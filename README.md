@@ -1,10 +1,9 @@
-pecora
-======
+# lit-solid-core
 
 # Installation
 
 ```bash
-npm install pecora solid-auth-client
+npm install @inrupt/lit-solid-core solid-auth-client
 ```
 
 # Usage
@@ -13,7 +12,7 @@ To be written.
 
 # Browser support
 
-Pecora uses relatively modern Javascript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io).
+lit-solid-core uses relatively modern Javascript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io).
 
 # Changelog
 

@@ -1,5 +1,5 @@
 {
-  "name": "pecora",
+  "name": "lit-solid-core",
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
@@ -12,15 +12,15 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://github.com/inrupt/pecora",
-  "bugs": "https://github.com/inrupt/pecora/issues",
+  "homepage": "https://github.com/inrupt/lit-solid-core",
+  "bugs": "https://github.com/inrupt/lit-solid-core/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/inrupt/pecora.git"
+    "url": "https://github.com/inrupt/lit-solid-core.git"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
