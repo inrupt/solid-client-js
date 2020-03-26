@@ -15,7 +15,7 @@ export default {
     {
       dir: "umd",
       format: "umd",
-      name: "Pecora",
+      name: "LitSolidCore",
     },
   ],
   plugins: [
