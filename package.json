@@ -1,0 +1,49 @@
+{
+  "name": "pecora",
+  "version": "0.0.1",
+  "scripts": {
+    "test": "eslint --config .eslintrc.js \"src/**\" && jest",
+    "build": "rollup --config rollup.config.js",
+    "prepublishOnly": "yarn run build"
+  },
+  "keywords": [
+    "rdf",
+    "solid",
+    "linked data",
+    "turtle"
+  ],
+  "homepage": "https://github.com/inrupt/pecora",
+  "bugs": "https://github.com/inrupt/pecora/issues",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inrupt/pecora.git"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.1.4",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
+    "eslint": "^6.8.0",
+    "husky": "^4.2.3",
+    "jest": "^25.2.1",
+    "lint-staged": "^10.0.9",
+    "prettier": "2.0.2",
+    "rollup": "^2.2.0",
+    "rollup-plugin-typescript2": "^0.26.0",
+    "ts-jest": "^25.2.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts}": "eslint --cache --fix",
+    "*.{ts,js,css,md}": "prettier --write"
+  }
+}
