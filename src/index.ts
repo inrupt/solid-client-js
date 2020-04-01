@@ -1,13 +1,13 @@
 import { DatasetCore } from "rdf-js";
 
-export { fetchDocument } from "./document";
+export { fetchLitDataset } from "./litDataset";
 
 /**
  * Alias to indicate where we expect an IRI
  */
 export type Reference = string;
 
-export type DocumentDataset = DatasetCore;
-export type DocumentDatasetWithMetadata = DocumentDataset & {
+export type LitDataset = DatasetCore;
+export type LitDatasetWithMetadata = LitDataset & {
   // Metadata properties
 };
