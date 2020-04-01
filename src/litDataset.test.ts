@@ -3,12 +3,12 @@ jest.mock("./fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { fetchDocument } from "./document";
+import { fetchLitDataset } from "./litDataset";
 
 it("should call the included fetcher by default", async () => {
   const mockedFetcher = jest.requireMock("./fetcher.ts");
 
-  await fetchDocument("https://some.url");
+  await fetchLitDataset("https://some.url");
 
   expect(mockedFetcher.fetch.mock.calls).toEqual([["https://some.url"]]);
 });
@@ -16,7 +16,7 @@ it("should call the included fetcher by default", async () => {
 it("should use the given fetcher if provided", async () => {
   const mockFetch = jest.fn().mockReturnValue(Promise.resolve(new Response()));
 
-  await fetchDocument("https://some.url", { fetch: mockFetch });
+  await fetchLitDataset("https://some.url", { fetch: mockFetch });
 
   expect(mockFetch.mock.calls).toEqual([["https://some.url"]]);
 });
@@ -38,7 +38,7 @@ it("should return a Dataset representing the fetched Turtle", async () => {
     .fn()
     .mockReturnValue(Promise.resolve(new Response(turtle)));
 
-  const dataset = await fetchDocument("https://arbitrary.url", {
+  const dataset = await fetchLitDataset("https://arbitrary.url", {
     fetch: mockFetch,
   });
 
