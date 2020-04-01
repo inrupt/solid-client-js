@@ -16,6 +16,11 @@ export async function fetchLitDataset(
   };
 
   const response = await config.fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Resource failed: ${response.status} ${response.statusText}.`
+    );
+  }
   const data = await response.text();
   const triples = await turtleToTriples(data, url);
   const doc = dataset();
