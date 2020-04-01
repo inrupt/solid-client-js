@@ -1,7 +1,7 @@
 import { dataset } from "@rdfjs/dataset";
-import { Reference, LitDatasetWithMetadata } from "./index";
+import { Reference, LitDatasetWithMetadata, LitDataset } from "./index";
 import { fetch } from "./fetcher";
-import { turtleToTriples } from "./formats/turtle";
+import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 
 const defaultFetchOptions = {
   fetch: fetch,
@@ -27,4 +27,37 @@ export async function fetchLitDataset(
   triples.forEach((triple) => doc.add(triple));
 
   return doc;
+}
+
+const defaultSaveOptions = {
+  fetch: fetch,
+};
+export async function saveLitDatasetAt(
+  url: Reference,
+  litDataset: LitDataset,
+  options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
+): Promise<LitDatasetWithMetadata> {
+  const config = {
+    ...defaultSaveOptions,
+    ...options,
+  };
+
+  const rawTurtle = await triplesToTurtle(Array.from(litDataset));
+
+  const response = await config.fetch(url, {
+    method: "PUT",
+    body: rawTurtle,
+    headers: {
+      "Content-Type": "text/turtle",
+      "If-None-Match": "*",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Storing the Resource failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  return litDataset;
 }

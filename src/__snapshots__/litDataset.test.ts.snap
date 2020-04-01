@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should return a Dataset representing the fetched Turtle 1`] = `
+exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
   "quads": Set {
     Object {
