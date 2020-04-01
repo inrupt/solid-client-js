@@ -1,15 +1,15 @@
 import { dataset } from "@rdfjs/dataset";
-import { Reference, DocumentDatasetWithMetadata } from "./index";
+import { Reference, LitDatasetWithMetadata } from "./index";
 import { fetch } from "./fetcher";
 import { turtleToTriples } from "./formats/turtle";
 
 const defaultFetchOptions = {
   fetch: fetch,
 };
-export async function fetchDocument(
+export async function fetchLitDataset(
   url: Reference,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<DocumentDatasetWithMetadata> {
+): Promise<LitDatasetWithMetadata> {
   const config = {
     ...defaultFetchOptions,
     ...options,

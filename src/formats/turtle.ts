@@ -9,7 +9,7 @@ import { Quad, Triple } from "rdf-js";
 export async function triplesToTurtle(quads: Quad[]): Promise<string> {
   const format = "text/turtle";
   const writer = new Writer({ format: format });
-  // Remove any potentially lingering references to Documents in Quads;
+  // Remove any potentially lingering references to Named Graphs in Quads;
   // they'll be determined by the URL the Turtle will be sent to:
   const triples = quads.map((quad) =>
     DataFactory.triple(quad.subject, quad.predicate, quad.object)
@@ -35,10 +35,10 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
  */
 export async function turtleToTriples(
   raw: string,
-  documentRef: Reference
+  resourceRef: Reference
 ): Promise<Triple[]> {
   const format = "text/turtle";
-  const parser = new Parser({ format: format, baseIRI: documentRef });
+  const parser = new Parser({ format: format, baseIRI: resourceRef });
 
   const parsingPromise = new Promise<Triple[]>((resolve, reject) => {
     const parsedTriples: Triple[] = [];
