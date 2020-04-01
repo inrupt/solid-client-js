@@ -45,3 +45,35 @@ it("should return a Dataset representing the fetched Turtle", async () => {
   expect(dataset.size).toBe(5);
   expect(dataset).toMatchSnapshot();
 });
+
+it("should return a meaningful error when the server returns a 403", async () => {
+  const mockFetch = jest
+    .fn()
+    .mockReturnValue(
+      Promise.resolve(new Response("Not allowed", { status: 403 }))
+    );
+
+  const fetchPromise = fetchLitDataset("https://arbitrary.url", {
+    fetch: mockFetch,
+  });
+
+  await expect(fetchPromise).rejects.toEqual(
+    new Error("Fetching the Resource failed: 403 Forbidden.")
+  );
+});
+
+it("should return a meaningful error when the server returns a 404", async () => {
+  const mockFetch = jest
+    .fn()
+    .mockReturnValue(
+      Promise.resolve(new Response("Not found", { status: 404 }))
+    );
+
+  const fetchPromise = fetchLitDataset("https://arbitrary.url", {
+    fetch: mockFetch,
+  });
+
+  await expect(fetchPromise).rejects.toEqual(
+    new Error("Fetching the Resource failed: 404 Not Found.")
+  );
+});
