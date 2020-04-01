@@ -31,13 +31,19 @@
     "jest": "^25.2.1",
     "lint-staged": "^10.0.9",
     "prettier": "2.0.2",
+    "rdf-namespaces": "^1.8.0",
     "rollup": "^2.2.0",
     "rollup-plugin-typescript2": "^0.26.0",
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "cross-fetch": "^3.0.4"
+    "@rdfjs/dataset": "^1.0.1",
+    "@types/n3": "^1.1.5",
+    "@types/rdf-js": "^2.0.11",
+    "@types/rdfjs__dataset": "^1.0.0",
+    "cross-fetch": "^3.0.4",
+    "n3": "^1.3.5"
   },
   "husky": {
     "hooks": {
