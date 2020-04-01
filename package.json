@@ -37,7 +37,9 @@
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "cross-fetch": "^3.0.4"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
