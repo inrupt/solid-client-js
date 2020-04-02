@@ -24,7 +24,7 @@ export default {
       typescript: require("typescript"),
       tsconfigOverride: {
         compilerOptions: {
-          module: "es2015",
+          module: "esnext",
         },
       },
     }),

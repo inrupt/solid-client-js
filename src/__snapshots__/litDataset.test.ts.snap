@@ -1,0 +1,103 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should return a Dataset representing the fetched Turtle 1`] = `
+DatasetCore {
+  "quads": Set {
+    Object {
+      "graph": Object {
+        "termType": "DefaultGraph",
+        "value": "",
+      },
+      "object": Object {
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+      },
+      "predicate": Object {
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      },
+      "subject": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url",
+      },
+    },
+    Object {
+      "graph": Object {
+        "termType": "DefaultGraph",
+        "value": "",
+      },
+      "object": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url#me",
+      },
+      "predicate": Object {
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/maker",
+      },
+      "subject": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url",
+      },
+    },
+    Object {
+      "graph": Object {
+        "termType": "DefaultGraph",
+        "value": "",
+      },
+      "object": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url#me",
+      },
+      "predicate": Object {
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/primaryTopic",
+      },
+      "subject": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url",
+      },
+    },
+    Object {
+      "graph": Object {
+        "termType": "DefaultGraph",
+        "value": "",
+      },
+      "object": Object {
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/Person",
+      },
+      "predicate": Object {
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      },
+      "subject": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url#me",
+      },
+    },
+    Object {
+      "graph": Object {
+        "termType": "DefaultGraph",
+        "value": "",
+      },
+      "object": Object {
+        "datatype": Object {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/2001/XMLSchema#string",
+        },
+        "language": "",
+        "termType": "Literal",
+        "value": "Vincent",
+      },
+      "predicate": Object {
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2006/vcard/ns#fn",
+      },
+      "subject": Object {
+        "termType": "NamedNode",
+        "value": "https://arbitrary.url#me",
+      },
+    },
+  },
+}
+`;
