@@ -1,4 +1,5 @@
 import { DatasetCore } from "rdf-js";
+import { Quad } from "n3";
 
 export { fetchLitDataset } from "./litDataset";
 
@@ -8,6 +9,7 @@ export { fetchLitDataset } from "./litDataset";
 export type Reference = string;
 
 export type LitDataset = DatasetCore;
-export type LitDatasetWithMetadata = LitDataset & {
+
+export type MetadataStruct = {
   // Metadata properties
 };
