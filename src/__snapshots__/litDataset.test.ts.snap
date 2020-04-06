@@ -2,6 +2,9 @@
 
 exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
+  "metadata": Object {
+    "fetchedFrom": "https://arbitrary.url",
+  },
   "quads": Set {
     Object {
       "graph": Object {
