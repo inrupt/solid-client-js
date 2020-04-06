@@ -1,5 +1,5 @@
 import { dataset } from "@rdfjs/dataset";
-import { Reference, LitDatasetWithMetadata, LitDataset } from "./index";
+import { Reference, LitDataset, MetadataStruct } from "./index";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 
@@ -9,7 +9,7 @@ const defaultFetchOptions = {
 export async function fetchLitDataset(
   url: Reference,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDatasetWithMetadata> {
+): Promise<LitDataset & MetadataStruct> {
   const config = {
     ...defaultFetchOptions,
     ...options,
@@ -36,7 +36,7 @@ export async function saveLitDatasetAt(
   url: Reference,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
-): Promise<LitDatasetWithMetadata> {
+): Promise<LitDataset & MetadataStruct> {
   const config = {
     ...defaultSaveOptions,
     ...options,
