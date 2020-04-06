@@ -1,5 +1,12 @@
 import { dataset } from "@rdfjs/dataset";
-import { Reference, LitDataset, MetadataStruct } from "./index";
+import {
+  Reference,
+  LitDataset,
+  MetadataStruct,
+  DiffStruct,
+  hasDiff,
+  hasMetadata,
+} from "./index";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 
@@ -23,10 +30,16 @@ export async function fetchLitDataset(
   }
   const data = await response.text();
   const triples = await turtleToTriples(data, url);
-  const doc = dataset();
-  triples.forEach((triple) => doc.add(triple));
+  const resource = dataset();
+  triples.forEach((triple) => resource.add(triple));
 
-  return doc;
+  const metadata: MetadataStruct["metadata"] = {
+    fetchedFrom: url,
+  };
+  const resourceWithMetadata: LitDataset &
+    MetadataStruct = Object.assign(resource, { metadata: metadata });
+
+  return resourceWithMetadata;
 }
 
 const defaultSaveOptions = {
@@ -42,16 +55,41 @@ export async function saveLitDatasetAt(
     ...options,
   };
 
-  const rawTurtle = await triplesToTurtle(Array.from(litDataset));
+  let requestInit: RequestInit;
 
-  const response = await config.fetch(url, {
-    method: "PUT",
-    body: rawTurtle,
-    headers: {
-      "Content-Type": "text/turtle",
-      "If-None-Match": "*",
-    },
-  });
+  if (isUpdate(litDataset, url)) {
+    const deleteStatement =
+      litDataset.diff.deletions.length > 0
+        ? `DELETE DATA {${(
+            await triplesToTurtle(litDataset.diff.deletions)
+          ).trim()}};`
+        : "";
+    const insertStatement =
+      litDataset.diff.additions.length > 0
+        ? `INSERT DATA {${(
+            await triplesToTurtle(litDataset.diff.additions)
+          ).trim()}};`
+        : "";
+
+    requestInit = {
+      method: "PATCH",
+      body: `${deleteStatement} ${insertStatement}`,
+      headers: {
+        "Content-Type": "application/sparql-update",
+      },
+    };
+  } else {
+    requestInit = {
+      method: "PUT",
+      body: await triplesToTurtle(Array.from(litDataset)),
+      headers: {
+        "Content-Type": "text/turtle",
+        "If-None-Match": "*",
+      },
+    };
+  }
+
+  const response = await config.fetch(url, requestInit);
 
   if (!response.ok) {
     throw new Error(
@@ -59,5 +97,33 @@ export async function saveLitDatasetAt(
     );
   }
 
-  return litDataset;
+  const existingMetadata: MetadataStruct["metadata"] = hasMetadata(litDataset)
+    ? litDataset.metadata
+    : {};
+  const storedDataset: LitDataset & DiffStruct & MetadataStruct = Object.assign(
+    litDataset,
+    {
+      diff: { additions: [], deletions: [] },
+      metadata: {
+        ...existingMetadata,
+        fetchedFrom: url,
+      },
+    }
+  );
+
+  return storedDataset;
+}
+
+function isUpdate(
+  litDataset: LitDataset,
+  url: Reference
+): litDataset is LitDataset &
+  DiffStruct &
+  MetadataStruct & { metadata: { fetchedFrom: string } } {
+  return (
+    hasDiff(litDataset) &&
+    hasMetadata(litDataset) &&
+    typeof litDataset.metadata.fetchedFrom === "string" &&
+    litDataset.metadata.fetchedFrom === url
+  );
 }
