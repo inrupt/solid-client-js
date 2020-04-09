@@ -49,7 +49,7 @@ export async function saveLitDatasetAt(
   url: Reference,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
-): Promise<LitDataset & MetadataStruct> {
+): Promise<LitDataset & MetadataStruct & DiffStruct> {
   const config = {
     ...defaultSaveOptions,
     ...options,

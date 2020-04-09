@@ -199,6 +199,17 @@ describe("saveLitDatasetAt", () => {
       );
     });
 
+    it("makes sure the returned LitDataset has an empty diff", async () => {
+      const mockDataset = dataset();
+
+      const storedLitDataset = await saveLitDatasetAt(
+        "https://arbitrary.pod/resource",
+        mockDataset
+      );
+
+      expect(storedLitDataset.diff).toEqual({ additions: [], deletions: [] });
+    });
+
     it("tells the Pod to only save new data when no data exists yet", async () => {
       const mockFetch = jest
         .fn()
@@ -357,6 +368,35 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls.length).toBe(1);
       expect(mockFetch.mock.calls[0][1].body).not.toMatch("INSERT");
+    });
+
+    it("makes sure the returned LitDataset has an empty diff", async () => {
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.triple(
+              DataFactory.namedNode("https://arbitrary.vocab/subject"),
+              DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+              DataFactory.namedNode("https://arbitrary.vocab/object")
+            ),
+          ],
+          deletions: [
+            DataFactory.triple(
+              DataFactory.namedNode("https://arbitrary-other.vocab/subject"),
+              DataFactory.namedNode("https://arbitrary-other.vocab/predicate"),
+              DataFactory.namedNode("https://arbitrary-other.vocab/object")
+            ),
+          ],
+        },
+        "https://arbitrary.pod/resource"
+      );
+
+      const storedLitDataset = await saveLitDatasetAt(
+        "https://arbitrary.pod/resource",
+        mockDataset
+      );
+
+      expect(storedLitDataset.diff).toEqual({ additions: [], deletions: [] });
     });
   });
 });
