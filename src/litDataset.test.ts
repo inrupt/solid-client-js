@@ -12,9 +12,11 @@ describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("./fetcher.ts");
 
-    await fetchLitDataset("https://some.url");
+    await fetchLitDataset("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([["https://some.url"]]);
+    expect(mockedFetcher.fetch.mock.calls).toEqual([
+      ["https://some.pod/resource"],
+    ]);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -22,9 +24,9 @@ describe("fetchLitDataset", () => {
       .fn()
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchLitDataset("https://some.url", { fetch: mockFetch });
+    await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.url"]]);
+    expect(mockFetch.mock.calls).toEqual([["https://some.pod/resource"]]);
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
@@ -32,11 +34,11 @@ describe("fetchLitDataset", () => {
       .fn()
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const litDataset = await fetchLitDataset("https://some.url", {
+    const litDataset = await fetchLitDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
-    expect(litDataset.metadata.fetchedFrom).toBe("https://some.url");
+    expect(litDataset.metadata.fetchedFrom).toBe("https://some.pod/resource");
   });
 
   it("returns a LitDataset representing the fetched Turtle", async () => {
@@ -56,7 +58,7 @@ describe("fetchLitDataset", () => {
       .fn()
       .mockReturnValue(Promise.resolve(new Response(turtle)));
 
-    const litDataset = await fetchLitDataset("https://arbitrary.url", {
+    const litDataset = await fetchLitDataset("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -71,7 +73,7 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchLitDataset("https://arbitrary.url", {
+    const fetchPromise = fetchLitDataset("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -87,7 +89,7 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchLitDataset("https://arbitrary.url", {
+    const fetchPromise = fetchLitDataset("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -101,7 +103,7 @@ describe("saveLitDatasetAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("./fetcher.ts");
 
-    await saveLitDatasetAt("https://some.url", dataset());
+    await saveLitDatasetAt("https://some.pod/resource", dataset());
 
     expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
   });
@@ -111,7 +113,9 @@ describe("saveLitDatasetAt", () => {
       .fn()
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await saveLitDatasetAt("https://some.url", dataset(), { fetch: mockFetch });
+    await saveLitDatasetAt("https://some.pod/resource", dataset(), {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls.length).toBe(1);
   });
@@ -123,9 +127,13 @@ describe("saveLitDatasetAt", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = saveLitDatasetAt("https://arbitrary.url", dataset(), {
-      fetch: mockFetch,
-    });
+    const fetchPromise = saveLitDatasetAt(
+      "https://arbitrary.pod/resource",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     await expect(fetchPromise).rejects.toEqual(
       new Error("Storing the Resource failed: 403 Forbidden.")
@@ -139,9 +147,13 @@ describe("saveLitDatasetAt", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = saveLitDatasetAt("https://arbitrary.url", dataset(), {
-      fetch: mockFetch,
-    });
+    const fetchPromise = saveLitDatasetAt(
+      "https://arbitrary.pod/resource",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     await expect(fetchPromise).rejects.toEqual(
       new Error("Storing the Resource failed: 404 Not Found.")
@@ -162,12 +174,12 @@ describe("saveLitDatasetAt", () => {
         )
       );
 
-      await saveLitDatasetAt("https://some.url", mockDataset, {
+      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.url");
+      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
       expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
         "text/turtle"
@@ -182,7 +194,7 @@ describe("saveLitDatasetAt", () => {
         .fn()
         .mockReturnValue(Promise.resolve(new Response()));
 
-      await saveLitDatasetAt("https://arbitrary.url", dataset(), {
+      await saveLitDatasetAt("https://arbitrary.pod/resource", dataset(), {
         fetch: mockFetch,
       });
 
@@ -240,15 +252,15 @@ describe("saveLitDatasetAt", () => {
             ),
           ],
         },
-        "https://some.url"
+        "https://some.pod/resource"
       );
 
-      await saveLitDatasetAt("https://some.url", mockDataset, {
+      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.url");
+      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1].method).toBe("PATCH");
       expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
         "application/sparql-update"
@@ -266,15 +278,17 @@ describe("saveLitDatasetAt", () => {
 
       const mockDataset = getMockUpdatedDataset(
         { additions: [], deletions: [] },
-        "https://some.url"
+        "https://some.pod/resource"
       );
 
-      await saveLitDatasetAt("https://some-other.url", mockDataset, {
+      await saveLitDatasetAt("https://some-other.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual("https://some-other.url");
+      expect(mockFetch.mock.calls[0][0]).toEqual(
+        "https://some-other.pod/resource"
+      );
       expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
       // Even though the diff is empty there should still be a body,
       // since the Dataset itself is not empty:
@@ -297,10 +311,10 @@ describe("saveLitDatasetAt", () => {
           ],
           deletions: [],
         },
-        "https://arbitrary.url"
+        "https://arbitrary.pod/resource"
       );
 
-      await saveLitDatasetAt("https://arbitrary.url", mockDataset, {
+      await saveLitDatasetAt("https://arbitrary.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -324,10 +338,10 @@ describe("saveLitDatasetAt", () => {
             ),
           ],
         },
-        "https://arbitrary.url"
+        "https://arbitrary.pod/resource"
       );
 
-      await saveLitDatasetAt("https://arbitrary.url", mockDataset, {
+      await saveLitDatasetAt("https://arbitrary.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 

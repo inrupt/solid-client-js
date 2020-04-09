@@ -3,7 +3,7 @@
 exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
   "metadata": Object {
-    "fetchedFrom": "https://arbitrary.url",
+    "fetchedFrom": "https://arbitrary.pod/resource",
   },
   "quads": Set {
     Object {
@@ -21,7 +21,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url",
+        "value": "https://arbitrary.pod/resource",
       },
     },
     Object {
@@ -31,7 +31,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url#me",
+        "value": "https://arbitrary.pod/resource#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -39,7 +39,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url",
+        "value": "https://arbitrary.pod/resource",
       },
     },
     Object {
@@ -49,7 +49,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url#me",
+        "value": "https://arbitrary.pod/resource#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -57,7 +57,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url",
+        "value": "https://arbitrary.pod/resource",
       },
     },
     Object {
@@ -75,7 +75,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url#me",
+        "value": "https://arbitrary.pod/resource#me",
       },
     },
     Object {
@@ -98,7 +98,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.url#me",
+        "value": "https://arbitrary.pod/resource#me",
       },
     },
   },
