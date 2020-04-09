@@ -40,13 +40,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
-    const mockFetch = jest
-      .fn()
-      .mockReturnValue(Promise.resolve(new Response()));
-
-    const litDataset = await fetchLitDataset("https://some.pod/resource", {
-      fetch: mockFetch,
-    });
+    const litDataset = await fetchLitDataset("https://some.pod/resource");
 
     expect(litDataset.metadata.fetchedFrom).toBe("https://some.pod/resource");
   });
