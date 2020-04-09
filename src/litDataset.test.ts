@@ -1,11 +1,21 @@
 jest.mock("./fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() => Promise.resolve(new Response())),
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
 }));
 
 import { Response } from "cross-fetch";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
-import { fetchLitDataset, saveLitDatasetAt } from "./litDataset";
+import {
+  fetchLitDataset,
+  saveLitDatasetAt,
+  saveLitDatasetInContainer,
+} from "./litDataset";
 import { DiffStruct, MetadataStruct, Reference, LitDataset } from ".";
 
 describe("fetchLitDataset", () => {
@@ -348,5 +358,194 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls.length).toBe(1);
       expect(mockFetch.mock.calls[0][1].body).not.toMatch("INSERT");
     });
+  });
+});
+
+describe("saveLitDatasetInContainer", () => {
+  const mockResponse = new Response("Arbitrary response", {
+    headers: { Location: "https://arbitrary.pod/container/resource" },
+  });
+
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("./fetcher.ts");
+
+    await saveLitDatasetInContainer("https://some.pod/container/", dataset());
+
+    expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+
+    await saveLitDatasetInContainer("https://some.pod/container/", dataset(), {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls.length).toBe(1);
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const fetchPromise = saveLitDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Storing the Resource in the Container failed: 403 Forbidden.")
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 404", async () => {
+    const mockFetch = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve(new Response("Not found", { status: 404 }))
+      );
+
+    const fetchPromise = saveLitDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Storing the Resource in the Container failed: 404 Not Found.")
+    );
+  });
+
+  it("returns a meaningful error when the server does not return the new Resource's location", async () => {
+    const mockFetch = jest
+      .fn()
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    const fetchPromise = saveLitDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error(
+        "Could not determine the location for the newly saved LitDataset."
+      )
+    );
+  });
+
+  it("sends the given LitDataset to the Pod", async () => {
+    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockDataset = dataset();
+    mockDataset.add(
+      DataFactory.triple(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    await saveLitDatasetInContainer(
+      "https://some.pod/container/",
+      mockDataset,
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][1].method).toBe("POST");
+    expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
+      "text/turtle"
+    );
+    expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+      "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+    );
+  });
+
+  it("sends the suggested slug to the Pod", async () => {
+    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+
+    await saveLitDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+        slugSuggestion: "some-slug",
+      }
+    );
+
+    expect(mockFetch.mock.calls[0][1].headers).toMatchObject({
+      slug: "some-slug",
+    });
+  });
+
+  it("does not send a suggested slug if none was provided", async () => {
+    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+
+    await saveLitDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls[0][1].headers.slug).toBeUndefined();
+  });
+
+  it("includes the final slug with the return value", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response("Arbitrary response", {
+          headers: { Location: "https://some.pod/container/resource" },
+        })
+      )
+    );
+
+    const savedLitDataset = await saveLitDatasetInContainer(
+      "https://some.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedLitDataset.metadata.fetchedFrom).toBe(
+      "https://some.pod/container/resource"
+    );
+  });
+
+  it("includes the final slug with the return value, normalised to the Container's origin", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response("Arbitrary response", {
+          headers: { Location: "/container/resource" },
+        })
+      )
+    );
+
+    const savedLitDataset = await saveLitDatasetInContainer(
+      "https://some.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedLitDataset.metadata.fetchedFrom).toBe(
+      "https://some.pod/container/resource"
+    );
   });
 });

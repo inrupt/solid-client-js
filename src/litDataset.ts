@@ -127,3 +127,58 @@ function isUpdate(
     litDataset.metadata.fetchedFrom === url
   );
 }
+
+const defaultSaveInContainerOptions = {
+  fetch: fetch,
+};
+type SaveInContainerOptions = Partial<
+  typeof defaultSaveInContainerOptions & {
+    slugSuggestion: string;
+  }
+>;
+export async function saveLitDatasetInContainer(
+  containerUrl: Reference,
+  litDataset: LitDataset,
+  options: SaveInContainerOptions = defaultSaveInContainerOptions
+): Promise<LitDataset & MetadataStruct> {
+  const config = {
+    ...defaultSaveOptions,
+    ...options,
+  };
+
+  const rawTurtle = await triplesToTurtle(Array.from(litDataset));
+  const headers: RequestInit["headers"] = {
+    "Content-Type": "text/turtle",
+  };
+  if (options.slugSuggestion) {
+    headers.slug = options.slugSuggestion;
+  }
+  const response = await config.fetch(containerUrl, {
+    method: "POST",
+    body: rawTurtle,
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Storing the Resource in the Container failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const locationHeader = response.headers.get("Location");
+  if (locationHeader === null) {
+    throw new Error(
+      "Could not determine the location for the newly saved LitDataset."
+    );
+  }
+
+  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
+    .href;
+  const metadata: MetadataStruct["metadata"] = {
+    fetchedFrom: resourceIri,
+  };
+  const resourceWithMetadata: LitDataset &
+    MetadataStruct = Object.assign(litDataset, { metadata: metadata });
+
+  return resourceWithMetadata;
+}
