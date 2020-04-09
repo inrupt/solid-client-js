@@ -77,7 +77,7 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    await expect(fetchPromise).rejects.toEqual(
+    await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource failed: 403 Forbidden.")
     );
   });
@@ -93,7 +93,7 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    await expect(fetchPromise).rejects.toEqual(
+    await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource failed: 404 Not Found.")
     );
   });
@@ -135,7 +135,7 @@ describe("saveLitDatasetAt", () => {
       }
     );
 
-    await expect(fetchPromise).rejects.toEqual(
+    await expect(fetchPromise).rejects.toThrow(
       new Error("Storing the Resource failed: 403 Forbidden.")
     );
   });
@@ -155,7 +155,7 @@ describe("saveLitDatasetAt", () => {
       }
     );
 
-    await expect(fetchPromise).rejects.toEqual(
+    await expect(fetchPromise).rejects.toThrow(
       new Error("Storing the Resource failed: 404 Not Found.")
     );
   });
