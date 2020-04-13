@@ -171,10 +171,11 @@ describe("saveLitDatasetAt", () => {
         .mockReturnValue(Promise.resolve(new Response()));
       const mockDataset = dataset();
       mockDataset.add(
-        DataFactory.triple(
+        DataFactory.quad(
           DataFactory.namedNode("https://arbitrary.vocab/subject"),
           DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object")
+          DataFactory.namedNode("https://arbitrary.vocab/object"),
+          undefined
         )
       );
 
@@ -226,10 +227,11 @@ describe("saveLitDatasetAt", () => {
     ): LitDataset & DiffStruct & MetadataStruct {
       const mockDataset = dataset();
       mockDataset.add(
-        DataFactory.triple(
+        DataFactory.quad(
           DataFactory.namedNode("https://arbitrary.vocab/subject"),
           DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object")
+          DataFactory.namedNode("https://arbitrary.vocab/object"),
+          undefined
         )
       );
 
@@ -253,17 +255,19 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
-              DataFactory.namedNode("https://some.vocab/object")
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
             ),
           ],
           deletions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://some-other.vocab/subject"),
               DataFactory.namedNode("https://some-other.vocab/predicate"),
-              DataFactory.namedNode("https://some-other.vocab/object")
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
             ),
           ],
         },
@@ -318,10 +322,11 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object")
+              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              undefined
             ),
           ],
           deletions: [],
@@ -346,10 +351,11 @@ describe("saveLitDatasetAt", () => {
         {
           additions: [],
           deletions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object")
+              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              undefined
             ),
           ],
         },
@@ -368,17 +374,19 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object")
+              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              undefined
             ),
           ],
           deletions: [
-            DataFactory.triple(
+            DataFactory.quad(
               DataFactory.namedNode("https://arbitrary-other.vocab/subject"),
               DataFactory.namedNode("https://arbitrary-other.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary-other.vocab/object")
+              DataFactory.namedNode("https://arbitrary-other.vocab/object"),
+              undefined
             ),
           ],
         },
@@ -482,10 +490,11 @@ describe("saveLitDatasetInContainer", () => {
     const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
     const mockDataset = dataset();
     mockDataset.add(
-      DataFactory.triple(
+      DataFactory.quad(
         DataFactory.namedNode("https://arbitrary.vocab/subject"),
         DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        DataFactory.namedNode("https://arbitrary.vocab/object"),
+        undefined
       )
     );
 
