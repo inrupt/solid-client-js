@@ -12,7 +12,7 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
   // Remove any potentially lingering references to Named Graphs in Quads;
   // they'll be determined by the URL the Turtle will be sent to:
   const triples = quads.map((quad) =>
-    DataFactory.triple(quad.subject, quad.predicate, quad.object)
+    DataFactory.quad(quad.subject, quad.predicate, quad.object, undefined)
   );
   writer.addQuads(triples);
   const writePromise = new Promise<string>((resolve, reject) => {

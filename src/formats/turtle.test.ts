@@ -14,15 +14,17 @@ describe("turtleToTriples", () => {
       "https://example.com/some-path"
     );
 
-    const expectedTriple1 = DataFactory.triple(
+    const expectedTriple1 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
       DataFactory.namedNode(rdf.type),
-      DataFactory.namedNode(foaf.Person)
+      DataFactory.namedNode(foaf.Person),
+      undefined
     );
-    const expectedTriple2 = DataFactory.triple(
+    const expectedTriple2 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
       DataFactory.namedNode(foaf.name),
-      DataFactory.literal("Some name")
+      DataFactory.literal("Some name"),
+      undefined
     );
     expect(parsed).toEqual([expectedTriple1, expectedTriple2]);
   });
@@ -44,10 +46,11 @@ describe("turtleToTriples", () => {
 describe("triplesToTurtle", () => {
   it("should convert quads to a turtle string", async () => {
     const triples = [
-      DataFactory.triple(
+      DataFactory.quad(
         DataFactory.namedNode("https://vincentt.inrupt.net/profile/card#me"),
         DataFactory.namedNode(foaf.name),
-        DataFactory.literal("Vincent")
+        DataFactory.literal("Vincent"),
+        undefined
       ),
     ];
 
