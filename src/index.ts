@@ -1,5 +1,4 @@
-import { DatasetCore } from "rdf-js";
-import { Quad } from "n3";
+import { DatasetCore, Quad } from "rdf-js";
 
 export { fetchLitDataset } from "./litDataset";
 
