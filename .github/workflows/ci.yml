@@ -41,3 +41,29 @@ jobs:
       with:
         name: dist
         path: dist
+  release:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Prepare for publication to GitHub Packages
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@inrupt'
+    - name: Prepare prerelease version
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+        # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
+        npm version prerelease --preid=${GITHUB_REF#refs/heads/}-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
+    - run: npm ci
+    - run: npm publish --tag "${GITHUB_REF#refs/heads/}"
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: |
+        echo "Package published. To install, run:"
+        echo ""
+        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid-core@${GITHUB_REF#refs/heads/}"
+        echo ""
+        echo "(You might first need to log in with \`npm login --registry=https://npm.pkg.github.com\`.)"
