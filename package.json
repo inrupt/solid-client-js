@@ -1,5 +1,5 @@
 {
-  "name": "lit-solid-core",
+  "name": "@inrupt/lit-solid-core",
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
