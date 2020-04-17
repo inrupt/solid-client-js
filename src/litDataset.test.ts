@@ -189,6 +189,9 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
         "text/turtle"
       );
+      expect(mockFetch.mock.calls[0][1].headers["Link"]).toBe(
+        '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
+      );
       expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
       );
@@ -511,6 +514,9 @@ describe("saveLitDatasetInContainer", () => {
     expect(mockFetch.mock.calls[0][1].method).toBe("POST");
     expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
       "text/turtle"
+    );
+    expect(mockFetch.mock.calls[0][1].headers["Link"]).toBe(
+      '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
     );
     expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
       "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."

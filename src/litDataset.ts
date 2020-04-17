@@ -85,6 +85,7 @@ export async function saveLitDatasetAt(
       headers: {
         "Content-Type": "text/turtle",
         "If-None-Match": "*",
+        Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
       },
     };
   }
@@ -149,6 +150,7 @@ export async function saveLitDatasetInContainer(
   const rawTurtle = await triplesToTurtle(Array.from(litDataset));
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
+    Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
   };
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
