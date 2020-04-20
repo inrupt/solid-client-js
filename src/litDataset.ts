@@ -1,6 +1,6 @@
 import { dataset } from "@rdfjs/dataset";
 import {
-  Reference,
+  IriString,
   LitDataset,
   MetadataStruct,
   DiffStruct,
@@ -14,7 +14,7 @@ const defaultFetchOptions = {
   fetch: fetch,
 };
 export async function fetchLitDataset(
-  url: Reference,
+  url: IriString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<LitDataset & MetadataStruct> {
   const config = {
@@ -46,7 +46,7 @@ const defaultSaveOptions = {
   fetch: fetch,
 };
 export async function saveLitDatasetAt(
-  url: Reference,
+  url: IriString,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
 ): Promise<LitDataset & MetadataStruct & DiffStruct> {
@@ -117,7 +117,7 @@ export async function saveLitDatasetAt(
 
 function isUpdate(
   litDataset: LitDataset,
-  url: Reference
+  url: IriString
 ): litDataset is LitDataset &
   DiffStruct &
   MetadataStruct & { metadata: { fetchedFrom: string } } {
@@ -138,7 +138,7 @@ type SaveInContainerOptions = Partial<
   }
 >;
 export async function saveLitDatasetInContainer(
-  containerUrl: Reference,
+  containerUrl: IriString,
   litDataset: LitDataset,
   options: SaveInContainerOptions = defaultSaveInContainerOptions
 ): Promise<LitDataset & MetadataStruct> {
