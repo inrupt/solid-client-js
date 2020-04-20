@@ -1,4 +1,4 @@
-import { Reference } from "../index";
+import { IriString } from "../index";
 import { DataFactory, Writer, Parser } from "n3";
 import { Quad, Triple } from "rdf-js";
 
@@ -35,7 +35,7 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
  */
 export async function turtleToTriples(
   raw: string,
-  resourceRef: Reference
+  resourceRef: IriString
 ): Promise<Triple[]> {
   const format = "text/turtle";
   const parser = new Parser({ format: format, baseIRI: resourceRef });

@@ -1,17 +1,18 @@
-import { DatasetCore, Quad } from "rdf-js";
+import { DatasetCore, Quad, NamedNode } from "rdf-js";
 
 export { fetchLitDataset } from "./litDataset";
 
 /**
  * Alias to indicate where we expect an IRI
  */
-export type Reference = string;
+export type Iri = NamedNode;
+export type IriString = string;
 
 export type LitDataset = DatasetCore;
 
 export type MetadataStruct = {
   metadata: {
-    fetchedFrom?: Reference;
+    fetchedFrom?: IriString;
   };
 };
 
