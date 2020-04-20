@@ -16,7 +16,7 @@ import {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
 } from "./litDataset";
-import { DiffStruct, MetadataStruct, Reference, LitDataset } from ".";
+import { DiffStruct, MetadataStruct, IriString, LitDataset } from ".";
 
 describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {
@@ -226,7 +226,7 @@ describe("saveLitDatasetAt", () => {
   describe("when updating an existing resource", () => {
     function getMockUpdatedDataset(
       diff: DiffStruct["diff"],
-      fromUrl: Reference
+      fromUrl: IriString
     ): LitDataset & DiffStruct & MetadataStruct {
       const mockDataset = dataset();
       mockDataset.add(
