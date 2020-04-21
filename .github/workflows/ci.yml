@@ -51,19 +51,23 @@ jobs:
         node-version: '12.x'
         registry-url: 'https://npm.pkg.github.com'
         scope: '@inrupt'
+    - name: Determine npm tag
+      # Remove non-alphanumeric characters
+      # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+      run: echo "::set-env name=TAG_SLUG::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]._-')"
     - name: Prepare prerelease version
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
-        npm version prerelease --preid=${GITHUB_REF#refs/heads/}-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
+        npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
     - run: npm ci
-    - run: npm publish --tag "${GITHUB_REF#refs/heads/}"
+    - run: npm publish --tag "$TAG_SLUG"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid-core@${GITHUB_REF#refs/heads/}"
+        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid-core@$TAG_SLUG"
         echo ""
         echo "(You might first need to log in with \`npm login --registry=https://npm.pkg.github.com\`.)"
