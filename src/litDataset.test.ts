@@ -16,7 +16,13 @@ import {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
 } from "./litDataset";
-import { DiffStruct, MetadataStruct, IriString, LitDataset } from ".";
+import {
+  DiffStruct,
+  MetadataStruct,
+  IriString,
+  LitDataset,
+  LocalNode,
+} from "./index";
 
 describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {
@@ -197,6 +203,71 @@ describe("saveLitDatasetAt", () => {
       );
     });
 
+    it("sets relative IRIs for LocalNodes", async () => {
+      const mockFetch = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(new Response()));
+      const mockDataset = dataset();
+      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-subject-name",
+      });
+      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-object-name",
+      });
+      mockDataset.add(
+        DataFactory.quad(
+          subjectLocal,
+          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+          objectLocal,
+          undefined
+        )
+      );
+
+      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls[0][1].body).toMatch("#some-subject-name");
+      expect(mockFetch.mock.calls[0][1].body).toMatch("#some-object-name");
+    });
+
+    it("resolves relative IRIs in the returned LitDataset", async () => {
+      const mockFetch = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(new Response()));
+      const mockDataset = dataset();
+      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-subject-name",
+      });
+      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-object-name",
+      });
+      mockDataset.add(
+        DataFactory.quad(
+          subjectLocal,
+          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+          objectLocal,
+          undefined
+        )
+      );
+
+      const storedLitDataset = await saveLitDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      expect(Array.from(storedLitDataset)[0].subject.value).toBe(
+        "https://some.pod/resource#some-subject-name"
+      );
+      expect(Array.from(storedLitDataset)[0].object.value).toBe(
+        "https://some.pod/resource#some-object-name"
+      );
+    });
+
     it("makes sure the returned LitDataset has an empty diff", async () => {
       const mockDataset = dataset();
 
@@ -290,6 +361,94 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
         "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
           "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
+      );
+    });
+
+    it("sets relative IRIs for LocalNodes", async () => {
+      const mockFetch = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(new Response()));
+
+      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-subject-name",
+      });
+      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-object-name",
+      });
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              subjectLocal,
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              objectLocal,
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              subjectLocal,
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              objectLocal,
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+        fetch: mockFetch,
+      });
+
+      const [deleteStatement, insertStatement] = (mockFetch.mock.calls[0][1]
+        .body as string).split(";");
+      expect(deleteStatement).toMatch("#some-subject-name");
+      expect(insertStatement).toMatch("#some-subject-name");
+      expect(deleteStatement).toMatch("#some-object-name");
+      expect(insertStatement).toMatch("#some-object-name");
+    });
+
+    it("resolves relative IRIs in the returned LitDataset", async () => {
+      const mockFetch = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(new Response()));
+
+      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-subject-name",
+      });
+      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+        name: "some-object-name",
+      });
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              subjectLocal,
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              objectLocal,
+              undefined
+            ),
+          ],
+          deletions: [],
+        },
+        "https://some.pod/resource"
+      );
+
+      const storedLitDataset = await saveLitDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      const storedQuads = Array.from(storedLitDataset);
+      expect(storedQuads[storedQuads.length - 1].subject.value).toBe(
+        "https://some.pod/resource#some-subject-name"
+      );
+      expect(storedQuads[storedQuads.length - 1].object.value).toBe(
+        "https://some.pod/resource#some-object-name"
       );
     });
 
@@ -523,6 +682,38 @@ describe("saveLitDatasetInContainer", () => {
     );
   });
 
+  it("sets relative IRIs for LocalNodes", async () => {
+    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-subject-name",
+    });
+    const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-object-name",
+    });
+    const mockDataset = dataset();
+    mockDataset.add(
+      DataFactory.quad(
+        subjectLocal,
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        objectLocal,
+        undefined
+      )
+    );
+
+    await saveLitDatasetInContainer(
+      "https://some.pod/container/",
+      mockDataset,
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+      "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
+    );
+  });
+
   it("sends the suggested slug to the Pod", async () => {
     const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
 
@@ -573,6 +764,47 @@ describe("saveLitDatasetInContainer", () => {
 
     expect(savedLitDataset.metadata.fetchedFrom).toBe(
       "https://some.pod/container/resource"
+    );
+  });
+
+  it("resolves relative IRIs in the returned LitDataset", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response("Arbitrary response", {
+          headers: { Location: "https://some.pod/container/resource" },
+        })
+      )
+    );
+
+    const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-subject-name",
+    });
+    const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-object-name",
+    });
+    const mockDataset = dataset();
+    mockDataset.add(
+      DataFactory.quad(
+        subjectLocal,
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        objectLocal,
+        undefined
+      )
+    );
+
+    const storedLitDataset = await saveLitDatasetInContainer(
+      "https://some.pod/container/",
+      mockDataset,
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(Array.from(storedLitDataset)[0].subject.value).toBe(
+      "https://some.pod/container/resource#some-subject-name"
+    );
+    expect(Array.from(storedLitDataset)[0].object.value).toBe(
+      "https://some.pod/container/resource#some-object-name"
     );
   });
 
