@@ -1,6 +1,10 @@
 import { DatasetCore, Quad, NamedNode } from "rdf-js";
 
-export { fetchLitDataset } from "./litDataset";
+export {
+  fetchLitDataset,
+  saveLitDatasetAt,
+  saveLitDatasetInContainer,
+} from "./litDataset";
 
 /**
  * Alias to indicate where we expect an IRI
