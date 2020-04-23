@@ -5,7 +5,18 @@ export {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
 } from "./litDataset";
-export { getOneThing, getAllThings, createThing, asIri } from "./thing";
+export {
+  getOneThing,
+  getAllThings,
+  createThing,
+  asIri,
+  getOneStringUnlocalised,
+  getOneStringInLocale,
+  getOneInteger,
+  getOneDecimal,
+  getOneBoolean,
+  getOneDatetime,
+} from "./thing";
 
 /**
  * Alias to indicate where we expect an IRI.

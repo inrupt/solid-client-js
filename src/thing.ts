@@ -1,4 +1,4 @@
-import { NamedNode } from "rdf-js";
+import { NamedNode, Quad, Literal } from "rdf-js";
 import {
   LitDataset,
   IriString,
@@ -146,6 +146,238 @@ export function asIri(thing: Thing, baseIri?: IriString): IriString {
 }
 
 /**
+ * @param thing The [[Thing]] to read an IRI value from.
+ * @param predicate The given Predicate for which you want the IRI value.
+ * @returns An IRI value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneIri(
+  thing: Thing,
+  predicate: Iri | IriString
+): IriString | null {
+  const predicateNode = asNamedNode(predicate);
+
+  const matchingStatement = findOne(thing, (statement) => {
+    return (
+      predicateNode.equals(statement.predicate) && isNamedNode(statement.object)
+    );
+  });
+
+  if (matchingStatement === null) {
+    return null;
+  }
+
+  return matchingStatement.object.value;
+}
+
+/**
+ * @param thing The [[Thing]] to read a string value from.
+ * @param predicate The given Predicate for which you want the string value.
+ * @returns A string value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneStringUnlocalised(
+  thing: Thing,
+  predicate: Iri | IriString
+): string | null {
+  const literalString = getLiteralOfType(
+    thing,
+    predicate,
+    "http://www.w3.org/2001/XMLSchema#string"
+  );
+
+  return literalString;
+}
+
+/**
+ * @param thing The [[Thing]] to read a localised string value from.
+ * @param predicate The given Predicate for which you want the localised string value.
+ * @param locale The desired locale for the string value.
+ * @returns A localised string value for the given Predicate, if present in `locale`, or null otherwise.
+ */
+export function getOneStringInLocale(
+  thing: Thing,
+  predicate: Iri | IriString,
+  locale: string
+): string | null {
+  const predicateNode = asNamedNode(predicate);
+
+  const matchingStatement = findOne(thing, (statement) => {
+    return (
+      predicateNode.equals(statement.predicate) &&
+      isLiteral(statement.object) &&
+      statement.object.datatype.value ===
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString" &&
+      statement.object.language.toLowerCase() === locale.toLowerCase()
+    );
+  });
+
+  if (matchingStatement === null) {
+    return null;
+  }
+
+  return matchingStatement.object.value;
+}
+
+/**
+ * @param thing The [[Thing]] to read an integer value from.
+ * @param predicate The given Predicate for which you want the integer value.
+ * @returns An integer value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneInteger(
+  thing: Thing,
+  predicate: Iri | IriString
+): number | null {
+  const literalString = getLiteralOfType(
+    thing,
+    predicate,
+    "http://www.w3.org/2001/XMLSchema#integer"
+  );
+
+  if (literalString === null) {
+    return null;
+  }
+
+  return Number.parseInt(literalString, 10);
+}
+
+/**
+ * @param thing The [[Thing]] to read a decimal value from.
+ * @param predicate The given Predicate for which you want the decimal value.
+ * @returns A decimal value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneDecimal(
+  thing: Thing,
+  predicate: Iri | IriString
+): number | null {
+  const literalString = getLiteralOfType(
+    thing,
+    predicate,
+    "http://www.w3.org/2001/XMLSchema#decimal"
+  );
+
+  if (literalString === null) {
+    return null;
+  }
+
+  return Number.parseFloat(literalString);
+}
+
+/**
+ * @param thing The [[Thing]] to read a boolean value from.
+ * @param predicate The given Predicate for which you want the boolean value.
+ * @returns A boolean value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneBoolean(
+  thing: Thing,
+  predicate: Iri | IriString
+): boolean | null {
+  const literalString = getLiteralOfType(
+    thing,
+    predicate,
+    "http://www.w3.org/2001/XMLSchema#boolean"
+  );
+
+  if (literalString === null) {
+    return null;
+  }
+
+  if (literalString === "1") {
+    return true;
+  } else if (literalString === "0") {
+    return false;
+  } else {
+    return null;
+  }
+}
+
+/**
+ * @param thing The [[Thing]] to read a datetime value from.
+ * @param predicate The given Predicate for which you want the datetime value.
+ * @returns A datetime value for the given Predicate, if present, or null otherwise.
+ */
+export function getOneDatetime(
+  thing: Thing,
+  predicate: Iri | IriString
+): Date | null {
+  const literalString = getLiteralOfType(
+    thing,
+    predicate,
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+  );
+
+  if (
+    literalString === null ||
+    literalString.length <= 17 ||
+    literalString.indexOf("Z") === -1
+  ) {
+    return null;
+  }
+
+  // See https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L87
+  const utcFullYear = parseInt(literalString.substring(0, 4), 10);
+  const utcMonth = parseInt(literalString.substring(5, 7), 10) - 1;
+  const utcDate = parseInt(literalString.substring(8, 10), 10);
+  const utcHours = parseInt(literalString.substring(11, 13), 10);
+  const utcMinutes = parseInt(literalString.substring(14, 16), 10);
+  const utcSeconds = parseInt(
+    literalString.substring(17, literalString.indexOf("Z")),
+    10
+  );
+  const date = new Date(0);
+  date.setUTCFullYear(utcFullYear);
+  date.setUTCMonth(utcMonth);
+  date.setUTCDate(utcDate);
+  date.setUTCHours(utcHours);
+  date.setUTCMinutes(utcMinutes);
+  date.setUTCSeconds(utcSeconds);
+  return date;
+}
+
+/**
+ * @param thing The [Thing]] to read a Literal of the given type from.
+ * @param predicate The given Predicate for which you want the Literal value.
+ * @param literalType Set type of the Literal data.
+ * @returns The stringified value for the given Predicate and type, if present, or null otherwise.
+ */
+function getLiteralOfType(
+  thing: Thing,
+  predicate: Iri | IriString,
+  literalType: IriString
+): string | null {
+  const predicateNode = asNamedNode(predicate);
+
+  const matchingStatement = findOne(thing, (statement) => {
+    return (
+      predicateNode.equals(statement.predicate) &&
+      isLiteral(statement.object) &&
+      statement.object.datatype.value === literalType
+    );
+  });
+
+  if (matchingStatement === null) {
+    return null;
+  }
+
+  return matchingStatement.object.value;
+}
+
+/**
+ * @param thing The [[Thing]] to extract Statements from.
+ * @param matcher Callback function that returns a boolean indicating whether a given Statement should be included.
+ * @returns First statement in `thing` for which `matcher` returned true.
+ */
+function findOne(
+  thing: Thing,
+  matcher: (statement: Quad) => boolean
+): Quad | null {
+  for (let statement of thing) {
+    if (matcher(statement)) {
+      return statement;
+    }
+  }
+  return null;
+}
+
+/**
  * Ensure that a given value is a Named Node.
  *
  * If the given parameter is a Named Node already, it will be returned as-is. If it is a string, it
@@ -179,6 +411,18 @@ function isNamedNode<T>(value: T | NamedNode): value is NamedNode {
     typeof value === "object" &&
     typeof (value as NamedNode).termType === "string" &&
     (value as NamedNode).termType === "NamedNode"
+  );
+}
+
+/**
+ * @param value The value that might or might not be a Literal.
+ * @returns Whether `value` is a Literal.
+ */
+function isLiteral<T>(value: T | Literal): value is Literal {
+  return (
+    typeof value === "object" &&
+    typeof (value as Literal).termType === "string" &&
+    (value as Literal).termType === "Literal"
   );
 }
 
