@@ -6,9 +6,14 @@ import {
   DiffStruct,
   hasDiff,
   hasMetadata,
+  LocalNode,
+  Iri,
 } from "./index";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
+import { Quad, NamedNode } from "rdf-js";
+import { isLocalNode } from "./thing";
+import { DataFactory } from "n3";
 
 const defaultFetchOptions = {
   fetch: fetch,
@@ -61,13 +66,17 @@ export async function saveLitDatasetAt(
     const deleteStatement =
       litDataset.diff.deletions.length > 0
         ? `DELETE DATA {${(
-            await triplesToTurtle(litDataset.diff.deletions)
+            await triplesToTurtle(
+              litDataset.diff.deletions.map(getNamedNodesForLocalNodes)
+            )
           ).trim()}};`
         : "";
     const insertStatement =
       litDataset.diff.additions.length > 0
         ? `INSERT DATA {${(
-            await triplesToTurtle(litDataset.diff.additions)
+            await triplesToTurtle(
+              litDataset.diff.additions.map(getNamedNodesForLocalNodes)
+            )
           ).trim()}};`
         : "";
 
@@ -81,7 +90,9 @@ export async function saveLitDatasetAt(
   } else {
     requestInit = {
       method: "PUT",
-      body: await triplesToTurtle(Array.from(litDataset)),
+      body: await triplesToTurtle(
+        Array.from(litDataset).map(getNamedNodesForLocalNodes)
+      ),
       headers: {
         "Content-Type": "text/turtle",
         "If-None-Match": "*",
@@ -98,21 +109,22 @@ export async function saveLitDatasetAt(
     );
   }
 
-  const existingMetadata: MetadataStruct["metadata"] = hasMetadata(litDataset)
-    ? litDataset.metadata
-    : {};
+  const metadata: MetadataStruct["metadata"] = hasMetadata(litDataset)
+    ? { ...litDataset.metadata, fetchedFrom: url }
+    : { fetchedFrom: url };
   const storedDataset: LitDataset & DiffStruct & MetadataStruct = Object.assign(
     litDataset,
     {
       diff: { additions: [], deletions: [] },
-      metadata: {
-        ...existingMetadata,
-        fetchedFrom: url,
-      },
+      metadata: metadata,
     }
   );
 
-  return storedDataset;
+  const storedDatasetWithResolvedIris = resolveLocalIrisInLitDataset(
+    storedDataset
+  );
+
+  return storedDatasetWithResolvedIris;
 }
 
 function isUpdate(
@@ -147,7 +159,9 @@ export async function saveLitDatasetInContainer(
     ...options,
   };
 
-  const rawTurtle = await triplesToTurtle(Array.from(litDataset));
+  const rawTurtle = await triplesToTurtle(
+    Array.from(litDataset).map(getNamedNodesForLocalNodes)
+  );
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
     Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
@@ -182,5 +196,91 @@ export async function saveLitDatasetInContainer(
   const resourceWithMetadata: LitDataset &
     MetadataStruct = Object.assign(litDataset, { metadata: metadata });
 
-  return resourceWithMetadata;
+  const resourceWithResolvedIris = resolveLocalIrisInLitDataset(
+    resourceWithMetadata
+  );
+
+  return resourceWithResolvedIris;
+}
+
+function getNamedNodesForLocalNodes(statement: Quad): Quad {
+  const subject = isLocalNode(statement.subject)
+    ? getNamedNodeFromLocalNode(statement.subject)
+    : statement.subject;
+  const object = isLocalNode(statement.object)
+    ? getNamedNodeFromLocalNode(statement.object)
+    : statement.object;
+
+  return {
+    ...statement,
+    subject: subject,
+    object: object,
+  };
+}
+
+function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
+  return DataFactory.namedNode("#" + localNode.name);
+}
+
+function resolveLocalIrisInLitDataset<
+  Dataset extends LitDataset & MetadataStruct
+>(litDataset: Dataset): Dataset {
+  const resourceIri = litDataset.metadata.fetchedFrom;
+  const unresolvedStatements = Array.from(litDataset);
+
+  unresolvedStatements.forEach((unresolvedStatement) => {
+    const resolvedStatement = resolveIriForLocalNodes(
+      unresolvedStatement,
+      resourceIri
+    );
+    litDataset.delete(unresolvedStatement);
+    litDataset.add(resolvedStatement);
+  });
+
+  return litDataset;
+}
+
+function resolveIriForLocalNodes(
+  statement: Quad,
+  resourceIri: IriString
+): Quad {
+  const subject = isLocalNode(statement.subject)
+    ? resolveIriForLocalNode(statement.subject, resourceIri)
+    : statement.subject;
+  const object = isLocalNode(statement.object)
+    ? resolveIriForLocalNode(statement.object, resourceIri)
+    : statement.object;
+
+  return {
+    ...statement,
+    subject: subject,
+    object: object,
+  };
+}
+
+function resolveIriForLocalNode(
+  localNode: LocalNode,
+  resourceIri: IriString
+): NamedNode {
+  return DataFactory.namedNode(resolveLocalIri(localNode.name, resourceIri));
+}
+
+/**
+ * @internal API for internal use only.
+ * @param name The name identifying a Thing.
+ * @param resourceIri The Resource in which the Thing can be found.
+ */
+export function resolveLocalIri(
+  name: string,
+  resourceIri: IriString
+): IriString {
+  /* istanbul ignore if [The URL interface is available in the testing environment, so we cannot test this] */
+  if (typeof URL === "undefined") {
+    throw new Error(
+      "The URL interface is not available, so an IRI cannot be determined."
+    );
+  }
+  const thingIri = new URL(resourceIri);
+  thingIri.hash = name;
+  return thingIri.href;
 }
