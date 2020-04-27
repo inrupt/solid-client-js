@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@rdfjs/dataset": "^1.0.1",
-    "@types/n3": "^1.1.5",
+    "@types/n3": "^1.1.6",
     "@types/rdf-js": "^2.0.11",
     "@types/rdfjs__dataset": "^1.0.0",
     "cross-fetch": "^3.0.4",
