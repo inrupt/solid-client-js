@@ -26,15 +26,15 @@
   "devDependencies": {
     "@types/jest": "^25.2.1",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
-    "@typescript-eslint/parser": "^2.29.0",
+    "@typescript-eslint/parser": "^2.30.0",
     "eslint": "^6.8.0",
     "husky": "^4.2.5",
-    "jest": "^25.2.1",
+    "jest": "^25.4.0",
     "lint-staged": "^10.0.9",
     "prettier": "2.0.2",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.2.0",
-    "rollup-plugin-typescript2": "^0.26.0",
+    "rollup-plugin-typescript2": "^0.27.0",
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.3"
   },
@@ -42,9 +42,9 @@
     "@rdfjs/dataset": "^1.0.1",
     "@types/n3": "^1.1.6",
     "@types/rdf-js": "^2.0.11",
-    "@types/rdfjs__dataset": "^1.0.0",
+    "@types/rdfjs__dataset": "^1.0.1",
     "cross-fetch": "^3.0.4",
-    "n3": "^1.3.5"
+    "n3": "^1.3.6"
   },
   "husky": {
     "hooks": {
