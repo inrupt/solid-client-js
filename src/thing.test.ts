@@ -10,9 +10,11 @@ import {
   createThing,
   asIri,
   getOneIri,
+  getOneLiteral,
+  getOneNamedNode,
 } from "./thing";
 import { dataset } from "@rdfjs/dataset";
-import { NamedNode, Quad } from "rdf-js";
+import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, Thing, ThingLocal, ThingPersisted } from "./index";
 
@@ -1067,5 +1069,161 @@ describe("getOneDatetime", () => {
     expect(
       getOneDatetime(thingWithNonDatetime, "https://some.vocab/predicate")
     ).toBeNull();
+  });
+});
+
+describe("getOneLiteral", () => {
+  it("returns the Literal for the given Predicate", () => {
+    const thingWithLiteral = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const foundLiteral = getOneLiteral(
+      thingWithLiteral,
+      "https://some.vocab/predicate"
+    );
+    expect(foundLiteral).not.toBeNull();
+    expect((foundLiteral as Literal).termType).toBe("Literal");
+    expect((foundLiteral as Literal).value).toBe("Some string");
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithLiteral = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const foundLiteral = getOneLiteral(
+      thingWithLiteral,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+    expect(foundLiteral).not.toBeNull();
+    expect((foundLiteral as Literal).termType).toBe("Literal");
+    expect((foundLiteral as Literal).value).toBe("Some string");
+  });
+
+  it("returns null if no Literal value was found", () => {
+    const plainDataset = dataset();
+
+    const thingWithoutLiteral: Thing = Object.assign(plainDataset, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getOneLiteral(thingWithoutLiteral, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-Literal values", () => {
+    const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+    thingWithDifferentTermTypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      (getOneLiteral(
+        thingWithDifferentTermTypes,
+        "https://some.vocab/predicate"
+      ) as Literal).termType
+    ).toBe("Literal");
+  });
+});
+
+describe("getOneNamedNode", () => {
+  function getMockThingWithNamedNode(
+    predicate: IriString,
+    object: IriString
+  ): Thing {
+    const plainDataset = dataset();
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode(predicate),
+      DataFactory.namedNode(object)
+    );
+    plainDataset.add(quad);
+
+    const thing: Thing = Object.assign(plainDataset, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+    return thing;
+  }
+
+  it("returns the Literal for the given Predicate", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object"
+    );
+
+    const foundNamedNode = getOneNamedNode(
+      thingWithNamedNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundNamedNode).not.toBeNull();
+    expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
+    expect((foundNamedNode as NamedNode).value).toBe(
+      "https://some.vocab/object"
+    );
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object"
+    );
+
+    const foundNamedNode = getOneNamedNode(
+      thingWithNamedNode,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+    expect(foundNamedNode).not.toBeNull();
+    expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
+    expect((foundNamedNode as NamedNode).value).toBe(
+      "https://some.vocab/object"
+    );
+  });
+
+  it("returns null if no Named Node value was found", () => {
+    const plainDataset = dataset();
+
+    const thingWithoutNamedNode: Thing = Object.assign(plainDataset, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getOneNamedNode(thingWithoutNamedNode, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-NamedNode values", () => {
+    const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+    thingWithDifferentTermTypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      (getOneNamedNode(
+        thingWithDifferentTermTypes,
+        "https://some.vocab/predicate"
+      ) as NamedNode).termType
+    ).toBe("NamedNode");
   });
 });

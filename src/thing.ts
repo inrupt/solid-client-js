@@ -333,6 +333,60 @@ export function getOneDatetime(
 }
 
 /**
+ * @param thing The [[Thing]] to read a Literal value from.
+ * @param predicate The given Predicate for which you want the Literal value.
+ * @returns A Literal value for the given Predicate, if present, or null otherwise.
+ * @ignore This should not be needed due to the other getOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ */
+export function getOneLiteral(
+  thing: Thing,
+  predicate: Iri | IriString
+): Literal | null {
+  const predicateNode = asNamedNode(predicate);
+
+  const matchingStatement = findOne(thing, (statement) => {
+    return (
+      predicateNode.equals(statement.predicate) && isLiteral(statement.object)
+    );
+  });
+
+  // This second arm should be covered by the function above already,
+  // but calling it here tells TypeScript the type of the Object (i.e. Literal):
+  if (matchingStatement === null || !isLiteral(matchingStatement.object)) {
+    return null;
+  }
+
+  return matchingStatement.object;
+}
+
+/**
+ * @param thing The [[Thing]] to read a NamedNode value from.
+ * @param predicate The given Predicate for which you want the NamedNode value.
+ * @returns A NamedNode value for the given Predicate, if present, or null otherwise.
+ * @ignore This should not be needed due to the other getOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ */
+export function getOneNamedNode(
+  thing: Thing,
+  predicate: Iri | IriString
+): NamedNode | null {
+  const predicateNode = asNamedNode(predicate);
+
+  const matchingStatement = findOne(thing, (statement) => {
+    return (
+      predicateNode.equals(statement.predicate) && isNamedNode(statement.object)
+    );
+  });
+
+  // This second arm should be covered by the function above already,
+  // but calling it here tells TypeScript the type of the Object (i.e. NamedNode):
+  if (matchingStatement === null || !isNamedNode(matchingStatement.object)) {
+    return null;
+  }
+
+  return matchingStatement.object;
+}
+
+/**
  * @param thing The [Thing]] to read a Literal of the given type from.
  * @param predicate The given Predicate for which you want the Literal value.
  * @param literalType Set type of the Literal data.
