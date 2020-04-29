@@ -1,6 +1,6 @@
 import { IriString } from "../index";
 import { DataFactory, Writer, Parser } from "n3";
-import { Quad, Triple } from "rdf-js";
+import { Quad } from "rdf-js";
 
 /**
  * @param quads Triples that should be serialised to Turtle
@@ -36,12 +36,12 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
 export async function turtleToTriples(
   raw: string,
   resourceIri: IriString
-): Promise<Triple[]> {
+): Promise<Quad[]> {
   const format = "text/turtle";
   const parser = new Parser({ format: format, baseIRI: resourceIri });
 
-  const parsingPromise = new Promise<Triple[]>((resolve, reject) => {
-    const parsedTriples: Triple[] = [];
+  const parsingPromise = new Promise<Quad[]>((resolve, reject) => {
+    const parsedTriples: Quad[] = [];
     parser.parse(raw, (error, triple, _prefixes) => {
       if (error) {
         return reject(error);
