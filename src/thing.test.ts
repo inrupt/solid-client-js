@@ -117,7 +117,7 @@ describe("getOneThing", () => {
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
 
-  it("accepts a SubjectLocal as the Subject identifier", () => {
+  it("accepts a LocalNode as the Subject identifier", () => {
     const quadWithLocalSubject = getMockQuad();
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
@@ -321,7 +321,7 @@ describe("getAllThings", () => {
     expect(Array.from(things[0])).toEqual([relevantQuad]);
   });
 
-  it("only returns Things whose Subject has an IRI, or is a SubjectLocal", () => {
+  it("only returns Things whose Subject has an IRI, or is a LocalNode", () => {
     const quadWithNamedSubject = getMockQuad({
       subject: "https://some.vocab/subject",
     });
@@ -331,7 +331,7 @@ describe("getAllThings", () => {
     );
     const quadWithLocalSubject = getMockQuad();
     const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a SubjectLocal"),
+      DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "localSubject" }
     );
     quadWithLocalSubject.subject = localSubject;
