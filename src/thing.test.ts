@@ -23,7 +23,6 @@ import {
   getAllDatetimes,
   getAllLiterals,
   getAllNamedNodes,
-  isEqual,
 } from "./thing";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
@@ -36,7 +35,6 @@ import {
   LitDataset,
   MetadataStruct,
   DiffStruct,
-  LocalNode,
 } from "./index";
 
 function getMockQuad(
@@ -2896,62 +2894,5 @@ describe("getAllNamedNodes", () => {
     );
     expect(foundNamedNodes.length).toBe(1);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
-  });
-});
-
-// Note: this function is not Thing-specific, and will be moved elsewhere later:
-describe("isEqual", () => {
-  it("recognises two equal LocalNodes without needing a Resource IRI", () => {
-    const localNode1: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
-    });
-    const localNode2: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
-    });
-    expect(isEqual(localNode1, localNode2)).toBe(true);
-  });
-
-  it("recognises two equal NamedNodes without needing a Resource IRI", () => {
-    const namedNode1 = DataFactory.namedNode("https://some.pod/resource#node");
-    const namedNode2 = DataFactory.namedNode("https://some.pod/resource#node");
-    expect(isEqual(namedNode1, namedNode2)).toBe(true);
-  });
-
-  it("recognises the equality of a LocalNode with the same resource IRI to a NamedNode", () => {
-    const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
-    });
-    const namedNode = DataFactory.namedNode(
-      "https://some.pod/resource#some-name"
-    );
-    expect(
-      isEqual(localNode, namedNode, {
-        resourceIri: "https://some.pod/resource",
-      })
-    ).toBe(true);
-    expect(
-      isEqual(namedNode, localNode, {
-        resourceIri: "https://some.pod/resource",
-      })
-    ).toBe(true);
-  });
-
-  it("recognises the inequality of a LocalNode with a different resource IRI to a NamedNode", () => {
-    const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
-    });
-    const namedNode = DataFactory.namedNode(
-      "https://some.pod/resource#some-name"
-    );
-    expect(
-      isEqual(localNode, namedNode, {
-        resourceIri: "https://some-other.pod/resource",
-      })
-    ).toBe(false);
-    expect(
-      isEqual(namedNode, localNode, {
-        resourceIri: "https://some-other.pod/resource",
-      })
-    ).toBe(false);
   });
 });
