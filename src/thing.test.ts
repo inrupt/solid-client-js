@@ -1,6 +1,7 @@
 import {
   getOneThing,
   getAllThings,
+  setThing,
   removeThing,
   getOneStringInLocale,
   getOneStringUnlocalised,
@@ -348,6 +349,296 @@ describe("getAllThings", () => {
     expect(things.length).toBe(2);
     expect(Array.from(things[0])).toEqual([quadWithNamedSubject]);
     expect(Array.from(things[1])).toEqual([quadWithLocalSubject]);
+  });
+});
+
+describe("setThing", () => {
+  it("returns a Dataset with only the Thing's Quads having the Thing's Subject", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const datasetWithMultipleThings = dataset();
+    datasetWithMultipleThings.add(oldThingQuad);
+    datasetWithMultipleThings.add(otherQuad);
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      iri: "https://some.vocab/subject",
+    });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithMultipleThings, newThing);
+
+    expect(Array.from(updatedDataset)).toEqual([otherQuad, newThingQuad]);
+  });
+
+  it("keeps track of additions and deletions in the attached diff", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const datasetWithMultipleThings = dataset();
+    datasetWithMultipleThings.add(oldThingQuad);
+    datasetWithMultipleThings.add(otherQuad);
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      iri: "https://some.vocab/subject",
+    });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithMultipleThings, newThing);
+
+    expect(updatedDataset.diff.additions).toEqual([newThingQuad]);
+    expect(updatedDataset.diff.deletions).toEqual([oldThingQuad]);
+  });
+
+  it("preserves existing diffs", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const existingAddition = getMockQuad({
+      object: "https://some.vocab/addition-object",
+    });
+    const existingDeletion = getMockQuad({
+      object: "https://some.vocab/deletion-object",
+    });
+    const datasetWithExistingDiff: LitDataset & DiffStruct = Object.assign(
+      dataset(),
+      {
+        diff: { additions: [existingAddition], deletions: [existingDeletion] },
+      }
+    );
+    datasetWithExistingDiff.add(oldThingQuad);
+    datasetWithExistingDiff.add(otherQuad);
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      iri: "https://some.vocab/subject",
+    });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithExistingDiff, newThing);
+
+    expect(updatedDataset.diff.additions).toEqual([
+      existingAddition,
+      newThingQuad,
+    ]);
+    expect(updatedDataset.diff.deletions).toEqual([
+      existingDeletion,
+      oldThingQuad,
+    ]);
+  });
+
+  it("does not modify the original LitDataset", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const existingAddition = getMockQuad({
+      object: "https://some.vocab/addition-object",
+    });
+    const existingDeletion = getMockQuad({
+      object: "https://some.vocab/deletion-object",
+    });
+    const datasetWithExistingDiff: LitDataset & DiffStruct = Object.assign(
+      dataset(),
+      {
+        diff: { additions: [existingAddition], deletions: [existingDeletion] },
+      }
+    );
+    datasetWithExistingDiff.add(oldThingQuad);
+    datasetWithExistingDiff.add(otherQuad);
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      iri: "https://some.vocab/subject",
+    });
+    newThing.add(newThingQuad);
+
+    setThing(datasetWithExistingDiff, newThing);
+
+    expect(Array.from(datasetWithExistingDiff)).toEqual([
+      oldThingQuad,
+      otherQuad,
+    ]);
+    expect(datasetWithExistingDiff.diff.additions).toEqual([existingAddition]);
+    expect(datasetWithExistingDiff.diff.deletions).toEqual([existingDeletion]);
+  });
+
+  it("does not modify Quads with unexpected Subjects", () => {
+    const unexpectedQuad = DataFactory.quad(
+      DataFactory.variable("Arbitrary unexpected Subject type"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.namedNode("https://arbitrary.vocab/object")
+    );
+    const datasetWithUnexpectedQuad = dataset();
+    datasetWithUnexpectedQuad.add(unexpectedQuad);
+
+    const thing: Thing = Object.assign(dataset(), {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    const updatedDataset = setThing(datasetWithUnexpectedQuad, thing);
+
+    expect(Array.from(updatedDataset)).toEqual([unexpectedQuad]);
+  });
+
+  it("can recognise LocalNodes", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localSubject" }
+    );
+    const mockPredicate = DataFactory.namedNode(
+      "https://arbitrary.vocab/predicate"
+    );
+    const oldThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/old-object")
+    );
+    const datasetWithLocalSubject = dataset();
+    datasetWithLocalSubject.add(oldThingQuad);
+
+    const newThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/new-object")
+    );
+    const newThing: Thing = Object.assign(dataset(), { name: "localSubject" });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
+
+    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
+  });
+
+  it("can reconcile new LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.pod/resource#subject",
+      object: "https://some.vocab/old-object",
+    });
+    const datasetWithNamedNode: LitDataset & MetadataStruct = Object.assign(
+      dataset(),
+      {
+        metadata: { fetchedFrom: "https://some.pod/resource" },
+      }
+    );
+    datasetWithNamedNode.add(oldThingQuad);
+
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "subject" }
+    );
+    const mockPredicate = DataFactory.namedNode(
+      "https://arbitrary.vocab/predicate"
+    );
+    const newThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/new-object")
+    );
+    const newThing: Thing = Object.assign(dataset(), { name: "subject" });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithNamedNode, newThing);
+
+    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
+  });
+
+  it("can reconcile new NamedNodes with existing LocalNodes if the LitDataset has a resource IRI attached", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "subject" }
+    );
+    const mockPredicate = DataFactory.namedNode(
+      "https://arbitrary.vocab/predicate"
+    );
+    const oldThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/new-object")
+    );
+    const datasetWithLocalSubject: LitDataset & MetadataStruct = Object.assign(
+      dataset(),
+      {
+        metadata: { fetchedFrom: "https://some.pod/resource" },
+      }
+    );
+    datasetWithLocalSubject.add(oldThingQuad);
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.pod/resource#subject",
+      object: "https://some.vocab/old-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), { name: "subject" });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
+
+    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
+  });
+
+  it("only updates LocalNodes if the LitDataset has no known IRI", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localSubject" }
+    );
+    const mockPredicate = DataFactory.namedNode(
+      "https://arbitrary.vocab/predicate"
+    );
+    const oldThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/old-object")
+    );
+    const similarSubjectQuad = getMockQuad({
+      subject: "https://some.pod/resource#localSubject",
+    });
+    const datasetWithLocalSubject = dataset();
+    datasetWithLocalSubject.add(oldThingQuad);
+    datasetWithLocalSubject.add(similarSubjectQuad);
+
+    const newThingQuad = DataFactory.quad(
+      localSubject,
+      mockPredicate,
+      DataFactory.namedNode("https://some.vocab/new-object")
+    );
+    const newThing: Thing = Object.assign(dataset(), { name: "localSubject" });
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
+
+    expect(Array.from(updatedDataset)).toEqual([
+      similarSubjectQuad,
+      newThingQuad,
+    ]);
   });
 });
 
