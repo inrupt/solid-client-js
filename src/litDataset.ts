@@ -1,4 +1,6 @@
 import { dataset } from "@rdfjs/dataset";
+import { Quad, NamedNode } from "rdf-js";
+import { DataFactory } from "n3";
 import {
   IriString,
   LitDataset,
@@ -7,13 +9,10 @@ import {
   hasDiff,
   hasMetadata,
   LocalNode,
-  Iri,
 } from "./index";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
-import { Quad, NamedNode } from "rdf-js";
-import { isLocalNode } from "./thing";
-import { DataFactory } from "n3";
+import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
 
 const defaultFetchOptions = {
   fetch: fetch,
@@ -238,54 +237,4 @@ function resolveLocalIrisInLitDataset<
   });
 
   return litDataset;
-}
-
-function resolveIriForLocalNodes(
-  statement: Quad,
-  resourceIri: IriString
-): Quad {
-  const subject = isLocalNode(statement.subject)
-    ? resolveIriForLocalNode(statement.subject, resourceIri)
-    : statement.subject;
-  const object = isLocalNode(statement.object)
-    ? resolveIriForLocalNode(statement.object, resourceIri)
-    : statement.object;
-
-  return {
-    ...statement,
-    subject: subject,
-    object: object,
-  };
-}
-
-/**
- * @param localNode The LocalNode to resolve to a NamedNode.
- * @param resourceIri The Resource in which the Node will be saved.
- * @internal Utility method; library users should not need to interact with LocalNodes directly.
- */
-export function resolveIriForLocalNode(
-  localNode: LocalNode,
-  resourceIri: IriString
-): NamedNode {
-  return DataFactory.namedNode(resolveLocalIri(localNode.name, resourceIri));
-}
-
-/**
- * @internal API for internal use only.
- * @param name The name identifying a Thing.
- * @param resourceIri The Resource in which the Thing can be found.
- */
-export function resolveLocalIri(
-  name: string,
-  resourceIri: IriString
-): IriString {
-  /* istanbul ignore if [The URL interface is available in the testing environment, so we cannot test this] */
-  if (typeof URL === "undefined") {
-    throw new Error(
-      "The URL interface is not available, so an IRI cannot be determined."
-    );
-  }
-  const thingIri = new URL(resourceIri);
-  thingIri.hash = name;
-  return thingIri.href;
 }
