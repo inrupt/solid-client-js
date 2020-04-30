@@ -8,6 +8,7 @@ export {
 export {
   getOneThing,
   getAllThings,
+  removeThing,
   createThing,
   asIri,
   getOneIri,
