@@ -86,6 +86,20 @@ export function getAllThings(
   return things;
 }
 
+export function setThing<Dataset extends LitDataset>(
+  litDataset: Dataset,
+  thing: Thing
+): Dataset & DiffStruct {
+  const newDataset = removeThing(litDataset, thing);
+
+  for (const statement of thing) {
+    newDataset.add(statement);
+    newDataset.diff.additions.push(statement);
+  }
+
+  return newDataset;
+}
+
 export function removeThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: IriString | Iri | LocalNode | Thing
