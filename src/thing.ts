@@ -7,10 +7,14 @@ import {
   ThingLocal,
   LocalNode,
   ThingPersisted,
+  DiffStruct,
+  MetadataStruct,
+  hasDiff,
+  hasMetadata,
 } from "./index";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
-import { resolveLocalIri } from "./litDataset";
+import { resolveLocalIri, resolveIriForLocalNode } from "./litDataset";
 
 export interface GetThingOptions {
   /**
@@ -80,6 +84,59 @@ export function getAllThings(
   );
 
   return things;
+}
+
+export function removeThing<Dataset extends LitDataset>(
+  litDataset: Dataset,
+  thing: IriString | Iri | LocalNode | Thing
+): Dataset & DiffStruct {
+  const newLitDataset = withDiff(cloneLitStructs(litDataset));
+  const resourceIri: IriString | undefined = hasMetadata(newLitDataset)
+    ? newLitDataset.metadata.fetchedFrom
+    : undefined;
+
+  const thingSubject = toSubjectNode(thing);
+  for (const quad of litDataset) {
+    if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
+      // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
+      newLitDataset.add(quad);
+    } else if (
+      !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
+    ) {
+      newLitDataset.add(quad);
+    } else {
+      newLitDataset.diff.deletions.push(quad);
+    }
+  }
+  return newLitDataset;
+}
+
+function withDiff<Dataset extends LitDataset>(
+  litDataset: Dataset
+): Dataset & DiffStruct {
+  const newLitDataset: Dataset & DiffStruct = hasDiff(litDataset)
+    ? litDataset
+    : Object.assign(litDataset, { diff: { additions: [], deletions: [] } });
+  return newLitDataset;
+}
+
+function cloneLitStructs<Dataset extends LitDataset>(
+  litDataset: Dataset
+): Dataset {
+  const freshDataset = dataset();
+  if (hasDiff(litDataset)) {
+    (freshDataset as LitDataset & DiffStruct).diff = {
+      additions: [...litDataset.diff.additions],
+      deletions: [...litDataset.diff.deletions],
+    };
+  }
+  if (hasMetadata(litDataset)) {
+    (freshDataset as LitDataset & MetadataStruct).metadata = {
+      ...litDataset.metadata,
+    };
+  }
+
+  return freshDataset as Dataset;
 }
 
 interface CreateThingLocalOptions {
@@ -771,6 +828,60 @@ export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
     (value as LocalNode).termType === "BlankNode" &&
     typeof (value as LocalNode).name === "string"
   );
+}
+
+function getLocalNode(name: string): LocalNode {
+  const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
+    name: name,
+  });
+  return localNode;
+}
+
+function toSubjectNode(
+  thing: IriString | Iri | LocalNode | Thing
+): NamedNode | LocalNode {
+  if (isNamedNode(thing) || isLocalNode(thing)) {
+    return thing;
+  }
+  if (typeof thing === "string") {
+    return asNamedNode(thing);
+  }
+  if (isThingLocal(thing)) {
+    return getLocalNode(thing.name);
+  }
+  return asNamedNode(asIri(thing));
+}
+
+interface IsEqualOptions {
+  resourceIri?: IriString;
+}
+/**
+ * @internal Library users shouldn't need to be exposed to LocalNodes.
+ * @todo Extract this into a separate file for data type-specific functions.
+ */
+export function isEqual(
+  node1: NamedNode | LocalNode,
+  node2: NamedNode | LocalNode,
+  options: IsEqualOptions = {}
+): boolean {
+  if (isNamedNode(node1) && isNamedNode(node2)) {
+    return node1.equals(node2);
+  }
+  if (isLocalNode(node1) && isLocalNode(node2)) {
+    return node1.name === node2.name;
+  }
+  if (typeof options.resourceIri === "undefined") {
+    // If we don't know what IRI to resolve the LocalNode to,
+    // we cannot conclude that it is equal to the NamedNode's full IRI:
+    return false;
+  }
+  const namedNode1 = isNamedNode(node1)
+    ? node1
+    : resolveIriForLocalNode(node1, options.resourceIri);
+  const namedNode2 = isNamedNode(node2)
+    ? node2
+    : resolveIriForLocalNode(node2, options.resourceIri);
+  return namedNode1.equals(namedNode2);
 }
 
 /**

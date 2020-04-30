@@ -258,7 +258,12 @@ function resolveIriForLocalNodes(
   };
 }
 
-function resolveIriForLocalNode(
+/**
+ * @param localNode The LocalNode to resolve to a NamedNode.
+ * @param resourceIri The Resource in which the Node will be saved.
+ * @internal Utility method; library users should not need to interact with LocalNodes directly.
+ */
+export function resolveIriForLocalNode(
   localNode: LocalNode,
   resourceIri: IriString
 ): NamedNode {
