@@ -12,9 +12,16 @@ import {
   hasDiff,
   hasMetadata,
 } from "./index";
-import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
-import { resolveLocalIri, resolveIriForLocalNode } from "./litDataset";
+import {
+  isLocalNode,
+  isEqual,
+  isNamedNode,
+  isLiteral,
+  getLocalNode,
+  asNamedNode,
+  resolveLocalIri,
+} from "./datatypes";
 
 export interface GetThingOptions {
   /**
@@ -771,55 +778,6 @@ function findAll<Object extends Quad_Object>(
 }
 
 /**
- * Ensure that a given value is a Named Node.
- *
- * If the given parameter is a Named Node already, it will be returned as-is. If it is a string, it
- * will check whether it is a valid IRI. If not, it will throw an error; otherwise a Named Node
- * representing the given IRI will be returned.
- *
- * @param iri The IRI that should be converted into a Named Node, if it isn't one yet.
- */
-function asNamedNode(iri: Iri | IriString): NamedNode {
-  if (isNamedNode(iri)) {
-    return iri;
-  }
-
-  // If the runtime environment supports URL, instantiate one.
-  // If thte given IRI is not a valid URL, it will throw an error.
-  // See: https://developer.mozilla.org/en-US/docs/Web/API/URL
-  /* istanbul ignore else [URL is available in our testing environment, so we cannot test the alternative] */
-  if (typeof URL !== "undefined") {
-    new URL(iri);
-  }
-
-  return DataFactory.namedNode(iri);
-}
-
-/**
- * @param value The value that might or might not be a Named Node.
- * @returns Whether `value` is a Named Node.
- */
-function isNamedNode<T>(value: T | NamedNode): value is NamedNode {
-  return (
-    typeof value === "object" &&
-    typeof (value as NamedNode).termType === "string" &&
-    (value as NamedNode).termType === "NamedNode"
-  );
-}
-
-/**
- * @param value The value that might or might not be a Literal.
- * @returns Whether `value` is a Literal.
- */
-function isLiteral<T>(value: T | Literal): value is Literal {
-  return (
-    typeof value === "object" &&
-    typeof (value as Literal).termType === "string" &&
-    (value as Literal).termType === "Literal"
-  );
-}
-
-/**
  * @param thing The [[Thing]] of which an IRI might or might not be known.
  * @return Whether `thing` has no known IRI yet.
  */
@@ -831,26 +789,6 @@ export function isThingLocal(
     typeof (thing as ThingPersisted).iri === "undefined"
   );
 }
-/**
- * @param value The value that might or might not be a Node with no known IRI yet.
- * @returns Whether `value` is a Node with no known IRI yet.
- */
-export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
-  return (
-    typeof value === "object" &&
-    typeof (value as LocalNode).termType === "string" &&
-    (value as LocalNode).termType === "BlankNode" &&
-    typeof (value as LocalNode).name === "string"
-  );
-}
-
-function getLocalNode(name: string): LocalNode {
-  const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-    name: name,
-  });
-  return localNode;
-}
-
 function toSubjectNode(
   thing: IriString | Iri | LocalNode | Thing
 ): NamedNode | LocalNode {
@@ -864,38 +802,6 @@ function toSubjectNode(
     return getLocalNode(thing.name);
   }
   return asNamedNode(asIri(thing));
-}
-
-interface IsEqualOptions {
-  resourceIri?: IriString;
-}
-/**
- * @internal Library users shouldn't need to be exposed to LocalNodes.
- * @todo Extract this into a separate file for data type-specific functions.
- */
-export function isEqual(
-  node1: NamedNode | LocalNode,
-  node2: NamedNode | LocalNode,
-  options: IsEqualOptions = {}
-): boolean {
-  if (isNamedNode(node1) && isNamedNode(node2)) {
-    return node1.equals(node2);
-  }
-  if (isLocalNode(node1) && isLocalNode(node2)) {
-    return node1.name === node2.name;
-  }
-  if (typeof options.resourceIri === "undefined") {
-    // If we don't know what IRI to resolve the LocalNode to,
-    // we cannot conclude that it is equal to the NamedNode's full IRI:
-    return false;
-  }
-  const namedNode1 = isNamedNode(node1)
-    ? node1
-    : resolveIriForLocalNode(node1, options.resourceIri);
-  const namedNode2 = isNamedNode(node2)
-    ? node2
-    : resolveIriForLocalNode(node2, options.resourceIri);
-  return namedNode1.equals(namedNode2);
 }
 
 /**
