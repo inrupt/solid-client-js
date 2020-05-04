@@ -30,6 +30,15 @@ export {
   getOneNamedNode,
   getAllLiterals,
   getAllNamedNodes,
+  removeOneIri,
+  removeOneStringUnlocalised,
+  removeOneStringInLocale,
+  removeOneInteger,
+  removeOneDecimal,
+  removeOneBoolean,
+  removeOneDatetime,
+  removeOneLiteral,
+  removeOneNamedNode,
 } from "./thing";
 
 /**
