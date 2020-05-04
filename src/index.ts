@@ -39,12 +39,12 @@ export type Iri = NamedNode;
 export type IriString = string;
 
 /**
- * A LitDataset represents all Statements from a single Resource.
+ * A LitDataset represents all Quads from a single Resource.
  */
 export type LitDataset = DatasetCore;
 /**
- * A Thing represents all Statements with a given Subject IRI and a given
- * Named Graph, from a single Resource.
+ * A Thing represents all Quads with a given Subject IRI and a given Named
+ * Graph, from a single Resource.
  */
 export type Thing = DatasetCore & ({ iri: IriString } | { name: string });
 /**
