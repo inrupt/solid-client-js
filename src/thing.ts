@@ -264,8 +264,22 @@ export function removeIri(
   predicate: Iri | IriString,
   value: Iri | IriString | LocalNode
 ): Thing & DiffStruct {
+  // Temporary escape just to test simple case first
+  if(isLocalNode(value)) {
+    return Object.assign(
+      thing,
+      { diff: { additions: [], deletions: [] } }
+    )
+  }
+  const iriMatcher = getPredicateObjectMatcher(predicate, value);
+  const quadsToRemove = findAll(thing, iriMatcher);
+  const deletions: Quad[] = []
+  quadsToRemove.forEach((quad) => {
+    thing.delete(quad);
+    deletions.push(quad)
+  })
   // TODO: Replace this mock value by an actual implementation:
-  return Object.assign(thing, { diff: { additions: [], deletions: [] } });
+  return Object.assign(thing, { diff: { additions: [], deletions: deletions } });
 }
 
 /**
@@ -635,6 +649,22 @@ const getNamedNodeMatcher = function (
 
   const matcher = function (quad: Quad): quad is QuadWithObject<NamedNode> {
     return predicateNode.equals(quad.predicate) && isNamedNode(quad.object);
+  };
+  return matcher;
+};
+
+const getPredicateObjectMatcher = function (
+  predicate: Iri | IriString,
+  object: Iri | IriString
+): Matcher<NamedNode> {
+  const predicateNode = asNamedNode(predicate);
+  if(isNamedNode(object)) {
+
+  }
+  let objectNode = asNamedNode(object);
+
+  const matcher = function (quad: Quad): quad is QuadWithObject<NamedNode> {
+    return predicateNode.equals(quad.predicate) && objectNode.equals(quad.object);
   };
   return matcher;
 };
