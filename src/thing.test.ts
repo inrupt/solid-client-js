@@ -1192,7 +1192,7 @@ describe("removeIri", () => {
   function getMockThingWithIri(
     predicate: IriString,
     iri: IriString = "https://arbitrary.vocab/object"
-  ): Thing {
+  ): ThingPersisted {
     const quad = getMockQuadWithIri(predicate, iri);
     const thing = dataset();
     thing.add(quad);
@@ -1243,6 +1243,22 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(thingWithIri).length).toBe(1);
+    expect(Array.from(updatedThing).length).toBe(0);
   });
 
   it("removes multiple instances of the same IRI for the same Predicate", () => {

@@ -223,6 +223,19 @@ export function asIri(thing: Thing, baseIri?: IriString): IriString {
   return thing.iri;
 }
 
+function cloneThingSkeleton<T extends Thing>(
+  thing: T
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+function cloneThingSkeleton(thing: Thing): Thing {
+  const freshThing = dataset();
+  if (isThingLocal(thing)) {
+    (freshThing as ThingLocal).name = thing.name;
+    return freshThing as ThingLocal;
+  }
+  (freshThing as ThingPersisted).iri = thing.iri;
+  return freshThing as ThingPersisted;
+}
+
 /**
  * @param thing The [[Thing]] to read an IRI value from.
  * @param predicate The given Predicate for which you want the IRI value.
@@ -259,26 +272,35 @@ export function getAllIris(
   return matchingQuads.map((quad) => quad.object.value);
 }
 
+export function removeIri<T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString,
+  value: Iri | IriString | ThingPersisted
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function removeIri(
   thing: Thing,
   predicate: Iri | IriString,
   value: Iri | IriString | ThingPersisted
 ): Thing {
-  // Temporary escape just to test simple case first
-  if (isLocalNode(value)) {
-    return Object.assign(thing, { diff: { additions: [], deletions: [] } });
+  const predicateNode = asNamedNode(predicate);
+  const iriNode = isNamedNode(value)
+    ? value
+    : typeof value === "string"
+    ? asNamedNode(value)
+    : asNamedNode(asIri(value));
+
+  const updatedThing = cloneThingSkeleton(thing);
+  // Clone the input Thing, excluding Quads matching the given IRI.
+  for (const quad of thing) {
+    if (
+      !quad.predicate.equals(predicateNode) ||
+      !isNamedNode(quad.object) ||
+      !quad.object.equals(iriNode)
+    ) {
+      updatedThing.add(quad);
+    }
   }
-  const iriMatcher = getPredicateObjectMatcher(predicate, value);
-  const quadsToRemove = findAll(thing, iriMatcher);
-  const deletions: Quad[] = [];
-  quadsToRemove.forEach((quad) => {
-    thing.delete(quad);
-    deletions.push(quad);
-  });
-  // TODO: Replace this mock value by an actual implementation:
-  return Object.assign(thing, {
-    diff: { additions: [], deletions: deletions },
-  });
+  return updatedThing;
 }
 
 /**
