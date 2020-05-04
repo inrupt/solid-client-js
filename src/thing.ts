@@ -259,6 +259,15 @@ export function getAllIris(
   return matchingQuads.map((quad) => quad.object.value);
 }
 
+export function removeIri(
+  thing: Thing,
+  predicate: Iri | IriString,
+  value: Iri | IriString | LocalNode
+): Thing & DiffStruct {
+  // TODO: Replace this mock value by an actual implementation:
+  return Object.assign(thing, { diff: { additions: [], deletions: [] } });
+}
+
 /**
  * @param thing The [[Thing]] to read a string value from.
  * @param predicate The given Predicate for which you want the string value.

@@ -23,6 +23,7 @@ import {
   getAllDatetimes,
   getAllLiterals,
   getAllNamedNodes,
+  removeIri,
 } from "./thing";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
@@ -1174,6 +1175,238 @@ describe("getAllIris", () => {
     expect(
       getAllIris(thingWithIri, "https://some-other.vocab/predicate")
     ).toEqual([]);
+  });
+});
+
+describe("removeIri", () => {
+  function getMockQuadWithIri(
+    predicate: IriString,
+    iri: IriString = "https://arbitrary.vocab/object"
+  ): Quad {
+    return getMockQuad({
+      subject: "https://arbitrary.vocab/subject",
+      predicate: predicate,
+      object: iri,
+    });
+  }
+  function getMockThingWithIri(
+    predicate: IriString,
+    iri: IriString = "https://arbitrary.vocab/object"
+  ): Thing {
+    const quad = getMockQuadWithIri(predicate, iri);
+    const thing = dataset();
+    thing.add(quad);
+
+    return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+  }
+
+  it("removes the given IRI value for the given Predicate", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("accepts IRI's as Named Nodes", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/resource#name")
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("removes multiple instances of the same IRI for the same Predicate", () => {
+    const thingWithDuplicateIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+    thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
+
+    const updatedThing = removeIri(
+      thingWithDuplicateIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("records the deletion in the diff", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(updatedThing.diff.deletions.length).toBe(1);
+    expect(updatedThing.diff.deletions[0].predicate.value).toBe(
+      "https://some.vocab/predicate"
+    );
+    expect(updatedThing.diff.deletions[0].object.value).toBe(
+      "https://some.pod/resource#name"
+    );
+  });
+
+  it("does not remove Quads with different Predicates or Objects", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+    const mockQuadWithDifferentIri = getMockQuadWithIri(
+      "https://some.vocab/predicate",
+      "https://some-other.pod/resource#name"
+    );
+    const mockQuadWithDifferentPredicate = getMockQuadWithIri(
+      "https://some-other.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+    thingWithIri.add(mockQuadWithDifferentIri);
+    thingWithIri.add(mockQuadWithDifferentPredicate);
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([
+      mockQuadWithDifferentIri,
+      mockQuadWithDifferentPredicate,
+    ]);
+  });
+
+  it("does not remove Quads with non-IRI Objects", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+    const mockQuadWithString = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.literal("Some non-IRI Object")
+    );
+    thingWithIri.add(mockQuadWithString);
+
+    const updatedThing = removeIri(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([mockQuadWithString]);
+  });
+
+  it("resolves LocalNodes", () => {
+    const localNode = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localNode" }
+    );
+    const quadWithLocalNode = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      localNode
+    );
+    const datasetWithLocalNode = dataset();
+    datasetWithLocalNode.add(quadWithLocalNode);
+    const thingWithLocalNode: Thing = Object.assign(datasetWithLocalNode, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    const updatedThing = removeIri(
+      thingWithLocalNode,
+      "https://some.vocab/predicate",
+      localNode
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
+  });
+
+  it("can match NamedNodes to LocalNodes on ThingPersisteds", () => {
+    const localNode = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localNode" }
+    );
+    const quadWithLocalNode = DataFactory.quad(
+      DataFactory.namedNode("https://some.vocab/resource#subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      localNode
+    );
+    const datasetWithLocalNode = dataset();
+    datasetWithLocalNode.add(quadWithLocalNode);
+    const thingWithLocalNode: Thing = Object.assign(datasetWithLocalNode, {
+      iri: "https://some.vocab/resource#subject",
+    });
+
+    const updatedThing = removeIri(
+      thingWithLocalNode,
+      "https://some.vocab/predicate",
+      "https://some.vocab/resource#localNode"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
+  });
+
+  const quadWithLocalNode = DataFactory.quad(
+    DataFactory.namedNode("https://some.vocab/resource#subject"),
+    DataFactory.namedNode("https://some.vocab/predicate"),
+    DataFactory.namedNode("https://some.vocab/resource#localNode")
+  );
+  const datasetWithLocalNode = dataset();
+  datasetWithLocalNode.add(quadWithLocalNode);
+  const thingWithLocalNode: Thing = Object.assign(datasetWithLocalNode, {
+    iri: "https://some.vocab/resource#subject",
+  });
+
+  it("can match LocalNodes to NamedNodes on ThingPersisteds", () => {
+    const localNode = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localNode" }
+    );
+    const updatedThing = removeIri(
+      thingWithLocalNode,
+      "https://some.vocab/predicate",
+      localNode
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
   });
 });
 
