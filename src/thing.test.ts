@@ -1310,6 +1310,91 @@ describe("removeIri", () => {
     expect(Array.from(updatedThing)).toEqual([mockQuadWithString]);
   });
 
+  it("resolves ThingPersisteds", () => {
+    const thingPersisted: ThingPersisted = Object.assign(dataset(), {
+      iri: "https://some.pod/resource#thing",
+    });
+    const quadWithThingPersistedIri = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/resource#thing")
+    );
+    const datasetWithThingPersistedIri = dataset();
+    datasetWithThingPersistedIri.add(quadWithThingPersistedIri);
+    const thingWithThingPersistedIri: Thing = Object.assign(
+      datasetWithThingPersistedIri,
+      {
+        iri: "https://arbitrary.vocab/subject",
+      }
+    );
+
+    const updatedThing = removeIri(
+      thingWithThingPersistedIri,
+      "https://some.vocab/predicate",
+      thingPersisted
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("resolves ThingLocals", () => {
+    const localNode = Object.assign(
+      DataFactory.blankNode("Blank node representing a LocalNode"),
+      { name: "localNode" }
+    );
+    const thingLocal: ThingLocal = Object.assign(dataset(), {
+      name: "localNode",
+    });
+    const quadWithThingLocalIri = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      localNode
+    );
+    const datasetWithThingLocalIri = dataset();
+    datasetWithThingLocalIri.add(quadWithThingLocalIri);
+    const thingWithThingLocalIri: Thing = Object.assign(
+      datasetWithThingLocalIri,
+      {
+        iri: "https://arbitrary.vocab/subject",
+      }
+    );
+
+    const updatedThing = removeIri(
+      thingWithThingLocalIri,
+      "https://some.vocab/predicate",
+      thingLocal
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("can match ThingLocals to Named Nodes on ThingPersisteds", () => {
+    const thingLocal: ThingLocal = Object.assign(dataset(), {
+      name: "localNode",
+    });
+    const quadWithNamedNode = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/resource#localNode")
+    );
+    const datasetWithNamedNode = dataset();
+    datasetWithNamedNode.add(quadWithNamedNode);
+    const thingPersistedWithNamedNode: Thing = Object.assign(
+      datasetWithNamedNode,
+      {
+        iri: "https://some.pod/resource#other-node",
+      }
+    );
+
+    const updatedThing = removeIri(
+      thingPersistedWithNamedNode,
+      "https://some.vocab/predicate",
+      thingLocal
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
   it("resolves LocalNodes", () => {
     const localNode = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),

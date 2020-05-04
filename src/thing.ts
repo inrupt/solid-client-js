@@ -262,24 +262,23 @@ export function getAllIris(
 export function removeIri(
   thing: Thing,
   predicate: Iri | IriString,
-  value: Iri | IriString | LocalNode
+  value: Iri | IriString | LocalNode | Thing
 ): Thing & DiffStruct {
   // Temporary escape just to test simple case first
-  if(isLocalNode(value)) {
-    return Object.assign(
-      thing,
-      { diff: { additions: [], deletions: [] } }
-    )
+  if (isLocalNode(value)) {
+    return Object.assign(thing, { diff: { additions: [], deletions: [] } });
   }
   const iriMatcher = getPredicateObjectMatcher(predicate, value);
   const quadsToRemove = findAll(thing, iriMatcher);
-  const deletions: Quad[] = []
+  const deletions: Quad[] = [];
   quadsToRemove.forEach((quad) => {
     thing.delete(quad);
-    deletions.push(quad)
-  })
+    deletions.push(quad);
+  });
   // TODO: Replace this mock value by an actual implementation:
-  return Object.assign(thing, { diff: { additions: [], deletions: deletions } });
+  return Object.assign(thing, {
+    diff: { additions: [], deletions: deletions },
+  });
 }
 
 /**
@@ -658,13 +657,15 @@ const getPredicateObjectMatcher = function (
   object: Iri | IriString
 ): Matcher<NamedNode> {
   const predicateNode = asNamedNode(predicate);
-  if(isNamedNode(object)) {
+  // if(isNamedNode(object)) {
 
-  }
+  // }
   let objectNode = asNamedNode(object);
 
   const matcher = function (quad: Quad): quad is QuadWithObject<NamedNode> {
-    return predicateNode.equals(quad.predicate) && objectNode.equals(quad.object);
+    return (
+      predicateNode.equals(quad.predicate) && objectNode.equals(quad.object)
+    );
   };
   return matcher;
 };
