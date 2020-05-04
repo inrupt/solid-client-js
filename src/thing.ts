@@ -674,24 +674,6 @@ const getNamedNodeMatcher = function (
   return matcher;
 };
 
-const getPredicateObjectMatcher = function (
-  predicate: Iri | IriString,
-  object: Iri | IriString
-): Matcher<NamedNode> {
-  const predicateNode = asNamedNode(predicate);
-  // if(isNamedNode(object)) {
-
-  // }
-  let objectNode = asNamedNode(object);
-
-  const matcher = function (quad: Quad): quad is QuadWithObject<NamedNode> {
-    return (
-      predicateNode.equals(quad.predicate) && objectNode.equals(quad.object)
-    );
-  };
-  return matcher;
-};
-
 /**
  * @param thing The [[Thing]] to read a NamedNode value from.
  * @param predicate The given Predicate for which you want the NamedNode value.

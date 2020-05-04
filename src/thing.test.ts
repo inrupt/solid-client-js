@@ -1261,6 +1261,31 @@ describe("removeIri", () => {
     expect(Array.from(updatedThing).length).toBe(0);
   });
 
+  it("also works on ThingLocals", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
+    const quadWithLocalSubject = DataFactory.quad(
+      localSubject,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/resource#name")
+    );
+    const datasetWithThingLocal = dataset();
+    datasetWithThingLocal.add(quadWithLocalSubject);
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      name: "localSubject",
+    });
+
+    const updatedThing = removeIri(
+      thingLocal,
+      "https://some.vocab/predicate",
+      "https://some.pod/resource#name"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
   it("removes multiple instances of the same IRI for the same Predicate", () => {
     const thingWithDuplicateIri = getMockThingWithIri(
       "https://some.vocab/predicate",
