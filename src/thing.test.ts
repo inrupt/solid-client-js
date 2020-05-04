@@ -1261,27 +1261,6 @@ describe("removeIri", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("records the deletion in the diff", () => {
-    const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
-    );
-
-    const updatedThing = removeIri(
-      thingWithIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
-    );
-
-    expect(updatedThing.diff.deletions.length).toBe(1);
-    expect(updatedThing.diff.deletions[0].predicate.value).toBe(
-      "https://some.vocab/predicate"
-    );
-    expect(updatedThing.diff.deletions[0].object.value).toBe(
-      "https://some.pod/resource#name"
-    );
-  });
-
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
@@ -1354,7 +1333,6 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
-    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
   });
 
   it("can match NamedNodes to LocalNodes on ThingPersisteds", () => {
@@ -1380,7 +1358,6 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
-    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
   });
 
   const quadWithLocalNode = DataFactory.quad(
@@ -1406,7 +1383,6 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
-    expect(updatedThing.diff.deletions).toEqual([quadWithLocalNode]);
   });
 });
 
