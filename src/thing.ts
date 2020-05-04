@@ -263,7 +263,7 @@ export function removeIri(
   thing: Thing,
   predicate: Iri | IriString,
   value: Iri | IriString | ThingPersisted
-): Thing & DiffStruct {
+): Thing {
   // Temporary escape just to test simple case first
   if (isLocalNode(value)) {
     return Object.assign(thing, { diff: { additions: [], deletions: [] } });
