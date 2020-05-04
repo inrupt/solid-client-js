@@ -262,7 +262,7 @@ export function getAllIris(
 export function removeIri(
   thing: Thing,
   predicate: Iri | IriString,
-  value: Iri | IriString | LocalNode | Thing
+  value: Iri | IriString | ThingPersisted
 ): Thing & DiffStruct {
   // Temporary escape just to test simple case first
   if (isLocalNode(value)) {
