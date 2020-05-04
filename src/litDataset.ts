@@ -202,16 +202,16 @@ export async function saveLitDatasetInContainer(
   return resourceWithResolvedIris;
 }
 
-function getNamedNodesForLocalNodes(statement: Quad): Quad {
-  const subject = isLocalNode(statement.subject)
-    ? getNamedNodeFromLocalNode(statement.subject)
-    : statement.subject;
-  const object = isLocalNode(statement.object)
-    ? getNamedNodeFromLocalNode(statement.object)
-    : statement.object;
+function getNamedNodesForLocalNodes(quad: Quad): Quad {
+  const subject = isLocalNode(quad.subject)
+    ? getNamedNodeFromLocalNode(quad.subject)
+    : quad.subject;
+  const object = isLocalNode(quad.object)
+    ? getNamedNodeFromLocalNode(quad.object)
+    : quad.object;
 
   return {
-    ...statement,
+    ...quad,
     subject: subject,
     object: object,
   };
@@ -225,15 +225,12 @@ function resolveLocalIrisInLitDataset<
   Dataset extends LitDataset & MetadataStruct
 >(litDataset: Dataset): Dataset {
   const resourceIri = litDataset.metadata.fetchedFrom;
-  const unresolvedStatements = Array.from(litDataset);
+  const unresolvedQuads = Array.from(litDataset);
 
-  unresolvedStatements.forEach((unresolvedStatement) => {
-    const resolvedStatement = resolveIriForLocalNodes(
-      unresolvedStatement,
-      resourceIri
-    );
-    litDataset.delete(unresolvedStatement);
-    litDataset.add(resolvedStatement);
+  unresolvedQuads.forEach((unresolvedQuad) => {
+    const resolvedQuad = resolveIriForLocalNodes(unresolvedQuad, resourceIri);
+    litDataset.delete(unresolvedQuad);
+    litDataset.add(resolvedQuad);
   });
 
   return litDataset;

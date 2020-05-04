@@ -27,13 +27,13 @@ export interface GetThingOptions {
   /**
    * Which Named Graph to extract the Thing from.
    *
-   * If not specified, the Thing will include Statements from all Named Graphs in the given
+   * If not specified, the Thing will include Quads from all Named Graphs in the given
    * [[LitDataset]].
    **/
   scope?: Iri | IriString;
 }
 /**
- * Extract Statements with a given Subject from a [[LitDataset]] into a [[Thing]].
+ * Extract Quads with a given Subject from a [[LitDataset]] into a [[Thing]].
  *
  * @param litDataset The [[LitDataset]] to extract the [[Thing]] from.
  * @param thingIri The IRI of the desired [[Thing]].
@@ -67,7 +67,7 @@ export function getOneThing(
 }
 
 /**
- * Get all [[Thing]]s about which a [[LitDataset]] contains Statements.
+ * Get all [[Thing]]s about which a [[LitDataset]] contains Quads.
  *
  * @param litDataset The [[LitDataset]] to extract the [[Thing]]s from.
  * @param options See [[GetThingOptions]].
@@ -77,12 +77,12 @@ export function getAllThings(
   options: GetThingOptions = {}
 ): Thing[] {
   const subjectIris = new Set<Iri | LocalNode>();
-  for (let statement of litDataset) {
-    if (isNamedNode(statement.subject)) {
-      subjectIris.add(statement.subject);
+  for (let quad of litDataset) {
+    if (isNamedNode(quad.subject)) {
+      subjectIris.add(quad.subject);
     }
-    if (isLocalNode(statement.subject)) {
-      subjectIris.add(statement.subject);
+    if (isLocalNode(quad.subject)) {
+      subjectIris.add(quad.subject);
     }
   }
 
@@ -99,9 +99,9 @@ export function setThing<Dataset extends LitDataset>(
 ): Dataset & DiffStruct {
   const newDataset = removeThing(litDataset, thing);
 
-  for (const statement of thing) {
-    newDataset.add(statement);
-    newDataset.diff.additions.push(statement);
+  for (const quad of thing) {
+    newDataset.add(quad);
+    newDataset.diff.additions.push(quad);
   }
 
   return newDataset;
@@ -234,13 +234,13 @@ export function getOneIri(
 ): IriString | null {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
-  const matchingStatement = findOne(thing, namedNodeMatcher);
+  const matchingQuad = findOne(thing, namedNodeMatcher);
 
-  if (matchingStatement === null) {
+  if (matchingQuad === null) {
     return null;
   }
 
-  return matchingStatement.object.value;
+  return matchingQuad.object.value;
 }
 
 /**
@@ -254,9 +254,9 @@ export function getAllIris(
 ): IriString[] {
   const iriMatcher = getNamedNodeMatcher(predicate);
 
-  const matchingStatements = findAll(thing, iriMatcher);
+  const matchingQuads = findAll(thing, iriMatcher);
 
-  return matchingStatements.map((statement) => statement.object.value);
+  return matchingQuads.map((quad) => quad.object.value);
 }
 
 /**
@@ -306,14 +306,14 @@ const getLocaleStringMatcher = function (
   const predicateNode = asNamedNode(predicate);
 
   const matcher = function (
-    statement: Quad
-  ): statement is QuadWithObject<LiteralLocaleString> {
+    quad: Quad
+  ): quad is QuadWithObject<LiteralLocaleString> {
     return (
-      predicateNode.equals(statement.predicate) &&
-      isLiteral(statement.object) &&
-      statement.object.datatype.value ===
+      predicateNode.equals(quad.predicate) &&
+      isLiteral(quad.object) &&
+      quad.object.datatype.value ===
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString" &&
-      statement.object.language.toLowerCase() === locale.toLowerCase()
+      quad.object.language.toLowerCase() === locale.toLowerCase()
     );
   };
   return matcher;
@@ -332,13 +332,13 @@ export function getOneStringInLocale(
 ): string | null {
   const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
 
-  const matchingStatement = findOne(thing, localeStringMatcher);
+  const matchingQuad = findOne(thing, localeStringMatcher);
 
-  if (matchingStatement === null) {
+  if (matchingQuad === null) {
     return null;
   }
 
-  return matchingStatement.object.value;
+  return matchingQuad.object.value;
 }
 
 /**
@@ -354,9 +354,9 @@ export function getAllStringsInLocale(
 ): string[] {
   const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
 
-  const matchingStatements = findAll(thing, localeStringMatcher);
+  const matchingQuads = findAll(thing, localeStringMatcher);
 
-  return matchingStatements.map((statement) => statement.object.value);
+  return matchingQuads.map((quad) => quad.object.value);
 }
 
 /**
@@ -575,12 +575,8 @@ const getLiteralMatcher = function (
 ): Matcher<Literal> {
   const predicateNode = asNamedNode(predicate);
 
-  const matcher = function (
-    statement: Quad
-  ): statement is QuadWithObject<Literal> {
-    return (
-      predicateNode.equals(statement.predicate) && isLiteral(statement.object)
-    );
+  const matcher = function (quad: Quad): quad is QuadWithObject<Literal> {
+    return predicateNode.equals(quad.predicate) && isLiteral(quad.object);
   };
   return matcher;
 };
@@ -597,13 +593,13 @@ export function getOneLiteral(
 ): Literal | null {
   const literalMatcher = getLiteralMatcher(predicate);
 
-  const matchingStatement = findOne(thing, literalMatcher);
+  const matchingQuad = findOne(thing, literalMatcher);
 
-  if (matchingStatement === null) {
+  if (matchingQuad === null) {
     return null;
   }
 
-  return matchingStatement.object;
+  return matchingQuad.object;
 }
 
 /**
@@ -618,9 +614,9 @@ export function getAllLiterals(
 ): Literal[] {
   const literalMatcher = getLiteralMatcher(predicate);
 
-  const matchingStatements = findAll(thing, literalMatcher);
+  const matchingQuads = findAll(thing, literalMatcher);
 
-  return matchingStatements.map((statement) => statement.object);
+  return matchingQuads.map((quad) => quad.object);
 }
 
 const getNamedNodeMatcher = function (
@@ -628,12 +624,8 @@ const getNamedNodeMatcher = function (
 ): Matcher<NamedNode> {
   const predicateNode = asNamedNode(predicate);
 
-  const matcher = function (
-    statement: Quad
-  ): statement is QuadWithObject<NamedNode> {
-    return (
-      predicateNode.equals(statement.predicate) && isNamedNode(statement.object)
-    );
+  const matcher = function (quad: Quad): quad is QuadWithObject<NamedNode> {
+    return predicateNode.equals(quad.predicate) && isNamedNode(quad.object);
   };
   return matcher;
 };
@@ -650,13 +642,13 @@ export function getOneNamedNode(
 ): NamedNode | null {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
-  const matchingStatement = findOne(thing, namedNodeMatcher);
+  const matchingQuad = findOne(thing, namedNodeMatcher);
 
-  if (matchingStatement === null) {
+  if (matchingQuad === null) {
     return null;
   }
 
-  return matchingStatement.object;
+  return matchingQuad.object;
 }
 
 /**
@@ -671,9 +663,9 @@ export function getAllNamedNodes(
 ): NamedNode[] {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
-  const matchingStatement = findAll(thing, namedNodeMatcher);
+  const matchingQuads = findAll(thing, namedNodeMatcher);
 
-  return matchingStatement.map((statement) => statement.object);
+  return matchingQuads.map((quad) => quad.object);
 }
 
 type LiteralOfType<Type extends IriString> = Literal & {
@@ -686,12 +678,12 @@ const getLiteralOfTypeMatcher = function <Datatype extends IriString>(
   const predicateNode = asNamedNode(predicate);
 
   const matcher = function (
-    statement: Quad
-  ): statement is QuadWithObject<LiteralOfType<Datatype>> {
+    quad: Quad
+  ): quad is QuadWithObject<LiteralOfType<Datatype>> {
     return (
-      predicateNode.equals(statement.predicate) &&
-      isLiteral(statement.object) &&
-      statement.object.datatype.value === datatype
+      predicateNode.equals(quad.predicate) &&
+      isLiteral(quad.object) &&
+      quad.object.datatype.value === datatype
     );
   };
   return matcher;
@@ -710,13 +702,13 @@ function getOneLiteralOfType<Datatype extends IriString>(
 ): string | null {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
 
-  const matchingStatement = findOne(thing, literalOfTypeMatcher);
+  const matchingQuad = findOne(thing, literalOfTypeMatcher);
 
-  if (matchingStatement === null) {
+  if (matchingQuad === null) {
     return null;
   }
 
-  return matchingStatement.object.value;
+  return matchingQuad.object.value;
 }
 
 /**
@@ -732,46 +724,46 @@ function getAllLiteralsOfType<Datatype extends IriString>(
 ): string[] {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
 
-  const matchingStatements = findAll(thing, literalOfTypeMatcher);
+  const matchingQuads = findAll(thing, literalOfTypeMatcher);
 
-  return matchingStatements.map((statement) => statement.object.value);
+  return matchingQuads.map((quad) => quad.object.value);
 }
 
 type QuadWithObject<Object extends Quad_Object> = Quad & { object: Object };
 type Matcher<Object extends Quad_Object> = (
-  statement: Quad
-) => statement is QuadWithObject<Object>;
+  quad: Quad
+) => quad is QuadWithObject<Object>;
 
 /**
- * @param thing The [[Thing]] to extract a Statement from.
- * @param matcher Callback function that returns a boolean indicating whether a given Statement should be included.
- * @returns First Statement in `thing` for which `matcher` returned true.
+ * @param thing The [[Thing]] to extract a Quad from.
+ * @param matcher Callback function that returns a boolean indicating whether a given Quad should be included.
+ * @returns First Quad in `thing` for which `matcher` returned true.
  */
 function findOne<Object extends Quad_Object>(
   thing: Thing,
   matcher: Matcher<Object>
 ): QuadWithObject<Object> | null {
-  for (let statement of thing) {
-    if (matcher(statement)) {
-      return statement;
+  for (let quad of thing) {
+    if (matcher(quad)) {
+      return quad;
     }
   }
   return null;
 }
 
 /**
- * @param thing The [[Thing]] to extract Statements from.
- * @param matcher Callback function that returns a boolean indicating whether a given Statement should be included.
- * @returns All Statement in `thing` for which `matcher` returned true.
+ * @param thing The [[Thing]] to extract Quads from.
+ * @param matcher Callback function that returns a boolean indicating whether a given Quad should be included.
+ * @returns All Quads in `thing` for which `matcher` returned true.
  */
 function findAll<Object extends Quad_Object>(
   thing: Thing,
   matcher: Matcher<Object>
 ): QuadWithObject<Object>[] {
   const matched: QuadWithObject<Object>[] = [];
-  for (let statement of thing) {
-    if (matcher(statement)) {
-      matched.push(statement);
+  for (let quad of thing) {
+    if (matcher(quad)) {
+      matched.push(quad);
     }
   }
   return matched;

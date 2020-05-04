@@ -111,21 +111,21 @@ export function isEqual(
 
 /**
  * @internal Utility method; library users should not need to interact with LocalNodes directly.
- * @param statement The Statement to resolve LocalNodes in.
+ * @param quad The Quad to resolve LocalNodes in.
  * @param resourceIri The IRI of the Resource to resolve the LocalNodes against.
  */
 export function resolveIriForLocalNodes(
-  statement: Quad,
+  quad: Quad,
   resourceIri: IriString
 ): Quad {
-  const subject = isLocalNode(statement.subject)
-    ? resolveIriForLocalNode(statement.subject, resourceIri)
-    : statement.subject;
-  const object = isLocalNode(statement.object)
-    ? resolveIriForLocalNode(statement.object, resourceIri)
-    : statement.object;
+  const subject = isLocalNode(quad.subject)
+    ? resolveIriForLocalNode(quad.subject, resourceIri)
+    : quad.subject;
+  const object = isLocalNode(quad.object)
+    ? resolveIriForLocalNode(quad.object, resourceIri)
+    : quad.object;
   return {
-    ...statement,
+    ...quad,
     subject: subject,
     object: object,
   };
