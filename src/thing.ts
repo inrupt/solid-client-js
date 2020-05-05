@@ -12,7 +12,7 @@ import {
   hasDiff,
   hasMetadata,
 } from "./index";
-import { dataset } from "@rdfjs/dataset";
+import { dataset, literal } from "@rdfjs/dataset";
 import {
   isLocalNode,
   isEqual,
@@ -300,6 +300,38 @@ export function removeIri(
       updatedThing.add(quad);
     }
   }
+  return updatedThing;
+}
+
+export function removeOneLiteral<T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString,
+  value: Literal
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function removeOneLiteral(
+  thing: Thing,
+  predicate: Iri | IriString,
+  value: Literal
+): Thing {
+  // Temporary mock-up that should be implemented
+  return thing;
+}
+
+export function removeOneStringUnlocalised<T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString,
+  value: string
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function removeOneStringUnlocalised(
+  thing: Thing,
+  predicate: Iri | IriString,
+  value: string
+): Thing {
+  const updatedThing = removeOneLiteral(
+    thing,
+    predicate,
+    literal(value, "http://www.w3.org/2001/XMLSchema#string")
+  );
   return updatedThing;
 }
 
