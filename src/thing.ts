@@ -316,7 +316,7 @@ export function removeOneLiteral(
 ): Thing {
   const predicateNode = asNamedNode(predicate);
   const updatedThing = cloneThingSkeleton(thing);
-  // Clone the input Thing, excluding Quads matching the given IRI.
+  // Clone the input Thing, excluding Quads matching the given Literal.
   for (const quad of thing) {
     if (
       !quad.predicate.equals(predicateNode) ||

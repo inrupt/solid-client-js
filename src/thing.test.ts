@@ -1495,13 +1495,13 @@ describe("removeStringUnlocalised", () => {
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
-    const thingWithIri = getMockThingWithLiteralFor(
+    const thingWithOtherQuads = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const mockQuadWithDifferentIri = getMockQuadWithLiteralFor(
+    const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       "https://some.vocab/predicate",
       "Some other arbitrary string",
       "string"
@@ -1511,17 +1511,17 @@ describe("removeStringUnlocalised", () => {
       "Some arbitrary string",
       "string"
     );
-    thingWithIri.add(mockQuadWithDifferentIri);
-    thingWithIri.add(mockQuadWithDifferentPredicate);
+    thingWithOtherQuads.add(mockQuadWithDifferentObject);
+    thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
     const updatedThing = removeStringUnlocalised(
-      thingWithIri,
+      thingWithOtherQuads,
       "https://some.vocab/predicate",
       "Some arbitrary string"
     );
 
     expect(Array.from(updatedThing)).toEqual([
-      mockQuadWithDifferentIri,
+      mockQuadWithDifferentObject,
       mockQuadWithDifferentPredicate,
     ]);
   });
