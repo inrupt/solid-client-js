@@ -509,6 +509,19 @@ export function getAllIntegers(
   );
 }
 
+export const removeOneInteger: RemoveOneOfType<number> = (
+  thing,
+  predicate,
+  value
+) => {
+  return removeOneLiteralOfType(
+    thing,
+    predicate,
+    value.toString(),
+    "http://www.w3.org/2001/XMLSchema#integer"
+  );
+};
+
 /**
  * @param thing The [[Thing]] to read a decimal value from.
  * @param predicate The given Predicate for which you want the decimal value.
