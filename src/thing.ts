@@ -329,28 +329,30 @@ export function removeOneLiteral(
   return updatedThing;
 }
 
-export function removeStringUnlocalised<T extends Thing>(
+export function removeOneLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
-  value: string | Literal
+  value: string,
+  type: IriString
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeStringUnlocalised(
+export function removeOneLiteralOfType(
   thing: Thing,
   predicate: Iri | IriString,
-  value: string | Literal
+  value: string,
+  type: IriString
 ): Thing {
   const updatedThing = removeOneLiteral(
     thing,
     predicate,
-    isLiteral(value)
-      ? value
-      : literal(
-          value,
-          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
-        )
+    literal(value, DataFactory.namedNode(type))
   );
   return updatedThing;
 }
+type RemoveOneOfType<Type> = <T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString,
+  value: Type
+) => T extends ThingLocal ? ThingLocal : ThingPersisted;
 
 /**
  * @param thing The [[Thing]] to read a string value from.
@@ -387,6 +389,19 @@ export function getAllStringUnlocaliseds(
 
   return literalStrings;
 }
+
+export const removeStringUnlocalised: RemoveOneOfType<string> = (
+  thing,
+  predicate,
+  value
+) => {
+  return removeOneLiteralOfType(
+    thing,
+    predicate,
+    value,
+    "http://www.w3.org/2001/XMLSchema#string"
+  );
+};
 
 type LiteralLocaleString = Literal & {
   datatype: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString" };
