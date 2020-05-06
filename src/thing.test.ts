@@ -24,6 +24,7 @@ import {
   getAllLiterals,
   getAllNamedNodes,
   removeIri,
+  removeStringUnlocalised,
 } from "./thing";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
@@ -1376,6 +1377,175 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
+  });
+});
+
+describe("removeStringUnlocalised", () => {
+  it("removes the given L value for the given Predicate", () => {
+    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithStringUnlocalised,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithStringUnlocalised,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("accepts unlocalised strings as Literal", () => {
+    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithStringUnlocalised,
+      "https://some.vocab/predicate",
+      DataFactory.literal(
+        "Some arbitrary string",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+      )
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithStringUnlocalised,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(thingWithStringUnlocalised).length).toBe(1);
+    expect(Array.from(updatedThing).length).toBe(0);
+  });
+
+  it("also works on ThingLocals", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
+    const quadWithLocalSubject = DataFactory.quad(
+      localSubject,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.literal(
+        "Some arbitrary string",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+      )
+    );
+    const datasetWithThingLocal = dataset();
+    datasetWithThingLocal.add(quadWithLocalSubject);
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      name: "localSubject",
+    });
+
+    const updatedThing = removeStringUnlocalised(
+      thingLocal,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("removes multiple instances of the same string for the same Predicate", () => {
+    const thingWithDuplicateString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+    thingWithDuplicateString.add(Array.from(thingWithDuplicateString)[0]);
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithDuplicateString,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("does not remove Quads with different Predicates or Objects", () => {
+    const thingWithIri = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+
+    const mockQuadWithDifferentIri = getMockQuadWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some other arbitrary string",
+      "string"
+    );
+    const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
+      "https://some-other.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+    thingWithIri.add(mockQuadWithDifferentIri);
+    thingWithIri.add(mockQuadWithDifferentPredicate);
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithIri,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([
+      mockQuadWithDifferentIri,
+      mockQuadWithDifferentPredicate,
+    ]);
+  });
+
+  it("does not remove Quads with non-string Objects", () => {
+    const thingWithString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some arbitrary string",
+      "string"
+    );
+    const mockQuadWithInteger = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#integer")
+    );
+    thingWithString.add(mockQuadWithInteger);
+
+    const updatedThing = removeStringUnlocalised(
+      thingWithString,
+      "https://some.vocab/predicate",
+      "Some arbitrary string"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([mockQuadWithInteger]);
   });
 });
 

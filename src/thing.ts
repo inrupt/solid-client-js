@@ -22,6 +22,7 @@ import {
   asNamedNode,
   resolveLocalIri,
 } from "./datatypes";
+import { DataFactory } from "n3";
 
 export interface GetThingOptions {
   /**
@@ -313,24 +314,40 @@ export function removeOneLiteral(
   predicate: Iri | IriString,
   value: Literal
 ): Thing {
-  // Temporary mock-up that should be implemented
-  return thing;
+  const predicateNode = asNamedNode(predicate);
+  const updatedThing = cloneThingSkeleton(thing);
+  // Clone the input Thing, excluding Quads matching the given IRI.
+  for (const quad of thing) {
+    if (
+      !quad.predicate.equals(predicateNode) ||
+      !isLiteral(quad.object) ||
+      !quad.object.equals(value)
+    ) {
+      updatedThing.add(quad);
+    }
+  }
+  return updatedThing;
 }
 
-export function removeOneStringUnlocalised<T extends Thing>(
+export function removeStringUnlocalised<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
-  value: string
+  value: string | Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeOneStringUnlocalised(
+export function removeStringUnlocalised(
   thing: Thing,
   predicate: Iri | IriString,
-  value: string
+  value: string | Literal
 ): Thing {
   const updatedThing = removeOneLiteral(
     thing,
     predicate,
-    literal(value, "http://www.w3.org/2001/XMLSchema#string")
+    isLiteral(value)
+      ? value
+      : literal(
+          value,
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+        )
   );
   return updatedThing;
 }
