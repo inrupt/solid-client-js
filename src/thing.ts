@@ -94,6 +94,13 @@ export function getAllThings(
   return things;
 }
 
+/**
+ * Insert a [[Thing]] into a [[LitDataset]], replacing previous instances of that Thing.
+ *
+ * @param litDataset The LitDataset to insert a Thing into.
+ * @param thing The Thing to insert into the given LitDataset.
+ * @returns A new LitDataset equal to the given LitDataset, but with the given Thing.
+ */
 export function setThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: Thing
@@ -108,6 +115,13 @@ export function setThing<Dataset extends LitDataset>(
   return newDataset;
 }
 
+/**
+ * Remove a Thing from a LitDataset.
+ *
+ * @param litDataset The LitDataset to remove a Thing from.
+ * @param thing The Thing to remove from `litDataset`.
+ * @returns A new [[LitDataset]] equal to the input LitDataset, excluding the given Thing.
+ */
 export function removeThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: IriString | Iri | LocalNode | Thing
