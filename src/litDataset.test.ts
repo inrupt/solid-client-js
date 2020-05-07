@@ -9,7 +9,6 @@ jest.mock("./fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
   fetchLitDataset,
@@ -23,6 +22,7 @@ import {
   LitDataset,
   LocalNode,
 } from "./index";
+import { dataset } from "@rdfjs/dataset";
 
 describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {

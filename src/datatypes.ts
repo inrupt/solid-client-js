@@ -1,5 +1,5 @@
 import { NamedNode, Literal, Quad } from "rdf-js";
-import { DataFactory } from "n3";
+import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./index";
 
 /**
