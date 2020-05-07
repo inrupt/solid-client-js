@@ -9,7 +9,7 @@ export const fetch: typeof window.fetch = (resource, init) => {
     // TypeScript cannot find the module - which is correct, since the consumer app should/can
     // provide it:
     // @ts-ignore
-    "solid-auth-fetcher"
+    "@inrupt/solid-auth-fetcher"
   )
     .catch(() =>
       import(
