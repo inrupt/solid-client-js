@@ -12,7 +12,7 @@ import {
   hasDiff,
   hasMetadata,
 } from "./index";
-import { dataset, DataFactory } from "./rdfjs";
+import { dataset, DataFactory, filter } from "./rdfjs";
 import {
   isLocalNode,
   isEqual,
@@ -237,17 +237,18 @@ export function asIri(thing: Thing, baseIri?: IriString): IriString {
   return thing.iri;
 }
 
-function cloneThingSkeleton<T extends Thing>(
-  thing: T
+function filterThing<T extends Thing>(
+  thing: T,
+  callback: (quad: Quad) => boolean
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function cloneThingSkeleton(thing: Thing): Thing {
-  const freshThing = dataset();
+function filterThing(thing: Thing, callback: (quad: Quad) => boolean): Thing {
+  const filtered = filter(thing, callback);
   if (isThingLocal(thing)) {
-    (freshThing as ThingLocal).name = thing.name;
-    return freshThing as ThingLocal;
+    (filtered as ThingLocal).name = thing.name;
+    return filtered as ThingLocal;
   }
-  (freshThing as ThingPersisted).iri = thing.iri;
-  return freshThing as ThingPersisted;
+  (filtered as ThingPersisted).iri = thing.iri;
+  return filtered as ThingPersisted;
 }
 
 /**
@@ -309,17 +310,13 @@ export function removeOneIri(
     ? asNamedNode(value)
     : asNamedNode(asIri(value));
 
-  const updatedThing = cloneThingSkeleton(thing);
-  // Clone the input Thing, excluding Quads matching the given IRI.
-  for (const quad of thing) {
-    if (
+  const updatedThing = filterThing(thing, (quad) => {
+    return (
       !quad.predicate.equals(predicateNode) ||
       !isNamedNode(quad.object) ||
       !quad.object.equals(iriNode)
-    ) {
-      updatedThing.add(quad);
-    }
-  }
+    );
+  });
   return updatedThing;
 }
 
@@ -876,17 +873,13 @@ export function removeOneLiteral(
   value: Literal
 ): Thing {
   const predicateNode = asNamedNode(predicate);
-  const updatedThing = cloneThingSkeleton(thing);
-  // Clone the input Thing, excluding Quads matching the given Literal.
-  for (const quad of thing) {
-    if (
+  const updatedThing = filterThing(thing, (quad) => {
+    return (
       !quad.predicate.equals(predicateNode) ||
       !isLiteral(quad.object) ||
       !quad.object.equals(value)
-    ) {
-      updatedThing.add(quad);
-    }
-  }
+    );
+  });
   return updatedThing;
 }
 
@@ -957,17 +950,13 @@ export function removeOneNamedNode(
   value: NamedNode
 ): Thing {
   const predicateNode = asNamedNode(predicate);
-  const updatedThing = cloneThingSkeleton(thing);
-  // Clone the input Thing, excluding Quads matching the given Literal.
-  for (const quad of thing) {
-    if (
+  const updatedThing = filterThing(thing, (quad) => {
+    return (
       !quad.predicate.equals(predicateNode) ||
       !isNamedNode(quad.object) ||
       !quad.object.equals(value)
-    ) {
-      updatedThing.add(quad);
-    }
-  }
+    );
+  });
   return updatedThing;
 }
 
