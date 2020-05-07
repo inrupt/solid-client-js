@@ -145,6 +145,16 @@ describe("isEqual", () => {
       })
     ).toBe(false);
   });
+  it("does not mark a LocalNode as equal to a NamedNode if no resource IRI is known", () => {
+    const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-name",
+    });
+    const namedNode = DataFactory.namedNode(
+      "https://some.pod/resource#some-name"
+    );
+    expect(isEqual(localNode, namedNode)).toBe(false);
+    expect(isEqual(namedNode, localNode)).toBe(false);
+  });
 });
 
 describe("resolveIriForLocalNodes", () => {
@@ -163,6 +173,23 @@ describe("resolveIriForLocalNodes", () => {
     const resolvedQuad = resolveIriForLocalNodes(
       quad,
       "https://some.pod/resource"
+    );
+    expect(resolvedQuad.subject.value).toBe(
+      "https://some.pod/resource#some-subject"
+    );
+    expect(resolvedQuad.object.value).toBe(
+      "https://some.pod/resource#some-object"
+    );
+  });
+  it("does not resolve the IRI for NamedNodes", () => {
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://some.pod/resource#some-subject"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/resource#some-object")
+    );
+    const resolvedQuad = resolveIriForLocalNodes(
+      quad,
+      "https://arbitrary.pod/resource"
     );
     expect(resolvedQuad.subject.value).toBe(
       "https://some.pod/resource#some-subject"
