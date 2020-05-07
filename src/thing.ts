@@ -12,7 +12,7 @@ import {
   hasDiff,
   hasMetadata,
 } from "./index";
-import { dataset } from "@rdfjs/dataset";
+import { dataset, DataFactory } from "./rdfjs";
 import {
   isLocalNode,
   isEqual,
@@ -22,7 +22,6 @@ import {
   asNamedNode,
   resolveLocalIri,
 } from "./datatypes";
-import { DataFactory } from "n3";
 
 export interface GetThingOptions {
   /**

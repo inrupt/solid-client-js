@@ -1,6 +1,4 @@
-import { dataset } from "@rdfjs/dataset";
 import { Quad, NamedNode } from "rdf-js";
-import { DataFactory } from "n3";
 import {
   IriString,
   LitDataset,
@@ -10,6 +8,7 @@ import {
   hasMetadata,
   LocalNode,
 } from "./index";
+import { dataset, DataFactory } from "./rdfjs";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";

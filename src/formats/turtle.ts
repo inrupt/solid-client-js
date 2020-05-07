@@ -1,6 +1,7 @@
 import { IriString } from "../index";
-import { DataFactory, Writer, Parser } from "n3";
+import { Writer, Parser } from "n3";
 import { Quad } from "rdf-js";
+import { DataFactory } from "../rdfjs";
 
 /**
  * @param quads Triples that should be serialised to Turtle
