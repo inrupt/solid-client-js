@@ -497,7 +497,11 @@ export function removeOneStringInLocale(
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
   // must call directly `removeOneLiteral` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
-  return removeOneLiteral(thing, predicate, DataFactory.literal(value, locale));
+  return removeOneLiteral(
+    thing,
+    predicate,
+    DataFactory.literal(value, locale.toLowerCase())
+  );
 }
 
 /**

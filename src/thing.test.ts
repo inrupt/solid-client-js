@@ -2097,14 +2097,14 @@ describe("removeOneStringInLocale", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Une chaîne de caractères quelconque",
-      "fr-FR"
+      "fr-fr"
     );
 
     const updatedThing = removeOneStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Une chaîne de caractères quelconque",
-      "fr-FR"
+      "fr-fr"
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -2114,14 +2114,14 @@ describe("removeOneStringInLocale", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     const updatedThing = removeOneStringInLocale(
       thingWithStringInLocale,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -2131,14 +2131,14 @@ describe("removeOneStringInLocale", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     const updatedThing = removeOneStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     expect(Array.from(thingWithStringInLocale).length).toBe(1);
@@ -2153,7 +2153,7 @@ describe("removeOneStringInLocale", () => {
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.literal("Some arbitrary string", "en-US")
+      DataFactory.literal("Some arbitrary string", "en-us")
     );
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
@@ -2165,7 +2165,7 @@ describe("removeOneStringInLocale", () => {
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -2175,7 +2175,7 @@ describe("removeOneStringInLocale", () => {
     const thingWithDuplicateStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
     thingWithDuplicateStringInLocale.add(
       Array.from(thingWithDuplicateStringInLocale)[0]
@@ -2185,7 +2185,7 @@ describe("removeOneStringInLocale", () => {
       thingWithDuplicateStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -2195,25 +2195,25 @@ describe("removeOneStringInLocale", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     const mockQuadWithDifferentStringInSameLocale = getMockQuadWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some other arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     const mockQuadWithSameStringInDifferentLocale = getMockQuadWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-UK"
+      "en-uk"
     );
 
     const mockQuadWithDifferentPredicate = getMockQuadWithStringInLocaleFor(
       "https://some.other.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
     thingWithStringInLocale.add(mockQuadWithDifferentStringInSameLocale);
     thingWithStringInLocale.add(mockQuadWithSameStringInDifferentLocale);
@@ -2237,13 +2237,13 @@ describe("removeOneStringInLocale", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-US"
+      "en-us"
     );
 
     const mockQuadWithStringInDifferentLocale = getMockQuadWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
-      "en-us"
+      "en-US"
     );
 
     thingWithStringInLocale.add(mockQuadWithStringInDifferentLocale);
