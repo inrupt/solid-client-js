@@ -50,7 +50,7 @@ export function removeOneIri(
  * @param value String to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneStringUnlocalised: RemoveOneOfType<string> = (
+export const removeOneStringUnlocalized: RemoveOneOfType<string> = (
   thing,
   predicate,
   value
