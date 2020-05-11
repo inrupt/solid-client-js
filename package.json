@@ -34,7 +34,7 @@
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.8.2",
     "rollup-plugin-typescript2": "^0.27.0",
-    "ts-jest": "^25.5.0",
+    "ts-jest": "^25.5.1",
     "typescript": "^3.8.3"
   },
   "dependencies": {
