@@ -12,6 +12,8 @@ export {
   removeThing,
   createThing,
   asIri,
+} from "./thing";
+export {
   getOneIri,
   getOneStringUnlocalised,
   getOneStringInLocale,
@@ -30,6 +32,8 @@ export {
   getOneNamedNode,
   getAllLiterals,
   getAllNamedNodes,
+} from "./thing/get";
+export {
   removeOneIri,
   removeOneStringUnlocalised,
   removeOneStringInLocale,
@@ -39,7 +43,7 @@ export {
   removeOneDatetime,
   removeOneLiteral,
   removeOneNamedNode,
-} from "./thing";
+} from "./thing/remove";
 
 /**
  * Alias to indicate where we expect an IRI.
