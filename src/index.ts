@@ -79,6 +79,14 @@ export type LocalNode = BlankNode & { name: string };
 export type MetadataStruct = {
   metadata: {
     fetchedFrom: IriString;
+    /**
+     * The IRI reported by the server as possibly containing an ACL file. Note that this file might
+     * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
+     *
+     * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
+     *         in this API changing as well.
+     */
+    unstable_aclIri?: IriString;
   };
 };
 

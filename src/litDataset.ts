@@ -1,4 +1,5 @@
 import { Quad, NamedNode } from "rdf-js";
+import LinkHeader from "http-link-header";
 import {
   IriString,
   LitDataset,
@@ -39,6 +40,15 @@ export async function fetchLitDataset(
   const metadata: MetadataStruct["metadata"] = {
     fetchedFrom: url,
   };
+  const linkHeader = response.headers.get("Link");
+  if (linkHeader) {
+    const parsedLinks = LinkHeader.parse(linkHeader);
+    const aclLinks = parsedLinks.get("rel", "acl");
+    if (aclLinks.length === 1) {
+      metadata.unstable_aclIri = new URL(aclLinks[0].uri, url).href;
+    }
+  }
+
   const resourceWithMetadata: LitDataset &
     MetadataStruct = Object.assign(resource, { metadata: metadata });
 
