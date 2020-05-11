@@ -1,6 +1,6 @@
 import {
   removeOneIri,
-  removeOneStringUnlocalised,
+  removeOneStringUnlocalized,
   removeOneStringInLocale,
   removeOneInteger,
   removeOneDecimal,
@@ -264,16 +264,16 @@ describe("removeOneIri", () => {
   });
 });
 
-describe("removeOneStringUnlocalised", () => {
+describe("removeOneStringUnlocalized", () => {
   it("removes the given string value for the given Predicate", () => {
-    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeOneStringUnlocalised(
-      thingWithStringUnlocalised,
+    const updatedThing = removeOneStringUnlocalized(
+      thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       "Some arbitrary string"
     );
@@ -282,14 +282,14 @@ describe("removeOneStringUnlocalised", () => {
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeOneStringUnlocalised(
-      thingWithStringUnlocalised,
+    const updatedThing = removeOneStringUnlocalized(
+      thingWithStringUnlocalized,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string"
     );
@@ -298,19 +298,19 @@ describe("removeOneStringUnlocalised", () => {
   });
 
   it("does not modify the input Thing", () => {
-    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeOneStringUnlocalised(
-      thingWithStringUnlocalised,
+    const updatedThing = removeOneStringUnlocalized(
+      thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       "Some arbitrary string"
     );
 
-    expect(Array.from(thingWithStringUnlocalised).length).toBe(1);
+    expect(Array.from(thingWithStringUnlocalized).length).toBe(1);
     expect(Array.from(updatedThing).length).toBe(0);
   });
 
@@ -333,7 +333,7 @@ describe("removeOneStringUnlocalised", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeOneStringUnlocalised(
+    const updatedThing = removeOneStringUnlocalized(
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -350,7 +350,7 @@ describe("removeOneStringUnlocalised", () => {
     );
     thingWithDuplicateString.add(Array.from(thingWithDuplicateString)[0]);
 
-    const updatedThing = removeOneStringUnlocalised(
+    const updatedThing = removeOneStringUnlocalized(
       thingWithDuplicateString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -379,7 +379,7 @@ describe("removeOneStringUnlocalised", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeOneStringUnlocalised(
+    const updatedThing = removeOneStringUnlocalized(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -404,7 +404,7 @@ describe("removeOneStringUnlocalised", () => {
     );
     thingWithString.add(mockQuadWithInteger);
 
-    const updatedThing = removeOneStringUnlocalised(
+    const updatedThing = removeOneStringUnlocalized(
       thingWithString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -608,7 +608,7 @@ describe("removeOneStringInLocale", () => {
   });
 
   it("does not remove Quads with non-string Objects", () => {
-    const thingWithLocalisedString = getMockThingWithStringInLocaleFor(
+    const thingWithLocalizedString = getMockThingWithStringInLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
@@ -618,10 +618,10 @@ describe("removeOneStringInLocale", () => {
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#integer")
     );
-    thingWithLocalisedString.add(mockQuadWithInteger);
+    thingWithLocalizedString.add(mockQuadWithInteger);
 
     const updatedThing = removeOneStringInLocale(
-      thingWithLocalisedString,
+      thingWithLocalizedString,
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
@@ -1236,14 +1236,14 @@ describe("removeOneDatetime", () => {
 
 describe("removeOneLiteral", () => {
   it("accepts unlocalised strings as Literal", () => {
-    const thingWithStringUnlocalised = getMockThingWithLiteralFor(
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeOneLiteral(
-      thingWithStringUnlocalised,
+      thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       DataFactory.literal(
         "Some arbitrary string",

@@ -15,14 +15,14 @@ export {
 } from "./thing";
 export {
   getOneIri,
-  getOneStringUnlocalised,
+  getOneStringUnlocalized,
   getOneStringInLocale,
   getOneInteger,
   getOneDecimal,
   getOneBoolean,
   getOneDatetime,
   getAllIris,
-  getAllStringUnlocaliseds,
+  getAllStringUnlocalizeds,
   getAllStringsInLocale,
   getAllIntegers,
   getAllDecimals,
@@ -35,7 +35,7 @@ export {
 } from "./thing/get";
 export {
   removeOneIri,
-  removeOneStringUnlocalised,
+  removeOneStringUnlocalized,
   removeOneStringInLocale,
   removeOneInteger,
   removeOneDecimal,

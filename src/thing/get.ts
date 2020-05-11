@@ -43,7 +43,7 @@ export function getAllIris(
  * @param predicate The given Predicate for which you want the string value.
  * @returns A string value for the given Predicate, if present, or null otherwise.
  */
-export function getOneStringUnlocalised(
+export function getOneStringUnlocalized(
   thing: Thing,
   predicate: Iri | IriString
 ): string | null {
@@ -61,7 +61,7 @@ export function getOneStringUnlocalised(
  * @param predicate The given Predicate for which you want the string values.
  * @returns The string values for the given Predicate.
  */
-export function getAllStringUnlocaliseds(
+export function getAllStringUnlocalizeds(
   thing: Thing,
   predicate: Iri | IriString
 ): string[] {
