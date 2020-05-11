@@ -7,7 +7,7 @@ import { asNamedNode, isNamedNode, isLiteral } from "../datatypes";
  * @param predicate The given Predicate for which you want the IRI value.
  * @returns An IRI value for the given Predicate, if present, or null otherwise.
  */
-export function getOneIri(
+export function getIriOne(
   thing: Thing,
   predicate: Iri | IriString
 ): IriString | null {
@@ -27,7 +27,7 @@ export function getOneIri(
  * @param predicate The given Predicate for which you want the IRI values.
  * @returns The IRI values for the given Predicate.
  */
-export function getAllIris(
+export function getIriAll(
   thing: Thing,
   predicate: Iri | IriString
 ): IriString[] {
@@ -43,11 +43,11 @@ export function getAllIris(
  * @param predicate The given Predicate for which you want the string value.
  * @returns A string value for the given Predicate, if present, or null otherwise.
  */
-export function getOneStringUnlocalized(
+export function getStringUnlocalizedOne(
   thing: Thing,
   predicate: Iri | IriString
 ): string | null {
-  const literalString = getOneLiteralOfType(
+  const literalString = getLiteralOneOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#string"
@@ -61,11 +61,11 @@ export function getOneStringUnlocalized(
  * @param predicate The given Predicate for which you want the string values.
  * @returns The string values for the given Predicate.
  */
-export function getAllStringUnlocalizeds(
+export function getStringUnlocalizedAll(
   thing: Thing,
   predicate: Iri | IriString
 ): string[] {
-  const literalStrings = getAllLiteralsOfType(
+  const literalStrings = getLiteralAllOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#string"
@@ -80,7 +80,7 @@ export function getAllStringUnlocalizeds(
  * @param locale The desired locale for the string value.
  * @returns A localised string value for the given Predicate, if present in `locale`, or null otherwise.
  */
-export function getOneStringInLocale(
+export function getStringInLocaleOne(
   thing: Thing,
   predicate: Iri | IriString,
   locale: string
@@ -102,7 +102,7 @@ export function getOneStringInLocale(
  * @param locale The desired locale for the string values.
  * @returns The localised string values for the given Predicate.
  */
-export function getAllStringsInLocale(
+export function getStringInLocaleAll(
   thing: Thing,
   predicate: Iri | IriString,
   locale: string
@@ -119,11 +119,11 @@ export function getAllStringsInLocale(
  * @param predicate The given Predicate for which you want the integer value.
  * @returns An integer value for the given Predicate, if present, or null otherwise.
  */
-export function getOneInteger(
+export function getIntegerOne(
   thing: Thing,
   predicate: Iri | IriString
 ): number | null {
-  const literalString = getOneLiteralOfType(
+  const literalString = getLiteralOneOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#integer"
@@ -141,11 +141,11 @@ export function getOneInteger(
  * @param predicate The given Predicate for which you want the integer values.
  * @returns The integer values for the given Predicate.
  */
-export function getAllIntegers(
+export function getIntegerAll(
   thing: Thing,
   predicate: Iri | IriString
 ): number[] {
-  const literalStrings = getAllLiteralsOfType(
+  const literalStrings = getLiteralAllOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#integer"
@@ -161,11 +161,11 @@ export function getAllIntegers(
  * @param predicate The given Predicate for which you want the decimal value.
  * @returns A decimal value for the given Predicate, if present, or null otherwise.
  */
-export function getOneDecimal(
+export function getDecimalOne(
   thing: Thing,
   predicate: Iri | IriString
 ): number | null {
-  const literalString = getOneLiteralOfType(
+  const literalString = getLiteralOneOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#decimal"
@@ -183,11 +183,11 @@ export function getOneDecimal(
  * @param predicate The given Predicate for which you want the decimal values.
  * @returns The decimal values for the given Predicate.
  */
-export function getAllDecimals(
+export function getDecimalAll(
   thing: Thing,
   predicate: Iri | IriString
 ): number[] {
-  const literalStrings = getAllLiteralsOfType(
+  const literalStrings = getLiteralAllOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#decimal"
@@ -203,11 +203,11 @@ export function getAllDecimals(
  * @param predicate The given Predicate for which you want the boolean value.
  * @returns A boolean value for the given Predicate, if present, or null otherwise.
  */
-export function getOneBoolean(
+export function getBooleanOne(
   thing: Thing,
   predicate: Iri | IriString
 ): boolean | null {
-  const literalString = getOneLiteralOfType(
+  const literalString = getLiteralOneOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#boolean"
@@ -231,11 +231,11 @@ export function getOneBoolean(
  * @param predicate The given Predicate for which you want the boolean values.
  * @returns The boolean values for the given Predicate.
  */
-export function getAllBooleans(
+export function getBooleanAll(
   thing: Thing,
   predicate: Iri | IriString
 ): boolean[] {
-  const literalStrings = getAllLiteralsOfType(
+  const literalStrings = getLiteralAllOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#boolean"
@@ -288,11 +288,11 @@ function parseDatetimeFromLiteralString(literalString: string): Date | null {
  * @param predicate The given Predicate for which you want the datetime value.
  * @returns A datetime value for the given Predicate, if present, or null otherwise.
  */
-export function getOneDatetime(
+export function getDatetimeOne(
   thing: Thing,
   predicate: Iri | IriString
 ): Date | null {
-  const literalString = getOneLiteralOfType(
+  const literalString = getLiteralOneOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#dateTime"
@@ -310,11 +310,11 @@ export function getOneDatetime(
  * @param predicate The given Predicate for which you want the datetime values.
  * @returns The datetime values for the given Predicate.
  */
-export function getAllDatetimes(
+export function getDatetimeAll(
   thing: Thing,
   predicate: Iri | IriString
 ): Date[] {
-  const literalStrings = getAllLiteralsOfType(
+  const literalStrings = getLiteralAllOfType(
     thing,
     predicate,
     "http://www.w3.org/2001/XMLSchema#dateTime"
@@ -329,9 +329,9 @@ export function getAllDatetimes(
  * @param thing The [[Thing]] to read a NamedNode value from.
  * @param predicate The given Predicate for which you want the NamedNode value.
  * @returns A NamedNode value for the given Predicate, if present, or null otherwise.
- * @ignore This should not be needed due to the other getOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getOneNamedNode(
+export function getNamedNodeOne(
   thing: Thing,
   predicate: Iri | IriString
 ): NamedNode | null {
@@ -350,9 +350,9 @@ export function getOneNamedNode(
  * @param thing The [[Thing]] to read the NamedNode values from.
  * @param predicate The given Predicate for which you want the NamedNode values.
  * @returns The NamedNode values for the given Predicate.
- * @ignore This should not be needed due to the other getOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getAllNamedNodes(
+export function getNamedNodeAll(
   thing: Thing,
   predicate: Iri | IriString
 ): NamedNode[] {
@@ -367,9 +367,9 @@ export function getAllNamedNodes(
  * @param thing The [[Thing]] to read a Literal value from.
  * @param predicate The given Predicate for which you want the Literal value.
  * @returns A Literal value for the given Predicate, if present, or null otherwise.
- * @ignore This should not be needed due to the other getOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getOneLiteral(
+export function getLiteralOne(
   thing: Thing,
   predicate: Iri | IriString
 ): Literal | null {
@@ -388,9 +388,9 @@ export function getOneLiteral(
  * @param thing The [[Thing]] to read the Literal values from.
  * @param predicate The given Predicate for which you want the Literal values.
  * @returns The Literal values for the given Predicate.
- * @ignore This should not be needed due to the other getAll*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*All() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getAllLiterals(
+export function getLiteralAll(
   thing: Thing,
   predicate: Iri | IriString
 ): Literal[] {
@@ -514,7 +514,7 @@ const getLocaleStringMatcher = function (
  * @param literalType Set type of the Literal data.
  * @returns The stringified value for the given Predicate and type, if present, or null otherwise.
  */
-function getOneLiteralOfType<Datatype extends IriString>(
+function getLiteralOneOfType<Datatype extends IriString>(
   thing: Thing,
   predicate: Iri | IriString,
   literalType: Datatype
@@ -536,7 +536,7 @@ function getOneLiteralOfType<Datatype extends IriString>(
  * @param literalType Set type of the Literal data.
  * @returns The stringified values for the given Predicate and type.
  */
-function getAllLiteralsOfType<Datatype extends IriString>(
+function getLiteralAllOfType<Datatype extends IriString>(
   thing: Thing,
   predicate: Iri | IriString,
   literalType: Datatype
