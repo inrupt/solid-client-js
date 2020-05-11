@@ -23,6 +23,7 @@
     "url": "https://github.com/inrupt/lit-solid-core.git"
   },
   "devDependencies": {
+    "@types/http-link-header": "^1.0.1",
     "@types/jest": "^25.2.1",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
@@ -43,6 +44,7 @@
     "@types/rdf-js": "^3.0.0",
     "@types/rdfjs__dataset": "^1.0.1",
     "cross-fetch": "^3.0.4",
+    "http-link-header": "^1.0.2",
     "n3": "^1.3.6"
   },
   "husky": {

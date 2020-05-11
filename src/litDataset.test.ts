@@ -51,6 +51,46 @@ describe("fetchLitDataset", () => {
     expect(litDataset.metadata.fetchedFrom).toBe("https://some.pod/resource");
   });
 
+  it("provides the IRI of the relevant ACL resource, if provided", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            Link: '<aclresource.acl>; rel="acl"',
+          },
+        })
+      )
+    );
+
+    const litDataset = await fetchLitDataset(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(litDataset.metadata.unstable_aclIri).toBe(
+      "https://some.pod/container/aclresource.acl"
+    );
+  });
+
+  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            Link: '<arbitrary-resource>; rel="not-acl"',
+          },
+        })
+      )
+    );
+
+    const litDataset = await fetchLitDataset(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(litDataset.metadata.unstable_aclIri).toBeUndefined();
+  });
+
   it("returns a LitDataset representing the fetched Turtle", async () => {
     const turtle = `
       @prefix : <#>.
