@@ -38,7 +38,7 @@ export interface GetThingOptions {
  * @param thingIri The IRI of the desired [[Thing]].
  * @param options See [[GetThingOptions]].
  */
-export function getOneThing(
+export function getThingOne(
   litDataset: LitDataset,
   thingIri: IriString | Iri | LocalNode,
   options: GetThingOptions = {}
@@ -71,7 +71,7 @@ export function getOneThing(
  * @param litDataset The [[LitDataset]] to extract the [[Thing]]s from.
  * @param options See [[GetThingOptions]].
  */
-export function getAllThings(
+export function getThingAll(
   litDataset: LitDataset,
   options: GetThingOptions = {}
 ): Thing[] {
@@ -86,7 +86,7 @@ export function getAllThings(
   }
 
   const things: Thing[] = Array.from(subjectIris).map((thingIri) =>
-    getOneThing(litDataset, thingIri, options)
+    getThingOne(litDataset, thingIri, options)
   );
 
   return things;
