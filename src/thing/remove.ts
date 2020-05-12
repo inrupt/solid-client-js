@@ -17,12 +17,12 @@ import { isThingLocal } from "../thing";
  * @param value IRI to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeOneIri<T extends Thing>(
+export function removeIriOne<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: Iri | IriString | ThingPersisted
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeOneIri(
+export function removeIriOne(
   thing: Thing,
   predicate: Iri | IriString,
   value: Iri | IriString | ThingPersisted
@@ -50,12 +50,12 @@ export function removeOneIri(
  * @param value String to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneStringUnlocalized: RemoveOneOfType<string> = (
+export const removeStringUnlocalizedOne: RemoveOneOfType<string> = (
   thing,
   predicate,
   value
 ) => {
-  return removeOneLiteralOfType(
+  return removeLiteralOneOfType(
     thing,
     predicate,
     value,
@@ -70,22 +70,22 @@ export const removeOneStringUnlocalized: RemoveOneOfType<string> = (
  * @param locale Locale of the string to remove.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeOneStringInLocale<T extends Thing>(
+export function removeStringInLocaleOne<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeOneStringInLocale(
+export function removeStringInLocaleOne(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
   locale: string
 ): Thing {
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
-  // must call directly `removeOneLiteral` directly, with the locale as the data
+  // must call directly `removeLiteralOne` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
-  return removeOneLiteral(
+  return removeLiteralOne(
     thing,
     predicate,
     DataFactory.literal(value, locale.toLowerCase())
@@ -98,12 +98,12 @@ export function removeOneStringInLocale(
  * @param value Integer to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneInteger: RemoveOneOfType<number> = (
+export const removeIntegerOne: RemoveOneOfType<number> = (
   thing,
   predicate,
   value
 ) => {
-  return removeOneLiteralOfType(
+  return removeLiteralOneOfType(
     thing,
     predicate,
     value.toString(),
@@ -117,12 +117,12 @@ export const removeOneInteger: RemoveOneOfType<number> = (
  * @param value Decimal to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneDecimal: RemoveOneOfType<number> = (
+export const removeDecimalOne: RemoveOneOfType<number> = (
   thing,
   predicate,
   value
 ) => {
-  return removeOneLiteralOfType(
+  return removeLiteralOneOfType(
     thing,
     predicate,
     value.toString(),
@@ -136,12 +136,12 @@ export const removeOneDecimal: RemoveOneOfType<number> = (
  * @param value Boolean to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneBoolean: RemoveOneOfType<boolean> = (
+export const removeBooleanOne: RemoveOneOfType<boolean> = (
   thing,
   predicate,
   value
 ) => {
-  return removeOneLiteralOfType(
+  return removeLiteralOneOfType(
     thing,
     predicate,
     value ? "1" : "0",
@@ -174,12 +174,12 @@ function serialiseDatetime(datetime: Date): string {
  * @param value Datetime to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeOneDatetime: RemoveOneOfType<Date> = (
+export const removeDatetimeOne: RemoveOneOfType<Date> = (
   thing,
   predicate,
   value
 ) => {
-  return removeOneLiteralOfType(
+  return removeLiteralOneOfType(
     thing,
     predicate,
     serialiseDatetime(value),
@@ -188,18 +188,18 @@ export const removeOneDatetime: RemoveOneOfType<Date> = (
 };
 
 /**
- * @ignore This should not be needed due to the other removeOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other remove*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing Thing to remove a NamedNode value from.
  * @param predicate Predicate for which to remove the given NamedNode value.
  * @param value NamedNode to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeOneNamedNode<T extends Thing>(
+export function removeNamedNodeOne<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeOneNamedNode(
+export function removeNamedNodeOne(
   thing: Thing,
   predicate: Iri | IriString,
   value: NamedNode
@@ -216,18 +216,18 @@ export function removeOneNamedNode(
 }
 
 /**
- * @ignore This should not be needed due to the other removeOne*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other remove*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing Thing to remove a Literal value from.
  * @param predicate Predicate for which to remove the given Literal value.
  * @param value Literal to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeOneLiteral<T extends Thing>(
+export function removeLiteralOne<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeOneLiteral(
+export function removeLiteralOne(
   thing: Thing,
   predicate: Iri | IriString,
   value: Literal
@@ -257,19 +257,19 @@ function filterThing(thing: Thing, callback: (quad: Quad) => boolean): Thing {
   return filtered as ThingPersisted;
 }
 
-function removeOneLiteralOfType<T extends Thing>(
+function removeLiteralOneOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
   type: IriString
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function removeOneLiteralOfType(
+function removeLiteralOneOfType(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
   type: IriString
 ): Thing {
-  const updatedThing = removeOneLiteral(
+  const updatedThing = removeLiteralOne(
     thing,
     predicate,
     DataFactory.literal(value, DataFactory.namedNode(type))

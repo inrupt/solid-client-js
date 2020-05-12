@@ -1,6 +1,6 @@
 import {
-  getOneThing,
-  getAllThings,
+  getThingOne,
+  getThingAll,
   setThing,
   removeThing,
   createThing,
@@ -71,7 +71,7 @@ describe("createThing", () => {
   });
 });
 
-describe("getOneThing", () => {
+describe("getThingOne", () => {
   it("returns a Dataset with just Quads in there with the given Subject", () => {
     const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
     const datasetWithMultipleThings = dataset();
@@ -80,7 +80,7 @@ describe("getOneThing", () => {
       getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
     );
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithMultipleThings,
       "https://some.vocab/subject"
     );
@@ -93,7 +93,7 @@ describe("getOneThing", () => {
     const datasetWithAThing = dataset();
     datasetWithAThing.add(relevantQuad);
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithAThing,
       DataFactory.namedNode("https://some.vocab/subject")
     );
@@ -111,7 +111,7 @@ describe("getOneThing", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
 
-    const thing = getOneThing(datasetWithThingLocal, localSubject);
+    const thing = getThingOne(datasetWithThingLocal, localSubject);
 
     expect(Array.from(thing)).toEqual([quadWithLocalSubject]);
   });
@@ -128,7 +128,7 @@ describe("getOneThing", () => {
     datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
     datasetWithMultipleNamedGraphs.add(quadInArbitraryGraph);
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject"
     );
@@ -152,7 +152,7 @@ describe("getOneThing", () => {
       })
     );
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
@@ -175,7 +175,7 @@ describe("getOneThing", () => {
       })
     );
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
@@ -198,7 +198,7 @@ describe("getOneThing", () => {
       })
     );
 
-    const thing = getOneThing(
+    const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
@@ -208,7 +208,7 @@ describe("getOneThing", () => {
   });
 });
 
-describe("getAllThings", () => {
+describe("getThingAll", () => {
   it("returns multiple Datasets, each with Quads with the same Subject", () => {
     const thing1Quad = getMockQuad({ subject: "https://some.vocab/subject" });
     const thing2Quad = getMockQuad({
@@ -218,7 +218,7 @@ describe("getAllThings", () => {
     datasetWithMultipleThings.add(thing1Quad);
     datasetWithMultipleThings.add(thing2Quad);
 
-    const things = getAllThings(datasetWithMultipleThings);
+    const things = getThingAll(datasetWithMultipleThings);
 
     expect(Array.from(things[0])).toEqual([thing1Quad]);
     expect(Array.from(things[1])).toEqual([thing2Quad]);
@@ -236,7 +236,7 @@ describe("getAllThings", () => {
     datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
     datasetWithMultipleNamedGraphs.add(quadInArbitraryGraph);
 
-    const things = getAllThings(datasetWithMultipleNamedGraphs);
+    const things = getThingAll(datasetWithMultipleNamedGraphs);
 
     expect(Array.from(things[0]).includes(quadInDefaultGraph)).toBe(true);
     expect(Array.from(things[0]).includes(quadInArbitraryGraph)).toBe(true);
@@ -256,7 +256,7 @@ describe("getAllThings", () => {
       })
     );
 
-    const things = getAllThings(datasetWithMultipleNamedGraphs, {
+    const things = getThingAll(datasetWithMultipleNamedGraphs, {
       scope: "https://some.vocab/namedGraph",
     });
 
@@ -277,7 +277,7 @@ describe("getAllThings", () => {
       })
     );
 
-    const things = getAllThings(datasetWithMultipleNamedGraphs, {
+    const things = getThingAll(datasetWithMultipleNamedGraphs, {
       scope: "https://some.vocab/namedGraph",
     });
 
@@ -298,7 +298,7 @@ describe("getAllThings", () => {
       })
     );
 
-    const things = getAllThings(datasetWithMultipleNamedGraphs, {
+    const things = getThingAll(datasetWithMultipleNamedGraphs, {
       scope: DataFactory.namedNode("https://some.vocab/namedGraph"),
     });
 
@@ -324,7 +324,7 @@ describe("getAllThings", () => {
     datasetWithMultipleThings.add(quadWithBlankSubject);
     datasetWithMultipleThings.add(quadWithLocalSubject);
 
-    const things = getAllThings(datasetWithMultipleThings);
+    const things = getThingAll(datasetWithMultipleThings);
 
     expect(things.length).toBe(2);
     expect(Array.from(things[0])).toEqual([quadWithNamedSubject]);
