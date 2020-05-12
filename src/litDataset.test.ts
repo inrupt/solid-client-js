@@ -91,6 +91,88 @@ describe("fetchLitDataset", () => {
     expect(litDataset.metadata.unstable_aclIri).toBeUndefined();
   });
 
+  it("provides the relevant access permissions to the Resource, if available", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            "wac-aLLOW": 'public="read",user="read write append control"',
+          },
+        })
+      )
+    );
+
+    const litDataset = await fetchLitDataset(
+      "https://arbitrary.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(litDataset.metadata.unstable_permissions).toEqual({
+      user: {
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      },
+      public: {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            // Public permissions are missing double quotes, user permissions are absent:
+            "WAC-Allow": "public=read",
+          },
+        })
+      )
+    );
+
+    const litDataset = await fetchLitDataset(
+      "https://arbitrary.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(litDataset.metadata.unstable_permissions).toEqual({
+      user: {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      },
+      public: {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("does not provide the resource's access permissions if not provided by the server", async () => {
+    const mockFetch = jest.fn().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {},
+        })
+      )
+    );
+
+    const litDataset = await fetchLitDataset(
+      "https://arbitrary.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(litDataset.metadata.unstable_permissions).toBeUndefined();
+  });
+
   it("returns a LitDataset representing the fetched Turtle", async () => {
     const turtle = `
       @prefix : <#>.

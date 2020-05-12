@@ -49,6 +49,11 @@ export async function fetchLitDataset(
     }
   }
 
+  const wacAllowHeader = response.headers.get("WAC-Allow");
+  if (wacAllowHeader) {
+    metadata.unstable_permissions = parseWacAllowHeader(wacAllowHeader);
+  }
+
   const resourceWithMetadata: LitDataset &
     MetadataStruct = Object.assign(resource, { metadata: metadata });
 
@@ -243,4 +248,49 @@ function resolveLocalIrisInLitDataset<
   });
 
   return litDataset;
+}
+
+/**
+ * Parse a WAC-Allow header into user and public access booleans.
+ *
+ * @param wacAllowHeader A WAC-Allow header in the format `user="read append write control",public="read"`
+ * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
+ */
+function parseWacAllowHeader(wacAllowHeader: string) {
+  function parsePermissionStatement(permissionStatement: string) {
+    const permissions = permissionStatement.split(" ");
+    return {
+      read: permissions.includes("read"),
+      append: permissions.includes("append"),
+      write: permissions.includes("write"),
+      control: permissions.includes("control"),
+    };
+  }
+  function getStatementFor(header: string, scope: "user" | "public") {
+    const relevantEntries = header
+      .split(",")
+      .map((rawEntry) => rawEntry.split("="))
+      .filter((parts) => parts.length === 2 && parts[0].trim() === scope);
+
+    // There should only be one statement with the given scope:
+    if (relevantEntries.length !== 1) {
+      return "";
+    }
+    const relevantStatement = relevantEntries[0][1].trim();
+
+    // The given statement should be wrapped in double quotes to be valid:
+    if (
+      relevantStatement.charAt(0) !== '"' ||
+      relevantStatement.charAt(relevantStatement.length - 1) !== '"'
+    ) {
+      return "";
+    }
+    // Return the statment without the wrapping quotes, e.g.: read append write control
+    return relevantStatement.substring(1, relevantStatement.length - 1);
+  }
+
+  return {
+    user: parsePermissionStatement(getStatementFor(wacAllowHeader, "user")),
+    public: parsePermissionStatement(getStatementFor(wacAllowHeader, "public")),
+  };
 }
