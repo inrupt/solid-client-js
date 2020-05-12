@@ -54,92 +54,6 @@ export const removeIriOne: RemoveOneOfType<Iri | IriString | ThingPersisted> = (
 };
 
 /**
- * @param thing Thing to remove an unlocalised string value from.
- * @param predicate Predicate for which to remove the given string value.
- * @param value String to remove from `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
- */
-export const removeStringUnlocalizedOne: RemoveOneOfType<string> = (
-  thing,
-  predicate,
-  value
-) => {
-  return removeLiteralOneOfType(
-    thing,
-    predicate,
-    value,
-    "http://www.w3.org/2001/XMLSchema#string"
-  );
-};
-
-/**
- * @param thing Thing to remove a localised string value from.
- * @param predicate Predicate for which to remove the given localised string value.
- * @param value String to remove from `thing` for the given `predicate`.
- * @param locale Locale of the string to remove.
- * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
- */
-export function removeStringInLocaleOne<T extends Thing>(
-  thing: T,
-  predicate: Iri | IriString,
-  value: string,
-  locale: string
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeStringInLocaleOne(
-  thing: Thing,
-  predicate: Iri | IriString,
-  value: string,
-  locale: string
-): Thing {
-  // Note: Due to how the `DataFactory.literal` constructor behaves, this function
-  // must call directly `removeLiteralOne` directly, with the locale as the data
-  // type of the Literal (which is not a valid NamedNode).
-  return removeLiteralOne(
-    thing,
-    predicate,
-    DataFactory.literal(value, locale.toLowerCase())
-  );
-}
-
-/**
- * @param thing Thing to remove an integer value from.
- * @param predicate Predicate for which to remove the given integer value.
- * @param value Integer to remove from `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
- */
-export const removeIntegerOne: RemoveOneOfType<number> = (
-  thing,
-  predicate,
-  value
-) => {
-  return removeLiteralOneOfType(
-    thing,
-    predicate,
-    value.toString(),
-    "http://www.w3.org/2001/XMLSchema#integer"
-  );
-};
-
-/**
- * @param thing Thing to remove a decimal value from.
- * @param predicate Predicate for which to remove the given decimal value.
- * @param value Decimal to remove from `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
- */
-export const removeDecimalOne: RemoveOneOfType<number> = (
-  thing,
-  predicate,
-  value
-) => {
-  return removeLiteralOneOfType(
-    thing,
-    predicate,
-    value.toString(),
-    "http://www.w3.org/2001/XMLSchema#decimal"
-  );
-};
-
-/**
  * @param thing Thing to remove a boolean value from.
  * @param predicate Predicate for which to remove the given boolean value.
  * @param value Boolean to remove from `thing` for the given `predicate`.
@@ -193,6 +107,92 @@ export const removeDatetimeOne: RemoveOneOfType<Date> = (
     predicate,
     serialiseDatetime(value),
     "http://www.w3.org/2001/XMLSchema#dateTime"
+  );
+};
+
+/**
+ * @param thing Thing to remove a decimal value from.
+ * @param predicate Predicate for which to remove the given decimal value.
+ * @param value Decimal to remove from `thing` for the given `predicate`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
+ */
+export const removeDecimalOne: RemoveOneOfType<number> = (
+  thing,
+  predicate,
+  value
+) => {
+  return removeLiteralOneOfType(
+    thing,
+    predicate,
+    value.toString(),
+    "http://www.w3.org/2001/XMLSchema#decimal"
+  );
+};
+
+/**
+ * @param thing Thing to remove an integer value from.
+ * @param predicate Predicate for which to remove the given integer value.
+ * @param value Integer to remove from `thing` for the given `predicate`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
+ */
+export const removeIntegerOne: RemoveOneOfType<number> = (
+  thing,
+  predicate,
+  value
+) => {
+  return removeLiteralOneOfType(
+    thing,
+    predicate,
+    value.toString(),
+    "http://www.w3.org/2001/XMLSchema#integer"
+  );
+};
+
+/**
+ * @param thing Thing to remove a localised string value from.
+ * @param predicate Predicate for which to remove the given localised string value.
+ * @param value String to remove from `thing` for the given `predicate`.
+ * @param locale Locale of the string to remove.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
+ */
+export function removeStringInLocaleOne<T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString,
+  value: string,
+  locale: string
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function removeStringInLocaleOne(
+  thing: Thing,
+  predicate: Iri | IriString,
+  value: string,
+  locale: string
+): Thing {
+  // Note: Due to how the `DataFactory.literal` constructor behaves, this function
+  // must call directly `removeLiteralOne` directly, with the locale as the data
+  // type of the Literal (which is not a valid NamedNode).
+  return removeLiteralOne(
+    thing,
+    predicate,
+    DataFactory.literal(value, locale.toLowerCase())
+  );
+}
+
+/**
+ * @param thing Thing to remove an unlocalised string value from.
+ * @param predicate Predicate for which to remove the given string value.
+ * @param value String to remove from `thing` for the given `predicate`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
+ */
+export const removeStringUnlocalizedOne: RemoveOneOfType<string> = (
+  thing,
+  predicate,
+  value
+) => {
+  return removeLiteralOneOfType(
+    thing,
+    predicate,
+    value,
+    "http://www.w3.org/2001/XMLSchema#string"
   );
 };
 

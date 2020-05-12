@@ -1,20 +1,20 @@
 import {
-  getStringInLocaleOne,
-  getStringUnlocalizedOne,
-  getIntegerOne,
-  getDecimalOne,
+  getIriOne,
   getBooleanOne,
   getDatetimeOne,
-  getIriOne,
+  getDecimalOne,
+  getIntegerOne,
+  getStringInLocaleOne,
+  getStringUnlocalizedOne,
   getLiteralOne,
   getNamedNodeOne,
   getIriAll,
-  getStringUnlocalizedAll,
-  getStringInLocaleAll,
-  getIntegerAll,
-  getDecimalAll,
   getBooleanAll,
   getDatetimeAll,
+  getDecimalAll,
+  getIntegerAll,
+  getStringInLocaleAll,
+  getStringUnlocalizedAll,
   getLiteralAll,
   getNamedNodeAll,
 } from "./get";
@@ -255,846 +255,6 @@ describe("getIriAll", () => {
 
     expect(
       getIriAll(thingWithIri, "https://some-other.vocab/predicate")
-    ).toEqual([]);
-  });
-});
-
-describe("getStringUnlocalizedOne", () => {
-  it("returns the string value for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Some value",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
-        "https://some.vocab/predicate"
-      )
-    ).toBe("Some value");
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Some value",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe("Some value");
-  });
-
-  it("returns null if no string value was found", () => {
-    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getStringUnlocalizedOne(
-        thingWithoutStringUnlocalized,
-        "https://some.vocab/predicate"
-      )
-    ).toBeNull();
-  });
-
-  it("does not return non-string values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "Some value",
-        "string"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getStringUnlocalizedOne(
-        thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
-    ).toBe("Some value");
-  });
-
-  it("returns null if no string value was found for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
-        "https://some-other.vocab/predicate"
-      )
-    ).toBeNull();
-  });
-});
-
-describe("getStringUnlocalizedAll", () => {
-  it("returns the string values for the given Predicate", () => {
-    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "Some value 1",
-      "Some value 2",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalizeds,
-        "https://some.vocab/predicate"
-      )
-    ).toEqual(["Some value 1", "Some value 2"]);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "Some value 1",
-      "Some value 2",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalizeds,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toEqual(["Some value 1", "Some value 2"]);
-  });
-
-  it("returns an empty array if no string values were found", () => {
-    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getStringUnlocalizedAll(
-        thingWithoutStringUnlocalizeds,
-        "https://some.vocab/predicate"
-      )
-    ).toEqual([]);
-  });
-
-  it("does not return non-string values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "Some value",
-        "string"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getStringUnlocalizedAll(
-        thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
-    ).toEqual(["Some value"]);
-  });
-
-  it("returns an empty array if no string values were found for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-
-    expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalized,
-        "https://some-other.vocab/predicate"
-      )
-    ).toEqual([]);
-  });
-});
-
-describe("getStringInLocaleOne", () => {
-  it("returns the string value for the given Predicate in the given locale", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleOne(
-        thingWithLocaleString,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toBe("Some value");
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleOne(
-        thingWithLocaleString,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        "nl-NL"
-      )
-    ).toBe("Some value");
-  });
-
-  it("supports matching locales with different casing", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleOne(
-        thingWithLocaleString,
-        "https://some.vocab/predicate",
-        "NL-nL"
-      )
-    ).toBe("Some value");
-  });
-
-  it("returns null if no locale string value was found", () => {
-    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getStringInLocaleOne(
-        thingWithoutStringUnlocalized,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toBeNull();
-  });
-
-  it("returns null if no locale string with the requested locale was found", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithDifferentLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleOne(
-        thingWithDifferentLocaleString,
-        "https://some.vocab/predicate",
-        "en-GB"
-      )
-    ).toBeNull();
-    expect(
-      getStringInLocaleOne(
-        thingWithDifferentLocaleString,
-        "https://some.vocab/predicate",
-        "nl"
-      )
-    ).toBeNull();
-  });
-
-  it("does not return non-locale-string values", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-    thingWithDifferentDatatypes.add(quadWithLocaleString);
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getStringInLocaleOne(
-        thingWithDifferentDatatypes,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toBe("Some value");
-  });
-
-  it("returns null if no locale string was found for the given Predicate", () => {
-    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleOne(
-        thingWithLocaleString,
-        "https://some-other.vocab/predicate",
-        "nl-NL"
-      )
-    ).toBeNull();
-  });
-});
-
-describe("getStringsInLocaleAll", () => {
-  it("returns the string values for the given Predicate in the given locale", () => {
-    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
-    const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale1
-    );
-    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
-    const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale2
-    );
-    const thing = dataset();
-    thing.add(quad1);
-    thing.add(quad2);
-    const thingWithLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleAll(
-        thingWithLocaleStrings,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toEqual(["Some value 1", "Some value 2"]);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
-    const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale1
-    );
-    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
-    const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale2
-    );
-    const thing = dataset();
-    thing.add(quad1);
-    thing.add(quad2);
-    const thingWithLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleAll(
-        thingWithLocaleStrings,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        "nl-NL"
-      )
-    ).toEqual(["Some value 1", "Some value 2"]);
-  });
-
-  it("supports matching locales with different casing", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleAll(
-        thingWithLocaleString,
-        "https://some.vocab/predicate",
-        "NL-nL"
-      )
-    ).toEqual(["Some value"]);
-  });
-
-  it("returns an empty array if no locale string values were found", () => {
-    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getStringInLocaleAll(
-        thingWithoutStringUnlocalizeds,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toEqual([]);
-  });
-
-  it("returns an empty array if no locale strings with the requested locale were found", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithDifferentLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleAll(
-        thingWithDifferentLocaleStrings,
-        "https://some.vocab/predicate",
-        "en-GB"
-      )
-    ).toEqual([]);
-    expect(
-      getStringInLocaleAll(
-        thingWithDifferentLocaleStrings,
-        "https://some.vocab/predicate",
-        "nl"
-      )
-    ).toEqual([]);
-  });
-
-  it("does not return non-locale-string values", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-    thingWithDifferentDatatypes.add(quadWithLocaleString);
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getStringInLocaleAll(
-        thingWithDifferentDatatypes,
-        "https://some.vocab/predicate",
-        "nl-NL"
-      )
-    ).toEqual(["Some value"]);
-  });
-
-  it("returns an empty array if no locale strings were found for the given Predicate", () => {
-    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
-    });
-
-    expect(
-      getStringInLocaleAll(
-        thingWithLocaleString,
-        "https://some-other.vocab/predicate",
-        "nl-NL"
-      )
-    ).toEqual([]);
-  });
-});
-
-describe("getIntegerOne", () => {
-  it("returns the integer value for the given Predicate", () => {
-    const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getIntegerOne(thingWithInteger, "https://some.vocab/predicate")
-    ).toBe(42);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getIntegerOne(
-        thingWithInteger,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe(42);
-  });
-
-  it("returns null if no integer value was found", () => {
-    const thingWithoutInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getIntegerOne(thingWithoutInteger, "https://some.vocab/predicate")
-    ).toBeNull();
-  });
-
-  it("does not return non-integer values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getIntegerOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe(42);
-  });
-
-  it("returns null if no integer value was found for the given Predicate", () => {
-    const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getIntegerOne(thingWithInteger, "https://some-other.vocab/predicate")
-    ).toBeNull();
-  });
-});
-
-describe("getIntegerAll", () => {
-  it("returns the integer values for the given Predicate", () => {
-    const thingWithIntegers = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "42",
-      "1337",
-      "integer"
-    );
-
-    expect(
-      getIntegerAll(thingWithIntegers, "https://some.vocab/predicate")
-    ).toEqual([42, 1337]);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithIntegers = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "42",
-      "1337",
-      "integer"
-    );
-
-    expect(
-      getIntegerAll(
-        thingWithIntegers,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toEqual([42, 1337]);
-  });
-
-  it("returns an empty array if no integer values were found", () => {
-    const thingWithoutIntegers = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getIntegerAll(thingWithoutIntegers, "https://some.vocab/predicate")
-    ).toEqual([]);
-  });
-
-  it("does not return non-integer values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getIntegerAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toEqual([42]);
-  });
-
-  it("returns an empty array if no integer values were found for the given Predicate", () => {
-    const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate")
-    ).toEqual([]);
-  });
-});
-
-describe("getDecimalOne", () => {
-  it("returns the decimal value for the given Predicate", () => {
-    const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getDecimalOne(thingWithDecimal, "https://some.vocab/predicate")
-    ).toBe(13.37);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getDecimalOne(
-        thingWithDecimal,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe(13.37);
-  });
-
-  it("returns null if no decimal value was found", () => {
-    const thingWithoutDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getDecimalOne(thingWithoutDecimal, "https://some.vocab/predicate")
-    ).toBeNull();
-  });
-
-  it("does not return non-decimal values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "13.37",
-        "decimal"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getDecimalOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe(13.37);
-  });
-
-  it("returns null if no decimal value was found for the given Predicate", () => {
-    const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getDecimalOne(thingWithDecimal, "https://some-other.vocab/predicate")
-    ).toBeNull();
-  });
-});
-
-describe("getDecimalAll", () => {
-  it("returns the decimal values for the given Predicate", () => {
-    const thingWithDecimals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "7.2",
-      "decimal"
-    );
-
-    expect(
-      getDecimalAll(thingWithDecimals, "https://some.vocab/predicate")
-    ).toEqual([13.37, 7.2]);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thingWithDecimals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "7.2",
-      "decimal"
-    );
-
-    expect(
-      getDecimalAll(
-        thingWithDecimals,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toEqual([13.37, 7.2]);
-  });
-
-  it("returns an empty array if no decimal values were found", () => {
-    const thingWithoutDecimals = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getDecimalAll(thingWithoutDecimals, "https://some.vocab/predicate")
-    ).toEqual([]);
-  });
-
-  it("does not return non-decimal values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "13.37",
-        "decimal"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
-
-    expect(
-      getDecimalAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toEqual([13.37]);
-  });
-
-  it("returns an empty array if no decimal values were found for the given Predicate", () => {
-    const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "13.37",
-      "decimal"
-    );
-
-    expect(
-      getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate")
     ).toEqual([]);
   });
 });
@@ -1474,6 +634,846 @@ describe("getDatetimeAll", () => {
     expect(
       getDatetimeAll(thingWithNonDatetime, "https://some.vocab/predicate")
     ).toEqual([expectedDate]);
+  });
+});
+
+describe("getDecimalOne", () => {
+  it("returns the decimal value for the given Predicate", () => {
+    const thingWithDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getDecimalOne(thingWithDecimal, "https://some.vocab/predicate")
+    ).toBe(13.37);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getDecimalOne(
+        thingWithDecimal,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toBe(13.37);
+  });
+
+  it("returns null if no decimal value was found", () => {
+    const thingWithoutDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getDecimalOne(thingWithoutDecimal, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-decimal values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor(
+        "https://some.vocab/predicate",
+        "13.37",
+        "decimal"
+      )
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getDecimalOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toBe(13.37);
+  });
+
+  it("returns null if no decimal value was found for the given Predicate", () => {
+    const thingWithDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getDecimalOne(thingWithDecimal, "https://some-other.vocab/predicate")
+    ).toBeNull();
+  });
+});
+
+describe("getDecimalAll", () => {
+  it("returns the decimal values for the given Predicate", () => {
+    const thingWithDecimals = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "7.2",
+      "decimal"
+    );
+
+    expect(
+      getDecimalAll(thingWithDecimals, "https://some.vocab/predicate")
+    ).toEqual([13.37, 7.2]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithDecimals = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "7.2",
+      "decimal"
+    );
+
+    expect(
+      getDecimalAll(
+        thingWithDecimals,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toEqual([13.37, 7.2]);
+  });
+
+  it("returns an empty array if no decimal values were found", () => {
+    const thingWithoutDecimals = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getDecimalAll(thingWithoutDecimals, "https://some.vocab/predicate")
+    ).toEqual([]);
+  });
+
+  it("does not return non-decimal values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor(
+        "https://some.vocab/predicate",
+        "13.37",
+        "decimal"
+      )
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getDecimalAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toEqual([13.37]);
+  });
+
+  it("returns an empty array if no decimal values were found for the given Predicate", () => {
+    const thingWithDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate")
+    ).toEqual([]);
+  });
+});
+
+describe("getIntegerOne", () => {
+  it("returns the integer value for the given Predicate", () => {
+    const thingWithInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getIntegerOne(thingWithInteger, "https://some.vocab/predicate")
+    ).toBe(42);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getIntegerOne(
+        thingWithInteger,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toBe(42);
+  });
+
+  it("returns null if no integer value was found", () => {
+    const thingWithoutInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getIntegerOne(thingWithoutInteger, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-integer values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getIntegerOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toBe(42);
+  });
+
+  it("returns null if no integer value was found for the given Predicate", () => {
+    const thingWithInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getIntegerOne(thingWithInteger, "https://some-other.vocab/predicate")
+    ).toBeNull();
+  });
+});
+
+describe("getIntegerAll", () => {
+  it("returns the integer values for the given Predicate", () => {
+    const thingWithIntegers = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "42",
+      "1337",
+      "integer"
+    );
+
+    expect(
+      getIntegerAll(thingWithIntegers, "https://some.vocab/predicate")
+    ).toEqual([42, 1337]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithIntegers = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "42",
+      "1337",
+      "integer"
+    );
+
+    expect(
+      getIntegerAll(
+        thingWithIntegers,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toEqual([42, 1337]);
+  });
+
+  it("returns an empty array if no integer values were found", () => {
+    const thingWithoutIntegers = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13.37",
+      "decimal"
+    );
+
+    expect(
+      getIntegerAll(thingWithoutIntegers, "https://some.vocab/predicate")
+    ).toEqual([]);
+  });
+
+  it("does not return non-integer values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getIntegerAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toEqual([42]);
+  });
+
+  it("returns an empty array if no integer values were found for the given Predicate", () => {
+    const thingWithInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate")
+    ).toEqual([]);
+  });
+});
+
+describe("getStringInLocaleOne", () => {
+  it("returns the string value for the given Predicate in the given locale", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleOne(
+        thingWithLocaleString,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toBe("Some value");
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleOne(
+        thingWithLocaleString,
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        "nl-NL"
+      )
+    ).toBe("Some value");
+  });
+
+  it("supports matching locales with different casing", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleOne(
+        thingWithLocaleString,
+        "https://some.vocab/predicate",
+        "NL-nL"
+      )
+    ).toBe("Some value");
+  });
+
+  it("returns null if no locale string value was found", () => {
+    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getStringInLocaleOne(
+        thingWithoutStringUnlocalized,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toBeNull();
+  });
+
+  it("returns null if no locale string with the requested locale was found", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithDifferentLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleOne(
+        thingWithDifferentLocaleString,
+        "https://some.vocab/predicate",
+        "en-GB"
+      )
+    ).toBeNull();
+    expect(
+      getStringInLocaleOne(
+        thingWithDifferentLocaleString,
+        "https://some.vocab/predicate",
+        "nl"
+      )
+    ).toBeNull();
+  });
+
+  it("does not return non-locale-string values", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quadWithLocaleString = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+    thingWithDifferentDatatypes.add(quadWithLocaleString);
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getStringInLocaleOne(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toBe("Some value");
+  });
+
+  it("returns null if no locale string was found for the given Predicate", () => {
+    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleOne(
+        thingWithLocaleString,
+        "https://some-other.vocab/predicate",
+        "nl-NL"
+      )
+    ).toBeNull();
+  });
+});
+
+describe("getStringsInLocaleAll", () => {
+  it("returns the string values for the given Predicate in the given locale", () => {
+    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
+    const quad1 = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale1
+    );
+    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
+    const quad2 = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale2
+    );
+    const thing = dataset();
+    thing.add(quad1);
+    thing.add(quad2);
+    const thingWithLocaleStrings = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleAll(
+        thingWithLocaleStrings,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toEqual(["Some value 1", "Some value 2"]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
+    const quad1 = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale1
+    );
+    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
+    const quad2 = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale2
+    );
+    const thing = dataset();
+    thing.add(quad1);
+    thing.add(quad2);
+    const thingWithLocaleStrings = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleAll(
+        thingWithLocaleStrings,
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        "nl-NL"
+      )
+    ).toEqual(["Some value 1", "Some value 2"]);
+  });
+
+  it("supports matching locales with different casing", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleAll(
+        thingWithLocaleString,
+        "https://some.vocab/predicate",
+        "NL-nL"
+      )
+    ).toEqual(["Some value"]);
+  });
+
+  it("returns an empty array if no locale string values were found", () => {
+    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getStringInLocaleAll(
+        thingWithoutStringUnlocalizeds,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toEqual([]);
+  });
+
+  it("returns an empty array if no locale strings with the requested locale were found", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithDifferentLocaleStrings = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleAll(
+        thingWithDifferentLocaleStrings,
+        "https://some.vocab/predicate",
+        "en-GB"
+      )
+    ).toEqual([]);
+    expect(
+      getStringInLocaleAll(
+        thingWithDifferentLocaleStrings,
+        "https://some.vocab/predicate",
+        "nl"
+      )
+    ).toEqual([]);
+  });
+
+  it("does not return non-locale-string values", () => {
+    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
+    const quadWithLocaleString = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+    thingWithDifferentDatatypes.add(quadWithLocaleString);
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getStringInLocaleAll(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate",
+        "nl-NL"
+      )
+    ).toEqual(["Some value"]);
+  });
+
+  it("returns an empty array if no locale strings were found for the given Predicate", () => {
+    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
+    const quad = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.vocab/subject"),
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      literalWithLocale
+    );
+    const thing = dataset();
+    thing.add(quad);
+    const thingWithLocaleString = Object.assign(thing, {
+      iri: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getStringInLocaleAll(
+        thingWithLocaleString,
+        "https://some-other.vocab/predicate",
+        "nl-NL"
+      )
+    ).toEqual([]);
+  });
+});
+
+describe("getStringUnlocalizedOne", () => {
+  it("returns the string value for the given Predicate", () => {
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some value",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedOne(
+        thingWithStringUnlocalized,
+        "https://some.vocab/predicate"
+      )
+    ).toBe("Some value");
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some value",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedOne(
+        thingWithStringUnlocalized,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toBe("Some value");
+  });
+
+  it("returns null if no string value was found", () => {
+    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getStringUnlocalizedOne(
+        thingWithoutStringUnlocalized,
+        "https://some.vocab/predicate"
+      )
+    ).toBeNull();
+  });
+
+  it("does not return non-string values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor(
+        "https://some.vocab/predicate",
+        "Some value",
+        "string"
+      )
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getStringUnlocalizedOne(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate"
+      )
+    ).toBe("Some value");
+  });
+
+  it("returns null if no string value was found for the given Predicate", () => {
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedOne(
+        thingWithStringUnlocalized,
+        "https://some-other.vocab/predicate"
+      )
+    ).toBeNull();
+  });
+});
+
+describe("getStringUnlocalizedAll", () => {
+  it("returns the string values for the given Predicate", () => {
+    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "Some value 1",
+      "Some value 2",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedAll(
+        thingWithStringUnlocalizeds,
+        "https://some.vocab/predicate"
+      )
+    ).toEqual(["Some value 1", "Some value 2"]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "Some value 1",
+      "Some value 2",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedAll(
+        thingWithStringUnlocalizeds,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toEqual(["Some value 1", "Some value 2"]);
+  });
+
+  it("returns an empty array if no string values were found", () => {
+    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getStringUnlocalizedAll(
+        thingWithoutStringUnlocalizeds,
+        "https://some.vocab/predicate"
+      )
+    ).toEqual([]);
+  });
+
+  it("does not return non-string values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+    thingWithDifferentDatatypes.add(
+      getMockQuadWithLiteralFor(
+        "https://some.vocab/predicate",
+        "Some value",
+        "string"
+      )
+    );
+    thingWithDifferentDatatypes.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    );
+
+    expect(
+      getStringUnlocalizedAll(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate"
+      )
+    ).toEqual(["Some value"]);
+  });
+
+  it("returns an empty array if no string values were found for the given Predicate", () => {
+    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+
+    expect(
+      getStringUnlocalizedAll(
+        thingWithStringUnlocalized,
+        "https://some-other.vocab/predicate"
+      )
+    ).toEqual([]);
   });
 });
 
