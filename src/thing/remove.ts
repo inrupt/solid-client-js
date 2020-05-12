@@ -1,4 +1,4 @@
-import { Quad, Literal, NamedNode } from "rdf-js";
+import { Literal, NamedNode } from "rdf-js";
 import {
   Thing,
   Iri,
@@ -7,9 +7,18 @@ import {
   ThingLocal,
   asIri,
 } from "../index";
-import { asNamedNode, isNamedNode, isLiteral } from "../datatypes";
-import { filter, DataFactory } from "../rdfjs";
-import { isThingLocal } from "../thing";
+import {
+  asNamedNode,
+  isNamedNode,
+  isLiteral,
+  serializeBoolean,
+  serializeDatetime,
+  serializeDecimal,
+  serializeInteger,
+  normalizeLocale,
+} from "../datatypes";
+import { DataFactory } from "../rdfjs";
+import { filterThing } from "../thing";
 
 export function removeAll<T extends Thing>(
   thing: T,
@@ -67,29 +76,10 @@ export const removeBooleanOne: RemoveOneOfType<boolean> = (
   return removeLiteralOneOfType(
     thing,
     predicate,
-    value ? "1" : "0",
+    serializeBoolean(value),
     "http://www.w3.org/2001/XMLSchema#boolean"
   );
 };
-
-function serialiseDatetime(datetime: Date): string {
-  // To align with rdflib, we ignore miliseconds:
-  // https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L74
-  const roundedDate = new Date(
-    Date.UTC(
-      datetime.getUTCFullYear(),
-      datetime.getUTCMonth(),
-      datetime.getUTCDate(),
-      datetime.getUTCHours(),
-      datetime.getUTCMinutes(),
-      datetime.getUTCSeconds(),
-      0
-    )
-  );
-  // Truncate the `.000Z` at the end (i.e. the miliseconds), to plain `Z`:
-  const rdflibStyleString = roundedDate.toISOString().replace(/\.000Z$/, "Z");
-  return rdflibStyleString;
-}
 
 /**
  * @param thing Thing to remove a datetime value from.
@@ -105,7 +95,7 @@ export const removeDatetimeOne: RemoveOneOfType<Date> = (
   return removeLiteralOneOfType(
     thing,
     predicate,
-    serialiseDatetime(value),
+    serializeDatetime(value),
     "http://www.w3.org/2001/XMLSchema#dateTime"
   );
 };
@@ -124,7 +114,7 @@ export const removeDecimalOne: RemoveOneOfType<number> = (
   return removeLiteralOneOfType(
     thing,
     predicate,
-    value.toString(),
+    serializeDecimal(value),
     "http://www.w3.org/2001/XMLSchema#decimal"
   );
 };
@@ -143,7 +133,7 @@ export const removeIntegerOne: RemoveOneOfType<number> = (
   return removeLiteralOneOfType(
     thing,
     predicate,
-    value.toString(),
+    serializeInteger(value),
     "http://www.w3.org/2001/XMLSchema#integer"
   );
 };
@@ -173,7 +163,7 @@ export function removeStringInLocaleOne(
   return removeLiteralOne(
     thing,
     predicate,
-    DataFactory.literal(value, locale.toLowerCase())
+    DataFactory.literal(value, normalizeLocale(locale))
   );
 }
 
@@ -250,20 +240,6 @@ export function removeLiteralOne(
     );
   });
   return updatedThing;
-}
-
-function filterThing<T extends Thing>(
-  thing: T,
-  callback: (quad: Quad) => boolean
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function filterThing(thing: Thing, callback: (quad: Quad) => boolean): Thing {
-  const filtered = filter(thing, callback);
-  if (isThingLocal(thing)) {
-    (filtered as ThingLocal).name = thing.name;
-    return filtered as ThingLocal;
-  }
-  (filtered as ThingPersisted).iri = thing.iri;
-  return filtered as ThingPersisted;
 }
 
 function removeLiteralOneOfType<T extends Thing>(

@@ -1,6 +1,14 @@
 import { Quad_Object, Quad, NamedNode, Literal } from "rdf-js";
 import { Thing, Iri, IriString } from "../index";
-import { asNamedNode, isNamedNode, isLiteral } from "../datatypes";
+import {
+  asNamedNode,
+  isNamedNode,
+  isLiteral,
+  deserializeBoolean,
+  deserializeDatetime,
+  deserializeDecimal,
+  deserializeInteger,
+} from "../datatypes";
 
 /**
  * @param thing The [[Thing]] to read an IRI value from.
@@ -57,13 +65,7 @@ export function getBooleanOne(
     return null;
   }
 
-  if (literalString === "1") {
-    return true;
-  } else if (literalString === "0") {
-    return false;
-  } else {
-    return null;
-  }
+  return deserializeBoolean(literalString);
 }
 
 /**
@@ -82,45 +84,8 @@ export function getBooleanAll(
   );
 
   return literalStrings
-    .map((literalString) => {
-      if (literalString === "1") {
-        return true;
-      } else if (literalString === "0") {
-        return false;
-      } else {
-        return null;
-      }
-    })
+    .map(deserializeBoolean)
     .filter((possibleBoolean) => possibleBoolean !== null) as boolean[];
-}
-
-function parseDatetimeFromLiteralString(literalString: string): Date | null {
-  if (
-    literalString === null ||
-    literalString.length <= 17 ||
-    literalString.indexOf("Z") === -1
-  ) {
-    return null;
-  }
-
-  // See https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L87
-  const utcFullYear = parseInt(literalString.substring(0, 4), 10);
-  const utcMonth = parseInt(literalString.substring(5, 7), 10) - 1;
-  const utcDate = parseInt(literalString.substring(8, 10), 10);
-  const utcHours = parseInt(literalString.substring(11, 13), 10);
-  const utcMinutes = parseInt(literalString.substring(14, 16), 10);
-  const utcSeconds = parseInt(
-    literalString.substring(17, literalString.indexOf("Z")),
-    10
-  );
-  const date = new Date(0);
-  date.setUTCFullYear(utcFullYear);
-  date.setUTCMonth(utcMonth);
-  date.setUTCDate(utcDate);
-  date.setUTCHours(utcHours);
-  date.setUTCMinutes(utcMinutes);
-  date.setUTCSeconds(utcSeconds);
-  return date;
 }
 
 /**
@@ -142,7 +107,7 @@ export function getDatetimeOne(
     return null;
   }
 
-  return parseDatetimeFromLiteralString(literalString);
+  return deserializeDatetime(literalString);
 }
 
 /**
@@ -161,7 +126,7 @@ export function getDatetimeAll(
   );
 
   return literalStrings
-    .map(parseDatetimeFromLiteralString)
+    .map(deserializeDatetime)
     .filter((potentialDatetime) => potentialDatetime !== null) as Date[];
 }
 
@@ -184,7 +149,7 @@ export function getDecimalOne(
     return null;
   }
 
-  return Number.parseFloat(literalString);
+  return deserializeDecimal(literalString);
 }
 
 /**
@@ -202,9 +167,9 @@ export function getDecimalAll(
     "http://www.w3.org/2001/XMLSchema#decimal"
   );
 
-  return literalStrings.map((literalString) =>
-    Number.parseFloat(literalString)
-  );
+  return literalStrings
+    .map((literalString) => deserializeDecimal(literalString))
+    .filter((potentialDecimal) => potentialDecimal !== null) as number[];
 }
 
 /**
@@ -226,7 +191,7 @@ export function getIntegerOne(
     return null;
   }
 
-  return Number.parseInt(literalString, 10);
+  return deserializeInteger(literalString);
 }
 
 /**
@@ -244,9 +209,9 @@ export function getIntegerAll(
     "http://www.w3.org/2001/XMLSchema#integer"
   );
 
-  return literalStrings.map((literalString) =>
-    Number.parseInt(literalString, 10)
-  );
+  return literalStrings
+    .map((literalString) => deserializeInteger(literalString))
+    .filter((potentialInteger) => potentialInteger !== null) as number[];
 }
 
 /**

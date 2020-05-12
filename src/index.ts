@@ -34,6 +34,17 @@ export {
   getNamedNodeAll,
 } from "./thing/get";
 export {
+  addIri,
+  addBoolean,
+  addDatetime,
+  addDecimal,
+  addInteger,
+  addStringInLocale,
+  addStringUnlocalized,
+  addLiteral,
+  addNamedNode,
+} from "./thing/add";
+export {
   removeAll,
   removeIriOne,
   removeBooleanOne,

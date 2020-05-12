@@ -10,7 +10,98 @@ import {
   resolveIriForLocalNode,
   resolveLocalIri,
   resolveIriForLocalNodes,
+  serializeBoolean,
+  deserializeBoolean,
+  serializeDatetime,
+  deserializeDatetime,
+  serializeDecimal,
+  deserializeDecimal,
+  serializeInteger,
+  deserializeInteger,
+  normalizeLocale,
 } from "./datatypes";
+
+describe("serializeBoolean", () => {
+  it("serializes true as `1`", () => {
+    expect(serializeBoolean(true)).toBe("1");
+  });
+
+  it("serializes false as `0`", () => {
+    expect(serializeBoolean(false)).toBe("0");
+  });
+});
+describe("deserializeBoolean", () => {
+  it("parses `1` as true", () => {
+    expect(deserializeBoolean("1")).toBe(true);
+  });
+
+  it("parses `0` as false", () => {
+    expect(deserializeBoolean("0")).toBe(false);
+  });
+
+  it("returns null if a value is not a serialised boolean", () => {
+    expect(deserializeBoolean("false")).toBe(null);
+    expect(deserializeBoolean("Not a serialised boolean")).toBe(null);
+  });
+});
+
+describe("serializeDatetime", () => {
+  it("properly serialises a given datetime", () => {
+    expect(
+      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)))
+    ).toBe("1990-11-12T13:37:42Z");
+  });
+});
+describe("deserializeDatetime", () => {
+  it("properly parses a serialised datetime", () => {
+    const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
+    expect(deserializeDatetime("1990-11-12T13:37:42Z")).toEqual(expectedDate);
+  });
+
+  it("returns null if a value is not a serialised datetime", () => {
+    expect(deserializeDatetime("1990-11-12")).toBe(null);
+    expect(deserializeDatetime("Not a serialised datetime")).toBe(null);
+  });
+});
+
+describe("serializeDecimal", () => {
+  it("properly serialises a given decimal", () => {
+    expect(serializeDecimal(13.37)).toBe("13.37");
+  });
+});
+describe("deserializeDecimal", () => {
+  it("properly parses a serialised decimal", () => {
+    expect(deserializeDecimal("13.37")).toBe(13.37);
+  });
+
+  it("return null if a value is not a serialised decimal", () => {
+    expect(deserializeDecimal("Not a serialised decimal")).toBe(null);
+  });
+});
+
+describe("serializeInteger", () => {
+  it("properly serialises a given integer", () => {
+    expect(serializeInteger(42)).toBe("42");
+  });
+});
+describe("deserializeInteger", () => {
+  it("properly parses a serialised integer", () => {
+    expect(deserializeInteger("42")).toBe(42);
+  });
+
+  it("return null if a value is not a serialised integer", () => {
+    expect(deserializeInteger("Not a serialised integer")).toBe(null);
+  });
+});
+
+describe("normalizeLocale", () => {
+  // The RDF/JS spec mandates lowercase locales:
+  // https://rdf.js.org/data-model-spec/#dom-literal-language
+  it("lowercases a given locale", () => {
+    expect(normalizeLocale("EN-GB")).toBe("en-gb");
+    expect(normalizeLocale("nl-NL")).toBe("nl-nl");
+  });
+});
 
 describe("isNamedNode", () => {
   it("recognises a NamedNode", () => {

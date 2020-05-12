@@ -3,6 +3,136 @@ import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./index";
 
 /**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value`.
+ */
+export function serializeBoolean(value: boolean): string {
+  return value ? "1" : "0";
+}
+/**
+ * @internal
+ * @param value Value to deserialise.
+ * @returns Deserialized boolean, or null if the given value is not a valid serialised boolean.
+ */
+export function deserializeBoolean(value: string): boolean | null {
+  if (value === "1") {
+    return true;
+  } else if (value === "0") {
+    return false;
+  } else {
+    return null;
+  }
+}
+
+/**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value`.
+ */
+export function serializeDatetime(value: Date): string {
+  // To align with rdflib, we ignore miliseconds:
+  // https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L74
+  const roundedDate = new Date(
+    Date.UTC(
+      value.getUTCFullYear(),
+      value.getUTCMonth(),
+      value.getUTCDate(),
+      value.getUTCHours(),
+      value.getUTCMinutes(),
+      value.getUTCSeconds(),
+      0
+    )
+  );
+  // Truncate the `.000Z` at the end (i.e. the miliseconds), to plain `Z`:
+  const rdflibStyleString = roundedDate.toISOString().replace(/\.000Z$/, "Z");
+  return rdflibStyleString;
+}
+/**
+ * @internal
+ * @param value Value to deserialise.
+ * @returns Deserialized datetime, or null if the given value is not a valid serialised datetime.
+ */
+export function deserializeDatetime(literalString: string): Date | null {
+  if (
+    literalString === null ||
+    literalString.length <= 17 ||
+    literalString.indexOf("Z") === -1
+  ) {
+    return null;
+  }
+
+  // See https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L87
+  const utcFullYear = parseInt(literalString.substring(0, 4), 10);
+  const utcMonth = parseInt(literalString.substring(5, 7), 10) - 1;
+  const utcDate = parseInt(literalString.substring(8, 10), 10);
+  const utcHours = parseInt(literalString.substring(11, 13), 10);
+  const utcMinutes = parseInt(literalString.substring(14, 16), 10);
+  const utcSeconds = parseInt(
+    literalString.substring(17, literalString.indexOf("Z")),
+    10
+  );
+  const date = new Date(0);
+  date.setUTCFullYear(utcFullYear);
+  date.setUTCMonth(utcMonth);
+  date.setUTCDate(utcDate);
+  date.setUTCHours(utcHours);
+  date.setUTCMinutes(utcMinutes);
+  date.setUTCSeconds(utcSeconds);
+  return date;
+}
+
+/**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value`.
+ */
+export function serializeDecimal(value: number): string {
+  return value.toString();
+}
+/**
+ * @internal
+ * @param value Value to deserialise.
+ * @returns Deserialized decimal, or null if the given value is not a valid serialised decimal.
+ */
+export function deserializeDecimal(literalString: string): number | null {
+  const deserialized = Number.parseFloat(literalString);
+  if (Number.isNaN(deserialized)) {
+    return null;
+  }
+  return deserialized;
+}
+
+/**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value`.
+ */
+export function serializeInteger(value: number): string {
+  return value.toString();
+}
+/**
+ * @internal
+ * @param value Value to deserialise.
+ * @returns Deserialized integer, or null if the given value is not a valid serialised integer.
+ */
+export function deserializeInteger(literalString: string): number | null {
+  const deserialized = Number.parseInt(literalString, 10);
+  if (Number.isNaN(deserialized)) {
+    return null;
+  }
+  return deserialized;
+}
+
+/**
+ * @internal
+ * @param locale Locale to transform into a consistent format.
+ */
+export function normalizeLocale(locale: string): string {
+  return locale.toLowerCase();
+}
+
+/**
  * @param value The value that might or might not be a Named Node.
  * @returns Whether `value` is a Named Node.
  */
