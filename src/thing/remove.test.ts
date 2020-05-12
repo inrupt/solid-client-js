@@ -10,32 +10,9 @@ import {
   removeNamedNodeOne,
 } from "./remove";
 import { dataset } from "@rdfjs/dataset";
-import { NamedNode, Quad } from "rdf-js";
+import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, Thing, ThingLocal, ThingPersisted } from "../index";
-
-function getMockQuad(
-  terms: Partial<{
-    subject: IriString;
-    predicate: IriString;
-    object: IriString;
-    namedGraph: IriString;
-  }> = {}
-) {
-  const subject: NamedNode = DataFactory.namedNode(
-    terms.subject ?? "https://arbitrary.vocab/subject"
-  );
-  const predicate: NamedNode = DataFactory.namedNode(
-    terms.predicate ?? "https://arbitrary.vocab/predicate"
-  );
-  const object: NamedNode = DataFactory.namedNode(
-    terms.object ?? "https://arbitrary.vocab/object"
-  );
-  const namedGraph: NamedNode | undefined = terms.namedGraph
-    ? DataFactory.namedNode(terms.namedGraph)
-    : undefined;
-  return DataFactory.quad(subject, predicate, object, namedGraph);
-}
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
@@ -63,16 +40,37 @@ function getMockThingWithLiteralFor(
 
   return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
 }
+function getMockQuadWithNamedNode(
+  predicate: IriString,
+  object: IriString
+): Quad {
+  const quad = DataFactory.quad(
+    DataFactory.namedNode("https://arbitrary.vocab/subject"),
+    DataFactory.namedNode(predicate),
+    DataFactory.namedNode(object)
+  );
+  return quad;
+}
+function getMockThingWithNamedNode(
+  predicate: IriString,
+  object: IriString
+): Thing {
+  const plainDataset = dataset();
+  const quad = getMockQuadWithNamedNode(predicate, object);
+  plainDataset.add(quad);
+
+  const thing: Thing = Object.assign(plainDataset, {
+    iri: "https://arbitrary.vocab/subject",
+  });
+  return thing;
+}
+
 describe("removeIriOne", () => {
   function getMockQuadWithIri(
     predicate: IriString,
     iri: IriString = "https://arbitrary.vocab/object"
   ): Quad {
-    return getMockQuad({
-      subject: "https://arbitrary.vocab/subject",
-      predicate: predicate,
-      object: iri,
-    });
+    return getMockQuadWithNamedNode(predicate, iri);
   }
   function getMockThingWithIri(
     predicate: IriString,
@@ -1502,31 +1500,6 @@ describe("removeLiteralOne", () => {
     expect(Array.from(updatedThing)).toEqual([mockQuadWithStringNotInteger]);
   });
 });
-
-function getMockQuadWithNamedNode(
-  predicate: IriString,
-  object: IriString
-): Quad {
-  const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object)
-  );
-  return quad;
-}
-function getMockThingWithNamedNode(
-  predicate: IriString,
-  object: IriString
-): Thing {
-  const plainDataset = dataset();
-  const quad = getMockQuadWithNamedNode(predicate, object);
-  plainDataset.add(quad);
-
-  const thing: Thing = Object.assign(plainDataset, {
-    iri: "https://arbitrary.vocab/subject",
-  });
-  return thing;
-}
 
 describe("removeNamedNodeOne", () => {
   it("removes the given NamedNode value for the given Predicate", () => {
