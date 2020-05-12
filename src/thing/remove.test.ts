@@ -1,4 +1,5 @@
 import {
+  removeAll,
   removeIriOne,
   removeStringUnlocalizedOne,
   removeStringInLocaleOne,
@@ -64,6 +65,114 @@ function getMockThingWithNamedNode(
   });
   return thing;
 }
+
+describe("removeAll", () => {
+  it("removes all values for the given Predicate", () => {
+    const quadWithIri = getMockQuadWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://arbitrary.vocab/object"
+    );
+    const thingWithStringAndIri = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string value",
+      "string"
+    );
+    thingWithStringAndIri.add(quadWithIri);
+
+    const updatedThing = removeAll(
+      thingWithStringAndIri,
+      "https://some.vocab/predicate"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thingWithString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string value",
+      "string"
+    );
+
+    const updatedThing = removeAll(
+      thingWithString,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thingWithString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string value",
+      "string"
+    );
+
+    const updatedThing = removeAll(
+      thingWithString,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+
+    expect(Array.from(thingWithString).length).toBe(1);
+    expect(Array.from(updatedThing).length).toBe(0);
+  });
+
+  it("also works on ThingLocals", () => {
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
+    const quadWithLocalSubject = DataFactory.quad(
+      localSubject,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/resource#name")
+    );
+    const datasetWithThingLocal = dataset();
+    datasetWithThingLocal.add(quadWithLocalSubject);
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      name: "localSubject",
+    });
+
+    const updatedThing = removeAll(thingLocal, "https://some.vocab/predicate");
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("removes multiple instances of the same value for the same Predicate", () => {
+    const thingWithDuplicateIri = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://arbitrary.pod/resource#name"
+    );
+    thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
+
+    const updatedThing = removeAll(
+      thingWithDuplicateIri,
+      "https://some.vocab/predicate"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("does not remove Quads with different Predicates", () => {
+    const thingWithIri = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://arbitrary.pod/resource#name"
+    );
+    const mockQuadWithDifferentPredicate = getMockQuadWithNamedNode(
+      "https://some-other.vocab/predicate",
+      "https://arbitrary.pod/resource#name"
+    );
+    thingWithIri.add(mockQuadWithDifferentPredicate);
+
+    const updatedThing = removeAll(
+      thingWithIri,
+      "https://some.vocab/predicate"
+    );
+
+    expect(Array.from(updatedThing)).toEqual([mockQuadWithDifferentPredicate]);
+  });
+});
 
 describe("removeIriOne", () => {
   function getMockQuadWithIri(

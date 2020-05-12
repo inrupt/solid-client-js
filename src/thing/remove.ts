@@ -11,6 +11,20 @@ import { asNamedNode, isNamedNode, isLiteral } from "../datatypes";
 import { filter, DataFactory } from "../rdfjs";
 import { isThingLocal } from "../thing";
 
+export function removeAll<T extends Thing>(
+  thing: T,
+  predicate: Iri | IriString
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
+  const predicateNode = asNamedNode(predicate);
+
+  const updatedThing = filterThing(
+    thing,
+    (quad) => !quad.predicate.equals(predicateNode)
+  );
+  return updatedThing;
+}
+
 /**
  * @param thing Thing to remove an IRI value from.
  * @param predicate Predicate for which to remove the given IRI value.
