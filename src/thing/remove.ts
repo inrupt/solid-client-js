@@ -31,16 +31,11 @@ export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
  * @param value IRI to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeIriOne<T extends Thing>(
-  thing: T,
-  predicate: Iri | IriString,
-  value: Iri | IriString | ThingPersisted
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeIriOne(
-  thing: Thing,
-  predicate: Iri | IriString,
-  value: Iri | IriString | ThingPersisted
-): Thing {
+export const removeIriOne: RemoveOneOfType<Iri | IriString | ThingPersisted> = (
+  thing,
+  predicate,
+  value
+) => {
   const predicateNode = asNamedNode(predicate);
   const iriNode = isNamedNode(value)
     ? value
@@ -56,7 +51,7 @@ export function removeIriOne(
     );
   });
   return updatedThing;
-}
+};
 
 /**
  * @param thing Thing to remove an unlocalised string value from.
