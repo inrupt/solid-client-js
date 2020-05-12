@@ -34,6 +34,7 @@ export {
   getNamedNodeAll,
 } from "./thing/get";
 export {
+  removeAll,
   removeIriOne,
   removeStringUnlocalizedOne,
   removeStringInLocaleOne,
