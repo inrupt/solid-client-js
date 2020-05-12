@@ -1,4 +1,4 @@
-import { NamedNode } from "rdf-js";
+import { NamedNode, Quad } from "rdf-js";
 import {
   LitDataset,
   IriString,
@@ -12,7 +12,7 @@ import {
   hasDiff,
   hasMetadata,
 } from "./index";
-import { dataset } from "./rdfjs";
+import { dataset, filter, clone } from "./rdfjs";
 import {
   isLocalNode,
   isEqual,
@@ -129,7 +129,7 @@ export function removeThing<Dataset extends LitDataset>(
     ? newLitDataset.metadata.fetchedFrom
     : undefined;
 
-  const thingSubject = toSubjectNode(thing);
+  const thingSubject = toNode(thing);
   for (const quad of litDataset) {
     if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
       // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
@@ -248,7 +248,12 @@ export function isThingLocal(
     typeof (thing as ThingPersisted).iri === "undefined"
   );
 }
-function toSubjectNode(
+/**
+ * @internal
+ * @param thing The Thing whose Subject Node you're interested in.
+ * @returns A Node that can be used as the Subject for this Thing's Quads.
+ */
+export function toNode(
   thing: IriString | Iri | LocalNode | Thing
 ): NamedNode | LocalNode {
   if (isNamedNode(thing) || isLocalNode(thing)) {
@@ -261,6 +266,47 @@ function toSubjectNode(
     return getLocalNode(thing.name);
   }
   return asNamedNode(asIri(thing));
+}
+
+/**
+ * @internal
+ * @param thing Thing to clone.
+ * @returns A new Thing with the same Quads as `input`.
+ */
+export function cloneThing<T extends Thing>(
+  thing: T
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function cloneThing(thing: Thing): Thing {
+  const cloned = clone(thing);
+  if (isThingLocal(thing)) {
+    (cloned as ThingLocal).name = thing.name;
+    return cloned as ThingLocal;
+  }
+  (cloned as ThingPersisted).iri = thing.iri;
+  return cloned as ThingPersisted;
+}
+
+/**
+ * @internal
+ * @param thing Thing to clone.
+ * @param callback Function that takes a Quad, and returns a boolean indicating whether that Quad should be included in the cloned Dataset.
+ * @returns A new Thing with the same Quads as `input`, excluding the ones for which `callback` returned `false`.
+ */
+export function filterThing<T extends Thing>(
+  thing: T,
+  callback: (quad: Quad) => boolean
+): T extends ThingLocal ? ThingLocal : ThingPersisted;
+export function filterThing(
+  thing: Thing,
+  callback: (quad: Quad) => boolean
+): Thing {
+  const filtered = filter(thing, callback);
+  if (isThingLocal(thing)) {
+    (filtered as ThingLocal).name = thing.name;
+    return filtered as ThingLocal;
+  }
+  (filtered as ThingPersisted).iri = thing.iri;
+  return filtered as ThingPersisted;
 }
 
 /**
