@@ -11,3 +11,4 @@ First release! What's possible with this first release:
 - Fetch data from Solid Pods or other public sources that publish Turtle data.
 - Store data back to Solid Pods.
 - Read values from datasets.
+- Inspect a user's permissions w.r.t. a given Resource. (Experimental.)

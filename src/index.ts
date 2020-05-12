@@ -76,6 +76,20 @@ export type ThingLocal = Thing & { name: string };
  */
 export type LocalNode = BlankNode & { name: string };
 
+type unstable_WacAllow = {
+  user: {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
+  public: {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
+};
 export type MetadataStruct = {
   metadata: {
     fetchedFrom: IriString;
@@ -87,6 +101,15 @@ export type MetadataStruct = {
      *         in this API changing as well.
      */
     unstable_aclIri?: IriString;
+    /**
+     * Access permissions for the current user and the general public for this resource.
+     *
+     * @ignore There is no consensus yet about how this functionality will be incorporated in the
+     *         final spec, so the final implementation might influence this API in the future.
+     * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
+     * @see https://github.com/solid/specification/issues/171
+     */
+    unstable_permissions?: unstable_WacAllow;
   };
 };
 
