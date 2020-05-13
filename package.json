@@ -34,7 +34,7 @@
     "prettier": "2.0.5",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.9.1",
-    "rollup-plugin-typescript2": "^0.27.0",
+    "rollup-plugin-typescript2": "^0.27.1",
     "ts-jest": "^25.5.1",
     "typescript": "^3.8.3"
   },
