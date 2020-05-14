@@ -45,6 +45,17 @@ export {
   addNamedNode,
 } from "./thing/add";
 export {
+  setIri,
+  setBoolean,
+  setDatetime,
+  setDecimal,
+  setInteger,
+  setStringInLocale,
+  setStringUnlocalized,
+  setLiteral,
+  setNamedNode,
+} from "./thing/set";
+export {
   removeAll,
   removeIri,
   removeBoolean,
