@@ -12,6 +12,10 @@ import { DataFactory } from "../rdfjs";
 import { Literal, NamedNode } from "rdf-js";
 
 /**
+ * Add an IRI to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setIri]].
+ *
  * @param thing Thing to add an IRI value to.
  * @param predicate Predicate for which to add the given IRI value.
  * @param value IRI to add to `thing` for the given `predicate`.
@@ -30,6 +34,10 @@ export const addIri: AddOfType<Iri | IriString | Thing> = (
 };
 
 /**
+ * Add a boolean to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setBoolean]].
+ *
  * @param thing Thing to add a boolean value to.
  * @param predicate Predicate for which to add the given boolean value.
  * @param value Boolean to add to `thing` for the given `predicate`.
@@ -45,6 +53,10 @@ export const addBoolean: AddOfType<boolean> = (thing, predicate, value) => {
 };
 
 /**
+ * Add a datetime to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setDatetime]].
+ *
  * @param thing Thing to add a datetime value to.
  * @param predicate Predicate for which to add the given datetime value.
  * @param value Datetime to add to `thing` for the given `predicate`.
@@ -60,6 +72,10 @@ export const addDatetime: AddOfType<Date> = (thing, predicate, value) => {
 };
 
 /**
+ * Add a decimal to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setDecimal]].
+ *
  * @param thing Thing to add a decimal value to.
  * @param predicate Predicate for which to add the given decimal value.
  * @param value Decimal to add to `thing` for the given `predicate`.
@@ -75,6 +91,10 @@ export const addDecimal: AddOfType<number> = (thing, predicate, value) => {
 };
 
 /**
+ * Add an integer to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setInteger]].
+ *
  * @param thing Thing to add an integer value to.
  * @param predicate Predicate for which to add the given integer value.
  * @param value Integer to add to `thing` for the given `predicate`.
@@ -90,6 +110,10 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
 };
 
 /**
+ * Add a localised string to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setStringInLocale]].
+ *
  * @param thing Thing to add a localised string value to.
  * @param predicate Predicate for which to add the given string value.
  * @param value String to add to `thing` for the given `predicate`.
@@ -113,6 +137,10 @@ export function addStringInLocale(
 }
 
 /**
+ * Add an unlocalised string to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setStringUnlocalized]].
+ *
  * @param thing Thing to add an unlocalised string value to.
  * @param predicate Predicate for which to add the given string value.
  * @param value String to add to `thing` for the given `predicate`.
@@ -132,6 +160,10 @@ export const addStringUnlocalized: AddOfType<string> = (
 };
 
 /**
+ * Add a NamedNode to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setNamedNode]].
+ *
  * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Named Node to.
  * @param predicate Predicate for which to add a value.
@@ -156,6 +188,10 @@ export function addNamedNode(
 }
 
 /**
+ * Add a Literal to a Predicate on a Thing.
+ *
+ * This preserves existing values for the given Predicate. To replace them, see [[setLiteral]].
+ *
  * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Literal to.
  * @param predicate Predicate for which to add a value.
