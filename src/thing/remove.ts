@@ -40,7 +40,7 @@ export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
  * @param value IRI to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeIriOne: RemoveOneOfType<Iri | IriString | ThingPersisted> = (
+export const removeIri: RemoveOfType<Iri | IriString | ThingPersisted> = (
   thing,
   predicate,
   value
@@ -68,12 +68,12 @@ export const removeIriOne: RemoveOneOfType<Iri | IriString | ThingPersisted> = (
  * @param value Boolean to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeBooleanOne: RemoveOneOfType<boolean> = (
+export const removeBoolean: RemoveOfType<boolean> = (
   thing,
   predicate,
   value
 ) => {
-  return removeLiteralOneOfType(
+  return removeLiteralOfType(
     thing,
     predicate,
     serializeBoolean(value),
@@ -87,12 +87,8 @@ export const removeBooleanOne: RemoveOneOfType<boolean> = (
  * @param value Datetime to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeDatetimeOne: RemoveOneOfType<Date> = (
-  thing,
-  predicate,
-  value
-) => {
-  return removeLiteralOneOfType(
+export const removeDatetime: RemoveOfType<Date> = (thing, predicate, value) => {
+  return removeLiteralOfType(
     thing,
     predicate,
     serializeDatetime(value),
@@ -106,12 +102,12 @@ export const removeDatetimeOne: RemoveOneOfType<Date> = (
  * @param value Decimal to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeDecimalOne: RemoveOneOfType<number> = (
+export const removeDecimal: RemoveOfType<number> = (
   thing,
   predicate,
   value
 ) => {
-  return removeLiteralOneOfType(
+  return removeLiteralOfType(
     thing,
     predicate,
     serializeDecimal(value),
@@ -125,12 +121,12 @@ export const removeDecimalOne: RemoveOneOfType<number> = (
  * @param value Integer to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeIntegerOne: RemoveOneOfType<number> = (
+export const removeInteger: RemoveOfType<number> = (
   thing,
   predicate,
   value
 ) => {
-  return removeLiteralOneOfType(
+  return removeLiteralOfType(
     thing,
     predicate,
     serializeInteger(value),
@@ -145,22 +141,22 @@ export const removeIntegerOne: RemoveOneOfType<number> = (
  * @param locale Locale of the string to remove.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeStringInLocaleOne<T extends Thing>(
+export function removeStringInLocale<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeStringInLocaleOne(
+export function removeStringInLocale(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
   locale: string
 ): Thing {
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
-  // must call directly `removeLiteralOne` directly, with the locale as the data
+  // must call directly `removeLiteral` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
-  return removeLiteralOne(
+  return removeLiteral(
     thing,
     predicate,
     DataFactory.literal(value, normalizeLocale(locale))
@@ -173,12 +169,12 @@ export function removeStringInLocaleOne(
  * @param value String to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeStringUnlocalizedOne: RemoveOneOfType<string> = (
+export const removeStringUnlocalized: RemoveOfType<string> = (
   thing,
   predicate,
   value
 ) => {
-  return removeLiteralOneOfType(
+  return removeLiteralOfType(
     thing,
     predicate,
     value,
@@ -187,18 +183,18 @@ export const removeStringUnlocalizedOne: RemoveOneOfType<string> = (
 };
 
 /**
- * @ignore This should not be needed due to the other remove*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other remove*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing Thing to remove a NamedNode value from.
  * @param predicate Predicate for which to remove the given NamedNode value.
  * @param value NamedNode to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeNamedNodeOne<T extends Thing>(
+export function removeNamedNode<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeNamedNodeOne(
+export function removeNamedNode(
   thing: Thing,
   predicate: Iri | IriString,
   value: NamedNode
@@ -215,18 +211,18 @@ export function removeNamedNodeOne(
 }
 
 /**
- * @ignore This should not be needed due to the other remove*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other remove*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing Thing to remove a Literal value from.
  * @param predicate Predicate for which to remove the given Literal value.
  * @param value Literal to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeLiteralOne<T extends Thing>(
+export function removeLiteral<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeLiteralOne(
+export function removeLiteral(
   thing: Thing,
   predicate: Iri | IriString,
   value: Literal
@@ -242,19 +238,19 @@ export function removeLiteralOne(
   return updatedThing;
 }
 
-function removeLiteralOneOfType<T extends Thing>(
+function removeLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
   type: IriString
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function removeLiteralOneOfType(
+function removeLiteralOfType(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
   type: IriString
 ): Thing {
-  const updatedThing = removeLiteralOne(
+  const updatedThing = removeLiteral(
     thing,
     predicate,
     DataFactory.literal(value, DataFactory.namedNode(type))
@@ -268,7 +264,7 @@ function removeLiteralOneOfType(
  * @param value Value to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-type RemoveOneOfType<Type> = <T extends Thing>(
+type RemoveOfType<Type> = <T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: Type

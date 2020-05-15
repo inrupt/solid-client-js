@@ -46,15 +46,15 @@ export {
 } from "./thing/add";
 export {
   removeAll,
-  removeIriOne,
-  removeBooleanOne,
-  removeDatetimeOne,
-  removeDecimalOne,
-  removeIntegerOne,
-  removeStringInLocaleOne,
-  removeStringUnlocalizedOne,
-  removeLiteralOne,
-  removeNamedNodeOne,
+  removeIri,
+  removeBoolean,
+  removeDatetime,
+  removeDecimal,
+  removeInteger,
+  removeStringInLocale,
+  removeStringUnlocalized,
+  removeLiteral,
+  removeNamedNode,
 } from "./thing/remove";
 
 /**
