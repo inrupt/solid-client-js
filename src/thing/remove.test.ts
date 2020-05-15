@@ -1,14 +1,14 @@
 import {
   removeAll,
-  removeIriOne,
-  removeBooleanOne,
-  removeDatetimeOne,
-  removeDecimalOne,
-  removeIntegerOne,
-  removeStringInLocaleOne,
-  removeStringUnlocalizedOne,
-  removeLiteralOne,
-  removeNamedNodeOne,
+  removeIri,
+  removeBoolean,
+  removeDatetime,
+  removeDecimal,
+  removeInteger,
+  removeStringInLocale,
+  removeStringUnlocalized,
+  removeLiteral,
+  removeNamedNode,
 } from "./remove";
 import { dataset } from "@rdfjs/dataset";
 import { Quad } from "rdf-js";
@@ -174,7 +174,7 @@ describe("removeAll", () => {
   });
 });
 
-describe("removeIriOne", () => {
+describe("removeIri", () => {
   function getMockQuadWithIri(
     predicate: IriString,
     iri: IriString = "https://arbitrary.vocab/object"
@@ -198,7 +198,7 @@ describe("removeIriOne", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -213,7 +213,7 @@ describe("removeIriOne", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "https://some.pod/resource#name"
@@ -228,7 +228,7 @@ describe("removeIriOne", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.pod/resource#name")
@@ -243,7 +243,7 @@ describe("removeIriOne", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -269,7 +269,7 @@ describe("removeIriOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingLocal,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -285,7 +285,7 @@ describe("removeIriOne", () => {
     );
     thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithDuplicateIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -310,7 +310,7 @@ describe("removeIriOne", () => {
     thingWithIri.add(mockQuadWithDifferentIri);
     thingWithIri.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -334,7 +334,7 @@ describe("removeIriOne", () => {
     );
     thingWithIri.add(mockQuadWithString);
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -361,7 +361,7 @@ describe("removeIriOne", () => {
       }
     );
 
-    const updatedThing = removeIriOne(
+    const updatedThing = removeIri(
       thingWithThingPersistedIri,
       "https://some.vocab/predicate",
       thingPersisted
@@ -371,7 +371,7 @@ describe("removeIriOne", () => {
   });
 });
 
-describe("removeBooleanOne", () => {
+describe("removeBoolean", () => {
   it("removes the given boolean value for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -379,7 +379,7 @@ describe("removeBooleanOne", () => {
       "boolean"
     );
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithBoolean,
       "https://some.vocab/predicate",
       true
@@ -395,7 +395,7 @@ describe("removeBooleanOne", () => {
       "boolean"
     );
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithBoolean,
       DataFactory.namedNode("https://some.vocab/predicate"),
       false
@@ -411,7 +411,7 @@ describe("removeBooleanOne", () => {
       "boolean"
     );
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithBoolean,
       "https://some.vocab/predicate",
       true
@@ -440,7 +440,7 @@ describe("removeBooleanOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingLocal,
       "https://some.vocab/predicate",
       true
@@ -457,7 +457,7 @@ describe("removeBooleanOne", () => {
     );
     thingWithDuplicateBoolean.add(Array.from(thingWithDuplicateBoolean)[0]);
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithDuplicateBoolean,
       "https://some.vocab/predicate",
       true
@@ -486,7 +486,7 @@ describe("removeBooleanOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       true
@@ -511,7 +511,7 @@ describe("removeBooleanOne", () => {
     );
     thingWithString.add(mockQuadWithIntegerNotBoolean);
 
-    const updatedThing = removeBooleanOne(
+    const updatedThing = removeBoolean(
       thingWithString,
       "https://some.vocab/predicate",
       true
@@ -521,7 +521,7 @@ describe("removeBooleanOne", () => {
   });
 });
 
-describe("removeDatetimeOne", () => {
+describe("removeDatetime", () => {
   it("removes the given datetime value for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -529,7 +529,7 @@ describe("removeDatetimeOne", () => {
       "dateTime"
     );
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithDatetime,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -545,7 +545,7 @@ describe("removeDatetimeOne", () => {
       "dateTime"
     );
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithDatetime,
       DataFactory.namedNode("https://some.vocab/predicate"),
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -561,7 +561,7 @@ describe("removeDatetimeOne", () => {
       "dateTime"
     );
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithDatetime,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -590,7 +590,7 @@ describe("removeDatetimeOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingLocal,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -607,7 +607,7 @@ describe("removeDatetimeOne", () => {
     );
     thingWithDuplicateDatetime.add(Array.from(thingWithDuplicateDatetime)[0]);
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithDuplicateDatetime,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -636,7 +636,7 @@ describe("removeDatetimeOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -664,7 +664,7 @@ describe("removeDatetimeOne", () => {
     );
     thingWithString.add(mockQuadWithStringNotDatetime);
 
-    const updatedThing = removeDatetimeOne(
+    const updatedThing = removeDatetime(
       thingWithString,
       "https://some.vocab/predicate",
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
@@ -674,7 +674,7 @@ describe("removeDatetimeOne", () => {
   });
 });
 
-describe("removeDecimalOne", () => {
+describe("removeDecimal", () => {
   it("removes the given decimal value for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -682,7 +682,7 @@ describe("removeDecimalOne", () => {
       "decimal"
     );
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithDecimal,
       "https://some.vocab/predicate",
       13.37
@@ -698,7 +698,7 @@ describe("removeDecimalOne", () => {
       "decimal"
     );
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithDecimal,
       DataFactory.namedNode("https://some.vocab/predicate"),
       13.37
@@ -714,7 +714,7 @@ describe("removeDecimalOne", () => {
       "decimal"
     );
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithDecimal,
       "https://some.vocab/predicate",
       13.37
@@ -743,7 +743,7 @@ describe("removeDecimalOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingLocal,
       "https://some.vocab/predicate",
       13.37
@@ -760,7 +760,7 @@ describe("removeDecimalOne", () => {
     );
     thingWithDuplicateDecimal.add(Array.from(thingWithDuplicateDecimal)[0]);
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithDuplicateDecimal,
       "https://some.vocab/predicate",
       13.37
@@ -789,7 +789,7 @@ describe("removeDecimalOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       13.37
@@ -814,7 +814,7 @@ describe("removeDecimalOne", () => {
     );
     thingWithString.add(mockQuadWithStringNotDecimal);
 
-    const updatedThing = removeDecimalOne(
+    const updatedThing = removeDecimal(
       thingWithString,
       "https://some.vocab/predicate",
       13.37
@@ -824,7 +824,7 @@ describe("removeDecimalOne", () => {
   });
 });
 
-describe("removeIntegerOne", () => {
+describe("removeInteger", () => {
   it("removes the given integer value for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -832,7 +832,7 @@ describe("removeIntegerOne", () => {
       "integer"
     );
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithInteger,
       "https://some.vocab/predicate",
       42
@@ -848,7 +848,7 @@ describe("removeIntegerOne", () => {
       "integer"
     );
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithInteger,
       DataFactory.namedNode("https://some.vocab/predicate"),
       42
@@ -864,7 +864,7 @@ describe("removeIntegerOne", () => {
       "integer"
     );
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithInteger,
       "https://some.vocab/predicate",
       42
@@ -893,7 +893,7 @@ describe("removeIntegerOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingLocal,
       "https://some.vocab/predicate",
       42
@@ -910,7 +910,7 @@ describe("removeIntegerOne", () => {
     );
     thingWithDuplicateInteger.add(Array.from(thingWithDuplicateInteger)[0]);
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithDuplicateInteger,
       "https://some.vocab/predicate",
       42
@@ -939,7 +939,7 @@ describe("removeIntegerOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       42
@@ -964,7 +964,7 @@ describe("removeIntegerOne", () => {
     );
     thingWithString.add(mockQuadWithStringNotInteger);
 
-    const updatedThing = removeIntegerOne(
+    const updatedThing = removeInteger(
       thingWithString,
       "https://some.vocab/predicate",
       42
@@ -974,7 +974,7 @@ describe("removeIntegerOne", () => {
   });
 });
 
-describe("removeStringInLocaleOne", () => {
+describe("removeStringInLocale", () => {
   function getMockQuadWithStringInLocaleFor(
     predicate: IriString,
     literalValue: string,
@@ -1009,7 +1009,7 @@ describe("removeStringInLocaleOne", () => {
       "fr-fr"
     );
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Une chaîne de caractères quelconque",
@@ -1026,7 +1026,7 @@ describe("removeStringInLocaleOne", () => {
       "en-us"
     );
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithStringInLocale,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string",
@@ -1043,7 +1043,7 @@ describe("removeStringInLocaleOne", () => {
       "en-us"
     );
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1070,7 +1070,7 @@ describe("removeStringInLocaleOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1090,7 +1090,7 @@ describe("removeStringInLocaleOne", () => {
       Array.from(thingWithDuplicateStringInLocale)[0]
     );
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithDuplicateStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1128,7 +1128,7 @@ describe("removeStringInLocaleOne", () => {
     thingWithStringInLocale.add(mockQuadWithSameStringInDifferentLocale);
     thingWithStringInLocale.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1157,7 +1157,7 @@ describe("removeStringInLocaleOne", () => {
 
     thingWithStringInLocale.add(mockQuadWithStringInDifferentLocale);
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1180,7 +1180,7 @@ describe("removeStringInLocaleOne", () => {
     );
     thingWithLocalizedString.add(mockQuadWithInteger);
 
-    const updatedThing = removeStringInLocaleOne(
+    const updatedThing = removeStringInLocale(
       thingWithLocalizedString,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1191,7 +1191,7 @@ describe("removeStringInLocaleOne", () => {
   });
 });
 
-describe("removeStringUnlocalizedOne", () => {
+describe("removeStringUnlocalized", () => {
   it("removes the given string value for the given Predicate", () => {
     const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -1199,7 +1199,7 @@ describe("removeStringUnlocalizedOne", () => {
       "string"
     );
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1215,7 +1215,7 @@ describe("removeStringUnlocalizedOne", () => {
       "string"
     );
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithStringUnlocalized,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string"
@@ -1231,7 +1231,7 @@ describe("removeStringUnlocalizedOne", () => {
       "string"
     );
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1260,7 +1260,7 @@ describe("removeStringUnlocalizedOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1277,7 +1277,7 @@ describe("removeStringUnlocalizedOne", () => {
     );
     thingWithDuplicateString.add(Array.from(thingWithDuplicateString)[0]);
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithDuplicateString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1306,7 +1306,7 @@ describe("removeStringUnlocalizedOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1331,7 +1331,7 @@ describe("removeStringUnlocalizedOne", () => {
     );
     thingWithString.add(mockQuadWithInteger);
 
-    const updatedThing = removeStringUnlocalizedOne(
+    const updatedThing = removeStringUnlocalized(
       thingWithString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1341,7 +1341,7 @@ describe("removeStringUnlocalizedOne", () => {
   });
 });
 
-describe("removeLiteralOne", () => {
+describe("removeLiteral", () => {
   it("accepts unlocalised strings as Literal", () => {
     const thingWithStringUnlocalized = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -1349,7 +1349,7 @@ describe("removeLiteralOne", () => {
       "string"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithStringUnlocalized,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1374,7 +1374,7 @@ describe("removeLiteralOne", () => {
       iri: "https://arbitrary.vocab/subject",
     });
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithStringInLocale,
       "https://some.vocab/predicate",
       DataFactory.literal("Some arbitrary string", "en-US")
@@ -1390,7 +1390,7 @@ describe("removeLiteralOne", () => {
       "integer"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithInteger,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1409,7 +1409,7 @@ describe("removeLiteralOne", () => {
       "decimal"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithDecimal,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1428,7 +1428,7 @@ describe("removeLiteralOne", () => {
       "boolean"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithBoolean,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1447,7 +1447,7 @@ describe("removeLiteralOne", () => {
       "dateTime"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithDatetime,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1466,7 +1466,7 @@ describe("removeLiteralOne", () => {
       "integer"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithInteger,
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.literal(
@@ -1485,7 +1485,7 @@ describe("removeLiteralOne", () => {
       "integer"
     );
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithInteger,
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.literal(
@@ -1517,7 +1517,7 @@ describe("removeLiteralOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingLocal,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1537,7 +1537,7 @@ describe("removeLiteralOne", () => {
     );
     thingWithDuplicateInteger.add(Array.from(thingWithDuplicateInteger)[0]);
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithDuplicateInteger,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1569,7 +1569,7 @@ describe("removeLiteralOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1597,7 +1597,7 @@ describe("removeLiteralOne", () => {
     );
     thingWithString.add(mockQuadWithStringNotInteger);
 
-    const updatedThing = removeLiteralOne(
+    const updatedThing = removeLiteral(
       thingWithString,
       "https://some.vocab/predicate",
       DataFactory.literal(
@@ -1610,14 +1610,14 @@ describe("removeLiteralOne", () => {
   });
 });
 
-describe("removeNamedNodeOne", () => {
+describe("removeNamedNode", () => {
   it("removes the given NamedNode value for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.vocab/object"
     );
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingWithNamedNode,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.vocab/object")
@@ -1632,7 +1632,7 @@ describe("removeNamedNodeOne", () => {
       "https://some.vocab/object"
     );
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingWithNamedNode,
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.namedNode("https://some.vocab/object")
@@ -1647,7 +1647,7 @@ describe("removeNamedNodeOne", () => {
       "https://some.vocab/object"
     );
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingWithNamedNode,
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.namedNode("https://some.vocab/object")
@@ -1673,7 +1673,7 @@ describe("removeNamedNodeOne", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingLocal,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.vocab/object")
@@ -1689,7 +1689,7 @@ describe("removeNamedNodeOne", () => {
     );
     thingWithDuplicateNamedNode.add(Array.from(thingWithDuplicateNamedNode)[0]);
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingWithDuplicateNamedNode,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.vocab/object")
@@ -1715,7 +1715,7 @@ describe("removeNamedNodeOne", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeNamedNodeOne(
+    const updatedThing = removeNamedNode(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.vocab/object")
