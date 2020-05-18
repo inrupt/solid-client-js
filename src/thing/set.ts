@@ -7,6 +7,8 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
+  XmlSchemaTypeIri,
+  xmlSchemaTypes,
 } from "../datatypes";
 import { removeAll } from "./remove";
 import { DataFactory } from "../rdfjs";
@@ -50,7 +52,7 @@ export const setBoolean: SetOfType<boolean> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeBoolean(value),
-    "http://www.w3.org/2001/XMLSchema#boolean"
+    xmlSchemaTypes.boolean
   );
 };
 
@@ -69,7 +71,7 @@ export const setDatetime: SetOfType<Date> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDatetime(value),
-    "http://www.w3.org/2001/XMLSchema#dateTime"
+    xmlSchemaTypes.dateTime
   );
 };
 
@@ -88,7 +90,7 @@ export const setDecimal: SetOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDecimal(value),
-    "http://www.w3.org/2001/XMLSchema#decimal"
+    xmlSchemaTypes.decimal
   );
 };
 
@@ -107,7 +109,7 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeInteger(value),
-    "http://www.w3.org/2001/XMLSchema#integer"
+    xmlSchemaTypes.integer
   );
 };
 
@@ -153,12 +155,7 @@ export const setStringUnlocalized: SetOfType<string> = (
   predicate,
   value
 ) => {
-  return setLiteralOfType(
-    thing,
-    predicate,
-    value,
-    "http://www.w3.org/2001/XMLSchema#string"
-  );
+  return setLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
 };
 
 /**
@@ -223,13 +220,13 @@ function setLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
-  type: IriString
+  type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function setLiteralOfType(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
-  type: IriString
+  type: XmlSchemaTypeIri
 ): Thing {
   const literal = DataFactory.literal(value, type);
   return setLiteral(thing, predicate, literal);
