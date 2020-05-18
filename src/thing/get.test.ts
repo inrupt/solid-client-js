@@ -1559,10 +1559,10 @@ describe("getLiteralAll", () => {
       "https://some.vocab/predicate"
     );
     expect(foundLiterals.length).toBe(2);
-    expect((foundLiterals[0] as Literal).termType).toBe("Literal");
-    expect((foundLiterals[0] as Literal).value).toBe("Some string 1");
-    expect((foundLiterals[1] as Literal).termType).toBe("Literal");
-    expect((foundLiterals[1] as Literal).value).toBe("Some string 2");
+    expect(foundLiterals[0].termType).toBe("Literal");
+    expect(foundLiterals[0].value).toBe("Some string 1");
+    expect(foundLiterals[1].termType).toBe("Literal");
+    expect(foundLiterals[1].value).toBe("Some string 2");
   });
 
   it("accepts Predicates as Named Nodes", () => {
@@ -1578,10 +1578,10 @@ describe("getLiteralAll", () => {
       DataFactory.namedNode("https://some.vocab/predicate")
     );
     expect(foundLiterals.length).toBe(2);
-    expect((foundLiterals[0] as Literal).termType).toBe("Literal");
-    expect((foundLiterals[0] as Literal).value).toBe("Some string 1");
-    expect((foundLiterals[1] as Literal).termType).toBe("Literal");
-    expect((foundLiterals[1] as Literal).value).toBe("Some string 2");
+    expect(foundLiterals[0].termType).toBe("Literal");
+    expect(foundLiterals[0].value).toBe("Some string 1");
+    expect(foundLiterals[1].termType).toBe("Literal");
+    expect(foundLiterals[1].value).toBe("Some string 2");
   });
 
   it("returns an empty array if no Literal values were found", () => {
