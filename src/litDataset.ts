@@ -3,10 +3,10 @@ import LinkHeader from "http-link-header";
 import {
   IriString,
   LitDataset,
-  MetadataStruct,
-  DiffStruct,
-  hasDiff,
-  hasMetadata,
+  DatasetInfo,
+  ChangeLog,
+  hasChangelog,
+  hasDatasetInfo,
   LocalNode,
 } from "./index";
 import { dataset, DataFactory } from "./rdfjs";
@@ -20,7 +20,7 @@ const defaultFetchOptions = {
 export async function fetchLitDataset(
   url: IriString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & MetadataStruct> {
+): Promise<LitDataset & DatasetInfo> {
   const config = {
     ...defaultFetchOptions,
     ...options,
@@ -37,7 +37,7 @@ export async function fetchLitDataset(
   const resource = dataset();
   triples.forEach((triple) => resource.add(triple));
 
-  const metadata: MetadataStruct["metadata"] = {
+  const datasetInfo: DatasetInfo["datasetInfo"] = {
     fetchedFrom: url,
   };
   const linkHeader = response.headers.get("Link");
@@ -45,19 +45,19 @@ export async function fetchLitDataset(
     const parsedLinks = LinkHeader.parse(linkHeader);
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      metadata.unstable_aclIri = new URL(aclLinks[0].uri, url).href;
+      datasetInfo.unstable_aclIri = new URL(aclLinks[0].uri, url).href;
     }
   }
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
   if (wacAllowHeader) {
-    metadata.unstable_permissions = parseWacAllowHeader(wacAllowHeader);
+    datasetInfo.unstable_permissions = parseWacAllowHeader(wacAllowHeader);
   }
 
-  const resourceWithMetadata: LitDataset &
-    MetadataStruct = Object.assign(resource, { metadata: metadata });
+  const resourceWithDatasetInfo: LitDataset &
+    DatasetInfo = Object.assign(resource, { datasetInfo: datasetInfo });
 
-  return resourceWithMetadata;
+  return resourceWithDatasetInfo;
 }
 
 const defaultSaveOptions = {
@@ -67,7 +67,7 @@ export async function saveLitDatasetAt(
   url: IriString,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
-): Promise<LitDataset & MetadataStruct & DiffStruct> {
+): Promise<LitDataset & DatasetInfo & ChangeLog> {
   const config = {
     ...defaultSaveOptions,
     ...options,
@@ -77,18 +77,18 @@ export async function saveLitDatasetAt(
 
   if (isUpdate(litDataset, url)) {
     const deleteStatement =
-      litDataset.diff.deletions.length > 0
+      litDataset.changeLog.deletions.length > 0
         ? `DELETE DATA {${(
             await triplesToTurtle(
-              litDataset.diff.deletions.map(getNamedNodesForLocalNodes)
+              litDataset.changeLog.deletions.map(getNamedNodesForLocalNodes)
             )
           ).trim()}};`
         : "";
     const insertStatement =
-      litDataset.diff.additions.length > 0
+      litDataset.changeLog.additions.length > 0
         ? `INSERT DATA {${(
             await triplesToTurtle(
-              litDataset.diff.additions.map(getNamedNodesForLocalNodes)
+              litDataset.changeLog.additions.map(getNamedNodesForLocalNodes)
             )
           ).trim()}};`
         : "";
@@ -122,14 +122,14 @@ export async function saveLitDatasetAt(
     );
   }
 
-  const metadata: MetadataStruct["metadata"] = hasMetadata(litDataset)
-    ? { ...litDataset.metadata, fetchedFrom: url }
+  const datasetInfo: DatasetInfo["datasetInfo"] = hasDatasetInfo(litDataset)
+    ? { ...litDataset.datasetInfo, fetchedFrom: url }
     : { fetchedFrom: url };
-  const storedDataset: LitDataset & DiffStruct & MetadataStruct = Object.assign(
+  const storedDataset: LitDataset & ChangeLog & DatasetInfo = Object.assign(
     litDataset,
     {
-      diff: { additions: [], deletions: [] },
-      metadata: metadata,
+      changeLog: { additions: [], deletions: [] },
+      datasetInfo: datasetInfo,
     }
   );
 
@@ -144,13 +144,13 @@ function isUpdate(
   litDataset: LitDataset,
   url: IriString
 ): litDataset is LitDataset &
-  DiffStruct &
-  MetadataStruct & { metadata: { fetchedFrom: string } } {
+  ChangeLog &
+  DatasetInfo & { datasetInfo: { fetchedFrom: string } } {
   return (
-    hasDiff(litDataset) &&
-    hasMetadata(litDataset) &&
-    typeof litDataset.metadata.fetchedFrom === "string" &&
-    litDataset.metadata.fetchedFrom === url
+    hasChangelog(litDataset) &&
+    hasDatasetInfo(litDataset) &&
+    typeof litDataset.datasetInfo.fetchedFrom === "string" &&
+    litDataset.datasetInfo.fetchedFrom === url
   );
 }
 
@@ -166,7 +166,7 @@ export async function saveLitDatasetInContainer(
   containerUrl: IriString,
   litDataset: LitDataset,
   options: SaveInContainerOptions = defaultSaveInContainerOptions
-): Promise<LitDataset & MetadataStruct> {
+): Promise<LitDataset & DatasetInfo> {
   const config = {
     ...defaultSaveOptions,
     ...options,
@@ -203,14 +203,14 @@ export async function saveLitDatasetInContainer(
 
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
-  const metadata: MetadataStruct["metadata"] = {
+  const datasetInfo: DatasetInfo["datasetInfo"] = {
     fetchedFrom: resourceIri,
   };
-  const resourceWithMetadata: LitDataset &
-    MetadataStruct = Object.assign(litDataset, { metadata: metadata });
+  const resourceWithDatasetInfo: LitDataset &
+    DatasetInfo = Object.assign(litDataset, { datasetInfo: datasetInfo });
 
   const resourceWithResolvedIris = resolveLocalIrisInLitDataset(
-    resourceWithMetadata
+    resourceWithDatasetInfo
   );
 
   return resourceWithResolvedIris;
@@ -235,10 +235,10 @@ function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
   return DataFactory.namedNode("#" + localNode.name);
 }
 
-function resolveLocalIrisInLitDataset<
-  Dataset extends LitDataset & MetadataStruct
->(litDataset: Dataset): Dataset {
-  const resourceIri = litDataset.metadata.fetchedFrom;
+function resolveLocalIrisInLitDataset<Dataset extends LitDataset & DatasetInfo>(
+  litDataset: Dataset
+): Dataset {
+  const resourceIri = litDataset.datasetInfo.fetchedFrom;
   const unresolvedQuads = Array.from(litDataset);
 
   unresolvedQuads.forEach((unresolvedQuad) => {

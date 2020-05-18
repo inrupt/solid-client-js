@@ -16,8 +16,8 @@ import {
   saveLitDatasetInContainer,
 } from "./litDataset";
 import {
-  DiffStruct,
-  MetadataStruct,
+  ChangeLog,
+  DatasetInfo,
   IriString,
   LitDataset,
   LocalNode,
@@ -48,7 +48,9 @@ describe("fetchLitDataset", () => {
   it("keeps track of where the LitDataset was fetched from", async () => {
     const litDataset = await fetchLitDataset("https://some.pod/resource");
 
-    expect(litDataset.metadata.fetchedFrom).toBe("https://some.pod/resource");
+    expect(litDataset.datasetInfo.fetchedFrom).toBe(
+      "https://some.pod/resource"
+    );
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
@@ -67,7 +69,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.metadata.unstable_aclIri).toBe(
+    expect(litDataset.datasetInfo.unstable_aclIri).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -88,7 +90,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.metadata.unstable_aclIri).toBeUndefined();
+    expect(litDataset.datasetInfo.unstable_aclIri).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -107,7 +109,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.metadata.unstable_permissions).toEqual({
+    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -140,7 +142,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.metadata.unstable_permissions).toEqual({
+    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -170,7 +172,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.metadata.unstable_permissions).toBeUndefined();
+    expect(litDataset.datasetInfo.unstable_permissions).toBeUndefined();
   });
 
   it("returns a LitDataset representing the fetched Turtle", async () => {
@@ -390,7 +392,7 @@ describe("saveLitDatasetAt", () => {
       );
     });
 
-    it("makes sure the returned LitDataset has an empty diff", async () => {
+    it("makes sure the returned LitDataset has an empty change log", async () => {
       const mockDataset = dataset();
 
       const storedLitDataset = await saveLitDatasetAt(
@@ -398,7 +400,10 @@ describe("saveLitDatasetAt", () => {
         mockDataset
       );
 
-      expect(storedLitDataset.diff).toEqual({ additions: [], deletions: [] });
+      expect(storedLitDataset.changeLog).toEqual({
+        additions: [],
+        deletions: [],
+      });
     });
 
     it("tells the Pod to only save new data when no data exists yet", async () => {
@@ -418,9 +423,9 @@ describe("saveLitDatasetAt", () => {
 
   describe("when updating an existing resource", () => {
     function getMockUpdatedDataset(
-      diff: DiffStruct["diff"],
+      changeLog: ChangeLog["changeLog"],
       fromUrl: IriString
-    ): LitDataset & DiffStruct & MetadataStruct {
+    ): LitDataset & ChangeLog & DatasetInfo {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
@@ -431,19 +436,21 @@ describe("saveLitDatasetAt", () => {
         )
       );
 
-      diff.additions.forEach((tripleToAdd) => mockDataset.add(tripleToAdd));
+      changeLog.additions.forEach((tripleToAdd) =>
+        mockDataset.add(tripleToAdd)
+      );
 
-      const metadata: MetadataStruct["metadata"] = {
+      const datasetInfo: DatasetInfo["datasetInfo"] = {
         fetchedFrom: fromUrl,
       };
 
       return Object.assign(mockDataset, {
-        diff: diff,
-        metadata: metadata,
+        changeLog: changeLog,
+        datasetInfo: datasetInfo,
       });
     }
 
-    it("sends just the diff to the Pod", async () => {
+    it("sends just the change log to the Pod", async () => {
       const mockFetch = jest
         .fn()
         .mockReturnValue(Promise.resolve(new Response()));
@@ -593,12 +600,12 @@ describe("saveLitDatasetAt", () => {
         "https://some-other.pod/resource"
       );
       expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
-      // Even though the diff is empty there should still be a body,
+      // Even though the change log is empty there should still be a body,
       // since the Dataset itself is not empty:
       expect(mockFetch.mock.calls[0][1].body.trim().length).toBeGreaterThan(0);
     });
 
-    it("does not include a DELETE statement if the diff contains no deletions", async () => {
+    it("does not include a DELETE statement if the change log contains no deletions", async () => {
       const mockFetch = jest
         .fn()
         .mockReturnValue(Promise.resolve(new Response()));
@@ -626,7 +633,7 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1].body).not.toMatch("DELETE");
     });
 
-    it("does not include an INSERT statement if the diff contains no additions", async () => {
+    it("does not include an INSERT statement if the change log contains no additions", async () => {
       const mockFetch = jest
         .fn()
         .mockReturnValue(Promise.resolve(new Response()));
@@ -654,7 +661,7 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1].body).not.toMatch("INSERT");
     });
 
-    it("makes sure the returned LitDataset has an empty diff", async () => {
+    it("makes sure the returned LitDataset has an empty change log", async () => {
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
@@ -682,7 +689,10 @@ describe("saveLitDatasetAt", () => {
         mockDataset
       );
 
-      expect(storedLitDataset.diff).toEqual({ additions: [], deletions: [] });
+      expect(storedLitDataset.changeLog).toEqual({
+        additions: [],
+        deletions: [],
+      });
     });
   });
 });
@@ -884,7 +894,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.metadata.fetchedFrom).toBe(
+    expect(savedLitDataset.datasetInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });
@@ -947,7 +957,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.metadata.fetchedFrom).toBe(
+    expect(savedLitDataset.datasetInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });

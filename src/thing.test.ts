@@ -15,8 +15,8 @@ import {
   ThingLocal,
   ThingPersisted,
   LitDataset,
-  MetadataStruct,
-  DiffStruct,
+  DatasetInfo,
+  ChangeLog,
 } from "./index";
 
 function getMockQuad(
@@ -359,7 +359,7 @@ describe("setThing", () => {
     expect(Array.from(updatedDataset)).toEqual([otherQuad, newThingQuad]);
   });
 
-  it("keeps track of additions and deletions in the attached diff", () => {
+  it("keeps track of additions and deletions in the attached change log", () => {
     const oldThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/old-object",
@@ -382,11 +382,11 @@ describe("setThing", () => {
 
     const updatedDataset = setThing(datasetWithMultipleThings, newThing);
 
-    expect(updatedDataset.diff.additions).toEqual([newThingQuad]);
-    expect(updatedDataset.diff.deletions).toEqual([oldThingQuad]);
+    expect(updatedDataset.changeLog.additions).toEqual([newThingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([oldThingQuad]);
   });
 
-  it("preserves existing diffs", () => {
+  it("preserves existing change logs", () => {
     const oldThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/old-object",
@@ -400,14 +400,17 @@ describe("setThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingDiff: LitDataset & DiffStruct = Object.assign(
+    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
       dataset(),
       {
-        diff: { additions: [existingAddition], deletions: [existingDeletion] },
+        changeLog: {
+          additions: [existingAddition],
+          deletions: [existingDeletion],
+        },
       }
     );
-    datasetWithExistingDiff.add(oldThingQuad);
-    datasetWithExistingDiff.add(otherQuad);
+    datasetWithExistingChangeLog.add(oldThingQuad);
+    datasetWithExistingChangeLog.add(otherQuad);
 
     const newThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
@@ -418,13 +421,13 @@ describe("setThing", () => {
     });
     newThing.add(newThingQuad);
 
-    const updatedDataset = setThing(datasetWithExistingDiff, newThing);
+    const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
 
-    expect(updatedDataset.diff.additions).toEqual([
+    expect(updatedDataset.changeLog.additions).toEqual([
       existingAddition,
       newThingQuad,
     ]);
-    expect(updatedDataset.diff.deletions).toEqual([
+    expect(updatedDataset.changeLog.deletions).toEqual([
       existingDeletion,
       oldThingQuad,
     ]);
@@ -444,14 +447,17 @@ describe("setThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingDiff: LitDataset & DiffStruct = Object.assign(
+    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
       dataset(),
       {
-        diff: { additions: [existingAddition], deletions: [existingDeletion] },
+        changeLog: {
+          additions: [existingAddition],
+          deletions: [existingDeletion],
+        },
       }
     );
-    datasetWithExistingDiff.add(oldThingQuad);
-    datasetWithExistingDiff.add(otherQuad);
+    datasetWithExistingChangeLog.add(oldThingQuad);
+    datasetWithExistingChangeLog.add(otherQuad);
 
     const newThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
@@ -462,14 +468,18 @@ describe("setThing", () => {
     });
     newThing.add(newThingQuad);
 
-    setThing(datasetWithExistingDiff, newThing);
+    setThing(datasetWithExistingChangeLog, newThing);
 
-    expect(Array.from(datasetWithExistingDiff)).toEqual([
+    expect(Array.from(datasetWithExistingChangeLog)).toEqual([
       oldThingQuad,
       otherQuad,
     ]);
-    expect(datasetWithExistingDiff.diff.additions).toEqual([existingAddition]);
-    expect(datasetWithExistingDiff.diff.deletions).toEqual([existingDeletion]);
+    expect(datasetWithExistingChangeLog.changeLog.additions).toEqual([
+      existingAddition,
+    ]);
+    expect(datasetWithExistingChangeLog.changeLog.deletions).toEqual([
+      existingDeletion,
+    ]);
   });
 
   it("does not modify Quads with unexpected Subjects", () => {
@@ -524,10 +534,10 @@ describe("setThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & MetadataStruct = Object.assign(
+    const datasetWithNamedNode: LitDataset & DatasetInfo = Object.assign(
       dataset(),
       {
-        metadata: { fetchedFrom: "https://some.pod/resource" },
+        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -565,10 +575,10 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalSubject: LitDataset & MetadataStruct = Object.assign(
+    const datasetWithLocalSubject: LitDataset & DatasetInfo = Object.assign(
       dataset(),
       {
-        metadata: { fetchedFrom: "https://some.pod/resource" },
+        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithLocalSubject.add(oldThingQuad);
@@ -650,7 +660,7 @@ describe("removeThing", () => {
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
   });
 
-  it("keeps track of deletions in the attached diff", () => {
+  it("keeps track of deletions in the attached change log", () => {
     const thingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
@@ -674,13 +684,15 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(datasetWithMultipleThings, thing);
 
-    expect(updatedDataset.diff.additions).toEqual([]);
-    expect(updatedDataset.diff.deletions.length).toBe(2);
-    expect(updatedDataset.diff.deletions.includes(sameSubjectQuad)).toBe(true);
-    expect(updatedDataset.diff.deletions.includes(thingQuad)).toBe(true);
+    expect(updatedDataset.changeLog.additions).toEqual([]);
+    expect(updatedDataset.changeLog.deletions.length).toBe(2);
+    expect(updatedDataset.changeLog.deletions.includes(sameSubjectQuad)).toBe(
+      true
+    );
+    expect(updatedDataset.changeLog.deletions.includes(thingQuad)).toBe(true);
   });
 
-  it("preserves existing diffs", () => {
+  it("preserves existing change logs", () => {
     const thingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
@@ -691,23 +703,26 @@ describe("removeThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingDiff: LitDataset & DiffStruct = Object.assign(
+    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
       dataset(),
       {
-        diff: { additions: [existingAddition], deletions: [existingDeletion] },
+        changeLog: {
+          additions: [existingAddition],
+          deletions: [existingDeletion],
+        },
       }
     );
-    datasetWithExistingDiff.add(thingQuad);
+    datasetWithExistingChangeLog.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
       iri: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
-    const updatedDataset = removeThing(datasetWithExistingDiff, thing);
+    const updatedDataset = removeThing(datasetWithExistingChangeLog, thing);
 
-    expect(updatedDataset.diff.additions).toEqual([existingAddition]);
-    expect(updatedDataset.diff.deletions).toEqual([
+    expect(updatedDataset.changeLog.additions).toEqual([existingAddition]);
+    expect(updatedDataset.changeLog.deletions).toEqual([
       existingDeletion,
       thingQuad,
     ]);
@@ -731,7 +746,7 @@ describe("removeThing", () => {
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.diff.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("does not modify the original LitDataset", () => {
@@ -753,7 +768,7 @@ describe("removeThing", () => {
       otherQuad,
     ]);
     expect(
-      (datasetWithMultipleThings as LitDataset & DiffStruct).diff
+      (datasetWithMultipleThings as LitDataset & ChangeLog).changeLog
     ).toBeUndefined();
   });
 
@@ -793,7 +808,7 @@ describe("removeThing", () => {
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.diff.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("can recognise LocalNodes", () => {
@@ -815,7 +830,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
     expect(Array.from(updatedDataset)).toEqual([]);
-    expect(updatedDataset.diff.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("can reconcile given LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
@@ -823,10 +838,10 @@ describe("removeThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & MetadataStruct = Object.assign(
+    const datasetWithNamedNode: LitDataset & DatasetInfo = Object.assign(
       dataset(),
       {
-        metadata: { fetchedFrom: "https://some.pod/resource" },
+        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -854,10 +869,10 @@ describe("removeThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalNode: LitDataset & MetadataStruct = Object.assign(
+    const datasetWithLocalNode: LitDataset & DatasetInfo = Object.assign(
       dataset(),
       {
-        metadata: { fetchedFrom: "https://some.pod/resource" },
+        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithLocalNode.add(thingQuad);
@@ -893,7 +908,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
     expect(Array.from(updatedDataset)).toEqual([similarSubjectQuad]);
-    expect(updatedDataset.diff.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
   });
 });
 
