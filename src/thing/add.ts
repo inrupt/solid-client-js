@@ -7,6 +7,8 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
+  XmlSchemaTypeIri,
+  xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
 import { Literal, NamedNode } from "rdf-js";
@@ -48,7 +50,7 @@ export const addBoolean: AddOfType<boolean> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeBoolean(value),
-    "http://www.w3.org/2001/XMLSchema#boolean"
+    xmlSchemaTypes.boolean
   );
 };
 
@@ -67,7 +69,7 @@ export const addDatetime: AddOfType<Date> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDatetime(value),
-    "http://www.w3.org/2001/XMLSchema#dateTime"
+    xmlSchemaTypes.dateTime
   );
 };
 
@@ -86,7 +88,7 @@ export const addDecimal: AddOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDecimal(value),
-    "http://www.w3.org/2001/XMLSchema#decimal"
+    xmlSchemaTypes.decimal
   );
 };
 
@@ -105,7 +107,7 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeInteger(value),
-    "http://www.w3.org/2001/XMLSchema#integer"
+    xmlSchemaTypes.integer
   );
 };
 
@@ -151,12 +153,7 @@ export const addStringUnlocalized: AddOfType<string> = (
   predicate,
   value
 ) => {
-  return addLiteralOfType(
-    thing,
-    predicate,
-    value,
-    "http://www.w3.org/2001/XMLSchema#string"
-  );
+  return addLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
 };
 
 /**
@@ -219,7 +216,7 @@ function addLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
-  type: IriString
+  type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function addLiteralOfType(
   thing: Thing,
