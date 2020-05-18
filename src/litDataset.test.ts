@@ -1,3 +1,4 @@
+import { describe, it, expect } from "@jest/globals";
 jest.mock("./fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -26,7 +27,12 @@ import { dataset } from "@rdfjs/dataset";
 
 describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts");
+    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
 
     await fetchLitDataset("https://some.pod/resource");
 
@@ -37,7 +43,7 @@ describe("fetchLitDataset", () => {
 
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
     await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
@@ -54,7 +60,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -75,7 +81,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -94,7 +100,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -126,7 +132,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -159,7 +165,7 @@ describe("fetchLitDataset", () => {
   });
 
   it("does not provide the resource's access permissions if not provided by the server", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {},
@@ -189,7 +195,7 @@ describe("fetchLitDataset", () => {
         vcard:fn "Vincent".
     `;
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response(turtle)));
 
     const litDataset = await fetchLitDataset("https://arbitrary.pod/resource", {
@@ -202,7 +208,7 @@ describe("fetchLitDataset", () => {
 
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
@@ -218,7 +224,7 @@ describe("fetchLitDataset", () => {
 
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
@@ -235,7 +241,12 @@ describe("fetchLitDataset", () => {
 
 describe("saveLitDatasetAt", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts");
+    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
 
     await saveLitDatasetAt("https://some.pod/resource", dataset());
 
@@ -244,7 +255,7 @@ describe("saveLitDatasetAt", () => {
 
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
     await saveLitDatasetAt("https://some.pod/resource", dataset(), {
@@ -256,7 +267,7 @@ describe("saveLitDatasetAt", () => {
 
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
@@ -276,7 +287,7 @@ describe("saveLitDatasetAt", () => {
 
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
@@ -297,7 +308,7 @@ describe("saveLitDatasetAt", () => {
   describe("when saving a new resource", () => {
     it("sends the given LitDataset to the Pod", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
       const mockDataset = dataset();
       mockDataset.add(
@@ -315,21 +326,23 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls.length).toBe(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-      expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
-      expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
-        "text/turtle"
-      );
-      expect(mockFetch.mock.calls[0][1].headers["Link"]).toBe(
-        '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
-      );
-      expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+      expect(mockFetch.mock.calls[0][1]!.method).toBe("PUT");
+      expect(
+        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+          "Content-Type"
+        ]
+      ).toBe("text/turtle");
+      expect(
+        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)["Link"]
+      ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
+      expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
       );
     });
 
     it("sets relative IRIs for LocalNodes", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
       const mockDataset = dataset();
       const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -352,13 +365,13 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][1].body).toMatch("#some-subject-name");
-      expect(mockFetch.mock.calls[0][1].body).toMatch("#some-object-name");
+      expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-subject-name");
+      expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-object-name");
     });
 
     it("resolves relative IRIs in the returned LitDataset", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
       const mockDataset = dataset();
       const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -408,14 +421,14 @@ describe("saveLitDatasetAt", () => {
 
     it("tells the Pod to only save new data when no data exists yet", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       await saveLitDatasetAt("https://arbitrary.pod/resource", dataset(), {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls[0][1].headers).toMatchObject({
+      expect(mockFetch.mock.calls[0][1]!.headers).toMatchObject({
         "If-None-Match": "*",
       });
     });
@@ -452,7 +465,7 @@ describe("saveLitDatasetAt", () => {
 
     it("sends just the change log to the Pod", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const mockDataset = getMockUpdatedDataset(
@@ -483,11 +496,13 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls.length).toBe(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-      expect(mockFetch.mock.calls[0][1].method).toBe("PATCH");
-      expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
-        "application/sparql-update"
-      );
-      expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+      expect(mockFetch.mock.calls[0][1]!.method).toBe("PATCH");
+      expect(
+        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+          "Content-Type"
+        ]
+      ).toBe("application/sparql-update");
+      expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
         "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
           "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
       );
@@ -495,7 +510,7 @@ describe("saveLitDatasetAt", () => {
 
     it("sets relative IRIs for LocalNodes", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -530,7 +545,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      const [deleteStatement, insertStatement] = (mockFetch.mock.calls[0][1]
+      const [deleteStatement, insertStatement] = (mockFetch.mock.calls[0][1]!
         .body as string).split(";");
       expect(deleteStatement).toMatch("#some-subject-name");
       expect(insertStatement).toMatch("#some-subject-name");
@@ -540,7 +555,7 @@ describe("saveLitDatasetAt", () => {
 
     it("resolves relative IRIs in the returned LitDataset", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -583,7 +598,7 @@ describe("saveLitDatasetAt", () => {
 
     it("sends the full LitDataset if it is saved to a different IRI", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const mockDataset = getMockUpdatedDataset(
@@ -599,15 +614,17 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][0]).toEqual(
         "https://some-other.pod/resource"
       );
-      expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
+      expect(mockFetch.mock.calls[0][1]!.method).toBe("PUT");
       // Even though the change log is empty there should still be a body,
       // since the Dataset itself is not empty:
-      expect(mockFetch.mock.calls[0][1].body.trim().length).toBeGreaterThan(0);
+      expect(
+        (mockFetch.mock.calls[0][1]!.body as string).trim().length
+      ).toBeGreaterThan(0);
     });
 
     it("does not include a DELETE statement if the change log contains no deletions", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const mockDataset = getMockUpdatedDataset(
@@ -630,12 +647,12 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][1].body).not.toMatch("DELETE");
+      expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("DELETE");
     });
 
     it("does not include an INSERT statement if the change log contains no additions", async () => {
       const mockFetch = jest
-        .fn()
+        .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
       const mockDataset = getMockUpdatedDataset(
@@ -658,7 +675,7 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls.length).toBe(1);
-      expect(mockFetch.mock.calls[0][1].body).not.toMatch("INSERT");
+      expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("INSERT");
     });
 
     it("makes sure the returned LitDataset has an empty change log", async () => {
@@ -703,7 +720,12 @@ describe("saveLitDatasetInContainer", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts");
+    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
 
     await saveLitDatasetInContainer("https://some.pod/container/", dataset());
 
@@ -711,7 +733,9 @@ describe("saveLitDatasetInContainer", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer("https://some.pod/container/", dataset(), {
       fetch: mockFetch,
@@ -722,7 +746,7 @@ describe("saveLitDatasetInContainer", () => {
 
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
@@ -742,7 +766,7 @@ describe("saveLitDatasetInContainer", () => {
 
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
@@ -762,7 +786,7 @@ describe("saveLitDatasetInContainer", () => {
 
   it("returns a meaningful error when the server does not return the new Resource's location", async () => {
     const mockFetch = jest
-      .fn()
+      .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
     const fetchPromise = saveLitDatasetInContainer(
@@ -781,7 +805,9 @@ describe("saveLitDatasetInContainer", () => {
   });
 
   it("sends the given LitDataset to the Pod", async () => {
-    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
     const mockDataset = dataset();
     mockDataset.add(
       DataFactory.quad(
@@ -802,20 +828,24 @@ describe("saveLitDatasetInContainer", () => {
 
     expect(mockFetch.mock.calls.length).toBe(1);
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
-    expect(mockFetch.mock.calls[0][1].method).toBe("POST");
-    expect(mockFetch.mock.calls[0][1].headers["Content-Type"]).toBe(
-      "text/turtle"
-    );
-    expect(mockFetch.mock.calls[0][1].headers["Link"]).toBe(
-      '<http://www.w3.org/ns/ldp#Resource>; rel="type"'
-    );
-    expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+    expect(mockFetch.mock.calls[0][1]!.method).toBe("POST");
+    expect(
+      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+        "Content-Type"
+      ]
+    ).toBe("text/turtle");
+    expect(
+      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)["Link"]
+    ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
+    expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
       "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
     );
   });
 
   it("sets relative IRIs for LocalNodes", async () => {
-    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
     const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "some-subject-name",
     });
@@ -841,13 +871,15 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(mockFetch.mock.calls.length).toBe(1);
-    expect(mockFetch.mock.calls[0][1].body.trim()).toBe(
+    expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
       "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
     );
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer(
       "https://arbitrary.pod/container/",
@@ -858,13 +890,15 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls[0][1].headers).toMatchObject({
+    expect(mockFetch.mock.calls[0][1]!.headers).toMatchObject({
       slug: "some-slug",
     });
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = jest.fn().mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer(
       "https://arbitrary.pod/container/",
@@ -874,11 +908,13 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls[0][1].headers.slug).toBeUndefined();
+    expect(
+      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>).slug
+    ).toBeUndefined();
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response("Arbitrary response", {
           headers: { Location: "https://some.pod/container/resource" },
@@ -900,7 +936,7 @@ describe("saveLitDatasetInContainer", () => {
   });
 
   it("resolves relative IRIs in the returned LitDataset", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response("Arbitrary response", {
           headers: { Location: "https://some.pod/container/resource" },
@@ -941,7 +977,7 @@ describe("saveLitDatasetInContainer", () => {
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = jest.fn().mockReturnValue(
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response("Arbitrary response", {
           headers: { Location: "/container/resource" },
