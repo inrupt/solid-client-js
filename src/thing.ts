@@ -7,10 +7,10 @@ import {
   ThingLocal,
   LocalNode,
   ThingPersisted,
-  DiffStruct,
-  MetadataStruct,
-  hasDiff,
-  hasMetadata,
+  ChangeLog,
+  DatasetInfo,
+  hasChangelog,
+  hasDatasetInfo,
 } from "./index";
 import { dataset, filter, clone } from "./rdfjs";
 import {
@@ -102,12 +102,12 @@ export function getThingAll(
 export function setThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: Thing
-): Dataset & DiffStruct {
+): Dataset & ChangeLog {
   const newDataset = removeThing(litDataset, thing);
 
   for (const quad of thing) {
     newDataset.add(quad);
-    newDataset.diff.additions.push(quad);
+    newDataset.changeLog.additions.push(quad);
   }
 
   return newDataset;
@@ -123,10 +123,10 @@ export function setThing<Dataset extends LitDataset>(
 export function removeThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: IriString | Iri | LocalNode | Thing
-): Dataset & DiffStruct {
-  const newLitDataset = withDiff(cloneLitStructs(litDataset));
-  const resourceIri: IriString | undefined = hasMetadata(newLitDataset)
-    ? newLitDataset.metadata.fetchedFrom
+): Dataset & ChangeLog {
+  const newLitDataset = withChangeLog(cloneLitStructs(litDataset));
+  const resourceIri: IriString | undefined = hasDatasetInfo(newLitDataset)
+    ? newLitDataset.datasetInfo.fetchedFrom
     : undefined;
 
   const thingSubject = toNode(thing);
@@ -139,18 +139,20 @@ export function removeThing<Dataset extends LitDataset>(
     ) {
       newLitDataset.add(quad);
     } else {
-      newLitDataset.diff.deletions.push(quad);
+      newLitDataset.changeLog.deletions.push(quad);
     }
   }
   return newLitDataset;
 }
 
-function withDiff<Dataset extends LitDataset>(
+function withChangeLog<Dataset extends LitDataset>(
   litDataset: Dataset
-): Dataset & DiffStruct {
-  const newLitDataset: Dataset & DiffStruct = hasDiff(litDataset)
+): Dataset & ChangeLog {
+  const newLitDataset: Dataset & ChangeLog = hasChangelog(litDataset)
     ? litDataset
-    : Object.assign(litDataset, { diff: { additions: [], deletions: [] } });
+    : Object.assign(litDataset, {
+        changeLog: { additions: [], deletions: [] },
+      });
   return newLitDataset;
 }
 
@@ -158,15 +160,15 @@ function cloneLitStructs<Dataset extends LitDataset>(
   litDataset: Dataset
 ): Dataset {
   const freshDataset = dataset();
-  if (hasDiff(litDataset)) {
-    (freshDataset as LitDataset & DiffStruct).diff = {
-      additions: [...litDataset.diff.additions],
-      deletions: [...litDataset.diff.deletions],
+  if (hasChangelog(litDataset)) {
+    (freshDataset as LitDataset & ChangeLog).changeLog = {
+      additions: [...litDataset.changeLog.additions],
+      deletions: [...litDataset.changeLog.deletions],
     };
   }
-  if (hasMetadata(litDataset)) {
-    (freshDataset as LitDataset & MetadataStruct).metadata = {
-      ...litDataset.metadata,
+  if (hasDatasetInfo(litDataset)) {
+    (freshDataset as LitDataset & DatasetInfo).datasetInfo = {
+      ...litDataset.datasetInfo,
     };
   }
 

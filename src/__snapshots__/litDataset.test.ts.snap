@@ -2,7 +2,7 @@
 
 exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
-  "metadata": Object {
+  "datasetInfo": Object {
     "fetchedFrom": "https://arbitrary.pod/resource",
   },
   "quads": Set {

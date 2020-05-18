@@ -113,8 +113,8 @@ type unstable_WacAllow = {
     control: boolean;
   };
 };
-export type MetadataStruct = {
-  metadata: {
+export type DatasetInfo = {
+  datasetInfo: {
     fetchedFrom: IriString;
     /**
      * The IRI reported by the server as possibly containing an ACL file. Note that this file might
@@ -136,27 +136,27 @@ export type MetadataStruct = {
   };
 };
 
-export type DiffStruct = {
-  diff: {
+export type ChangeLog = {
+  changeLog: {
     additions: Quad[];
     deletions: Quad[];
   };
 };
 
-export function hasMetadata<T extends LitDataset>(
+export function hasDatasetInfo<T extends LitDataset>(
   dataset: T
-): dataset is T & MetadataStruct {
-  const potentialMetadataStruct = dataset as T & MetadataStruct;
-  return typeof potentialMetadataStruct.metadata === "object";
+): dataset is T & DatasetInfo {
+  const potentialDatasetInfo = dataset as T & DatasetInfo;
+  return typeof potentialDatasetInfo.datasetInfo === "object";
 }
 
-export function hasDiff<T extends LitDataset>(
+export function hasChangelog<T extends LitDataset>(
   dataset: T
-): dataset is T & DiffStruct {
-  const potentialDiffStruct = dataset as T & DiffStruct;
+): dataset is T & ChangeLog {
+  const potentialChangeLog = dataset as T & ChangeLog;
   return (
-    typeof potentialDiffStruct.diff === "object" &&
-    Array.isArray(potentialDiffStruct.diff.additions) &&
-    Array.isArray(potentialDiffStruct.diff.deletions)
+    typeof potentialChangeLog.changeLog === "object" &&
+    Array.isArray(potentialChangeLog.changeLog.additions) &&
+    Array.isArray(potentialChangeLog.changeLog.deletions)
   );
 }
