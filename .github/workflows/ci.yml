@@ -28,6 +28,7 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
+    - run: npm run e2e-test
     - run: npx prettier --check "src/**"
       # Prettier for some reason reports that the formatting is off on Windows.
       # Since a single check is sufficient for code formatting, we skip it there:
