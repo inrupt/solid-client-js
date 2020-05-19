@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
+    "e2e-test": "jest --config=jest.e2e.config.js",
     "build": "rollup --config rollup.config.js",
     "prepublishOnly": "yarn run build"
   },
