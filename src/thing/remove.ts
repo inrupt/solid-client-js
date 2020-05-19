@@ -16,6 +16,8 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
+  XmlSchemaTypeIri,
+  xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
 import { filterThing } from "../thing";
@@ -77,7 +79,7 @@ export const removeBoolean: RemoveOfType<boolean> = (
     thing,
     predicate,
     serializeBoolean(value),
-    "http://www.w3.org/2001/XMLSchema#boolean"
+    xmlSchemaTypes.boolean
   );
 };
 
@@ -92,7 +94,7 @@ export const removeDatetime: RemoveOfType<Date> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDatetime(value),
-    "http://www.w3.org/2001/XMLSchema#dateTime"
+    xmlSchemaTypes.dateTime
   );
 };
 
@@ -111,7 +113,7 @@ export const removeDecimal: RemoveOfType<number> = (
     thing,
     predicate,
     serializeDecimal(value),
-    "http://www.w3.org/2001/XMLSchema#decimal"
+    xmlSchemaTypes.decimal
   );
 };
 
@@ -130,7 +132,7 @@ export const removeInteger: RemoveOfType<number> = (
     thing,
     predicate,
     serializeInteger(value),
-    "http://www.w3.org/2001/XMLSchema#integer"
+    xmlSchemaTypes.integer
   );
 };
 
@@ -174,12 +176,7 @@ export const removeStringUnlocalized: RemoveOfType<string> = (
   predicate,
   value
 ) => {
-  return removeLiteralOfType(
-    thing,
-    predicate,
-    value,
-    "http://www.w3.org/2001/XMLSchema#string"
-  );
+  return removeLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
 };
 
 /**
@@ -242,13 +239,13 @@ function removeLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Iri | IriString,
   value: string,
-  type: IriString
+  type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function removeLiteralOfType(
   thing: Thing,
   predicate: Iri | IriString,
   value: string,
-  type: IriString
+  type: XmlSchemaTypeIri
 ): Thing {
   const updatedThing = removeLiteral(
     thing,
