@@ -8,11 +8,13 @@ import {
   hasChangelog,
   hasDatasetInfo,
   LocalNode,
+  unstable_Acl,
 } from "./index";
 import { dataset, DataFactory } from "./rdfjs";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
+import { unstable_AccessModes } from "./acl";
 
 const defaultFetchOptions = {
   fetch: fetch,
@@ -58,6 +60,13 @@ export async function fetchLitDataset(
     DatasetInfo = Object.assign(resource, { datasetInfo: datasetInfo });
 
   return resourceWithDatasetInfo;
+}
+
+export async function unstable_fetchLitDatasetWithAcl(
+  url: IriString,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<LitDataset & DatasetInfo & unstable_Acl> {
+  throw new Error("To be implemented");
 }
 
 const defaultSaveOptions = {
@@ -257,14 +266,24 @@ function resolveLocalIrisInLitDataset<Dataset extends LitDataset & DatasetInfo>(
  * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
  */
 function parseWacAllowHeader(wacAllowHeader: string) {
-  function parsePermissionStatement(permissionStatement: string) {
+  function parsePermissionStatement(
+    permissionStatement: string
+  ): unstable_AccessModes {
     const permissions = permissionStatement.split(" ");
-    return {
-      read: permissions.includes("read"),
-      append: permissions.includes("append"),
-      write: permissions.includes("write"),
-      control: permissions.includes("control"),
-    };
+    const writePermission = permissions.includes("write");
+    return writePermission
+      ? {
+          read: permissions.includes("read"),
+          append: true,
+          write: true,
+          control: permissions.includes("control"),
+        }
+      : {
+          read: permissions.includes("read"),
+          append: permissions.includes("append"),
+          write: false,
+          control: permissions.includes("control"),
+        };
   }
   function getStatementFor(header: string, scope: "user" | "public") {
     const relevantEntries = header

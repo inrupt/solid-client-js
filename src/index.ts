@@ -73,6 +73,7 @@ export {
  */
 export type Iri = NamedNode;
 export type IriString = string;
+export type WebId = IriString;
 
 /**
  * A LitDataset represents all Quads from a single Resource.
@@ -98,6 +99,11 @@ export type ThingLocal = Thing & { name: string };
  * Node's full IRI once it is persisted, where it will transform into a Named Node.
  */
 export type LocalNode = BlankNode & { name: string };
+
+export type unstable_AclDataset = LitDataset &
+  DatasetInfo & { accessTo: IriString };
+
+export type unstable_AclRule = Thing;
 
 type unstable_WacAllow = {
   user: {
@@ -143,6 +149,13 @@ export type ChangeLog = {
   };
 };
 
+export type unstable_Acl = {
+  acl: {
+    resourceAcl?: unstable_AclDataset;
+    fallbackAcl: unstable_AclDataset;
+  };
+};
+
 export function hasDatasetInfo<T extends LitDataset>(
   dataset: T
 ): dataset is T & DatasetInfo {
@@ -158,5 +171,19 @@ export function hasChangelog<T extends LitDataset>(
     typeof potentialChangeLog.changeLog === "object" &&
     Array.isArray(potentialChangeLog.changeLog.additions) &&
     Array.isArray(potentialChangeLog.changeLog.deletions)
+  );
+}
+
+export function unstable_hasAcl<T extends LitDataset>(
+  dataset: T
+): dataset is T & unstable_Acl {
+  const potentialAcl = dataset as T & unstable_Acl;
+  return (
+    typeof potentialAcl.acl === "object" &&
+    typeof potentialAcl.acl.fallbackAcl === "object" &&
+    hasDatasetInfo(potentialAcl.acl.fallbackAcl) &&
+    (typeof potentialAcl.acl.resourceAcl === "undefined" ||
+      (typeof potentialAcl.acl.resourceAcl === "object" &&
+        hasDatasetInfo(potentialAcl.acl.resourceAcl)))
   );
 }
