@@ -16,6 +16,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: "module",
+    tsconfigRootDir: __dirname,
+    project: ["./tsconfig.json"],
   },
   plugins: ["@typescript-eslint"],
   rules: {
@@ -23,5 +25,6 @@ module.exports = {
     // we disable the generic one, because it thinks imported types are unused
     // when they're not:
     "no-unused-vars": "off",
+    "@typescript-eslint/no-floating-promises": "error",
   },
 };

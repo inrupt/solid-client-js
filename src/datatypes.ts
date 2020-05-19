@@ -3,6 +3,21 @@ import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./index";
 
 /**
+ * IRIs of the XML Schema data types we support
+ * @internal
+ */
+export const xmlSchemaTypes = {
+  boolean: "http://www.w3.org/2001/XMLSchema#boolean",
+  dateTime: "http://www.w3.org/2001/XMLSchema#dateTime",
+  decimal: "http://www.w3.org/2001/XMLSchema#decimal",
+  integer: "http://www.w3.org/2001/XMLSchema#integer",
+  string: "http://www.w3.org/2001/XMLSchema#string",
+  langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+} as const;
+/** @internal */
+export type XmlSchemaTypeIri = typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
+
+/**
  * @internal
  * @param value Value to serialise.
  * @returns String representation of `value`.
