@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
+    "e2e-test": "jest --config=jest.e2e.config.js",
     "build": "rollup --config rollup.config.js",
     "prepublishOnly": "yarn run build"
   },
@@ -24,16 +25,16 @@
   },
   "devDependencies": {
     "@types/http-link-header": "^1.0.1",
-    "@types/jest": "^25.2.2",
-    "@typescript-eslint/eslint-plugin": "^2.33.0",
-    "@typescript-eslint/parser": "^2.33.0",
+    "@types/jest": "^25.2.3",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.0.0",
     "husky": "^4.2.5",
     "jest": "^25.5.4",
-    "lint-staged": "^10.2.2",
+    "lint-staged": "^10.2.4",
     "prettier": "2.0.5",
     "rdf-namespaces": "^1.8.0",
-    "rollup": "^2.10.2",
+    "rollup": "^2.10.4",
     "rollup-plugin-typescript2": "^0.27.1",
     "ts-jest": "^25.5.1",
     "typescript": "^3.8.3"
