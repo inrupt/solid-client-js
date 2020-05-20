@@ -30,6 +30,8 @@ export async function unstable_saveFallbackAclFor(
   dataset: LitDataset,
   acl: unstable_Acl
 ): Promise<unstable_Acl | null> {
+  // TODO: Implement this last, and only if we agree with both relevant teams that this is desirable.
+  //       See https://github.com/inrupt/lit-solid-core/pull/89/files/33f9fe5780877cd2764aae6fc62f2da6a4fe5569#r427773611
   throw new Error("To be implemented");
 }
 
