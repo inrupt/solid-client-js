@@ -65,7 +65,7 @@ export async function fetchLitDataset(
 export async function unstable_fetchLitDatasetWithAcl(
   url: IriString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & DatasetInfo & unstable_Acl> {
+): Promise<LitDataset & DatasetInfo & (unstable_Acl | { acl: null })> {
   throw new Error("To be implemented");
 }
 
