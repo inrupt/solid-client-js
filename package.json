@@ -34,7 +34,7 @@
     "lint-staged": "^10.2.4",
     "prettier": "2.0.5",
     "rdf-namespaces": "^1.8.0",
-    "rollup": "^2.10.4",
+    "rollup": "^2.10.5",
     "rollup-plugin-typescript2": "^0.27.1",
     "ts-jest": "^25.5.1",
     "typescript": "^3.8.3"
@@ -43,7 +43,7 @@
     "@rdfjs/dataset": "^1.0.1",
     "@types/n3": "^1.1.6",
     "@types/rdf-js": "^3.0.0",
-    "@types/rdfjs__dataset": "^1.0.1",
+    "@types/rdfjs__dataset": "^1.0.2",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
     "n3": "^1.3.7"
