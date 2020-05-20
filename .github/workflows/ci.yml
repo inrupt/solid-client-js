@@ -70,6 +70,6 @@ jobs:
     - run: |
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid-core@$TAG_SLUG"
+        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid@$TAG_SLUG"
         echo ""
         echo "(You might first need to log in with \`npm login --registry=https://npm.pkg.github.com\`.)"

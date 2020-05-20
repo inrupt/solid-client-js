@@ -1,5 +1,5 @@
 {
-  "name": "@inrupt/lit-solid-core",
+  "name": "@inrupt/lit-solid",
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
@@ -13,15 +13,15 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://github.com/inrupt/lit-solid-core",
-  "bugs": "https://github.com/inrupt/lit-solid-core/issues",
+  "homepage": "https://github.com/inrupt/lit-solid",
+  "bugs": "https://github.com/inrupt/lit-solid/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/inrupt/lit-solid-core.git"
+    "url": "https://github.com/inrupt/lit-solid.git"
   },
   "devDependencies": {
     "@types/http-link-header": "^1.0.1",
