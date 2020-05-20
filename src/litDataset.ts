@@ -8,13 +8,19 @@ import {
   hasChangelog,
   hasDatasetInfo,
   LocalNode,
+  unstable_Acl,
+  unstable_hasAccessibleAcl,
 } from "./index";
 import { dataset, DataFactory } from "./rdfjs";
 import { fetch } from "./fetcher";
 import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
+import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
 
-const defaultFetchOptions = {
+/**
+ * @internal
+ */
+export const defaultFetchOptions = {
   fetch: fetch,
 };
 export async function fetchLitDataset(
@@ -37,15 +43,51 @@ export async function fetchLitDataset(
   const resource = dataset();
   triples.forEach((triple) => resource.add(triple));
 
+  const datasetInfo = parseDatasetInfo(response);
+
+  const resourceWithDatasetInfo: LitDataset &
+    DatasetInfo = Object.assign(resource, { datasetInfo: datasetInfo });
+
+  return resourceWithDatasetInfo;
+}
+
+/**
+ * @internal
+ */
+export async function internal_fetchLitDatasetInfo(
+  url: IriString,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<DatasetInfo> {
+  const config = {
+    ...defaultFetchOptions,
+    ...options,
+  };
+
+  const response = await config.fetch(url, { method: "HEAD" });
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Resource metadata failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const datasetInfo = parseDatasetInfo(response);
+
+  return { datasetInfo: datasetInfo };
+}
+
+function parseDatasetInfo(response: Response): DatasetInfo["datasetInfo"] {
   const datasetInfo: DatasetInfo["datasetInfo"] = {
-    fetchedFrom: url,
+    fetchedFrom: response.url,
   };
   const linkHeader = response.headers.get("Link");
   if (linkHeader) {
     const parsedLinks = LinkHeader.parse(linkHeader);
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      datasetInfo.unstable_aclIri = new URL(aclLinks[0].uri, url).href;
+      datasetInfo.unstable_aclIri = new URL(
+        aclLinks[0].uri,
+        datasetInfo.fetchedFrom
+      ).href;
     }
   }
 
@@ -54,10 +96,49 @@ export async function fetchLitDataset(
     datasetInfo.unstable_permissions = parseWacAllowHeader(wacAllowHeader);
   }
 
-  const resourceWithDatasetInfo: LitDataset &
-    DatasetInfo = Object.assign(resource, { datasetInfo: datasetInfo });
+  return datasetInfo;
+}
 
-  return resourceWithDatasetInfo;
+/**
+ * Experimental: fetch a LitDataset and its associated Access Control List.
+ *
+ * This is an experimental function that fetches both a Resource, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
+ * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
+ * provide this info in a single request. Therefore, and because this function is still
+ * experimental, prefer [[fetchLitDataset]] instead.
+ *
+ * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
+ * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
+ * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
+ * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
+ * authenticated user.
+ *
+ * @param url IRI of the LitDataset to fetch.
+ * @param options
+ * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
+ */
+export async function unstable_fetchLitDatasetWithAcl(
+  url: IriString,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<LitDataset & DatasetInfo & (unstable_Acl | { acl: null })> {
+  const litDataset = await fetchLitDataset(url, options);
+
+  if (!unstable_hasAccessibleAcl(litDataset)) {
+    return Object.assign(litDataset, { acl: null });
+  }
+
+  const [resourceAcl, fallbackAcl] = await Promise.all([
+    internal_fetchResourceAcl(litDataset, options),
+    internal_fetchFallbackAcl(litDataset, options),
+  ]);
+
+  const acl: unstable_Acl["acl"] = {
+    fallbackAcl: fallbackAcl,
+    resourceAcl: resourceAcl !== null ? resourceAcl : undefined,
+  };
+
+  return Object.assign(litDataset, { acl: acl });
 }
 
 const defaultSaveOptions = {

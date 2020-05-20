@@ -4,6 +4,7 @@ export {
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
+  unstable_fetchLitDatasetWithAcl,
 } from "./litDataset";
 export {
   getThingOne,
@@ -99,6 +100,11 @@ export type ThingLocal = Thing & { name: string };
  */
 export type LocalNode = BlankNode & { name: string };
 
+export type unstable_AclDataset = LitDataset &
+  DatasetInfo & { accessTo: IriString };
+
+export type unstable_AclRule = Thing;
+
 type unstable_WacAllow = {
   user: {
     read: boolean;
@@ -143,6 +149,13 @@ export type ChangeLog = {
   };
 };
 
+export type unstable_Acl = {
+  acl: {
+    resourceAcl?: unstable_AclDataset;
+    fallbackAcl: unstable_AclDataset | null;
+  };
+};
+
 export function hasDatasetInfo<T extends LitDataset>(
   dataset: T
 ): dataset is T & DatasetInfo {
@@ -159,4 +172,12 @@ export function hasChangelog<T extends LitDataset>(
     Array.isArray(potentialChangeLog.changeLog.additions) &&
     Array.isArray(potentialChangeLog.changeLog.deletions)
   );
+}
+
+export function unstable_hasAccessibleAcl<Dataset extends DatasetInfo>(
+  dataset: Dataset
+): dataset is Dataset & {
+  datasetInfo: { unstable_aclIri: IriString };
+} {
+  return typeof dataset.datasetInfo.unstable_aclIri === "string";
 }
