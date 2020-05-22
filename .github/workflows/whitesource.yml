@@ -1,0 +1,53 @@
+name: Whitesource Security Scan
+
+on:
+  # The config is set up to verify compliance on pull requests, and to update the
+  # whitesource inventory on push to the master branch.
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  whitesource:
+    runs-on: ubuntu-18.04
+    name: Whitesource security scan
+    steps:
+      # Setup
+      - name: Checkout repository
+        uses: actions/checkout@v2.1.0
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1.3.0
+        with:
+          java-version: 1.8
+
+      # Use a cache for the local gradle repository
+      - name: Cache
+        uses: actions/cache@v1.1.2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Fetch WSS unified agent
+        run: wget https://github.com/whitesource/unified-agent-distribution/releases/download/$WHITESOURCE_UNIFIED_AGENT_VERSION/wss-unified-agent.jar -O resources/whitesource/wss-unified-agent.jar
+        env:
+          WHITESOURCE_UNIFIED_AGENT_VERSION: v20.4.2.1
+
+      - name: Install all the dependencies
+        run: npm ci
+
+      - name: Run WhiteSource Scan
+        run: java -jar "$WHITESOURCE_UA_PATH" -c "$WHITESOURCE_CONFIG_PATH" -apiKey "${{ secrets.WHITESOURCE_API_KEY }}" -userKey "${{ secrets.WHITESOURCE_USER_KEY }}" -scanComment "Inrupt CI agent"
+        env:
+          WHITESOURCE_UA_PATH: resources/whitesource/wss-unified-agent.jar
+          WHITESOURCE_CONFIG_PATH: resources/whitesource/wss-${{ github.event_name }}-scan.config
+
+      - name: Upload artifacts for debugging
+        uses: actions/upload-artifact@v1.0.0
+        if: failure()
+        with:
+          path: whitesource/policyRejectionSummary.json
+          name: whitesource-logs
