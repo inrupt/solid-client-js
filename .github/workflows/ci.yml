@@ -43,7 +43,7 @@ jobs:
       with:
         name: dist
         path: dist
-  release:
+  release-npm:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2.1.0
@@ -51,8 +51,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-        registry-url: 'https://npm.pkg.github.com'
-        scope: '@inrupt'
+        registry-url: 'https://registry.npmjs.org'
     - name: Determine npm tag
       # Remove non-alphanumeric characters
       # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -66,10 +65,8 @@ jobs:
     - run: npm ci
     - run: npm publish --tag "$TAG_SLUG"
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - run: |
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm_config_registry=https://npm.pkg.github.com/inrupt npm install @inrupt/lit-solid@$TAG_SLUG"
-        echo ""
-        echo "(You might first need to log in with \`npm login --registry=https://npm.pkg.github.com\`.)"
+        echo "    npm install lit-solid@$TAG_SLUG"

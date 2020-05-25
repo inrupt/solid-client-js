@@ -3,7 +3,7 @@
 # Installation
 
 ```bash
-npm install @inrupt/lit-solid solid-auth-client
+npm install lit-solid solid-auth-client
 ```
 
 # Usage
