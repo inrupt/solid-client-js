@@ -4,10 +4,13 @@ import {
   internal_fetchLitDatasetInfo,
 } from "./litDataset";
 import {
-  unstable_AclDataset,
   DatasetInfo,
+  unstable_AclDataset,
   unstable_hasAccessibleAcl,
+  unstable_AclRule,
+  unstable_AccessModes,
 } from "./index";
+import { getIriAll } from "./thing/get";
 
 export async function internal_fetchResourceAcl(
   dataset: DatasetInfo,
@@ -86,3 +89,37 @@ function getContainerPath(resourcePath: string): string {
 
   return containerPath;
 }
+
+/** @internal */
+export function internal_getAccessModes(
+  rule: unstable_AclRule
+): unstable_AccessModes {
+  const ruleAccessModes = getIriAll(rule, "http://www.w3.org/ns/auth/acl#mode");
+  const writeAccess = ruleAccessModes.includes(unstable_accessModes.write);
+  return writeAccess
+    ? {
+        read: ruleAccessModes.includes(unstable_accessModes.read),
+        append: true,
+        write: true,
+        control: ruleAccessModes.includes(unstable_accessModes.control),
+      }
+    : {
+        read: ruleAccessModes.includes(unstable_accessModes.read),
+        append: ruleAccessModes.includes(unstable_accessModes.append),
+        write: false,
+        control: ruleAccessModes.includes(unstable_accessModes.control),
+      };
+}
+
+/**
+ * IRIs of potential Access Modes
+ * @internal
+ */
+export const unstable_accessModes = {
+  read: "http://www.w3.org/ns/auth/acl#Read",
+  append: "http://www.w3.org/ns/auth/acl#Append",
+  write: "http://www.w3.org/ns/auth/acl#Write",
+  control: "http://www.w3.org/ns/auth/acl#Control",
+} as const;
+/** @internal */
+export type unstable_AccessModeIri = typeof unstable_accessModes[keyof typeof unstable_accessModes];
