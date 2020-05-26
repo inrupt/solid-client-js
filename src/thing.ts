@@ -75,18 +75,28 @@ export function getThingAll(
   litDataset: LitDataset,
   options: GetThingOptions = {}
 ): Thing[] {
-  const subjectIris = new Set<Iri | LocalNode>();
+  const subjectNodes = new Array<Iri | LocalNode>();
   for (let quad of litDataset) {
-    if (isNamedNode(quad.subject)) {
-      subjectIris.add(quad.subject);
+    // Because NamedNode objects with the same IRI are actually different
+    // object instances, we have to manually check whether `subjectNodes` does
+    // not yet include `quadSubject` before adding it.
+    const quadSubject = quad.subject;
+    if (
+      isNamedNode(quadSubject) &&
+      !subjectNodes.some((subjectNode) => isEqual(subjectNode, quadSubject))
+    ) {
+      subjectNodes.push(quadSubject);
     }
-    if (isLocalNode(quad.subject)) {
-      subjectIris.add(quad.subject);
+    if (
+      isLocalNode(quadSubject) &&
+      !subjectNodes.some((subjectNode) => isEqual(subjectNode, quadSubject))
+    ) {
+      subjectNodes.push(quadSubject);
     }
   }
 
-  const things: Thing[] = Array.from(subjectIris).map((thingIri) =>
-    getThingOne(litDataset, thingIri, options)
+  const things: Thing[] = subjectNodes.map((subjectNode) =>
+    getThingOne(litDataset, subjectNode, options)
   );
 
   return things;
