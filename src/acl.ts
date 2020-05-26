@@ -11,6 +11,7 @@ import {
   unstable_AclRule,
   unstable_AccessModes,
   Thing,
+  IriString,
 } from "./index";
 import { getThingAll } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -117,6 +118,21 @@ function isResourceAclRule(aclRule: unstable_AclRule): boolean {
 }
 
 /** @internal */
+export function internal_getResourceAclRulesForResource(
+  aclRules: unstable_AclRule[],
+  resource: IriString
+): unstable_AclRule[] {
+  return aclRules.filter((rule) => appliesToResource(rule, resource));
+}
+
+function appliesToResource(
+  aclRule: unstable_AclRule,
+  resource: IriString
+): boolean {
+  return getIriAll(aclRule, acl.accessTo).includes(resource);
+}
+
+/** @internal */
 export function internal_getDefaultAclRules(
   aclRules: unstable_AclRule[]
 ): unstable_AclRule[] {
@@ -125,6 +141,21 @@ export function internal_getDefaultAclRules(
 
 function isDefaultAclRule(aclRule: unstable_AclRule): boolean {
   return getIriOne(aclRule, acl.default) !== null;
+}
+
+/** @internal */
+export function internal_getDefaultAclRulesForResource(
+  aclRules: unstable_AclRule[],
+  resource: IriString
+): unstable_AclRule[] {
+  return aclRules.filter((rule) => isDefaultForResource(rule, resource));
+}
+
+function isDefaultForResource(
+  aclRule: unstable_AclRule,
+  resource: IriString
+): boolean {
+  return getIriAll(aclRule, acl.default).includes(resource);
 }
 
 /** @internal */
