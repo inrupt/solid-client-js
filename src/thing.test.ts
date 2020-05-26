@@ -225,6 +225,30 @@ describe("getThingAll", () => {
     expect(Array.from(things[1])).toEqual([thing2Quad]);
   });
 
+  it("returns one Thing per unique Subject", () => {
+    const thing1Quad1 = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/object1",
+    });
+    const thing1Quad2 = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/object2",
+    });
+    const thing2Quad = getMockQuad({
+      subject: "https://some-other.vocab/subject",
+    });
+    const datasetWithMultipleThings = dataset();
+    datasetWithMultipleThings.add(thing1Quad1);
+    datasetWithMultipleThings.add(thing1Quad2);
+    datasetWithMultipleThings.add(thing2Quad);
+
+    const things = getThingAll(datasetWithMultipleThings);
+
+    expect(things.length).toBe(2);
+    expect(Array.from(things[0])).toEqual([thing1Quad1, thing1Quad2]);
+    expect(Array.from(things[1])).toEqual([thing2Quad]);
+  });
+
   it("returns Quads from all Named Graphs if no scope was specified", () => {
     const quadInDefaultGraph = getMockQuad({
       subject: "https://some.vocab/subject",
