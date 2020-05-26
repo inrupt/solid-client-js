@@ -105,19 +105,24 @@ export type unstable_AclDataset = LitDataset &
 
 export type unstable_AclRule = Thing;
 
+export type unstable_AccessModes =
+  // If someone has write permissions, they also have append permissions:
+  | {
+      read: boolean;
+      append: true;
+      write: true;
+      control: boolean;
+    }
+  | {
+      read: boolean;
+      append: boolean;
+      write: false;
+      control: boolean;
+    };
+
 type unstable_WacAllow = {
-  user: {
-    read: boolean;
-    append: boolean;
-    write: boolean;
-    control: boolean;
-  };
-  public: {
-    read: boolean;
-    append: boolean;
-    write: boolean;
-    control: boolean;
-  };
+  user: unstable_AccessModes;
+  public: unstable_AccessModes;
 };
 export type DatasetInfo = {
   datasetInfo: {

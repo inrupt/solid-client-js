@@ -15,6 +15,7 @@ import {
   LocalNode,
   unstable_Acl,
   unstable_hasAccessibleAcl,
+  unstable_AccessModes,
 } from "./index";
 
 /**
@@ -338,14 +339,24 @@ function resolveLocalIrisInLitDataset<Dataset extends LitDataset & DatasetInfo>(
  * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
  */
 function parseWacAllowHeader(wacAllowHeader: string) {
-  function parsePermissionStatement(permissionStatement: string) {
+  function parsePermissionStatement(
+    permissionStatement: string
+  ): unstable_AccessModes {
     const permissions = permissionStatement.split(" ");
-    return {
-      read: permissions.includes("read"),
-      append: permissions.includes("append"),
-      write: permissions.includes("write"),
-      control: permissions.includes("control"),
-    };
+    const writePermission = permissions.includes("write");
+    return writePermission
+      ? {
+          read: permissions.includes("read"),
+          append: true,
+          write: true,
+          control: permissions.includes("control"),
+        }
+      : {
+          read: permissions.includes("read"),
+          append: permissions.includes("append"),
+          write: false,
+          control: permissions.includes("control"),
+        };
   }
   function getStatementFor(header: string, scope: "user" | "public") {
     const relevantEntries = header
