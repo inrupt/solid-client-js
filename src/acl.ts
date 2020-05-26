@@ -1,3 +1,4 @@
+import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
   defaultFetchOptions,
@@ -9,8 +10,10 @@ import {
   unstable_hasAccessibleAcl,
   unstable_AclRule,
   unstable_AccessModes,
+  Thing,
 } from "./index";
-import { getIriAll } from "./thing/get";
+import { getThingAll } from "./thing";
+import { getIriOne, getIriAll } from "./thing/get";
 
 export async function internal_fetchResourceAcl(
   dataset: DatasetInfo,
@@ -91,10 +94,22 @@ function getContainerPath(resourcePath: string): string {
 }
 
 /** @internal */
+export function internal_getAclRules(
+  aclDataset: unstable_AclDataset
+): unstable_AclRule[] {
+  const things = getThingAll(aclDataset);
+  return things.filter(isAclRule);
+}
+
+function isAclRule(thing: Thing): thing is unstable_AclRule {
+  return getIriOne(thing, rdf.type) === acl.Authorization;
+}
+
+/** @internal */
 export function internal_getAccessModes(
   rule: unstable_AclRule
 ): unstable_AccessModes {
-  const ruleAccessModes = getIriAll(rule, "http://www.w3.org/ns/auth/acl#mode");
+  const ruleAccessModes = getIriAll(rule, acl.mode);
   const writeAccess = ruleAccessModes.includes(unstable_accessModes.write);
   return writeAccess
     ? {

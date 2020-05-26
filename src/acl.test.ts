@@ -16,8 +16,9 @@ import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
   internal_getAccessModes,
+  internal_getAclRules,
 } from "./acl";
-import { DatasetInfo } from "./index";
+import { DatasetInfo, ThingPersisted } from "./index";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -304,6 +305,94 @@ describe("fetchFallbackAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
+  });
+});
+
+describe("getAclRules", () => {
+  it("only returns Things that represent ACL Rules", () => {
+    const aclDataset = Object.assign(dataset(), {
+      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/not-an-acl-rule"),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+      )
+    );
+
+    const agentClassRuleSubjectIri =
+      "https://some.pod/resource.acl#agentClassRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
+        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
+      )
+    );
+
+    const agentRuleSubjectIri = "https://some.pod/resource.acl#agentRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentRuleSubjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+
+    const rules = internal_getAclRules(aclDataset);
+
+    expect(rules).toHaveLength(2);
+    expect((rules[0] as ThingPersisted).iri).toBe(agentClassRuleSubjectIri);
+    expect((rules[1] as ThingPersisted).iri).toBe(agentRuleSubjectIri);
   });
 });
 
