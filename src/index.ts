@@ -68,12 +68,14 @@ export {
   removeLiteral,
   removeNamedNode,
 } from "./thing/remove";
+export { unstable_getAgentResourceAccessModesOne } from "./acl/agent";
 
 /**
  * Alias to indicate where we expect an IRI.
  */
 export type Iri = NamedNode;
 export type IriString = string;
+export type WebId = IriString;
 
 /**
  * A LitDataset represents all Quads from a single Resource.
