@@ -10,7 +10,13 @@ jest.mock("./fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
+import { dataset } from "@rdfjs/dataset";
+import { DataFactory } from "n3";
+import {
+  internal_fetchResourceAcl,
+  internal_fetchFallbackAcl,
+  internal_getAccessModes,
+} from "./acl";
 import { DatasetInfo } from "./index";
 
 function mockResponse(
@@ -298,5 +304,81 @@ describe("fetchFallbackAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
+  });
+});
+
+describe("getAccessModes", () => {
+  it("returns true for Access Modes that are granted", () => {
+    const subject = "https://arbitrary.pod/profileDoc#webId";
+
+    const mockRule = Object.assign(dataset(), { iri: subject });
+    mockRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subject),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    mockRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subject),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
+      )
+    );
+    mockRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subject),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
+      )
+    );
+    mockRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subject),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
+      )
+    );
+
+    expect(internal_getAccessModes(mockRule)).toEqual({
+      read: true,
+      append: true,
+      write: true,
+      control: true,
+    });
+  });
+
+  it("returns false for undefined Access Modes", () => {
+    const subject = "https://arbitrary.pod/profileDoc#webId";
+
+    const mockRule = Object.assign(dataset(), { iri: subject });
+
+    expect(internal_getAccessModes(mockRule)).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("infers Append access from Write access", () => {
+    const subject = "https://arbitrary.pod/profileDoc#webId";
+
+    const mockRule = Object.assign(dataset(), { iri: subject });
+    mockRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subject),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
+      )
+    );
+
+    expect(internal_getAccessModes(mockRule)).toEqual({
+      read: false,
+      append: true,
+      write: true,
+      control: false,
+    });
   });
 });
