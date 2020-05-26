@@ -17,8 +17,10 @@ import {
   internal_fetchFallbackAcl,
   internal_getAccessModes,
   internal_getAclRules,
+  internal_getResourceAclRules,
+  internal_getDefaultAclRules,
 } from "./acl";
-import { DatasetInfo, ThingPersisted } from "./index";
+import { DatasetInfo, ThingPersisted, unstable_AclRule } from "./index";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -393,6 +395,124 @@ describe("getAclRules", () => {
     expect(rules).toHaveLength(2);
     expect((rules[0] as ThingPersisted).iri).toBe(agentClassRuleSubjectIri);
     expect((rules[1] as ThingPersisted).iri).toBe(agentRuleSubjectIri);
+  });
+});
+
+describe("getResourceAclRules", () => {
+  it("only returns ACL Rules that apply to a Resource", () => {
+    const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/resource.acl#rule1",
+    });
+    resourceAclRule1.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource1")
+      )
+    );
+
+    const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/container/.acl#rule2",
+    });
+    defaultAclRule1.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container1/")
+      )
+    );
+
+    const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/resource.acl#rule3",
+    });
+    resourceAclRule2.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule3"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource2")
+      )
+    );
+
+    const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/container/.acl#rule4",
+    });
+    defaultAclRule2.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule4"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container2/")
+      )
+    );
+
+    const aclRules = [
+      resourceAclRule1,
+      defaultAclRule1,
+      resourceAclRule2,
+      defaultAclRule2,
+    ];
+
+    const resourceRules = internal_getResourceAclRules(aclRules);
+
+    expect(resourceRules).toEqual([resourceAclRule1, resourceAclRule2]);
+  });
+});
+
+describe("getDefaultAclRules", () => {
+  it("only returns ACL Rules that are the default for a Container", () => {
+    const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/resource.acl#rule1",
+    });
+    resourceAclRule1.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource1")
+      )
+    );
+
+    const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/container/.acl#rule2",
+    });
+    defaultAclRule1.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container1/")
+      )
+    );
+
+    const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/resource.acl#rule3",
+    });
+    resourceAclRule2.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule3"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource2")
+      )
+    );
+
+    const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
+      iri: "https://arbitrary.pod/container/.acl#rule4",
+    });
+    defaultAclRule2.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule4"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container2/")
+      )
+    );
+
+    const aclRules = [
+      resourceAclRule1,
+      defaultAclRule1,
+      resourceAclRule2,
+      defaultAclRule2,
+    ];
+
+    const resourceRules = internal_getDefaultAclRules(aclRules);
+
+    expect(resourceRules).toEqual([defaultAclRule1, defaultAclRule2]);
   });
 });
 

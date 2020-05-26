@@ -106,6 +106,28 @@ function isAclRule(thing: Thing): thing is unstable_AclRule {
 }
 
 /** @internal */
+export function internal_getResourceAclRules(
+  aclRules: unstable_AclRule[]
+): unstable_AclRule[] {
+  return aclRules.filter(isResourceAclRule);
+}
+
+function isResourceAclRule(aclRule: unstable_AclRule): boolean {
+  return getIriOne(aclRule, acl.accessTo) !== null;
+}
+
+/** @internal */
+export function internal_getDefaultAclRules(
+  aclRules: unstable_AclRule[]
+): unstable_AclRule[] {
+  return aclRules.filter(isDefaultAclRule);
+}
+
+function isDefaultAclRule(aclRule: unstable_AclRule): boolean {
+  return getIriOne(aclRule, acl.default) !== null;
+}
+
+/** @internal */
 export function internal_getAccessModes(
   rule: unstable_AclRule
 ): unstable_AccessModes {

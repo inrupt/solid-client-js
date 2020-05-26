@@ -3,6 +3,8 @@
 
 export const acl = {
   Authorization: "http://www.w3.org/ns/auth/acl#Authorization",
+  accessTo: "http://www.w3.org/ns/auth/acl#accessTo",
+  default: "http://www.w3.org/ns/auth/acl#default",
   mode: "http://www.w3.org/ns/auth/acl#mode",
 } as const;
 
