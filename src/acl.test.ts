@@ -21,8 +21,14 @@ import {
   internal_getDefaultAclRules,
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
+  internal_combineAccessModes,
 } from "./acl";
-import { DatasetInfo, ThingPersisted, unstable_AclRule } from "./index";
+import {
+  DatasetInfo,
+  ThingPersisted,
+  unstable_AclRule,
+  unstable_AccessModes,
+} from "./index";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -686,6 +692,63 @@ describe("getAccessModes", () => {
     );
 
     expect(internal_getAccessModes(mockRule)).toEqual({
+      read: false,
+      append: true,
+      write: true,
+      control: false,
+    });
+  });
+});
+
+describe("combineAccessModes", () => {
+  it("returns true for Access Modes that are true in any of the given Access Mode sets", () => {
+    const modes: unstable_AccessModes[] = [
+      { read: false, append: false, write: false, control: false },
+      { read: true, append: false, write: false, control: false },
+      { read: false, append: true, write: false, control: false },
+      { read: false, append: true, write: true, control: false },
+      { read: false, append: false, write: false, control: true },
+    ];
+
+    expect(internal_combineAccessModes(modes)).toEqual({
+      read: true,
+      append: true,
+      write: true,
+      control: true,
+    });
+  });
+
+  it("returns false for Access Modes that are false in all of the given Access Mode sets", () => {
+    const modes: unstable_AccessModes[] = [
+      { read: false, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
+    ];
+
+    expect(internal_combineAccessModes(modes)).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("returns false for all Modes if no Access Modes were given", () => {
+    expect(internal_combineAccessModes([])).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("infers Append access from Write access", () => {
+    const modes: unstable_AccessModes[] = [
+      { read: false, append: false, write: false, control: false },
+      { read: false, append: false, write: true, control: false } as any,
+    ];
+
+    expect(internal_combineAccessModes(modes)).toEqual({
       read: false,
       append: true,
       write: true,

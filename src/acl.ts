@@ -179,6 +179,31 @@ export function internal_getAccessModes(
       };
 }
 
+/** @internal */
+export function internal_combineAccessModes(
+  modes: unstable_AccessModes[]
+): unstable_AccessModes {
+  return modes.reduce(
+    (accumulator, current) => {
+      const writeAccess = accumulator.write || current.write;
+      return writeAccess
+        ? {
+            read: accumulator.read || current.read,
+            append: true,
+            write: true,
+            control: accumulator.control || current.control,
+          }
+        : {
+            read: accumulator.read || current.read,
+            append: accumulator.append || current.append,
+            write: false,
+            control: accumulator.control || current.control,
+          };
+    },
+    { read: false, append: false, write: false, control: false }
+  );
+}
+
 /**
  * IRIs of potential Access Modes
  * @internal
