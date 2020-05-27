@@ -1,4 +1,5 @@
 import {
+  getFile,
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
@@ -66,6 +67,7 @@ import {
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
+  expect(getFile).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
