@@ -60,14 +60,14 @@ describe("Non-RDF data fetch", () => {
 
     await getFile("https://some.url", {
       fetch: mockFetch,
-      headers: new Headers({ Accept: "text/turlte" }),
+      headers: new Headers({ Accept: "text/turtle" }),
     });
 
     expect(mockFetch.mock.calls).toEqual([
       [
         "https://some.url",
         {
-          headers: new Headers({ Accept: "text/turlte" }),
+          headers: new Headers({ Accept: "text/turtle" }),
         },
       ],
     ]);
