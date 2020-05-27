@@ -1,12 +1,12 @@
 import { fetch } from "./fetcher";
 import { IriString } from "./index";
-import { Headers } from "cross-fetch";
 
-/**
- * @internal
- */
-const defaultFetchOptions = {
-  headers: new Headers({}),
+interface GetFileOptions {
+  fetch: typeof window.fetch;
+  headers: RequestInit["headers"];
+}
+const defaultGetFileOptions = {
+  headers: {},
   fetch: fetch,
 };
 
@@ -18,10 +18,10 @@ const defaultFetchOptions = {
  */
 export async function getFile(
   url: IriString,
-  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Blob> {
   const config = {
-    ...defaultFetchOptions,
+    ...defaultGetFileOptions,
     ...options,
   };
   const response = await config.fetch(url, { headers: config.headers });
