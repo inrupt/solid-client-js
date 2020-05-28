@@ -244,7 +244,7 @@ describe("getThingAll", () => {
 
     const things = getThingAll(datasetWithMultipleThings);
 
-    expect(things.length).toBe(2);
+    expect(things).toHaveLength(2);
     expect(Array.from(things[0])).toEqual([thing1Quad1, thing1Quad2]);
     expect(Array.from(things[1])).toEqual([thing2Quad]);
   });
@@ -351,7 +351,7 @@ describe("getThingAll", () => {
 
     const things = getThingAll(datasetWithMultipleThings);
 
-    expect(things.length).toBe(2);
+    expect(things).toHaveLength(2);
     expect(Array.from(things[0])).toEqual([quadWithNamedSubject]);
     expect(Array.from(things[1])).toEqual([quadWithLocalSubject]);
   });
@@ -710,7 +710,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, thing);
 
     expect(updatedDataset.changeLog.additions).toEqual([]);
-    expect(updatedDataset.changeLog.deletions.length).toBe(2);
+    expect(updatedDataset.changeLog.deletions).toHaveLength(2);
     expect(updatedDataset.changeLog.deletions.includes(sameSubjectQuad)).toBe(
       true
     );

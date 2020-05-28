@@ -44,7 +44,7 @@ describe("fetchResourceAcl", () => {
     expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource.acl");
   });
 
@@ -102,7 +102,7 @@ describe("fetchResourceAcl", () => {
     });
 
     expect(fetchedAcl).toBeNull();
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource.acl");
   });
 });
@@ -138,7 +138,7 @@ describe("fetchFallbackAcl", () => {
 
     expect(fetchedAcl?.accessTo).toBe("https://some.pod/");
     expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe("https://some.pod/.acl");
-    expect(mockFetch.mock.calls.length).toBe(2);
+    expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
   });
@@ -159,7 +159,7 @@ describe("fetchFallbackAcl", () => {
 
     await internal_fetchFallbackAcl(sourceDataset);
 
-    expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe("https://some.pod/");
   });
 
@@ -216,7 +216,7 @@ describe("fetchFallbackAcl", () => {
     expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe(
       "https://some.pod/with-acl/.acl"
     );
-    expect(mockFetch.mock.calls.length).toBe(4);
+    expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe(
       "https://some.pod/with-acl/without-acl/"
     );
@@ -254,7 +254,7 @@ describe("fetchFallbackAcl", () => {
     });
 
     expect(fetchedAcl).toBeNull();
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe(
       "https://some.pod/arbitrary-parent/no-control-access/"
     );
@@ -295,7 +295,7 @@ describe("fetchFallbackAcl", () => {
     });
 
     expect(fetchedAcl).toBeNull();
-    expect(mockFetch.mock.calls.length).toBe(2);
+    expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
   });

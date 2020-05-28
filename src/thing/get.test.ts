@@ -1559,7 +1559,7 @@ describe("getLiteralAll", () => {
       thingWithLiterals,
       "https://some.vocab/predicate"
     );
-    expect(foundLiterals.length).toBe(2);
+    expect(foundLiterals).toHaveLength(2);
     expect(foundLiterals[0].termType).toBe("Literal");
     expect(foundLiterals[0].value).toBe("Some string 1");
     expect(foundLiterals[1].termType).toBe("Literal");
@@ -1578,7 +1578,7 @@ describe("getLiteralAll", () => {
       thingWithLiterals,
       DataFactory.namedNode("https://some.vocab/predicate")
     );
-    expect(foundLiterals.length).toBe(2);
+    expect(foundLiterals).toHaveLength(2);
     expect(foundLiterals[0].termType).toBe("Literal");
     expect(foundLiterals[0].value).toBe("Some string 1");
     expect(foundLiterals[1].termType).toBe("Literal");
@@ -1616,7 +1616,7 @@ describe("getLiteralAll", () => {
       "https://some.vocab/predicate"
     );
 
-    expect(foundLiterals.length).toBe(1);
+    expect(foundLiterals).toHaveLength(1);
     expect(foundLiterals[0].termType).toBe("Literal");
   });
 });
@@ -1753,7 +1753,7 @@ describe("getNamedNodeAll", () => {
       thingWithNamedNodes,
       "https://some.vocab/predicate"
     );
-    expect(foundNamedNodes.length).toBe(2);
+    expect(foundNamedNodes).toHaveLength(2);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
     expect(foundNamedNodes[0].value).toBe("https://some.vocab/object1");
     expect(foundNamedNodes[1].termType).toBe("NamedNode");
@@ -1771,7 +1771,7 @@ describe("getNamedNodeAll", () => {
       thingWithNamedNodes,
       DataFactory.namedNode("https://some.vocab/predicate")
     );
-    expect(foundNamedNodes.length).toBe(2);
+    expect(foundNamedNodes).toHaveLength(2);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
     expect(foundNamedNodes[0].value).toBe("https://some.vocab/object1");
     expect(foundNamedNodes[1].termType).toBe("NamedNode");
@@ -1808,7 +1808,7 @@ describe("getNamedNodeAll", () => {
       thingWithDifferentTermTypes,
       "https://some.vocab/predicate"
     );
-    expect(foundNamedNodes.length).toBe(1);
+    expect(foundNamedNodes).toHaveLength(1);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
   });
 });

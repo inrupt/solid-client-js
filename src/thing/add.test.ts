@@ -62,7 +62,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -82,7 +82,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -105,7 +105,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -129,7 +129,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -149,7 +149,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -168,8 +168,8 @@ describe("addIri", () => {
       "https://arbitrary.pod/other-resource#object"
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -185,7 +185,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -212,7 +212,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -248,7 +248,7 @@ describe("addIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -277,7 +277,7 @@ describe("addBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -297,7 +297,7 @@ describe("addBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -316,8 +316,8 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -333,7 +333,7 @@ describe("addBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -360,7 +360,7 @@ describe("addBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -394,7 +394,7 @@ describe("addBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -423,7 +423,7 @@ describe("addDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -443,7 +443,7 @@ describe("addDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -462,8 +462,8 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -479,7 +479,7 @@ describe("addDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -506,7 +506,7 @@ describe("addDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -540,7 +540,7 @@ describe("addDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -569,7 +569,7 @@ describe("addDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -589,7 +589,7 @@ describe("addDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -608,8 +608,8 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -625,7 +625,7 @@ describe("addDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -652,7 +652,7 @@ describe("addDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -686,7 +686,7 @@ describe("addDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -711,7 +711,7 @@ describe("addInteger", () => {
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -731,7 +731,7 @@ describe("addInteger", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -750,8 +750,8 @@ describe("addInteger", () => {
       42
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -767,7 +767,7 @@ describe("addInteger", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -790,7 +790,7 @@ describe("addInteger", () => {
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -820,7 +820,7 @@ describe("addInteger", () => {
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -850,7 +850,7 @@ describe("addStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -871,7 +871,7 @@ describe("addStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -891,8 +891,8 @@ describe("addStringInLocale", () => {
       "en-GB"
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -909,7 +909,7 @@ describe("addStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -937,7 +937,7 @@ describe("addStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -972,7 +972,7 @@ describe("addStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1001,7 +1001,7 @@ describe("addStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1021,7 +1021,7 @@ describe("addStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1040,8 +1040,8 @@ describe("addStringUnlocalized", () => {
       "Arbitrary string value"
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1057,7 +1057,7 @@ describe("addStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -1084,7 +1084,7 @@ describe("addStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1118,7 +1118,7 @@ describe("addStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1147,7 +1147,7 @@ describe("addNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1167,7 +1167,7 @@ describe("addNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1186,8 +1186,8 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1203,7 +1203,7 @@ describe("addNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -1230,7 +1230,7 @@ describe("addNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1266,7 +1266,7 @@ describe("addNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1295,7 +1295,7 @@ describe("addLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1315,7 +1315,7 @@ describe("addLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1334,8 +1334,8 @@ describe("addLiteral", () => {
       DataFactory.literal("Arbitrary string value")
     );
 
-    expect(Array.from(thing).length).toBe(0);
-    expect(Array.from(updatedThing).length).toBe(1);
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1351,7 +1351,7 @@ describe("addLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
@@ -1378,7 +1378,7 @@ describe("addLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1412,7 +1412,7 @@ describe("addLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(2);
+    expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
