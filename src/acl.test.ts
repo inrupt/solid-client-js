@@ -22,11 +22,14 @@ import {
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
   internal_combineAccessModes,
+  unstable_getResourceAcl,
+  unstable_getFallbackAcl,
 } from "./acl";
 import {
   DatasetInfo,
   ThingPersisted,
   unstable_AclRule,
+  unstable_AclDataset,
   unstable_AccessModes,
 } from "./index";
 
@@ -315,6 +318,42 @@ describe("fetchFallbackAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
+  });
+});
+
+describe("getResourceAcl", () => {
+  it("returns the attached Resource ACL Dataset", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/resource",
+      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+    });
+    const litDataset = Object.assign(dataset(), {
+      acl: { resourceAcl: aclDataset, fallbackAcl: null },
+    });
+    expect(unstable_getResourceAcl(litDataset)).toEqual(aclDataset);
+  });
+
+  it("returns null if the given LitDataset does not have a Resource ACL attached", () => {
+    const litDataset = Object.assign(dataset(), { acl: { fallbackAcl: null } });
+    expect(unstable_getResourceAcl(litDataset)).toBeNull();
+  });
+});
+
+describe("getFallbackAcl", () => {
+  it("returns the attached Fallback ACL Dataset", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/",
+      datasetInfo: { fetchedFrom: "https://arbitrary.pod/.acl" },
+    });
+    const litDataset = Object.assign(dataset(), {
+      acl: { fallbackAcl: aclDataset },
+    });
+    expect(unstable_getFallbackAcl(litDataset)).toEqual(aclDataset);
+  });
+
+  it("returns null if the given LitDataset does not have a Fallback ACL attached", () => {
+    const litDataset = Object.assign(dataset(), { acl: { fallbackAcl: null } });
+    expect(unstable_getFallbackAcl(litDataset)).toBeNull();
   });
 });
 

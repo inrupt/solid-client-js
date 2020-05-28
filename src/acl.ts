@@ -12,6 +12,7 @@ import {
   unstable_AccessModes,
   Thing,
   IriString,
+  unstable_Acl,
 } from "./index";
 import { getThingAll } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -92,6 +93,60 @@ function getContainerPath(resourcePath: string): string {
     ) + "/";
 
   return containerPath;
+}
+
+export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
+  dataset: Dataset
+): dataset is Dataset & {
+  acl: { resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined> };
+} {
+  return typeof dataset.acl.resourceAcl !== "undefined";
+}
+
+export function unstable_getResourceAcl(
+  dataset: unstable_Acl & {
+    acl: {
+      resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined>;
+    };
+  }
+): unstable_AclDataset;
+export function unstable_getResourceAcl(
+  dataset: unstable_Acl
+): unstable_AclDataset | null;
+export function unstable_getResourceAcl(
+  dataset: unstable_Acl
+): unstable_AclDataset | null {
+  if (!unstable_hasResourceAcl(dataset)) {
+    return null;
+  }
+  return dataset.acl.resourceAcl;
+}
+
+export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
+  dataset: Dataset
+): dataset is Dataset & {
+  acl: { fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null> };
+} {
+  return dataset.acl.fallbackAcl !== null;
+}
+
+export function unstable_getFallbackAcl(
+  dataset: unstable_Acl & {
+    acl: {
+      fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null>;
+    };
+  }
+): unstable_AclDataset;
+export function unstable_getFallbackAcl(
+  dataset: unstable_Acl
+): unstable_AclDataset | null;
+export function unstable_getFallbackAcl(
+  dataset: unstable_Acl
+): unstable_AclDataset | null {
+  if (!unstable_hasFallbackAcl(dataset)) {
+    return null;
+  }
+  return dataset.acl.fallbackAcl;
 }
 
 /** @internal */

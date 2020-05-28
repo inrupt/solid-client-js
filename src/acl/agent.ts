@@ -1,9 +1,11 @@
 import {
+  DatasetInfo,
+  LitDataset,
   WebId,
-  IriString,
   unstable_AclDataset,
   unstable_AccessModes,
   unstable_AclRule,
+  unstable_Acl,
 } from "../index";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl } from "../constants";
@@ -13,9 +15,39 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_getAccessModes,
   internal_combineAccessModes,
+  unstable_hasResourceAcl,
+  unstable_getResourceAcl,
+  unstable_hasFallbackAcl,
+  unstable_getFallbackAcl,
 } from "../acl";
 
 export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
+
+/**
+ * Find out what Access Modes have been granted to a given Agent specifically for a given LitDataset.
+ *
+ * Keep in mind that this function will not tell you what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param dataset The LitDataset to which the given Agent may have been granted access.
+ * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
+ * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ */
+export function unstable_getAgentAccessModesOne(
+  dataset: LitDataset & DatasetInfo & unstable_Acl,
+  agent: WebId
+): unstable_AccessModes | null {
+  if (unstable_hasResourceAcl(dataset)) {
+    const resourceAcl = unstable_getResourceAcl(dataset);
+    return unstable_getAgentResourceAccessModesOne(resourceAcl, agent);
+  }
+  if (unstable_hasFallbackAcl(dataset)) {
+    const fallbackAcl = unstable_getFallbackAcl(dataset);
+    return unstable_getAgentDefaultAccessModesOne(fallbackAcl, agent);
+  }
+  return null;
+}
 
 /**
  * Given an ACL LitDataset, find out which access modes it provides to an Agent for its associated Resource.
