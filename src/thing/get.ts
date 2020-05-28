@@ -382,7 +382,7 @@ function findOne<Object extends Quad_Object>(
   thing: Thing,
   matcher: Matcher<Object>
 ): QuadWithObject<Object> | null {
-  for (let quad of thing) {
+  for (const quad of thing) {
     if (matcher(quad)) {
       return quad;
     }
@@ -400,7 +400,7 @@ function findAll<Object extends Quad_Object>(
   matcher: Matcher<Object>
 ): QuadWithObject<Object>[] {
   const matched: QuadWithObject<Object>[] = [];
-  for (let quad of thing) {
+  for (const quad of thing) {
     if (matcher(quad)) {
       matched.push(quad);
     }
