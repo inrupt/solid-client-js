@@ -1,5 +1,10 @@
 import { Quad, NamedNode } from "rdf-js";
 import LinkHeader from "http-link-header";
+import { dataset, DataFactory } from "./rdfjs";
+import { fetch } from "./fetcher";
+import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
+import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
+import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
 import {
   IriString,
   LitDataset,
@@ -11,11 +16,6 @@ import {
   unstable_Acl,
   unstable_hasAccessibleAcl,
 } from "./index";
-import { dataset, DataFactory } from "./rdfjs";
-import { fetch } from "./fetcher";
-import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
-import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
-import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
 
 /**
  * @internal

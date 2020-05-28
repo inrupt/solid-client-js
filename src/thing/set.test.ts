@@ -1,4 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
+import { dataset } from "@rdfjs/dataset";
+import { Quad, Term } from "rdf-js";
+import { DataFactory } from "n3";
+import { IriString, ThingLocal, LocalNode } from "../index";
 import {
   setIri,
   setBoolean,
@@ -10,10 +14,6 @@ import {
   setNamedNode,
   setLiteral,
 } from "./set";
-import { dataset } from "@rdfjs/dataset";
-import { Quad, Term } from "rdf-js";
-import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../index";
 
 function getMockQuad(
   subject: IriString,

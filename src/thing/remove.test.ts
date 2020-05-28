@@ -1,4 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
+import { dataset } from "@rdfjs/dataset";
+import { Quad } from "rdf-js";
+import { DataFactory } from "n3";
+import { IriString, Thing, ThingLocal, ThingPersisted } from "../index";
 import {
   removeAll,
   removeIri,
@@ -11,10 +15,6 @@ import {
   removeLiteral,
   removeNamedNode,
 } from "./remove";
-import { dataset } from "@rdfjs/dataset";
-import { Quad } from "rdf-js";
-import { DataFactory } from "n3";
-import { IriString, Thing, ThingLocal, ThingPersisted } from "../index";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
