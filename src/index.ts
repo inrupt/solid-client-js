@@ -72,6 +72,8 @@ export {
   unstable_AgentAccess,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
+  unstable_getAgentDefaultAccessModesOne,
+  unstable_getAgentDefaultAccessModesAll,
 } from "./acl/agent";
 
 /**
