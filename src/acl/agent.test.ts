@@ -6,6 +6,7 @@ import {
   unstable_getAgentResourceAccessModesAll,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
+  unstable_getAgentAccessModesOne,
 } from "./agent";
 import {
   LitDataset,
@@ -91,6 +92,23 @@ function addAclRuleQuads(
   return Object.assign(aclDataset, { accessTo: resource });
 }
 
+function addAclDatasetToLitDataset(
+  litDataset: LitDataset & DatasetInfo,
+  aclDataset: unstable_AclDataset,
+  type: "resource" | "fallback"
+): LitDataset & DatasetInfo & unstable_Acl {
+  const acl: unstable_Acl["acl"] = {
+    fallbackAcl: null,
+    ...(((litDataset as any) as unstable_Acl).acl ?? {}),
+  };
+  if (type === "resource") {
+    acl.resourceAcl = aclDataset;
+  } else if (type === "fallback") {
+    acl.fallbackAcl = aclDataset;
+  }
+  return Object.assign(litDataset, { acl: acl });
+}
+
 function getMockDataset(fetchedFrom: IriString): LitDataset & DatasetInfo {
   return Object.assign(dataset(), {
     datasetInfo: {
@@ -98,6 +116,192 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & DatasetInfo {
     },
   });
 }
+
+describe("getAgentAccessModesOne", () => {
+  it("returns the Resource's own applicable ACL rules", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/resource.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/resource",
+      { read: false, append: false, write: false, control: true },
+      "resource"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAcl,
+      "resource"
+    );
+
+    const accessModes = unstable_getAgentAccessModesOne(
+      litDatasetWithAcl,
+      "https://some.pod/profileDoc#webId"
+    );
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      fallbackAcl,
+      "fallback"
+    );
+
+    const accessModes = unstable_getAgentAccessModesOne(
+      litDatasetWithAcl,
+      "https://some.pod/profileDoc#webId"
+    );
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const inaccessibleAcl: unstable_Acl = {
+      acl: { fallbackAcl: null },
+    };
+    const litDatasetWithInaccessibleAcl = Object.assign(
+      litDataset,
+      inaccessibleAcl
+    );
+
+    expect(
+      unstable_getAgentAccessModesOne(
+        litDatasetWithInaccessibleAcl,
+        "https://arbitrary.pod/profileDoc#webId"
+      )
+    ).toBeNull();
+  });
+
+  it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/resource.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default"
+    );
+    const litDatasetWithJustResourceAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAcl,
+      "resource"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDatasetWithJustResourceAcl,
+      fallbackAcl,
+      "fallback"
+    );
+
+    const accessModes = unstable_getAgentAccessModesOne(
+      litDatasetWithAcl,
+      "https://some.pod/profileDoc#webId"
+    );
+
+    expect(accessModes).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
+    const litDataset = getMockDataset("https://some.pod/container/");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+    const resourceAclWithDefaultRules = addAclRuleQuads(
+      resourceAcl,
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAclWithDefaultRules,
+      "resource"
+    );
+
+    const accessModes = unstable_getAgentAccessModesOne(
+      litDatasetWithAcl,
+      "https://some.pod/profileDoc#webId"
+    );
+
+    expect(accessModes).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+    const fallbackAclWithDefaultRules = addAclRuleQuads(
+      fallbackAcl,
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      fallbackAclWithDefaultRules,
+      "fallback"
+    );
+
+    const accessModes = unstable_getAgentAccessModesOne(
+      litDatasetWithAcl,
+      "https://some.pod/profileDoc#webId"
+    );
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+});
 
 describe("getAgentResourceAccessModesOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {

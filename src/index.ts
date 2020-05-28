@@ -70,6 +70,7 @@ export {
 } from "./thing/remove";
 export {
   unstable_AgentAccess,
+  unstable_getAgentAccessModesOne,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
   unstable_getAgentDefaultAccessModesOne,
