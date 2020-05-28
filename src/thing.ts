@@ -76,7 +76,7 @@ export function getThingAll(
   options: GetThingOptions = {}
 ): Thing[] {
   const subjectNodes = new Array<Iri | LocalNode>();
-  for (let quad of litDataset) {
+  for (const quad of litDataset) {
     // Because NamedNode objects with the same IRI are actually different
     // object instances, we have to manually check whether `subjectNodes` does
     // not yet include `quadSubject` before adding it.
