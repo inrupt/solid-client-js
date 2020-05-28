@@ -759,16 +759,16 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-      expect(mockFetch.mock.calls[0][1]!.method).toBe("PUT");
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       expect(
-        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
         ]
       ).toBe("text/turtle");
       expect(
-        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)["Link"]
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
       ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
-      expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
       );
     });
@@ -798,8 +798,8 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-subject-name");
-      expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-object-name");
+      expect(mockFetch.mock.calls[0][1]?.body).toMatch("#some-subject-name");
+      expect(mockFetch.mock.calls[0][1]?.body).toMatch("#some-object-name");
     });
 
     it("resolves relative IRIs in the returned LitDataset", async () => {
@@ -861,7 +861,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls[0][1]!.headers).toMatchObject({
+      expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
         "If-None-Match": "*",
       });
     });
@@ -929,13 +929,13 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-      expect(mockFetch.mock.calls[0][1]!.method).toBe("PATCH");
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
       expect(
-        (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
         ]
       ).toBe("application/sparql-update");
-      expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
           "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
       );
@@ -1047,11 +1047,11 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][0]).toEqual(
         "https://some-other.pod/resource"
       );
-      expect(mockFetch.mock.calls[0][1]!.method).toBe("PUT");
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       // Even though the change log is empty there should still be a body,
       // since the Dataset itself is not empty:
       expect(
-        (mockFetch.mock.calls[0][1]!.body as string).trim().length
+        (mockFetch.mock.calls[0][1]?.body as string).trim().length
       ).toBeGreaterThan(0);
     });
 
@@ -1080,7 +1080,7 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("DELETE");
+      expect(mockFetch.mock.calls[0][1]?.body as string).not.toMatch("DELETE");
     });
 
     it("does not include an INSERT statement if the change log contains no additions", async () => {
@@ -1108,7 +1108,7 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("INSERT");
+      expect(mockFetch.mock.calls[0][1]?.body as string).not.toMatch("INSERT");
     });
 
     it("makes sure the returned LitDataset has an empty change log", async () => {
@@ -1261,16 +1261,16 @@ describe("saveLitDatasetInContainer", () => {
 
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
-    expect(mockFetch.mock.calls[0][1]!.method).toBe("POST");
+    expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(
-      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)[
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
         "Content-Type"
       ]
     ).toBe("text/turtle");
     expect(
-      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>)["Link"]
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
     ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
-    expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
+    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
     );
   });
@@ -1304,7 +1304,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
+    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
     );
   });
@@ -1323,7 +1323,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls[0][1]!.headers).toMatchObject({
+    expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
       slug: "some-slug",
     });
   });
@@ -1342,7 +1342,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(
-      (mockFetch.mock.calls[0][1]!.headers as Record<string, string>).slug
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug
     ).toBeUndefined();
   });
 
