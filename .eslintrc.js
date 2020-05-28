@@ -7,6 +7,8 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:jest/recommended",
+    "plugin:jest/style",
   ],
   globals: {
     Atomics: "readonly",
@@ -19,7 +21,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ["./tsconfig.json"],
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "jest"],
   rules: {
     // There's a TypeScript-specific version of this rule;
     // we disable the generic one, because it thinks imported types are unused

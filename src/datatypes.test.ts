@@ -182,7 +182,7 @@ describe("asNamedNode", () => {
   });
 
   it("throws an error on invalid IRIs", () => {
-    expect(() => asNamedNode("Not an IRI")).toThrowError("Not an IRI");
+    expect(() => asNamedNode("Not an IRI")).toThrow("Not an IRI");
   });
 });
 
