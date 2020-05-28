@@ -57,6 +57,8 @@ import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
+  unstable_getAgentDefaultAccessModesOne,
+  unstable_getAgentDefaultAccessModesAll,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -120,4 +122,6 @@ it("exports the public API from the entry file", () => {
   expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
   expect(unstable_getAgentResourceAccessModesOne).toBeDefined();
   expect(unstable_getAgentResourceAccessModesAll).toBeDefined();
+  expect(unstable_getAgentDefaultAccessModesOne).toBeDefined();
+  expect(unstable_getAgentDefaultAccessModesAll).toBeDefined();
 });
