@@ -68,7 +68,7 @@ describe("createThing", () => {
   });
 
   it("throws an error if the given URL is invalid", () => {
-    expect(() => createThing({ iri: "Invalid IRI" })).toThrowError();
+    expect(() => createThing({ iri: "Invalid IRI" })).toThrow();
   });
 });
 
@@ -711,9 +711,7 @@ describe("removeThing", () => {
 
     expect(updatedDataset.changeLog.additions).toEqual([]);
     expect(updatedDataset.changeLog.deletions).toHaveLength(2);
-    expect(updatedDataset.changeLog.deletions).toContain(
-      sameSubjectQuad
-    );
+    expect(updatedDataset.changeLog.deletions).toContain(sameSubjectQuad);
     expect(updatedDataset.changeLog.deletions).toContain(thingQuad);
   });
 
@@ -957,7 +955,7 @@ describe("asIri", () => {
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localThing = Object.assign(dataset(), { name: "some-name" });
 
-    expect(() => asIri(localThing, undefined as any)).toThrowError(
+    expect(() => asIri(localThing, undefined as any)).toThrow(
       "The IRI of a Thing that has not been persisted cannot be determined without a base IRI."
     );
   });
