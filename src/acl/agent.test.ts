@@ -18,100 +18,22 @@ import {
 } from "../index";
 import { Quad } from "rdf-js";
 
-function addAgentResourceAccess(
-  litDataset: LitDataset & DatasetInfo,
-  agent: WebId,
-  resource: IriString,
-  accessModes: unstable_AccessModes
-): LitDataset &
-  DatasetInfo &
-  unstable_Acl & {
-    acl: {
-      resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined>;
-    };
-  } {
-  const currentAclDataset =
-    ((litDataset as any) as unstable_Acl)?.acl?.resourceAcl ?? dataset();
-  const aclDataset: unstable_AclDataset = Object.assign(currentAclDataset, {
-    accessTo: litDataset.datasetInfo.fetchedFrom,
-    datasetInfo: {
-      fetchedFrom: litDataset.datasetInfo.fetchedFrom + ".acl",
-    },
-  });
-
-  const aclRuleQuads = getAclRuleQuads(
-    resource,
-    agent,
-    accessModes,
-    "resource"
-  );
-  aclRuleQuads.forEach((quad) => aclDataset.add(quad));
-
-  const acl: unstable_Acl["acl"] & {
-    resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined>;
-  } = {
-    fallbackAcl: null,
-    ...(((litDataset as unknown) as unstable_Acl).acl ?? {}),
-    resourceAcl: aclDataset,
-  };
-
-  return Object.assign(litDataset, {
-    acl: acl,
-  });
-}
-
-function addAgentDefaultAccess(
-  litDataset: LitDataset & DatasetInfo,
-  agent: WebId,
-  resource: IriString,
-  accessModes: unstable_AccessModes
-): LitDataset &
-  DatasetInfo &
-  unstable_Acl & {
-    acl: {
-      fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null>;
-    };
-  } {
-  const currentAclDataset =
-    ((litDataset as any) as unstable_Acl)?.acl?.fallbackAcl ?? dataset();
-  const aclDataset: unstable_AclDataset = Object.assign(currentAclDataset, {
-    accessTo: litDataset.datasetInfo.fetchedFrom,
-    datasetInfo: {
-      fetchedFrom: litDataset.datasetInfo.fetchedFrom + ".acl",
-    },
-  });
-
-  const aclRuleQuads = getAclRuleQuads(resource, agent, accessModes, "default");
-  aclRuleQuads.forEach((quad) => aclDataset.add(quad));
-
-  const acl: unstable_Acl["acl"] & {
-    fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null>;
-  } = {
-    ...(((litDataset as unknown) as unstable_Acl).acl ?? {}),
-    fallbackAcl: aclDataset,
-  };
-
-  return Object.assign(litDataset, {
-    acl: acl,
-  });
-}
-
-function getAclRuleQuads(
-  resource: IriString,
+function addAclRuleQuads(
+  aclDataset: LitDataset & DatasetInfo,
   agent: IriString,
+  resource: IriString,
   accessModes: unstable_AccessModes,
   type: "resource" | "default"
-): Quad[] {
-  const quads: Quad[] = [];
+): unstable_AclDataset {
   const subjectIri = "#" + encodeURIComponent(agent) + Math.random();
-  quads.push(
+  aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
       DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
       DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
     )
   );
-  quads.push(
+  aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
       DataFactory.namedNode(
@@ -122,7 +44,7 @@ function getAclRuleQuads(
       DataFactory.namedNode(resource)
     )
   );
-  quads.push(
+  aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
       DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
@@ -130,7 +52,7 @@ function getAclRuleQuads(
     )
   );
   if (accessModes.read) {
-    quads.push(
+    aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
@@ -139,7 +61,7 @@ function getAclRuleQuads(
     );
   }
   if (accessModes.append) {
-    quads.push(
+    aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
@@ -148,7 +70,7 @@ function getAclRuleQuads(
     );
   }
   if (accessModes.write) {
-    quads.push(
+    aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
@@ -157,7 +79,7 @@ function getAclRuleQuads(
     );
   }
   if (accessModes.control) {
-    quads.push(
+    aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
@@ -166,7 +88,7 @@ function getAclRuleQuads(
     );
   }
 
-  return quads;
+  return Object.assign(aclDataset, { accessTo: resource });
 }
 
 function getMockDataset(fetchedFrom: IriString): LitDataset & DatasetInfo {
@@ -179,16 +101,16 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & DatasetInfo {
 
 describe("getAgentResourceAccessModesOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
-    const mockDataset = addAgentResourceAccess(
-      getMockDataset("https://arbitrary.pod/resource"),
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: true }
+      { read: true, append: false, write: false, control: true },
+      "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessModesOne(
-      mockDataset.acl.resourceAcl,
-      mockDataset.datasetInfo.fetchedFrom,
+      resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -201,23 +123,23 @@ describe("getAgentResourceAccessModesOne", () => {
   });
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessModesOne(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -230,16 +152,16 @@ describe("getAgentResourceAccessModesOne", () => {
   });
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
-    const mockDataset = addAgentResourceAccess(
-      getMockDataset("https://arbitrary.pod/resource"),
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessModesOne(
-      mockDataset.acl.resourceAcl,
-      mockDataset.datasetInfo.fetchedFrom,
+      resourceAcl,
       "https://some-other.pod/profileDoc#webId"
     );
 
@@ -252,23 +174,23 @@ describe("getAgentResourceAccessModesOne", () => {
   });
 
   it("ignores ACL rules that apply to a different Agent", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessModesOne(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -281,23 +203,23 @@ describe("getAgentResourceAccessModesOne", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    const mockDataset = getMockDataset("https://some.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://arbitrary.pod/profileDoc#webId",
       "https://some.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessModesOne(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      resourceAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
 
@@ -312,24 +234,22 @@ describe("getAgentResourceAccessModesOne", () => {
 
 describe("getAgentResourceAccessModesAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -348,24 +268,22 @@ describe("getAgentResourceAccessModesAll", () => {
   });
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -378,17 +296,15 @@ describe("getAgentResourceAccessModesAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleAgents = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    const oneQuad = Array.from(
-      mockDatasetWithMultipleAgents.acl.resourceAcl
-    )[0];
-    mockDatasetWithMultipleAgents.acl.resourceAcl.add(
+    const oneQuad = Array.from(resourceAcl)[0];
+    resourceAcl.add(
       DataFactory.quad(
         oneQuad.subject,
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
@@ -396,10 +312,7 @@ describe("getAgentResourceAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(
-      mockDatasetWithMultipleAgents.acl.resourceAcl,
-      mockDatasetWithMultipleAgents.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -418,15 +331,15 @@ describe("getAgentResourceAccessModesAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
     const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
-    mockDatasetWithMultipleRules.add(
+    resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
@@ -435,14 +348,14 @@ describe("getAgentResourceAccessModesAll", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
       )
     );
-    mockDatasetWithMultipleRules.add(
+    resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
         DataFactory.namedNode("https://arbitrary.pod/resource")
       )
     );
-    mockDatasetWithMultipleRules.add(
+    resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
@@ -450,10 +363,7 @@ describe("getAgentResourceAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -466,24 +376,22 @@ describe("getAgentResourceAccessModesAll", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    const mockDataset = getMockDataset("https://some.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDataset,
+    let resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      { read: true, append: false, write: false, control: false },
+      "resource"
     );
-    mockDatasetWithMultipleRules = addAgentResourceAccess(
-      mockDatasetWithMultipleRules,
+    resourceAcl = addAclRuleQuads(
+      resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      { read: false, append: true, write: false, control: false },
+      "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(
-      mockDatasetWithMultipleRules.acl.resourceAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -498,16 +406,16 @@ describe("getAgentResourceAccessModesAll", () => {
 
 describe("getAgentDefaultAccessModesOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
-    const mockDataset = addAgentDefaultAccess(
-      getMockDataset("https://arbitrary.pod/resource"),
+    const containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: true }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: true },
+      "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessModesOne(
-      mockDataset.acl.fallbackAcl,
-      mockDataset.datasetInfo.fetchedFrom,
+      containerAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -520,23 +428,23 @@ describe("getAgentDefaultAccessModesOne", () => {
   });
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessModesOne(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      containerAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -549,16 +457,16 @@ describe("getAgentDefaultAccessModesOne", () => {
   });
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
-    const mockDataset = addAgentDefaultAccess(
-      getMockDataset("https://arbitrary.pod/resource"),
+    const containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessModesOne(
-      mockDataset.acl.fallbackAcl,
-      mockDataset.datasetInfo.fetchedFrom,
+      containerAcl,
       "https://some-other.pod/profileDoc#webId"
     );
 
@@ -571,23 +479,23 @@ describe("getAgentDefaultAccessModesOne", () => {
   });
 
   it("ignores ACL rules that apply to a different Agent", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessModesOne(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      containerAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -600,23 +508,23 @@ describe("getAgentDefaultAccessModesOne", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    const mockDataset = getMockDataset("https://some.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://some-other.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://arbitrary.pod/profileDoc#webId",
-      "https://some.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://some.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessModesOne(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom,
+      containerAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
 
@@ -631,24 +539,22 @@ describe("getAgentDefaultAccessModesOne", () => {
 
 describe("getAgentDefaultAccessModesAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -667,24 +573,22 @@ describe("getAgentDefaultAccessModesAll", () => {
   });
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -697,17 +601,15 @@ describe("getAgentDefaultAccessModesAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleAgents = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acln"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    const oneQuad = Array.from(
-      mockDatasetWithMultipleAgents.acl.fallbackAcl
-    )[0];
-    mockDatasetWithMultipleAgents.acl.fallbackAcl.add(
+    const oneQuad = Array.from(containerAcl)[0];
+    containerAcl.add(
       DataFactory.quad(
         oneQuad.subject,
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
@@ -715,10 +617,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(
-      mockDatasetWithMultipleAgents.acl.fallbackAcl,
-      mockDatasetWithMultipleAgents.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -737,15 +636,15 @@ describe("getAgentDefaultAccessModesAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
     const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
-    mockDatasetWithMultipleRules.add(
+    containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
@@ -754,14 +653,14 @@ describe("getAgentDefaultAccessModesAll", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
       )
     );
-    mockDatasetWithMultipleRules.add(
+    containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
+        DataFactory.namedNode("https://arbitrary.pod/container/")
       )
     );
-    mockDatasetWithMultipleRules.add(
+    containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
@@ -769,10 +668,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -785,24 +681,22 @@ describe("getAgentDefaultAccessModesAll", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    const mockDataset = getMockDataset("https://some.pod/resource");
-    let mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDataset,
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/resource",
-      { read: true, append: false, write: false, control: false }
+      "https://some-other.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default"
     );
-    mockDatasetWithMultipleRules = addAgentDefaultAccess(
-      mockDatasetWithMultipleRules,
+    containerAcl = addAclRuleQuads(
+      containerAcl,
       "https://some.pod/profileDoc#webId",
-      "https://some.pod/resource",
-      { read: false, append: true, write: false, control: false }
+      "https://some.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(
-      mockDatasetWithMultipleRules.acl.fallbackAcl,
-      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
-    );
+    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
