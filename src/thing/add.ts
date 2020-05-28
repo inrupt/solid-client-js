@@ -1,3 +1,4 @@
+import { Literal, NamedNode } from "rdf-js";
 import { Thing, IriString, ThingLocal, ThingPersisted, Iri } from "../index";
 import { cloneThing, toNode } from "../thing";
 import {
@@ -11,7 +12,6 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { Literal, NamedNode } from "rdf-js";
 
 /**
  * Add an IRI to a Predicate on a Thing.

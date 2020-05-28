@@ -1,13 +1,13 @@
 import {
-  unstable_AclDataset,
-  DatasetInfo,
-  unstable_hasAccessibleAcl,
-} from "./index";
-import {
   fetchLitDataset,
   defaultFetchOptions,
   internal_fetchLitDatasetInfo,
 } from "./litDataset";
+import {
+  unstable_AclDataset,
+  DatasetInfo,
+  unstable_hasAccessibleAcl,
+} from "./index";
 
 export async function internal_fetchResourceAcl(
   dataset: DatasetInfo,

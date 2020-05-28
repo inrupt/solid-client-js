@@ -1,3 +1,4 @@
+import { foaf, schema } from "rdf-namespaces";
 import {
   fetchLitDataset,
   setThing,
@@ -7,7 +8,6 @@ import {
   setStringUnlocalized,
   saveLitDatasetAt,
 } from "./index";
-import { foaf, schema } from "rdf-namespaces";
 
 describe("End-to-end tests", () => {
   it("should be able to read and update data in a Pod", async () => {

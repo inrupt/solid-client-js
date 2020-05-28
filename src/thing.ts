@@ -1,4 +1,13 @@
 import { NamedNode, Quad } from "rdf-js";
+import { dataset, filter, clone } from "./rdfjs";
+import {
+  isLocalNode,
+  isEqual,
+  isNamedNode,
+  getLocalNode,
+  asNamedNode,
+  resolveLocalIri,
+} from "./datatypes";
 import {
   LitDataset,
   IriString,
@@ -12,15 +21,6 @@ import {
   hasChangelog,
   hasDatasetInfo,
 } from "./index";
-import { dataset, filter, clone } from "./rdfjs";
-import {
-  isLocalNode,
-  isEqual,
-  isNamedNode,
-  getLocalNode,
-  asNamedNode,
-  resolveLocalIri,
-} from "./datatypes";
 
 export interface GetThingOptions {
   /**

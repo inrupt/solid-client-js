@@ -1,6 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
-import { LocalNode } from "./index";
 import {
   isEqual,
   isNamedNode,
@@ -21,6 +20,7 @@ import {
   deserializeInteger,
   normalizeLocale,
 } from "./datatypes";
+import { LocalNode } from "./index";
 
 describe("serializeBoolean", () => {
   it("serializes true as `1`", () => {

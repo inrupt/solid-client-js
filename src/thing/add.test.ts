@@ -1,4 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
+import { dataset } from "@rdfjs/dataset";
+import { Quad, Term } from "rdf-js";
+import { DataFactory } from "n3";
+import { IriString, ThingLocal, LocalNode } from "../index";
 import {
   addIri,
   addBoolean,
@@ -10,10 +14,6 @@ import {
   addNamedNode,
   addLiteral,
 } from "./add";
-import { dataset } from "@rdfjs/dataset";
-import { Quad, Term } from "rdf-js";
-import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../index";
 
 function getMockEmptyThing(iri = "https://arbitrary.vocab/subject") {
   const thing = dataset();

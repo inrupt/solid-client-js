@@ -1,4 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
+import { dataset } from "@rdfjs/dataset";
+import { NamedNode } from "rdf-js";
+import { DataFactory } from "n3";
 import {
   getThingOne,
   getThingAll,
@@ -7,9 +10,6 @@ import {
   createThing,
   asIri,
 } from "./thing";
-import { dataset } from "@rdfjs/dataset";
-import { NamedNode } from "rdf-js";
-import { DataFactory } from "n3";
 import {
   IriString,
   Thing,

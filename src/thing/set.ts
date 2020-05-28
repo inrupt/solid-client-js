@@ -1,5 +1,5 @@
-import { Thing, Iri, IriString, ThingLocal, ThingPersisted } from "../index";
 import { Literal, NamedNode } from "rdf-js";
+import { Thing, Iri, IriString, ThingLocal, ThingPersisted } from "../index";
 import {
   asNamedNode,
   serializeBoolean,
@@ -10,9 +10,9 @@ import {
   XmlSchemaTypeIri,
   xmlSchemaTypes,
 } from "../datatypes";
-import { removeAll } from "./remove";
 import { DataFactory } from "../rdfjs";
 import { toNode } from "../thing";
+import { removeAll } from "./remove";
 
 /**
  * Replace existing values for a Predicate by a given IRI on a Thing.

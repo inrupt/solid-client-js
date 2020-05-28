@@ -11,6 +11,7 @@ jest.mock("./fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
+import { dataset } from "@rdfjs/dataset";
 import {
   fetchLitDataset,
   saveLitDatasetAt,
@@ -25,7 +26,6 @@ import {
   LitDataset,
   LocalNode,
 } from "./index";
-import { dataset } from "@rdfjs/dataset";
 
 function mockResponse(
   body?: BodyInit | null,
