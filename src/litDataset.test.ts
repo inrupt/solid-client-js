@@ -294,7 +294,7 @@ describe("fetchLitDatasetWithAcl", () => {
     expect(fetchedLitDataset.acl?.fallbackAcl?.datasetInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
-    expect(mockFetch.mock.calls.length).toBe(4);
+    expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
     expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/");
@@ -452,7 +452,7 @@ describe("fetchLitDatasetInfo", () => {
 
     await internal_fetchLitDatasetInfo("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
@@ -467,7 +467,7 @@ describe("fetchLitDatasetInfo", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
@@ -683,7 +683,7 @@ describe("saveLitDatasetAt", () => {
 
     await saveLitDatasetAt("https://some.pod/resource", dataset());
 
-    expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -695,7 +695,7 @@ describe("saveLitDatasetAt", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -757,7 +757,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1]!.method).toBe("PUT");
       expect(
@@ -797,7 +797,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-subject-name");
       expect(mockFetch.mock.calls[0][1]!.body).toMatch("#some-object-name");
     });
@@ -927,7 +927,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1]!.method).toBe("PATCH");
       expect(
@@ -1043,7 +1043,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual(
         "https://some-other.pod/resource"
       );
@@ -1079,7 +1079,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("DELETE");
     });
 
@@ -1107,7 +1107,7 @@ describe("saveLitDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls.length).toBe(1);
+      expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]!.body as string).not.toMatch("INSERT");
     });
 
@@ -1162,7 +1162,7 @@ describe("saveLitDatasetInContainer", () => {
 
     await saveLitDatasetInContainer("https://some.pod/container/", dataset());
 
-    expect(mockedFetcher.fetch.mock.calls.length).toBe(1);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -1174,7 +1174,7 @@ describe("saveLitDatasetInContainer", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -1259,7 +1259,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
     expect(mockFetch.mock.calls[0][1]!.method).toBe("POST");
     expect(
@@ -1303,7 +1303,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls.length).toBe(1);
+    expect(mockFetch.mock.calls).toHaveLength(1);
     expect((mockFetch.mock.calls[0][1]!.body as string).trim()).toBe(
       "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
     );

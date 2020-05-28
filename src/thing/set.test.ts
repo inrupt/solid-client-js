@@ -85,7 +85,7 @@ describe("setIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -165,7 +165,7 @@ describe("setIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(updatedQuads[0].subject.value).toBe(
       "https://some.pod/resource#subject"
     );
@@ -229,7 +229,7 @@ describe("setIri", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
     expect(updatedQuads[0].predicate.value).toBe(
       "https://some.vocab/predicate"
@@ -293,7 +293,7 @@ describe("setBoolean", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -431,7 +431,7 @@ describe("setDatetime", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -569,7 +569,7 @@ describe("setDecimal", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -703,7 +703,7 @@ describe("setInteger", () => {
     const updatedThing = setInteger(thing, "https://some.vocab/predicate", 42);
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -842,7 +842,7 @@ describe("setStringInLocale", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -984,7 +984,7 @@ describe("setStringUnlocalized", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1122,7 +1122,7 @@ describe("setNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
@@ -1186,7 +1186,7 @@ describe("setNamedNode", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
     expect(updatedQuads[0].predicate.value).toBe(
       "https://some.vocab/predicate"
@@ -1250,7 +1250,7 @@ describe("setLiteral", () => {
     );
 
     const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads.length).toBe(1);
+    expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",

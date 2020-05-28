@@ -115,8 +115,8 @@ describe("removeAll", () => {
       DataFactory.namedNode("https://some.vocab/predicate")
     );
 
-    expect(Array.from(thingWithString).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithString)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -250,8 +250,8 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(Array.from(thingWithIri).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithIri)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -418,8 +418,8 @@ describe("removeBoolean", () => {
       true
     );
 
-    expect(Array.from(thingWithBoolean).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithBoolean)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -568,8 +568,8 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(Array.from(thingWithDatetime).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithDatetime)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -721,8 +721,8 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(Array.from(thingWithDecimal).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithDecimal)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -871,8 +871,8 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(Array.from(thingWithInteger).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithInteger)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1051,8 +1051,8 @@ describe("removeStringInLocale", () => {
       "en-us"
     );
 
-    expect(Array.from(thingWithStringInLocale).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithStringInLocale)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1238,8 +1238,8 @@ describe("removeStringUnlocalized", () => {
       "Some arbitrary string"
     );
 
-    expect(Array.from(thingWithStringUnlocalized).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithStringUnlocalized)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1495,8 +1495,8 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(Array.from(thingWithInteger).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithInteger)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1654,8 +1654,8 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(Array.from(thingWithNamedNode).length).toBe(1);
-    expect(Array.from(updatedThing).length).toBe(0);
+    expect(Array.from(thingWithNamedNode)).toHaveLength(1);
+    expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
   it("also works on ThingLocals", () => {
