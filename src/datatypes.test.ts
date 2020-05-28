@@ -41,8 +41,8 @@ describe("deserializeBoolean", () => {
   });
 
   it("returns null if a value is not a serialised boolean", () => {
-    expect(deserializeBoolean("false")).toBe(null);
-    expect(deserializeBoolean("Not a serialised boolean")).toBe(null);
+    expect(deserializeBoolean("false")).toBeNull();
+    expect(deserializeBoolean("Not a serialised boolean")).toBeNull();
   });
 });
 
@@ -60,8 +60,8 @@ describe("deserializeDatetime", () => {
   });
 
   it("returns null if a value is not a serialised datetime", () => {
-    expect(deserializeDatetime("1990-11-12")).toBe(null);
-    expect(deserializeDatetime("Not a serialised datetime")).toBe(null);
+    expect(deserializeDatetime("1990-11-12")).toBeNull();
+    expect(deserializeDatetime("Not a serialised datetime")).toBeNull();
   });
 });
 
@@ -76,7 +76,7 @@ describe("deserializeDecimal", () => {
   });
 
   it("return null if a value is not a serialised decimal", () => {
-    expect(deserializeDecimal("Not a serialised decimal")).toBe(null);
+    expect(deserializeDecimal("Not a serialised decimal")).toBeNull();
   });
 });
 
@@ -91,7 +91,7 @@ describe("deserializeInteger", () => {
   });
 
   it("return null if a value is not a serialised integer", () => {
-    expect(deserializeInteger("Not a serialised integer")).toBe(null);
+    expect(deserializeInteger("Not a serialised integer")).toBeNull();
   });
 });
 
