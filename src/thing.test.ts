@@ -135,8 +135,8 @@ describe("getThingOne", () => {
     );
 
     expect(thing.size).toEqual(2);
-    expect(Array.from(thing).includes(quadInDefaultGraph)).toBe(true);
-    expect(Array.from(thing).includes(quadInArbitraryGraph)).toBe(true);
+    expect(Array.from(thing)).toContain(quadInDefaultGraph);
+    expect(Array.from(thing)).toContain(quadInArbitraryGraph);
   });
 
   it("is able to limit the Thing's scope to a single Named Graph", () => {
@@ -263,8 +263,8 @@ describe("getThingAll", () => {
 
     const things = getThingAll(datasetWithMultipleNamedGraphs);
 
-    expect(Array.from(things[0]).includes(quadInDefaultGraph)).toBe(true);
-    expect(Array.from(things[0]).includes(quadInArbitraryGraph)).toBe(true);
+    expect(Array.from(things[0])).toContain(quadInDefaultGraph);
+    expect(Array.from(things[0])).toContain(quadInArbitraryGraph);
   });
 
   it("is able to limit the Things' scope to a single Named Graph", () => {
@@ -711,10 +711,10 @@ describe("removeThing", () => {
 
     expect(updatedDataset.changeLog.additions).toEqual([]);
     expect(updatedDataset.changeLog.deletions).toHaveLength(2);
-    expect(updatedDataset.changeLog.deletions.includes(sameSubjectQuad)).toBe(
-      true
+    expect(updatedDataset.changeLog.deletions).toContain(
+      sameSubjectQuad
     );
-    expect(updatedDataset.changeLog.deletions.includes(thingQuad)).toBe(true);
+    expect(updatedDataset.changeLog.deletions).toContain(thingQuad);
   });
 
   it("preserves existing change logs", () => {
