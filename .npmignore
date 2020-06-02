@@ -3,4 +3,6 @@ coverage
 *.test.js
 *.test.ts
 whitesource/
+# Resources should contain files useful at build time only, and should not
+# be required as part of the package (like devDependencies)
 resources/
