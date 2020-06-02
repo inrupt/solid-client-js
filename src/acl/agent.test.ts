@@ -1,7 +1,10 @@
 import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
-import { unstable_getAgentResourceAccessModesOne } from "./agent";
+import {
+  unstable_getAgentResourceAccessModesOne,
+  unstable_getAgentResourceAccessModesAll,
+} from "./agent";
 import {
   LitDataset,
   unstable_AccessModes,
@@ -242,6 +245,192 @@ describe("getAgentResourceAccessModesOne", () => {
       append: true,
       write: false,
       control: false,
+    });
+  });
+});
+
+describe("getAgentResourceAccessModesAll", () => {
+  it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
+    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
+    let mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDataset,
+      "https://some-other.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false }
+    );
+    mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDatasetWithMultipleRules,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: false, append: true, write: false, control: false }
+    );
+
+    const agentAccess = unstable_getAgentResourceAccessModesAll(
+      mockDatasetWithMultipleRules.acl.resourceAcl,
+      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
+    );
+
+    expect(agentAccess).toEqual({
+      "https://some.pod/profileDoc#webId": {
+        read: false,
+        append: true,
+        write: false,
+        control: false,
+      },
+      "https://some-other.pod/profileDoc#webId": {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("combines Access Modes defined for the same Agent in different Rules", () => {
+    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
+    let mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDataset,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false }
+    );
+    mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDatasetWithMultipleRules,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: false, append: true, write: false, control: false }
+    );
+
+    const agentAccess = unstable_getAgentResourceAccessModesAll(
+      mockDatasetWithMultipleRules.acl.resourceAcl,
+      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
+    );
+
+    expect(agentAccess).toEqual({
+      "https://some.pod/profileDoc#webId": {
+        read: true,
+        append: true,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
+    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
+    let mockDatasetWithMultipleAgents = addAgentResourceAccess(
+      mockDataset,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false }
+    );
+    const oneQuad = Array.from(
+      mockDatasetWithMultipleAgents.acl.resourceAcl
+    )[0];
+    mockDatasetWithMultipleAgents.acl.resourceAcl.add(
+      DataFactory.quad(
+        oneQuad.subject,
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+      )
+    );
+
+    const agentAccess = unstable_getAgentResourceAccessModesAll(
+      mockDatasetWithMultipleAgents.acl.resourceAcl,
+      mockDatasetWithMultipleAgents.datasetInfo.fetchedFrom
+    );
+
+    expect(agentAccess).toEqual({
+      "https://some.pod/profileDoc#webId": {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+      "https://some-other.pod/profileDoc#webId": {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("ignores ACL rules that do not apply to an Agent", () => {
+    const mockDataset = getMockDataset("https://arbitrary.pod/resource");
+    let mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDataset,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false }
+    );
+    const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
+    mockDatasetWithMultipleRules.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    mockDatasetWithMultipleRules.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    mockDatasetWithMultipleRules.add(
+      DataFactory.quad(
+        DataFactory.namedNode(agentClassRuleSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
+        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
+      )
+    );
+
+    const agentAccess = unstable_getAgentResourceAccessModesAll(
+      mockDatasetWithMultipleRules.acl.resourceAcl,
+      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
+    );
+
+    expect(agentAccess).toEqual({
+      "https://some.pod/profileDoc#webId": {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("ignores ACL rules that apply to a different Resource", () => {
+    const mockDataset = getMockDataset("https://some.pod/resource");
+    let mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://some-other.pod/resource",
+      { read: true, append: false, write: false, control: false }
+    );
+    mockDatasetWithMultipleRules = addAgentResourceAccess(
+      mockDatasetWithMultipleRules,
+      "https://some.pod/profileDoc#webId",
+      "https://some.pod/resource",
+      { read: false, append: true, write: false, control: false }
+    );
+
+    const agentAccess = unstable_getAgentResourceAccessModesAll(
+      mockDatasetWithMultipleRules.acl.resourceAcl,
+      mockDatasetWithMultipleRules.datasetInfo.fetchedFrom
+    );
+
+    expect(agentAccess).toEqual({
+      "https://some.pod/profileDoc#webId": {
+        read: false,
+        append: true,
+        write: false,
+        control: false,
+      },
     });
   });
 });
