@@ -10,7 +10,7 @@ jest.mock("./fetcher", () => ({
     ),
 }));
 
-import { fetchFile } from "./nonRdfData";
+import { fetchFile, deleteFile } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
@@ -100,6 +100,76 @@ describe("Non-RDF data fetch", () => {
     expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
     expect(response).toEqual(
       new Response(undefined, { status: 400, statusText: "Bad request" })
+    );
+  });
+});
+
+describe("Non-RDF data deletion", () => {
+  it("should DELETE a remote resource using cross-fetch if no other fetcher is available", async () => {
+    // Mocking cross-fetch must not happen in the global scope, otherwise it
+    // breaks the imports of the Headers and Response classes.
+    jest.mock("cross-fetch");
+    const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
+      ReturnType<typeof window.fetch>,
+      [RequestInfo, RequestInit]
+    >;
+    crossFetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      )
+    );
+
+    await deleteFile("https://some.url");
+
+    expect(crossFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+  });
+
+  it("should DELETE a remote resource using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 200, statusText: "Deleted" })
+        )
+      );
+
+    await deleteFile("https://some.url", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+  });
+
+  it("should throw on failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          status: 400,
+          statusText: "Bad request",
+        })
+      )
+    );
+
+    await expect(
+      deleteFile("https://some.url", {
+        fetch: mockFetch,
+      })
+    ).rejects.toThrow(
+      new Error(
+        "Failed to delete the data at https://some.url: 400 Bad request."
+      )
     );
   });
 });

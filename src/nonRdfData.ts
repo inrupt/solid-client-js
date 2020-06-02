@@ -10,7 +10,7 @@ const defaultGetFileOptions = {
 };
 
 /**
- * getFile fetches a file, and returns it as a blob of data.
+ * Fetches a file at a given IRI, and returns it as a blob of data.
  *
  * @param url The IRI of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
@@ -24,4 +24,27 @@ export async function fetchFile(
     ...options,
   };
   return config.fetch(input, config.init);
+}
+
+/**
+ * Deletes a file at a given IRI
+ *
+ * @param url The IRI of the file to delete
+ */
+export async function deleteFile(
+  url: IriString,
+  options: Partial<NonRdfFetchOptions> = defaultNonRdfFetchOptions
+): Promise<void> {
+  const config = {
+    ...defaultGetFileOptions,
+    ...options,
+  };
+  const response = await config.fetch(url, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to delete the data at ${url}: ${response.status} ${response.statusText}.`
+    );
+  }
 }

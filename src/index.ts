@@ -1,6 +1,6 @@
 import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
 
-export { fetchFile } from "./nonRdfData";
+export { fetchFile, deleteFile } from "./nonRdfData";
 export {
   fetchLitDataset,
   saveLitDatasetAt,

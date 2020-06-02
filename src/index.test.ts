@@ -1,5 +1,6 @@
 import {
   fetchFile,
+  deleteFile,
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
@@ -68,6 +69,7 @@ import {
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
   expect(fetchFile).toBeDefined();
+  expect(deleteFile).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
