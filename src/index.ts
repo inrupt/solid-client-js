@@ -68,7 +68,11 @@ export {
   removeLiteral,
   removeNamedNode,
 } from "./thing/remove";
-export { unstable_getAgentResourceAccessModesOne } from "./acl/agent";
+export {
+  unstable_AgentAccess,
+  unstable_getAgentResourceAccessModesOne,
+  unstable_getAgentResourceAccessModesAll,
+} from "./acl/agent";
 
 /**
  * Alias to indicate where we expect an IRI.

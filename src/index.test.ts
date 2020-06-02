@@ -56,6 +56,7 @@ import {
   removeNamedNode,
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentResourceAccessModesOne,
+  unstable_getAgentResourceAccessModesAll,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -118,4 +119,5 @@ it("exports the public API from the entry file", () => {
   expect(removeNamedNode).toBeDefined();
   expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
   expect(unstable_getAgentResourceAccessModesOne).toBeDefined();
+  expect(unstable_getAgentResourceAccessModesAll).toBeDefined();
 });
