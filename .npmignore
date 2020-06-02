@@ -2,3 +2,5 @@
 coverage
 *.test.js
 *.test.ts
+whitesource/
+resources/
