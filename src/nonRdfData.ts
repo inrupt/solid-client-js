@@ -1,12 +1,11 @@
 import { fetch } from "./fetcher";
 import { IriString } from "./index";
 
-interface GetFileOptions {
+interface GetFileOptions extends RequestInit {
   fetch: typeof window.fetch;
-  headers: RequestInit["headers"];
 }
+
 const defaultGetFileOptions = {
-  headers: {},
   fetch: fetch,
 };
 
@@ -17,19 +16,15 @@ const defaultGetFileOptions = {
  * @param options Fetching options: a custom fetcher and/or headers.
  */
 export async function getFile(
-  url: IriString,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob> {
+  input: RequestInfo,
+  init: Partial<GetFileOptions> = defaultGetFileOptions
+): Promise<Response> {
   const config = {
     ...defaultGetFileOptions,
-    ...options,
+    ...init,
   };
-  const response = await config.fetch(url, { headers: config.headers });
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch the data at ${url}: ${response.status} ${response.statusText}.`
-    );
-  }
-
-  return response.blob();
+  // The `fetch` field is not part of the original RequestInit, and it is no longer
+  // needed in the init object.
+  delete init.fetch;
+  return config.fetch(input, init);
 }

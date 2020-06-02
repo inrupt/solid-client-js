@@ -20,14 +20,7 @@ describe("Non-RDF data fetch", () => {
 
     await getFile("https://some.url");
 
-    expect(crossFetch.mock.calls).toEqual([
-      [
-        "https://some.url",
-        {
-          headers: {},
-        },
-      ],
-    ]);
+    expect(crossFetch.mock.calls).toEqual([["https://some.url", {}]]);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
@@ -41,14 +34,7 @@ describe("Non-RDF data fetch", () => {
 
     await getFile("https://some.url", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls).toEqual([
-      [
-        "https://some.url",
-        {
-          headers: {},
-        },
-      ],
-    ]);
+    expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
   });
 
   it("should pass the request headers through", async () => {
@@ -73,26 +59,5 @@ describe("Non-RDF data fetch", () => {
         },
       ],
     ]);
-  });
-
-  it("should throw on failed request", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Some data", {
-          status: 400,
-          statusText: "Bad request",
-        })
-      )
-    );
-
-    await expect(
-      getFile("https://some.url", {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      new Error(
-        "Failed to fetch the data at https://some.url: 400 Bad request."
-      )
-    );
   });
 });
