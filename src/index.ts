@@ -71,6 +71,7 @@ export {
 export {
   unstable_AgentAccess,
   unstable_getAgentAccessModesOne,
+  unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
   unstable_getAgentDefaultAccessModesOne,
