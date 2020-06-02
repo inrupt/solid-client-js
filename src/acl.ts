@@ -17,6 +17,7 @@ import {
 import { getThingAll } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
 
+/** @internal */
 export async function internal_fetchResourceAcl(
   dataset: DatasetInfo,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
@@ -41,6 +42,7 @@ export async function internal_fetchResourceAcl(
   }
 }
 
+/** @internal */
 export async function internal_fetchFallbackAcl(
   dataset: DatasetInfo & {
     datasetInfo: {
