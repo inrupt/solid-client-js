@@ -1,6 +1,6 @@
 import { fetch } from "./fetcher";
 
-interface GetFileOptions extends RequestInit {
+interface GetFileOptions {
   fetch: typeof window.fetch;
   init: RequestInit;
 }
@@ -21,7 +21,7 @@ export async function fetchFile(
 ): Promise<Response> {
   const config = {
     ...defaultGetFileOptions,
-    ...init,
+    ...options,
   };
   return config.fetch(input, config.init);
 }
