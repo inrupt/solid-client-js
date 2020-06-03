@@ -10,7 +10,7 @@ jest.mock("./fetcher", () => ({
     ),
 }));
 
-import { getFile } from "./nonRdfData";
+import { fetchFile } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
@@ -31,7 +31,7 @@ describe("Non-RDF data fetch", () => {
       )
     );
 
-    await getFile("https://some.url");
+    await fetchFile("https://some.url");
 
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", {}]]);
   });
@@ -45,7 +45,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    await getFile("https://some.url", { fetch: mockFetch });
+    await fetchFile("https://some.url", { fetch: mockFetch });
 
     expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
   });
@@ -59,7 +59,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    await getFile("https://some.url", {
+    await fetchFile("https://some.url", {
       fetch: mockFetch,
       headers: new Headers({ Accept: "text/turtle" }),
     });

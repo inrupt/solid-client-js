@@ -1,5 +1,4 @@
 import { fetch } from "./fetcher";
-import { IriString } from "./index";
 
 interface GetFileOptions extends RequestInit {
   fetch: typeof window.fetch;
@@ -15,7 +14,7 @@ const defaultGetFileOptions = {
  * @param url The IRI of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  */
-export async function getFile(
+export async function fetchFile(
   input: RequestInfo,
   init: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Response> {
