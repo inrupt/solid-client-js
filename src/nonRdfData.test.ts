@@ -48,7 +48,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", undefined, {
+    const response = await fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -67,15 +67,12 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile(
-      "https://some.url",
-      {
+    const response = await fetchFile("https://some.url", {
+      init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
-      {
-        fetch: mockFetch,
-      }
-    );
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls).toEqual([
       [
@@ -99,7 +96,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", undefined, {
+    const response = await fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 

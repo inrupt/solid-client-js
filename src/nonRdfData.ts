@@ -2,6 +2,7 @@ import { fetch } from "./fetcher";
 
 interface GetFileOptions {
   fetch: typeof window.fetch;
+  init: RequestInit;
 }
 
 const defaultGetFileOptions = {
@@ -16,12 +17,11 @@ const defaultGetFileOptions = {
  */
 export async function fetchFile(
   input: RequestInfo,
-  init?: RequestInit,
   options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Response> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
   };
-  return config.fetch(input, init);
+  return config.fetch(input, options.init);
 }
