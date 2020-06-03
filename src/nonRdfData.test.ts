@@ -31,9 +31,12 @@ describe("Non-RDF data fetch", () => {
       )
     );
 
-    await fetchFile("https://some.url");
+    const response = await fetchFile("https://some.url");
 
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(response).toEqual(
+      new Response("Some data", { status: 200, statusText: "OK" })
+    );
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
@@ -45,9 +48,12 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    await fetchFile("https://some.url", { fetch: mockFetch });
+    const response = await fetchFile("https://some.url", { fetch: mockFetch });
 
     expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(response).toEqual(
+      new Response("Some data", { status: 200, statusText: "OK" })
+    );
   });
 
   it("should pass the request headers through", async () => {
@@ -59,7 +65,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    await fetchFile("https://some.url", {
+    const response = await fetchFile("https://some.url", {
       fetch: mockFetch,
       headers: new Headers({ Accept: "text/turtle" }),
     });
@@ -72,5 +78,27 @@ describe("Non-RDF data fetch", () => {
         },
       ],
     ]);
+    expect(response).toEqual(
+      new Response("Some data", { status: 200, statusText: "OK" })
+    );
+  });
+
+  it("should return the response even on failure", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 400, statusText: "Bad request" })
+        )
+      );
+
+    const response = await fetchFile("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(response).toEqual(
+      new Response(undefined, { status: 400, statusText: "Bad request" })
+    );
   });
 });
