@@ -1,4 +1,14 @@
-import { it, expect } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
+
+jest.mock("./fetcher", () => ({
+  fetch: jest
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve(
+        new Response("Some data", { status: 200, statusText: "OK" })
+      )
+    ),
+}));
 
 import { getFile } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
@@ -7,12 +17,15 @@ describe("Non-RDF data fetch", () => {
   it("should GET a remote resource using cross-fetch if no other fetcher is available", async () => {
     // Mocking cross-fetch must not happen in the global scope, otherwise it
     // breaks the imports of the Headers and Response classes.
-    jest.mock("cross-fetch");
-    const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
-      ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit]
-    >;
-    crossFetch.mockReturnValue(
+
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
       Promise.resolve(
         new Response("Some data", { status: 200, statusText: "OK" })
       )
@@ -20,7 +33,7 @@ describe("Non-RDF data fetch", () => {
 
     await getFile("https://some.url");
 
-    expect(crossFetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", {}]]);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
