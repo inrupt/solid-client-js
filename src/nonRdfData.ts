@@ -23,5 +23,5 @@ export async function fetchFile(
     ...defaultGetFileOptions,
     ...options,
   };
-  return config.fetch(input, options.init);
+  return config.fetch(input, config.init);
 }
