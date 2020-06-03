@@ -15,9 +15,6 @@ import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
   it("should GET a remote resource using cross-fetch if no other fetcher is available", async () => {
-    // Mocking cross-fetch must not happen in the global scope, otherwise it
-    // breaks the imports of the Headers and Response classes.
-
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
