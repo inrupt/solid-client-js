@@ -106,22 +106,22 @@ describe("Non-RDF data fetch", () => {
 
 describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using cross-fetch if no other fetcher is available", async () => {
-    // Mocking cross-fetch must not happen in the global scope, otherwise it
-    // breaks the imports of the Headers and Response classes.
-    jest.mock("cross-fetch");
-    const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
-      ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit]
-    >;
-    crossFetch.mockReturnValue(
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
       Promise.resolve(
         new Response(undefined, { status: 200, statusText: "Deleted" })
       )
     );
 
-    await deleteFile("https://some.url");
+    const response = await deleteFile("https://some.url");
 
-    expect(crossFetch.mock.calls).toEqual([
+    expect(fetcher.fetch.mock.calls).toEqual([
       [
         "https://some.url",
         {
@@ -129,6 +129,9 @@ describe("Non-RDF data deletion", () => {
         },
       ],
     ]);
+    expect(response).toEqual(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
   });
 
   it("should DELETE a remote resource using the provided fetcher", async () => {
@@ -140,7 +143,63 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await deleteFile("https://some.url", { fetch: mockFetch });
+    const response = await deleteFile("https://some.url", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toEqual(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+  });
+
+  it("should pass through the request init if it is set by the user", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 200, statusText: "Deleted" })
+        )
+      );
+
+    await deleteFile("https://some.url", {
+      fetch: mockFetch,
+      init: {
+        mode: "same-origin",
+      },
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+          mode: "same-origin",
+        },
+      ],
+    ]);
+  });
+
+  it("should override the request method if it is set by the user", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 200, statusText: "Deleted" })
+        )
+      );
+
+    await deleteFile("https://some.url", {
+      fetch: mockFetch,
+      init: {
+        method: "HEAD",
+      },
+    });
 
     expect(mockFetch.mock.calls).toEqual([
       [
@@ -152,7 +211,7 @@ describe("Non-RDF data deletion", () => {
     ]);
   });
 
-  it("should throw on failed request", async () => {
+  it("should return the response failed request", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
@@ -162,14 +221,15 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    await expect(
-      deleteFile("https://some.url", {
-        fetch: mockFetch,
+    const response = await deleteFile("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(response).toEqual(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
       })
-    ).rejects.toThrow(
-      new Error(
-        "Failed to delete the data at https://some.url: 400 Bad request."
-      )
     );
   });
 });
