@@ -1,6 +1,6 @@
 import { fetch } from "./fetcher";
 
-interface GetFileOptions extends RequestInit {
+interface GetFileOptions {
   fetch: typeof window.fetch;
 }
 
@@ -16,14 +16,12 @@ const defaultGetFileOptions = {
  */
 export async function fetchFile(
   input: RequestInfo,
-  init: Partial<GetFileOptions> = defaultGetFileOptions
+  init?: RequestInit,
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Response> {
   const config = {
     ...defaultGetFileOptions,
-    ...init,
+    ...options,
   };
-  // The `fetch` field is not part of the original RequestInit, and it is no longer
-  // needed in the init object.
-  delete init.fetch;
   return config.fetch(input, init);
 }

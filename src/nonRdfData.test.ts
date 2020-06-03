@@ -33,7 +33,7 @@ describe("Non-RDF data fetch", () => {
 
     const response = await fetchFile("https://some.url");
 
-    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
     expect(response).toEqual(
       new Response("Some data", { status: 200, statusText: "OK" })
     );
@@ -48,9 +48,11 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", { fetch: mockFetch });
+    const response = await fetchFile("https://some.url", undefined, {
+      fetch: mockFetch,
+    });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
     expect(response).toEqual(
       new Response("Some data", { status: 200, statusText: "OK" })
     );
@@ -65,10 +67,15 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
-      fetch: mockFetch,
-      headers: new Headers({ Accept: "text/turtle" }),
-    });
+    const response = await fetchFile(
+      "https://some.url",
+      {
+        headers: new Headers({ Accept: "text/turtle" }),
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch.mock.calls).toEqual([
       [
@@ -92,11 +99,11 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await fetchFile("https://some.url", undefined, {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", {}]]);
+    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
     expect(response).toEqual(
       new Response(undefined, { status: 400, statusText: "Bad request" })
     );
