@@ -160,7 +160,7 @@ export function internal_getAclRules(
 }
 
 function isAclRule(thing: Thing): thing is unstable_AclRule {
-  return getIriOne(thing, rdf.type) === acl.Authorization;
+  return getIriAll(thing, rdf.type).includes(acl.Authorization);
 }
 
 /** @internal */

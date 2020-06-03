@@ -443,6 +443,62 @@ describe("getAclRules", () => {
     expect((rules[0] as ThingPersisted).iri).toBe(agentClassRuleSubjectIri);
     expect((rules[1] as ThingPersisted).iri).toBe(agentRuleSubjectIri);
   });
+
+  it("returns Things with multiple `rdf:type`s, as long as at least on type is `acl:Authorization`", () => {
+    const aclDataset = Object.assign(dataset(), {
+      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+
+    const ruleWithMultipleTypesSubjectIri =
+      "https://some.pod/resource.acl#agentClassRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("https://arbitrary.vocab/not-an#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
+      )
+    );
+
+    const rules = internal_getAclRules(aclDataset);
+
+    expect(rules).toHaveLength(1);
+    expect((rules[0] as ThingPersisted).iri).toBe(
+      ruleWithMultipleTypesSubjectIri
+    );
+  });
 });
 
 describe("getResourceAclRules", () => {
