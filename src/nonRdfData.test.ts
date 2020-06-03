@@ -93,7 +93,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", undefined, {
+    const response = await fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
