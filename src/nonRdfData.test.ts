@@ -14,7 +14,7 @@ import { fetchFile, deleteFile } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
-  it("should GET a remote resource using cross-fetch if no other fetcher is available", async () => {
+  it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
@@ -105,7 +105,7 @@ describe("Non-RDF data fetch", () => {
 });
 
 describe("Non-RDF data deletion", () => {
-  it("should DELETE a remote resource using cross-fetch if no other fetcher is available", async () => {
+  it("should DELETE a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
