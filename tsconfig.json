@@ -59,6 +59,14 @@
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
+  "typedocOptions": {
+    "mode": "modules",
+    "out": "website/docs/api",
+    "excludeNotExported": true,
+    "stripInternal": true,
+    "theme": "docusaurus2",
+    "readme": "none",
+  },
   "include": ["src/**/*.ts", ".eslintrc.js"],
   "exclude": []
 }
