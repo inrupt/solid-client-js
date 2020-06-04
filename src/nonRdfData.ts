@@ -12,10 +12,12 @@ const defaultFetchFileOptions = {
 /**
  * Fetches a file at a given IRI, and returns it as a blob of data.
  *
+ * Please note that this function is still experimental: its API can change in non-major releases.
+ *
  * @param url The IRI of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  */
-export async function fetchFile(
+export async function unstable_fetchFile(
   input: RequestInfo,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Response> {
@@ -29,9 +31,11 @@ export async function fetchFile(
 /**
  * Deletes a file at a given IRI
  *
+ * Please note that this function is still experimental: its API can change in non-major releases.
+ *
  * @param input The IRI of the file to delete
  */
-export async function deleteFile(
+export async function unstable_deleteFile(
   input: RequestInfo,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Response> {
