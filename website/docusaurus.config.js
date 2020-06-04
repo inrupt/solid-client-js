@@ -9,21 +9,34 @@ module.exports = {
   organizationName: "inrupt", // Usually your GitHub org/user name.
   projectName: "lit-solid", // Usually your repo name.
   themeConfig: {
+    announcementBar: {
+      id: "alpha-warning", // Any value that will identify this message.
+      content:
+        "Both LIT Solid and this website are still in alpha. Expect things to break.",
+      backgroundColor: "#ffba00", // Defaults to `#fff`.
+      textColor: "#091E42", // Defaults to `#000`.
+    },
     navbar: {
-      title: "My Site",
-      logo: {
-        alt: "My Site Logo",
-        src: "img/logo.svg",
-      },
+      title: "LIT Solid",
+      // logo: {
+      //   alt: "My Site Logo",
+      //   src: "img/logo.svg",
+      // },
       links: [
         {
           to: "docs/",
           activeBasePath: "docs",
-          label: "Docs",
+          label: "Getting Started",
           position: "left",
         },
         {
-          href: "https://github.com/facebook/docusaurus",
+          to: "docs/api/index",
+          activeBasePath: "docs/api/index",
+          label: "API Reference",
+          position: "left",
+        },
+        {
+          href: "https://github.com/inrupt/lit-solid",
           label: "GitHub",
           position: "right",
         },
@@ -36,29 +49,29 @@ module.exports = {
           title: "Docs",
           items: [
             {
-              label: "Style Guide",
+              label: "Getting started",
               to: "docs/",
             },
             {
-              label: "Second Doc",
-              to: "docs/doc2/",
+              label: "API Reference",
+              to: "docs/api/index",
             },
           ],
         },
         {
-          title: "Community",
+          title: "Solid",
           items: [
             {
-              label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
+              label: "Project website",
+              href: "https://solidproject.org/",
             },
             {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
+              label: "Community",
+              href: "https://forum.solidproject.org/",
             },
             {
               label: "Twitter",
-              href: "https://twitter.com/docusaurus",
+              href: "https://twitter.com/project_solid",
             },
           ],
         },
@@ -66,13 +79,17 @@ module.exports = {
           title: "More",
           items: [
             {
-              label: "GitHub",
-              href: "https://github.com/facebook/docusaurus",
+              label: "Source code",
+              href: "https://github.com/inrupt/lit-solid",
+            },
+            {
+              label: "Report a bug",
+              href: "https://github.com/inrupt/lit-solid/issues",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Inrupt, Inc.`,
     },
   },
   presets: [
@@ -81,11 +98,10 @@ module.exports = {
       {
         docs: {
           // It is recommended to set document id as docs home page (`docs/` path).
-          homePageId: "doc1",
+          homePageId: "getting-started",
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
-          editUrl:
-            "https://github.com/facebook/docusaurus/edit/master/website/",
+          editUrl: "https://github.com/inrupt/lit-solid/edit/master/website/",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),

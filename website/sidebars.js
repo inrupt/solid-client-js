@@ -1,6 +1,11 @@
 module.exports = {
-  someSidebar: {
-    Docusaurus: ["doc1", "doc2", "doc3"],
-    Features: ["mdx"],
-  },
+  // The API sidebar will be automatically generated when running TypeDoc:
+  api: {},
+  tutorials: [
+    {
+      type: "category",
+      label: "Tutorials",
+      items: ["getting-started"],
+    },
+  ],
 };
