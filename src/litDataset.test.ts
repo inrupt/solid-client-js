@@ -18,6 +18,7 @@ import {
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
   internal_fetchLitDatasetInfo,
+  createLitDataset,
 } from "./litDataset";
 import {
   ChangeLog,
@@ -33,6 +34,14 @@ function mockResponse(
 ): Response {
   return new Response(body, init);
 }
+
+describe("createLitDataset", () => {
+  it("should initialise a new empty LitDataset", () => {
+    const litDataset = createLitDataset();
+
+    expect(Array.from(litDataset)).toEqual([]);
+  });
+});
 
 describe("fetchLitDataset", () => {
   it("calls the included fetcher by default", async () => {
