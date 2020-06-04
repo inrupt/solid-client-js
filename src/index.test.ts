@@ -1,6 +1,6 @@
 import {
-  fetchFile,
-  deleteFile,
+  unstable_fetchFile,
+  unstable_deleteFile,
   createLitDataset,
   fetchLitDataset,
   saveLitDatasetAt,
@@ -69,8 +69,8 @@ import {
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
-  expect(fetchFile).toBeDefined();
-  expect(deleteFile).toBeDefined();
+  expect(unstable_fetchFile).toBeDefined();
+  expect(unstable_deleteFile).toBeDefined();
   expect(createLitDataset).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();

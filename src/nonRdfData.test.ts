@@ -10,7 +10,7 @@ jest.mock("./fetcher", () => ({
     ),
 }));
 
-import { fetchFile, deleteFile } from "./nonRdfData";
+import { unstable_fetchFile, unstable_deleteFile } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
@@ -28,7 +28,7 @@ describe("Non-RDF data fetch", () => {
       )
     );
 
-    const response = await fetchFile("https://some.url");
+    const response = await unstable_fetchFile("https://some.url");
 
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
     expect(response).toEqual(
@@ -45,7 +45,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await unstable_fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -64,7 +64,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await unstable_fetchFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -93,7 +93,7 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await unstable_fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -119,7 +119,7 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await deleteFile("https://some.url");
+    const response = await unstable_deleteFile("https://some.url");
 
     expect(fetcher.fetch.mock.calls).toEqual([
       [
@@ -143,7 +143,9 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    const response = await deleteFile("https://some.url", { fetch: mockFetch });
+    const response = await unstable_deleteFile("https://some.url", {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls).toEqual([
       [
@@ -167,7 +169,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await deleteFile("https://some.url", {
+    await unstable_deleteFile("https://some.url", {
       fetch: mockFetch,
       init: {
         mode: "same-origin",
@@ -194,7 +196,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await deleteFile("https://some.url", {
+    await unstable_deleteFile("https://some.url", {
       fetch: mockFetch,
       init: {
         method: "HEAD",
@@ -221,7 +223,7 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await deleteFile("https://some.url", {
+    const response = await unstable_deleteFile("https://some.url", {
       fetch: mockFetch,
     });
 
