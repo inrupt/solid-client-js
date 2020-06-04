@@ -19,6 +19,13 @@ import {
 } from "./index";
 
 /**
+ * Initialise a new [[LitDataset]] in memory.
+ */
+export function createLitDataset(): LitDataset {
+  return dataset();
+}
+
+/**
  * @internal
  */
 export const defaultFetchOptions = {

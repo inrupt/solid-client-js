@@ -2,6 +2,7 @@ import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
 
 export { fetchFile, deleteFile } from "./nonRdfData";
 export {
+  createLitDataset,
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
