@@ -1,11 +1,13 @@
+const pkg = require("../package.json");
+
 module.exports = {
-  title: "My Site",
-  tagline: "The tagline of my site",
-  url: "https://your-docusaurus-test-site.com",
-  baseUrl: "/",
+  title: "LIT Solid",
+  tagline: pkg.description,
+  url: "https://inrupt.github.io",
+  baseUrl: process.env.CI ? "/lit-solid/" : "/",
   favicon: "img/favicon.ico",
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "inrupt", // Usually your GitHub org/user name.
+  projectName: "lit-solid", // Usually your repo name.
   themeConfig: {
     navbar: {
       title: "My Site",

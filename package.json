@@ -1,5 +1,6 @@
 {
   "name": "lit-solid",
+  "description": "Read, update and delete data on a Solid Pod.",
   "version": "0.0.1",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
