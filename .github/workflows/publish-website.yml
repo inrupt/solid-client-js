@@ -1,0 +1,43 @@
+name: Publish website
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  CI: true
+jobs:
+  publish-website:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Prepare for publication to GitHub Packages
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org'
+    - name: Build API docs and website
+      run: |
+        npm ci
+        npx typedoc
+        cd website
+        npm ci
+        npm run build
+        touch build/.nojekyll
+    - name: Deploy to GitHub Pages
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email $GITHUB_ACTOR@users.noreply.github.com
+        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/inrupt/lit-solid.git
+        git fetch --no-recurse-submodules
+        cd website
+        git worktree add ./gh-pages gh-pages
+        cd gh-pages
+        git rm -r .
+        cp -r ../build/. .
+        git add .
+        git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
+        git push gh-pages-remote gh-pages:gh-pages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
