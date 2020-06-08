@@ -35,7 +35,7 @@
     "lint-staged": "^10.2.9",
     "prettier": "2.0.5",
     "rdf-namespaces": "^1.8.0",
-    "rollup": "^2.13.1",
+    "rollup": "^2.15.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "ts-jest": "^26.1.0",
     "typescript": "^3.9.5"
