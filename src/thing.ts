@@ -22,6 +22,9 @@ import {
   hasDatasetInfo,
 } from "./interfaces";
 
+/**
+ * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
+ */
 export interface GetThingOptions {
   /**
    * Which Named Graph to extract the Thing from.
@@ -36,7 +39,7 @@ export interface GetThingOptions {
  *
  * @param litDataset The [[LitDataset]] to extract the [[Thing]] from.
  * @param thingIri The IRI of the desired [[Thing]].
- * @param options See [[GetThingOptions]].
+ * @param options Not yet implemented.
  */
 export function getThingOne(
   litDataset: LitDataset,
@@ -69,7 +72,7 @@ export function getThingOne(
  * Get all [[Thing]]s about which a [[LitDataset]] contains Quads.
  *
  * @param litDataset The [[LitDataset]] to extract the [[Thing]]s from.
- * @param options See [[GetThingOptions]].
+ * @param options Not yet implemented.
  */
 export function getThingAll(
   litDataset: LitDataset,
