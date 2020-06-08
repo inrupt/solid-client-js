@@ -22,6 +22,13 @@ import {
 import { DataFactory } from "../rdfjs";
 import { filterThing } from "../thing";
 
+/**
+ * Given a Thing and a Predicate, remove all values for that Predicate from `thing`.
+ *
+ * @param thing [[Thing]] to remove values from.
+ * @param predicate Predicate for which to remove all values from the Thing.
+ * @returns A new Thing equal to the input Thing with all values removed for the given Predicate.
+ */
 export function removeAll<T extends Thing>(
   thing: T,
   predicate: Iri | IriString
@@ -37,6 +44,8 @@ export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
 }
 
 /**
+ * Remove an IRI for a Predicate on a Thing.
+ *
  * @param thing Thing to remove an IRI value from.
  * @param predicate Predicate for which to remove the given IRI value.
  * @param value IRI to remove from `thing` for the given `predicate`.
@@ -65,6 +74,8 @@ export const removeIri: RemoveOfType<Iri | IriString | ThingPersisted> = (
 };
 
 /**
+ * Remove a boolean for a Predicate on a Thing.
+ *
  * @param thing Thing to remove a boolean value from.
  * @param predicate Predicate for which to remove the given boolean value.
  * @param value Boolean to remove from `thing` for the given `predicate`.
@@ -84,6 +95,8 @@ export const removeBoolean: RemoveOfType<boolean> = (
 };
 
 /**
+ * Remove a datetime for a Predicate on a Thing.
+ *
  * @param thing Thing to remove a datetime value from.
  * @param predicate Predicate for which to remove the given datetime value.
  * @param value Datetime to remove from `thing` for the given `predicate`.
@@ -99,6 +112,8 @@ export const removeDatetime: RemoveOfType<Date> = (thing, predicate, value) => {
 };
 
 /**
+ * Remove a decimal for a Predicate on a Thing.
+ *
  * @param thing Thing to remove a decimal value from.
  * @param predicate Predicate for which to remove the given decimal value.
  * @param value Decimal to remove from `thing` for the given `predicate`.
@@ -118,6 +133,8 @@ export const removeDecimal: RemoveOfType<number> = (
 };
 
 /**
+ * Remove an integer for a Predicate on a Thing.
+ *
  * @param thing Thing to remove an integer value from.
  * @param predicate Predicate for which to remove the given integer value.
  * @param value Integer to remove from `thing` for the given `predicate`.
@@ -137,6 +154,8 @@ export const removeInteger: RemoveOfType<number> = (
 };
 
 /**
+ * Remove a localised string for a Predicate on a Thing.
+ *
  * @param thing Thing to remove a localised string value from.
  * @param predicate Predicate for which to remove the given localised string value.
  * @param value String to remove from `thing` for the given `predicate`.
@@ -166,6 +185,8 @@ export function removeStringInLocale(
 }
 
 /**
+ * Remove an unlocalised string for a Predicate on a Thing.
+ *
  * @param thing Thing to remove an unlocalised string value from.
  * @param predicate Predicate for which to remove the given string value.
  * @param value String to remove from `thing` for the given `predicate`.
