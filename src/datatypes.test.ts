@@ -20,7 +20,7 @@ import {
   deserializeInteger,
   normalizeLocale,
 } from "./datatypes";
-import { LocalNode } from "./index";
+import { LocalNode } from "./interfaces";
 
 describe("serializeBoolean", () => {
   it("serializes true as `1`", () => {

@@ -1,12 +1,12 @@
 import { Literal, NamedNode } from "rdf-js";
+import { asIri } from "../index";
 import {
   Thing,
   Iri,
   IriString,
   ThingPersisted,
   ThingLocal,
-  asIri,
-} from "../index";
+} from "../interfaces";
 import {
   asNamedNode,
   isNamedNode,

@@ -2,7 +2,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, Thing, ThingLocal, ThingPersisted } from "../index";
+import { IriString, Thing, ThingLocal, ThingPersisted } from "../interfaces";
 import {
   removeAll,
   removeIri,

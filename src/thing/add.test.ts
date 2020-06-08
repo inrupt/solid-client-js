@@ -2,7 +2,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../index";
+import { IriString, ThingLocal, LocalNode } from "../interfaces";
 import {
   addIri,
   addBoolean,

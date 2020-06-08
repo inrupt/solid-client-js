@@ -1,6 +1,6 @@
 import { NamedNode, Literal, Quad } from "rdf-js";
 import { DataFactory } from "./rdfjs";
-import { IriString, LocalNode, Iri } from "./index";
+import { IriString, LocalNode, Iri } from "./interfaces";
 
 /**
  * IRIs of the XML Schema data types we support

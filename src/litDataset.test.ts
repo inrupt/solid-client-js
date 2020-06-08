@@ -26,7 +26,7 @@ import {
   IriString,
   LitDataset,
   LocalNode,
-} from "./index";
+} from "./interfaces";
 
 function mockResponse(
   body?: BodyInit | null,

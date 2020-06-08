@@ -1,5 +1,11 @@
 import { Literal, NamedNode } from "rdf-js";
-import { Thing, IriString, ThingLocal, ThingPersisted, Iri } from "../index";
+import {
+  Thing,
+  IriString,
+  ThingLocal,
+  ThingPersisted,
+  Iri,
+} from "../interfaces";
 import { cloneThing, toNode } from "../thing";
 import {
   asNamedNode,

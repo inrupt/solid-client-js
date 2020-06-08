@@ -1,5 +1,11 @@
 import { Literal, NamedNode } from "rdf-js";
-import { Thing, Iri, IriString, ThingLocal, ThingPersisted } from "../index";
+import {
+  Thing,
+  Iri,
+  IriString,
+  ThingLocal,
+  ThingPersisted,
+} from "../interfaces";
 import {
   asNamedNode,
   serializeBoolean,

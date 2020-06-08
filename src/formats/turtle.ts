@@ -1,6 +1,6 @@
 import { Writer, Parser } from "n3";
 import { Quad } from "rdf-js";
-import { IriString } from "../index";
+import { IriString } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 
 /**

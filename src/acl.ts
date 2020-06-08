@@ -13,7 +13,7 @@ import {
   Thing,
   IriString,
   unstable_Acl,
-} from "./index";
+} from "./interfaces";
 import { getThingAll } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
 

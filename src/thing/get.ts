@@ -1,5 +1,5 @@
 import { Quad_Object, Quad, NamedNode, Literal } from "rdf-js";
-import { Thing, Iri, IriString } from "../index";
+import { Thing, Iri, IriString } from "../interfaces";
 import {
   asNamedNode,
   isNamedNode,
