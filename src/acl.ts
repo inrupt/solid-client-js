@@ -97,6 +97,19 @@ function getContainerPath(resourcePath: string): string {
   return containerPath;
 }
 
+/**
+ * Verify whether an ACL LitDataset was found for the given LitDataset.
+ *
+ * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have an ACL LitDataset
+ * attached, but we cannot be sure: it might be that none exists for this specific Resource (in
+ * which case the fallback ACL applies), or the currently authenticated user (if any) might not have
+ * Control access to the fetched Resource.
+ *
+ * This function verifies that the fallback ACL LitDataset is accessible.
+ *
+ * @param dataset A [[LitDataset]] that might have an ACL LitDataset attached.
+ * @returns Whether `dataset` has an ACL LitDataset attached.
+ */
 export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
   dataset: Dataset
 ): dataset is Dataset & {
@@ -105,6 +118,16 @@ export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
   return typeof dataset.acl.resourceAcl !== "undefined";
 }
 
+/**
+ * Access the ACL LitDataset attached to a LitDataset.
+ *
+ * Given a LitDataset that has an ACL LitDataset attached, this function will give you access to
+ * that ACL LitDataset. To verify whether the fallback ACL LitDataset is available, see
+ * [[unstable_hasResourceAcl]].
+ *
+ * @param dataset A [[LitDataset]] with potentially an ACL LitDataset attached.
+ * @returns The ACL LitDataset, if available, and undefined if not.
+ */
 export function unstable_getResourceAcl(
   dataset: unstable_Acl & {
     acl: {
@@ -124,6 +147,18 @@ export function unstable_getResourceAcl(
   return dataset.acl.resourceAcl;
 }
 
+/**
+ * Verify whether a fallback ACL LitDataset was found for the given LitDataset.
+ *
+ * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have a fallback ACL
+ * LitDataset attached, but we cannot be sure: the currently authenticated user (if any) might not
+ * have Control access to one of the fetched Resource's Containers.
+ *
+ * This function verifies that the fallback ACL LitDataset is accessible.
+ *
+ * @param dataset A [[LitDataset]] that might have a fallback ACL LitDataset attached.
+ * @returns Whether `dataset` has a fallback ACL LitDataset attached.
+ */
 export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
   dataset: Dataset
 ): dataset is Dataset & {
@@ -132,6 +167,16 @@ export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
   return dataset.acl.fallbackAcl !== null;
 }
 
+/**
+ * Access the fallback ACL LitDataset attached to a LitDataset.
+ *
+ * Given a LitDataset that has a fallback ACL LitDataset attached, this function will give you
+ * access to that ACL LitDataset. To verify whether the fallback ACL LitDataset is available, see
+ * [[unstable_hasFallbackAcl]].
+ *
+ * @param dataset A [[LitDataset]] with potentially a fallback ACL LitDataset attached.
+ * @returns The fallback ACL LitDataset, if null if it coult not be accessed.
+ */
 export function unstable_getFallbackAcl(
   dataset: unstable_Acl & {
     acl: {
@@ -220,19 +265,19 @@ export function internal_getAccessModes(
   rule: unstable_AclRule
 ): unstable_AccessModes {
   const ruleAccessModes = getIriAll(rule, acl.mode);
-  const writeAccess = ruleAccessModes.includes(unstable_accessModes.write);
+  const writeAccess = ruleAccessModes.includes(accessModeIriStrings.write);
   return writeAccess
     ? {
-        read: ruleAccessModes.includes(unstable_accessModes.read),
+        read: ruleAccessModes.includes(accessModeIriStrings.read),
         append: true,
         write: true,
-        control: ruleAccessModes.includes(unstable_accessModes.control),
+        control: ruleAccessModes.includes(accessModeIriStrings.control),
       }
     : {
-        read: ruleAccessModes.includes(unstable_accessModes.read),
-        append: ruleAccessModes.includes(unstable_accessModes.append),
+        read: ruleAccessModes.includes(accessModeIriStrings.read),
+        append: ruleAccessModes.includes(accessModeIriStrings.append),
         write: false,
-        control: ruleAccessModes.includes(unstable_accessModes.control),
+        control: ruleAccessModes.includes(accessModeIriStrings.control),
       };
 }
 
@@ -265,11 +310,11 @@ export function internal_combineAccessModes(
  * IRIs of potential Access Modes
  * @internal
  */
-export const unstable_accessModes = {
+const accessModeIriStrings = {
   read: "http://www.w3.org/ns/auth/acl#Read",
   append: "http://www.w3.org/ns/auth/acl#Append",
   write: "http://www.w3.org/ns/auth/acl#Write",
   control: "http://www.w3.org/ns/auth/acl#Control",
 } as const;
 /** @internal */
-export type unstable_AccessModeIri = typeof unstable_accessModes[keyof typeof unstable_accessModes];
+type AccessModeIriString = typeof accessModeIriStrings[keyof typeof accessModeIriStrings];

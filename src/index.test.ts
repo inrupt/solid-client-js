@@ -58,6 +58,10 @@ import {
   removeLiteral,
   removeNamedNode,
   unstable_fetchLitDatasetWithAcl,
+  unstable_hasFallbackAcl,
+  unstable_getFallbackAcl,
+  unstable_hasResourceAcl,
+  unstable_getResourceAcl,
   unstable_getAgentAccessModesOne,
   unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
@@ -128,6 +132,10 @@ it("exports the public API from the entry file", () => {
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
   expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
+  expect(unstable_hasFallbackAcl).toBeDefined();
+  expect(unstable_getFallbackAcl).toBeDefined();
+  expect(unstable_hasResourceAcl).toBeDefined();
+  expect(unstable_getResourceAcl).toBeDefined();
   expect(unstable_getAgentAccessModesOne).toBeDefined();
   expect(unstable_getAgentAccessModesAll).toBeDefined();
   expect(unstable_getAgentResourceAccessModesOne).toBeDefined();

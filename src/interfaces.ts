@@ -35,8 +35,17 @@ export type LocalNode = BlankNode & { name: string };
 export type unstable_AclDataset = LitDataset &
   DatasetInfo & { accessTo: IriString };
 
+/**
+ * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
+ */
 export type unstable_AclRule = Thing;
 
+/**
+ * An object with the boolean properties `read`, `append`, `write` and `control`, representing the
+ * respective Access Modes defined by the Web Access Control specification.
+ *
+ * Since that specification is not finalised yet, this interface is still experimental.
+ */
 export type unstable_AccessModes =
   // If someone has write permissions, they also have append permissions:
   | {
@@ -51,6 +60,7 @@ export type unstable_AccessModes =
       write: false;
       control: boolean;
     };
+
 type unstable_WacAllow = {
   user: unstable_AccessModes;
   public: unstable_AccessModes;
@@ -85,6 +95,9 @@ export type ChangeLog = {
   };
 };
 
+/**
+ * @hidden Developers should use [[unstable_getResourceAcl]] and [[unstable_getFallbackAcl]] to access these.
+ */
 export type unstable_Acl = {
   acl: {
     resourceAcl?: unstable_AclDataset;
@@ -110,6 +123,16 @@ export function hasChangelog<T extends LitDataset>(
   );
 }
 
+/**
+ * Given a [[LitDataset]], verify whether it has ACL data attached to it.
+ *
+ * This should generally only be true for LitDatasets fetched by
+ * [[unstable_fetchLitDatasetWithAcl]].
+ *
+ * @param dataset A [[LitDataset]].
+ * @returns Whether the given `dataset` has ACL data attached to it.
+ * @internal
+ */
 export function unstable_hasAccessibleAcl<Dataset extends DatasetInfo>(
   dataset: Dataset
 ): dataset is Dataset & {

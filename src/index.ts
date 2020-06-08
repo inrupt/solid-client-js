@@ -69,6 +69,12 @@ export {
   removeNamedNode,
 } from "./thing/remove";
 export {
+  unstable_hasFallbackAcl,
+  unstable_getFallbackAcl,
+  unstable_hasResourceAcl,
+  unstable_getResourceAcl,
+} from "./acl";
+export {
   unstable_AgentAccess,
   unstable_getAgentAccessModesOne,
   unstable_getAgentAccessModesAll,
