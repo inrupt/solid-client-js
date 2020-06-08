@@ -4,7 +4,13 @@ import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
  * Alias to indicate where we expect an IRI.
  */
 export type Iri = NamedNode;
+/**
+ * Alias to indicate where we expect an IRI string.
+ */
 export type IriString = string;
+/**
+ * Alias to indicate where we expect a WebID to be passed.
+ */
 export type WebId = IriString;
 
 /**
@@ -29,9 +35,17 @@ export type ThingLocal = Thing & { name: string };
  *
  * This is a Blank Node with a `name` property attached, which will be used to construct this
  * Node's full IRI once it is persisted, where it will transform into a Named Node.
+ *
+ * @internal Utility method; library users should not need to interact with LocalNodes directly.
  */
 export type LocalNode = BlankNode & { name: string };
 
+/**
+ * A [[LitDataset]] containing Access Control rules for another LitDataset.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ */
 export type unstable_AclDataset = LitDataset &
   DatasetInfo & { accessTo: IriString };
 
@@ -65,6 +79,9 @@ type unstable_WacAllow = {
   user: unstable_AccessModes;
   public: unstable_AccessModes;
 };
+/**
+ * [[LitDataset]]s fetched by lit-solid include this metadata describing its relation to a Pod Resource.
+ */
 export type DatasetInfo = {
   datasetInfo: {
     fetchedFrom: IriString;
@@ -88,6 +105,9 @@ export type DatasetInfo = {
   };
 };
 
+/**
+ * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
+ */
 export type ChangeLog = {
   changeLog: {
     additions: Quad[];
@@ -105,6 +125,12 @@ export type unstable_Acl = {
   };
 };
 
+/**
+ * Verify whether a given LitDataset includes metadata about where it was retrieved from.
+ *
+ * @param dataset A [[LitDataset]] that may have metadata attached about the Resource it was retrieved from.
+ * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
+ */
 export function hasDatasetInfo<T extends LitDataset>(
   dataset: T
 ): dataset is T & DatasetInfo {
@@ -112,6 +138,7 @@ export function hasDatasetInfo<T extends LitDataset>(
   return typeof potentialDatasetInfo.datasetInfo === "object";
 }
 
+/** @internal */
 export function hasChangelog<T extends LitDataset>(
   dataset: T
 ): dataset is T & ChangeLog {
