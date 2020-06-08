@@ -62,6 +62,12 @@
   "typedocOptions": {
     "mode": "modules",
     "out": "website/docs/api",
+    "exclude": [
+      "node_modules/**",
+      "**/*.test.ts",
+      // Re-exported functions are already documented in their own modules:
+      "src/index.ts",
+    ],
     "excludeNotExported": true,
     "stripInternal": true,
     "theme": "docusaurus2",

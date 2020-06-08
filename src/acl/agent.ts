@@ -6,7 +6,7 @@ import {
   unstable_AclDataset,
   unstable_AccessModes,
   unstable_AclRule,
-} from "../index";
+} from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl } from "../constants";
 import {

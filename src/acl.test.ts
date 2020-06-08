@@ -31,7 +31,7 @@ import {
   unstable_AclRule,
   unstable_AclDataset,
   unstable_AccessModes,
-} from "./index";
+} from "./interfaces";
 
 function mockResponse(
   body?: BodyInit | null,

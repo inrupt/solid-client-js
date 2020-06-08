@@ -20,7 +20,7 @@ import {
   DatasetInfo,
   hasChangelog,
   hasDatasetInfo,
-} from "./index";
+} from "./interfaces";
 
 export interface GetThingOptions {
   /**

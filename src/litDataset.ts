@@ -16,7 +16,7 @@ import {
   unstable_Acl,
   unstable_hasAccessibleAcl,
   unstable_AccessModes,
-} from "./index";
+} from "./interfaces";
 
 /**
  * Initialise a new [[LitDataset]] in memory.

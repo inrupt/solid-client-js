@@ -16,7 +16,7 @@ import {
   DatasetInfo,
   IriString,
   unstable_AclDataset,
-} from "../index";
+} from "../interfaces";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & DatasetInfo,

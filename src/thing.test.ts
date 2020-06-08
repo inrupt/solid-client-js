@@ -18,7 +18,7 @@ import {
   LitDataset,
   DatasetInfo,
   ChangeLog,
-} from "./index";
+} from "./interfaces";
 
 function getMockQuad(
   terms: Partial<{
