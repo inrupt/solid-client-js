@@ -67,6 +67,16 @@
       "**/*.test.ts",
       // Re-exported functions are already documented in their own modules:
       "src/index.ts",
+      // Constants are only used internally:
+      "src/constants.ts",
+      // Helper methods for working with raw RDF internally:
+      "src/datatypes.ts",
+      // Behind-the-scenes auto-detection of the right fetcher to use:
+      "src/fetcher.ts",
+      // Helper methods for working with raw Turtle internally:
+      "src/formats/turtle.ts",
+      // Internal wrapper for RDF/JS implementations:
+      "src/rdfjs.ts",
     ],
     "excludeNotExported": true,
     "stripInternal": true,
