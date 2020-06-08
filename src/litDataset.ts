@@ -20,6 +20,8 @@ import {
 
 /**
  * Initialise a new [[LitDataset]] in memory.
+ *
+ * @returns An empty [[LitDataset]].
  */
 export function createLitDataset(): LitDataset {
   return dataset();
@@ -31,6 +33,13 @@ export function createLitDataset(): LitDataset {
 export const defaultFetchOptions = {
   fetch: fetch,
 };
+/**
+ * Fetch a LitDataset from the given URL. Currently requires the LitDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
+ *
+ * @param url URL to fetch a [[LitDataset]] from.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Promise resolving to a [[LitDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
+ */
 export async function fetchLitDataset(
   url: IriString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
@@ -123,7 +132,7 @@ function parseDatasetInfo(response: Response): DatasetInfo["datasetInfo"] {
  * authenticated user.
  *
  * @param url IRI of the LitDataset to fetch.
- * @param options
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
  */
 export async function unstable_fetchLitDatasetWithAcl(
@@ -152,6 +161,14 @@ export async function unstable_fetchLitDatasetWithAcl(
 const defaultSaveOptions = {
   fetch: fetch,
 };
+/**
+ * Given a LitDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
+ *
+ * @param url URL to save `litDataset` to.
+ * @param litDataset The [[LitDataset]] to save.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Promise resolving to a [[LitDataset]] containing the stored data, or rejecting if saving it failed.
+ */
 export async function saveLitDatasetAt(
   url: IriString,
   litDataset: LitDataset,
@@ -251,6 +268,14 @@ type SaveInContainerOptions = Partial<
     slugSuggestion: string;
   }
 >;
+/**
+ * Given a LitDataset, store it in a Solid Pod in a new Resource inside a Container.
+ *
+ * @param containerUrl URL of the Container in which to create a new Resource.
+ * @param litDataset The [[LitDataset]] to save to a new Resource in the given Container.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
+ */
 export async function saveLitDatasetInContainer(
   containerUrl: IriString,
   litDataset: LitDataset,
