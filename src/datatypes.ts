@@ -148,6 +148,7 @@ export function normalizeLocale(locale: string): string {
 }
 
 /**
+ * @internal Library users shouldn't need to be exposed to raw NamedNodes.
  * @param value The value that might or might not be a Named Node.
  * @returns Whether `value` is a Named Node.
  */
@@ -160,6 +161,7 @@ export function isNamedNode<T>(value: T | NamedNode): value is NamedNode {
 }
 
 /**
+ * @internal Library users shouldn't need to be exposed to raw Literals.
  * @param value The value that might or might not be a Literal.
  * @returns Whether `value` is a Literal.
  */
@@ -172,6 +174,7 @@ export function isLiteral<T>(value: T | Literal): value is Literal {
 }
 
 /**
+ * @internal Library users shouldn't need to be exposed to LocalNodes.
  * @param value The value that might or might not be a Node with no known IRI yet.
  * @returns Whether `value` is a Node with no known IRI yet.
  */
@@ -205,6 +208,7 @@ export function getLocalNode(name: string): LocalNode {
  * will check whether it is a valid IRI. If not, it will throw an error; otherwise a Named Node
  * representing the given IRI will be returned.
  *
+ * @internal Library users shouldn't need to be exposed to raw NamedNodes.
  * @param iri The IRI that should be converted into a Named Node, if it isn't one yet.
  */
 export function asNamedNode(iri: Iri | IriString): NamedNode {
