@@ -47,7 +47,7 @@
     "@types/rdfjs__dataset": "^1.0.2",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
-    "n3": "^1.3.7"
+    "n3": "^1.4.0"
   },
   "husky": {
     "hooks": {
