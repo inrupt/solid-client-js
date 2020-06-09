@@ -21,9 +21,11 @@ import { toNode } from "../thing";
 import { removeAll } from "./remove";
 
 /**
- * Replace existing values for a Predicate by a given IRI on a Thing.
+ * Create a new Thing with existing values replaced by the given IRI for the given Predicate.
  *
  * To preserve existing values, see [[addIri]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set an IRI value on.
  * @param predicate Predicate for which to set the given IRI value.
@@ -44,9 +46,11 @@ export const setIri: SetOfType<Iri | IriString | Thing> = (
 };
 
 /**
- * Replace existing values for a Predicate by a given boolean on a Thing.
+ * Create a new Thing with existing values replaced by the given boolean for the given Predicate.
  *
  * To preserve existing values, see [[addBoolean]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set a boolean value on.
  * @param predicate Predicate for which to set the given boolean value.
@@ -63,9 +67,11 @@ export const setBoolean: SetOfType<boolean> = (thing, predicate, value) => {
 };
 
 /**
- * Replace existing values for a Predicate by a given datetime on a Thing.
+ * Create a new Thing with existing values replaced by the given datetime for the given Predicate.
  *
  * To preserve existing values, see [[addDatetime]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set an datetime value on.
  * @param predicate Predicate for which to set the given datetime value.
@@ -82,9 +88,11 @@ export const setDatetime: SetOfType<Date> = (thing, predicate, value) => {
 };
 
 /**
- * Replace existing values for a Predicate by a given decimal on a Thing.
+ * Create a new Thing with existing values replaced by the given decimal for the given Predicate.
  *
  * To preserve existing values, see [[addDecimal]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set a decimal value on.
  * @param predicate Predicate for which to set the given decimal value.
@@ -101,9 +109,11 @@ export const setDecimal: SetOfType<number> = (thing, predicate, value) => {
 };
 
 /**
- * Replace existing values for a Predicate by a given integer on a Thing.
+ * Create a new Thing with existing values replaced by the given integer for the given Predicate.
  *
  * To preserve existing values, see [[addInteger]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set an integer value on.
  * @param predicate Predicate for which to set the given integer value.
@@ -120,9 +130,11 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
 };
 
 /**
- * Replace existing values for a Predicate by a given localised string on a Thing.
+ * Create a new Thing with existing values replaced by the given localised string for the given Predicate.
  *
  * To preserve existing values, see [[addStringInLocale]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set a localised string value on.
  * @param predicate Predicate for which to set the given localised string value.
@@ -147,9 +159,11 @@ export function setStringInLocale(
 }
 
 /**
- * Replace existing values for a Predicate by a given unlocalised string on a Thing.
+ * Create a new Thing with existing values replaced by the given unlocalised string for the given Predicate.
  *
  * To preserve existing values, see [[addStringUnlocalized]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set an unlocalised string value on.
  * @param predicate Predicate for which to set the given unlocalised string value.
@@ -165,9 +179,11 @@ export const setStringUnlocalized: SetOfType<string> = (
 };
 
 /**
- * Replace existing values for a Predicate by a given NamedNode on a Thing.
+ * Create a new Thing with existing values replaced by the given Named Node for the given Predicate.
  *
  * This preserves existing values for the given Predicate. To replace them, see [[setNamedNode]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other set*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to set a NamedNode on.
@@ -194,9 +210,11 @@ export function setNamedNode(
 }
 
 /**
- * Replace existing values for a Predicate by a given Literal on a Thing.
+ * Create a new Thing with existing values replaced by the given Literal for the given Predicate.
  *
  * This preserves existing values for the given Predicate. To replace them, see [[setLiteral]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other set*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to set a Literal on.
@@ -239,7 +257,9 @@ function setLiteralOfType(
 }
 
 /**
- * Replace existing values for a Predicate by a given value on a Thing.
+ * Create a new Thing with existing values replaced by the given value for the given Predicate.
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to set a value on.
  * @param predicate Predicate for which to set the given value.
