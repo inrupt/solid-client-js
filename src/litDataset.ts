@@ -6,7 +6,7 @@ import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
 import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
 import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
 import {
-  IriString,
+  UrlString,
   LitDataset,
   DatasetInfo,
   ChangeLog,
@@ -41,7 +41,7 @@ export const defaultFetchOptions = {
  * @returns Promise resolving to a [[LitDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
  */
 export async function fetchLitDataset(
-  url: IriString,
+  url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<LitDataset & DatasetInfo> {
   const config = {
@@ -72,7 +72,7 @@ export async function fetchLitDataset(
  * @internal
  */
 export async function internal_fetchLitDatasetInfo(
-  url: IriString,
+  url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<DatasetInfo> {
   const config = {
@@ -101,7 +101,7 @@ function parseDatasetInfo(response: Response): DatasetInfo["datasetInfo"] {
     const parsedLinks = LinkHeader.parse(linkHeader);
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      datasetInfo.unstable_aclIri = new URL(
+      datasetInfo.unstable_aclUrl = new URL(
         aclLinks[0].uri,
         datasetInfo.fetchedFrom
       ).href;
@@ -131,12 +131,12 @@ function parseDatasetInfo(response: Response): DatasetInfo["datasetInfo"] {
  * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
  * authenticated user.
  *
- * @param url IRI of the LitDataset to fetch.
+ * @param url URL of the LitDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
  */
 export async function unstable_fetchLitDatasetWithAcl(
-  url: IriString,
+  url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<LitDataset & DatasetInfo & (unstable_Acl | { acl: null })> {
   const litDataset = await fetchLitDataset(url, options);
@@ -170,7 +170,7 @@ const defaultSaveOptions = {
  * @returns A Promise resolving to a [[LitDataset]] containing the stored data, or rejecting if saving it failed.
  */
 export async function saveLitDatasetAt(
-  url: IriString,
+  url: UrlString,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
 ): Promise<LitDataset & DatasetInfo & ChangeLog> {
@@ -248,7 +248,7 @@ export async function saveLitDatasetAt(
 
 function isUpdate(
   litDataset: LitDataset,
-  url: IriString
+  url: UrlString
 ): litDataset is LitDataset &
   ChangeLog &
   DatasetInfo & { datasetInfo: { fetchedFrom: string } } {
@@ -277,7 +277,7 @@ type SaveInContainerOptions = Partial<
  * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
  */
 export async function saveLitDatasetInContainer(
-  containerUrl: IriString,
+  containerUrl: UrlString,
   litDataset: LitDataset,
   options: SaveInContainerOptions = defaultSaveInContainerOptions
 ): Promise<LitDataset & DatasetInfo> {

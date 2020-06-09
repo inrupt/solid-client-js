@@ -4,7 +4,7 @@ import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode } from "../interfaces";
 import {
-  setIri,
+  setUrl,
   setBoolean,
   setDatetime,
   setDecimal,
@@ -29,7 +29,7 @@ function getMockQuad(
 function getMockThing(quad: Quad) {
   const thing = dataset();
   thing.add(quad);
-  return Object.assign(thing, { iri: quad.subject.value });
+  return Object.assign(thing, { url: quad.subject.value });
 }
 function literalOfType(
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime",
@@ -78,7 +78,7 @@ describe("setIri", () => {
     const thing = getMockThing(existingQuad1);
     thing.add(existingQuad2);
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       "https://some.vocab/predicate",
       "https://some.pod/other-resource#object"
@@ -103,7 +103,7 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.pod/other-resource#object")
@@ -127,10 +127,10 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
     const targetThing = Object.assign(dataset(), {
-      iri: "https://some.pod/other-resource#object",
+      url: "https://some.pod/other-resource#object",
     });
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       "https://some.vocab/predicate",
       targetThing
@@ -158,7 +158,7 @@ describe("setIri", () => {
       name: "localObject",
     });
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       "https://some.vocab/predicate",
       thingLocal
@@ -183,7 +183,7 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "https://some.pod/other-resource#object"
@@ -207,7 +207,7 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    setIri(
+    setUrl(
       thing,
       "https://arbitrary.vocab/predicate",
       "https://arbitrary.pod/other-resource#object"
@@ -222,7 +222,7 @@ describe("setIri", () => {
       name: "localSubject",
     });
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thingLocal,
       "https://some.vocab/predicate",
       "https://some.pod/other-resource#object"
@@ -247,7 +247,7 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    const updatedThing = setIri(
+    const updatedThing = setUrl(
       thing,
       "https://some.vocab/other-predicate",
       "https://some.pod/resource#object"

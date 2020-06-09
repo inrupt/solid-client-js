@@ -2,8 +2,8 @@ import { Literal, NamedNode } from "rdf-js";
 import { asIri } from "../index";
 import {
   Thing,
-  Iri,
-  IriString,
+  Url,
+  UrlString,
   ThingPersisted,
   ThingLocal,
 } from "../interfaces";
@@ -33,9 +33,9 @@ import { filterThing } from "../thing";
  */
 export function removeAll<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
+export function removeAll(thing: Thing, predicate: Url | UrlString): Thing {
   const predicateNode = asNamedNode(predicate);
 
   const updatedThing = filterThing(
@@ -46,16 +46,16 @@ export function removeAll(thing: Thing, predicate: Iri | IriString): Thing {
 }
 
 /**
- * Create a new Thing with the given IRI removed for the given Predicate.
+ * Create a new Thing with the given URL removed for the given Predicate.
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
- * @param thing Thing to remove an IRI value from.
- * @param predicate Predicate for which to remove the given IRI value.
- * @param value IRI to remove from `thing` for the given `predicate`.
+ * @param thing Thing to remove a URL value from.
+ * @param predicate Predicate for which to remove the given URL value.
+ * @param value URL to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeIri: RemoveOfType<Iri | IriString | ThingPersisted> = (
+export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   thing,
   predicate,
   value
@@ -76,6 +76,8 @@ export const removeIri: RemoveOfType<Iri | IriString | ThingPersisted> = (
   });
   return updatedThing;
 };
+/** @hidden Alias of [[removeUrl]] for those who prefer IRI terminology. */
+export const removeIri = removeUrl;
 
 /**
  * Create a new Thing with the given boolean removed for the given Predicate.
@@ -178,13 +180,13 @@ export const removeInteger: RemoveOfType<number> = (
  */
 export function removeStringInLocale<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function removeStringInLocale(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): Thing {
@@ -225,12 +227,12 @@ export const removeStringUnlocalized: RemoveOfType<string> = (
  */
 export function removeNamedNode<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function removeNamedNode(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): Thing {
   const predicateNode = asNamedNode(predicate);
@@ -253,12 +255,12 @@ export function removeNamedNode(
  */
 export function removeLiteral<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function removeLiteral(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): Thing {
   const predicateNode = asNamedNode(predicate);
@@ -274,13 +276,13 @@ export function removeLiteral(
 
 function removeLiteralOfType<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function removeLiteralOfType(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): Thing {
@@ -300,6 +302,6 @@ function removeLiteralOfType(
  */
 type RemoveOfType<Type> = <T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Type
 ) => T extends ThingLocal ? ThingLocal : ThingPersisted;

@@ -8,7 +8,7 @@ import {
   setThing,
   removeThing,
   createThing,
-  asIri,
+  asUrl,
 } from "./thing";
 import {
   IriString,
@@ -61,14 +61,14 @@ describe("createThing", () => {
 
   it("uses the given IRI, if any", () => {
     const thing: ThingPersisted = createThing({
-      iri: "https://some.pod/resource#thing",
+      url: "https://some.pod/resource#thing",
     });
 
-    expect(thing.iri).toBe("https://some.pod/resource#thing");
+    expect(thing.url).toBe("https://some.pod/resource#thing");
   });
 
   it("throws an error if the given URL is invalid", () => {
-    expect(() => createThing({ iri: "Invalid IRI" })).toThrow();
+    expect(() => createThing({ url: "Invalid IRI" })).toThrow();
   });
 });
 
@@ -375,7 +375,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -401,7 +401,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -442,7 +442,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -489,7 +489,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -517,7 +517,7 @@ describe("setThing", () => {
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     const updatedDataset = setThing(datasetWithUnexpectedQuad, thing);
@@ -676,7 +676,7 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
@@ -703,7 +703,7 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
@@ -738,7 +738,7 @@ describe("removeThing", () => {
     datasetWithExistingChangeLog.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      iri: "https://some.vocab/subject",
+      url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
@@ -805,7 +805,7 @@ describe("removeThing", () => {
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     const updatedDataset = removeThing(datasetWithUnexpectedQuad, thing);
@@ -938,16 +938,16 @@ describe("removeThing", () => {
 describe("asIri", () => {
   it("returns the IRI of a persisted Thing", () => {
     const persistedThing: Thing = Object.assign(dataset(), {
-      iri: "https://some.pod/resource#thing",
+      url: "https://some.pod/resource#thing",
     });
 
-    expect(asIri(persistedThing)).toBe("https://some.pod/resource#thing");
+    expect(asUrl(persistedThing)).toBe("https://some.pod/resource#thing");
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
     const localThing = Object.assign(dataset(), { name: "some-name" });
 
-    expect(asIri(localThing, "https://some.pod/resource")).toBe(
+    expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
     );
   });
@@ -955,8 +955,8 @@ describe("asIri", () => {
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localThing = Object.assign(dataset(), { name: "some-name" });
 
-    expect(() => asIri(localThing, undefined as any)).toThrow(
-      "The IRI of a Thing that has not been persisted cannot be determined without a base IRI."
+    expect(() => asUrl(localThing, undefined as any)).toThrow(
+      "The URL of a Thing that has not been persisted cannot be determined without a base URL."
     );
   });
 });

@@ -12,9 +12,11 @@ export {
   setThing,
   removeThing,
   createThing,
+  asUrl,
   asIri,
 } from "./thing";
 export {
+  getUrlOne,
   getIriOne,
   getBooleanOne,
   getDatetimeOne,
@@ -22,6 +24,7 @@ export {
   getIntegerOne,
   getStringInLocaleOne,
   getStringUnlocalizedOne,
+  getUrlAll,
   getIriAll,
   getBooleanAll,
   getDatetimeAll,
@@ -35,6 +38,7 @@ export {
   getNamedNodeAll,
 } from "./thing/get";
 export {
+  addUrl,
   addIri,
   addBoolean,
   addDatetime,
@@ -46,6 +50,7 @@ export {
   addNamedNode,
 } from "./thing/add";
 export {
+  setUrl,
   setIri,
   setBoolean,
   setDatetime,
@@ -58,6 +63,7 @@ export {
 } from "./thing/set";
 export {
   removeAll,
+  removeUrl,
   removeIri,
   removeBoolean,
   removeDatetime,
@@ -84,7 +90,9 @@ export {
   unstable_getAgentDefaultAccessModesAll,
 } from "./acl/agent";
 export {
+  Url,
   Iri,
+  UrlString,
   IriString,
   WebId,
   LitDataset,

@@ -104,7 +104,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclIri).toBe(
+    expect(litDataset.datasetInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -125,7 +125,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclIri).toBeUndefined();
+    expect(litDataset.datasetInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -518,7 +518,7 @@ describe("fetchLitDatasetInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclIri).toBe(
+    expect(litDataset.datasetInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -539,7 +539,7 @@ describe("fetchLitDatasetInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclIri).toBeUndefined();
+    expect(litDataset.datasetInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {

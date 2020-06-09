@@ -4,7 +4,7 @@ import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, Thing } from "../interfaces";
 import {
-  getIriOne,
+  getUrlOne,
   getBooleanOne,
   getDatetimeOne,
   getDecimalOne,
@@ -13,7 +13,7 @@ import {
   getStringUnlocalizedOne,
   getLiteralOne,
   getNamedNodeOne,
-  getIriAll,
+  getUrlAll,
   getBooleanAll,
   getDatetimeAll,
   getDecimalAll,
@@ -48,7 +48,7 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
 }
 function getMockThingWithLiteralsFor(
   predicate: IriString,
@@ -70,7 +70,7 @@ function getMockThingWithLiteralsFor(
   thing.add(quad1);
   thing.add(quad2);
 
-  return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
 }
 
 describe("getIriOne", () => {
@@ -93,7 +93,7 @@ describe("getIriOne", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
   }
 
   it("returns the IRI value for the given Predicate", () => {
@@ -102,7 +102,7 @@ describe("getIriOne", () => {
       "https://some.vocab/object"
     );
 
-    expect(getIriOne(thingWithIri, "https://some.vocab/predicate")).toBe(
+    expect(getUrlOne(thingWithIri, "https://some.vocab/predicate")).toBe(
       "https://some.vocab/object"
     );
   });
@@ -114,7 +114,7 @@ describe("getIriOne", () => {
     );
 
     expect(
-      getIriOne(
+      getUrlOne(
         thingWithIri,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -129,7 +129,7 @@ describe("getIriOne", () => {
     );
 
     expect(
-      getIriOne(thingWithoutIri, "https://some.vocab/predicate")
+      getUrlOne(thingWithoutIri, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -154,7 +154,7 @@ describe("getIriOne", () => {
     );
 
     expect(
-      getIriOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getUrlOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toBe("https://some.vocab/object");
   });
 
@@ -162,7 +162,7 @@ describe("getIriOne", () => {
     const thingWithIri = getMockThingWithIri("https://some.vocab/predicate");
 
     expect(
-      getIriOne(thingWithIri, "https://some-other.vocab/predicate")
+      getUrlOne(thingWithIri, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -190,7 +190,7 @@ describe("getIriAll", () => {
     thing.add(quad1);
     thing.add(quad2);
 
-    return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
   }
 
   it("returns the IRI values for the given Predicate", () => {
@@ -200,7 +200,7 @@ describe("getIriAll", () => {
       "https://some.vocab/object2"
     );
 
-    expect(getIriAll(thingWithIris, "https://some.vocab/predicate")).toEqual([
+    expect(getUrlAll(thingWithIris, "https://some.vocab/predicate")).toEqual([
       "https://some.vocab/object1",
       "https://some.vocab/object2",
     ]);
@@ -214,7 +214,7 @@ describe("getIriAll", () => {
     );
 
     expect(
-      getIriAll(
+      getUrlAll(
         thingWithIris,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -228,7 +228,7 @@ describe("getIriAll", () => {
       "integer"
     );
 
-    expect(getIriAll(thingWithoutIris, "https://some.vocab/predicate")).toEqual(
+    expect(getUrlAll(thingWithoutIris, "https://some.vocab/predicate")).toEqual(
       []
     );
   });
@@ -247,7 +247,7 @@ describe("getIriAll", () => {
     );
 
     expect(
-      getIriAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getUrlAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toEqual(["https://some.vocab/object"]);
   });
 
@@ -255,7 +255,7 @@ describe("getIriAll", () => {
     const thingWithIri = getMockThingWithIris("https://some.vocab/predicate");
 
     expect(
-      getIriAll(thingWithIri, "https://some-other.vocab/predicate")
+      getUrlAll(thingWithIri, "https://some-other.vocab/predicate")
     ).toEqual([]);
   });
 });
@@ -961,7 +961,7 @@ describe("getStringInLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -983,7 +983,7 @@ describe("getStringInLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1005,7 +1005,7 @@ describe("getStringInLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1043,7 +1043,7 @@ describe("getStringInLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1102,7 +1102,7 @@ describe("getStringInLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1133,7 +1133,7 @@ describe("getStringsInLocaleAll", () => {
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1162,7 +1162,7 @@ describe("getStringsInLocaleAll", () => {
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1184,7 +1184,7 @@ describe("getStringsInLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1222,7 +1222,7 @@ describe("getStringsInLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleStrings = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1281,7 +1281,7 @@ describe("getStringsInLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1515,7 +1515,7 @@ describe("getLiteralOne", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiteral: Thing = Object.assign(plainDataset, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1589,7 +1589,7 @@ describe("getLiteralAll", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiterals: Thing = Object.assign(plainDataset, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1641,7 +1641,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    iri: "https://arbitrary.vocab/subject",
+    url: "https://arbitrary.vocab/subject",
   });
   return thing;
 }
@@ -1685,7 +1685,7 @@ describe("getNamedNodeOne", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNode: Thing = Object.assign(plainDataset, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1737,7 +1737,7 @@ describe("getNamedNodeAll", () => {
     plainDataset.add(quad2);
 
     const thing: Thing = Object.assign(plainDataset, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
     return thing;
   }
@@ -1782,7 +1782,7 @@ describe("getNamedNodeAll", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNodes: Thing = Object.assign(plainDataset, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     expect(

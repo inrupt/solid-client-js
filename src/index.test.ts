@@ -10,7 +10,9 @@ import {
   setThing,
   removeThing,
   createThing,
+  asUrl,
   asIri,
+  getUrlOne,
   getIriOne,
   getBooleanOne,
   getDatetimeOne,
@@ -18,6 +20,7 @@ import {
   getIntegerOne,
   getStringInLocaleOne,
   getStringUnlocalizedOne,
+  getUrlAll,
   getIriAll,
   getBooleanAll,
   getDatetimeAll,
@@ -29,6 +32,7 @@ import {
   getNamedNodeOne,
   getLiteralAll,
   getNamedNodeAll,
+  addUrl,
   addIri,
   addBoolean,
   addDatetime,
@@ -38,6 +42,7 @@ import {
   addStringUnlocalized,
   addLiteral,
   addNamedNode,
+  setUrl,
   setIri,
   setBoolean,
   setDatetime,
@@ -48,6 +53,7 @@ import {
   setLiteral,
   setNamedNode,
   removeAll,
+  removeUrl,
   removeIri,
   removeBoolean,
   removeDatetime,
@@ -84,7 +90,9 @@ it("exports the public API from the entry file", () => {
   expect(setThing).toBeDefined();
   expect(removeThing).toBeDefined();
   expect(createThing).toBeDefined();
+  expect(asUrl).toBeDefined();
   expect(asIri).toBeDefined();
+  expect(getUrlOne).toBeDefined();
   expect(getIriOne).toBeDefined();
   expect(getBooleanOne).toBeDefined();
   expect(getDatetimeOne).toBeDefined();
@@ -92,6 +100,7 @@ it("exports the public API from the entry file", () => {
   expect(getIntegerOne).toBeDefined();
   expect(getStringInLocaleOne).toBeDefined();
   expect(getStringUnlocalizedOne).toBeDefined();
+  expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
   expect(getBooleanAll).toBeDefined();
   expect(getDatetimeAll).toBeDefined();
@@ -103,6 +112,7 @@ it("exports the public API from the entry file", () => {
   expect(getNamedNodeOne).toBeDefined();
   expect(getLiteralAll).toBeDefined();
   expect(getNamedNodeAll).toBeDefined();
+  expect(addUrl).toBeDefined();
   expect(addIri).toBeDefined();
   expect(addBoolean).toBeDefined();
   expect(addDatetime).toBeDefined();
@@ -112,6 +122,7 @@ it("exports the public API from the entry file", () => {
   expect(addStringUnlocalized).toBeDefined();
   expect(addLiteral).toBeDefined();
   expect(addNamedNode).toBeDefined();
+  expect(setUrl).toBeDefined();
   expect(setIri).toBeDefined();
   expect(setBoolean).toBeDefined();
   expect(setDatetime).toBeDefined();
@@ -122,6 +133,7 @@ it("exports the public API from the entry file", () => {
   expect(setLiteral).toBeDefined();
   expect(setNamedNode).toBeDefined();
   expect(removeAll).toBeDefined();
+  expect(removeUrl).toBeDefined();
   expect(removeIri).toBeDefined();
   expect(removeBoolean).toBeDefined();
   expect(removeDatetime).toBeDefined();
