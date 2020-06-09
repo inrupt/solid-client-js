@@ -98,17 +98,17 @@ function getContainerPath(resourcePath: string): string {
 }
 
 /**
- * Verify whether an ACL LitDataset was found for the given LitDataset.
+ * Verify whether an ACL was found for the given LitDataset.
  *
- * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have an ACL LitDataset
- * attached, but we cannot be sure: it might be that none exists for this specific Resource (in
- * which case the fallback ACL applies), or the currently authenticated user (if any) might not have
- * Control access to the fetched Resource.
+ * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have an ACL attached, but
+ * we cannot be sure: it might be that none exists for this specific Resource (in which case the
+ * fallback ACL applies), or the currently authenticated user (if any) might not have Control access
+ * to the fetched Resource.
  *
- * This function verifies that the fallback ACL LitDataset is accessible.
+ * This function verifies that the LitDataset's ACL is accessible.
  *
- * @param dataset A [[LitDataset]] that might have an ACL LitDataset attached.
- * @returns Whether `dataset` has an ACL LitDataset attached.
+ * @param dataset A [[LitDataset]] that might have an ACL attached.
+ * @returns Whether `dataset` has an ACL attached.
  */
 export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
   dataset: Dataset
@@ -119,14 +119,13 @@ export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
 }
 
 /**
- * Access the ACL LitDataset attached to a LitDataset.
+ * Access the ACL attached to a LitDataset.
  *
- * Given a LitDataset that has an ACL LitDataset attached, this function will give you access to
- * that ACL LitDataset. To verify whether the fallback ACL LitDataset is available, see
- * [[unstable_hasResourceAcl]].
+ * Given a LitDataset that has an ACL attached, this function will give you access to that ACL. To
+ * verify whether the ACL is available, see [[unstable_hasResourceAcl]].
  *
- * @param dataset A [[LitDataset]] with potentially an ACL LitDataset attached.
- * @returns The ACL LitDataset, if available, and undefined if not.
+ * @param dataset A [[LitDataset]] with potentially an ACL attached.
+ * @returns The ACL, if available, and undefined if not.
  */
 export function unstable_getResourceAcl(
   dataset: unstable_Acl & {
@@ -148,16 +147,16 @@ export function unstable_getResourceAcl(
 }
 
 /**
- * Verify whether a fallback ACL LitDataset was found for the given LitDataset.
+ * Verify whether a fallback ACL was found for the given LitDataset.
  *
  * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have a fallback ACL
- * LitDataset attached, but we cannot be sure: the currently authenticated user (if any) might not
- * have Control access to one of the fetched Resource's Containers.
+ * attached, but we cannot be sure: the currently authenticated user (if any) might not have Control
+ * access to one of the fetched Resource's Containers.
  *
- * This function verifies that the fallback ACL LitDataset is accessible.
+ * This function verifies that the fallback ACL is accessible.
  *
- * @param dataset A [[LitDataset]] that might have a fallback ACL LitDataset attached.
- * @returns Whether `dataset` has a fallback ACL LitDataset attached.
+ * @param dataset A [[LitDataset]] that might have a fallback ACL attached.
+ * @returns Whether `dataset` has a fallback ACL attached.
  */
 export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
   dataset: Dataset
@@ -168,14 +167,13 @@ export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
 }
 
 /**
- * Access the fallback ACL LitDataset attached to a LitDataset.
+ * Access the fallback ACL attached to a LitDataset.
  *
- * Given a LitDataset that has a fallback ACL LitDataset attached, this function will give you
- * access to that ACL LitDataset. To verify whether the fallback ACL LitDataset is available, see
- * [[unstable_hasFallbackAcl]].
+ * Given a LitDataset that has a fallback ACL attached, this function will give you access to that
+ * ACL. To verify whether the fallback ACL is available, see [[unstable_hasFallbackAcl]].
  *
- * @param dataset A [[LitDataset]] with potentially a fallback ACL LitDataset attached.
- * @returns The fallback ACL LitDataset, if null if it coult not be accessed.
+ * @param dataset A [[LitDataset]] with potentially a fallback ACL attached.
+ * @returns The fallback ACL, or null if it coult not be accessed.
  */
 export function unstable_getFallbackAcl(
   dataset: unstable_Acl & {
