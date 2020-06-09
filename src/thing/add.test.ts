@@ -4,7 +4,7 @@ import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode } from "../interfaces";
 import {
-  addIri,
+  addUrl,
   addBoolean,
   addDatetime,
   addDecimal,
@@ -17,7 +17,7 @@ import {
 
 function getMockEmptyThing(iri = "https://arbitrary.vocab/subject") {
   const thing = dataset();
-  return Object.assign(thing, { iri: iri });
+  return Object.assign(thing, { url: iri });
 }
 function literalOfType(
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime",
@@ -55,7 +55,7 @@ describe("addIri", () => {
   it("adds the given IRI value for the given predicate", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       "https://some.pod/other-resource#object"
@@ -75,7 +75,7 @@ describe("addIri", () => {
   it("accepts values as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.pod/other-resource#object")
@@ -98,7 +98,7 @@ describe("addIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       targetThing
@@ -122,7 +122,7 @@ describe("addIri", () => {
       name: "localObject",
     });
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       thingLocal
@@ -142,7 +142,7 @@ describe("addIri", () => {
   it("accepts Predicates as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "https://some.pod/other-resource#object"
@@ -162,7 +162,7 @@ describe("addIri", () => {
   it("does not modify the input Thing", () => {
     const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://arbitrary.vocab/predicate",
       "https://arbitrary.pod/other-resource#object"
@@ -178,7 +178,7 @@ describe("addIri", () => {
       name: "localSubject",
     });
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thingLocal,
       "https://some.vocab/predicate",
       "https://some.pod/other-resource#object"
@@ -205,7 +205,7 @@ describe("addIri", () => {
       )
     );
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       "https://some.pod/yet-another-resource#object"
@@ -241,7 +241,7 @@ describe("addIri", () => {
       )
     );
 
-    const updatedThing = addIri(
+    const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
       "https://some.pod/other-resource#object"

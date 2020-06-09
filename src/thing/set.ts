@@ -1,8 +1,8 @@
 import { Literal, NamedNode } from "rdf-js";
 import {
   Thing,
-  Iri,
-  IriString,
+  Url,
+  UrlString,
   ThingLocal,
   ThingPersisted,
 } from "../interfaces";
@@ -21,29 +21,31 @@ import { toNode } from "../thing";
 import { removeAll } from "./remove";
 
 /**
- * Create a new Thing with existing values replaced by the given IRI for the given Predicate.
+ * Create a new Thing with existing values replaced by the given URL for the given Predicate.
  *
- * To preserve existing values, see [[addIri]].
+ * To preserve existing values, see [[addUrl]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
- * @param thing Thing to set an IRI value on.
- * @param predicate Predicate for which to set the given IRI value.
- * @param value IRI to set on `thing` for the given `predicate`.
+ * @param thing Thing to set a URL value on.
+ * @param predicate Predicate for which to set the given URL value.
+ * @param url URL to set on `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Predicate.
  */
-export const setIri: SetOfType<Iri | IriString | Thing> = (
+export const setUrl: SetOfType<Url | UrlString | Thing> = (
   thing,
   predicate,
-  iri
+  url
 ) => {
   const newThing = removeAll(thing, predicate);
 
   const predicateNode = asNamedNode(predicate);
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(iri)));
+  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(url)));
 
   return newThing;
 };
+/** @hidden Alias of [[setUrl]] for those who prefer IRI terminology. */
+export const setIri = setUrl;
 
 /**
  * Create a new Thing with existing values replaced by the given boolean for the given Predicate.
@@ -144,13 +146,13 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
  */
 export function setStringInLocale<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function setStringInLocale(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): Thing {
@@ -193,12 +195,12 @@ export const setStringUnlocalized: SetOfType<string> = (
  */
 export function setNamedNode<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function setNamedNode(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): Thing {
   const newThing = removeAll(thing, predicate);
@@ -224,12 +226,12 @@ export function setNamedNode(
  */
 export function setLiteral<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function setLiteral(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): Thing {
   const newThing = removeAll(thing, predicate);
@@ -242,13 +244,13 @@ export function setLiteral(
 
 function setLiteralOfType<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function setLiteralOfType(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): Thing {
@@ -268,6 +270,6 @@ function setLiteralOfType(
  */
 type SetOfType<Type> = <T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Type
 ) => T extends ThingLocal ? ThingLocal : ThingPersisted;

@@ -1,40 +1,44 @@
 import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
 
 /**
- * Alias to indicate where we expect an IRI.
+ * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
  */
-export type Iri = NamedNode;
+export type Url = NamedNode;
+/** @hidden Alias of Url for those who prefer to use IRI terminology. */
+export type Iri = Url;
 /**
- * Alias to indicate where we expect an IRI string.
+ * Alias to indicate where we expect to be given a URL.
  */
-export type IriString = string;
+export type UrlString = string;
+/** @hidden Alias of UrlString for those who prefer to use IRI terminology. */
+export type IriString = UrlString;
 /**
- * Alias to indicate where we expect a WebID to be passed.
+ * Alias to indicate where we expect to be given a WebId.
  */
-export type WebId = IriString;
+export type WebId = UrlString;
 
 /**
  * A LitDataset represents all Quads from a single Resource.
  */
 export type LitDataset = DatasetCore;
 /**
- * A Thing represents all Quads with a given Subject IRI and a given Named
+ * A Thing represents all Quads with a given Subject URL and a given Named
  * Graph, from a single Resource.
  */
-export type Thing = DatasetCore & ({ iri: IriString } | { name: string });
+export type Thing = DatasetCore & ({ url: UrlString } | { name: string });
 /**
- * A [[Thing]] for which we know what the full Subject IRI is.
+ * A [[Thing]] for which we know what the full Subject URL is.
  */
-export type ThingPersisted = Thing & { iri: IriString };
+export type ThingPersisted = Thing & { url: UrlString };
 /**
- * A [[Thing]] whose full Subject IRI will be determined when it is persisted.
+ * A [[Thing]] whose full Subject URL will be determined when it is persisted.
  */
 export type ThingLocal = Thing & { name: string };
 /**
  * Represents the BlankNode that will be initialised to a NamedNode when persisted.
  *
  * This is a Blank Node with a `name` property attached, which will be used to construct this
- * Node's full IRI once it is persisted, where it will transform into a Named Node.
+ * Node's full URL once it is persisted, where it will transform into a Named Node.
  *
  * @internal Utility method; library users should not need to interact with LocalNodes directly.
  */
@@ -47,7 +51,7 @@ export type LocalNode = BlankNode & { name: string };
  * function is still experimental and can change in a non-major release.
  */
 export type unstable_AclDataset = LitDataset &
-  DatasetInfo & { accessTo: IriString };
+  DatasetInfo & { accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
@@ -84,15 +88,15 @@ type unstable_WacAllow = {
  */
 export type DatasetInfo = {
   datasetInfo: {
-    fetchedFrom: IriString;
+    fetchedFrom: UrlString;
     /**
-     * The IRI reported by the server as possibly containing an ACL file. Note that this file might
+     * The URL reported by the server as possibly containing an ACL file. Note that this file might
      * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
      *
      * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
      *         in this API changing as well.
      */
-    unstable_aclIri?: IriString;
+    unstable_aclUrl?: UrlString;
     /**
      * Access permissions for the current user and the general public for this resource.
      *
@@ -163,7 +167,7 @@ export function hasChangelog<T extends LitDataset>(
 export function unstable_hasAccessibleAcl<Dataset extends DatasetInfo>(
   dataset: Dataset
 ): dataset is Dataset & {
-  datasetInfo: { unstable_aclIri: IriString };
+  datasetInfo: { unstable_aclUrl: UrlString };
 } {
-  return typeof dataset.datasetInfo.unstable_aclIri === "string";
+  return typeof dataset.datasetInfo.unstable_aclUrl === "string";
 }

@@ -1,5 +1,5 @@
 import { Quad_Object, Quad, NamedNode, Literal } from "rdf-js";
-import { Thing, Iri, IriString } from "../interfaces";
+import { Thing, Url, UrlString } from "../interfaces";
 import {
   asNamedNode,
   isNamedNode,
@@ -13,14 +13,14 @@ import {
 } from "../datatypes";
 
 /**
- * @param thing The [[Thing]] to read an IRI value from.
- * @param predicate The given Predicate for which you want the IRI value.
- * @returns An IRI value for the given Predicate, if present, or null otherwise.
+ * @param thing The [[Thing]] to read a URL value from.
+ * @param predicate The given Predicate for which you want the URL value.
+ * @returns A URL value for the given Predicate, if present, or null otherwise.
  */
-export function getIriOne(
+export function getUrlOne(
   thing: Thing,
-  predicate: Iri | IriString
-): IriString | null {
+  predicate: Url | UrlString
+): UrlString | null {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
   const matchingQuad = findOne(thing, namedNodeMatcher);
@@ -31,22 +31,26 @@ export function getIriOne(
 
   return matchingQuad.object.value;
 }
+/** @hidden Alias of [[getUrlOne]] for those who prefer IRI terminology. */
+export const getIriOne = getUrlOne;
 
 /**
- * @param thing The [[Thing]] to read the IRI values from.
- * @param predicate The given Predicate for which you want the IRI values.
- * @returns The IRI values for the given Predicate.
+ * @param thing The [[Thing]] to read the URL values from.
+ * @param predicate The given Predicate for which you want the URL values.
+ * @returns The URL values for the given Predicate.
  */
-export function getIriAll(
+export function getUrlAll(
   thing: Thing,
-  predicate: Iri | IriString
-): IriString[] {
+  predicate: Url | UrlString
+): UrlString[] {
   const iriMatcher = getNamedNodeMatcher(predicate);
 
   const matchingQuads = findAll(thing, iriMatcher);
 
   return matchingQuads.map((quad) => quad.object.value);
 }
+/** @hidden Alias of [[getUrlAll]] for those who prefer IRI terminology. */
+export const getIriAll = getUrlAll;
 
 /**
  * @param thing The [[Thing]] to read a boolean value from.
@@ -55,7 +59,7 @@ export function getIriAll(
  */
 export function getBooleanOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): boolean | null {
   const literalString = getLiteralOneOfType(
     thing,
@@ -77,7 +81,7 @@ export function getBooleanOne(
  */
 export function getBooleanAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): boolean[] {
   const literalStrings = getLiteralAllOfType(
     thing,
@@ -97,7 +101,7 @@ export function getBooleanAll(
  */
 export function getDatetimeOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): Date | null {
   const literalString = getLiteralOneOfType(
     thing,
@@ -119,7 +123,7 @@ export function getDatetimeOne(
  */
 export function getDatetimeAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): Date[] {
   const literalStrings = getLiteralAllOfType(
     thing,
@@ -139,7 +143,7 @@ export function getDatetimeAll(
  */
 export function getDecimalOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): number | null {
   const literalString = getLiteralOneOfType(
     thing,
@@ -161,7 +165,7 @@ export function getDecimalOne(
  */
 export function getDecimalAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): number[] {
   const literalStrings = getLiteralAllOfType(
     thing,
@@ -181,7 +185,7 @@ export function getDecimalAll(
  */
 export function getIntegerOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): number | null {
   const literalString = getLiteralOneOfType(
     thing,
@@ -203,7 +207,7 @@ export function getIntegerOne(
  */
 export function getIntegerAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): number[] {
   const literalStrings = getLiteralAllOfType(
     thing,
@@ -224,7 +228,7 @@ export function getIntegerAll(
  */
 export function getStringInLocaleOne(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   locale: string
 ): string | null {
   const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
@@ -246,7 +250,7 @@ export function getStringInLocaleOne(
  */
 export function getStringInLocaleAll(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   locale: string
 ): string[] {
   const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
@@ -263,7 +267,7 @@ export function getStringInLocaleAll(
  */
 export function getStringUnlocalizedOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): string | null {
   const literalString = getLiteralOneOfType(
     thing,
@@ -281,7 +285,7 @@ export function getStringUnlocalizedOne(
  */
 export function getStringUnlocalizedAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): string[] {
   const literalStrings = getLiteralAllOfType(
     thing,
@@ -300,7 +304,7 @@ export function getStringUnlocalizedAll(
  */
 export function getNamedNodeOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): NamedNode | null {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
@@ -321,7 +325,7 @@ export function getNamedNodeOne(
  */
 export function getNamedNodeAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): NamedNode[] {
   const namedNodeMatcher = getNamedNodeMatcher(predicate);
 
@@ -338,7 +342,7 @@ export function getNamedNodeAll(
  */
 export function getLiteralOne(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): Literal | null {
   const literalMatcher = getLiteralMatcher(predicate);
 
@@ -359,7 +363,7 @@ export function getLiteralOne(
  */
 export function getLiteralAll(
   thing: Thing,
-  predicate: Iri | IriString
+  predicate: Url | UrlString
 ): Literal[] {
   const literalMatcher = getLiteralMatcher(predicate);
 
@@ -408,7 +412,7 @@ function findAll<Object extends Quad_Object>(
   return matched;
 }
 
-function getNamedNodeMatcher(predicate: Iri | IriString): Matcher<NamedNode> {
+function getNamedNodeMatcher(predicate: Url | UrlString): Matcher<NamedNode> {
   const predicateNode = asNamedNode(predicate);
 
   const matcher = function matcher(
@@ -419,7 +423,7 @@ function getNamedNodeMatcher(predicate: Iri | IriString): Matcher<NamedNode> {
   return matcher;
 }
 
-function getLiteralMatcher(predicate: Iri | IriString): Matcher<Literal> {
+function getLiteralMatcher(predicate: Url | UrlString): Matcher<Literal> {
   const predicateNode = asNamedNode(predicate);
 
   const matcher = function matcher(
@@ -434,7 +438,7 @@ type LiteralOfType<Type extends XmlSchemaTypeIri> = Literal & {
   datatype: { value: Type };
 };
 function getLiteralOfTypeMatcher<Datatype extends XmlSchemaTypeIri>(
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   datatype: Datatype
 ): Matcher<LiteralOfType<Datatype>> {
   const predicateNode = asNamedNode(predicate);
@@ -456,7 +460,7 @@ type LiteralLocaleString = Literal & {
   language: string;
 };
 function getLocaleStringMatcher(
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   locale: string
 ): Matcher<LiteralLocaleString> {
   const predicateNode = asNamedNode(predicate);
@@ -482,7 +486,7 @@ function getLocaleStringMatcher(
  */
 function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   literalType: Datatype
 ): string | null {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
@@ -504,7 +508,7 @@ function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
  */
 function getLiteralAllOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   literalType: Datatype
 ): string[] {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
