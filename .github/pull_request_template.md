@@ -1,6 +1,6 @@
 <!-- When fixing a bug: -->
 
-This PR fixes bug #.
+This PR fixes #<issue ID>.
 
 - [ ] I've added a unit test to test for potential regressions of this bug.
 - [ ] The changelog has been updated, if applicable.
