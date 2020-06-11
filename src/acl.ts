@@ -56,6 +56,10 @@ export async function internal_fetchFallbackAcl(
 ): Promise<unstable_AclDataset | null> {
   const resourceUrl = new URL(dataset.datasetInfo.fetchedFrom);
   const resourcePath = resourceUrl.pathname;
+  // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
+  //       set in stone that that will always be the case. We might need to check the Container's
+  //       metadata at some point in time to check whether it is actually the root of the Pod.
+  //       See: https://github.com/solid/specification/issues/153#issuecomment-624630022
   if (resourcePath === "/") {
     // We're already at the root, so there's no Container we can retrieve:
     return null;
