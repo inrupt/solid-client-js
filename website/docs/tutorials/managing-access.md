@@ -27,7 +27,7 @@ The possible [Access Modes](../glossary#access-modes) that can be granted are
 [Read](../glossary#read-access), [Append](../glossary#append-access),
 [Write](../glossary#write-access) and [Control](../glossary#control-access),
 
-:::info A note about access to ACLs
+:::note A note about access to ACLs
 
 A Resource's or Container's ACL is only accessible to your app if the following are true:
 
