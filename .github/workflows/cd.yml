@@ -1,18 +1,15 @@
 name: CD
 
-on: 
-    push:
-        branches-ignore:
-            - dependabot/*
+on: push
 
 env:
   CI: true
 jobs:
-  release-npm:
+  publish-npm:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2.1.0
-    - name: Prepare for publication to GitHub Packages
+    - name: Prepare for publication to npm
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -28,7 +25,8 @@ jobs:
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
         npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
     - run: npm ci
-    - run: npm publish --tag "$TAG_SLUG"
+    - name: Publish an npm tag for this branch
+      run: npm publish --tag "$TAG_SLUG"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - run: |
