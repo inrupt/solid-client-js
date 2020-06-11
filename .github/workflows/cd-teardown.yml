@@ -7,7 +7,7 @@ env:
 jobs:
   unpublish-npm:
     runs-on: ubuntu-18.04
-    if: github.event.ref_type == 'branch' && !startsWith(github.event.ref, 'dependabot/')
+    if: github.event.ref_type == 'branch'
     steps:
     - name: Prepare for unpublication from npm
       uses: actions/setup-node@v1
