@@ -13,4 +13,4 @@ First release! What's possible with this first release:
 - Read data from datasets.
 - Manipulate data in datasets.
 - Inspect a user's permissions w.r.t. a given Resource. (Experimental.)
-- Retrieve and/or delete any file (including non-RDF) from a Pod.
+- Retrieve, delete and/or write any file (including non-RDF) from/to a Pod.

@@ -1,4 +1,9 @@
-export { unstable_fetchFile, unstable_deleteFile } from "./nonRdfData";
+export {
+  unstable_fetchFile,
+  unstable_deleteFile,
+  unstable_saveFileInContainer,
+  unstable_overwriteFile,
+} from "./nonRdfData";
 export {
   createLitDataset,
   fetchLitDataset,
