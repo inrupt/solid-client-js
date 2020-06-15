@@ -1,3 +1,24 @@
+/**
+ * Copyright 2020 Inrupt Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 const pkg = require("../package.json");
 
 const prismTheme = require("prism-react-renderer/themes/github");
@@ -16,18 +37,18 @@ prismTheme.styles = prismTheme.styles.map((style) => {
 });
 
 module.exports = {
-  title: "lit-solid",
+  title: "lit-pod",
   tagline: pkg.description,
   url: "https://inrupt.github.io",
-  baseUrl: process.env.CI ? "/lit-solid/" : "/",
+  baseUrl: process.env.CI ? "/lit-pod/" : "/",
   favicon: "img/favicon.ico",
   organizationName: "inrupt", // Usually your GitHub org/user name.
-  projectName: "lit-solid", // Usually your repo name.
+  projectName: "lit-pod", // Usually your repo name.
   themeConfig: {
     announcementBar: {
       id: "alpha-warning", // Any value that will identify this message.
       content:
-        "Both lit-solid and this website are still in alpha. Expect things to break.",
+        "Both lit-pod and this website are still in alpha. Expect things to break.",
       backgroundColor: "#ffba00", // Defaults to `#fff`.
       textColor: "#091E42", // Defaults to `#000`.
     },
@@ -36,7 +57,7 @@ module.exports = {
       theme: prismTheme,
     },
     navbar: {
-      title: "lit-solid",
+      title: "lit-pod",
       // logo: {
       //   alt: "My Site Logo",
       //   src: "img/logo.svg",
@@ -55,7 +76,7 @@ module.exports = {
           position: "left",
         },
         {
-          href: "https://github.com/inrupt/lit-solid",
+          href: "https://github.com/inrupt/lit-pod",
           label: "GitHub",
           position: "right",
         },
@@ -99,11 +120,11 @@ module.exports = {
           items: [
             {
               label: "Source code",
-              href: "https://github.com/inrupt/lit-solid",
+              href: "https://github.com/inrupt/lit-pod",
             },
             {
               label: "Report a bug",
-              href: "https://github.com/inrupt/lit-solid/issues",
+              href: "https://github.com/inrupt/lit-pod/issues",
             },
           ],
         },
@@ -120,7 +141,7 @@ module.exports = {
           homePageId: "getting-started",
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
-          editUrl: "https://github.com/inrupt/lit-solid/edit/master/website/",
+          editUrl: "https://github.com/inrupt/lit-pod/edit/master/website/",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),

@@ -1,5 +1,5 @@
 {
-  "name": "lit-solid",
+  "name": "@solid/lit-pod",
   "description": "Read, update and delete data on a Solid Pod.",
   "version": "0.0.1",
   "scripts": {
@@ -17,15 +17,15 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://github.com/inrupt/lit-solid",
-  "bugs": "https://github.com/inrupt/lit-solid/issues",
+  "homepage": "https://github.com/inrupt/lit-pod",
+  "bugs": "https://github.com/inrupt/lit-pod/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/inrupt/lit-solid.git"
+    "url": "https://github.com/inrupt/lit-pod.git"
   },
   "devDependencies": {
     "@types/http-link-header": "^1.0.1",

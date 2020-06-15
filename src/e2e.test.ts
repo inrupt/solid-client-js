@@ -35,11 +35,11 @@ describe("End-to-end tests", () => {
     const randomNick = "Random nick " + Math.random();
 
     const dataset = await fetchLitDataset(
-      "https://lit-e2e-test.inrupt.net/public/lit-solid-core-test.ttl"
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"
     );
     const existingThing = getThingOne(
       dataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-solid-core-test.ttl#thing1"
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
 
     expect(getStringUnlocalizedOne(existingThing, foaf.name)).toBe(
@@ -55,13 +55,13 @@ describe("End-to-end tests", () => {
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveLitDatasetAt(
-      "https://lit-e2e-test.inrupt.net/public/lit-solid-core-test.ttl",
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl",
       updatedDataset
     );
 
     const savedThing = getThingOne(
       savedDataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-solid-core-test.ttl#thing1"
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
     expect(getStringUnlocalizedOne(savedThing, foaf.name)).toBe(
       "Thing for first end-to-end test"

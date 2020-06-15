@@ -4,7 +4,7 @@ title: Working with Data
 sidebar_label: Working with Data
 ---
 
-The two most important data structures when working with data in lit-solid are the `Thing` and the `LitDataset`:
+The two most important data structures when working with data in lit-pod are the `Thing` and the `LitDataset`:
 
 - A [**`Thing`**](../api/modules/_interfaces_#thing) is the most basic store of data about a particular subject.
   Each Thing has its own URL to identify it. For example, the URL of the Thing about yours truly is:
@@ -53,7 +53,7 @@ fetch will be the one at the authenticated user's [WebID](../glossary#webid), wh
 links to other potentially relevant LitDatasets.
 
 ```typescript
-import { fetchLitDataset } from "lit-solid";
+import { fetchLitDataset } from "@solid/lit-pod";
 
 const litDataset = await fetchLitDataset(
   "https://example.com/some/interesting/resource"
@@ -68,7 +68,7 @@ you found that URL on another Thing) using
 Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_#getthingall)
 
 ```typescript
-import { getThingOne } from "lit-solid";
+import { getThingOne } from "@solid/lit-pod";
 
 const thing = getThingOne(
   litDataset,
@@ -110,7 +110,7 @@ import {
   getStringUnlocalizedAll,
   getStringUnlocalizedOne,
   getUrlAll,
-} from "lit-solid";
+} from "@solid/lit-pod";
 
 // We're looking for data…
 // …stating the Thing's name (`http://xmlns.com/foaf/0.1/name`)
@@ -150,7 +150,7 @@ import {
   fetchLitDataset,
   getThingOne,
   getStringUnlocalizedOne,
-} from "lit-solid";
+} from "@solid/lit-pod";
 
 const profileResource = await fetchLitDataset(
   "https://vincentt.inrupt.net/profile/card"
@@ -183,7 +183,7 @@ Again, let's cover them one by one.
 We can start with [a Thing we obtained earlier](#2-obtain-a-thing), or create an empty one:
 
 ```typescript
-import { createThing } from "lit-solid";
+import { createThing } from "@solid/lit-pod";
 
 const thing = createThing();
 ```
@@ -198,7 +198,7 @@ Let's say we're trying to add a nickname, a characteristic identified by `http:/
 It will be a string (`"timbl"`), and will be in addition to any existing nicknames already listed in `thing`:
 
 ```typescript
-import { addStringUnlocalized } from "lit-solid";
+import { addStringUnlocalized } from "@solid/lit-pod";
 
 let updatedThing = addStringUnlocalized(
   thing,
@@ -215,7 +215,7 @@ See which are available for which data type at
 
 :::tip A heads-up about immutability
 
-Note that lit-solid never modifies the objects you provide to it.
+Note that lit-pod never modifies the objects you provide to it.
 Instead, it will create a new object based on the one it is given,
 with the requested changes applied.
 
@@ -234,7 +234,7 @@ If the updated Thing was based on an existing Thing obtained from that LitDatase
 the updated Thing will replace the previous one.
 
 ```typescript
-import { setThing } from "lit-solid";
+import { setThing } from "@solid/lit-pod";
 
 const updatedDataset = setThing(litDataset, updatedThing);
 ```
@@ -246,7 +246,7 @@ To save the updated LitDataset to a Pod, use
 If the given location already contains data, that will be updated to match the given LitDataset.
 
 ```typescript
-import { saveLitDatasetAt } from "lit-solid";
+import { saveLitDatasetAt } from "@solid/lit-pod";
 
 const savedLitDataset = await saveLitDatasetAt(
   "https://example.com/some/interesting/resource",
@@ -266,7 +266,7 @@ import {
   setStringUnlocalizedOne,
   setThing,
   saveLitDatasetAt,
-} from "lit-solid";
+} from "@solid/lit-pod";
 
 const profileResource = await fetchLitDataset(
   "https://vincentt.inrupt.net/profile/card"
