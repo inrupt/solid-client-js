@@ -1,11 +1,7 @@
 import { fetch } from "./fetcher";
+import { Headers } from "cross-fetch";
 
-/**
- * Some of the headers must be set by the library, rather than directly.
- */
-export type UploadRequestInit = Exclude<RequestInit, "method" | "headers"> & {
-  headers?: Exclude<RequestInit["headers"], "Slug" | "If-None-Match">;
-};
+export type UploadRequestInit = Omit<RequestInit, "method">;
 
 type FetchFileOptions = {
   fetch: typeof window.fetch;
@@ -15,6 +11,15 @@ type FetchFileOptions = {
 const defaultFetchFileOptions = {
   fetch: fetch,
 };
+
+const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
+
+/**
+ * Some of the headers must be set by the library, rather than directly.
+ */
+function containsReserved(header: Headers): boolean {
+  return RESERVED_HEADERS.some((reserved) => header.has(reserved));
+}
 
 /**
  * Fetches a file at a given URL, and returns it as a blob of data.
@@ -111,24 +116,23 @@ async function writeFile(
     ...defaultFetchFileOptions,
     ...options,
   };
-  const init: RequestInit = {
-    ...config.init,
-    method: method,
-    body: file,
-  };
+  const headers = new Headers(config.init?.headers ?? {});
+  if (containsReserved(headers)) {
+    throw new Error(
+      `No reserved header (${RESERVED_HEADERS}) should be set in the optional RequestInit.`
+    );
+  }
 
   // If a slug is in the parameters, set the request headers accordingly
   if (config.slug !== undefined) {
-    init.headers = {
-      ...init.headers,
-      Slug: config.slug,
-    };
+    headers.append("Slug", config.slug);
   }
+  headers.append("Content-Type", file.type);
 
-  init.headers = {
-    ...init.headers,
-    "Content-Type": file.type,
-  };
-
-  return await config.fetch(targetUrl, init);
+  return await config.fetch(targetUrl, {
+    ...config.init,
+    headers,
+    method,
+    body: file,
+  });
 }

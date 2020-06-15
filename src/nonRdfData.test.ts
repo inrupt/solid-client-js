@@ -191,33 +191,6 @@ describe("Non-RDF data deletion", () => {
       ],
     ]);
   });
-
-  it("should override the request method if it is set by the user", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" })
-        )
-      );
-
-    await unstable_deleteFile("https://some.url", {
-      fetch: mockFetch,
-      init: {
-        method: "HEAD",
-      },
-    });
-
-    expect(mockFetch.mock.calls).toEqual([
-      [
-        "https://some.url",
-        {
-          method: "DELETE",
-        },
-      ],
-    ]);
-  });
-
   it("should return the response on a failed request", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
@@ -289,9 +262,11 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({
-      "Content-Type": "binary",
-    });
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+      })
+    );
     expect(mockCall[1]?.method).toEqual("POST");
     expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(response).toEqual(
@@ -334,7 +309,9 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({ "Content-Type": "binary" })
+    );
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
@@ -362,10 +339,12 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({
-      "Content-Type": "binary",
-      Slug: "someFileName",
-    });
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+        Slug: "someFileName",
+      })
+    );
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
@@ -373,7 +352,7 @@ describe("Write non-RDF data into a folder", () => {
     );
   });
 
-  it("supports passing slug through headers", async () => {
+  it("throws when a reserved header is passed", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -382,31 +361,16 @@ describe("Write non-RDF data into a folder", () => {
         )
       );
 
-    const response = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob,
-      {
+    await expect(
+      unstable_saveFileInContainer("https://some.url", mockBlob, {
         fetch: mockFetch,
         init: {
           headers: {
             Slug: "someFileName",
           },
         },
-      }
-    );
-
-    const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({
-      "Content-Type": "binary",
-      Slug: "someFileName",
-    });
-    expect(mockCall[1]?.method).toEqual("POST");
-    expect(mockCall[1]?.body).toEqual(mockBlob);
-
-    expect(response).toEqual(
-      new Response(undefined, { status: 201, statusText: "Created" })
-    );
+      })
+    ).rejects.toThrow(/reserved header/);
   });
 });
 
@@ -452,9 +416,11 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({
-      "Content-Type": "binary",
-    });
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+      })
+    );
     expect(mockCall[1]?.method).toEqual("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
@@ -498,7 +464,9 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({ "Content-Type": "binary" })
+    );
     expect(mockCall[1]?.method).toEqual("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
