@@ -412,25 +412,6 @@ describe("Write non-RDF data into a folder", () => {
       new Response(undefined, { status: 201, statusText: "Created" })
     );
   });
-
-  it("should override the request method if it is set by the user", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
-      );
-
-    await unstable_saveFileInContainer("https://some.url", mockBlob as Blob, {
-      fetch: mockFetch,
-      init: {
-        method: "HEAD",
-      },
-    });
-
-    expect(mockFetch.mock.calls[0][1]?.method).toEqual("POST");
-  });
 });
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
@@ -603,24 +584,5 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
     );
-  });
-
-  it("should override the request method if it is set by the user", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
-      );
-
-    await unstable_overwriteFile("https://some.url", mockBlob as Blob, {
-      fetch: mockFetch,
-      init: {
-        method: "HEAD",
-      },
-    });
-
-    expect(mockFetch.mock.calls[0][1]?.method).toEqual("PUT");
   });
 });

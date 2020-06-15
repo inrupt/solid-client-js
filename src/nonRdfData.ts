@@ -1,10 +1,16 @@
 import { fetch } from "./fetcher";
-import { mergeHeaders } from "./utils/headersUtils";
 
-interface FetchFileOptions {
+/**
+ * Some of the headers must be set by the library, rather than directly.
+ */
+export type UploadRequestInit = Exclude<RequestInit, "method" | "headers"> & {
+  headers?: Exclude<RequestInit["headers"], "Slug" | "If-None-Match">;
+};
+
+type FetchFileOptions = {
   fetch: typeof window.fetch;
-  init: RequestInit;
-}
+  init: UploadRequestInit;
+};
 
 const defaultFetchFileOptions = {
   fetch: fetch,
@@ -105,29 +111,24 @@ async function writeFile(
     ...defaultFetchFileOptions,
     ...options,
   };
-  if (config.init === undefined) {
-    config.init = {
-      headers: {},
-    };
-  }
-
-  // If a slug is in the parameters, set the request headers accordingly
-  if (config.slug !== undefined) {
-    config.init.headers = mergeHeaders(
-      config.init.headers,
-      "Slug",
-      config.slug
-    );
-  }
-  config.init.headers = mergeHeaders(
-    config.init.headers,
-    "Content-Type",
-    file.type
-  );
-
-  return await config.fetch(targetUrl, {
+  const init: RequestInit = {
     ...config.init,
     method: method,
     body: await file.arrayBuffer(),
-  });
+  };
+
+  // If a slug is in the parameters, set the request headers accordingly
+  if (config.slug !== undefined) {
+    init.headers = {
+      ...init.headers,
+      Slug: config.slug,
+    };
+  }
+
+  init.headers = {
+    ...init.headers,
+    "Content-Type": file.type,
+  };
+
+  return await config.fetch(targetUrl, init);
 }
