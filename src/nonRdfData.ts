@@ -87,7 +87,7 @@ export async function unstable_saveFileInContainer(
 export async function unstable_overwriteFile(
   fileUrl: RequestInfo,
   file: Blob,
-  options: Partial<SaveFileOptions> = defaultFetchFileOptions
+  options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Response> {
   return writeFile(fileUrl, file, "PUT", options);
 }
