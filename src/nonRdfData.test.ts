@@ -250,7 +250,29 @@ describe("Write non-RDF data into a folder", () => {
       }),
   };
 
-  it("should POST to a remote resource using cross-fetch if no other fetcher is available", async () => {
+  it("should default to the included fetcher if no other is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob as Blob
+    );
+
+    expect(fetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("should POST to a remote resource the included fetcher, and return the response", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
@@ -281,6 +303,24 @@ describe("Write non-RDF data into a folder", () => {
     );
   });
 
+  it("should use the provided fetcher if available", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob as Blob,
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
   it("should POST a remote resource using the provided fetcher", async () => {
     const mockFetch = jest
       .fn(window.fetch)
@@ -299,10 +339,7 @@ describe("Write non-RDF data into a folder", () => {
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
-    if (!mockCall[1]?.body) {
-      throw new Error(`Missing a body, expected "Some Data"`);
-    }
-    expect(mockCall[1].body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -405,7 +442,26 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       }),
   };
 
-  it("should PUT to a remote resource using cross-fetch if no other fetcher is available", async () => {
+  it("should default to the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    await unstable_overwriteFile("https://some.url", mockBlob as Blob);
+
+    expect(fetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("should PUT to a remote resource when using the included fetcher, and return the response", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
@@ -437,7 +493,25 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     );
   });
 
-  it("should PUT a remote resource using the provided fetcher", async () => {
+  it("should use the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_overwriteFile(
+      "https://some.url",
+      mockBlob as Blob,
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should PUT a remote resource using the provided fetcher, and return the response", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
