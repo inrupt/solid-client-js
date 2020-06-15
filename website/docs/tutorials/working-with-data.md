@@ -80,8 +80,8 @@ const thing = getThingOne(
 
 There are three things to know about data in Solid:
 
-1. Like Things themselves, data is indexed by a URL that uniquely identifies it.
-2. Data is typed, e.g. as a string or as an integer.
+1. Data is attached to a Thing via a URL that uniquely identifies what of the Thing's characteristics it describes.
+2. Data is typed, e.g. as a string, an integer or a URL (e.g. pointing to other Things).
 3. There can be zero, one or more values for some type of data.
 
 As an example, in my profile, an app can look for my name using the URL `http://xmlns.com/foaf/0.1/name`.
@@ -95,14 +95,15 @@ The URL is decided on by whomever writes the data, and can be any arbitrary URL.
 However, agreeing on a specific URL for specific types of data can make different apps interoperable.
 To encourage interoperability, people have come together to agree on specific URLs for specific types of data for common use cases — so-called _Vocabularies_.
 
-In the above example, the URL is part of the "Friend of a Friend" (FOAF) Vocabulary.
+In the above example, the URL is part of the "Friend of a Friend" [(FOAF) Vocabulary](http://xmlns.com/foaf/spec).
 In this case, you can even follow the link to see a description of how they intended `name` to be used
 (with a string, possibly multiple ones).
 
 :::
 
 To access data, you use the appropriate function depending on what type of data you expect,
-how much of it, and pass it the URL at which it is indexed. For example:
+how much of it, and pass it the URL that identifies which of the Thing's characteristics you're looking for.
+For example:
 
 ```typescript
 import {
@@ -111,16 +112,28 @@ import {
   getUrlAll,
 } from "lit-solid";
 
+// We're looking for data…
+// …stating the Thing's name (`http://xmlns.com/foaf/0.1/name`)
+// …of type string
+// …and we expect multiple values:
 const names = getStringUnlocalizedAll(thing, "http://xmlns.com/foaf/0.1/name");
-// => an array of strings indexed at `http://xmlns.com/foaf/0.1/name`.
+// => an array of strings representing the `http://xmlns.com/foaf/0.1/name`.
 
+// We're looking for data…
+// …stating the Thing's Skype ID (`http://xmlns.com/foaf/0.1/skypeId`)
+// …of type string
+// …and we want just one value, assuming it to be the only one:
 const skypeId = getStringUnlocalizedOne(
   thing,
   "http://xmlns.com/foaf/0.1/skypeId"
 );
-// => one of the strings indexed at `http://xmlns.com/foaf/0.1/skypeId`,
+// => one of the strings representing the `http://xmlns.com/foaf/0.1/skypeId`,
 //    or null if there were none.
 
+// We're looking for data…
+// …stating the Thing's acquaintances (`http://xmlns.com/foaf/0.1/knows`)
+// …of type URL
+// …and we expect multiple values:
 const acquaintances = getUrlAll(thing, "http://xmlns.com/foaf/0.1/knows");
 // => an array of URLs, presumably pointing to the Things describing acquaintances.
 ```
@@ -129,7 +142,8 @@ For an overview of all data access functions, see [`thing/get`](../api/modules/_
 
 ### Reading data - full example
 
-Putting it all together, here's an example of fetching someone's nickname:
+Putting it all together, here's an example of fetching the nickname of someone with a known
+[WebID](../glossary#webid) (`https://vincentt.inrupt.net/profile/card#me`):
 
 ```typescript
 import {
@@ -176,7 +190,7 @@ const thing = createThing();
 
 As [when reading data](#3-read-data), we need to know three things about our data:
 
-1. At what URL we want to index it.
+1. What URL identifies the characteristic described by this data.
 2. What type it has.
 3. Whether it's the only value of its kind, or one of many.
 
@@ -276,3 +290,13 @@ const updatedProfileResource = await saveLitDatasetAt(
   updatedProfileResource
 );
 ```
+
+:::note
+
+Writing to a Pod is subject to access restriction:
+if you try to run this _exact_ example it will fail,
+because not everyone can write data into `https://vincentt.inrupt.net/profile/card`.
+It is, after all, my personal profile!
+For more details about access management, see [Managing Access](./managing-access).
+
+:::
