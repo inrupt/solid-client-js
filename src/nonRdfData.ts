@@ -17,11 +17,11 @@ const defaultFetchFileOptions = {
 };
 
 /**
- * Fetches a file at a given IRI, and returns it as a blob of data.
+ * Fetches a file at a given URL, and returns it as a blob of data.
  *
  * Please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param url The IRI of the fetched file
+ * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  */
 export async function unstable_fetchFile(
@@ -36,11 +36,11 @@ export async function unstable_fetchFile(
 }
 
 /**
- * Deletes a file at a given IRI
+ * Deletes a file at a given URL
  *
  * Please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param input The IRI of the file to delete
+ * @param input The URL of the file to delete
  */
 export async function unstable_deleteFile(
   input: RequestInfo,
@@ -61,11 +61,11 @@ type SaveFileOptions = FetchFileOptions & {
 };
 
 /**
- * Saves a file in a folder at a given IRI. The server will return the final
+ * Saves a file in a folder at a given URL. The server will return the final
  * filename (which may or may not be the given `slug`), it will return it in
  * the response's Location header.
  *
- * @param folderUrl The IRI of the folder where the new file is saved
+ * @param folderUrl The URL of the folder where the new file is saved
  * @param file The file to be written
  * @param options Additional parameters for file creation (e.g. a slug)
  */
@@ -78,9 +78,9 @@ export async function unstable_saveFileInContainer(
 }
 
 /**
- * Saves a file at a given IRI, erasing any previous content.
+ * Saves a file at a given URL, erasing any previous content.
  *
- * @param fileUrl The IRI where the file is saved
+ * @param fileUrl The URL where the file is saved
  * @param file The file to be written
  * @param options Additional parameters for file creation (e.g. a slug)
  */
@@ -96,7 +96,7 @@ export async function unstable_overwriteFile(
  * Internal function that performs the actual write HTTP query, either POST
  * or PUT depending on the use case.
  *
- * @param fileUrl The IRI where the file is saved
+ * @param fileUrl The URL where the file is saved
  * @param file The file to be written
  * @param method The HTTP method
  * @param options Additional parameters for file creation (e.g. a slug)
