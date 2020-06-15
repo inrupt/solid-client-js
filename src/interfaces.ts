@@ -171,3 +171,8 @@ export function unstable_hasAccessibleAcl<Dataset extends DatasetInfo>(
 } {
   return typeof dataset.datasetInfo.unstable_aclUrl === "string";
 }
+
+/**
+ * A RequestInit restriction where the method is set by the library
+ */
+export type unstable_UploadRequestInit = Omit<RequestInit, "method">;

@@ -1,11 +1,10 @@
 import { fetch } from "./fetcher";
 import { Headers } from "cross-fetch";
-
-export type UploadRequestInit = Omit<RequestInit, "method">;
+import { unstable_UploadRequestInit } from "./interfaces";
 
 type FetchFileOptions = {
   fetch: typeof window.fetch;
-  init: UploadRequestInit;
+  init: unstable_UploadRequestInit;
 };
 
 const defaultFetchFileOptions = {

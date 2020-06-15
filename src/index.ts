@@ -111,4 +111,5 @@ export {
   unstable_AclDataset,
   unstable_AclRule,
   unstable_AccessModes,
+  unstable_UploadRequestInit,
 } from "./interfaces";
