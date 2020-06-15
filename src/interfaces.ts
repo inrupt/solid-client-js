@@ -105,7 +105,7 @@ type unstable_WacAllow = {
   public: unstable_AccessModes;
 };
 /**
- * [[LitDataset]]s fetched by lit-solid include this metadata describing its relation to a Pod Resource.
+ * [[LitDataset]]s fetched by lit-pod include this metadata describing its relation to a Pod Resource.
  */
 export type DatasetInfo = {
   datasetInfo: {

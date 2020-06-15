@@ -1,9 +1,9 @@
-# lit-solid
+# @solid/lit-pod
 
 # Installation
 
 ```bash
-npm install lit-solid solid-auth-client
+npm install @solid/lit-pod solid-auth-client
 ```
 
 # Usage
@@ -12,7 +12,7 @@ To be written.
 
 # Browser support
 
-lit-solid uses relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers` and `Array.prototype.includes`.
+lit-pod uses relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers` and `Array.prototype.includes`.
 
 # Changelog
 

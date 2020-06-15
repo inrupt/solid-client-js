@@ -56,7 +56,7 @@ To do the former, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesOne,
-} from "lit-solid";
+} from "@solid/lit-pod";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
@@ -76,7 +76,7 @@ To get all agent to whom access was granted, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesAll,
-} from "lit-solid";
+} from "@solid/lit-pod";
 
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"

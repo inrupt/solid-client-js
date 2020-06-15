@@ -19,7 +19,7 @@ jobs:
       # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
       run: echo "::set-env name=TAG_SLUG::$(echo "${{ github.event.ref }}" | tr -cd '[:alnum:]-')"
     - name: Remove npm tag for the deleted branch
-      run: npm dist-tag rm lit-solid $TAG_SLUG
+      run: npm dist-tag rm @solid/lit-pod $TAG_SLUG
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - run: echo "Package tag \`$TAG_SLUG\` unpublished."

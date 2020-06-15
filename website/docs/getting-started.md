@@ -1,6 +1,6 @@
 ---
 id: getting-started
-title: Getting Started with lit-solid
+title: Getting Started with lit-pod
 sidebar_label: Getting Started
 ---
 
@@ -12,14 +12,14 @@ The documentation is still being written; here be dragons!
 
 ## Installation
 
-lit-solid is available as a package on npm, and can be used in the browser with a module bundler like Webpack, or in Node.js.
+lit-pod is available as a package on npm, and can be used in the browser with a module bundler like Webpack, or in Node.js.
 
 ```bash
-npm install lit-solid
+npm install @solid/lit-pod
 ```
 
 If [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
-lit-solid will automatically use it to make authenticated requests.
+lit-pod will automatically use it to make authenticated requests.
 If no such authenticated fetcher is provided, only public [Resources](./glossary#resource) can be accessed.
 
 ## Quick start
@@ -27,7 +27,7 @@ If no such authenticated fetcher is provided, only public [Resources](./glossary
 ### Fetching data
 
 ```typescript
-import { fetchLitDataset } from "lit-solid";
+import { fetchLitDataset } from "@solid/lit-pod";
 
 const profileResource = await fetchLitDataset(
   "https://vincentt.inrupt.net/profile/card"
@@ -37,7 +37,7 @@ const profileResource = await fetchLitDataset(
 ### Reading data
 
 ```typescript
-import { getThingOne, getStringUnlocalisedOne } from "lit-solid";
+import { getThingOne, getStringUnlocalisedOne } from "@solid/lit-pod";
 import { foaf } from "rdf-namespaces";
 
 const profile = getThingOne(
@@ -52,7 +52,11 @@ For more details, see [Working with Data](./tutorials/working-with-data#reading-
 ### Writing data
 
 ```typescript
-import { setStringUnlocalised, setThing, saveLitDatasetAt } from "lit-solid";
+import {
+  setStringUnlocalised,
+  setThing,
+  saveLitDatasetAt,
+} from "@solid/lit-pod";
 import { foaf } from "rdf-namespaces";
 
 const updatedProfile = setStringUnlocalised(profile, foaf.name, "Vincent");
