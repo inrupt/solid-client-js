@@ -244,7 +244,7 @@ describe("Non-RDF data deletion", () => {
 describe("Write non-RDF data into a folder", () => {
   const mockBlob = {
     type: "binary",
-  };
+  } as Blob;
 
   it("should default to the included fetcher if no other is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
@@ -262,7 +262,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob
+      mockBlob
     );
 
     expect(fetcher.fetch).toHaveBeenCalled();
@@ -284,7 +284,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob
+      mockBlob
     );
 
     const mockCall = fetcher.fetch.mock.calls[0];
@@ -293,7 +293,7 @@ describe("Write non-RDF data into a folder", () => {
       "Content-Type": "binary",
     });
     expect(mockCall[1]?.method).toEqual("POST");
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
     );
@@ -310,7 +310,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       { fetch: mockFetch }
     );
 
@@ -328,14 +328,14 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       { fetch: mockFetch }
     );
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -353,7 +353,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       {
         fetch: mockFetch,
         slug: "someFileName",
@@ -366,7 +366,7 @@ describe("Write non-RDF data into a folder", () => {
       "Content-Type": "binary",
       Slug: "someFileName",
     });
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -384,7 +384,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const response = await unstable_saveFileInContainer(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       {
         fetch: mockFetch,
         init: {
@@ -402,7 +402,7 @@ describe("Write non-RDF data into a folder", () => {
       Slug: "someFileName",
     });
     expect(mockCall[1]?.method).toEqual("POST");
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -413,11 +413,7 @@ describe("Write non-RDF data into a folder", () => {
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
   const mockBlob = {
     type: "binary",
-    arrayBuffer: () =>
-      new Promise((resolve) => {
-        resolve(new ArrayBuffer(8));
-      }),
-  };
+  } as Blob;
 
   it("should default to the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
@@ -433,7 +429,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    await unstable_overwriteFile("https://some.url", mockBlob as Blob);
+    await unstable_overwriteFile("https://some.url", mockBlob);
 
     expect(fetcher.fetch).toHaveBeenCalled();
   });
@@ -452,10 +448,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    const response = await unstable_overwriteFile(
-      "https://some.url",
-      mockBlob as Blob
-    );
+    const response = await unstable_overwriteFile("https://some.url", mockBlob);
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -463,7 +456,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       "Content-Type": "binary",
     });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -481,7 +474,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const response = await unstable_overwriteFile(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       { fetch: mockFetch }
     );
 
@@ -499,7 +492,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const response = await unstable_overwriteFile(
       "https://some.url",
-      mockBlob as Blob,
+      mockBlob,
       { fetch: mockFetch }
     );
 
@@ -507,7 +500,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(mockCall[0]).toEqual("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
+    expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
