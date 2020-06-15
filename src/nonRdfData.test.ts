@@ -218,7 +218,7 @@ describe("Non-RDF data deletion", () => {
     ]);
   });
 
-  it("should return the response on failed request", async () => {
+  it("should return the response on a failed request", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {

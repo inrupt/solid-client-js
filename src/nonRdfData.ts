@@ -50,13 +50,13 @@ export async function unstable_deleteFile(
   });
 }
 
-interface SaveFileOptions extends FetchFileOptions {
+type SaveFileOptions = FetchFileOptions & {
   slug?: string;
-}
+};
 
 /**
- * Saves a file in a folder at a given IRI. If a slug is suggested, and a file
- * with a similar name exists, the server will pick a name and return it in
+ * Saves a file in a folder at a given IRI. The server will return the final
+ * filename (which may or may not be the given `slug`), it will return it in
  * the response's Location header.
  *
  * @param folderUrl The IRI of the folder where the new file is saved
