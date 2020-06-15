@@ -5,7 +5,12 @@ module.exports = {
     {
       type: "category",
       label: "Tutorials",
-      items: ["getting-started", "tutorials/managing-access"],
+      items: [
+        "getting-started",
+        "tutorials/working-with-data",
+        "tutorials/working-with-files",
+        "tutorials/managing-access",
+      ],
     },
     {
       type: "category",
