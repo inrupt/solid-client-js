@@ -244,10 +244,6 @@ describe("Non-RDF data deletion", () => {
 describe("Write non-RDF data into a folder", () => {
   const mockBlob = {
     type: "binary",
-    arrayBuffer: () =>
-      new Promise((resolve) => {
-        resolve(new ArrayBuffer(8));
-      }),
   };
 
   it("should default to the included fetcher if no other is available", async () => {
