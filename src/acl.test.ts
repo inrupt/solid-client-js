@@ -45,7 +45,7 @@ describe("fetchResourceAcl", () => {
     const sourceDataset: DatasetInfo = {
       datasetInfo: {
         fetchedFrom: "https://some.pod/resource",
-        unstable_aclIri: "https://some.pod/resource.acl",
+        unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
     const mockFetch = jest
@@ -72,7 +72,7 @@ describe("fetchResourceAcl", () => {
     const sourceDataset: DatasetInfo = {
       datasetInfo: {
         fetchedFrom: "https://some.pod/resource",
-        unstable_aclIri: "https://some.pod/resource.acl",
+        unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
     const mockedFetcher = jest.requireMock("./fetcher.ts") as {
@@ -105,7 +105,7 @@ describe("fetchResourceAcl", () => {
     const sourceDataset: DatasetInfo = {
       datasetInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        unstable_aclIri: "https://some.pod/resource.acl",
+        unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -135,7 +135,7 @@ describe("fetchFallbackAcl", () => {
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclIri: "https://arbitrary.pod/resource.acl",
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -167,7 +167,7 @@ describe("fetchFallbackAcl", () => {
     const sourceDataset = {
       datasetInfo: {
         fetchedFrom: "https://some.pod/resource",
-        unstable_aclIri: "https://some.pod/resource.acl",
+        unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
     const mockedFetcher = jest.requireMock("./fetcher.ts") as {
@@ -190,7 +190,7 @@ describe("fetchFallbackAcl", () => {
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclIri:
+        unstable_aclUrl:
           "https://arbitrary.pod/with-acl/without-acl/resource.acl",
       },
     };
@@ -257,7 +257,7 @@ describe("fetchFallbackAcl", () => {
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclIri:
+        unstable_aclUrl:
           "https://arbitrary.pod/arbitrary-parent/no-control-access/resource.acl",
       },
     };
@@ -287,7 +287,7 @@ describe("fetchFallbackAcl", () => {
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclIri: "https://arbitrary.pod/resource.acl",
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
 
@@ -440,8 +440,8 @@ describe("getAclRules", () => {
     const rules = internal_getAclRules(aclDataset);
 
     expect(rules).toHaveLength(2);
-    expect((rules[0] as ThingPersisted).iri).toBe(agentClassRuleSubjectIri);
-    expect((rules[1] as ThingPersisted).iri).toBe(agentRuleSubjectIri);
+    expect((rules[0] as ThingPersisted).url).toBe(agentClassRuleSubjectIri);
+    expect((rules[1] as ThingPersisted).url).toBe(agentRuleSubjectIri);
   });
 
   it("returns Things with multiple `rdf:type`s, as long as at least on type is `acl:Authorization`", () => {
@@ -495,7 +495,7 @@ describe("getAclRules", () => {
     const rules = internal_getAclRules(aclDataset);
 
     expect(rules).toHaveLength(1);
-    expect((rules[0] as ThingPersisted).iri).toBe(
+    expect((rules[0] as ThingPersisted).url).toBe(
       ruleWithMultipleTypesSubjectIri
     );
   });
@@ -504,7 +504,7 @@ describe("getAclRules", () => {
 describe("getResourceAclRules", () => {
   it("only returns ACL Rules that apply to a Resource", () => {
     const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule1",
+      url: "https://arbitrary.pod/resource.acl#rule1",
     });
     resourceAclRule1.add(
       DataFactory.quad(
@@ -515,7 +515,7 @@ describe("getResourceAclRules", () => {
     );
 
     const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule2",
+      url: "https://arbitrary.pod/container/.acl#rule2",
     });
     defaultAclRule1.add(
       DataFactory.quad(
@@ -526,7 +526,7 @@ describe("getResourceAclRules", () => {
     );
 
     const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule3",
+      url: "https://arbitrary.pod/resource.acl#rule3",
     });
     resourceAclRule2.add(
       DataFactory.quad(
@@ -537,7 +537,7 @@ describe("getResourceAclRules", () => {
     );
 
     const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule4",
+      url: "https://arbitrary.pod/container/.acl#rule4",
     });
     defaultAclRule2.add(
       DataFactory.quad(
@@ -563,7 +563,7 @@ describe("getResourceAclRules", () => {
 describe("getResourceAclRulesForResource", () => {
   it("only returns ACL Rules that apply to a given Resource", () => {
     const targetResourceAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule1",
+      url: "https://arbitrary.pod/resource.acl#rule1",
     });
     targetResourceAclRule.add(
       DataFactory.quad(
@@ -574,7 +574,7 @@ describe("getResourceAclRulesForResource", () => {
     );
 
     const defaultAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule2",
+      url: "https://arbitrary.pod/container/.acl#rule2",
     });
     defaultAclRule.add(
       DataFactory.quad(
@@ -585,7 +585,7 @@ describe("getResourceAclRulesForResource", () => {
     );
 
     const otherResourceAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule3",
+      url: "https://arbitrary.pod/resource.acl#rule3",
     });
     otherResourceAclRule.add(
       DataFactory.quad(
@@ -613,7 +613,7 @@ describe("getResourceAclRulesForResource", () => {
 describe("getDefaultAclRules", () => {
   it("only returns ACL Rules that are the default for a Container", () => {
     const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule1",
+      url: "https://arbitrary.pod/resource.acl#rule1",
     });
     resourceAclRule1.add(
       DataFactory.quad(
@@ -624,7 +624,7 @@ describe("getDefaultAclRules", () => {
     );
 
     const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule2",
+      url: "https://arbitrary.pod/container/.acl#rule2",
     });
     defaultAclRule1.add(
       DataFactory.quad(
@@ -635,7 +635,7 @@ describe("getDefaultAclRules", () => {
     );
 
     const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule3",
+      url: "https://arbitrary.pod/resource.acl#rule3",
     });
     resourceAclRule2.add(
       DataFactory.quad(
@@ -646,7 +646,7 @@ describe("getDefaultAclRules", () => {
     );
 
     const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule4",
+      url: "https://arbitrary.pod/container/.acl#rule4",
     });
     defaultAclRule2.add(
       DataFactory.quad(
@@ -672,7 +672,7 @@ describe("getDefaultAclRules", () => {
 describe("getDefaultAclRulesForResource", () => {
   it("only returns ACL Rules that are the default for children of a given Container", () => {
     const resourceAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/resource.acl#rule1",
+      url: "https://arbitrary.pod/resource.acl#rule1",
     });
     resourceAclRule.add(
       DataFactory.quad(
@@ -683,7 +683,7 @@ describe("getDefaultAclRulesForResource", () => {
     );
 
     const targetDefaultAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule2",
+      url: "https://arbitrary.pod/container/.acl#rule2",
     });
     targetDefaultAclRule.add(
       DataFactory.quad(
@@ -694,7 +694,7 @@ describe("getDefaultAclRulesForResource", () => {
     );
 
     const otherDefaultAclRule: unstable_AclRule = Object.assign(dataset(), {
-      iri: "https://arbitrary.pod/container/.acl#rule3",
+      url: "https://arbitrary.pod/container/.acl#rule3",
     });
     otherDefaultAclRule.add(
       DataFactory.quad(
@@ -723,7 +723,7 @@ describe("getAccessModes", () => {
   it("returns true for Access Modes that are granted", () => {
     const subject = "https://arbitrary.pod/profileDoc#webId";
 
-    const mockRule = Object.assign(dataset(), { iri: subject });
+    const mockRule = Object.assign(dataset(), { url: subject });
     mockRule.add(
       DataFactory.quad(
         DataFactory.namedNode(subject),
@@ -764,7 +764,7 @@ describe("getAccessModes", () => {
   it("returns false for undefined Access Modes", () => {
     const subject = "https://arbitrary.pod/profileDoc#webId";
 
-    const mockRule = Object.assign(dataset(), { iri: subject });
+    const mockRule = Object.assign(dataset(), { url: subject });
 
     expect(internal_getAccessModes(mockRule)).toEqual({
       read: false,
@@ -777,7 +777,7 @@ describe("getAccessModes", () => {
   it("infers Append access from Write access", () => {
     const subject = "https://arbitrary.pod/profileDoc#webId";
 
-    const mockRule = Object.assign(dataset(), { iri: subject });
+    const mockRule = Object.assign(dataset(), { url: subject });
     mockRule.add(
       DataFactory.quad(
         DataFactory.namedNode(subject),

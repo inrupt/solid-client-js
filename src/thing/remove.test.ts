@@ -5,7 +5,7 @@ import { DataFactory } from "n3";
 import { IriString, Thing, ThingLocal, ThingPersisted } from "../interfaces";
 import {
   removeAll,
-  removeIri,
+  removeUrl,
   removeBoolean,
   removeDatetime,
   removeDecimal,
@@ -40,7 +40,7 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
 }
 function getMockQuadWithNamedNode(
   predicate: IriString,
@@ -62,7 +62,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    iri: "https://arbitrary.vocab/subject",
+    url: "https://arbitrary.vocab/subject",
   });
   return thing;
 }
@@ -190,7 +190,7 @@ describe("removeIri", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
   }
 
   it("removes the given IRI value for the given Predicate", () => {
@@ -199,7 +199,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -214,7 +214,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "https://some.pod/resource#name"
@@ -229,7 +229,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       "https://some.vocab/predicate",
       DataFactory.namedNode("https://some.pod/resource#name")
@@ -244,7 +244,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -270,7 +270,7 @@ describe("removeIri", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingLocal,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -286,7 +286,7 @@ describe("removeIri", () => {
     );
     thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithDuplicateIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -311,7 +311,7 @@ describe("removeIri", () => {
     thingWithIri.add(mockQuadWithDifferentIri);
     thingWithIri.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -335,7 +335,7 @@ describe("removeIri", () => {
     );
     thingWithIri.add(mockQuadWithString);
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithIri,
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -346,7 +346,7 @@ describe("removeIri", () => {
 
   it("resolves ThingPersisteds", () => {
     const thingPersisted: ThingPersisted = Object.assign(dataset(), {
-      iri: "https://some.pod/resource#thing",
+      url: "https://some.pod/resource#thing",
     });
     const quadWithThingPersistedIri = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.vocab/subject"),
@@ -358,11 +358,11 @@ describe("removeIri", () => {
     const thingWithThingPersistedIri: Thing = Object.assign(
       datasetWithThingPersistedIri,
       {
-        iri: "https://arbitrary.vocab/subject",
+        url: "https://arbitrary.vocab/subject",
       }
     );
 
-    const updatedThing = removeIri(
+    const updatedThing = removeUrl(
       thingWithThingPersistedIri,
       "https://some.vocab/predicate",
       thingPersisted
@@ -1001,7 +1001,7 @@ describe("removeStringInLocale", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { iri: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
   }
   it("removes the given localised string for the given Predicate", () => {
     const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
@@ -1372,7 +1372,7 @@ describe("removeLiteral", () => {
     thing.add(quad);
 
     const thingWithStringInLocale = Object.assign(thing, {
-      iri: "https://arbitrary.vocab/subject",
+      url: "https://arbitrary.vocab/subject",
     });
 
     const updatedThing = removeLiteral(

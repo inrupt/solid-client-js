@@ -1,10 +1,10 @@
 import { Literal, NamedNode } from "rdf-js";
 import {
   Thing,
-  IriString,
+  UrlString,
   ThingLocal,
   ThingPersisted,
-  Iri,
+  Url,
 } from "../interfaces";
 import { cloneThing, toNode } from "../thing";
 import {
@@ -20,28 +20,30 @@ import {
 import { DataFactory } from "../rdfjs";
 
 /**
- * Create a new Thing with an IRI added for a Predicate.
+ * Create a new Thing with a URL added for a Predicate.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setIri]].
+ * This preserves existing values for the given Predicate. To replace them, see [[setUrl]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
- * @param thing Thing to add an IRI value to.
- * @param predicate Predicate for which to add the given IRI value.
- * @param value IRI to add to `thing` for the given `predicate`.
+ * @param thing Thing to add a URL value to.
+ * @param predicate Predicate for which to add the given URL value.
+ * @param url URL to add to `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
  */
-export const addIri: AddOfType<Iri | IriString | Thing> = (
+export const addUrl: AddOfType<Url | UrlString | Thing> = (
   thing,
   predicate,
-  iri
+  url
 ) => {
   const predicateNode = asNamedNode(predicate);
   const newThing = cloneThing(thing);
 
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(iri)));
+  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(url)));
   return newThing;
 };
+/** @hidden Alias for [[addUrl]] for those who prefer IRI terminology. */
+export const addIri = addUrl;
 
 /**
  * Create a new Thing with a boolean added for a Predicate.
@@ -142,13 +144,13 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
  */
 export function addStringInLocale<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addStringInLocale(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   locale: string
 ): Thing {
@@ -191,12 +193,12 @@ export const addStringUnlocalized: AddOfType<string> = (
  */
 export function addNamedNode<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addNamedNode(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: NamedNode
 ): Thing {
   const predicateNode = asNamedNode(predicate);
@@ -221,12 +223,12 @@ export function addNamedNode(
  */
 export function addLiteral<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addLiteral(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Literal
 ): Thing {
   const predicateNode = asNamedNode(predicate);
@@ -238,15 +240,15 @@ export function addLiteral(
 
 function addLiteralOfType<T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function addLiteralOfType(
   thing: Thing,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: string,
-  type: IriString
+  type: UrlString
 ): Thing {
   const literal = DataFactory.literal(value, type);
   return addLiteral(thing, predicate, literal);
@@ -260,6 +262,6 @@ function addLiteralOfType(
  */
 type AddOfType<Type> = <T extends Thing>(
   thing: T,
-  predicate: Iri | IriString,
+  predicate: Url | UrlString,
   value: Type
 ) => T extends ThingLocal ? ThingLocal : ThingPersisted;

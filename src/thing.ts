@@ -10,9 +10,9 @@ import {
 } from "./datatypes";
 import {
   LitDataset,
-  IriString,
+  UrlString,
   Thing,
-  Iri,
+  Url,
   ThingLocal,
   LocalNode,
   ThingPersisted,
@@ -32,21 +32,21 @@ export interface GetThingOptions {
    * If not specified, the Thing will include Quads from all Named Graphs in the given
    * [[LitDataset]].
    **/
-  scope?: Iri | IriString;
+  scope?: Url | UrlString;
 }
 /**
  * Extract Quads with a given Subject from a [[LitDataset]] into a [[Thing]].
  *
  * @param litDataset The [[LitDataset]] to extract the [[Thing]] from.
- * @param thingIri The IRI of the desired [[Thing]].
+ * @param thingUrl The URL of the desired [[Thing]].
  * @param options Not yet implemented.
  */
 export function getThingOne(
   litDataset: LitDataset,
-  thingIri: IriString | Iri | LocalNode,
+  thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
 ): Thing {
-  const subject = isLocalNode(thingIri) ? thingIri : asNamedNode(thingIri);
+  const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
   const scope: NamedNode | null = options.scope
     ? asNamedNode(options.scope)
     : null;
@@ -61,7 +61,7 @@ export function getThingOne(
     return thing;
   } else {
     const thing: Thing = Object.assign(thingDataset, {
-      iri: subject.value,
+      url: subject.value,
     });
 
     return thing;
@@ -78,7 +78,7 @@ export function getThingAll(
   litDataset: LitDataset,
   options: GetThingOptions = {}
 ): Thing[] {
-  const subjectNodes = new Array<Iri | LocalNode>();
+  const subjectNodes = new Array<Url | LocalNode>();
   for (const quad of litDataset) {
     // Because NamedNode objects with the same IRI are actually different
     // object instances, we have to manually check whether `subjectNodes` does
@@ -135,10 +135,10 @@ export function setThing<Dataset extends LitDataset>(
  */
 export function removeThing<Dataset extends LitDataset>(
   litDataset: Dataset,
-  thing: IriString | Iri | LocalNode | Thing
+  thing: UrlString | Url | LocalNode | Thing
 ): Dataset & ChangeLog {
   const newLitDataset = withChangeLog(cloneLitStructs(litDataset));
-  const resourceIri: IriString | undefined = hasDatasetInfo(newLitDataset)
+  const resourceIri: UrlString | undefined = hasDatasetInfo(newLitDataset)
     ? newLitDataset.datasetInfo.fetchedFrom
     : undefined;
 
@@ -190,7 +190,7 @@ function cloneLitStructs<Dataset extends LitDataset>(
 
 interface CreateThingLocalOptions {
   /**
-   * The name that should be used for this [[Thing]] when constructing its IRI.
+   * The name that should be used for this [[Thing]] when constructing its URL.
    *
    * If not provided, a random one will be generated.
    */
@@ -198,9 +198,9 @@ interface CreateThingLocalOptions {
 }
 interface CreateThingPersistedOptions {
   /**
-   * The IRI of the newly created [[Thing]].
+   * The URL of the newly created [[Thing]].
    */
-  iri: IriString;
+  url: UrlString;
 }
 export type CreateThingOptions =
   | CreateThingLocalOptions
@@ -215,14 +215,14 @@ export function createThing(
 ): ThingPersisted;
 export function createThing(options?: CreateThingLocalOptions): ThingLocal;
 export function createThing(options: CreateThingOptions = {}): Thing {
-  if (typeof (options as CreateThingPersistedOptions).iri !== "undefined") {
-    const iri = (options as CreateThingPersistedOptions).iri;
+  if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
+    const url = (options as CreateThingPersistedOptions).url;
     /* istanbul ignore else [URL is defined is the testing environment, so we cannot test this] */
     if (typeof URL !== "undefined") {
       // Throws an error if the IRI is invalid:
-      new URL(iri);
+      new URL(url);
     }
-    const thing: ThingPersisted = Object.assign(dataset(), { iri: iri });
+    const thing: ThingPersisted = Object.assign(dataset(), { url: url });
     return thing;
   }
   const name = (options as CreateThingLocalOptions).name ?? generateName();
@@ -231,36 +231,38 @@ export function createThing(options: CreateThingOptions = {}): Thing {
 }
 
 /**
- * Get the IRI to a given [[Thing]].
+ * Get the URL to a given [[Thing]].
  *
- * @param thing The [[Thing]] you want to obtain the IRI from.
- * @param baseIri If `thing` is not persisted yet, the base IRI that should be used to construct this [[Thing]]'s IRI.
+ * @param thing The [[Thing]] you want to obtain the URL from.
+ * @param baseUrl If `thing` is not persisted yet, the base URL that should be used to construct this [[Thing]]'s URL.
  */
-export function asIri(thing: ThingLocal, baseIri: IriString): IriString;
-export function asIri(thing: ThingPersisted): IriString;
-export function asIri(thing: Thing, baseIri?: IriString): IriString {
+export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
+export function asUrl(thing: ThingPersisted): UrlString;
+export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
   if (isThingLocal(thing)) {
-    if (typeof baseIri === "undefined") {
+    if (typeof baseUrl === "undefined") {
       throw new Error(
-        "The IRI of a Thing that has not been persisted cannot be determined without a base IRI."
+        "The URL of a Thing that has not been persisted cannot be determined without a base URL."
       );
     }
-    return resolveLocalIri(thing.name, baseIri);
+    return resolveLocalIri(thing.name, baseUrl);
   }
 
-  return thing.iri;
+  return thing.url;
 }
+/** @hidden Alias of [[asUrl]] for those who prefer IRI terminology. */
+export const asIri = asUrl;
 
 /**
- * @param thing The [[Thing]] of which an IRI might or might not be known.
- * @return Whether `thing` has no known IRI yet.
+ * @param thing The [[Thing]] of which a URL might or might not be known.
+ * @return Whether `thing` has no known URL yet.
  */
 export function isThingLocal(
   thing: ThingPersisted | ThingLocal
 ): thing is ThingLocal {
   return (
     typeof (thing as ThingLocal).name === "string" &&
-    typeof (thing as ThingPersisted).iri === "undefined"
+    typeof (thing as ThingPersisted).url === "undefined"
   );
 }
 /**
@@ -269,7 +271,7 @@ export function isThingLocal(
  * @returns A Node that can be used as the Subject for this Thing's Quads.
  */
 export function toNode(
-  thing: IriString | Iri | LocalNode | Thing
+  thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode {
   if (isNamedNode(thing) || isLocalNode(thing)) {
     return thing;
@@ -280,7 +282,7 @@ export function toNode(
   if (isThingLocal(thing)) {
     return getLocalNode(thing.name);
   }
-  return asNamedNode(asIri(thing));
+  return asNamedNode(asUrl(thing));
 }
 
 /**
@@ -297,7 +299,7 @@ export function cloneThing(thing: Thing): Thing {
     (cloned as ThingLocal).name = thing.name;
     return cloned as ThingLocal;
   }
-  (cloned as ThingPersisted).iri = thing.iri;
+  (cloned as ThingPersisted).url = thing.url;
   return cloned as ThingPersisted;
 }
 
@@ -320,7 +322,7 @@ export function filterThing(
     (filtered as ThingLocal).name = thing.name;
     return filtered as ThingLocal;
   }
-  (filtered as ThingPersisted).iri = thing.iri;
+  (filtered as ThingPersisted).url = thing.url;
   return filtered as ThingPersisted;
 }
 

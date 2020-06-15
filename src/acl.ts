@@ -28,7 +28,7 @@ export async function internal_fetchResourceAcl(
 
   try {
     const aclLitDataset = await fetchLitDataset(
-      dataset.datasetInfo.unstable_aclIri,
+      dataset.datasetInfo.unstable_aclUrl,
       options
     );
     return Object.assign(aclLitDataset, {
@@ -46,8 +46,8 @@ export async function internal_fetchResourceAcl(
 export async function internal_fetchFallbackAcl(
   dataset: DatasetInfo & {
     datasetInfo: {
-      unstable_aclIri: Exclude<
-        DatasetInfo["datasetInfo"]["unstable_aclIri"],
+      unstable_aclUrl: Exclude<
+        DatasetInfo["datasetInfo"]["unstable_aclUrl"],
         undefined
       >;
     };
