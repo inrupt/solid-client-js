@@ -1,6 +1,6 @@
 ---
 id: getting-started
-title: Getting Started with LIT Solid
+title: Getting Started with lit-solid
 sidebar_label: Getting Started
 ---
 

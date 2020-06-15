@@ -1,7 +1,7 @@
 const pkg = require("../package.json");
 
 module.exports = {
-  title: "LIT Solid",
+  title: "lit-solid",
   tagline: pkg.description,
   url: "https://inrupt.github.io",
   baseUrl: process.env.CI ? "/lit-solid/" : "/",
@@ -12,12 +12,12 @@ module.exports = {
     announcementBar: {
       id: "alpha-warning", // Any value that will identify this message.
       content:
-        "Both LIT Solid and this website are still in alpha. Expect things to break.",
+        "Both lit-solid and this website are still in alpha. Expect things to break.",
       backgroundColor: "#ffba00", // Defaults to `#fff`.
       textColor: "#091E42", // Defaults to `#000`.
     },
     navbar: {
-      title: "LIT Solid",
+      title: "lit-solid",
       // logo: {
       //   alt: "My Site Logo",
       //   src: "img/logo.svg",
