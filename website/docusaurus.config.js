@@ -1,5 +1,20 @@
 const pkg = require("../package.json");
 
+const prismTheme = require("prism-react-renderer/themes/github");
+prismTheme.styles = prismTheme.styles.map((style) => {
+  if (!style.types.includes("comment")) {
+    return style;
+  }
+
+  return {
+    ...style,
+    style: {
+      ...style.style,
+      color: "#008500",
+    },
+  };
+});
+
 module.exports = {
   title: "lit-solid",
   tagline: pkg.description,
@@ -15,6 +30,10 @@ module.exports = {
         "Both lit-solid and this website are still in alpha. Expect things to break.",
       backgroundColor: "#ffba00", // Defaults to `#fff`.
       textColor: "#091E42", // Defaults to `#000`.
+    },
+    prism: {
+      // This is the included theme that least de-emphasises comments:
+      theme: prismTheme,
     },
     navbar: {
       title: "lit-solid",
