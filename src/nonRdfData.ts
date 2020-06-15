@@ -114,7 +114,7 @@ async function writeFile(
   const init: RequestInit = {
     ...config.init,
     method: method,
-    body: await file.arrayBuffer(),
+    body: file,
   };
 
   // If a slug is in the parameters, set the request headers accordingly

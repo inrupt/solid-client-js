@@ -297,7 +297,7 @@ describe("Write non-RDF data into a folder", () => {
       "Content-Type": "binary",
     });
     expect(mockCall[1]?.method).toEqual("POST");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
     );
@@ -339,7 +339,7 @@ describe("Write non-RDF data into a folder", () => {
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -370,7 +370,7 @@ describe("Write non-RDF data into a folder", () => {
       "Content-Type": "binary",
       Slug: "someFileName",
     });
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -406,7 +406,7 @@ describe("Write non-RDF data into a folder", () => {
       Slug: "someFileName",
     });
     expect(mockCall[1]?.method).toEqual("POST");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -467,7 +467,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       "Content-Type": "binary",
     });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -511,7 +511,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(mockCall[0]).toEqual("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -543,7 +543,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       Slug: "someFileName",
     });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
@@ -579,7 +579,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       Slug: "someFileName",
     });
     expect(mockCall[1]?.method).toEqual("PUT");
-    expect(mockCall[1]?.body).toEqual(new ArrayBuffer(8));
+    expect(mockCall[1]?.body).toEqual(mockBlob as Blob);
 
     expect(response).toEqual(
       new Response(undefined, { status: 201, statusText: "Created" })
