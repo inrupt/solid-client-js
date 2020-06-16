@@ -26,7 +26,7 @@ jobs:
         npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
     - run: npm ci
     - name: Publish an npm tag for this branch
-      run: npm publish --tag "$TAG_SLUG"
+      run: npm publish --access public --tag "$TAG_SLUG"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - run: |
