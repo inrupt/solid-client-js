@@ -106,6 +106,10 @@ module.exports = {
               href: "https://solidproject.org/",
             },
             {
+              label: "Inrupt",
+              href: "https://inrupt.com",
+            },
+            {
               label: "Community",
               href: "https://forum.solidproject.org/",
             },
