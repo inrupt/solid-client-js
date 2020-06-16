@@ -17,7 +17,7 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://github.com/inrupt/lit-pod",
+  "homepage": "https://inrupt.github.io/lit-pod/",
   "bugs": "https://github.com/inrupt/lit-pod/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
