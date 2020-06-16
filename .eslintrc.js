@@ -1,3 +1,5 @@
+/* eslint-disable license-header/header */
+
 module.exports = {
   env: {
     browser: true,
@@ -21,12 +23,13 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ["./tsconfig.eslint.json"],
   },
-  plugins: ["@typescript-eslint", "jest"],
+  plugins: ["@typescript-eslint", "jest", "license-header"],
   rules: {
     // There's a TypeScript-specific version of this rule;
     // we disable the generic one, because it thinks imported types are unused
     // when they're not:
     "no-unused-vars": "off",
     "@typescript-eslint/no-floating-promises": "error",
+    "license-header/header": ["error", "./resources/license-header.js"],
   },
 };
