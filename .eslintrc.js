@@ -30,6 +30,6 @@ module.exports = {
     // when they're not:
     "no-unused-vars": "off",
     "@typescript-eslint/no-floating-promises": "error",
-    "license-header/header": ["error", "./resources/license-header.js"],
+    "license-header/header": [process.env.CI ? "error" : "warn", "./resources/license-header.js"],
   },
 };
