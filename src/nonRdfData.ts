@@ -118,7 +118,9 @@ async function writeFile(
   const headers = new Headers(config.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
-      `No reserved header (${RESERVED_HEADERS}) should be set in the optional RequestInit.`
+      `No reserved header (${RESERVED_HEADERS.join(
+        ", "
+      )}) should be set in the optional RequestInit.`
     );
   }
 
