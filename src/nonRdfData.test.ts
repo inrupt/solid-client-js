@@ -10,7 +10,12 @@ jest.mock("./fetcher", () => ({
     ),
 }));
 
-import { unstable_fetchFile, unstable_deleteFile } from "./nonRdfData";
+import {
+  unstable_fetchFile,
+  unstable_deleteFile,
+  unstable_saveFileInContainer,
+  unstable_overwriteFile,
+} from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
 describe("Non-RDF data fetch", () => {
@@ -186,34 +191,7 @@ describe("Non-RDF data deletion", () => {
       ],
     ]);
   });
-
-  it("should override the request method if it is set by the user", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" })
-        )
-      );
-
-    await unstable_deleteFile("https://some.url", {
-      fetch: mockFetch,
-      init: {
-        method: "HEAD",
-      },
-    });
-
-    expect(mockFetch.mock.calls).toEqual([
-      [
-        "https://some.url",
-        {
-          method: "DELETE",
-        },
-      ],
-    ]);
-  });
-
-  it("should return the response failed request", async () => {
+  it("should return the response on a failed request", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
@@ -232,6 +210,268 @@ describe("Non-RDF data deletion", () => {
         status: 400,
         statusText: "Bad request",
       })
+    );
+  });
+});
+
+describe("Write non-RDF data into a folder", () => {
+  const mockBlob = {
+    type: "binary",
+  } as Blob;
+
+  it("should default to the included fetcher if no other is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob
+    );
+
+    expect(fetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("should POST to a remote resource the included fetcher, and return the response", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob
+    );
+
+    const mockCall = fetcher.fetch.mock.calls[0];
+    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+      })
+    );
+    expect(mockCall[1]?.method).toEqual("POST");
+    expect(mockCall[1]?.body).toEqual(mockBlob);
+    expect(response).toEqual(
+      new Response(undefined, { status: 201, statusText: "Created" })
+    );
+  });
+
+  it("should use the provided fetcher if available", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob,
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should POST a remote resource using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob,
+      { fetch: mockFetch }
+    );
+
+    const mockCall = mockFetch.mock.calls[0];
+    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({ "Content-Type": "binary" })
+    );
+    expect(mockCall[1]?.body).toEqual(mockBlob);
+
+    expect(response).toEqual(
+      new Response(undefined, { status: 201, statusText: "Created" })
+    );
+  });
+
+  it("should pass the suggested slug through", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_saveFileInContainer(
+      "https://some.url",
+      mockBlob,
+      {
+        fetch: mockFetch,
+        slug: "someFileName",
+      }
+    );
+
+    const mockCall = mockFetch.mock.calls[0];
+    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+        Slug: "someFileName",
+      })
+    );
+    expect(mockCall[1]?.body).toEqual(mockBlob);
+
+    expect(response).toEqual(
+      new Response(undefined, { status: 201, statusText: "Created" })
+    );
+  });
+
+  it("throws when a reserved header is passed", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    await expect(
+      unstable_saveFileInContainer("https://some.url", mockBlob, {
+        fetch: mockFetch,
+        init: {
+          headers: {
+            Slug: "someFileName",
+          },
+        },
+      })
+    ).rejects.toThrow(/reserved header/);
+  });
+});
+
+describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
+  const mockBlob = {
+    type: "binary",
+  } as Blob;
+
+  it("should default to the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    await unstable_overwriteFile("https://some.url", mockBlob);
+
+    expect(fetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("should PUT to a remote resource when using the included fetcher, and return the response", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, { status: 201, statusText: "Created" })
+      )
+    );
+
+    const response = await unstable_overwriteFile("https://some.url", mockBlob);
+
+    const mockCall = fetcher.fetch.mock.calls[0];
+    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({
+        "Content-Type": "binary",
+      })
+    );
+    expect(mockCall[1]?.method).toEqual("PUT");
+    expect(mockCall[1]?.body).toEqual(mockBlob);
+
+    expect(response).toEqual(
+      new Response(undefined, { status: 201, statusText: "Created" })
+    );
+  });
+
+  it("should use the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_overwriteFile(
+      "https://some.url",
+      mockBlob,
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should PUT a remote resource using the provided fetcher, and return the response", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 201, statusText: "Created" })
+        )
+      );
+
+    const response = await unstable_overwriteFile(
+      "https://some.url",
+      mockBlob,
+      { fetch: mockFetch }
+    );
+
+    const mockCall = mockFetch.mock.calls[0];
+    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[1]?.headers).toEqual(
+      new Headers({ "Content-Type": "binary" })
+    );
+    expect(mockCall[1]?.method).toEqual("PUT");
+    expect(mockCall[1]?.body).toEqual(mockBlob);
+
+    expect(response).toEqual(
+      new Response(undefined, { status: 201, statusText: "Created" })
     );
   });
 });

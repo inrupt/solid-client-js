@@ -1,4 +1,9 @@
-export { unstable_fetchFile, unstable_deleteFile } from "./nonRdfData";
+export {
+  unstable_fetchFile,
+  unstable_deleteFile,
+  unstable_saveFileInContainer,
+  unstable_overwriteFile,
+} from "./nonRdfData";
 export {
   createLitDataset,
   fetchLitDataset,
@@ -106,4 +111,5 @@ export {
   unstable_AclDataset,
   unstable_AclRule,
   unstable_AccessModes,
+  unstable_UploadRequestInit,
 } from "./interfaces";

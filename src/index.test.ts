@@ -1,6 +1,8 @@
 import {
   unstable_fetchFile,
   unstable_deleteFile,
+  unstable_saveFileInContainer,
+  unstable_overwriteFile,
   createLitDataset,
   fetchLitDataset,
   saveLitDatasetAt,
@@ -81,6 +83,8 @@ import {
 it("exports the public API from the entry file", () => {
   expect(unstable_fetchFile).toBeDefined();
   expect(unstable_deleteFile).toBeDefined();
+  expect(unstable_saveFileInContainer).toBeDefined();
+  expect(unstable_overwriteFile).toBeDefined();
   expect(createLitDataset).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
