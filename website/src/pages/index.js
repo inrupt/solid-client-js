@@ -1,3 +1,24 @@
+/**
+ * Copyright 2020 Inrupt Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 import React from "react";
 import classnames from "classnames";
 import Layout from "@theme/Layout";
@@ -8,32 +29,28 @@ import styles from "./styles.module.css";
 
 const features = [
   {
-    title: <>Easy to Use</>,
-    imageUrl: "img/undraw_docusaurus_mountain.svg",
+    title: <>Made for Solid</>,
+    imageUrl: "img/solid-logo.svg",
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Tailored specifically to <a href="https://solidproject.org">Solid</a>,
+        lit-pod makes it a breeze to store your users' data in their Solid Pods.
       </>
     ),
   },
   {
-    title: <>Focus on What Matters</>,
-    imageUrl: "img/undraw_docusaurus_tree.svg",
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
-    ),
+    title: <>Gets out of your way</>,
+    imageUrl: "img/undraw_on_the_way_ldaq.svg",
+    description: <>We get you the data; the rest is up to you.</>,
   },
   {
-    title: <>Powered by React</>,
-    imageUrl: "img/undraw_docusaurus_react.svg",
+    title: <>Supported by Inrupt</>,
+    imageUrl: "img/inrupt-logo.svg",
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        lit-pod is used and supported by <a href="https://inrupt.com">Inrupt</a>
+        , the company founded by Sir Tim Berners-Lee to take Solid from the
+        vision of a few to the reality of many.
       </>
     ),
   },
@@ -58,10 +75,7 @@ function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title={siteConfig.title} description={siteConfig.tagline}>
       <header className={classnames("hero hero--primary", styles.heroBanner)}>
         <div className="container">
           <h1 className="hero__title">{siteConfig.title}</h1>
