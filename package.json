@@ -3,10 +3,13 @@
   "description": "Read, update and delete data on a Solid Pod.",
   "version": "0.0.1",
   "scripts": {
-    "test": "eslint --config .eslintrc.js \"src/**\" && jest",
+    "test": "eslint --config .eslintrc.js \"src/**\" && jest && npm run check-licenses",
     "e2e-test": "jest --config=jest.e2e.config.js",
     "build": "rollup --config rollup.config.js",
-    "prepublishOnly": "yarn run build"
+    "prepublishOnly": "yarn run build",
+    "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
+    "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
+    "lint": "eslint --config .eslintrc.js --fix"
   },
   "keywords": [
     "rdf",
@@ -31,8 +34,10 @@
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.2.0",
     "eslint-plugin-jest": "^23.13.2",
+    "eslint-plugin-license-header": "^0.2.0",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
+    "license-checker": "^25.0.1",
     "lint-staged": "^10.2.9",
     "prettier": "2.0.5",
     "rdf-namespaces": "^1.8.0",
