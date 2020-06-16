@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-        os: [ubuntu-18.04]
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
         node-version: [12.x, 10.x]
     steps:
     - uses: actions/checkout@v2.1.0
