@@ -8,7 +8,7 @@ npm install @solid/lit-pod solid-auth-client
 
 # Usage
 
-To be written.
+See https://inrupt.github.io/lit-pod/docs/
 
 # Browser support
 
