@@ -159,11 +159,16 @@ function parseDatasetInfo(response: Response): DatasetInfo["datasetInfo"] {
 export async function unstable_fetchLitDatasetWithAcl(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & DatasetInfo & (unstable_Acl | { acl: null })> {
+): Promise<LitDataset & DatasetInfo & unstable_Acl> {
   const litDataset = await fetchLitDataset(url, options);
 
   if (!unstable_hasAccessibleAcl(litDataset)) {
-    return Object.assign(litDataset, { acl: null });
+    return Object.assign(litDataset, {
+      acl: {
+        resourceAcl: undefined,
+        fallbackAcl: null,
+      },
+    });
   }
 
   const [resourceAcl, fallbackAcl] = await Promise.all([
