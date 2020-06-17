@@ -2,6 +2,7 @@
   "name": "@solid/lit-pod",
   "description": "Make your web apps work with Solid Pods.",
   "version": "0.0.1",
+  "license": "MIT",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest && npm run check-licenses",
     "e2e-test": "jest --config=jest.e2e.config.js",
