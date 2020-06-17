@@ -23,6 +23,7 @@ import {
   WithResourceInfo,
   LitDataset,
   WebId,
+  unstable_ResourceWithAcl,
   unstable_Acl,
   unstable_AclDataset,
   unstable_AccessModes,
@@ -45,51 +46,53 @@ import {
 export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
 
 /**
- * Find out what Access Modes have been granted to a given Agent specifically for a given LitDataset.
+ * Find out what Access Modes have been granted to a given Agent specifically for a given Resource.
  *
  * Keep in mind that this function will not tell you what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param dataset The LitDataset to which the given Agent may have been granted access.
+ * @param resourceInfo Informations about the Resource to which Agents may have been granted access.
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesOne(
-  dataset: LitDataset & WithResourceInfo & unstable_Acl,
+resourceInfo: WithResourceInfo["resourceInfo"] & unstable_Acl,
   agent: WebId
 ): unstable_AccessModes | null {
-  if (unstable_hasResourceAcl(dataset)) {
-    const resourceAcl = unstable_getResourceAcl(dataset);
-    return unstable_getAgentResourceAccessModesOne(resourceAcl, agent);
+  if (unstable_hasResourceAcl(resourceInfo)) {
+    return unstable_getAgentResourceAccessModesOne(
+      resourceInfo.resourceAcl,
+      agent
+    );
   }
-  if (unstable_hasFallbackAcl(dataset)) {
-    const fallbackAcl = unstable_getFallbackAcl(dataset);
-    return unstable_getAgentDefaultAccessModesOne(fallbackAcl, agent);
+  if (unstable_hasFallbackAcl(resourceInfo)) {
+    return unstable_getAgentDefaultAccessModesOne(
+      resourceInfo.fallbackAcl,
+      agent
+    );
   }
   return null;
 }
 
 /**
- * Find out what Access Modes have been granted to specific Agents for a given LitDataset.
+ * Find out what Access Modes have been granted to specific Agents for a given Resource.
  *
  * Keep in mind that this function will not tell you what access arbitrary Agents might have through other ACL rules, e.g. public or group-specific permissions.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param dataset The LitDataset to which Agents may have been granted access.
+ * @param resourceInfo Informations about the Resource to which Agents may have been granted access.
  * @returns Which Access Modes have been granted to which Agents specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesAll(
-  dataset: LitDataset & WithResourceInfo & unstable_Acl
+resourceInfo: WithResourceInfo["resourceInfo"] & unstable_Acl
 ): unstable_AgentAccess | null {
-  if (unstable_hasResourceAcl(dataset)) {
-    const resourceAcl = unstable_getResourceAcl(dataset);
-    return unstable_getAgentResourceAccessModesAll(resourceAcl);
+  if (unstable_hasResourceAcl(resourceInfo)) {
+    return unstable_getAgentResourceAccessModesAll(resourceInfo.resourceAcl);
   }
-  if (unstable_hasFallbackAcl(dataset)) {
-    const fallbackAcl = unstable_getFallbackAcl(dataset);
-    return unstable_getAgentDefaultAccessModesAll(fallbackAcl);
+  if (unstable_hasFallbackAcl(resourceInfo)) {
+    return unstable_getAgentDefaultAccessModesAll(resourceInfo.fallbackAcl);
   }
   return null;
 }

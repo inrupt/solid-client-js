@@ -44,6 +44,17 @@ A Resource's or Container's ACL is only accessible to your app if the following 
 Access can be granted to individual [agents](../glossary#agent), to groups, or even to everyone.
 We currently only support reading what access has been granted to individual agents specifically.
 
+### Fetching access information
+
+There are two main ways of checking the access information of a Resource:
+
+1. Fetch the entire Resource, data and information at once. To do so, use the functions
+   `unstable_fetchFile` or `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource
+   data (e.g. your profile or friend list) and the `ResourceInfo`, with the associated
+   access information.
+2. Fetch only the information about a Resource, without fetching the Resource itself
+   with `fetchResourceInfo`.
+
 ### Reading agent access
 
 Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access a
@@ -56,13 +67,17 @@ To do the former, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesOne,
+  unstable_getResourceInfoAndAcl,
 } from "@solid/lit-pod";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const agentAccess = unstable_getAgentAccessModesOne(litDatasetWithAcl, webId);
+const agentAccess = unstable_getAgentAccessModesOne(
+  unstable_getResourceInfoAndAcl(litDatasetWithAcl),
+  webId
+);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -76,12 +91,15 @@ To get all agent to whom access was granted, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesAll,
+  unstable_getResourceInfoAndAcl,
 } from "@solid/lit-pod";
 
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const accessByAgent = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+const accessByAgent = unstable_getAgentAccessModesAll(
+  unstable_getResourceInfoAndAcl(litDatasetWithAcl)
+);
 
 // => an object like
 //    {

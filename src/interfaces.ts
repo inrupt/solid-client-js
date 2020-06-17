@@ -144,11 +144,13 @@ export type WithChangeLog = {
 /**
  * @hidden Developers should use [[unstable_getResourceAcl]] and [[unstable_getFallbackAcl]] to access these.
  */
+export type unstable_ResourceWithAcl = {
+  acl: unstable_Acl;
+};
+
 export type unstable_Acl = {
-  acl: {
-    resourceAcl?: unstable_AclDataset;
-    fallbackAcl: unstable_AclDataset | null;
-  };
+  resourceAcl?: unstable_AclDataset;
+  fallbackAcl: unstable_AclDataset | null;
 };
 
 /**
