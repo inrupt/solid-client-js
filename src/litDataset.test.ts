@@ -346,7 +346,7 @@ describe("fetchLitDatasetWithAcl", () => {
     ]);
   });
 
-  it("returns null for the ACL if the fetched Resource does not include a pointer to an ACL file", async () => {
+  it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
     const mockFetch = jest.fn(window.fetch);
 
     mockFetch.mockReturnValueOnce(
@@ -365,7 +365,9 @@ describe("fetchLitDatasetWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.acl).toBeNull();
+    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(fetchedLitDataset.acl.resourceAcl).toBeUndefined();
+    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
   });
 
   it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
