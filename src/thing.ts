@@ -38,7 +38,7 @@ import {
   LocalNode,
   ThingPersisted,
   ChangeLog,
-  ResourceInfo,
+  ResourceWithInfo,
   hasChangelog,
   hasResourceInfo,
 } from "./interfaces";
@@ -201,7 +201,7 @@ function cloneLitStructs<Dataset extends LitDataset>(
     };
   }
   if (hasResourceInfo(litDataset)) {
-    (freshDataset as LitDataset & ResourceInfo).resourceInfo = {
+    (freshDataset as LitDataset & ResourceWithInfo).resourceInfo = {
       ...litDataset.resourceInfo,
     };
   }

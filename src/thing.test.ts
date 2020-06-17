@@ -37,7 +37,7 @@ import {
   ThingLocal,
   ThingPersisted,
   LitDataset,
-  ResourceInfo,
+  ResourceWithInfo,
   ChangeLog,
 } from "./interfaces";
 
@@ -580,7 +580,7 @@ describe("setThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & ResourceInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & ResourceWithInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },
@@ -621,12 +621,10 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalSubject: LitDataset & ResourceInfo = Object.assign(
-      dataset(),
-      {
-        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
-      }
-    );
+    const datasetWithLocalSubject: LitDataset &
+      ResourceWithInfo = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://some.pod/resource" },
+    });
     datasetWithLocalSubject.add(oldThingQuad);
 
     const newThingQuad = getMockQuad({
@@ -882,7 +880,7 @@ describe("removeThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & ResourceInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & ResourceWithInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },
@@ -913,7 +911,7 @@ describe("removeThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalNode: LitDataset & ResourceInfo = Object.assign(
+    const datasetWithLocalNode: LitDataset & ResourceWithInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },
