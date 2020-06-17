@@ -54,7 +54,7 @@ if (response.ok) {
 
 There are two approaches to writing files:
 
-1. you know exactly at which IRI your file should be saved (potentially overwriting any data that sat there previously)
+1. you know exactly at which URL your file should be saved (potentially overwriting any data that sat there previously)
 2. you know what [Container](../glossary#container) should be the parent of your file, like saving it into a folder.
 
 ### Writing a file directly at a URL
@@ -78,7 +78,7 @@ if (response.ok) {
 ### Saving a file into a parent resource
 
 With this approach, you kindly ask the server to come up with a name for your file, potentially using a `slug` if you
-provide one. Note that there is no guarantee about how the server will use the slug, if at all. In any case, if the slug
+provide one. Note that there is no guarantee about how the server will use the `slug`, if at all. In any case, if the `slug`
 you provide matches a file that already exists under the same target resource, the server will create a new name for your
 file so that no content is overwritten.
 
