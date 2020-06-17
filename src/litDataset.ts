@@ -355,10 +355,12 @@ export async function saveLitDatasetInContainer(
   const resourceInfo: ResourceWithInfo["resourceInfo"] = {
     fetchedFrom: resourceIri,
   };
-  const resourceWithResourceInfo: LitDataset &
-    ResourceWithInfo = Object.assign(litDataset, {
-    resourceInfo: resourceInfo,
-  });
+  const resourceWithResourceInfo: LitDataset & ResourceWithInfo = Object.assign(
+    litDataset,
+    {
+      resourceInfo: resourceInfo,
+    }
+  );
 
   const resourceWithResolvedIris = resolveLocalIrisInLitDataset(
     resourceWithResourceInfo
