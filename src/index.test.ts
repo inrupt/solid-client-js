@@ -42,7 +42,7 @@ import {
   getDecimalOne,
   getIntegerOne,
   getStringInLocaleOne,
-  getStringUnlocalizedOne,
+  getStringNoLocaleOne,
   getUrlAll,
   getIriAll,
   getBooleanAll,
@@ -50,7 +50,7 @@ import {
   getDecimalAll,
   getIntegerAll,
   getStringInLocaleAll,
-  getStringUnlocalizedAll,
+  getStringNoLocaleAll,
   getLiteralOne,
   getNamedNodeOne,
   getLiteralAll,
@@ -62,7 +62,7 @@ import {
   addDecimal,
   addInteger,
   addStringInLocale,
-  addStringUnlocalized,
+  addStringNoLocale,
   addLiteral,
   addNamedNode,
   setUrl,
@@ -72,7 +72,7 @@ import {
   setDecimal,
   setInteger,
   setStringInLocale,
-  setStringUnlocalized,
+  setStringNoLocale,
   setLiteral,
   setNamedNode,
   removeAll,
@@ -83,7 +83,7 @@ import {
   removeDecimal,
   removeInteger,
   removeStringInLocale,
-  removeStringUnlocalized,
+  removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
   unstable_fetchLitDatasetWithAcl,
@@ -97,6 +97,12 @@ import {
   unstable_getAgentResourceAccessModesAll,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
+  // Deprecated functions still exported for backwards compatibility:
+  getStringUnlocalizedOne,
+  getStringUnlocalizedAll,
+  addStringUnlocalized,
+  setStringUnlocalized,
+  removeStringUnlocalized,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -124,7 +130,7 @@ it("exports the public API from the entry file", () => {
   expect(getDecimalOne).toBeDefined();
   expect(getIntegerOne).toBeDefined();
   expect(getStringInLocaleOne).toBeDefined();
-  expect(getStringUnlocalizedOne).toBeDefined();
+  expect(getStringNoLocaleOne).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
   expect(getBooleanAll).toBeDefined();
@@ -132,7 +138,7 @@ it("exports the public API from the entry file", () => {
   expect(getDecimalAll).toBeDefined();
   expect(getIntegerAll).toBeDefined();
   expect(getStringInLocaleAll).toBeDefined();
-  expect(getStringUnlocalizedAll).toBeDefined();
+  expect(getStringNoLocaleAll).toBeDefined();
   expect(getLiteralOne).toBeDefined();
   expect(getNamedNodeOne).toBeDefined();
   expect(getLiteralAll).toBeDefined();
@@ -144,7 +150,7 @@ it("exports the public API from the entry file", () => {
   expect(addDecimal).toBeDefined();
   expect(addInteger).toBeDefined();
   expect(addStringInLocale).toBeDefined();
-  expect(addStringUnlocalized).toBeDefined();
+  expect(addStringNoLocale).toBeDefined();
   expect(addLiteral).toBeDefined();
   expect(addNamedNode).toBeDefined();
   expect(setUrl).toBeDefined();
@@ -154,7 +160,7 @@ it("exports the public API from the entry file", () => {
   expect(setDecimal).toBeDefined();
   expect(setInteger).toBeDefined();
   expect(setStringInLocale).toBeDefined();
-  expect(setStringUnlocalized).toBeDefined();
+  expect(setStringNoLocale).toBeDefined();
   expect(setLiteral).toBeDefined();
   expect(setNamedNode).toBeDefined();
   expect(removeAll).toBeDefined();
@@ -165,7 +171,7 @@ it("exports the public API from the entry file", () => {
   expect(removeDecimal).toBeDefined();
   expect(removeInteger).toBeDefined();
   expect(removeStringInLocale).toBeDefined();
-  expect(removeStringUnlocalized).toBeDefined();
+  expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
   expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
@@ -179,4 +185,12 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getAgentResourceAccessModesAll).toBeDefined();
   expect(unstable_getAgentDefaultAccessModesOne).toBeDefined();
   expect(unstable_getAgentDefaultAccessModesAll).toBeDefined();
+});
+
+it("still exports deprecated methods", () => {
+  expect(getStringUnlocalizedOne).toBeDefined();
+  expect(getStringUnlocalizedAll).toBeDefined();
+  expect(addStringUnlocalized).toBeDefined();
+  expect(setStringUnlocalized).toBeDefined();
+  expect(removeStringUnlocalized).toBeDefined();
 });

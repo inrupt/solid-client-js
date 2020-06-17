@@ -31,7 +31,7 @@ import {
   addDecimal,
   addInteger,
   addStringInLocale,
-  addStringUnlocalized,
+  addStringNoLocale,
   addNamedNode,
   addLiteral,
 } from "./add";
@@ -1011,11 +1011,11 @@ describe("addStringInLocale", () => {
   });
 });
 
-describe("addStringUnlocalized", () => {
+describe("addStringNoLocale", () => {
   it("adds the given unlocalised string value for the given predicate", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string value"
@@ -1035,7 +1035,7 @@ describe("addStringUnlocalized", () => {
   it("accepts Predicates as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string value"
@@ -1055,7 +1055,7 @@ describe("addStringUnlocalized", () => {
   it("does not modify the input Thing", () => {
     const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thing,
       "https://arbitrary.vocab/predicate",
       "Arbitrary string value"
@@ -1071,7 +1071,7 @@ describe("addStringUnlocalized", () => {
       name: "localSubject",
     });
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thingLocal,
       "https://some.vocab/predicate",
       "Some string value"
@@ -1098,7 +1098,7 @@ describe("addStringUnlocalized", () => {
       )
     );
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string value"
@@ -1132,7 +1132,7 @@ describe("addStringUnlocalized", () => {
       )
     );
 
-    const updatedThing = addStringUnlocalized(
+    const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string value"

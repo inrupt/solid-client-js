@@ -31,7 +31,7 @@ import {
   getDecimalOne,
   getIntegerOne,
   getStringInLocaleOne,
-  getStringUnlocalizedOne,
+  getStringNoLocaleOne,
   getLiteralOne,
   getNamedNodeOne,
   getUrlAll,
@@ -40,7 +40,7 @@ import {
   getDecimalAll,
   getIntegerAll,
   getStringInLocaleAll,
-  getStringUnlocalizedAll,
+  getStringNoLocaleAll,
   getLiteralAll,
   getNamedNodeAll,
 } from "./get";
@@ -1039,7 +1039,7 @@ describe("getStringInLocaleOne", () => {
   });
 
   it("returns null if no locale string value was found", () => {
-    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
@@ -1047,7 +1047,7 @@ describe("getStringInLocaleOne", () => {
 
     expect(
       getStringInLocaleOne(
-        thingWithoutStringUnlocalized,
+        thingWithoutStringNoLocale,
         "https://some.vocab/predicate",
         "nl-NL"
       )
@@ -1218,7 +1218,7 @@ describe("getStringsInLocaleAll", () => {
   });
 
   it("returns an empty array if no locale string values were found", () => {
-    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
+    const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
@@ -1226,7 +1226,7 @@ describe("getStringsInLocaleAll", () => {
 
     expect(
       getStringInLocaleAll(
-        thingWithoutStringUnlocalizeds,
+        thingWithoutStringNoLocales,
         "https://some.vocab/predicate",
         "nl-NL"
       )
@@ -1315,47 +1315,47 @@ describe("getStringsInLocaleAll", () => {
   });
 });
 
-describe("getStringUnlocalizedOne", () => {
+describe("getStringNoLocaleOne", () => {
   it("returns the string value for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some value",
       "string"
     );
 
     expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
+      getStringNoLocaleOne(
+        thingWithStringNoLocale,
         "https://some.vocab/predicate"
       )
     ).toBe("Some value");
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some value",
       "string"
     );
 
     expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
+      getStringNoLocaleOne(
+        thingWithStringNoLocale,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
     ).toBe("Some value");
   });
 
   it("returns null if no string value was found", () => {
-    const thingWithoutStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
     );
 
     expect(
-      getStringUnlocalizedOne(
-        thingWithoutStringUnlocalized,
+      getStringNoLocaleOne(
+        thingWithoutStringNoLocale,
         "https://some.vocab/predicate"
       )
     ).toBeNull();
@@ -1383,7 +1383,7 @@ describe("getStringUnlocalizedOne", () => {
     );
 
     expect(
-      getStringUnlocalizedOne(
+      getStringNoLocaleOne(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate"
       )
@@ -1391,24 +1391,24 @@ describe("getStringUnlocalizedOne", () => {
   });
 
   it("returns null if no string value was found for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
       "string"
     );
 
     expect(
-      getStringUnlocalizedOne(
-        thingWithStringUnlocalized,
+      getStringNoLocaleOne(
+        thingWithStringNoLocale,
         "https://some-other.vocab/predicate"
       )
     ).toBeNull();
   });
 });
 
-describe("getStringUnlocalizedAll", () => {
+describe("getStringNoLocaleAll", () => {
   it("returns the string values for the given Predicate", () => {
-    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
+    const thingWithStringNoLocales = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "Some value 1",
       "Some value 2",
@@ -1416,15 +1416,15 @@ describe("getStringUnlocalizedAll", () => {
     );
 
     expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalizeds,
+      getStringNoLocaleAll(
+        thingWithStringNoLocales,
         "https://some.vocab/predicate"
       )
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalizeds = getMockThingWithLiteralsFor(
+    const thingWithStringNoLocales = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "Some value 1",
       "Some value 2",
@@ -1432,23 +1432,23 @@ describe("getStringUnlocalizedAll", () => {
     );
 
     expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalizeds,
+      getStringNoLocaleAll(
+        thingWithStringNoLocales,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
   it("returns an empty array if no string values were found", () => {
-    const thingWithoutStringUnlocalizeds = getMockThingWithLiteralFor(
+    const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
     );
 
     expect(
-      getStringUnlocalizedAll(
-        thingWithoutStringUnlocalizeds,
+      getStringNoLocaleAll(
+        thingWithoutStringNoLocales,
         "https://some.vocab/predicate"
       )
     ).toEqual([]);
@@ -1476,7 +1476,7 @@ describe("getStringUnlocalizedAll", () => {
     );
 
     expect(
-      getStringUnlocalizedAll(
+      getStringNoLocaleAll(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate"
       )
@@ -1484,15 +1484,15 @@ describe("getStringUnlocalizedAll", () => {
   });
 
   it("returns an empty array if no string values were found for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
       "string"
     );
 
     expect(
-      getStringUnlocalizedAll(
-        thingWithStringUnlocalized,
+      getStringNoLocaleAll(
+        thingWithStringNoLocale,
         "https://some-other.vocab/predicate"
       )
     ).toEqual([]);
