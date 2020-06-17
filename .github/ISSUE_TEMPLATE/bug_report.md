@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a bug report to help us improve
 title: ""
-labels: ""
+labels: "bug"
 assignees: ""
 ---
 
@@ -31,7 +31,7 @@ Steps to reproduce the behavior:
 
 **Environment**
 
-Please run `npx envinfo` in your project folder and paste the output here:
+<!-- Please run `npx envinfo` in your project folder and paste the output here: -->
 
 ```
 $ npx envinfo
