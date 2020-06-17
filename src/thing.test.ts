@@ -37,7 +37,7 @@ import {
   ThingLocal,
   ThingPersisted,
   LitDataset,
-  DatasetInfo,
+  ResourceInfo,
   ChangeLog,
 } from "./interfaces";
 
@@ -580,10 +580,10 @@ describe("setThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & DatasetInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & ResourceInfo = Object.assign(
       dataset(),
       {
-        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -621,10 +621,10 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalSubject: LitDataset & DatasetInfo = Object.assign(
+    const datasetWithLocalSubject: LitDataset & ResourceInfo = Object.assign(
       dataset(),
       {
-        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithLocalSubject.add(oldThingQuad);
@@ -882,10 +882,10 @@ describe("removeThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & DatasetInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & ResourceInfo = Object.assign(
       dataset(),
       {
-        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -913,10 +913,10 @@ describe("removeThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalNode: LitDataset & DatasetInfo = Object.assign(
+    const datasetWithLocalNode: LitDataset & ResourceInfo = Object.assign(
       dataset(),
       {
-        datasetInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
       }
     );
     datasetWithLocalNode.add(thingQuad);

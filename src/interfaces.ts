@@ -72,7 +72,7 @@ export type LocalNode = BlankNode & { name: string };
  * function is still experimental and can change in a non-major release.
  */
 export type unstable_AclDataset = LitDataset &
-  DatasetInfo & { accessTo: UrlString };
+  ResourceInfo & { accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
@@ -107,8 +107,8 @@ type unstable_WacAllow = {
 /**
  * [[LitDataset]]s fetched by lit-pod include this metadata describing its relation to a Pod Resource.
  */
-export type DatasetInfo = {
-  datasetInfo: {
+export type ResourceInfo = {
+  resourceInfo: {
     fetchedFrom: UrlString;
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might
@@ -156,11 +156,11 @@ export type unstable_Acl = {
  * @param dataset A [[LitDataset]] that may have metadata attached about the Resource it was retrieved from.
  * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
  */
-export function hasDatasetInfo<T extends LitDataset>(
+export function hasResourceInfo<T extends LitDataset>(
   dataset: T
-): dataset is T & DatasetInfo {
-  const potentialDatasetInfo = dataset as T & DatasetInfo;
-  return typeof potentialDatasetInfo.datasetInfo === "object";
+): dataset is T & ResourceInfo {
+  const potentialResourceInfo = dataset as T & ResourceInfo;
+  return typeof potentialResourceInfo.resourceInfo === "object";
 }
 
 /** @internal */
@@ -185,12 +185,12 @@ export function hasChangelog<T extends LitDataset>(
  * @returns Whether the given `dataset` has ACL data attached to it.
  * @internal
  */
-export function unstable_hasAccessibleAcl<Dataset extends DatasetInfo>(
+export function unstable_hasAccessibleAcl<Dataset extends ResourceInfo>(
   dataset: Dataset
 ): dataset is Dataset & {
-  datasetInfo: { unstable_aclUrl: UrlString };
+  resourceInfo: { unstable_aclUrl: UrlString };
 } {
-  return typeof dataset.datasetInfo.unstable_aclUrl === "string";
+  return typeof dataset.resourceInfo.unstable_aclUrl === "string";
 }
 
 /**

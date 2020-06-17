@@ -2,9 +2,6 @@
 
 exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
-  "datasetInfo": Object {
-    "fetchedFrom": "https://arbitrary.pod/resource",
-  },
   "quads": Set {
     Object {
       "graph": Object {
@@ -101,6 +98,9 @@ DatasetCore {
         "value": "https://arbitrary.pod/resource#me",
       },
     },
+  },
+  "resourceInfo": Object {
+    "fetchedFrom": "https://arbitrary.pod/resource",
   },
 }
 `;

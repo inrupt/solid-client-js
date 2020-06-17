@@ -23,10 +23,10 @@ import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
   defaultFetchOptions,
-  internal_fetchLitDatasetInfo,
+  internal_fetchResourceInfo,
 } from "./litDataset";
 import {
-  DatasetInfo,
+  ResourceInfo,
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_AclRule,
@@ -40,7 +40,7 @@ import { getIriOne, getIriAll } from "./thing/get";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
-  dataset: DatasetInfo,
+  dataset: ResourceInfo,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   if (!unstable_hasAccessibleAcl(dataset)) {
@@ -49,11 +49,11 @@ export async function internal_fetchResourceAcl(
 
   try {
     const aclLitDataset = await fetchLitDataset(
-      dataset.datasetInfo.unstable_aclUrl,
+      dataset.resourceInfo.unstable_aclUrl,
       options
     );
     return Object.assign(aclLitDataset, {
-      accessTo: dataset.datasetInfo.fetchedFrom,
+      accessTo: dataset.resourceInfo.fetchedFrom,
     });
   } catch (e) {
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
@@ -65,17 +65,17 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  dataset: DatasetInfo & {
-    datasetInfo: {
+  dataset: ResourceInfo & {
+    resourceInfo: {
       unstable_aclUrl: Exclude<
-        DatasetInfo["datasetInfo"]["unstable_aclUrl"],
+        ResourceInfo["resourceInfo"]["unstable_aclUrl"],
         undefined
       >;
     };
   },
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(dataset.datasetInfo.fetchedFrom);
+  const resourceUrl = new URL(dataset.resourceInfo.fetchedFrom);
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -88,10 +88,7 @@ export async function internal_fetchFallbackAcl(
 
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
-  const containerInfo = await internal_fetchLitDatasetInfo(
-    containerIri,
-    options
-  );
+  const containerInfo = await internal_fetchResourceInfo(containerIri, options);
 
   if (!unstable_hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,

@@ -47,7 +47,7 @@ import {
   unstable_getFallbackAcl,
 } from "./acl";
 import {
-  DatasetInfo,
+  ResourceInfo,
   ThingPersisted,
   unstable_AclRule,
   unstable_AclDataset,
@@ -63,8 +63,8 @@ function mockResponse(
 
 describe("fetchResourceAcl", () => {
   it("returns the fetched ACL LitDataset", async () => {
-    const sourceDataset: DatasetInfo = {
-      datasetInfo: {
+    const sourceDataset: ResourceInfo = {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
@@ -82,7 +82,7 @@ describe("fetchResourceAcl", () => {
     });
 
     expect(fetchedAcl?.accessTo).toBe("https://some.pod/resource");
-    expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
     expect(mockFetch.mock.calls).toHaveLength(1);
@@ -90,8 +90,8 @@ describe("fetchResourceAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const sourceDataset: DatasetInfo = {
-      datasetInfo: {
+    const sourceDataset: ResourceInfo = {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
@@ -111,8 +111,8 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the source LitDataset has no known ACL IRI", async () => {
-    const sourceDataset: DatasetInfo = {
-      datasetInfo: {
+    const sourceDataset: ResourceInfo = {
+      resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
       },
     };
@@ -123,8 +123,8 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the ACL was not found", async () => {
-    const sourceDataset: DatasetInfo = {
-      datasetInfo: {
+    const sourceDataset: ResourceInfo = {
+      resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
@@ -151,7 +151,7 @@ describe("fetchResourceAcl", () => {
 describe("fetchFallbackAcl", () => {
   it("returns the parent Container's ACL LitDataset, if present", async () => {
     const sourceDataset = {
-      datasetInfo: {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
@@ -178,7 +178,7 @@ describe("fetchFallbackAcl", () => {
     });
 
     expect(fetchedAcl?.accessTo).toBe("https://some.pod/");
-    expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe("https://some.pod/.acl");
+    expect(fetchedAcl?.resourceInfo.fetchedFrom).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
@@ -186,7 +186,7 @@ describe("fetchFallbackAcl", () => {
 
   it("calls the included fetcher by default", async () => {
     const sourceDataset = {
-      datasetInfo: {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
@@ -206,7 +206,7 @@ describe("fetchFallbackAcl", () => {
 
   it("travels up multiple levels if no ACL was found on the levels in between", async () => {
     const sourceDataset = {
-      datasetInfo: {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/with-acl/without-acl/resource",
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
@@ -254,7 +254,7 @@ describe("fetchFallbackAcl", () => {
     });
 
     expect(fetchedAcl?.accessTo).toBe("https://some.pod/with-acl/");
-    expect(fetchedAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/with-acl/.acl"
     );
     expect(mockFetch.mock.calls).toHaveLength(4);
@@ -272,7 +272,7 @@ describe("fetchFallbackAcl", () => {
   // not be able to determine the effective ACL:
   it("returns null if one of the Containers on the way up does not advertise an ACL", async () => {
     const sourceDataset = {
-      datasetInfo: {
+      resourceInfo: {
         fetchedFrom:
           "https://some.pod/arbitrary-parent/no-control-access/resource",
         // If no ACL IRI is given, the user does not have Control Access,
@@ -303,7 +303,7 @@ describe("fetchFallbackAcl", () => {
 
   it("returns null if no ACL could be found for the Containers up to the root of the Pod", async () => {
     const sourceDataset = {
-      datasetInfo: {
+      resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
@@ -346,7 +346,7 @@ describe("getResourceAcl", () => {
   it("returns the attached Resource ACL Dataset", () => {
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
       accessTo: "https://arbitrary.pod/resource",
-      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
     });
     const litDataset = Object.assign(dataset(), {
       acl: { resourceAcl: aclDataset, fallbackAcl: null },
@@ -364,7 +364,7 @@ describe("getFallbackAcl", () => {
   it("returns the attached Fallback ACL Dataset", () => {
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
       accessTo: "https://arbitrary.pod/",
-      datasetInfo: { fetchedFrom: "https://arbitrary.pod/.acl" },
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/.acl" },
     });
     const litDataset = Object.assign(dataset(), {
       acl: { fallbackAcl: aclDataset },
@@ -381,7 +381,7 @@ describe("getFallbackAcl", () => {
 describe("getAclRules", () => {
   it("only returns Things that represent ACL Rules", () => {
     const aclDataset = Object.assign(dataset(), {
-      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
       accessTo: "https://arbitrary.pod/resource",
     });
 
@@ -467,7 +467,7 @@ describe("getAclRules", () => {
 
   it("returns Things with multiple `rdf:type`s, as long as at least on type is `acl:Authorization`", () => {
     const aclDataset = Object.assign(dataset(), {
-      datasetInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
       accessTo: "https://arbitrary.pod/resource",
     });
 
