@@ -24,6 +24,10 @@
   justify-content: center;
 }
 
+.heroButton {
+  margin: 0 var(--ifm-spacing-horizontal);
+}
+
 .features {
   display: flex;
   align-items: center;
