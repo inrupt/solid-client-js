@@ -153,7 +153,7 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
 /**
  * Create a new Thing with a localised string added for a Predicate.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setStringInLocale]].
+ * This preserves existing values for the given Predicate. To replace them, see [[setStringWithLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
@@ -163,13 +163,13 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
  * @param locale Locale of the added string.
  * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
  */
-export function addStringInLocale<T extends Thing>(
+export function addStringWithLocale<T extends Thing>(
   thing: T,
   predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function addStringInLocale(
+export function addStringWithLocale(
   thing: Thing,
   predicate: Url | UrlString,
   value: string,

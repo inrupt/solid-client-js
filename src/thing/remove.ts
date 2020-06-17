@@ -199,13 +199,13 @@ export const removeInteger: RemoveOfType<number> = (
  * @param locale Locale of the string to remove.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export function removeStringInLocale<T extends Thing>(
+export function removeStringWithLocale<T extends Thing>(
   thing: T,
   predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeStringInLocale(
+export function removeStringWithLocale(
   thing: Thing,
   predicate: Url | UrlString,
   value: string,

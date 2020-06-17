@@ -41,7 +41,7 @@ import {
   getDatetimeOne,
   getDecimalOne,
   getIntegerOne,
-  getStringInLocaleOne,
+  getStringWithLocaleOne,
   getStringNoLocaleOne,
   getUrlAll,
   getIriAll,
@@ -49,7 +49,7 @@ import {
   getDatetimeAll,
   getDecimalAll,
   getIntegerAll,
-  getStringInLocaleAll,
+  getStringWithLocaleAll,
   getStringNoLocaleAll,
   getLiteralOne,
   getNamedNodeOne,
@@ -61,7 +61,7 @@ import {
   addDatetime,
   addDecimal,
   addInteger,
-  addStringInLocale,
+  addStringWithLocale,
   addStringNoLocale,
   addLiteral,
   addNamedNode,
@@ -71,7 +71,7 @@ import {
   setDatetime,
   setDecimal,
   setInteger,
-  setStringInLocale,
+  setStringWithLocale,
   setStringNoLocale,
   setLiteral,
   setNamedNode,
@@ -82,7 +82,7 @@ import {
   removeDatetime,
   removeDecimal,
   removeInteger,
-  removeStringInLocale,
+  removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
@@ -103,6 +103,11 @@ import {
   addStringUnlocalized,
   setStringUnlocalized,
   removeStringUnlocalized,
+  getStringInLocaleOne,
+  getStringInLocaleAll,
+  addStringInLocale,
+  setStringInLocale,
+  removeStringInLocale,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -129,7 +134,7 @@ it("exports the public API from the entry file", () => {
   expect(getDatetimeOne).toBeDefined();
   expect(getDecimalOne).toBeDefined();
   expect(getIntegerOne).toBeDefined();
-  expect(getStringInLocaleOne).toBeDefined();
+  expect(getStringWithLocaleOne).toBeDefined();
   expect(getStringNoLocaleOne).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
@@ -137,7 +142,7 @@ it("exports the public API from the entry file", () => {
   expect(getDatetimeAll).toBeDefined();
   expect(getDecimalAll).toBeDefined();
   expect(getIntegerAll).toBeDefined();
-  expect(getStringInLocaleAll).toBeDefined();
+  expect(getStringWithLocaleAll).toBeDefined();
   expect(getStringNoLocaleAll).toBeDefined();
   expect(getLiteralOne).toBeDefined();
   expect(getNamedNodeOne).toBeDefined();
@@ -149,7 +154,7 @@ it("exports the public API from the entry file", () => {
   expect(addDatetime).toBeDefined();
   expect(addDecimal).toBeDefined();
   expect(addInteger).toBeDefined();
-  expect(addStringInLocale).toBeDefined();
+  expect(addStringWithLocale).toBeDefined();
   expect(addStringNoLocale).toBeDefined();
   expect(addLiteral).toBeDefined();
   expect(addNamedNode).toBeDefined();
@@ -159,7 +164,7 @@ it("exports the public API from the entry file", () => {
   expect(setDatetime).toBeDefined();
   expect(setDecimal).toBeDefined();
   expect(setInteger).toBeDefined();
-  expect(setStringInLocale).toBeDefined();
+  expect(setStringWithLocale).toBeDefined();
   expect(setStringNoLocale).toBeDefined();
   expect(setLiteral).toBeDefined();
   expect(setNamedNode).toBeDefined();
@@ -170,7 +175,7 @@ it("exports the public API from the entry file", () => {
   expect(removeDatetime).toBeDefined();
   expect(removeDecimal).toBeDefined();
   expect(removeInteger).toBeDefined();
-  expect(removeStringInLocale).toBeDefined();
+  expect(removeStringWithLocale).toBeDefined();
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
@@ -188,9 +193,14 @@ it("exports the public API from the entry file", () => {
 });
 
 it("still exports deprecated methods", () => {
+  expect(getStringInLocaleOne).toBeDefined();
   expect(getStringUnlocalizedOne).toBeDefined();
+  expect(getStringInLocaleAll).toBeDefined();
   expect(getStringUnlocalizedAll).toBeDefined();
+  expect(addStringInLocale).toBeDefined();
   expect(addStringUnlocalized).toBeDefined();
+  expect(setStringInLocale).toBeDefined();
   expect(setStringUnlocalized).toBeDefined();
+  expect(removeStringInLocale).toBeDefined();
   expect(removeStringUnlocalized).toBeDefined();
 });

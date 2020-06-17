@@ -155,7 +155,7 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
 /**
  * Create a new Thing with existing values replaced by the given localised string for the given Predicate.
  *
- * To preserve existing values, see [[addStringInLocale]].
+ * To preserve existing values, see [[addStringWithLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
@@ -165,13 +165,13 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
  * @param locale Locale of the added string.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Predicate.
  */
-export function setStringInLocale<T extends Thing>(
+export function setStringWithLocale<T extends Thing>(
   thing: T,
   predicate: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function setStringInLocale(
+export function setStringWithLocale(
   thing: Thing,
   predicate: Url | UrlString,
   value: string,

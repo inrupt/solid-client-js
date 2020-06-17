@@ -30,7 +30,7 @@ import {
   getDatetimeOne,
   getDecimalOne,
   getIntegerOne,
-  getStringInLocaleOne,
+  getStringWithLocaleOne,
   getStringNoLocaleOne,
   getLiteralOne,
   getNamedNodeOne,
@@ -39,7 +39,7 @@ import {
   getDatetimeAll,
   getDecimalAll,
   getIntegerAll,
-  getStringInLocaleAll,
+  getStringWithLocaleAll,
   getStringNoLocaleAll,
   getLiteralAll,
   getNamedNodeAll,
@@ -971,7 +971,7 @@ describe("getIntegerAll", () => {
   });
 });
 
-describe("getStringInLocaleOne", () => {
+describe("getStringWithLocaleOne", () => {
   it("returns the string value for the given Predicate in the given locale", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
@@ -986,7 +986,7 @@ describe("getStringInLocaleOne", () => {
     });
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithLocaleString,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1008,7 +1008,7 @@ describe("getStringInLocaleOne", () => {
     });
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithLocaleString,
         DataFactory.namedNode("https://some.vocab/predicate"),
         "nl-NL"
@@ -1030,7 +1030,7 @@ describe("getStringInLocaleOne", () => {
     });
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithLocaleString,
         "https://some.vocab/predicate",
         "NL-nL"
@@ -1046,7 +1046,7 @@ describe("getStringInLocaleOne", () => {
     );
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithoutStringNoLocale,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1068,14 +1068,14 @@ describe("getStringInLocaleOne", () => {
     });
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
         "en-GB"
       )
     ).toBeNull();
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
         "nl"
@@ -1105,7 +1105,7 @@ describe("getStringInLocaleOne", () => {
     );
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1127,7 +1127,7 @@ describe("getStringInLocaleOne", () => {
     });
 
     expect(
-      getStringInLocaleOne(
+      getStringWithLocaleOne(
         thingWithLocaleString,
         "https://some-other.vocab/predicate",
         "nl-NL"
@@ -1136,7 +1136,7 @@ describe("getStringInLocaleOne", () => {
   });
 });
 
-describe("getStringsInLocaleAll", () => {
+describe("getStringsWithLocaleAll", () => {
   it("returns the string values for the given Predicate in the given locale", () => {
     const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
     const quad1 = DataFactory.quad(
@@ -1158,7 +1158,7 @@ describe("getStringsInLocaleAll", () => {
     });
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithLocaleStrings,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1187,7 +1187,7 @@ describe("getStringsInLocaleAll", () => {
     });
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithLocaleStrings,
         DataFactory.namedNode("https://some.vocab/predicate"),
         "nl-NL"
@@ -1209,7 +1209,7 @@ describe("getStringsInLocaleAll", () => {
     });
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithLocaleString,
         "https://some.vocab/predicate",
         "NL-nL"
@@ -1225,7 +1225,7 @@ describe("getStringsInLocaleAll", () => {
     );
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithoutStringNoLocales,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1247,14 +1247,14 @@ describe("getStringsInLocaleAll", () => {
     });
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
         "https://some.vocab/predicate",
         "en-GB"
       )
     ).toEqual([]);
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
         "https://some.vocab/predicate",
         "nl"
@@ -1284,7 +1284,7 @@ describe("getStringsInLocaleAll", () => {
     );
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1306,7 +1306,7 @@ describe("getStringsInLocaleAll", () => {
     });
 
     expect(
-      getStringInLocaleAll(
+      getStringWithLocaleAll(
         thingWithLocaleString,
         "https://some-other.vocab/predicate",
         "nl-NL"

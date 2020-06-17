@@ -30,7 +30,7 @@ import {
   addDatetime,
   addDecimal,
   addInteger,
-  addStringInLocale,
+  addStringWithLocale,
   addStringNoLocale,
   addNamedNode,
   addLiteral,
@@ -859,11 +859,11 @@ describe("addInteger", () => {
   });
 });
 
-describe("addStringInLocale", () => {
+describe("addStringWithLocale", () => {
   it("adds the given localised string value for the given predicate", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string",
@@ -884,7 +884,7 @@ describe("addStringInLocale", () => {
   it("accepts Predicates as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string",
@@ -905,7 +905,7 @@ describe("addStringInLocale", () => {
   it("does not modify the input Thing", () => {
     const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thing,
       DataFactory.namedNode("https://arbitrary.vocab/predicate"),
       "Some string",
@@ -922,7 +922,7 @@ describe("addStringInLocale", () => {
       name: "localSubject",
     });
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thingLocal,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string",
@@ -950,7 +950,7 @@ describe("addStringInLocale", () => {
       )
     );
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string",
@@ -985,7 +985,7 @@ describe("addStringInLocale", () => {
       )
     );
 
-    const updatedThing = addStringInLocale(
+    const updatedThing = addStringWithLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string",

@@ -31,7 +31,7 @@ import {
   removeDatetime,
   removeDecimal,
   removeInteger,
-  removeStringInLocale,
+  removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
@@ -996,8 +996,8 @@ describe("removeInteger", () => {
   });
 });
 
-describe("removeStringInLocale", () => {
-  function getMockQuadWithStringInLocaleFor(
+describe("removeStringWithLocale", () => {
+  function getMockQuadWithStringWithLocaleFor(
     predicate: IriString,
     literalValue: string,
     locale: string
@@ -1009,12 +1009,12 @@ describe("removeStringInLocale", () => {
     );
     return quad;
   }
-  function getMockThingWithStringInLocaleFor(
+  function getMockThingWithStringWithLocaleFor(
     predicate: IriString,
     literalValue: string,
     locale: string
   ): Thing {
-    const quad = getMockQuadWithStringInLocaleFor(
+    const quad = getMockQuadWithStringWithLocaleFor(
       predicate,
       literalValue,
       locale
@@ -1025,14 +1025,14 @@ describe("removeStringInLocale", () => {
     return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
   }
   it("removes the given localised string for the given Predicate", () => {
-    const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Une chaîne de caractères quelconque",
       "fr-fr"
     );
 
-    const updatedThing = removeStringInLocale(
-      thingWithStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithStringWithLocale,
       "https://some.vocab/predicate",
       "Une chaîne de caractères quelconque",
       "fr-fr"
@@ -1042,14 +1042,14 @@ describe("removeStringInLocale", () => {
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
 
-    const updatedThing = removeStringInLocale(
-      thingWithStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithStringWithLocale,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string",
       "en-us"
@@ -1059,20 +1059,20 @@ describe("removeStringInLocale", () => {
   });
 
   it("does not modify the input Thing", () => {
-    const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
 
-    const updatedThing = removeStringInLocale(
-      thingWithStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithStringWithLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
 
-    expect(Array.from(thingWithStringInLocale)).toHaveLength(1);
+    expect(Array.from(thingWithStringWithLocale)).toHaveLength(1);
     expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
@@ -1092,7 +1092,7 @@ describe("removeStringInLocale", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeStringInLocale(
+    const updatedThing = removeStringWithLocale(
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1103,17 +1103,17 @@ describe("removeStringInLocale", () => {
   });
 
   it("removes multiple instances of the same localised string for the same Predicate", () => {
-    const thingWithDuplicateStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithDuplicateStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
-    thingWithDuplicateStringInLocale.add(
-      Array.from(thingWithDuplicateStringInLocale)[0]
+    thingWithDuplicateStringWithLocale.add(
+      Array.from(thingWithDuplicateStringWithLocale)[0]
     );
 
-    const updatedThing = removeStringInLocale(
-      thingWithDuplicateStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithDuplicateStringWithLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
@@ -1123,35 +1123,35 @@ describe("removeStringInLocale", () => {
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
-    const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
 
-    const mockQuadWithDifferentStringInSameLocale = getMockQuadWithStringInLocaleFor(
+    const mockQuadWithDifferentStringInSameLocale = getMockQuadWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some other arbitrary string",
       "en-us"
     );
 
-    const mockQuadWithSameStringInDifferentLocale = getMockQuadWithStringInLocaleFor(
+    const mockQuadWithSameStringInDifferentLocale = getMockQuadWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-uk"
     );
 
-    const mockQuadWithDifferentPredicate = getMockQuadWithStringInLocaleFor(
+    const mockQuadWithDifferentPredicate = getMockQuadWithStringWithLocaleFor(
       "https://some.other.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
-    thingWithStringInLocale.add(mockQuadWithDifferentStringInSameLocale);
-    thingWithStringInLocale.add(mockQuadWithSameStringInDifferentLocale);
-    thingWithStringInLocale.add(mockQuadWithDifferentPredicate);
+    thingWithStringWithLocale.add(mockQuadWithDifferentStringInSameLocale);
+    thingWithStringWithLocale.add(mockQuadWithSameStringInDifferentLocale);
+    thingWithStringWithLocale.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeStringInLocale(
-      thingWithStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithStringWithLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
@@ -1165,22 +1165,22 @@ describe("removeStringInLocale", () => {
   });
 
   it("removes Quads when the locale casing mismatch", () => {
-    const thingWithStringInLocale = getMockThingWithStringInLocaleFor(
+    const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-us"
     );
 
-    const mockQuadWithStringInDifferentLocale = getMockQuadWithStringInLocaleFor(
+    const mockQuadWithStringInDifferentLocale = getMockQuadWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
     );
 
-    thingWithStringInLocale.add(mockQuadWithStringInDifferentLocale);
+    thingWithStringWithLocale.add(mockQuadWithStringInDifferentLocale);
 
-    const updatedThing = removeStringInLocale(
-      thingWithStringInLocale,
+    const updatedThing = removeStringWithLocale(
+      thingWithStringWithLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
@@ -1190,7 +1190,7 @@ describe("removeStringInLocale", () => {
   });
 
   it("does not remove Quads with non-string Objects", () => {
-    const thingWithLocalizedString = getMockThingWithStringInLocaleFor(
+    const thingWithLocalizedString = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "en-US"
@@ -1202,7 +1202,7 @@ describe("removeStringInLocale", () => {
     );
     thingWithLocalizedString.add(mockQuadWithInteger);
 
-    const updatedThing = removeStringInLocale(
+    const updatedThing = removeStringWithLocale(
       thingWithLocalizedString,
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1392,12 +1392,12 @@ describe("removeLiteral", () => {
     const thing = dataset();
     thing.add(quad);
 
-    const thingWithStringInLocale = Object.assign(thing, {
+    const thingWithStringWithLocale = Object.assign(thing, {
       url: "https://arbitrary.vocab/subject",
     });
 
     const updatedThing = removeLiteral(
-      thingWithStringInLocale,
+      thingWithStringWithLocale,
       "https://some.vocab/predicate",
       DataFactory.literal("Some arbitrary string", "en-US")
     );
