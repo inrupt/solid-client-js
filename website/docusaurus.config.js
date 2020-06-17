@@ -64,6 +64,12 @@ module.exports = {
       // },
       links: [
         {
+          to: "docs/introduction",
+          activeBasePath: "docs",
+          label: "Introduction",
+          position: "left",
+        },
+        {
           to: "docs/",
           activeBasePath: "docs",
           label: "Getting Started",
@@ -88,6 +94,10 @@ module.exports = {
         {
           title: "Docs",
           items: [
+            {
+              label: "Introduction",
+              to: "docs/introduction",
+            },
             {
               label: "Getting started",
               to: "docs/",

@@ -86,6 +86,16 @@ function Home() {
                 "button button--outline button--secondary button--lg",
                 styles.getStarted
               )}
+              to={useBaseUrl("docs/introduction")}
+            >
+              Introduction
+            </Link>
+            &nbsp;&nbsp;&nbsp;
+            <Link
+              className={classnames(
+                "button button--outline button--secondary button--lg",
+                styles.getStarted
+              )}
               to={useBaseUrl("docs/")}
             >
               Get Started
