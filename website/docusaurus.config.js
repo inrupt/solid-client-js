@@ -65,9 +65,15 @@ module.exports = {
       // },
       links: [
         {
-          to: "docs/",
-          activeBasePath: "docs",
+          to: "docs/getting-started",
+          activeBasePath: "docs/getting-started",
           label: "Getting Started",
+          position: "left",
+        },
+        {
+          to: "docs/guide/installation",
+          activeBasePath: "docs/guide/",
+          label: "Guide",
           position: "left",
         },
         {
@@ -91,7 +97,11 @@ module.exports = {
           items: [
             {
               label: "Getting started",
-              to: "docs/",
+              to: "docs/getting-started",
+            },
+            {
+              label: "Guide",
+              to: "docs/guide/installation",
             },
             {
               label: "API Reference",
