@@ -126,7 +126,7 @@ export {
   ThingPersisted,
   ThingLocal,
   LocalNode,
-  DatasetInfo,
+  ResourceInfo,
   ChangeLog,
   unstable_Acl,
   unstable_AclDataset,

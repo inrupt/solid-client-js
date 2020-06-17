@@ -38,12 +38,12 @@ import {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
-  internal_fetchLitDatasetInfo,
+  internal_fetchResourceInfo,
   createLitDataset,
 } from "./litDataset";
 import {
   ChangeLog,
-  DatasetInfo,
+  ResourceInfo,
   IriString,
   LitDataset,
   LocalNode,
@@ -103,7 +103,7 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(litDataset.datasetInfo.fetchedFrom).toBe(
+    expect(litDataset.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
   });
@@ -125,7 +125,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclUrl).toBe(
+    expect(litDataset.resourceInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -146,7 +146,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclUrl).toBeUndefined();
+    expect(litDataset.resourceInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -165,7 +165,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
+    expect(litDataset.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -198,7 +198,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
+    expect(litDataset.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -228,7 +228,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toBeUndefined();
+    expect(litDataset.resourceInfo.unstable_permissions).toBeUndefined();
   });
 
   it("returns a LitDataset representing the fetched Turtle", async () => {
@@ -315,13 +315,13 @@ describe("fetchLitDatasetWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
-    expect(fetchedLitDataset.acl?.resourceAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
-    expect(fetchedLitDataset.acl?.fallbackAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
     expect(mockFetch.mock.calls).toHaveLength(4);
@@ -393,7 +393,7 @@ describe("fetchLitDatasetWithAcl", () => {
 
     expect(fetchedLitDataset.acl).not.toBeNull();
     expect(fetchedLitDataset.acl?.fallbackAcl).toBeNull();
-    expect(fetchedLitDataset.acl?.resourceAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -429,7 +429,7 @@ describe("fetchLitDatasetWithAcl", () => {
     );
 
     expect(fetchedLitDataset.acl?.resourceAcl).toBeUndefined();
-    expect(fetchedLitDataset.acl?.fallbackAcl?.datasetInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
   });
@@ -473,7 +473,7 @@ describe("fetchLitDatasetWithAcl", () => {
   });
 });
 
-describe("fetchLitDatasetInfo", () => {
+describe("fetchResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("./fetcher.ts") as {
       fetch: jest.Mock<
@@ -482,7 +482,7 @@ describe("fetchLitDatasetInfo", () => {
       >;
     };
 
-    await internal_fetchLitDatasetInfo("https://some.pod/resource");
+    await internal_fetchResourceInfo("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
@@ -495,7 +495,7 @@ describe("fetchLitDatasetInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await internal_fetchLitDatasetInfo("https://some.pod/resource", {
+    await internal_fetchResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -512,14 +512,14 @@ describe("fetchLitDatasetInfo", () => {
         )
       );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDataset.datasetInfo.fetchedFrom).toBe(
+    expect(litDataset.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
   });
@@ -536,12 +536,12 @@ describe("fetchLitDatasetInfo", () => {
       )
     );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclUrl).toBe(
+    expect(litDataset.resourceInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -557,12 +557,12 @@ describe("fetchLitDatasetInfo", () => {
       )
     );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_aclUrl).toBeUndefined();
+    expect(litDataset.resourceInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -576,12 +576,12 @@ describe("fetchLitDatasetInfo", () => {
       )
     );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
+    expect(litDataset.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -609,12 +609,12 @@ describe("fetchLitDatasetInfo", () => {
       )
     );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toEqual({
+    expect(litDataset.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -639,12 +639,12 @@ describe("fetchLitDatasetInfo", () => {
       )
     );
 
-    const litDataset = await internal_fetchLitDatasetInfo(
+    const litDataset = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.datasetInfo.unstable_permissions).toBeUndefined();
+    expect(litDataset.resourceInfo.unstable_permissions).toBeUndefined();
   });
 
   it("does not request the actual data from the server", async () => {
@@ -656,7 +656,7 @@ describe("fetchLitDatasetInfo", () => {
         )
       );
 
-    await internal_fetchLitDatasetInfo("https://some.pod/resource", {
+    await internal_fetchResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -672,7 +672,7 @@ describe("fetchLitDatasetInfo", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = internal_fetchLitDatasetInfo(
+    const fetchPromise = internal_fetchResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -691,7 +691,7 @@ describe("fetchLitDatasetInfo", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = internal_fetchLitDatasetInfo(
+    const fetchPromise = internal_fetchResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -903,7 +903,7 @@ describe("saveLitDatasetAt", () => {
     function getMockUpdatedDataset(
       changeLog: ChangeLog["changeLog"],
       fromUrl: IriString
-    ): LitDataset & ChangeLog & DatasetInfo {
+    ): LitDataset & ChangeLog & ResourceInfo {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
@@ -918,13 +918,13 @@ describe("saveLitDatasetAt", () => {
         mockDataset.add(tripleToAdd)
       );
 
-      const datasetInfo: DatasetInfo["datasetInfo"] = {
+      const resourceInfo: ResourceInfo["resourceInfo"] = {
         fetchedFrom: fromUrl,
       };
 
       return Object.assign(mockDataset, {
         changeLog: changeLog,
-        datasetInfo: datasetInfo,
+        resourceInfo: resourceInfo,
       });
     }
 
@@ -1395,7 +1395,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.datasetInfo.fetchedFrom).toBe(
+    expect(savedLitDataset.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });
@@ -1458,7 +1458,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.datasetInfo.fetchedFrom).toBe(
+    expect(savedLitDataset.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });

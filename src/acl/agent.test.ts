@@ -34,13 +34,13 @@ import {
   LitDataset,
   unstable_AccessModes,
   unstable_Acl,
-  DatasetInfo,
+  ResourceInfo,
   IriString,
   unstable_AclDataset,
 } from "../interfaces";
 
 function addAclRuleQuads(
-  aclDataset: LitDataset & DatasetInfo,
+  aclDataset: LitDataset & ResourceInfo,
   agent: IriString,
   resource: IriString,
   accessModes: unstable_AccessModes,
@@ -113,10 +113,10 @@ function addAclRuleQuads(
 }
 
 function addAclDatasetToLitDataset(
-  litDataset: LitDataset & DatasetInfo,
+  litDataset: LitDataset & ResourceInfo,
   aclDataset: unstable_AclDataset,
   type: "resource" | "fallback"
-): LitDataset & DatasetInfo & unstable_Acl {
+): LitDataset & ResourceInfo & unstable_Acl {
   const acl: unstable_Acl["acl"] = {
     fallbackAcl: null,
     ...(((litDataset as any) as unstable_Acl).acl ?? {}),
@@ -129,9 +129,9 @@ function addAclDatasetToLitDataset(
   return Object.assign(litDataset, { acl: acl });
 }
 
-function getMockDataset(fetchedFrom: IriString): LitDataset & DatasetInfo {
+function getMockDataset(fetchedFrom: IriString): LitDataset & ResourceInfo {
   return Object.assign(dataset(), {
-    datasetInfo: {
+    resourceInfo: {
       fetchedFrom: fetchedFrom,
     },
   });

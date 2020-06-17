@@ -38,9 +38,9 @@ import {
   LocalNode,
   ThingPersisted,
   ChangeLog,
-  DatasetInfo,
+  ResourceInfo,
   hasChangelog,
-  hasDatasetInfo,
+  hasResourceInfo,
 } from "./interfaces";
 
 /**
@@ -159,8 +159,8 @@ export function removeThing<Dataset extends LitDataset>(
   thing: UrlString | Url | LocalNode | Thing
 ): Dataset & ChangeLog {
   const newLitDataset = withChangeLog(cloneLitStructs(litDataset));
-  const resourceIri: UrlString | undefined = hasDatasetInfo(newLitDataset)
-    ? newLitDataset.datasetInfo.fetchedFrom
+  const resourceIri: UrlString | undefined = hasResourceInfo(newLitDataset)
+    ? newLitDataset.resourceInfo.fetchedFrom
     : undefined;
 
   const thingSubject = toNode(thing);
@@ -200,9 +200,9 @@ function cloneLitStructs<Dataset extends LitDataset>(
       deletions: [...litDataset.changeLog.deletions],
     };
   }
-  if (hasDatasetInfo(litDataset)) {
-    (freshDataset as LitDataset & DatasetInfo).datasetInfo = {
-      ...litDataset.datasetInfo,
+  if (hasResourceInfo(litDataset)) {
+    (freshDataset as LitDataset & ResourceInfo).resourceInfo = {
+      ...litDataset.resourceInfo,
     };
   }
 
