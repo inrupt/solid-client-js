@@ -231,7 +231,7 @@ export function removeStringInLocale(
  * @param value String to remove from `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
  */
-export const removeStringUnlocalized: RemoveOfType<string> = (
+export const removeStringNoLocale: RemoveOfType<string> = (
   thing,
   predicate,
   value

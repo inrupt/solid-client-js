@@ -32,7 +32,7 @@ import {
   removeDecimal,
   removeInteger,
   removeStringInLocale,
-  removeStringUnlocalized,
+  removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
 } from "./remove";
@@ -1213,16 +1213,16 @@ describe("removeStringInLocale", () => {
   });
 });
 
-describe("removeStringUnlocalized", () => {
+describe("removeStringNoLocale", () => {
   it("removes the given string value for the given Predicate", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeStringUnlocalized(
-      thingWithStringUnlocalized,
+    const updatedThing = removeStringNoLocale(
+      thingWithStringNoLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string"
     );
@@ -1231,14 +1231,14 @@ describe("removeStringUnlocalized", () => {
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeStringUnlocalized(
-      thingWithStringUnlocalized,
+    const updatedThing = removeStringNoLocale(
+      thingWithStringNoLocale,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some arbitrary string"
     );
@@ -1247,19 +1247,19 @@ describe("removeStringUnlocalized", () => {
   });
 
   it("does not modify the input Thing", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
-    const updatedThing = removeStringUnlocalized(
-      thingWithStringUnlocalized,
+    const updatedThing = removeStringNoLocale(
+      thingWithStringNoLocale,
       "https://some.vocab/predicate",
       "Some arbitrary string"
     );
 
-    expect(Array.from(thingWithStringUnlocalized)).toHaveLength(1);
+    expect(Array.from(thingWithStringNoLocale)).toHaveLength(1);
     expect(Array.from(updatedThing)).toHaveLength(0);
   });
 
@@ -1282,7 +1282,7 @@ describe("removeStringUnlocalized", () => {
       name: "localSubject",
     });
 
-    const updatedThing = removeStringUnlocalized(
+    const updatedThing = removeStringNoLocale(
       thingLocal,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1299,7 +1299,7 @@ describe("removeStringUnlocalized", () => {
     );
     thingWithDuplicateString.add(Array.from(thingWithDuplicateString)[0]);
 
-    const updatedThing = removeStringUnlocalized(
+    const updatedThing = removeStringNoLocale(
       thingWithDuplicateString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1328,7 +1328,7 @@ describe("removeStringUnlocalized", () => {
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
-    const updatedThing = removeStringUnlocalized(
+    const updatedThing = removeStringNoLocale(
       thingWithOtherQuads,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1353,7 +1353,7 @@ describe("removeStringUnlocalized", () => {
     );
     thingWithString.add(mockQuadWithInteger);
 
-    const updatedThing = removeStringUnlocalized(
+    const updatedThing = removeStringNoLocale(
       thingWithString,
       "https://some.vocab/predicate",
       "Some arbitrary string"
@@ -1365,14 +1365,14 @@ describe("removeStringUnlocalized", () => {
 
 describe("removeLiteral", () => {
   it("accepts unlocalised strings as Literal", () => {
-    const thingWithStringUnlocalized = getMockThingWithLiteralFor(
+    const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeLiteral(
-      thingWithStringUnlocalized,
+      thingWithStringNoLocale,
       "https://some.vocab/predicate",
       DataFactory.literal(
         "Some arbitrary string",

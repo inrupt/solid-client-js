@@ -286,7 +286,7 @@ export function getStringInLocaleAll(
  * @param predicate The given Predicate for which you want the string value.
  * @returns A string value for the given Predicate, if present, or null otherwise.
  */
-export function getStringUnlocalizedOne(
+export function getStringNoLocaleOne(
   thing: Thing,
   predicate: Url | UrlString
 ): string | null {
@@ -304,7 +304,7 @@ export function getStringUnlocalizedOne(
  * @param predicate The given Predicate for which you want the string values.
  * @returns The string values for the given Predicate.
  */
-export function getStringUnlocalizedAll(
+export function getStringNoLocaleAll(
   thing: Thing,
   predicate: Url | UrlString
 ): string[] {

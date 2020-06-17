@@ -24,9 +24,9 @@ import {
   fetchLitDataset,
   setThing,
   getThingOne,
-  getStringUnlocalizedOne,
+  getStringNoLocaleOne,
   setDatetime,
-  setStringUnlocalized,
+  setStringNoLocale,
   saveLitDatasetAt,
 } from "./index";
 
@@ -42,7 +42,7 @@ describe("End-to-end tests", () => {
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
 
-    expect(getStringUnlocalizedOne(existingThing, foaf.name)).toBe(
+    expect(getStringNoLocaleOne(existingThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
 
@@ -51,7 +51,7 @@ describe("End-to-end tests", () => {
       schema.dateModified,
       new Date()
     );
-    updatedThing = setStringUnlocalized(updatedThing, foaf.nick, randomNick);
+    updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveLitDatasetAt(
@@ -63,9 +63,9 @@ describe("End-to-end tests", () => {
       savedDataset,
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
-    expect(getStringUnlocalizedOne(savedThing, foaf.name)).toBe(
+    expect(getStringNoLocaleOne(savedThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
-    expect(getStringUnlocalizedOne(savedThing, foaf.nick)).toBe(randomNick);
+    expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
   });
 });

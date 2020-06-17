@@ -182,7 +182,7 @@ export function addStringInLocale(
 /**
  * Create a new Thing with an unlocalised string added for a Predicate.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setStringUnlocalized]].
+ * This preserves existing values for the given Predicate. To replace them, see [[setStringNoLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
@@ -191,7 +191,7 @@ export function addStringInLocale(
  * @param value String to add to `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
  */
-export const addStringUnlocalized: AddOfType<string> = (
+export const addStringNoLocale: AddOfType<string> = (
   thing,
   predicate,
   value

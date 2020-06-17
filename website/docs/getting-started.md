@@ -37,14 +37,14 @@ const profileResource = await fetchLitDataset(
 ### Reading data
 
 ```typescript
-import { getThingOne, getStringUnlocalisedOne } from "@solid/lit-pod";
+import { getThingOne, getStringNoLocaleOne } from "@solid/lit-pod";
 import { foaf } from "rdf-namespaces";
 
 const profile = getThingOne(
   profileResource,
   "https://vincentt.inrupt.net/profile/card#me"
 );
-const name = getStringUnlocalisedOne(profileResource, foaf.name);
+const name = getStringNoLocaleOne(profileResource, foaf.name);
 ```
 
 For more details, see [Working with Data](./tutorials/working-with-data#reading-data).

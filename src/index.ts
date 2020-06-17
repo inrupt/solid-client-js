@@ -49,7 +49,7 @@ export {
   getDecimalOne,
   getIntegerOne,
   getStringInLocaleOne,
-  getStringUnlocalizedOne,
+  getStringNoLocaleOne,
   getUrlAll,
   getIriAll,
   getBooleanAll,
@@ -57,11 +57,16 @@ export {
   getDecimalAll,
   getIntegerAll,
   getStringInLocaleAll,
-  getStringUnlocalizedAll,
+  getStringNoLocaleAll,
   getLiteralOne,
   getNamedNodeOne,
   getLiteralAll,
   getNamedNodeAll,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[getStringNoLocaleOne]] */
+  getStringNoLocaleOne as getStringUnlocalizedOne,
+  /** @deprecated See [[getStringNoLocaleAll]] */
+  getStringNoLocaleAll as getStringUnlocalizedAll,
 } from "./thing/get";
 export {
   addUrl,
@@ -71,9 +76,12 @@ export {
   addDecimal,
   addInteger,
   addStringInLocale,
-  addStringUnlocalized,
+  addStringNoLocale,
   addLiteral,
   addNamedNode,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[addStringNoLocale]] */
+  addStringNoLocale as addStringUnlocalized,
 } from "./thing/add";
 export {
   setUrl,
@@ -83,9 +91,12 @@ export {
   setDecimal,
   setInteger,
   setStringInLocale,
-  setStringUnlocalized,
+  setStringNoLocale,
   setLiteral,
   setNamedNode,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[setStringNoLocale]] */
+  setStringNoLocale as setStringUnlocalized,
 } from "./thing/set";
 export {
   removeAll,
@@ -96,9 +107,12 @@ export {
   removeDecimal,
   removeInteger,
   removeStringInLocale,
-  removeStringUnlocalized,
+  removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[removeStringNoLocale]] */
+  removeStringNoLocale as removeStringUnlocalized,
 } from "./thing/remove";
 export {
   unstable_hasFallbackAcl,

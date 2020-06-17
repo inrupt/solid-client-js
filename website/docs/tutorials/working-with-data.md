@@ -107,8 +107,8 @@ For example:
 
 ```typescript
 import {
-  getStringUnlocalizedAll,
-  getStringUnlocalizedOne,
+  getStringNoLocaleAll,
+  getStringNoLocaleOne,
   getUrlAll,
 } from "@solid/lit-pod";
 
@@ -116,14 +116,14 @@ import {
 // …stating the Thing's name (`http://xmlns.com/foaf/0.1/name`)
 // …of type string
 // …and we expect multiple values:
-const names = getStringUnlocalizedAll(thing, "http://xmlns.com/foaf/0.1/name");
+const names = getStringNoLocaleAll(thing, "http://xmlns.com/foaf/0.1/name");
 // => an array of strings representing the `http://xmlns.com/foaf/0.1/name`.
 
 // We're looking for data…
 // …stating the Thing's Skype ID (`http://xmlns.com/foaf/0.1/skypeId`)
 // …of type string
 // …and we want just one value, assuming it to be the only one:
-const skypeId = getStringUnlocalizedOne(
+const skypeId = getStringNoLocaleOne(
   thing,
   "http://xmlns.com/foaf/0.1/skypeId"
 );
@@ -149,7 +149,7 @@ Putting it all together, here's an example of fetching the nickname of someone w
 import {
   fetchLitDataset,
   getThingOne,
-  getStringUnlocalizedOne,
+  getStringNoLocaleOne,
 } from "@solid/lit-pod";
 
 const profileResource = await fetchLitDataset(
@@ -161,7 +161,7 @@ const profile = getThingOne(
   "https://vincentt.inrupt.net/profile/card#me"
 );
 
-const nickName = getStringUnlocalizedOne(
+const nickName = getStringNoLocaleOne(
   profile,
   "http://xmlns.com/foaf/0.1/nick"
 );
@@ -198,9 +198,9 @@ Let's say we're trying to add a nickname, a characteristic identified by `http:/
 It will be a string (`"timbl"`), and will be in addition to any existing nicknames already listed in `thing`:
 
 ```typescript
-import { addStringUnlocalized } from "@solid/lit-pod";
+import { addStringNoLocale } from "@solid/lit-pod";
 
-let updatedThing = addStringUnlocalized(
+let updatedThing = addStringNoLocale(
   thing,
   `http://xmlns.com/foaf/0.1/nick`,
   "timbl"
@@ -263,7 +263,7 @@ and saving it back:
 import {
   fetchLitDataset,
   getThingOne,
-  setStringUnlocalizedOne,
+  setStringNoLocaleOne,
   setThing,
   saveLitDatasetAt,
 } from "@solid/lit-pod";
@@ -277,7 +277,7 @@ const profile = getThingOne(
   "https://vincentt.inrupt.net/profile/card#me"
 );
 
-const updatedProfile = setStringUnlocalizedOne(
+const updatedProfile = setStringNoLocaleOne(
   profile,
   "http://xmlns.com/foaf/0.1/nick",
   "Your humble tutorial writer"

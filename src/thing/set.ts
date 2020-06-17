@@ -184,7 +184,7 @@ export function setStringInLocale(
 /**
  * Create a new Thing with existing values replaced by the given unlocalised string for the given Predicate.
  *
- * To preserve existing values, see [[addStringUnlocalized]].
+ * To preserve existing values, see [[addStringNoLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
@@ -193,7 +193,7 @@ export function setStringInLocale(
  * @param value Unlocalised string to set on `thing` for the given `predicate`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Predicate.
  */
-export const setStringUnlocalized: SetOfType<string> = (
+export const setStringNoLocale: SetOfType<string> = (
   thing,
   predicate,
   value
