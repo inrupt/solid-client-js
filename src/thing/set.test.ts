@@ -30,7 +30,7 @@ import {
   setDatetime,
   setDecimal,
   setInteger,
-  setStringInLocale,
+  setStringWithLocale,
   setStringNoLocale,
   setNamedNode,
   setLiteral,
@@ -840,7 +840,7 @@ describe("setInteger", () => {
   });
 });
 
-describe("setStringInLocale", () => {
+describe("setStringWithLocale", () => {
   it("replaces existing values with the given localised string for the given Predicate", () => {
     const existingQuad1 = getMockQuad(
       "https://some.pod/resource#subject",
@@ -855,7 +855,7 @@ describe("setStringInLocale", () => {
     const thing = getMockThing(existingQuad1);
     thing.add(existingQuad2);
 
-    const updatedThing = setStringInLocale(
+    const updatedThing = setStringWithLocale(
       thing,
       "https://some.vocab/predicate",
       "Some string value",
@@ -881,7 +881,7 @@ describe("setStringInLocale", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    const updatedThing = setStringInLocale(
+    const updatedThing = setStringWithLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string value",
@@ -906,7 +906,7 @@ describe("setStringInLocale", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    setStringInLocale(
+    setStringWithLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string value",
@@ -933,7 +933,7 @@ describe("setStringInLocale", () => {
       name: "localSubject",
     });
 
-    const updatedThing = setStringInLocale(
+    const updatedThing = setStringWithLocale(
       thingLocal,
       "https://some.vocab/predicate",
       "Some string value",
@@ -958,7 +958,7 @@ describe("setStringInLocale", () => {
     );
     const thing = getMockThing(existingQuad);
 
-    const updatedThing = setStringInLocale(
+    const updatedThing = setStringWithLocale(
       thing,
       "https://some.vocab/other-predicate",
       "Some string value",

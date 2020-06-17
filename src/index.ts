@@ -48,7 +48,7 @@ export {
   getDatetimeOne,
   getDecimalOne,
   getIntegerOne,
-  getStringInLocaleOne,
+  getStringWithLocaleOne,
   getStringNoLocaleOne,
   getUrlAll,
   getIriAll,
@@ -56,7 +56,7 @@ export {
   getDatetimeAll,
   getDecimalAll,
   getIntegerAll,
-  getStringInLocaleAll,
+  getStringWithLocaleAll,
   getStringNoLocaleAll,
   getLiteralOne,
   getNamedNodeOne,
@@ -67,6 +67,10 @@ export {
   getStringNoLocaleOne as getStringUnlocalizedOne,
   /** @deprecated See [[getStringNoLocaleAll]] */
   getStringNoLocaleAll as getStringUnlocalizedAll,
+  /** @deprecated See [[getStringWithLocaleOne]] */
+  getStringWithLocaleOne as getStringInLocaleOne,
+  /** @deprecated See [[getStringWithLocaleAll]] */
+  getStringWithLocaleAll as getStringInLocaleAll,
 } from "./thing/get";
 export {
   addUrl,
@@ -75,13 +79,15 @@ export {
   addDatetime,
   addDecimal,
   addInteger,
-  addStringInLocale,
+  addStringWithLocale,
   addStringNoLocale,
   addLiteral,
   addNamedNode,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[addStringNoLocale]] */
   addStringNoLocale as addStringUnlocalized,
+  /** @deprecated See [[addStringWithLocale]] */
+  addStringWithLocale as addStringInLocale,
 } from "./thing/add";
 export {
   setUrl,
@@ -90,13 +96,15 @@ export {
   setDatetime,
   setDecimal,
   setInteger,
-  setStringInLocale,
+  setStringWithLocale,
   setStringNoLocale,
   setLiteral,
   setNamedNode,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[setStringNoLocale]] */
   setStringNoLocale as setStringUnlocalized,
+  /** @deprecated See [[setStringWithLocale]] */
+  setStringWithLocale as setStringInLocale,
 } from "./thing/set";
 export {
   removeAll,
@@ -106,13 +114,15 @@ export {
   removeDatetime,
   removeDecimal,
   removeInteger,
-  removeStringInLocale,
+  removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[removeStringNoLocale]] */
   removeStringNoLocale as removeStringUnlocalized,
+  /** @deprecated See [[removeStringWithLocale]] */
+  removeStringWithLocale as removeStringInLocale,
 } from "./thing/remove";
 export {
   unstable_hasFallbackAcl,

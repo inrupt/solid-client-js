@@ -247,7 +247,7 @@ export function getIntegerAll(
  * @param locale The desired locale for the string value.
  * @returns A localised string value for the given Predicate, if present in `locale`, or null otherwise.
  */
-export function getStringInLocaleOne(
+export function getStringWithLocaleOne(
   thing: Thing,
   predicate: Url | UrlString,
   locale: string
@@ -269,7 +269,7 @@ export function getStringInLocaleOne(
  * @param locale The desired locale for the string values.
  * @returns The localised string values for the given Predicate.
  */
-export function getStringInLocaleAll(
+export function getStringWithLocaleAll(
   thing: Thing,
   predicate: Url | UrlString,
   locale: string
