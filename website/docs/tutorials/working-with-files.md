@@ -105,7 +105,7 @@ be `/some/folder/new-file-3869a250`, which means the file is saved at the URL `h
 ## Customizing the requests
 
 If you need to customize the request eventually sent to the server, you can do so by using the optional `init` parameter.
-`init` conforms to the [`init` parameter](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters) of the `fetch` API. For instance, the following code snippet sets a custom
+`init` conforms to the [`init` parameter](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters) of the `fetch` API. For instance, the following code snippet sets a custom
 header.
 
 ```typescript
