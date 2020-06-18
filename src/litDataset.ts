@@ -94,9 +94,9 @@ export async function fetchLitDataset(
  * Retrieve the information about a resource (e.g. access permissions) without
  * fetching the resource itself.
  *
- * @param url URL to fetch a [[LitDataset]] from.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns Promise resolving to a [[LitDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
+ * @param url URL to fetch Resource metadata from.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
+ * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
  */
 export async function fetchResourceInfo(
   url: UrlString,
