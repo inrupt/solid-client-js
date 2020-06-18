@@ -50,10 +50,10 @@ There are two main ways of checking the access information of a Resource:
 
 1. Fetch the entire Resource, data and information at once. To do so, use the functions
    `unstable_fetchFile` or `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource
-   data (e.g. your profile or friend list) and the `ResourceInfo`, with the associated
+   data (e.g. your profile or friend list), the `ResourceInfo`, and the ACL containing the associated
    access information.
 2. Fetch only the information about a Resource, without fetching the Resource itself
-   with `fetchResourceInfo`.
+   with `fetchResourceInfo`, and then fetching the associated ACL (if any).
 
 ### Reading agent access
 
@@ -67,7 +67,6 @@ To do the former, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesOne,
-  unstable_getResourceInfoAndAcl,
 } from "@solid/lit-pod";
 
 const webId = "https://example.com/profile#webid";
@@ -75,7 +74,7 @@ const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
 const agentAccess = unstable_getAgentAccessModesOne(
-  unstable_getResourceInfoAndAcl(litDatasetWithAcl),
+  litDatasetWithAcl.acl,
   webId
 );
 
@@ -91,15 +90,12 @@ To get all agent to whom access was granted, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessModesAll,
-  unstable_getResourceInfoAndAcl,
 } from "@solid/lit-pod";
 
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const accessByAgent = unstable_getAgentAccessModesAll(
-  unstable_getResourceInfoAndAcl(litDatasetWithAcl)
-);
+const accessByAgent = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
 
 // => an object like
 //    {

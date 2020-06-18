@@ -194,12 +194,6 @@ export async function unstable_fetchLitDatasetWithAcl(
   return Object.assign(litDataset, { acl: acl });
 }
 
-export function unstable_getResourceInfoAndAcl(
-  resource: WithResourceInfo & unstable_WithAcl
-): WithResourceInfo["resourceInfo"] & unstable_WithAcl["acl"] {
-  return Object.assign(resource.resourceInfo, resource.acl);
-}
-
 const defaultSaveOptions = {
   fetch: fetch,
 };
