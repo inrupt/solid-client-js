@@ -366,7 +366,7 @@ describe("fetchLitDatasetWithAcl", () => {
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.acl.resourceAcl).toBeUndefined();
+    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
     expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
   });
 
@@ -428,7 +428,7 @@ describe("fetchLitDatasetWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.acl?.resourceAcl).toBeUndefined();
+    expect(fetchedLitDataset.acl?.resourceAcl).toBeNull();
     expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );

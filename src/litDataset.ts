@@ -175,7 +175,7 @@ export async function unstable_fetchLitDatasetWithAcl(
   if (!unstable_hasAccessibleAcl(litDataset)) {
     return Object.assign(litDataset, {
       acl: {
-        resourceAcl: undefined,
+        resourceAcl: null,
         fallbackAcl: null,
       },
     });
@@ -188,7 +188,7 @@ export async function unstable_fetchLitDatasetWithAcl(
 
   const acl: unstable_WithAcl["acl"] = {
     fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl !== null ? resourceAcl : undefined,
+    resourceAcl: resourceAcl !== null ? resourceAcl : null,
   };
 
   return Object.assign(litDataset, { acl: acl });
