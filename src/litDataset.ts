@@ -29,10 +29,9 @@ import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
 import {
   UrlString,
   LitDataset,
-  ResourceInfo,
-  ResourceWithInfo,
-  ChangeLog,
+  WithChangeLog,
   hasChangelog,
+  WithResourceInfo,
   hasResourceInfo,
   LocalNode,
   unstable_Acl,
@@ -65,7 +64,7 @@ export const defaultFetchOptions = {
 export async function fetchLitDataset(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & ResourceWithInfo> {
+): Promise<LitDataset & WithResourceInfo> {
   const config = {
     ...defaultFetchOptions,
     ...options,
@@ -85,7 +84,7 @@ export async function fetchLitDataset(
   const resourceInfo = parseResourceInfo(response);
 
   const resourceWithResourceInfo: LitDataset &
-    ResourceWithInfo = Object.assign(resource, { resourceInfo: resourceInfo });
+    WithResourceInfo = Object.assign(resource, { resourceInfo: resourceInfo });
 
   return resourceWithResourceInfo;
 }
@@ -101,7 +100,7 @@ export async function fetchLitDataset(
 export async function fetchResourceInfo(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<ResourceInfo> {
+): Promise<WithResourceInfo["resourceInfo"]> {
   const config = {
     ...defaultFetchOptions,
     ...options,
@@ -121,8 +120,8 @@ export async function fetchResourceInfo(
 
 function parseResourceInfo(
   response: Response
-): ResourceWithInfo["resourceInfo"] {
-  const resourceInfo: ResourceWithInfo["resourceInfo"] = {
+): WithResourceInfo["resourceInfo"] {
+  const resourceInfo: WithResourceInfo["resourceInfo"] = {
     fetchedFrom: response.url,
   };
   const linkHeader = response.headers.get("Link");
@@ -167,7 +166,7 @@ function parseResourceInfo(
 export async function unstable_fetchLitDatasetWithAcl(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & ResourceWithInfo & unstable_Acl> {
+): Promise<LitDataset & WithResourceInfo & unstable_Acl> {
   const litDataset = await fetchLitDataset(url, options);
 
   if (!unstable_hasAccessibleAcl(litDataset)) {
@@ -207,7 +206,7 @@ export async function saveLitDatasetAt(
   url: UrlString,
   litDataset: LitDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
-): Promise<LitDataset & ResourceWithInfo & ChangeLog> {
+): Promise<LitDataset & WithResourceInfo & WithChangeLog> {
   const config = {
     ...defaultSaveOptions,
     ...options,
@@ -262,14 +261,14 @@ export async function saveLitDatasetAt(
     );
   }
 
-  const resourceInfo: ResourceWithInfo["resourceInfo"] = hasResourceInfo(
+  const resourceInfo: WithResourceInfo["resourceInfo"] = hasResourceInfo(
     litDataset
   )
     ? { ...litDataset.resourceInfo, fetchedFrom: url }
     : { fetchedFrom: url };
   const storedDataset: LitDataset &
-    ChangeLog &
-    ResourceWithInfo = Object.assign(litDataset, {
+    WithChangeLog &
+    WithResourceInfo = Object.assign(litDataset, {
     changeLog: { additions: [], deletions: [] },
     resourceInfo: resourceInfo,
   });
@@ -285,8 +284,8 @@ function isUpdate(
   litDataset: LitDataset,
   url: UrlString
 ): litDataset is LitDataset &
-  ChangeLog &
-  ResourceWithInfo & { resourceInfo: { fetchedFrom: string } } {
+  WithChangeLog &
+  WithResourceInfo & { resourceInfo: { fetchedFrom: string } } {
   return (
     hasChangelog(litDataset) &&
     hasResourceInfo(litDataset) &&
@@ -315,7 +314,7 @@ export async function saveLitDatasetInContainer(
   containerUrl: UrlString,
   litDataset: LitDataset,
   options: SaveInContainerOptions = defaultSaveInContainerOptions
-): Promise<LitDataset & ResourceWithInfo> {
+): Promise<LitDataset & WithResourceInfo> {
   const config = {
     ...defaultSaveOptions,
     ...options,
@@ -352,10 +351,10 @@ export async function saveLitDatasetInContainer(
 
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
-  const resourceInfo: ResourceWithInfo["resourceInfo"] = {
+  const resourceInfo: WithResourceInfo["resourceInfo"] = {
     fetchedFrom: resourceIri,
   };
-  const resourceWithResourceInfo: LitDataset & ResourceWithInfo = Object.assign(
+  const resourceWithResourceInfo: LitDataset & WithResourceInfo = Object.assign(
     litDataset,
     {
       resourceInfo: resourceInfo,
@@ -389,7 +388,7 @@ function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
 }
 
 function resolveLocalIrisInLitDataset<
-  Dataset extends LitDataset & ResourceWithInfo
+  Dataset extends LitDataset & WithResourceInfo
 >(litDataset: Dataset): Dataset {
   const resourceIri = litDataset.resourceInfo.fetchedFrom;
   const unresolvedQuads = Array.from(litDataset);

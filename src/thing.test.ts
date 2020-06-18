@@ -37,8 +37,8 @@ import {
   ThingLocal,
   ThingPersisted,
   LitDataset,
-  ResourceWithInfo,
-  ChangeLog,
+  WithResourceInfo,
+  WithChangeLog,
 } from "./interfaces";
 
 function getMockQuad(
@@ -446,15 +446,13 @@ describe("setThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
-      dataset(),
-      {
-        changeLog: {
-          additions: [existingAddition],
-          deletions: [existingDeletion],
-        },
-      }
-    );
+    const datasetWithExistingChangeLog: LitDataset &
+      WithChangeLog = Object.assign(dataset(), {
+      changeLog: {
+        additions: [existingAddition],
+        deletions: [existingDeletion],
+      },
+    });
     datasetWithExistingChangeLog.add(oldThingQuad);
     datasetWithExistingChangeLog.add(otherQuad);
 
@@ -493,15 +491,13 @@ describe("setThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
-      dataset(),
-      {
-        changeLog: {
-          additions: [existingAddition],
-          deletions: [existingDeletion],
-        },
-      }
-    );
+    const datasetWithExistingChangeLog: LitDataset &
+      WithChangeLog = Object.assign(dataset(), {
+      changeLog: {
+        additions: [existingAddition],
+        deletions: [existingDeletion],
+      },
+    });
     datasetWithExistingChangeLog.add(oldThingQuad);
     datasetWithExistingChangeLog.add(otherQuad);
 
@@ -580,7 +576,7 @@ describe("setThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & ResourceWithInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },
@@ -622,7 +618,7 @@ describe("setThing", () => {
       DataFactory.namedNode("https://some.vocab/new-object")
     );
     const datasetWithLocalSubject: LitDataset &
-      ResourceWithInfo = Object.assign(dataset(), {
+      WithResourceInfo = Object.assign(dataset(), {
       resourceInfo: { fetchedFrom: "https://some.pod/resource" },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -745,15 +741,13 @@ describe("removeThing", () => {
     const existingDeletion = getMockQuad({
       object: "https://some.vocab/deletion-object",
     });
-    const datasetWithExistingChangeLog: LitDataset & ChangeLog = Object.assign(
-      dataset(),
-      {
-        changeLog: {
-          additions: [existingAddition],
-          deletions: [existingDeletion],
-        },
-      }
-    );
+    const datasetWithExistingChangeLog: LitDataset &
+      WithChangeLog = Object.assign(dataset(), {
+      changeLog: {
+        additions: [existingAddition],
+        deletions: [existingDeletion],
+      },
+    });
     datasetWithExistingChangeLog.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
@@ -810,7 +804,7 @@ describe("removeThing", () => {
       otherQuad,
     ]);
     expect(
-      (datasetWithMultipleThings as LitDataset & ChangeLog).changeLog
+      (datasetWithMultipleThings as LitDataset & WithChangeLog).changeLog
     ).toBeUndefined();
   });
 
@@ -880,7 +874,7 @@ describe("removeThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const datasetWithNamedNode: LitDataset & ResourceWithInfo = Object.assign(
+    const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },
@@ -911,7 +905,7 @@ describe("removeThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const datasetWithLocalNode: LitDataset & ResourceWithInfo = Object.assign(
+    const datasetWithLocalNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
         resourceInfo: { fetchedFrom: "https://some.pod/resource" },

@@ -42,8 +42,8 @@ import {
   createLitDataset,
 } from "./litDataset";
 import {
-  ChangeLog,
-  ResourceWithInfo,
+  WithChangeLog,
+  WithResourceInfo,
   IriString,
   LitDataset,
   LocalNode,
@@ -893,9 +893,9 @@ describe("saveLitDatasetAt", () => {
 
   describe("when updating an existing resource", () => {
     function getMockUpdatedDataset(
-      changeLog: ChangeLog["changeLog"],
+      changeLog: WithChangeLog["changeLog"],
       fromUrl: IriString
-    ): LitDataset & ChangeLog & ResourceWithInfo {
+    ): LitDataset & WithChangeLog & WithResourceInfo {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
@@ -910,7 +910,7 @@ describe("saveLitDatasetAt", () => {
         mockDataset.add(tripleToAdd)
       );
 
-      const resourceInfo: ResourceWithInfo["resourceInfo"] = {
+      const resourceInfo: WithResourceInfo["resourceInfo"] = {
         fetchedFrom: fromUrl,
       };
 

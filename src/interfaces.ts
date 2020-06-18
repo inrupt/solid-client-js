@@ -72,7 +72,7 @@ export type LocalNode = BlankNode & { name: string };
  * function is still experimental and can change in a non-major release.
  */
 export type unstable_AclDataset = LitDataset &
-  ResourceWithInfo & { accessTo: UrlString };
+  WithResourceInfo & { accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
@@ -108,34 +108,33 @@ type unstable_WacAllow = {
 /**
  * [[LitDataset]]s fetched by lit-pod include this metadata describing its relation to a Pod Resource.
  */
-export type ResourceWithInfo = {
-  resourceInfo: ResourceInfo;
+export type WithResourceInfo = {
+  resourceInfo: {
+    fetchedFrom: UrlString;
+    /**
+     * The URL reported by the server as possibly containing an ACL file. Note that this file might
+     * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
+     *
+     * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
+     *         in this API changing as well.
+     */
+    unstable_aclUrl?: UrlString;
+    /**
+     * Access permissions for the current user and the general public for this resource.
+     *
+     * @ignore There is no consensus yet about how this functionality will be incorporated in the
+     *         final spec, so the final implementation might influence this API in the future.
+     * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
+     * @see https://github.com/solid/specification/issues/171
+     */
+    unstable_permissions?: unstable_WacAllow;
+  };
 };
 
-export type ResourceInfo = {
-  fetchedFrom: UrlString;
-  /**
-   * The URL reported by the server as possibly containing an ACL file. Note that this file might
-   * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
-   *
-   * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
-   *         in this API changing as well.
-   */
-  unstable_aclUrl?: UrlString;
-  /**
-   * Access permissions for the current user and the general public for this resource.
-   *
-   * @ignore There is no consensus yet about how this functionality will be incorporated in the
-   *         final spec, so the final implementation might influence this API in the future.
-   * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
-   * @see https://github.com/solid/specification/issues/171
-   */
-  unstable_permissions?: unstable_WacAllow;
-};
 /**
  * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
-export type ChangeLog = {
+export type WithChangeLog = {
   changeLog: {
     additions: Quad[];
     deletions: Quad[];
@@ -160,16 +159,16 @@ export type unstable_Acl = {
  */
 export function hasResourceInfo<T extends LitDataset>(
   dataset: T
-): dataset is T & ResourceWithInfo {
-  const potentialResourceInfo = dataset as T & ResourceWithInfo;
+): dataset is T & WithResourceInfo {
+  const potentialResourceInfo = dataset as T & WithResourceInfo;
   return typeof potentialResourceInfo.resourceInfo === "object";
 }
 
 /** @internal */
 export function hasChangelog<T extends LitDataset>(
   dataset: T
-): dataset is T & ChangeLog {
-  const potentialChangeLog = dataset as T & ChangeLog;
+): dataset is T & WithChangeLog {
+  const potentialChangeLog = dataset as T & WithChangeLog;
   return (
     typeof potentialChangeLog.changeLog === "object" &&
     Array.isArray(potentialChangeLog.changeLog.additions) &&
@@ -187,7 +186,7 @@ export function hasChangelog<T extends LitDataset>(
  * @returns Whether the given `dataset` has ACL data attached to it.
  * @internal
  */
-export function unstable_hasAccessibleAcl<Dataset extends ResourceWithInfo>(
+export function unstable_hasAccessibleAcl<Dataset extends WithResourceInfo>(
   dataset: Dataset
 ): dataset is Dataset & {
   resourceInfo: { unstable_aclUrl: UrlString };

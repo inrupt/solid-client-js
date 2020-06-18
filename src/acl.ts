@@ -26,7 +26,7 @@ import {
   fetchResourceInfo,
 } from "./litDataset";
 import {
-  ResourceWithInfo,
+  WithResourceInfo,
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_AclRule,
@@ -40,7 +40,7 @@ import { getIriOne, getIriAll } from "./thing/get";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
-  dataset: ResourceWithInfo,
+  dataset: WithResourceInfo,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   if (!unstable_hasAccessibleAcl(dataset)) {
@@ -65,10 +65,10 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  dataset: ResourceWithInfo & {
+  dataset: WithResourceInfo & {
     resourceInfo: {
       unstable_aclUrl: Exclude<
-        ResourceWithInfo["resourceInfo"]["unstable_aclUrl"],
+        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
         undefined
       >;
     };

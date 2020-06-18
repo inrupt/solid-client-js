@@ -47,7 +47,7 @@ import {
   unstable_getFallbackAcl,
 } from "./acl";
 import {
-  ResourceWithInfo,
+  WithResourceInfo,
   ThingPersisted,
   unstable_AclRule,
   unstable_AclDataset,
@@ -63,7 +63,7 @@ function mockResponse(
 
 describe("fetchResourceAcl", () => {
   it("returns the fetched ACL LitDataset", async () => {
-    const sourceDataset: ResourceWithInfo = {
+    const sourceDataset: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
@@ -90,7 +90,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const sourceDataset: ResourceWithInfo = {
+    const sourceDataset: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
@@ -111,7 +111,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the source LitDataset has no known ACL IRI", async () => {
-    const sourceDataset: ResourceWithInfo = {
+    const sourceDataset: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
       },
@@ -123,7 +123,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the ACL was not found", async () => {
-    const sourceDataset: ResourceWithInfo = {
+    const sourceDataset: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
         unstable_aclUrl: "https://some.pod/resource.acl",
