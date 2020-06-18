@@ -96,6 +96,7 @@ import {
   unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
+  unstable_setAgentResourceAccessModes,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
   // Deprecated functions still exported for backwards compatibility:
@@ -190,6 +191,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getAgentAccessModesAll).toBeDefined();
   expect(unstable_getAgentResourceAccessModesOne).toBeDefined();
   expect(unstable_getAgentResourceAccessModesAll).toBeDefined();
+  expect(unstable_setAgentResourceAccessModes).toBeDefined();
   expect(unstable_getAgentDefaultAccessModesOne).toBeDefined();
   expect(unstable_getAgentDefaultAccessModesAll).toBeDefined();
 });

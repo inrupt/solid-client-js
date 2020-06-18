@@ -137,6 +137,7 @@ export {
   unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
+  unstable_setAgentResourceAccessModes,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
 } from "./acl/agent";
