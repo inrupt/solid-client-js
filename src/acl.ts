@@ -128,7 +128,7 @@ function getContainerPath(resourcePath: string): string {
 /**
  * Verify whether an ACL was found for the given Resource.
  *
- * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have an resource ACL attached, but
+ * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have a resource ACL attached, but
  * we cannot be sure: it might be that none exists for this specific Resource (in which case the
  * fallback ACL applies), or the currently authenticated user (if any) might not have Control access
  * to the fetched Resource.

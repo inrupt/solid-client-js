@@ -49,7 +49,7 @@ export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param resourceInfo Informations about the Resource to which Agents may have been granted access.
+ * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
@@ -79,7 +79,7 @@ export function unstable_getAgentAccessModesOne(
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param resourceInfo Informations about the Resource to which Agents may have been granted access.
+ * @param resourceInfo Information about the Resource to which Agents may have been granted access.
  * @returns Which Access Modes have been granted to which Agents specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesAll(
