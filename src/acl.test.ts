@@ -355,7 +355,9 @@ describe("getResourceAcl", () => {
   });
 
   it("returns null if the given LitDataset does not have a Resource ACL attached", () => {
-    const litDataset = Object.assign(dataset(), { acl: { fallbackAcl: null } });
+    const litDataset = Object.assign(dataset(), {
+      acl: { fallbackAcl: null, resourceAcl: null },
+    });
     expect(unstable_getResourceAcl(litDataset)).toBeNull();
   });
 });
@@ -367,13 +369,15 @@ describe("getFallbackAcl", () => {
       resourceInfo: { fetchedFrom: "https://arbitrary.pod/.acl" },
     });
     const litDataset = Object.assign(dataset(), {
-      acl: { fallbackAcl: aclDataset },
+      acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
     expect(unstable_getFallbackAcl(litDataset)).toEqual(aclDataset);
   });
 
   it("returns null if the given LitDataset does not have a Fallback ACL attached", () => {
-    const litDataset = Object.assign(dataset(), { acl: { fallbackAcl: null } });
+    const litDataset = Object.assign(dataset(), {
+      acl: { fallbackAcl: null, resourceAcl: null },
+    });
     expect(unstable_getFallbackAcl(litDataset)).toBeNull();
   });
 });

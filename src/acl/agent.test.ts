@@ -119,6 +119,7 @@ function addAclDatasetToLitDataset(
 ): LitDataset & WithResourceInfo & unstable_WithAcl {
   const acl: unstable_WithAcl["acl"] = {
     fallbackAcl: null,
+    resourceAcl: null,
     ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
   };
   if (type === "resource") {
@@ -154,7 +155,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     const accessModes = unstable_getAgentAccessModesOne(
-      litDatasetWithAcl.acl,
+      litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -182,7 +183,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     const accessModes = unstable_getAgentAccessModesOne(
-      litDatasetWithAcl.acl,
+      litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -197,7 +198,7 @@ describe("getAgentAccessModesOne", () => {
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: unstable_WithAcl = {
-      acl: { fallbackAcl: null },
+      acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
       litDataset,
@@ -206,7 +207,7 @@ describe("getAgentAccessModesOne", () => {
 
     expect(
       unstable_getAgentAccessModesOne(
-        litDatasetWithInaccessibleAcl.acl,
+        litDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
     ).toBeNull();
@@ -240,7 +241,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     const accessModes = unstable_getAgentAccessModesOne(
-      litDatasetWithAcl.acl,
+      litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -275,7 +276,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     const accessModes = unstable_getAgentAccessModesOne(
-      litDatasetWithAcl.acl,
+      litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -310,7 +311,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     const accessModes = unstable_getAgentAccessModesOne(
-      litDatasetWithAcl.acl,
+      litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
@@ -339,7 +340,7 @@ describe("getAgentAccessModesAll", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     expect(accessModes).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -366,7 +367,7 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     expect(accessModes).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -381,7 +382,7 @@ describe("getAgentAccessModesAll", () => {
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: unstable_WithAcl = {
-      acl: { fallbackAcl: null },
+      acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
       litDataset,
@@ -389,7 +390,7 @@ describe("getAgentAccessModesAll", () => {
     );
 
     expect(
-      unstable_getAgentAccessModesAll(litDatasetWithInaccessibleAcl.acl)
+      unstable_getAgentAccessModesAll(litDatasetWithInaccessibleAcl)
     ).toBeNull();
   });
 
@@ -420,7 +421,7 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     expect(accessModes).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -459,7 +460,7 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     // It only includes rules for agent "https://some.pod/profileDoc#webId",
     // not for "https://some-other.pod/profileDoc#webId"
@@ -495,7 +496,7 @@ describe("getAgentAccessModesAll", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     expect(accessModes).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -529,7 +530,7 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
     expect(accessModes).toEqual({
       "https://some.pod/profileDoc#webId": {

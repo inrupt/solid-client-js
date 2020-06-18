@@ -146,7 +146,7 @@ export type WithChangeLog = {
  */
 export type unstable_WithAcl = {
   acl: {
-    resourceAcl?: unstable_AclDataset;
+    resourceAcl: unstable_AclDataset | null;
     fallbackAcl: unstable_AclDataset | null;
   };
 };

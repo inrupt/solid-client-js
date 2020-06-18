@@ -54,18 +54,18 @@ export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
  * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesOne(
-  resourceInfo: unstable_WithAcl["acl"],
+  resourceInfo: unstable_WithAcl,
   agent: WebId
 ): unstable_AccessModes | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     return unstable_getAgentResourceAccessModesOne(
-      resourceInfo.resourceAcl,
+      resourceInfo.acl.resourceAcl,
       agent
     );
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
     return unstable_getAgentDefaultAccessModesOne(
-      resourceInfo.fallbackAcl,
+      resourceInfo.acl.fallbackAcl,
       agent
     );
   }
@@ -83,13 +83,15 @@ export function unstable_getAgentAccessModesOne(
  * @returns Which Access Modes have been granted to which Agents specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesAll(
-  resourceInfo: unstable_WithAcl["acl"]
+  resourceInfo: unstable_WithAcl
 ): unstable_AgentAccess | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getAgentResourceAccessModesAll(resourceInfo.resourceAcl);
+    return unstable_getAgentResourceAccessModesAll(
+      resourceInfo.acl.resourceAcl
+    );
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getAgentDefaultAccessModesAll(resourceInfo.fallbackAcl);
+    return unstable_getAgentDefaultAccessModesAll(resourceInfo.acl.fallbackAcl);
   }
   return null;
 }

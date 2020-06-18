@@ -135,15 +135,17 @@ function getContainerPath(resourcePath: string): string {
  *
  * This function verifies that the Resource's ACL is accessible.
  *
- * @param acl A Resource that might have an ACL attached.
+ * @param resource A Resource that might have an ACL attached.
  * @returns Whether `dataset` has an ACL attached.
  */
-export function unstable_hasResourceAcl<Acl extends unstable_WithAcl["acl"]>(
-  acl: Acl
-): acl is Acl & {
-  resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], undefined>;
+export function unstable_hasResourceAcl<Resource extends unstable_WithAcl>(
+  resource: Resource
+): resource is Resource & {
+  acl: {
+    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+  };
 } {
-  return typeof acl.resourceAcl !== "undefined";
+  return resource.acl.resourceAcl !== null;
 }
 
 /**
@@ -168,7 +170,7 @@ export function unstable_getResourceAcl(
 export function unstable_getResourceAcl(
   resource: unstable_WithAcl
 ): unstable_AclDataset | null {
-  if (!unstable_hasResourceAcl(resource.acl)) {
+  if (!unstable_hasResourceAcl(resource)) {
     return null;
   }
   return resource.acl.resourceAcl;
@@ -183,15 +185,17 @@ export function unstable_getResourceAcl(
  *
  * This function verifies that the fallback ACL is accessible.
  *
- * @param acl A [[LitDataset]] that might have a fallback ACL attached.
+ * @param resource A [[LitDataset]] that might have a fallback ACL attached.
  * @returns Whether `dataset` has a fallback ACL attached.
  */
-export function unstable_hasFallbackAcl<Acl extends unstable_WithAcl["acl"]>(
-  acl: Acl
-): acl is Acl & {
-  fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
+  resource: Resource
+): resource is Resource & {
+  acl: {
+    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+  };
 } {
-  return acl.fallbackAcl !== null;
+  return resource.acl.fallbackAcl !== null;
 }
 
 /**
@@ -216,7 +220,7 @@ export function unstable_getFallbackAcl(
 export function unstable_getFallbackAcl(
   dataset: unstable_WithAcl
 ): unstable_AclDataset | null {
-  if (!unstable_hasFallbackAcl(dataset.acl)) {
+  if (!unstable_hasFallbackAcl(dataset)) {
     return null;
   }
   return dataset.acl.fallbackAcl;
