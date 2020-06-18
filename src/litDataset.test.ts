@@ -40,6 +40,7 @@ import {
   unstable_fetchLitDatasetWithAcl,
   fetchResourceInfo,
   createLitDataset,
+  unstable_fetchResourceInfoWithAcl,
 } from "./litDataset";
 import {
   WithChangeLog,
@@ -473,6 +474,209 @@ describe("fetchLitDatasetWithAcl", () => {
   });
 });
 
+describe("fetchResourceInfoWithAcl", () => {
+  it("returns both the Resource's own ACL as well as its Container's", async () => {
+    const mockFetch = jest.fn((url) => {
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url,
+        })
+      );
+    });
+
+    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource.acl"
+    );
+    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/.acl"
+    );
+    expect(mockFetch.mock.calls).toHaveLength(4);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+    expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/");
+    expect(mockFetch.mock.calls[3][0]).toBe("https://some.pod/.acl");
+  });
+
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    await unstable_fetchResourceInfoWithAcl("https://some.pod/resource");
+
+    expect(mockedFetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.pod/resource",
+        {
+          method: "HEAD",
+        },
+      ],
+    ]);
+  });
+
+  it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
+    const mockFetch = jest.fn(window.fetch);
+
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          headers: {
+            Link: "",
+          },
+          url: "https://some.pod/resource",
+        })
+      )
+    );
+
+    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
+  });
+
+  it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
+    const mockFetch = jest.fn((url) => {
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: "" }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url,
+        })
+      );
+    });
+
+    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedLitDataset.acl).not.toBeNull();
+    expect(fetchedLitDataset.acl?.fallbackAcl).toBeNull();
+    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(
+          mockResponse("ACL not found", {
+            status: 404,
+            url: "https://some.pod/resource.acl",
+          })
+        );
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url,
+        })
+      );
+    });
+
+    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedLitDataset.acl?.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/.acl"
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const fetchPromise = unstable_fetchResourceInfoWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the Resource metadata failed: 403 Forbidden.")
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 404", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not found", { status: 404 }))
+      );
+
+    const fetchPromise = unstable_fetchResourceInfoWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the Resource metadata failed: 404 Not Found.")
+    );
+  });
+
+  it("does not request the actual data from the server", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          mockResponse(undefined, { url: "https://some.pod/resource" })
+        )
+      );
+
+    await unstable_fetchResourceInfoWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      ["https://some.pod/resource", { method: "HEAD" }],
+    ]);
+  });
+});
+
 describe("fetchResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("./fetcher.ts") as {
@@ -519,7 +723,9 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(litDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
+    expect(litDatasetInfo.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource"
+    );
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
@@ -539,7 +745,7 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_aclUrl).toBe(
+    expect(litDatasetInfo.resourceInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -560,7 +766,7 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_aclUrl).toBeUndefined();
+    expect(litDatasetInfo.resourceInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -579,7 +785,7 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_permissions).toEqual({
+    expect(litDatasetInfo.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -612,7 +818,7 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_permissions).toEqual({
+    expect(litDatasetInfo.resourceInfo.unstable_permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -642,7 +848,7 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_permissions).toBeUndefined();
+    expect(litDatasetInfo.resourceInfo.unstable_permissions).toBeUndefined();
   });
 
   it("does not request the actual data from the server", async () => {

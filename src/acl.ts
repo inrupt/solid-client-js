@@ -89,22 +89,16 @@ export async function internal_fetchFallbackAcl(
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
   const containerInfo = await fetchResourceInfo(containerIri, options);
-  const containerWithInfo = {
-    resourceInfo: containerInfo,
-  };
 
-  if (!unstable_hasAccessibleAcl(containerWithInfo)) {
+  if (!unstable_hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,
     // we cannot determine whether its ACL is the one that applies. Thus, return null:
     return null;
   }
 
-  const containerAcl = await internal_fetchResourceAcl(
-    containerWithInfo,
-    options
-  );
+  const containerAcl = await internal_fetchResourceAcl(containerInfo, options);
   if (containerAcl === null) {
-    return internal_fetchFallbackAcl(containerWithInfo, options);
+    return internal_fetchFallbackAcl(containerInfo, options);
   }
 
   return containerAcl;
