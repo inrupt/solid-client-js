@@ -28,6 +28,7 @@ export {
 export {
   createLitDataset,
   fetchLitDataset,
+  fetchResourceInfo,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
@@ -150,8 +151,8 @@ export {
   ThingPersisted,
   ThingLocal,
   LocalNode,
-  ResourceInfo,
-  ChangeLog,
+  WithResourceInfo,
+  WithChangeLog,
   unstable_Acl,
   unstable_AclDataset,
   unstable_AclRule,

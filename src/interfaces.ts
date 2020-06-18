@@ -72,7 +72,7 @@ export type LocalNode = BlankNode & { name: string };
  * function is still experimental and can change in a non-major release.
  */
 export type unstable_AclDataset = LitDataset &
-  ResourceInfo & { accessTo: UrlString };
+  WithResourceInfo & { accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
@@ -104,10 +104,11 @@ type unstable_WacAllow = {
   user: unstable_AccessModes;
   public: unstable_AccessModes;
 };
+
 /**
  * [[LitDataset]]s fetched by lit-pod include this metadata describing its relation to a Pod Resource.
  */
-export type ResourceInfo = {
+export type WithResourceInfo = {
   resourceInfo: {
     fetchedFrom: UrlString;
     /**
@@ -133,7 +134,7 @@ export type ResourceInfo = {
 /**
  * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
-export type ChangeLog = {
+export type WithChangeLog = {
   changeLog: {
     additions: Quad[];
     deletions: Quad[];
@@ -158,16 +159,16 @@ export type unstable_Acl = {
  */
 export function hasResourceInfo<T extends LitDataset>(
   dataset: T
-): dataset is T & ResourceInfo {
-  const potentialResourceInfo = dataset as T & ResourceInfo;
+): dataset is T & WithResourceInfo {
+  const potentialResourceInfo = dataset as T & WithResourceInfo;
   return typeof potentialResourceInfo.resourceInfo === "object";
 }
 
 /** @internal */
 export function hasChangelog<T extends LitDataset>(
   dataset: T
-): dataset is T & ChangeLog {
-  const potentialChangeLog = dataset as T & ChangeLog;
+): dataset is T & WithChangeLog {
+  const potentialChangeLog = dataset as T & WithChangeLog;
   return (
     typeof potentialChangeLog.changeLog === "object" &&
     Array.isArray(potentialChangeLog.changeLog.additions) &&
@@ -185,7 +186,7 @@ export function hasChangelog<T extends LitDataset>(
  * @returns Whether the given `dataset` has ACL data attached to it.
  * @internal
  */
-export function unstable_hasAccessibleAcl<Dataset extends ResourceInfo>(
+export function unstable_hasAccessibleAcl<Dataset extends WithResourceInfo>(
   dataset: Dataset
 ): dataset is Dataset & {
   resourceInfo: { unstable_aclUrl: UrlString };

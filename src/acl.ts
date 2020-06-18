@@ -23,10 +23,10 @@ import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
   defaultFetchOptions,
-  internal_fetchResourceInfo,
+  fetchResourceInfo,
 } from "./litDataset";
 import {
-  ResourceInfo,
+  WithResourceInfo,
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_AclRule,
@@ -40,7 +40,7 @@ import { getIriOne, getIriAll } from "./thing/get";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
-  dataset: ResourceInfo,
+  dataset: WithResourceInfo,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   if (!unstable_hasAccessibleAcl(dataset)) {
@@ -65,10 +65,10 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  dataset: ResourceInfo & {
+  dataset: WithResourceInfo & {
     resourceInfo: {
       unstable_aclUrl: Exclude<
-        ResourceInfo["resourceInfo"]["unstable_aclUrl"],
+        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
         undefined
       >;
     };
@@ -88,17 +88,23 @@ export async function internal_fetchFallbackAcl(
 
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
-  const containerInfo = await internal_fetchResourceInfo(containerIri, options);
+  const containerInfo = await fetchResourceInfo(containerIri, options);
+  const containerWithInfo = {
+    resourceInfo: containerInfo,
+  };
 
-  if (!unstable_hasAccessibleAcl(containerInfo)) {
+  if (!unstable_hasAccessibleAcl(containerWithInfo)) {
     // If the current user does not have access to this Container's ACL,
     // we cannot determine whether its ACL is the one that applies. Thus, return null:
     return null;
   }
 
-  const containerAcl = await internal_fetchResourceAcl(containerInfo, options);
+  const containerAcl = await internal_fetchResourceAcl(
+    containerWithInfo,
+    options
+  );
   if (containerAcl === null) {
-    return internal_fetchFallbackAcl(containerInfo, options);
+    return internal_fetchFallbackAcl(containerWithInfo, options);
   }
 
   return containerAcl;

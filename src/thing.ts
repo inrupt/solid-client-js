@@ -37,8 +37,8 @@ import {
   ThingLocal,
   LocalNode,
   ThingPersisted,
-  ChangeLog,
-  ResourceInfo,
+  WithChangeLog,
+  WithResourceInfo,
   hasChangelog,
   hasResourceInfo,
 } from "./interfaces";
@@ -136,7 +136,7 @@ export function getThingAll(
 export function setThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: Thing
-): Dataset & ChangeLog {
+): Dataset & WithChangeLog {
   const newDataset = removeThing(litDataset, thing);
 
   for (const quad of thing) {
@@ -157,7 +157,7 @@ export function setThing<Dataset extends LitDataset>(
 export function removeThing<Dataset extends LitDataset>(
   litDataset: Dataset,
   thing: UrlString | Url | LocalNode | Thing
-): Dataset & ChangeLog {
+): Dataset & WithChangeLog {
   const newLitDataset = withChangeLog(cloneLitStructs(litDataset));
   const resourceIri: UrlString | undefined = hasResourceInfo(newLitDataset)
     ? newLitDataset.resourceInfo.fetchedFrom
@@ -181,8 +181,8 @@ export function removeThing<Dataset extends LitDataset>(
 
 function withChangeLog<Dataset extends LitDataset>(
   litDataset: Dataset
-): Dataset & ChangeLog {
-  const newLitDataset: Dataset & ChangeLog = hasChangelog(litDataset)
+): Dataset & WithChangeLog {
+  const newLitDataset: Dataset & WithChangeLog = hasChangelog(litDataset)
     ? litDataset
     : Object.assign(litDataset, {
         changeLog: { additions: [], deletions: [] },
@@ -195,13 +195,13 @@ function cloneLitStructs<Dataset extends LitDataset>(
 ): Dataset {
   const freshDataset = dataset();
   if (hasChangelog(litDataset)) {
-    (freshDataset as LitDataset & ChangeLog).changeLog = {
+    (freshDataset as LitDataset & WithChangeLog).changeLog = {
       additions: [...litDataset.changeLog.additions],
       deletions: [...litDataset.changeLog.deletions],
     };
   }
   if (hasResourceInfo(litDataset)) {
-    (freshDataset as LitDataset & ResourceInfo).resourceInfo = {
+    (freshDataset as LitDataset & WithResourceInfo).resourceInfo = {
       ...litDataset.resourceInfo,
     };
   }
