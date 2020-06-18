@@ -154,7 +154,7 @@ export {
   LocalNode,
   WithResourceInfo,
   WithChangeLog,
-  unstable_ResourceWithAcl,
+  unstable_WithAcl,
   unstable_AclDataset,
   unstable_AclRule,
   unstable_AccessModes,

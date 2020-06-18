@@ -34,10 +34,9 @@ import {
   WithResourceInfo,
   hasResourceInfo,
   LocalNode,
-  unstable_ResourceWithAcl,
+  unstable_WithAcl,
   unstable_hasAccessibleAcl,
   unstable_AccessModes,
-  unstable_Acl,
 } from "./interfaces";
 
 /**
@@ -170,7 +169,7 @@ export function parseResourceInfo(
 export async function unstable_fetchLitDatasetWithAcl(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo & unstable_ResourceWithAcl> {
+): Promise<LitDataset & WithResourceInfo & unstable_WithAcl> {
   const litDataset = await fetchLitDataset(url, options);
 
   if (!unstable_hasAccessibleAcl(litDataset)) {
@@ -187,7 +186,7 @@ export async function unstable_fetchLitDatasetWithAcl(
     internal_fetchFallbackAcl(litDataset, options),
   ]);
 
-  const acl: unstable_ResourceWithAcl["acl"] = {
+  const acl: unstable_WithAcl["acl"] = {
     fallbackAcl: fallbackAcl,
     resourceAcl: resourceAcl !== null ? resourceAcl : undefined,
   };
@@ -196,8 +195,8 @@ export async function unstable_fetchLitDatasetWithAcl(
 }
 
 export function unstable_getResourceInfoAndAcl(
-  resource: WithResourceInfo & unstable_ResourceWithAcl
-): WithResourceInfo['resourceInfo'] & unstable_Acl {
+  resource: WithResourceInfo & unstable_WithAcl
+): WithResourceInfo["resourceInfo"] & unstable_WithAcl["acl"] {
   return Object.assign(resource.resourceInfo, resource.acl);
 }
 

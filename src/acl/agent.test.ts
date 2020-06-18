@@ -33,7 +33,7 @@ import {
 import {
   LitDataset,
   unstable_AccessModes,
-  unstable_ResourceWithAcl,
+  unstable_WithAcl,
   WithResourceInfo,
   IriString,
   unstable_AclDataset,
@@ -117,10 +117,10 @@ function addAclDatasetToLitDataset(
   litDataset: LitDataset & WithResourceInfo,
   aclDataset: unstable_AclDataset,
   type: "resource" | "fallback"
-): LitDataset & WithResourceInfo & unstable_ResourceWithAcl {
-  const acl: unstable_ResourceWithAcl["acl"] = {
+): LitDataset & WithResourceInfo & unstable_WithAcl {
+  const acl: unstable_WithAcl["acl"] = {
     fallbackAcl: null,
-    ...(((litDataset as any) as unstable_ResourceWithAcl).acl ?? {}),
+    ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
   };
   if (type === "resource") {
     acl.resourceAcl = aclDataset;
@@ -197,7 +197,7 @@ describe("getAgentAccessModesOne", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_ResourceWithAcl = {
+    const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -385,7 +385,7 @@ describe("getAgentAccessModesAll", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_ResourceWithAcl = {
+    const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(

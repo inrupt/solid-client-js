@@ -23,8 +23,7 @@ import {
   WithResourceInfo,
   LitDataset,
   WebId,
-  unstable_ResourceWithAcl,
-  unstable_Acl,
+  unstable_WithAcl,
   unstable_AclDataset,
   unstable_AccessModes,
   unstable_AclRule,
@@ -38,9 +37,7 @@ import {
   internal_getAccessModes,
   internal_combineAccessModes,
   unstable_hasResourceAcl,
-  unstable_getResourceAcl,
   unstable_hasFallbackAcl,
-  unstable_getFallbackAcl,
 } from "../acl";
 
 export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
@@ -57,7 +54,7 @@ export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
  * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesOne(
-resourceInfo: WithResourceInfo["resourceInfo"] & unstable_Acl,
+  resourceInfo: WithResourceInfo["resourceInfo"] & unstable_WithAcl["acl"],
   agent: WebId
 ): unstable_AccessModes | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
@@ -86,7 +83,7 @@ resourceInfo: WithResourceInfo["resourceInfo"] & unstable_Acl,
  * @returns Which Access Modes have been granted to which Agents specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function unstable_getAgentAccessModesAll(
-resourceInfo: WithResourceInfo["resourceInfo"] & unstable_Acl
+  resourceInfo: WithResourceInfo["resourceInfo"] & unstable_WithAcl["acl"]
 ): unstable_AgentAccess | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     return unstable_getAgentResourceAccessModesAll(resourceInfo.resourceAcl);
