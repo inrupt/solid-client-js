@@ -21,13 +21,15 @@
 
 import {
   WebId,
+  WithChangeLog,
   unstable_WithAcl,
   unstable_AclDataset,
   unstable_AccessModes,
   unstable_AclRule,
+  IriString,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
-import { acl } from "../constants";
+import { acl, rdf } from "../constants";
 import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,
@@ -38,7 +40,13 @@ import {
   unstable_getResourceAcl,
   unstable_hasFallbackAcl,
   unstable_getFallbackAcl,
+  internal_accessModeIriStrings,
+  internal_removeEmptyAclRules,
 } from "../acl";
+import { createThing, getThingAll, setThing } from "../thing";
+import { removeIri } from "../thing/remove";
+import { setIri } from "../thing/set";
+import { addIri } from "../thing/add";
 
 export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
 
@@ -148,6 +156,57 @@ export function unstable_getAgentResourceAccessModesAll(
 }
 
 /**
+ * Given an ACL LitDataset, modify the ACL Rules to set specific Access Modes for a given Agent.
+ *
+ * If the given ACL LitDataset already includes ACL Rules that grant a certain set of Access Modes
+ * to the given Agent, those will be overridden by the given Access Modes.
+ *
+ * Keep in mind that this function will not modify:
+ * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
+ * - what access arbitrary Agents have to child Resources.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param agent The Agent to grant specific Access Modes.
+ * @param accessModes The Access Modes to grant to the Agent.
+ */
+export function unstable_setAgentResourceAccessModes(
+  aclDataset: unstable_AclDataset,
+  agent: WebId,
+  accessModes: unstable_AccessModes
+): unstable_AclDataset & WithChangeLog {
+  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // give the Agent access to the Resource:
+  let filteredAcl = aclDataset;
+  getThingAll(aclDataset).forEach((aclRule) => {
+    // Obtain both the Rule that no longer includes the given Agent,
+    // and a new Rule that includes all ACL Quads
+    // that do not pertain to the given Agent-Resource combination.
+    // Note that usually, the latter will no longer include any meaningful statements;
+    // we'll clean them up afterwards.
+    const [filteredRule, remainingRule] = removeAgentFromResourceRule(
+      aclRule,
+      agent,
+      aclDataset.accessTo
+    );
+    filteredAcl = setThing(filteredAcl, filteredRule);
+    filteredAcl = setThing(filteredAcl, remainingRule);
+  });
+
+  // Create a new Rule that only grants the given Agent the given Access Modes:
+  let newRule = intialiseAclRule(accessModes);
+  newRule = setIri(newRule, acl.accessTo, aclDataset.accessTo);
+  newRule = setIri(newRule, acl.agent, agent);
+  const updatedAcl = setThing(filteredAcl, newRule);
+
+  // Remove any remaining Rules that do not contain any meaningful statements:
+  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
+
+  return cleanedAcl;
+}
+
+/**
  * Given an ACL LitDataset, find out which access modes it provides to an Agent for the associated Container Resource's child Resources.
  *
  * Keep in mind that this function will not tell you:
@@ -216,6 +275,86 @@ function getAgentAclRules(aclRules: unstable_AclRule[]): unstable_AclRule[] {
 
 function isAgentAclRule(aclRule: unstable_AclRule): boolean {
   return getIriOne(aclRule, acl.agent) !== null;
+}
+
+/**
+ * Create a new ACL Rule with the same ACL values as the input ACL Rule, but having a different IRI.
+ *
+ * Note that non-ACL values will not be copied over.
+ *
+ * @param sourceRule ACL rule to duplicate.
+ */
+function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
+  let targetRule = createThing();
+  targetRule = setIri(targetRule, rdf.type, acl.Authorization);
+
+  function copyIris(
+    inputRule: typeof sourceRule,
+    outputRule: typeof targetRule,
+    predicate: IriString
+  ) {
+    return getIriAll(inputRule, predicate).reduce(
+      (outputRule, iriTarget) => addIri(outputRule, predicate, iriTarget),
+      outputRule
+    );
+  }
+
+  targetRule = copyIris(sourceRule, targetRule, acl.accessTo);
+  targetRule = copyIris(sourceRule, targetRule, acl.default);
+  targetRule = copyIris(sourceRule, targetRule, acl.agent);
+  targetRule = copyIris(sourceRule, targetRule, acl.agentGroup);
+  targetRule = copyIris(sourceRule, targetRule, acl.agentClass);
+  targetRule = copyIris(sourceRule, targetRule, acl.origin);
+  targetRule = copyIris(sourceRule, targetRule, acl.mode);
+
+  return targetRule;
+}
+
+/**
+ * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
+ * except for giving the given Agent access to the given Resource.
+ *
+ * @param rule The ACL Rule that should no longer apply for a given Agent to a given Resource.
+ * @param agent The Agent that should be removed from the Rule for the given Resource.
+ * @param resourceIri The Resource to which the Rule should no longer apply for the given Agent.
+ * @returns A tuple with the original ACL Rule sans the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
+ */
+function removeAgentFromResourceRule(
+  rule: unstable_AclRule,
+  agent: WebId,
+  resourceIri: IriString
+): [unstable_AclRule, unstable_AclRule] {
+  // The existing rule will keep applying to Agents other than the given one:
+  let ruleWithoutAgent = removeIri(rule, acl.agent, agent);
+  // The new rule will...
+  let ruleForOtherTargets = duplicateAclRule(rule);
+  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
+  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
+  // ...but not to the given Resource:
+  ruleForOtherTargets = removeIri(
+    ruleForOtherTargets,
+    acl.accessTo,
+    resourceIri
+  );
+  return [ruleWithoutAgent, ruleForOtherTargets];
+}
+
+function intialiseAclRule(accessModes: unstable_AccessModes): unstable_AclRule {
+  let newRule = createThing();
+  newRule = setIri(newRule, rdf.type, acl.Authorization);
+  if (accessModes.read) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.read);
+  }
+  if (accessModes.append && !accessModes.write) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.append);
+  }
+  if (accessModes.write) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.write);
+  }
+  if (accessModes.control) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.control);
+  }
+  return newRule;
 }
 
 function getAccessModesByAgent(
