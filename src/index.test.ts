@@ -26,7 +26,6 @@ import {
   unstable_overwriteFile,
   createLitDataset,
   fetchLitDataset,
-  fetchResourceInfo,
   unstable_fetchResourceInfoWithAcl,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
@@ -121,7 +120,6 @@ it("exports the public API from the entry file", () => {
   expect(unstable_overwriteFile).toBeDefined();
   expect(createLitDataset).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
-  expect(fetchResourceInfo).toBeDefined();
   expect(unstable_fetchResourceInfoWithAcl).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();

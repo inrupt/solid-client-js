@@ -97,10 +97,10 @@ export async function fetchLitDataset(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
  */
-export async function fetchResourceInfo(
+export async function internal_fetchResourceInfo(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<WithResourceInfo> {
+): Promise<WithResourceInfo["resourceInfo"]> {
   const config = {
     ...defaultFetchOptions,
     ...options,
@@ -115,7 +115,7 @@ export async function fetchResourceInfo(
 
   const resourceInfo = parseResourceInfo(response);
 
-  return { resourceInfo };
+  return resourceInfo;
 }
 
 /**
@@ -126,16 +126,14 @@ export async function fetchResourceInfo(
  * @param resourceInfo The Resource info with the ACL URL
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  */
-export async function unstable_fetchAcl(
+export async function internal_fetchAcl(
   resourceInfo: WithResourceInfo,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<unstable_WithAcl> {
+): Promise<unstable_WithAcl["acl"]> {
   if (!unstable_hasAccessibleAcl(resourceInfo)) {
     return {
-      acl: {
-        resourceAcl: null,
-        fallbackAcl: null,
-      },
+      resourceAcl: null,
+      fallbackAcl: null,
     };
   }
   const [resourceAcl, fallbackAcl] = await Promise.all([
@@ -144,10 +142,8 @@ export async function unstable_fetchAcl(
   ]);
 
   return {
-    acl: {
-      fallbackAcl: fallbackAcl,
-      resourceAcl: resourceAcl,
-    },
+    fallbackAcl: fallbackAcl,
+    resourceAcl: resourceAcl,
   };
 }
 
@@ -173,9 +169,9 @@ export async function unstable_fetchResourceInfoWithAcl(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<WithResourceInfo & unstable_WithAcl> {
-  const resourceInfo = await fetchResourceInfo(url, options);
-  const acl = await unstable_fetchAcl(resourceInfo, options);
-  return Object.assign(resourceInfo, acl);
+  const resourceInfo = await internal_fetchResourceInfo(url, options);
+  const acl = await internal_fetchAcl({ resourceInfo }, options);
+  return Object.assign({ resourceInfo }, { acl });
 }
 
 /**
@@ -231,8 +227,8 @@ export async function unstable_fetchLitDatasetWithAcl(
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<LitDataset & WithResourceInfo & unstable_WithAcl> {
   const litDataset = await fetchLitDataset(url, options);
-  const acl = await unstable_fetchAcl(litDataset, options);
-  return Object.assign(litDataset, acl);
+  const acl = await internal_fetchAcl(litDataset, options);
+  return Object.assign(litDataset, { acl });
 }
 
 const defaultSaveOptions = {

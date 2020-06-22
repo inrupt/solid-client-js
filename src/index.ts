@@ -28,7 +28,6 @@ export {
 export {
   createLitDataset,
   fetchLitDataset,
-  fetchResourceInfo,
   unstable_fetchResourceInfoWithAcl,
   saveLitDatasetAt,
   saveLitDatasetInContainer,

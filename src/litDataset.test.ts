@@ -37,9 +37,9 @@ import {
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
-  unstable_fetchAcl,
+  internal_fetchAcl,
   unstable_fetchLitDatasetWithAcl,
-  fetchResourceInfo,
+  internal_fetchResourceInfo,
   createLitDataset,
   unstable_fetchResourceInfoWithAcl,
 } from "./litDataset";
@@ -311,7 +311,7 @@ describe("fetchAcl", () => {
       },
     };
 
-    await unstable_fetchAcl(mockResourceInfo);
+    await internal_fetchAcl(mockResourceInfo);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       ["https://some.pod/resource.acl"],
@@ -328,13 +328,13 @@ describe("fetchAcl", () => {
       },
     };
 
-    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+    const fetchedAcl = await internal_fetchAcl(mockResourceInfo, {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toHaveLength(0);
-    expect(fetchedAcl.acl.resourceAcl).toBeNull();
-    expect(fetchedAcl.acl.fallbackAcl).toBeNull();
+    expect(fetchedAcl.resourceAcl).toBeNull();
+    expect(fetchedAcl.fallbackAcl).toBeNull();
   });
 
   it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
@@ -360,13 +360,13 @@ describe("fetchAcl", () => {
       },
     };
 
-    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+    const fetchedAcl = await internal_fetchAcl(mockResourceInfo, {
       fetch: mockFetch,
     });
 
     expect(fetchedAcl).not.toBeNull();
-    expect(fetchedAcl.acl.fallbackAcl).toBeNull();
-    expect(fetchedAcl.acl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.fallbackAcl).toBeNull();
+    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -403,12 +403,12 @@ describe("fetchAcl", () => {
       },
     };
 
-    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+    const fetchedAcl = await internal_fetchAcl(mockResourceInfo, {
       fetch: mockFetch,
     });
 
-    expect(fetchedAcl.acl.resourceAcl).toBeNull();
-    expect(fetchedAcl.acl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.resourceAcl).toBeNull();
+    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
   });
@@ -678,7 +678,7 @@ describe("fetchResourceInfo", () => {
       >;
     };
 
-    await fetchResourceInfo("https://some.pod/resource");
+    await internal_fetchResourceInfo("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
@@ -691,7 +691,7 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchResourceInfo("https://some.pod/resource", {
+    await internal_fetchResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -708,16 +708,14 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/resource"
-    );
+    expect(litDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
@@ -732,12 +730,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.resourceInfo.unstable_aclUrl).toBe(
+    expect(litDatasetInfo.unstable_aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -753,12 +751,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.resourceInfo.unstable_aclUrl).toBeUndefined();
+    expect(litDatasetInfo.unstable_aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -772,12 +770,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.resourceInfo.unstable_permissions).toEqual({
+    expect(litDatasetInfo.unstable_permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -805,12 +803,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.resourceInfo.unstable_permissions).toEqual({
+    expect(litDatasetInfo.unstable_permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -835,12 +833,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await fetchResourceInfo(
+    const litDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.resourceInfo.unstable_permissions).toBeUndefined();
+    expect(litDatasetInfo.unstable_permissions).toBeUndefined();
   });
 
   it("does not request the actual data from the server", async () => {
@@ -852,7 +850,7 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    await fetchResourceInfo("https://some.pod/resource", {
+    await internal_fetchResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -868,9 +866,12 @@ describe("fetchResourceInfo", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchResourceInfo("https://arbitrary.pod/resource", {
-      fetch: mockFetch,
-    });
+    const fetchPromise = internal_fetchResourceInfo(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource metadata failed: 403 Forbidden.")
@@ -884,9 +885,12 @@ describe("fetchResourceInfo", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchResourceInfo("https://arbitrary.pod/resource", {
-      fetch: mockFetch,
-    });
+    const fetchPromise = internal_fetchResourceInfo(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource metadata failed: 404 Not Found.")

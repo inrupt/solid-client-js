@@ -23,7 +23,7 @@ import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
   defaultFetchOptions,
-  fetchResourceInfo,
+  internal_fetchResourceInfo,
 } from "./litDataset";
 import {
   WithResourceInfo,
@@ -88,7 +88,9 @@ export async function internal_fetchFallbackAcl(
 
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
-  const containerInfo = await fetchResourceInfo(containerIri, options);
+  const containerInfo = {
+    resourceInfo: await internal_fetchResourceInfo(containerIri, options),
+  };
 
   if (!unstable_hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,
