@@ -119,34 +119,35 @@ export async function fetchResourceInfo(
 }
 
 /**
+ * @internal
+ *
  * This (currently internal) function fetches the ACL indicated in the [[WithResourceInfo]]
  * attached to a resource.
  * @param resourceInfo The Resource info with the ACL URL
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  */
-// async function unstable_fetchAcl(
-//   resourceInfo: WithResourceInfo,
-//   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-// ) : Promise<unstable_WithAcl["acl"]> {
+export async function unstable_fetchAcl(
+  resourceInfo: WithResourceInfo,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<unstable_WithAcl["acl"]> {
+  if (!unstable_hasAccessibleAcl(resourceInfo)) {
+    return {
+      resourceAcl: null,
+      fallbackAcl: null,
+    };
+  }
+  const [resourceAcl, fallbackAcl] = await Promise.all([
+    internal_fetchResourceAcl(resourceInfo, options),
+    internal_fetchFallbackAcl(resourceInfo, options),
+  ]);
 
-//   if (!unstable_hasAccessibleAcl(resourceInfo)) {
-//     return {
-//         resourceAcl: null,
-//         fallbackAcl: null,
-//     };
-//   }
-//   const [resourceAcl, fallbackAcl] = await Promise.all([
-//     internal_fetchResourceAcl(resourceInfo, options),
-//     internal_fetchFallbackAcl(resourceInfo, options),
-//   ]);
+  const acl: unstable_WithAcl["acl"] = {
+    fallbackAcl: fallbackAcl,
+    resourceAcl: resourceAcl,
+  };
 
-//   const acl: unstable_WithAcl["acl"] = {
-//     fallbackAcl: fallbackAcl,
-//     resourceAcl: resourceAcl,
-//   };
-
-//   return acl;
-// }
+  return acl;
+}
 
 /**
  * Experimental: fetch a LitDataset and its associated Access Control List.
@@ -172,27 +173,7 @@ export async function unstable_fetchResourceInfoWithAcl(
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<WithResourceInfo & unstable_WithAcl> {
   const resourceInfo = await fetchResourceInfo(url, options);
-  // const acl = await unstable_fetchAcl(resourceInfo);
-
-  if (!unstable_hasAccessibleAcl(resourceInfo)) {
-    return Object.assign(resourceInfo, {
-      acl: {
-        resourceAcl: null,
-        fallbackAcl: null,
-      },
-    });
-  }
-
-  const [resourceAcl, fallbackAcl] = await Promise.all([
-    internal_fetchResourceAcl(resourceInfo, options),
-    internal_fetchFallbackAcl(resourceInfo, options),
-  ]);
-
-  const acl: unstable_WithAcl["acl"] = {
-    fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl,
-  };
-
+  const acl = await unstable_fetchAcl(resourceInfo, options);
   return Object.assign(resourceInfo, { acl });
 }
 
@@ -249,25 +230,7 @@ export async function unstable_fetchLitDatasetWithAcl(
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<LitDataset & WithResourceInfo & unstable_WithAcl> {
   const litDataset = await fetchLitDataset(url, options);
-  // const acl = await unstable_fetchAcl(litDataset);
-  if (!unstable_hasAccessibleAcl(litDataset)) {
-    return Object.assign(litDataset, {
-      acl: {
-        resourceAcl: null,
-        fallbackAcl: null,
-      },
-    });
-  }
-
-  const [resourceAcl, fallbackAcl] = await Promise.all([
-    internal_fetchResourceAcl(litDataset, options),
-    internal_fetchFallbackAcl(litDataset, options),
-  ]);
-
-  const acl: unstable_WithAcl["acl"] = {
-    fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl,
-  };
+  const acl = await unstable_fetchAcl(litDataset, options);
   return Object.assign(litDataset, { acl: acl });
 }
 

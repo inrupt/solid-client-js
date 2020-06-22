@@ -37,6 +37,7 @@ import {
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
+  unstable_fetchAcl,
   unstable_fetchLitDatasetWithAcl,
   fetchResourceInfo,
   createLitDataset,
@@ -294,6 +295,125 @@ describe("fetchLitDataset", () => {
   });
 });
 
+describe("fetchAcl", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const mockResourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    await unstable_fetchAcl(mockResourceInfo);
+
+    expect(mockedFetcher.fetch.mock.calls).toEqual([
+      ["https://some.pod/resource.acl"],
+      ["https://some.pod/", { method: "HEAD" }],
+    ]);
+  });
+
+  it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
+    const mockFetch = jest.fn(window.fetch);
+
+    const mockResourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+      },
+    };
+
+    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toHaveLength(0);
+    expect(fetchedAcl.resourceAcl).toBeNull();
+    expect(fetchedAcl.fallbackAcl).toBeNull();
+  });
+
+  it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
+    const mockFetch = jest.fn((url) => {
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: "" }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url,
+        })
+      );
+    });
+
+    const mockResourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+      fetch: mockFetch,
+    });
+
+    expect(fetchedAcl).not.toBeNull();
+    expect(fetchedAcl.fallbackAcl).toBeNull();
+    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(
+          mockResponse("ACL not found", {
+            status: 404,
+            url: "https://some.pod/resource.acl",
+          })
+        );
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url,
+        })
+      );
+    });
+
+    const mockResourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    const fetchedAcl = await unstable_fetchAcl(mockResourceInfo, {
+      fetch: mockFetch,
+    });
+
+    expect(fetchedAcl.resourceAcl).toBeNull();
+    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/.acl"
+    );
+  });
+});
+
 describe("fetchLitDatasetWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
@@ -369,70 +489,6 @@ describe("fetchLitDatasetWithAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
     expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
-  });
-
-  it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
-    const mockFetch = jest.fn((url) => {
-      const headers =
-        url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
-          ? { Link: "" }
-          : undefined;
-      return Promise.resolve(
-        mockResponse(undefined, {
-          headers: headers,
-          url: url,
-        })
-      );
-    });
-
-    const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
-      "https://some.pod/resource",
-      { fetch: mockFetch }
-    );
-
-    expect(fetchedLitDataset.acl).not.toBeNull();
-    expect(fetchedLitDataset.acl?.fallbackAcl).toBeNull();
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/resource.acl"
-    );
-  });
-
-  it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
-    const mockFetch = jest.fn((url) => {
-      if (url === "https://some.pod/resource.acl") {
-        return Promise.resolve(
-          mockResponse("ACL not found", {
-            status: 404,
-            url: "https://some.pod/resource.acl",
-          })
-        );
-      }
-
-      const headers =
-        url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
-      return Promise.resolve(
-        mockResponse(undefined, {
-          headers: headers,
-          url: url,
-        })
-      );
-    });
-
-    const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
-      "https://some.pod/resource",
-      { fetch: mockFetch }
-    );
-
-    expect(fetchedLitDataset.acl?.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -554,70 +610,6 @@ describe("fetchResourceInfoWithAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
     expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
-  });
-
-  it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
-    const mockFetch = jest.fn((url) => {
-      const headers =
-        url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
-          ? { Link: "" }
-          : undefined;
-      return Promise.resolve(
-        mockResponse(undefined, {
-          headers: headers,
-          url: url,
-        })
-      );
-    });
-
-    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
-      "https://some.pod/resource",
-      { fetch: mockFetch }
-    );
-
-    expect(fetchedLitDataset.acl).not.toBeNull();
-    expect(fetchedLitDataset.acl?.fallbackAcl).toBeNull();
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/resource.acl"
-    );
-  });
-
-  it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
-    const mockFetch = jest.fn((url) => {
-      if (url === "https://some.pod/resource.acl") {
-        return Promise.resolve(
-          mockResponse("ACL not found", {
-            status: 404,
-            url: "https://some.pod/resource.acl",
-          })
-        );
-      }
-
-      const headers =
-        url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
-      return Promise.resolve(
-        mockResponse(undefined, {
-          headers: headers,
-          url: url,
-        })
-      );
-    });
-
-    const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
-      "https://some.pod/resource",
-      { fetch: mockFetch }
-    );
-
-    expect(fetchedLitDataset.acl?.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
