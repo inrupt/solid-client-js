@@ -46,14 +46,9 @@ We currently only support reading what access has been granted to individual age
 
 ### Fetching access information
 
-There are two main ways of checking the access information of a Resource:
-
-1. Fetch the entire Resource, data and information at once. To do so, use the functions
-   `unstable_fetchFile` or `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource
-   data (e.g. your profile or friend list), the `ResourceInfo`, and the ACL containing the associated
-   access information.
-2. Fetch only the information about a Resource, without fetching the Resource itself
-   with `fetchResourceInfo`, and then fetching the associated ACL (if any).
+Getting access information when fetching a resource may result in an additional request to the server. To avoid
+unecessary requests, the API makes it explicit when you get access information along your resource: `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
+and the ACL containing the associated access information.
 
 ### Reading agent access
 
