@@ -68,10 +68,7 @@ const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const agentAccess = unstable_getAgentAccessModesOne(
-  litDatasetWithAcl.acl,
-  webId
-);
+const agentAccess = unstable_getAgentAccessModesOne(litDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -90,7 +87,7 @@ import {
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const accessByAgent = unstable_getAgentAccessModesAll(litDatasetWithAcl.acl);
+const accessByAgent = unstable_getAgentAccessModesAll(litDatasetWithAcl);
 
 // => an object like
 //    {
