@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Quad } from "rdf-js";
 import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
@@ -35,8 +36,9 @@ import {
   IriString,
   unstable_WithAcl,
 } from "./interfaces";
-import { getThingAll } from "./thing";
+import { getThingAll, removeThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
+import { DataFactory } from "./rdfjs";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
@@ -330,6 +332,87 @@ export function internal_combineAccessModes(
     },
     { read: false, append: false, write: false, control: false }
   );
+}
+
+/** @internal */
+export function internal_removeEmptyAclRules<
+  Dataset extends unstable_AclDataset
+>(aclDataset: Dataset): Dataset {
+  const aclRules = internal_getAclRules(aclDataset);
+  const aclRulesToRemove = aclRules.filter(isEmptyAclRule);
+
+  // Is this too clever? It iterates over aclRulesToRemove, one by one removing them from aclDataset.
+  const updatedAclDataset = aclRulesToRemove.reduce(removeThing, aclDataset);
+
+  return updatedAclDataset;
+}
+
+function isEmptyAclRule(aclRule: unstable_AclRule): boolean {
+  // If there are Quads in there unrelated to Access Control,
+  // this is not an empty ACL rule that can be deleted:
+  if (Array.from(aclRule).some((quad) => !isAclQuad(quad))) {
+    return false;
+  }
+
+  // If the rule does not apply to any Resource, it is no longer working:
+  if (
+    getIriOne(aclRule, acl.accessTo) === null &&
+    getIriOne(aclRule, acl.default) === null
+  ) {
+    return true;
+  }
+
+  // If the rule does not specify Access Modes, it is no longer working:
+  if (getIriOne(aclRule, acl.mode) === null) {
+    return true;
+  }
+
+  // If the rule does not specify whom it applies to, it is no longer working:
+  if (
+    getIriOne(aclRule, acl.agent) === null &&
+    getIriOne(aclRule, acl.agentGroup) === null &&
+    getIriOne(aclRule, acl.agentClass) === null
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function isAclQuad(quad: Quad): boolean {
+  const predicate = quad.predicate;
+  const object = quad.object;
+  if (
+    predicate.equals(DataFactory.namedNode(rdf.type)) &&
+    object.equals(DataFactory.namedNode(acl.Authorization))
+  ) {
+    return true;
+  }
+  if (
+    predicate.equals(DataFactory.namedNode(acl.accessTo)) ||
+    predicate.equals(DataFactory.namedNode(acl.default))
+  ) {
+    return true;
+  }
+  if (
+    predicate.equals(DataFactory.namedNode(acl.mode)) &&
+    Object.values(accessModeIriStrings).some((mode) =>
+      object.equals(DataFactory.namedNode(mode))
+    )
+  ) {
+    return true;
+  }
+  if (
+    predicate.equals(DataFactory.namedNode(acl.agent)) ||
+    predicate.equals(DataFactory.namedNode(acl.agentGroup)) ||
+    predicate.equals(DataFactory.namedNode(acl.agentClass))
+  ) {
+    return true;
+  }
+  if (predicate.equals(DataFactory.namedNode(acl.origin))) {
+    return true;
+  }
+  return false;
 }
 
 /**
