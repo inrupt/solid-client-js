@@ -28,7 +28,7 @@ export {
 export {
   createLitDataset,
   fetchLitDataset,
-  fetchResourceInfo,
+  unstable_fetchResourceInfoWithAcl,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
@@ -153,7 +153,7 @@ export {
   LocalNode,
   WithResourceInfo,
   WithChangeLog,
-  unstable_Acl,
+  unstable_WithAcl,
   unstable_AclDataset,
   unstable_AclRule,
   unstable_AccessModes,

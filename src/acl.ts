@@ -23,7 +23,7 @@ import { acl, rdf } from "./constants";
 import {
   fetchLitDataset,
   defaultFetchOptions,
-  fetchResourceInfo,
+  internal_fetchResourceInfo,
 } from "./litDataset";
 import {
   WithResourceInfo,
@@ -33,7 +33,7 @@ import {
   unstable_AccessModes,
   Thing,
   IriString,
-  unstable_Acl,
+  unstable_WithAcl,
 } from "./interfaces";
 import { getThingAll } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -88,23 +88,19 @@ export async function internal_fetchFallbackAcl(
 
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
-  const containerInfo = await fetchResourceInfo(containerIri, options);
-  const containerWithInfo = {
-    resourceInfo: containerInfo,
+  const containerInfo = {
+    resourceInfo: await internal_fetchResourceInfo(containerIri, options),
   };
 
-  if (!unstable_hasAccessibleAcl(containerWithInfo)) {
+  if (!unstable_hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,
     // we cannot determine whether its ACL is the one that applies. Thus, return null:
     return null;
   }
 
-  const containerAcl = await internal_fetchResourceAcl(
-    containerWithInfo,
-    options
-  );
+  const containerAcl = await internal_fetchResourceAcl(containerInfo, options);
   if (containerAcl === null) {
-    return internal_fetchFallbackAcl(containerWithInfo, options);
+    return internal_fetchFallbackAcl(containerInfo, options);
   }
 
   return containerAcl;
@@ -126,95 +122,99 @@ function getContainerPath(resourcePath: string): string {
 }
 
 /**
- * Verify whether an ACL was found for the given LitDataset.
+ * Verify whether an ACL was found for the given Resource.
  *
- * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have an ACL attached, but
+ * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have a resource ACL attached, but
  * we cannot be sure: it might be that none exists for this specific Resource (in which case the
  * fallback ACL applies), or the currently authenticated user (if any) might not have Control access
  * to the fetched Resource.
  *
- * This function verifies that the LitDataset's ACL is accessible.
+ * This function verifies that the Resource's ACL is accessible.
  *
- * @param dataset A [[LitDataset]] that might have an ACL attached.
+ * @param resource A Resource that might have an ACL attached.
  * @returns Whether `dataset` has an ACL attached.
  */
-export function unstable_hasResourceAcl<Dataset extends unstable_Acl>(
-  dataset: Dataset
-): dataset is Dataset & {
-  acl: { resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined> };
+export function unstable_hasResourceAcl<Resource extends unstable_WithAcl>(
+  resource: Resource
+): resource is Resource & {
+  acl: {
+    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+  };
 } {
-  return typeof dataset.acl.resourceAcl !== "undefined";
+  return resource.acl.resourceAcl !== null;
 }
 
 /**
- * Access the ACL attached to a LitDataset.
+ * Access the ACL attached to a Resource.
  *
- * Given a LitDataset that has an ACL attached, this function will give you access to that ACL. To
+ * Given a Resource that has an ACL attached, this function will give you access to that ACL. To
  * verify whether the ACL is available, see [[unstable_hasResourceAcl]].
  *
- * @param dataset A [[LitDataset]] with potentially an ACL attached.
+ * @param resource A Resource with potentially an ACL attached.
  * @returns The ACL, if available, and undefined if not.
  */
 export function unstable_getResourceAcl(
-  dataset: unstable_Acl & {
+  resource: unstable_WithAcl & {
     acl: {
-      resourceAcl: Exclude<unstable_Acl["acl"]["resourceAcl"], undefined>;
+      resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
     };
   }
 ): unstable_AclDataset;
 export function unstable_getResourceAcl(
-  dataset: unstable_Acl
+  resource: unstable_WithAcl
 ): unstable_AclDataset | null;
 export function unstable_getResourceAcl(
-  dataset: unstable_Acl
+  resource: unstable_WithAcl
 ): unstable_AclDataset | null {
-  if (!unstable_hasResourceAcl(dataset)) {
+  if (!unstable_hasResourceAcl(resource)) {
     return null;
   }
-  return dataset.acl.resourceAcl;
+  return resource.acl.resourceAcl;
 }
 
 /**
- * Verify whether a fallback ACL was found for the given LitDataset.
+ * Verify whether a fallback ACL was found for the given Resource.
  *
- * A LitDataset fetched with [[unstable_fetchLitDatasetWithAcl]] _might_ have a fallback ACL
+ * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have a fallback ACL
  * attached, but we cannot be sure: the currently authenticated user (if any) might not have Control
  * access to one of the fetched Resource's Containers.
  *
  * This function verifies that the fallback ACL is accessible.
  *
- * @param dataset A [[LitDataset]] that might have a fallback ACL attached.
+ * @param resource A [[LitDataset]] that might have a fallback ACL attached.
  * @returns Whether `dataset` has a fallback ACL attached.
  */
-export function unstable_hasFallbackAcl<Dataset extends unstable_Acl>(
-  dataset: Dataset
-): dataset is Dataset & {
-  acl: { fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null> };
+export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
+  resource: Resource
+): resource is Resource & {
+  acl: {
+    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+  };
 } {
-  return dataset.acl.fallbackAcl !== null;
+  return resource.acl.fallbackAcl !== null;
 }
 
 /**
- * Access the fallback ACL attached to a LitDataset.
+ * Access the fallback ACL attached to a Resource.
  *
- * Given a LitDataset that has a fallback ACL attached, this function will give you access to that
+ * Given a Resource that has a fallback ACL attached, this function will give you access to that
  * ACL. To verify whether the fallback ACL is available, see [[unstable_hasFallbackAcl]].
  *
- * @param dataset A [[LitDataset]] with potentially a fallback ACL attached.
+ * @param resource A Resource with potentially a fallback ACL attached.
  * @returns The fallback ACL, or null if it coult not be accessed.
  */
 export function unstable_getFallbackAcl(
-  dataset: unstable_Acl & {
+  resource: unstable_WithAcl & {
     acl: {
-      fallbackAcl: Exclude<unstable_Acl["acl"]["fallbackAcl"], null>;
+      fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
     };
   }
 ): unstable_AclDataset;
 export function unstable_getFallbackAcl(
-  dataset: unstable_Acl
+  dataset: unstable_WithAcl
 ): unstable_AclDataset | null;
 export function unstable_getFallbackAcl(
-  dataset: unstable_Acl
+  dataset: unstable_WithAcl
 ): unstable_AclDataset | null {
   if (!unstable_hasFallbackAcl(dataset)) {
     return null;
