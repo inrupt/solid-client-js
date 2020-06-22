@@ -37,7 +37,9 @@ import {
   internal_getAccessModes,
   internal_combineAccessModes,
   unstable_hasResourceAcl,
+  unstable_getResourceAcl,
   unstable_hasFallbackAcl,
+  unstable_getFallbackAcl,
 } from "../acl";
 
 export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
@@ -86,12 +88,12 @@ export function unstable_getAgentAccessModesAll(
   resourceInfo: unstable_WithAcl
 ): unstable_AgentAccess | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getAgentResourceAccessModesAll(
-      resourceInfo.acl.resourceAcl
-    );
+    const resourceAcl = unstable_getResourceAcl(resourceInfo);
+    return unstable_getAgentResourceAccessModesAll(resourceAcl);
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getAgentDefaultAccessModesAll(resourceInfo.acl.fallbackAcl);
+    const fallbackAcl = unstable_getFallbackAcl(resourceInfo);
+    return unstable_getAgentDefaultAccessModesAll(fallbackAcl);
   }
   return null;
 }
