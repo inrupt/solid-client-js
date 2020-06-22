@@ -33,6 +33,7 @@ jobs:
       # Prettier for some reason reports that the formatting is off on Windows.
       # Since a single check is sufficient for code formatting, we skip it there:
       if: runner.os != 'Windows'
+    - run: npm run check-licenses
     - name: Archive code coverage results
       uses: actions/upload-artifact@v1.0.0
       with:

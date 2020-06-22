@@ -1,5 +1,5 @@
 module.exports = {
-  // The API sidebar will be automatically generated when running TypeDoc:
+  // The API sidebar will be automatically generated in CI when running TypeDoc:
   api: {},
   prose: [
     {
