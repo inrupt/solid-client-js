@@ -333,8 +333,8 @@ describe("fetchAcl", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(0);
-    expect(fetchedAcl.resourceAcl).toBeNull();
-    expect(fetchedAcl.fallbackAcl).toBeNull();
+    expect(fetchedAcl.acl.resourceAcl).toBeNull();
+    expect(fetchedAcl.acl.fallbackAcl).toBeNull();
   });
 
   it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
@@ -365,8 +365,8 @@ describe("fetchAcl", () => {
     });
 
     expect(fetchedAcl).not.toBeNull();
-    expect(fetchedAcl.fallbackAcl).toBeNull();
-    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.acl.fallbackAcl).toBeNull();
+    expect(fetchedAcl.acl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -407,8 +407,8 @@ describe("fetchAcl", () => {
       fetch: mockFetch,
     });
 
-    expect(fetchedAcl.resourceAcl).toBeNull();
-    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.acl.resourceAcl).toBeNull();
+    expect(fetchedAcl.acl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
   });
