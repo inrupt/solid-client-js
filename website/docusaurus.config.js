@@ -48,9 +48,10 @@ module.exports = {
     announcementBar: {
       id: "alpha-warning", // Any value that will identify this message.
       content:
-        "Both lit-pod and this website are still in alpha. Expect things to break.",
-      backgroundColor: "#ffba00", // Defaults to `#fff`.
-      textColor: "#091E42", // Defaults to `#000`.
+        "Both lit-pod and this website are still in alpha. Expect things to change.",
+      // Same as --ifm-color-warning in custom.css:
+      backgroundColor: '#ffa600', // Defaults to `#fff`.
+      textColor: '#000', // Defaults to `#000`.
     },
     prism: {
       // This is the included theme that least de-emphasises comments:
