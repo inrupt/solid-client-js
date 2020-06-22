@@ -119,10 +119,10 @@ export async function fetchResourceInfo(
 }
 
 /**
- * @internal
- *
  * This (currently internal) function fetches the ACL indicated in the [[WithResourceInfo]]
  * attached to a resource.
+ *
+ * @internal
  * @param resourceInfo The Resource info with the ACL URL
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  */
@@ -152,21 +152,20 @@ export async function unstable_fetchAcl(
 /**
  * Experimental: fetch a LitDataset and its associated Access Control List.
  *
- * This is an experimental function that fetches both a Resource, the linked ACL Resource (if
- * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
+ * This is an experimental function that fetches both a Resource's metadata, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available (if accessible). This can
  * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
  * provide this info in a single request. Therefore, and because this function is still
  * experimental, prefer [[fetchLitDataset]] instead.
  *
- * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
- * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
- * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
- * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
- * authenticated user.
+ * If the Resource's linked ACL Resource could not be fetched (because it does not exist, or because
+ * the authenticated user does not have access to it), `acl.resourceAcl` will be `null`. If the
+ * applicable Container's ACL is not accessible to the authenticated user, `acl.fallbackAcl` will be
+ * `null`.
  *
  * @param url URL of the LitDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
+ * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
  */
 export async function unstable_fetchResourceInfoWithAcl(
   url: UrlString,
