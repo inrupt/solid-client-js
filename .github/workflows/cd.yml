@@ -6,7 +6,7 @@ env:
   CI: true
 jobs:
   prepare-deployment:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
@@ -34,7 +34,7 @@ jobs:
         echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
 
   publish-npm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     steps:
     - uses: actions/checkout@v2.1.0
