@@ -20,8 +20,6 @@
  */
 
 import {
-  WithResourceInfo,
-  LitDataset,
   WebId,
   unstable_WithAcl,
   unstable_AclDataset,
