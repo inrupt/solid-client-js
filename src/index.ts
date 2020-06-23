@@ -140,6 +140,7 @@ export {
   unstable_setAgentResourceAccessModes,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
+  unstable_setAgentDefaultAccessModes,
 } from "./acl/agent";
 export {
   Url,

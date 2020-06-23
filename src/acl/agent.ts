@@ -258,6 +258,57 @@ export function unstable_getAgentDefaultAccessModesAll(
   return getAccessModesByAgent(agentResourceRules);
 }
 
+/**
+ * Given an ACL LitDataset, modify the ACL Rules to set specific default Access Modes for a given Agent.
+ *
+ * If the given ACL LitDataset already includes ACL Rules that grant a certain set of default Access Modes
+ * to the given Agent, those will be overridden by the given Access Modes.
+ *
+ * Keep in mind that this function will not modify:
+ * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
+ * - what access arbitrary Agents have to the Container itself.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param agent The Agent to grant specific Access Modes.
+ * @param accessModes The Access Modes to grant to the Agent.
+ */
+export function unstable_setAgentDefaultAccessModes(
+  aclDataset: unstable_AclDataset,
+  agent: WebId,
+  accessModes: unstable_AccessModes
+): unstable_AclDataset & WithChangeLog {
+  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // give the Agent default access to the Resource:
+  let filteredAcl = aclDataset;
+  getThingAll(aclDataset).forEach((aclRule) => {
+    // Obtain both the Rule that no longer includes the given Agent,
+    // and a new Rule that includes all ACL Quads
+    // that do not pertain to the given Agent-Resource default combination.
+    // Note that usually, the latter will no longer include any meaningful statements;
+    // we'll clean them up afterwards.
+    const [filteredRule, remainingRule] = removeAgentFromDefaultRule(
+      aclRule,
+      agent,
+      aclDataset.accessTo
+    );
+    filteredAcl = setThing(filteredAcl, filteredRule);
+    filteredAcl = setThing(filteredAcl, remainingRule);
+  });
+
+  // Create a new Rule that only grants the given Agent the given default Access Modes:
+  let newRule = intialiseAclRule(accessModes);
+  newRule = setIri(newRule, acl.default, aclDataset.accessTo);
+  newRule = setIri(newRule, acl.agent, agent);
+  const updatedAcl = setThing(filteredAcl, newRule);
+
+  // Remove any remaining Rules that do not contain any meaningful statements:
+  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
+
+  return cleanedAcl;
+}
+
 function getAgentAclRulesForAgent(
   aclRules: unstable_AclRule[],
   agent: WebId
@@ -335,6 +386,35 @@ function removeAgentFromResourceRule(
     ruleForOtherTargets,
     acl.accessTo,
     resourceIri
+  );
+  return [ruleWithoutAgent, ruleForOtherTargets];
+}
+
+/**
+ * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
+ * except for giving the given Agent default access to the given Container.
+ *
+ * @param rule The ACL Rule that should no longer apply for a given Agent as default for a given Container.
+ * @param agent The Agent that should be removed from the Rule for the given Container.
+ * @param containerIri The Container to which the Rule should no longer apply as default for the given Agent.
+ * @returns A tuple with the original ACL Rule sans the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
+ */
+function removeAgentFromDefaultRule(
+  rule: unstable_AclRule,
+  agent: WebId,
+  containerIri: IriString
+): [unstable_AclRule, unstable_AclRule] {
+  // The existing rule will keep applying to Agents other than the given one:
+  let ruleWithoutAgent = removeIri(rule, acl.agent, agent);
+  // The new rule will...
+  let ruleForOtherTargets = duplicateAclRule(rule);
+  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
+  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
+  // ...but not as a default for the given Container:
+  ruleForOtherTargets = removeIri(
+    ruleForOtherTargets,
+    acl.default,
+    containerIri
   );
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
