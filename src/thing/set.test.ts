@@ -175,8 +175,11 @@ describe("setIri", () => {
     );
     const thing = getMockThing(existingQuad);
     const datasetWithThingLocal = dataset();
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "localObject",
+    });
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      localSubject: localSubject,
     });
 
     const updatedThing = setUrl(
@@ -239,8 +242,11 @@ describe("setIri", () => {
 
   it("also works on ThingLocals", () => {
     const datasetWithThingLocal = dataset();
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "localSubject",
+    });
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      localSubject: localSubject,
     });
 
     const updatedThing = setUrl(
@@ -379,7 +385,7 @@ describe("setBoolean", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setBoolean(
@@ -395,7 +401,7 @@ describe("setBoolean", () => {
         object: literalOfType("boolean", "1"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -517,7 +523,7 @@ describe("setDatetime", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setDatetime(
@@ -533,7 +539,7 @@ describe("setDatetime", () => {
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -655,7 +661,7 @@ describe("setDecimal", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setDecimal(
@@ -671,7 +677,7 @@ describe("setDecimal", () => {
         object: literalOfType("decimal", "13.37"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -789,7 +795,7 @@ describe("setInteger", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setInteger(
@@ -805,7 +811,7 @@ describe("setInteger", () => {
         object: literalOfType("integer", "42"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -930,7 +936,7 @@ describe("setStringWithLocale", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setStringWithLocale(
@@ -947,7 +953,7 @@ describe("setStringWithLocale", () => {
         object: DataFactory.literal("Some string value", "en-gb"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -1070,7 +1076,7 @@ describe("setStringNoLocale", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setStringNoLocale(
@@ -1086,7 +1092,7 @@ describe("setStringNoLocale", () => {
         object: literalOfType("string", "Some string value"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {
@@ -1196,8 +1202,12 @@ describe("setNamedNode", () => {
 
   it("also works on ThingLocals", () => {
     const datasetWithThingLocal = dataset();
+    const localSubject = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setNamedNode(
@@ -1335,7 +1345,7 @@ describe("setLiteral", () => {
       )
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = setLiteral(
@@ -1351,7 +1361,7 @@ describe("setLiteral", () => {
         object: DataFactory.literal("Some string value"),
       })
     ).toBe(true);
-    expect(updatedThing.name).toBe("localSubject");
+    expect(updatedThing.localSubject.name).toBe("localSubject");
   });
 
   it("preserves existing Quads with different Predicates", () => {

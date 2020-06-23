@@ -76,7 +76,7 @@ export function getThingOne(
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
-      name: subject.name,
+      localSubject: subject,
     });
 
     return thing;
@@ -247,7 +247,10 @@ export function createThing(options: CreateThingOptions = {}): Thing {
     return thing;
   }
   const name = (options as CreateThingLocalOptions).name ?? generateName();
-  const thing: ThingLocal = Object.assign(dataset(), { name: name });
+  const localSubject: LocalNode = getLocalNode(name);
+  const thing: ThingLocal = Object.assign(dataset(), {
+    localSubject: localSubject,
+  });
   return thing;
 }
 
@@ -266,7 +269,7 @@ export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
         "The URL of a Thing that has not been persisted cannot be determined without a base URL."
       );
     }
-    return resolveLocalIri(thing.name, baseUrl);
+    return resolveLocalIri(thing.localSubject.name, baseUrl);
   }
 
   return thing.url;
@@ -282,7 +285,7 @@ export function isThingLocal(
   thing: ThingPersisted | ThingLocal
 ): thing is ThingLocal {
   return (
-    typeof (thing as ThingLocal).name === "string" &&
+    typeof (thing as ThingLocal).localSubject?.name === "string" &&
     typeof (thing as ThingPersisted).url === "undefined"
   );
 }
@@ -301,7 +304,7 @@ export function toNode(
     return asNamedNode(thing);
   }
   if (isThingLocal(thing)) {
-    return getLocalNode(thing.name);
+    return thing.localSubject;
   }
   return asNamedNode(asUrl(thing));
 }
@@ -317,7 +320,7 @@ export function cloneThing<T extends Thing>(
 export function cloneThing(thing: Thing): Thing {
   const cloned = clone(thing);
   if (isThingLocal(thing)) {
-    (cloned as ThingLocal).name = thing.name;
+    (cloned as ThingLocal).localSubject = thing.localSubject;
     return cloned as ThingLocal;
   }
   (cloned as ThingPersisted).url = thing.url;
@@ -340,7 +343,7 @@ export function filterThing(
 ): Thing {
   const filtered = filter(thing, callback);
   if (isThingLocal(thing)) {
-    (filtered as ThingLocal).name = thing.name;
+    (filtered as ThingLocal).localSubject = thing.localSubject;
     return filtered as ThingLocal;
   }
   (filtered as ThingPersisted).url = thing.url;
