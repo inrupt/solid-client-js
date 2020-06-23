@@ -153,7 +153,7 @@ describe("removeAll", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeAll(thingLocal, "https://some.vocab/predicate");
@@ -288,7 +288,7 @@ describe("removeIri", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeUrl(
@@ -459,7 +459,7 @@ describe("removeBoolean", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeBoolean(
@@ -609,7 +609,7 @@ describe("removeDatetime", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeDatetime(
@@ -762,7 +762,7 @@ describe("removeDecimal", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeDecimal(
@@ -912,7 +912,7 @@ describe("removeInteger", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeInteger(
@@ -1089,7 +1089,7 @@ describe("removeStringWithLocale", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeStringWithLocale(
@@ -1279,7 +1279,7 @@ describe("removeStringNoLocale", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeStringNoLocale(
@@ -1536,7 +1536,7 @@ describe("removeLiteral", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeLiteral(
@@ -1692,7 +1692,7 @@ describe("removeNamedNode", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = removeNamedNode(
