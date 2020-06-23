@@ -293,19 +293,25 @@ export function internal_getAccessModes(
   rule: unstable_AclRule
 ): unstable_AccessModes {
   const ruleAccessModes = getIriAll(rule, acl.mode);
-  const writeAccess = ruleAccessModes.includes(accessModeIriStrings.write);
+  const writeAccess = ruleAccessModes.includes(
+    internal_accessModeIriStrings.write
+  );
   return writeAccess
     ? {
-        read: ruleAccessModes.includes(accessModeIriStrings.read),
+        read: ruleAccessModes.includes(internal_accessModeIriStrings.read),
         append: true,
         write: true,
-        control: ruleAccessModes.includes(accessModeIriStrings.control),
+        control: ruleAccessModes.includes(
+          internal_accessModeIriStrings.control
+        ),
       }
     : {
-        read: ruleAccessModes.includes(accessModeIriStrings.read),
-        append: ruleAccessModes.includes(accessModeIriStrings.append),
+        read: ruleAccessModes.includes(internal_accessModeIriStrings.read),
+        append: ruleAccessModes.includes(internal_accessModeIriStrings.append),
         write: false,
-        control: ruleAccessModes.includes(accessModeIriStrings.control),
+        control: ruleAccessModes.includes(
+          internal_accessModeIriStrings.control
+        ),
       };
 }
 
@@ -396,7 +402,7 @@ function isAclQuad(quad: Quad): boolean {
   }
   if (
     predicate.equals(DataFactory.namedNode(acl.mode)) &&
-    Object.values(accessModeIriStrings).some((mode) =>
+    Object.values(internal_accessModeIriStrings).some((mode) =>
       object.equals(DataFactory.namedNode(mode))
     )
   ) {
@@ -419,11 +425,11 @@ function isAclQuad(quad: Quad): boolean {
  * IRIs of potential Access Modes
  * @internal
  */
-const accessModeIriStrings = {
+export const internal_accessModeIriStrings = {
   read: "http://www.w3.org/ns/auth/acl#Read",
   append: "http://www.w3.org/ns/auth/acl#Append",
   write: "http://www.w3.org/ns/auth/acl#Write",
   control: "http://www.w3.org/ns/auth/acl#Control",
 } as const;
 /** @internal */
-type AccessModeIriString = typeof accessModeIriStrings[keyof typeof accessModeIriStrings];
+type AccessModeIriString = typeof internal_accessModeIriStrings[keyof typeof internal_accessModeIriStrings];
