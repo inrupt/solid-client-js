@@ -32,6 +32,7 @@ export {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
+  unstable_saveAclFor,
 } from "./litDataset";
 export {
   getThingOne,
