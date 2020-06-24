@@ -29,6 +29,7 @@ import {
   unstable_fetchResourceInfoWithAcl,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
+  unstable_saveAclFor,
   getThingOne,
   getThingAll,
   setThing,
@@ -123,6 +124,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_fetchResourceInfoWithAcl).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
+  expect(unstable_saveAclFor).toBeDefined();
   expect(getThingOne).toBeDefined();
   expect(getThingAll).toBeDefined();
   expect(setThing).toBeDefined();

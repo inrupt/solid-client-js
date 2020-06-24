@@ -37,6 +37,7 @@ import {
   unstable_WithAcl,
   unstable_hasAccessibleAcl,
   unstable_AccessModes,
+  unstable_AclDataset,
 } from "./interfaces";
 
 /**
@@ -406,6 +407,38 @@ export async function saveLitDatasetInContainer(
   );
 
   return resourceWithResolvedIris;
+}
+
+/**
+ * Save the ACL for a Resource.
+ *
+ * @param resource The Resource to which the given ACL applies.
+ * @param resourceAcl An [[unstable_AclDataset]] whose ACL Rules will apply to `resource`.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ */
+export async function unstable_saveAclFor(
+  resource: WithResourceInfo & {
+    resourceInfo: {
+      unstable_aclUrl: Exclude<
+        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
+        undefined
+      >;
+    };
+  },
+  resourceAcl: unstable_AclDataset,
+  options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
+): Promise<unstable_AclDataset & WithResourceInfo> {
+  const savedDataset = await saveLitDatasetAt(
+    resource.resourceInfo.unstable_aclUrl,
+    resourceAcl,
+    options
+  );
+  const savedAclDataset: unstable_AclDataset &
+    typeof savedDataset = Object.assign(savedDataset, {
+    accessTo: resource.resourceInfo.fetchedFrom,
+  });
+
+  return savedAclDataset;
 }
 
 function getNamedNodesForLocalNodes(quad: Quad): Quad {
