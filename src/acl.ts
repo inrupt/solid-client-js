@@ -136,14 +136,28 @@ function getContainerPath(resourcePath: string): string {
  * @param resource A Resource that might have an ACL attached.
  * @returns Whether `dataset` has an ACL attached.
  */
-export function unstable_hasResourceAcl<Resource extends unstable_WithAcl>(
+export function unstable_hasResourceAcl<
+  Resource extends unstable_WithAcl & WithResourceInfo
+>(
   resource: Resource
 ): resource is Resource & {
   acl: {
     resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
   };
+} & {
+  resourceInfo: {
+    unstable_aclUrl: Exclude<
+      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
+      undefined
+    >;
+  };
 } {
-  return resource.acl.resourceAcl !== null;
+  return (
+    resource.acl.resourceAcl !== null &&
+    resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
+    resource.resourceInfo.unstable_aclUrl ===
+      resource.acl.resourceAcl.resourceInfo.fetchedFrom
+  );
 }
 
 /**
@@ -156,17 +170,18 @@ export function unstable_hasResourceAcl<Resource extends unstable_WithAcl>(
  * @returns The ACL, if available, and undefined if not.
  */
 export function unstable_getResourceAcl(
-  resource: unstable_WithAcl & {
-    acl: {
-      resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
-    };
-  }
+  resource: unstable_WithAcl &
+    WithResourceInfo & {
+      acl: {
+        resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+      };
+    }
 ): unstable_AclDataset;
 export function unstable_getResourceAcl(
-  resource: unstable_WithAcl
+  resource: unstable_WithAcl & WithResourceInfo
 ): unstable_AclDataset | null;
 export function unstable_getResourceAcl(
-  resource: unstable_WithAcl
+  resource: unstable_WithAcl & WithResourceInfo
 ): unstable_AclDataset | null {
   if (!unstable_hasResourceAcl(resource)) {
     return null;
