@@ -93,6 +93,7 @@ function Home() {
           </div>
         </div>
       </header>
+      {/* Feature highlights have been disabled until Product people have taken a look at them :)
       <main>
         {features && features.length > 0 && (
           <section className={styles.features}>
@@ -105,7 +106,7 @@ function Home() {
             </div>
           </section>
         )}
-      </main>
+      </main> */}
     </Layout>
   );
 }
