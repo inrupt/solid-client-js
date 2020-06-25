@@ -126,6 +126,9 @@ function addAclDatasetToLitDataset(
     ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
   };
   if (type === "resource") {
+    litDataset.resourceInfo.unstable_aclUrl =
+      aclDataset.resourceInfo.fetchedFrom;
+    aclDataset.accessTo = litDataset.resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
