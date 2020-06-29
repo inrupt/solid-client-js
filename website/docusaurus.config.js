@@ -78,7 +78,7 @@ module.exports = {
         },
         {
           to: "docs/api/index",
-          activeBasePath: "docs/api/index",
+          activeBasePath: "docs/api/",
           label: "API Reference",
           position: "left",
         },
