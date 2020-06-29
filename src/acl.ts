@@ -185,7 +185,7 @@ export function unstable_getResourceAcl(
  */
 export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
   resource: Resource
-): resource is unstable_WithFallbackAcl<Resource> {
+): resource is Resource & unstable_WithFallbackAcl {
   return resource.acl.fallbackAcl !== null;
 }
 
