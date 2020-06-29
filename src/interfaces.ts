@@ -178,6 +178,20 @@ export function hasChangelog<T extends LitDataset>(
 }
 
 /**
+ * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
+ */
+export type unstable_WithAccessibleAcl<
+  Resource extends WithResourceInfo = WithResourceInfo
+> = Resource & {
+  resourceInfo: {
+    unstable_aclUrl: Exclude<
+      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
+      undefined
+    >;
+  };
+};
+
+/**
  * Given a [[LitDataset]], verify whether it has ACL data attached to it.
  *
  * This should generally only be true for LitDatasets fetched by
@@ -187,11 +201,9 @@ export function hasChangelog<T extends LitDataset>(
  * @returns Whether the given `dataset` has ACL data attached to it.
  * @internal
  */
-export function unstable_hasAccessibleAcl<Dataset extends WithResourceInfo>(
-  dataset: Dataset
-): dataset is Dataset & {
-  resourceInfo: { unstable_aclUrl: UrlString };
-} {
+export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
+  dataset: Resource
+): dataset is unstable_WithAccessibleAcl<Resource> {
   return typeof dataset.resourceInfo.unstable_aclUrl === "string";
 }
 
