@@ -34,13 +34,9 @@ export const fetch: typeof window.fetch = (resource, init) => {
   let fetch;
 
   try {
-    fetch = require("@inrupt/solid-auth-fetcher").fetch;
+    fetch = require("solid-auth-client").fetch;
   } catch (e) {
-    try {
-      fetch = require("solid-auth-client").fetch;
-    } catch (e) {
-      fetch = require("cross-fetch");
-    }
+    fetch = require("cross-fetch");
   }
 
   return fetch(resource, init);
