@@ -141,7 +141,13 @@ export function setThing<Dataset extends LitDataset>(
 
   for (const quad of thing) {
     newDataset.add(quad);
-    newDataset.changeLog.additions.push(quad);
+    if (newDataset.changeLog.deletions.includes(quad)) {
+      newDataset.changeLog.deletions = newDataset.changeLog.deletions.filter(
+        (deletion) => deletion !== quad
+      );
+    } else {
+      newDataset.changeLog.additions.push(quad);
+    }
   }
 
   return newDataset;
@@ -164,6 +170,8 @@ export function removeThing<Dataset extends LitDataset>(
     : undefined;
 
   const thingSubject = toNode(thing);
+  // Copy every Quad from the input dataset into what is to be the output dataset,
+  // unless its Subject is the same as that of the Thing that is to be removed:
   for (const quad of litDataset) {
     if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
       // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
@@ -172,6 +180,13 @@ export function removeThing<Dataset extends LitDataset>(
       !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
     ) {
       newLitDataset.add(quad);
+    } else if (newLitDataset.changeLog.additions.includes(quad)) {
+      // If this Quad was added to the LitDataset since it was fetched from the Pod,
+      // remove it from the additions rather than adding it to the deletions,
+      // to avoid asking the Pod to remove a Quad that does not exist there:
+      newLitDataset.changeLog.additions = newLitDataset.changeLog.additions.filter(
+        (addition) => addition != quad
+      );
     } else {
       newLitDataset.changeLog.deletions.push(quad);
     }

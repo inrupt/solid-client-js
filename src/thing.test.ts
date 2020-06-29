@@ -434,6 +434,52 @@ describe("setThing", () => {
     expect(updatedDataset.changeLog.deletions).toEqual([oldThingQuad]);
   });
 
+  it("reconciles deletions and additions in the change log", () => {
+    const oldThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const addedQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/previously-added-object",
+    });
+    const deletedQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/previously-deleted-object",
+    });
+    const datasetWithMultipleThings = dataset();
+    datasetWithMultipleThings.add(oldThingQuad);
+    datasetWithMultipleThings.add(otherQuad);
+    datasetWithMultipleThings.add(addedQuad);
+    const datasetWithExistingChangeLog = Object.assign(
+      datasetWithMultipleThings,
+      {
+        changeLog: {
+          additions: [addedQuad],
+          deletions: [deletedQuad],
+        },
+      }
+    );
+
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      url: "https://some.vocab/subject",
+    });
+    newThing.add(newThingQuad);
+    newThing.add(deletedQuad);
+
+    const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
+
+    expect(updatedDataset.changeLog.additions).toEqual([newThingQuad]);
+    expect(updatedDataset.changeLog.deletions).toEqual([oldThingQuad]);
+  });
+
   it("preserves existing change logs", () => {
     const oldThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",
@@ -738,6 +784,41 @@ describe("removeThing", () => {
     expect(updatedDataset.changeLog.deletions).toHaveLength(2);
     expect(updatedDataset.changeLog.deletions).toContain(sameSubjectQuad);
     expect(updatedDataset.changeLog.deletions).toContain(thingQuad);
+  });
+
+  it("reconciles deletions in the change log with additions", () => {
+    const thingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const sameSubjectQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/old-object",
+    });
+    const otherQuad = getMockQuad({
+      subject: "https://arbitrary-other.vocab/subject",
+    });
+    const datasetWithMultipleThings = dataset();
+    datasetWithMultipleThings.add(thingQuad);
+    datasetWithMultipleThings.add(sameSubjectQuad);
+    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithChangelog = Object.assign(datasetWithMultipleThings, {
+      changeLog: {
+        additions: [thingQuad],
+        deletions: [],
+      },
+    });
+
+    const thing: Thing = Object.assign(dataset(), {
+      url: "https://some.vocab/subject",
+    });
+    thing.add(thingQuad);
+
+    const updatedDataset = removeThing(datasetWithChangelog, thing);
+
+    expect(updatedDataset.changeLog.additions).toEqual([]);
+    expect(updatedDataset.changeLog.deletions).toHaveLength(1);
+    expect(updatedDataset.changeLog.deletions).toContain(sameSubjectQuad);
   });
 
   it("preserves existing change logs", () => {
