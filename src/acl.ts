@@ -36,6 +36,8 @@ import {
   IriString,
   unstable_WithAcl,
   unstable_WithAccessibleAcl,
+  unstable_WithResourceAcl,
+  unstable_WithFallbackAcl,
 } from "./interfaces";
 import { getThingAll, removeThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -134,11 +136,9 @@ export function unstable_hasResourceAcl<
   Resource extends unstable_WithAcl & WithResourceInfo
 >(
   resource: Resource
-): resource is Resource & {
-  acl: {
-    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
-  };
-} & unstable_WithAccessibleAcl {
+): resource is Resource &
+  unstable_WithResourceAcl &
+  unstable_WithAccessibleAcl {
   return (
     resource.acl.resourceAcl !== null &&
     resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
@@ -157,12 +157,7 @@ export function unstable_hasResourceAcl<
  * @returns The ACL, if available, and undefined if not.
  */
 export function unstable_getResourceAcl(
-  resource: unstable_WithAcl &
-    WithResourceInfo & {
-      acl: {
-        resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
-      };
-    }
+  resource: unstable_WithAcl & WithResourceInfo & unstable_WithResourceAcl
 ): unstable_AclDataset;
 export function unstable_getResourceAcl(
   resource: unstable_WithAcl & WithResourceInfo
@@ -190,11 +185,7 @@ export function unstable_getResourceAcl(
  */
 export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
   resource: Resource
-): resource is Resource & {
-  acl: {
-    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
-  };
-} {
+): resource is unstable_WithFallbackAcl<Resource> {
   return resource.acl.fallbackAcl !== null;
 }
 
@@ -208,11 +199,7 @@ export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
  * @returns The fallback ACL, or null if it coult not be accessed.
  */
 export function unstable_getFallbackAcl(
-  resource: unstable_WithAcl & {
-    acl: {
-      fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
-    };
-  }
+  resource: unstable_WithFallbackAcl
 ): unstable_AclDataset;
 export function unstable_getFallbackAcl(
   dataset: unstable_WithAcl

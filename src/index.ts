@@ -158,6 +158,8 @@ export {
   WithChangeLog,
   unstable_WithAccessibleAcl,
   unstable_WithAcl,
+  unstable_WithFallbackAcl,
+  unstable_WithResourceAcl,
   unstable_AclDataset,
   unstable_AclRule,
   unstable_AccessModes,
