@@ -35,6 +35,7 @@ import {
   Thing,
   IriString,
   unstable_WithAcl,
+  unstable_WithAccessibleAcl,
 } from "./interfaces";
 import { getThingAll, removeThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -67,17 +68,10 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  dataset: WithResourceInfo & {
-    resourceInfo: {
-      unstable_aclUrl: Exclude<
-        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
-        undefined
-      >;
-    };
-  },
+  resource: unstable_WithAccessibleAcl,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(dataset.resourceInfo.fetchedFrom);
+  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom);
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -144,14 +138,7 @@ export function unstable_hasResourceAcl<
   acl: {
     resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
   };
-} & {
-  resourceInfo: {
-    unstable_aclUrl: Exclude<
-      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
-      undefined
-    >;
-  };
-} {
+} & unstable_WithAccessibleAcl {
   return (
     resource.acl.resourceAcl !== null &&
     resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
