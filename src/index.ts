@@ -138,8 +138,10 @@ export {
   unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
   unstable_getAgentResourceAccessModesAll,
+  unstable_setAgentResourceAccessModes,
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
+  unstable_setAgentDefaultAccessModes,
 } from "./acl/agent";
 export {
   Url,

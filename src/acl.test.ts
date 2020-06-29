@@ -45,6 +45,7 @@ import {
   internal_combineAccessModes,
   unstable_getResourceAcl,
   unstable_getFallbackAcl,
+  internal_removeEmptyAclRules,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -874,5 +875,458 @@ describe("combineAccessModes", () => {
       write: true,
       control: false,
     });
+  });
+});
+
+describe("removeEmptyAclRules", () => {
+  it("removes rules that do not apply to anyone", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual([]);
+  });
+
+  it("does not modify the input LitDataset", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toHaveLength(0);
+    expect(Array.from(aclDataset)).toHaveLength(3);
+  });
+
+  it("removes rules that do not set any Access Modes", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual([]);
+  });
+
+  it("removes rules that do not have target Resources to which they apply", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual([]);
+  });
+
+  it("removes rules that specify an acl:origin but not in combination with an Agent, Agent Group or Agent Class", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#origin"),
+        DataFactory.namedNode("https://arbitrary.origin")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual([]);
+  });
+
+  it("does not remove Rules that are also something other than an ACL Rule", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("https://arbitrary.vocab/not/an/Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+
+  it("does not remove Things that are Rules but also have other Quads", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.literal("Arbitrary non-ACL value")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+
+  it("does not remove Rules that apply to a Container's child Resources", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/container/.acl" },
+      accessTo: "https://arbitrary.pod/container/",
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+
+  it("does not remove Rules that apply to an Agent", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+
+  it("does not remove Rules that apply to an Agent Group", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentGroup"),
+        DataFactory.namedNode("https://arbitrary.pod/groups#colleagues")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+
+  it("does not remove Rules that apply to an Agent Class", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/resource")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
+        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
+      )
+    );
+
+    const updatedDataset = internal_removeEmptyAclRules(aclDataset);
+
+    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
   });
 });

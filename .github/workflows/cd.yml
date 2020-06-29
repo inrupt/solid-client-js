@@ -5,31 +5,101 @@ on: push
 env:
   CI: true
 jobs:
+  prepare-deployment:
+    runs-on: ubuntu-20.04
+    outputs:
+      tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
+      deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
+    steps:
+    - name: Create GitHub Deployment
+      id: create-deployment
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments
+        repository: ${{ github.repository }}
+        ref: ${{ github.sha }}
+        environment: review
+        transient_environment: true
+        auto_merge: false
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        # The deployment runs in parallel with CI, so status checks will never have succeeded yet:
+        required_contexts: '[]'
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    - name: Determine npm tag
+      id: determine-npm-tag
+      run: |
+        # Remove non-alphanumeric characters
+        # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+        echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
+
   publish-npm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
+    needs: [prepare-deployment]
     steps:
     - uses: actions/checkout@v2.1.0
+    - name: Mark GitHub Deployment as in progress
+      id: start-deployment
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        description: "Publishing to npm tag `${{ needs.prepare-deployment.outputs.tag-slug }}`…"
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        state: in_progress
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: Prepare for publication to npm
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
-    - name: Determine npm tag
-      # Remove non-alphanumeric characters
-      # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-      run: echo "::set-env name=TAG_SLUG::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
     - name: Prepare prerelease version
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
         npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
+      env:
+        TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
     - run: npm ci
     - name: Publish an npm tag for this branch
-      run: npm publish --access public --tag "$TAG_SLUG"
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    - run: |
+      run: |
+        npm publish --access public --tag "$TAG_SLUG"
         echo "Package published. To install, run:"
         echo ""
         echo "    npm install @solid/lit-pod@$TAG_SLUG"
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
+    - name: Mark GitHub Deployment as successful
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        environment_url: 'https://www.npmjs.com/package/@solid/lit-pod/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
+        description: "Published to npm. To install, run: npm install @solid/lit-pod@${{ needs.prepare-deployment.outputs.tag-slug }}"
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        state: success
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    - name: Mark GitHub Deployment as failed
+      uses: octokit/request-action@v2.x
+      if: failure()
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        description: "Publication to npm failed. Review the GitHub Actions log for more information."
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        state: failure
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
