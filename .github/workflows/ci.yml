@@ -29,6 +29,10 @@ jobs:
     - run: npm run build
     - run: npm test
     - run: npm run e2e-test
+      # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
+      # and because behaviour on different OS's is already tested by unit tests,
+      # end-to-end tests only need to run on one OS:
+      if: runner.os == 'Linux' && matrix.node-version == '12.x'
     - run: npx prettier --check "src/**"
       # Prettier for some reason reports that the formatting is off on Windows.
       # Since a single check is sufficient for code formatting, we skip it there:

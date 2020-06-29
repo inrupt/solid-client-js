@@ -153,6 +153,28 @@ export type unstable_WithAcl = {
 };
 
 /**
+ * If this type applies to a Resource, an Access Control List that applies to it exists and is accessible to the currently authenticated user.
+ */
+export type unstable_WithResourceAcl<
+  Resource extends unstable_WithAcl = unstable_WithAcl
+> = Resource & {
+  acl: {
+    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+  };
+};
+
+/**
+ * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
+ */
+export type unstable_WithFallbackAcl<
+  Resource extends unstable_WithAcl = unstable_WithAcl
+> = Resource & {
+  acl: {
+    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+  };
+};
+
+/**
  * Verify whether a given LitDataset includes metadata about where it was retrieved from.
  *
  * @param dataset A [[LitDataset]] that may have metadata attached about the Resource it was retrieved from.
@@ -178,6 +200,20 @@ export function hasChangelog<T extends LitDataset>(
 }
 
 /**
+ * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
+ */
+export type unstable_WithAccessibleAcl<
+  Resource extends WithResourceInfo = WithResourceInfo
+> = Resource & {
+  resourceInfo: {
+    unstable_aclUrl: Exclude<
+      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
+      undefined
+    >;
+  };
+};
+
+/**
  * Given a [[LitDataset]], verify whether it has ACL data attached to it.
  *
  * This should generally only be true for LitDatasets fetched by
@@ -187,11 +223,9 @@ export function hasChangelog<T extends LitDataset>(
  * @returns Whether the given `dataset` has ACL data attached to it.
  * @internal
  */
-export function unstable_hasAccessibleAcl<Dataset extends WithResourceInfo>(
-  dataset: Dataset
-): dataset is Dataset & {
-  resourceInfo: { unstable_aclUrl: UrlString };
-} {
+export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
+  dataset: Resource
+): dataset is unstable_WithAccessibleAcl<Resource> {
   return typeof dataset.resourceInfo.unstable_aclUrl === "string";
 }
 

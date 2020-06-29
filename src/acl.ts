@@ -35,6 +35,9 @@ import {
   Thing,
   IriString,
   unstable_WithAcl,
+  unstable_WithAccessibleAcl,
+  unstable_WithResourceAcl,
+  unstable_WithFallbackAcl,
 } from "./interfaces";
 import { getThingAll, removeThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -67,17 +70,10 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  dataset: WithResourceInfo & {
-    resourceInfo: {
-      unstable_aclUrl: Exclude<
-        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
-        undefined
-      >;
-    };
-  },
+  resource: unstable_WithAccessibleAcl,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(dataset.resourceInfo.fetchedFrom);
+  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom);
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -140,18 +136,9 @@ export function unstable_hasResourceAcl<
   Resource extends unstable_WithAcl & WithResourceInfo
 >(
   resource: Resource
-): resource is Resource & {
-  acl: {
-    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
-  };
-} & {
-  resourceInfo: {
-    unstable_aclUrl: Exclude<
-      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
-      undefined
-    >;
-  };
-} {
+): resource is Resource &
+  unstable_WithResourceAcl &
+  unstable_WithAccessibleAcl {
   return (
     resource.acl.resourceAcl !== null &&
     resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
@@ -170,12 +157,7 @@ export function unstable_hasResourceAcl<
  * @returns The ACL, if available, and undefined if not.
  */
 export function unstable_getResourceAcl(
-  resource: unstable_WithAcl &
-    WithResourceInfo & {
-      acl: {
-        resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
-      };
-    }
+  resource: unstable_WithAcl & WithResourceInfo & unstable_WithResourceAcl
 ): unstable_AclDataset;
 export function unstable_getResourceAcl(
   resource: unstable_WithAcl & WithResourceInfo
@@ -203,11 +185,7 @@ export function unstable_getResourceAcl(
  */
 export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
   resource: Resource
-): resource is Resource & {
-  acl: {
-    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
-  };
-} {
+): resource is unstable_WithFallbackAcl<Resource> {
   return resource.acl.fallbackAcl !== null;
 }
 
@@ -221,11 +199,7 @@ export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
  * @returns The fallback ACL, or null if it coult not be accessed.
  */
 export function unstable_getFallbackAcl(
-  resource: unstable_WithAcl & {
-    acl: {
-      fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
-    };
-  }
+  resource: unstable_WithFallbackAcl
 ): unstable_AclDataset;
 export function unstable_getFallbackAcl(
   dataset: unstable_WithAcl

@@ -38,6 +38,7 @@ import {
   unstable_hasAccessibleAcl,
   unstable_AccessModes,
   unstable_AclDataset,
+  unstable_WithAccessibleAcl,
 } from "./interfaces";
 
 /**
@@ -417,14 +418,7 @@ export async function saveLitDatasetInContainer(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  */
 export async function unstable_saveAclFor(
-  resource: WithResourceInfo & {
-    resourceInfo: {
-      unstable_aclUrl: Exclude<
-        WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
-        undefined
-      >;
-    };
-  },
+  resource: unstable_WithAccessibleAcl,
   resourceAcl: unstable_AclDataset,
   options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
 ): Promise<unstable_AclDataset & WithResourceInfo> {
