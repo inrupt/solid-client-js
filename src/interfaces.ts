@@ -153,6 +153,28 @@ export type unstable_WithAcl = {
 };
 
 /**
+ * If this type applies to a Resource, an Access Control List that applies to it exists and is accessible to the currently authenticated user.
+ */
+export type unstable_WithResourceAcl<
+  Resource extends unstable_WithAcl = unstable_WithAcl
+> = Resource & {
+  acl: {
+    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+  };
+};
+
+/**
+ * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
+ */
+export type unstable_WithFallbackAcl<
+  Resource extends unstable_WithAcl = unstable_WithAcl
+> = Resource & {
+  acl: {
+    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+  };
+};
+
+/**
  * Verify whether a given LitDataset includes metadata about where it was retrieved from.
  *
  * @param dataset A [[LitDataset]] that may have metadata attached about the Resource it was retrieved from.
