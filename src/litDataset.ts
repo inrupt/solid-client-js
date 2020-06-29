@@ -34,7 +34,7 @@ import {
   WithResourceInfo,
   hasResourceInfo,
   LocalNode,
-  unstable_Acl,
+  unstable_WithAcl,
   unstable_hasAccessibleAcl,
   unstable_AccessModes,
 } from "./interfaces";
@@ -97,7 +97,7 @@ export async function fetchLitDataset(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
  */
-export async function fetchResourceInfo(
+export async function internal_fetchResourceInfo(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<WithResourceInfo["resourceInfo"]> {
@@ -118,7 +118,66 @@ export async function fetchResourceInfo(
   return resourceInfo;
 }
 
-function parseResourceInfo(
+/**
+ * This (currently internal) function fetches the ACL indicated in the [[WithResourceInfo]]
+ * attached to a resource.
+ *
+ * @internal
+ * @param resourceInfo The Resource info with the ACL URL
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
+ */
+export async function internal_fetchAcl(
+  resourceInfo: WithResourceInfo,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<unstable_WithAcl["acl"]> {
+  if (!unstable_hasAccessibleAcl(resourceInfo)) {
+    return {
+      resourceAcl: null,
+      fallbackAcl: null,
+    };
+  }
+  const [resourceAcl, fallbackAcl] = await Promise.all([
+    internal_fetchResourceAcl(resourceInfo, options),
+    internal_fetchFallbackAcl(resourceInfo, options),
+  ]);
+
+  return {
+    fallbackAcl: fallbackAcl,
+    resourceAcl: resourceAcl,
+  };
+}
+
+/**
+ * Experimental: fetch a LitDataset and its associated Access Control List.
+ *
+ * This is an experimental function that fetches both a Resource's metadata, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available (if accessible). This can
+ * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
+ * provide this info in a single request. Therefore, and because this function is still
+ * experimental, prefer [[fetchLitDataset]] instead.
+ *
+ * If the Resource's linked ACL Resource could not be fetched (because it does not exist, or because
+ * the authenticated user does not have access to it), `acl.resourceAcl` will be `null`. If the
+ * applicable Container's ACL is not accessible to the authenticated user, `acl.fallbackAcl` will be
+ * `null`.
+ *
+ * @param url URL of the LitDataset to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
+ */
+export async function unstable_fetchResourceInfoWithAcl(
+  url: UrlString,
+  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+): Promise<WithResourceInfo & unstable_WithAcl> {
+  const resourceInfo = await internal_fetchResourceInfo(url, options);
+  const acl = await internal_fetchAcl({ resourceInfo }, options);
+  return Object.assign({ resourceInfo }, { acl });
+}
+
+/**
+ * @internal
+ */
+export function parseResourceInfo(
   response: Response
 ): WithResourceInfo["resourceInfo"] {
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
@@ -166,29 +225,10 @@ function parseResourceInfo(
 export async function unstable_fetchLitDatasetWithAcl(
   url: UrlString,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo & unstable_Acl> {
+): Promise<LitDataset & WithResourceInfo & unstable_WithAcl> {
   const litDataset = await fetchLitDataset(url, options);
-
-  if (!unstable_hasAccessibleAcl(litDataset)) {
-    return Object.assign(litDataset, {
-      acl: {
-        resourceAcl: undefined,
-        fallbackAcl: null,
-      },
-    });
-  }
-
-  const [resourceAcl, fallbackAcl] = await Promise.all([
-    internal_fetchResourceAcl(litDataset, options),
-    internal_fetchFallbackAcl(litDataset, options),
-  ]);
-
-  const acl: unstable_Acl["acl"] = {
-    fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl !== null ? resourceAcl : undefined,
-  };
-
-  return Object.assign(litDataset, { acl: acl });
+  const acl = await internal_fetchAcl(litDataset, options);
+  return Object.assign(litDataset, { acl });
 }
 
 const defaultSaveOptions = {

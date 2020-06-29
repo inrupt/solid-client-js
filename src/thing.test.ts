@@ -30,6 +30,7 @@ import {
   removeThing,
   createThing,
   asUrl,
+  toNode,
 } from "./thing";
 import {
   IriString,
@@ -39,6 +40,7 @@ import {
   LitDataset,
   WithResourceInfo,
   WithChangeLog,
+  LocalNode,
 } from "./interfaces";
 
 function getMockQuad(
@@ -69,15 +71,15 @@ describe("createThing", () => {
     const thing1: ThingLocal = createThing();
     const thing2: ThingLocal = createThing();
 
-    expect(typeof thing1.name).toBe("string");
-    expect(thing1.name.length).toBeGreaterThan(0);
-    expect(thing1.name).not.toEqual(thing2.name);
+    expect(typeof thing1.localSubject.name).toBe("string");
+    expect(thing1.localSubject.name.length).toBeGreaterThan(0);
+    expect(thing1.localSubject.name).not.toEqual(thing2.localSubject.name);
   });
 
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.name).toBe("some-name");
+    expect(thing.localSubject.name).toBe("some-name");
   });
 
   it("uses the given IRI, if any", () => {
@@ -563,7 +565,9 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const newThing: Thing = Object.assign(dataset(), { name: "localSubject" });
+    const newThing: Thing = Object.assign(dataset(), {
+      localSubject: localSubject,
+    });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithLocalSubject, newThing);
@@ -596,7 +600,9 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const newThing: Thing = Object.assign(dataset(), { name: "subject" });
+    const newThing: Thing = Object.assign(dataset(), {
+      localSubject: localSubject,
+    });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithNamedNode, newThing);
@@ -627,7 +633,9 @@ describe("setThing", () => {
       subject: "https://some.pod/resource#subject",
       object: "https://some.vocab/old-object",
     });
-    const newThing: Thing = Object.assign(dataset(), { name: "subject" });
+    const newThing: Thing = Object.assign(dataset(), {
+      localSubject: localSubject,
+    });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithLocalSubject, newThing);
@@ -660,7 +668,9 @@ describe("setThing", () => {
       mockPredicate,
       DataFactory.namedNode("https://some.vocab/new-object")
     );
-    const newThing: Thing = Object.assign(dataset(), { name: "localSubject" });
+    const newThing: Thing = Object.assign(dataset(), {
+      localSubject: localSubject,
+    });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithLocalSubject, newThing);
@@ -958,7 +968,10 @@ describe("asIri", () => {
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
-    const localThing = Object.assign(dataset(), { name: "some-name" });
+    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-name",
+    });
+    const localThing = Object.assign(dataset(), { localSubject: localSubject });
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
@@ -966,10 +979,28 @@ describe("asIri", () => {
   });
 
   it("throws an error when a local Thing was given without a base IRI", () => {
-    const localThing = Object.assign(dataset(), { name: "some-name" });
+    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
+      name: "some-name",
+    });
+    const localThing = Object.assign(dataset(), { localSubject: localSubject });
 
     expect(() => asUrl(localThing, undefined as any)).toThrow(
       "The URL of a Thing that has not been persisted cannot be determined without a base URL."
     );
+  });
+});
+
+describe("toNode", () => {
+  it("should result in equal LocalNodes for the same ThingLocal", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
+    const thing: ThingLocal = Object.assign(dataset(), {
+      localSubject: localSubject,
+    });
+    const node1 = toNode(thing);
+    const node2 = toNode(thing);
+    expect(node1.equals(node2)).toBe(true);
   });
 });

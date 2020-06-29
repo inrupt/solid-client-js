@@ -138,9 +138,13 @@ describe("addIri", () => {
 
   it("accepts values as ThingLocals", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localObject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localObject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addUrl(
@@ -194,9 +198,13 @@ describe("addIri", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addUrl(
@@ -342,9 +350,13 @@ describe("addBoolean", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addBoolean(
@@ -488,9 +500,13 @@ describe("addDatetime", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addDatetime(
@@ -634,9 +650,13 @@ describe("addDecimal", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addDecimal(
@@ -776,9 +796,13 @@ describe("addInteger", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addInteger(
@@ -917,9 +941,13 @@ describe("addStringWithLocale", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addStringWithLocale(
@@ -1066,9 +1094,13 @@ describe("addStringNoLocale", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addStringNoLocale(
@@ -1212,9 +1244,13 @@ describe("addNamedNode", () => {
   });
 
   it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addNamedNode(
@@ -1361,8 +1397,12 @@ describe("addLiteral", () => {
 
   it("also works on ThingLocals", () => {
     const datasetWithThingLocal = dataset();
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { name: "localSubject" }
+    );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      name: "localSubject",
+      localSubject: localSubject,
     });
 
     const updatedThing = addLiteral(

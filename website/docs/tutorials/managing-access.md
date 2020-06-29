@@ -44,6 +44,12 @@ A Resource's or Container's ACL is only accessible to your app if the following 
 Access can be granted to individual [agents](../glossary#agent), to groups, or even to everyone.
 We currently only support reading what access has been granted to individual agents specifically.
 
+### Fetching access information
+
+Getting access information when fetching a resource may result in an additional request to the server. To avoid
+unecessary requests, the API makes it explicit when you get access information along your resource: `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
+and the ACL containing the associated access information.
+
 ### Reading agent access
 
 Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access a

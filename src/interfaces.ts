@@ -46,7 +46,8 @@ export type LitDataset = DatasetCore;
  * A Thing represents all Quads with a given Subject URL and a given Named
  * Graph, from a single Resource.
  */
-export type Thing = DatasetCore & ({ url: UrlString } | { name: string });
+export type Thing = DatasetCore &
+  ({ url: UrlString } | { localSubject: LocalNode });
 /**
  * A [[Thing]] for which we know what the full Subject URL is.
  */
@@ -54,7 +55,7 @@ export type ThingPersisted = Thing & { url: UrlString };
 /**
  * A [[Thing]] whose full Subject URL will be determined when it is persisted.
  */
-export type ThingLocal = Thing & { name: string };
+export type ThingLocal = Thing & { localSubject: LocalNode };
 /**
  * Represents the BlankNode that will be initialised to a NamedNode when persisted.
  *
@@ -144,9 +145,9 @@ export type WithChangeLog = {
 /**
  * @hidden Developers should use [[unstable_getResourceAcl]] and [[unstable_getFallbackAcl]] to access these.
  */
-export type unstable_Acl = {
+export type unstable_WithAcl = {
   acl: {
-    resourceAcl?: unstable_AclDataset;
+    resourceAcl: unstable_AclDataset | null;
     fallbackAcl: unstable_AclDataset | null;
   };
 };
