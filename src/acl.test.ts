@@ -351,13 +351,48 @@ describe("getResourceAcl", () => {
     });
     const litDataset = Object.assign(dataset(), {
       acl: { resourceAcl: aclDataset, fallbackAcl: null },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
     });
     expect(unstable_getResourceAcl(litDataset)).toEqual(aclDataset);
+  });
+
+  it("returns null if the given Resource does not consider the attached ACL to pertain to it", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/resource",
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+    });
+    const litDataset = Object.assign(dataset(), {
+      acl: { resourceAcl: aclDataset, fallbackAcl: null },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        unsafe_aclUrl: "https://arbitrary.pod/other-resource.acl",
+      },
+    });
+    expect(unstable_getResourceAcl(litDataset)).toBeNull();
+  });
+
+  it("returns null if the attached ACL does not pertain to the given Resource", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/other-resource",
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+    });
+    const litDataset = Object.assign(dataset(), {
+      acl: { resourceAcl: aclDataset, fallbackAcl: null },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        unsafe_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    });
+    expect(unstable_getResourceAcl(litDataset)).toBeNull();
   });
 
   it("returns null if the given LitDataset does not have a Resource ACL attached", () => {
     const litDataset = Object.assign(dataset(), {
       acl: { fallbackAcl: null, resourceAcl: null },
+      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource" },
     });
     expect(unstable_getResourceAcl(litDataset)).toBeNull();
   });
