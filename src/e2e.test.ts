@@ -28,6 +28,14 @@ import {
   setDatetime,
   setStringNoLocale,
   saveLitDatasetAt,
+  unstable_fetchLitDatasetWithAcl,
+  unstable_hasResourceAcl,
+  unstable_getAgentAccessModesOne,
+  unstable_getFallbackAcl,
+  unstable_getResourceAcl,
+  unstable_getAgentResourceAccessModesOne,
+  unstable_setAgentResourceAccessModes,
+  unstable_saveAclFor,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -67,5 +75,84 @@ describe("End-to-end tests", () => {
       "Thing for first end-to-end test"
     );
     expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
+  });
+
+  it("should be able to read and update ACLs", async () => {
+    const fakeWebId =
+      "https://example.com/fake-webid#" +
+      Date.now().toString() +
+      Math.random().toString();
+
+    const datasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
+    );
+    const datasetWithoutAcl = await unstable_fetchLitDatasetWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
+    );
+
+    expect(unstable_hasResourceAcl(datasetWithAcl)).toBe(true);
+    expect(unstable_hasResourceAcl(datasetWithoutAcl)).toBe(false);
+    expect(
+      unstable_getAgentAccessModesOne(
+        datasetWithAcl,
+        "https://vincentt.inrupt.net/profile/card#me"
+      )
+    ).toEqual({
+      read: false,
+      append: true,
+      write: false,
+      control: false,
+    });
+    expect(
+      unstable_getAgentAccessModesOne(
+        datasetWithoutAcl,
+        "https://vincentt.inrupt.net/profile/card#me"
+      )
+    ).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+    const fallbackAclForDatasetWithoutAcl = unstable_getFallbackAcl(
+      datasetWithoutAcl
+    );
+    expect(fallbackAclForDatasetWithoutAcl?.accessTo).toBe(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
+    );
+
+    if (unstable_hasResourceAcl(datasetWithAcl)) {
+      const acl = unstable_getResourceAcl(datasetWithAcl);
+      const updatedAcl = unstable_setAgentResourceAccessModes(acl, fakeWebId, {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+      const savedAcl = await unstable_saveAclFor(datasetWithAcl, updatedAcl);
+      const fakeWebIdAccess = unstable_getAgentResourceAccessModesOne(
+        savedAcl,
+        fakeWebId
+      );
+      expect(fakeWebIdAccess).toEqual({
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+
+      // Cleanup
+      const cleanedAcl = unstable_setAgentResourceAccessModes(
+        savedAcl,
+        fakeWebId,
+        {
+          read: false,
+          append: false,
+          write: false,
+          control: false,
+        }
+      );
+      await unstable_saveAclFor(datasetWithAcl, cleanedAcl);
+    }
   });
 });
