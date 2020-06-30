@@ -21,6 +21,8 @@
 
 import {
   IriString,
+  WithResourceInfo,
+  unstable_WithAcl,
   unstable_AccessModes,
   unstable_AclDataset,
   unstable_AclRule,
@@ -33,7 +35,31 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_getAccessModes,
   internal_combineAccessModes,
+  unstable_hasResourceAcl,
+  unstable_hasFallbackAcl,
 } from "../acl";
+
+/**
+ * Find out what Access Modes have been granted to everyone for a given Resource.
+ *
+ * Keep in mind that this function will not tell you what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
+ * @returns Which Access Modes have been granted to everyone for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ */
+export function unstable_getPublicAccessModes(
+  resourceInfo: unstable_WithAcl & WithResourceInfo
+): unstable_AccessModes | null {
+  if (unstable_hasResourceAcl(resourceInfo)) {
+    return unstable_getPublicResourceAccessModes(resourceInfo.acl.resourceAcl);
+  }
+  if (unstable_hasFallbackAcl(resourceInfo)) {
+    return unstable_getPublicDefaultAccessModes(resourceInfo.acl.fallbackAcl);
+  }
+  return null;
+}
 
 /**
  * Given an ACL LitDataset, find out which access modes it provides to everyone for its associated Resource.
