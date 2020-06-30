@@ -144,6 +144,7 @@ export {
   unstable_getAgentDefaultAccessModesAll,
   unstable_setAgentDefaultAccessModes,
 } from "./acl/agent";
+export { unstable_getPublicResourceAccessModes } from "./acl/agentClass";
 export {
   Url,
   Iri,
