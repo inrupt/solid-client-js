@@ -86,7 +86,7 @@ function Home() {
                 "button button--secondary button--lg",
                 styles.heroButton
               )}
-              to={useBaseUrl("docs/getting-started")}
+              to={useBaseUrl("docs/")}
             >
               Get Started
             </Link>
