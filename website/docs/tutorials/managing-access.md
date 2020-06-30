@@ -50,6 +50,29 @@ Getting access information when fetching a resource may result in an additional 
 unecessary requests, the API makes it explicit when you get access information along your resource: `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
 and the ACL containing the associated access information.
 
+### Reading public access
+
+Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access
+everyone has, regardless of whether they are authenticated or not. You can do so using
+[`unstable_getPublicAccessModes`](../api/modules/_acl_agentclass_#unstable_getpublicaccessmodes):
+
+```typescript
+import {
+  unstable_fetchLitDatasetWithAcl,
+  unstable_getPublicAccessModes,
+} from "@solid/lit-pod";
+
+const webId = "https://example.com/profile#webid";
+const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+  "https://example.com"
+);
+const publicAccess = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+// => an object like
+//    { read: true, append: false, write: false, control: true }
+//    or null if the ACL is not accessible to the current user.
+```
+
 ### Reading agent access
 
 Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access a
@@ -75,7 +98,7 @@ const agentAccess = unstable_getAgentAccessModesOne(litDatasetWithAcl, webId);
 //    or null if the ACL is not accessible to the current user.
 ```
 
-To get all agent to whom access was granted, use
+To get all agents to whom access was granted, use
 [`unstable_getAgentAccessModesAll`](../api/modules/_acl_agent_#unstable_getagentaccessmodesall):
 
 ```typescript
