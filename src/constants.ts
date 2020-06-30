@@ -38,3 +38,8 @@ export const acl = {
 export const rdf = {
   type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 } as const;
+
+/** @internal */
+export const foaf = {
+  Agent: "http://xmlns.com/foaf/0.1/Agent",
+} as const;

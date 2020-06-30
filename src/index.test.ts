@@ -101,6 +101,7 @@ import {
   unstable_getAgentDefaultAccessModesOne,
   unstable_getAgentDefaultAccessModesAll,
   unstable_setAgentDefaultAccessModes,
+  unstable_getPublicResourceAccessModes,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -198,6 +199,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getAgentDefaultAccessModesOne).toBeDefined();
   expect(unstable_getAgentDefaultAccessModesAll).toBeDefined();
   expect(unstable_setAgentDefaultAccessModes).toBeDefined();
+  expect(unstable_getPublicResourceAccessModes).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
