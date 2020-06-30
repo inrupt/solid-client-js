@@ -25,6 +25,7 @@ import { dataset } from "@rdfjs/dataset";
 import {
   unstable_getPublicResourceAccessModes,
   unstable_getPublicDefaultAccessModes,
+  unstable_getPublicAccessModes,
 } from "./agentClass";
 import {
   LitDataset,
@@ -32,6 +33,7 @@ import {
   IriString,
   unstable_AccessModes,
   unstable_AclDataset,
+  unstable_WithAcl,
 } from "../interfaces";
 
 function addAclRuleQuads(
@@ -110,6 +112,27 @@ function addAclRuleQuads(
   return Object.assign(aclDataset, { accessTo: resource });
 }
 
+function addAclDatasetToLitDataset(
+  litDataset: LitDataset & WithResourceInfo,
+  aclDataset: unstable_AclDataset,
+  type: "resource" | "fallback"
+): LitDataset & WithResourceInfo & unstable_WithAcl {
+  const acl: unstable_WithAcl["acl"] = {
+    fallbackAcl: null,
+    resourceAcl: null,
+    ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
+  };
+  if (type === "resource") {
+    litDataset.resourceInfo.unstable_aclUrl =
+      aclDataset.resourceInfo.fetchedFrom;
+    aclDataset.accessTo = litDataset.resourceInfo.fetchedFrom;
+    acl.resourceAcl = aclDataset;
+  } else if (type === "fallback") {
+    acl.fallbackAcl = aclDataset;
+  }
+  return Object.assign(litDataset, { acl: acl });
+}
+
 function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     resourceInfo: {
@@ -117,6 +140,174 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
     },
   });
 }
+
+describe("getPublicAccessModes", () => {
+  it("returns the Resource's own applicable ACL rules", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/resource.acl"),
+      "https://some.pod/container/resource",
+      { read: false, append: false, write: false, control: true },
+      "resource",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAcl,
+      "resource"
+    );
+
+    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      fallbackAcl,
+      "fallback"
+    );
+
+    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const inaccessibleAcl: unstable_WithAcl = {
+      acl: { fallbackAcl: null, resourceAcl: null },
+    };
+    const litDatasetWithInaccessibleAcl = Object.assign(
+      litDataset,
+      inaccessibleAcl
+    );
+
+    expect(
+      unstable_getPublicAccessModes(litDatasetWithInaccessibleAcl)
+    ).toBeNull();
+  });
+
+  it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/resource.acl"),
+      "https://some.pod/container/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const litDatasetWithJustResourceAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAcl,
+      "resource"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDatasetWithJustResourceAcl,
+      fallbackAcl,
+      "fallback"
+    );
+
+    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+    expect(accessModes).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
+    const litDataset = getMockDataset("https://some.pod/container/");
+    const resourceAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const resourceAclWithDefaultRules = addAclRuleQuads(
+      resourceAcl,
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      resourceAclWithDefaultRules,
+      "resource"
+    );
+
+    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+    expect(accessModes).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
+    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const fallbackAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const fallbackAclWithDefaultRules = addAclRuleQuads(
+      fallbackAcl,
+      "https://some.pod/container/",
+      { read: false, append: false, write: false, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    const litDatasetWithAcl = addAclDatasetToLitDataset(
+      litDataset,
+      fallbackAclWithDefaultRules,
+      "fallback"
+    );
+
+    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+
+    expect(accessModes).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+});
 
 describe("getPublicResourceAccessModes", () => {
   it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
