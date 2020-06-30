@@ -50,8 +50,8 @@ module.exports = {
       content:
         "Both lit-pod and this website are still in alpha. Expect things to change.",
       // Same as --ifm-color-warning in custom.css:
-      backgroundColor: '#ffa600', // Defaults to `#fff`.
-      textColor: '#000', // Defaults to `#000`.
+      backgroundColor: "#ffa600", // Defaults to `#fff`.
+      textColor: "#000", // Defaults to `#000`.
     },
     prism: {
       // This is the included theme that least de-emphasises comments:
@@ -65,8 +65,8 @@ module.exports = {
       // },
       links: [
         {
-          to: "docs/getting-started",
-          activeBasePath: "docs/getting-started",
+          to: "docs/",
+          activeBaseRegex: "docs/$",
           label: "Getting Started",
           position: "left",
         },
@@ -97,7 +97,7 @@ module.exports = {
           items: [
             {
               label: "Getting started",
-              to: "docs/getting-started",
+              to: "docs/",
             },
             {
               label: "Guide",
