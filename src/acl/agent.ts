@@ -110,7 +110,7 @@ export function unstable_getAgentAccessModesAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to child Resources, in case the associated Resource is a Container.
+ * - what access the given Agent has to child Resources, in case the associated Resource is a Container (see [[unstable_getAgentDefaultAccessModesOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -212,7 +212,7 @@ export function unstable_setAgentResourceAccessModes(
  *
  * Keep in mind that this function will not tell you:
  * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to Container Resource itself (see [[unstable_getAgentResourceAccessModesOne]] for that).
+ * - what access the given Agent has to the Container Resource itself (see [[unstable_getAgentResourceAccessModesOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
