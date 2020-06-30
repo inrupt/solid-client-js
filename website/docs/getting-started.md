@@ -27,6 +27,7 @@ If no such authenticated fetcher is provided, only public [Resources](./glossary
 :::info
 
 If you are looking for a more thorough introduction, you can work your way through the full [Guide](./guide/installation).
+Testing website deploy on Vercel
 
 :::
 
