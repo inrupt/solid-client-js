@@ -30,6 +30,7 @@ import {
   saveLitDatasetAt,
   unstable_fetchLitDatasetWithAcl,
   unstable_hasResourceAcl,
+  unstable_getPublicAccessModes,
   unstable_getAgentAccessModesOne,
   unstable_getFallbackAcl,
   unstable_getResourceAcl,
@@ -92,6 +93,12 @@ describe("End-to-end tests", () => {
 
     expect(unstable_hasResourceAcl(datasetWithAcl)).toBe(true);
     expect(unstable_hasResourceAcl(datasetWithoutAcl)).toBe(false);
+    expect(unstable_getPublicAccessModes(datasetWithAcl)).toEqual({
+      read: true,
+      append: true,
+      write: true,
+      control: true,
+    });
     expect(
       unstable_getAgentAccessModesOne(
         datasetWithAcl,
