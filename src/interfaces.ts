@@ -112,6 +112,7 @@ type unstable_WacAllow = {
 export type WithResourceInfo = {
   resourceInfo: {
     fetchedFrom: UrlString;
+    isLitDataset: boolean;
     contentType?: string;
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might

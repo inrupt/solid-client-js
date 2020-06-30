@@ -28,6 +28,8 @@ import {
   setDatetime,
   setStringNoLocale,
   saveLitDatasetAt,
+  isLitDataset,
+  unstable_fetchResourceInfoWithAcl,
   unstable_fetchLitDatasetWithAcl,
   unstable_hasResourceAcl,
   unstable_getPublicAccessModes,
@@ -77,6 +79,19 @@ describe("End-to-end tests", () => {
     );
     expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
   });
+
+  it("can differentiate between RDF and non-RDF Resources", async () => {
+    const rdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
+    );
+    const nonRdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
+    );
+    expect(isLitDataset(rdfResourceInfo)).toBe(true);
+    expect(isLitDataset(nonRdfResourceInfo)).toBe(false);
+    // Fetching both Resource and Fallback ACLs takes quite a while on a bad network connection,
+    // so double Jest's default timeout of 5 seconds:
+  }, 10000);
 
   it("should be able to read and update ACLs", async () => {
     const fakeWebId =

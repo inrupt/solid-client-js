@@ -629,7 +629,10 @@ describe("setThing", () => {
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: {
+          fetchedFrom: "https://some.pod/resource",
+          isLitDataset: true,
+        },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -671,7 +674,10 @@ describe("setThing", () => {
     );
     const datasetWithLocalSubject: LitDataset &
       WithResourceInfo = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://some.pod/resource" },
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
+      },
     });
     datasetWithLocalSubject.add(oldThingQuad);
 
@@ -968,7 +974,10 @@ describe("removeThing", () => {
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: {
+          fetchedFrom: "https://some.pod/resource",
+          isLitDataset: true,
+        },
       }
     );
     datasetWithNamedNode.add(oldThingQuad);
@@ -999,7 +1008,10 @@ describe("removeThing", () => {
     const datasetWithLocalNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: { fetchedFrom: "https://some.pod/resource" },
+        resourceInfo: {
+          fetchedFrom: "https://some.pod/resource",
+          isLitDataset: true,
+        },
       }
     );
     datasetWithLocalNode.add(thingQuad);
