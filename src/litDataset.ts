@@ -206,6 +206,14 @@ export function parseResourceInfo(
 }
 
 /**
+ * @param resource Resource for which to check whether it is a Container.
+ * @returns Whether `resource` is a Container.
+ */
+export function isContainer(resource: WithResourceInfo): boolean {
+  return resource.resourceInfo.fetchedFrom.endsWith("/");
+}
+
+/**
  * Experimental: fetch a LitDataset and its associated Access Control List.
  *
  * This is an experimental function that fetches both a Resource, the linked ACL Resource (if

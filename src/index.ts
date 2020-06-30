@@ -29,6 +29,7 @@ export {
   createLitDataset,
   fetchLitDataset,
   unstable_fetchResourceInfoWithAcl,
+  isContainer,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
