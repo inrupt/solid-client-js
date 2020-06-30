@@ -100,6 +100,7 @@ DatasetCore {
     },
   },
   "resourceInfo": Object {
+    "contentType": "text/plain;charset=UTF-8",
     "fetchedFrom": "https://arbitrary.pod/resource",
   },
 }
