@@ -41,6 +41,7 @@ import {
   unstable_fetchLitDatasetWithAcl,
   internal_fetchResourceInfo,
   isContainer,
+  isLitDataset,
   getContentType,
   createLitDataset,
   unstable_fetchResourceInfoWithAcl,
@@ -311,6 +312,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -329,6 +331,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
       },
     };
 
@@ -360,6 +363,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -403,6 +407,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -722,6 +727,65 @@ describe("fetchResourceInfo", () => {
     expect(litDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
   });
 
+  it("knows when the Resource contains a LitDataset", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://arbitrary.pod/resource",
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(litDatasetInfo.isLitDataset).toBe(true);
+  });
+
+  it("knows when the Resource does not contain a LitDataset", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://arbitrary.pod/resource",
+          headers: { "Content-Type": "image/svg+xml" },
+        })
+      )
+    );
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(litDatasetInfo.isLitDataset).toBe(false);
+  });
+
+  it("marks a Resource as not a LitDataset when its Content Type is unknown", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          mockResponse(undefined, { url: "https://arbitrary.pod/resource" })
+        )
+      );
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(litDatasetInfo.isLitDataset).toBe(false);
+  });
+
   it("exposes the Content Type when known", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
@@ -942,6 +1006,7 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/",
+        isLitDataset: true,
       },
     };
 
@@ -952,10 +1017,35 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/not-a-container",
+        isLitDataset: true,
       },
     };
 
     expect(isContainer(resourceInfo)).toBe(false);
+  });
+});
+
+describe("isLitDataset", () => {
+  it("should recognise a LitDataset", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/",
+        isLitDataset: true,
+      },
+    };
+
+    expect(isLitDataset(resourceInfo)).toBe(true);
+  });
+
+  it("should recognise non-RDF Resources", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/not-a-litdataset.png",
+        isLitDataset: false,
+      },
+    };
+
+    expect(isLitDataset(resourceInfo)).toBe(false);
   });
 });
 
@@ -964,6 +1054,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         contentType: "multipart/form-data; boundary=something",
       },
     };
@@ -977,6 +1068,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
       },
     };
 
@@ -1200,6 +1292,7 @@ describe("saveLitDatasetAt", () => {
 
       const resourceInfo: WithResourceInfo["resourceInfo"] = {
         fetchedFrom: fromUrl,
+        isLitDataset: true,
       };
 
       return Object.assign(mockDataset, {
@@ -1755,11 +1848,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://arbitrary.pod/resource",
     });
 
@@ -1775,11 +1872,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://arbitrary.pod/resource",
     });
 
@@ -1799,11 +1900,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://arbitrary.pod/resource",
     });
 
@@ -1823,11 +1928,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://some-other.pod/resource",
     });
 
@@ -1845,11 +1954,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://arbitrary.pod/resource",
       changeLog: {
         additions: [],
@@ -1871,11 +1984,15 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
         unstable_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
-      resourceInfo: { fetchedFrom: "https://arbitrary-other.pod/resource.acl" },
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary-other.pod/resource.acl",
+        isLitDataset: true,
+      },
       accessTo: "https://arbitrary.pod/resource",
       changeLog: {
         additions: [],

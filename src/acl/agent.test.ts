@@ -140,6 +140,7 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     resourceInfo: {
       fetchedFrom: fetchedFrom,
+      isLitDataset: true,
     },
   });
 }
