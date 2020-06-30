@@ -31,7 +31,7 @@ prismTheme.styles = prismTheme.styles.map((style) => {
     ...style,
     style: {
       ...style.style,
-      color: "#008500",
+      color: "#00ff00",
     },
   };
 });
