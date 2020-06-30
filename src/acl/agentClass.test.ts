@@ -22,7 +22,10 @@
 import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
-import { unstable_getPublicResourceAccessModes } from "./agentClass";
+import {
+  unstable_getPublicResourceAccessModes,
+  unstable_getPublicDefaultAccessModes,
+} from "./agentClass";
 import {
   LitDataset,
   WithResourceInfo,
@@ -223,6 +226,124 @@ describe("getPublicResourceAccessModes", () => {
     );
 
     const agentAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+
+    expect(agentAccess).toEqual({
+      read: false,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+});
+
+describe("getPublicDefaultAccessModes", () => {
+  it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
+    const containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+
+    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+
+    expect(agentAccess).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("combines Access Modes defined for the Agent Class foaf:Agent in separate rules", () => {
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    containerAcl = addAclRuleQuads(
+      containerAcl,
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+
+    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+
+    expect(agentAccess).toEqual({
+      read: true,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("returns false for all Access Modes if there are no ACL rules for the Agent Class foaf:Agent", () => {
+    const containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+    );
+
+    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+
+    expect(agentAccess).toEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores ACL rules that apply to a different Agent Class", () => {
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/container/.acl"),
+      "https://arbitrary.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+    );
+    containerAcl = addAclRuleQuads(
+      containerAcl,
+      "https://arbitrary.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+
+    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+
+    expect(agentAccess).toEqual({
+      read: false,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores ACL rules that apply to a different Resource", () => {
+    let containerAcl = addAclRuleQuads(
+      getMockDataset("https://some.pod/container/.acl"),
+      "https://some-other.pod/container/",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+    containerAcl = addAclRuleQuads(
+      containerAcl,
+      "https://some.pod/container/",
+      { read: false, append: true, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
+
+    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,

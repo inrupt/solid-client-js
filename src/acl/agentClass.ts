@@ -30,6 +30,7 @@ import { getIriAll } from "../thing/get";
 import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,
+  internal_getDefaultAclRulesForResource,
   internal_getAccessModes,
   internal_combineAccessModes,
 } from "../acl";
@@ -39,7 +40,7 @@ import {
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to child Resources, in case the associated Resource is a Container.
+ * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[unstable_getDefaultResourceAccessModes]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -51,6 +52,34 @@ export function unstable_getPublicResourceAccessModes(
 ): unstable_AccessModes {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
+    allRules,
+    aclDataset.accessTo
+  );
+  const publicResourceRules = getAgentClassAclRulesForAgentClass(
+    resourceRules,
+    foaf.Agent
+  );
+  const publicAccessModes = publicResourceRules.map(internal_getAccessModes);
+  return internal_combineAccessModes(publicAccessModes);
+}
+
+/**
+ * Given an ACL LitDataset, find out which access modes it provides to everyone for the associated Container Resource's child Resources.
+ *
+ * Keep in mind that this function will not tell you:
+ * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
+ * - what access anyone has to the Container Resource itself (see [[unstable_getPublicResourceAccessModes]] for that).
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param aclDataset The LitDataset that contains Access-Control List rules for a certain Container.
+ * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL LitDataset.
+ */
+export function unstable_getPublicDefaultAccessModes(
+  aclDataset: unstable_AclDataset
+): unstable_AccessModes {
+  const allRules = internal_getAclRules(aclDataset);
+  const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
     aclDataset.accessTo
   );
