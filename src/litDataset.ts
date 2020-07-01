@@ -184,6 +184,7 @@ export function parseResourceInfo(
 ): WithResourceInfo["resourceInfo"] {
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
     fetchedFrom: response.url,
+    contentType: response.headers.get("Content-Type") ?? undefined,
   };
   const linkHeader = response.headers.get("Link");
   if (linkHeader) {
@@ -211,6 +212,14 @@ export function parseResourceInfo(
  */
 export function isContainer(resource: WithResourceInfo): boolean {
   return resource.resourceInfo.fetchedFrom.endsWith("/");
+}
+
+/**
+ * @param resource Resource for which to determine the Content Type.
+ * @returns The Content Type, if known, or null if not known.
+ */
+export function getContentType(resource: WithResourceInfo): string | null {
+  return resource.resourceInfo.contentType ?? null;
 }
 
 /**

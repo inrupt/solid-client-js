@@ -30,6 +30,7 @@ export {
   fetchLitDataset,
   unstable_fetchResourceInfoWithAcl,
   isContainer,
+  getContentType,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,

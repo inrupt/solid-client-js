@@ -41,6 +41,7 @@ import {
   unstable_fetchLitDatasetWithAcl,
   internal_fetchResourceInfo,
   isContainer,
+  getContentType,
   createLitDataset,
   unstable_fetchResourceInfoWithAcl,
   unstable_saveAclFor,
@@ -721,6 +722,41 @@ describe("fetchResourceInfo", () => {
     expect(litDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
   });
 
+  it("exposes the Content Type when known", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: { "Content-Type": "text/turtle; charset=UTF-8" },
+        })
+      )
+    );
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(litDatasetInfo.contentType).toBe("text/turtle; charset=UTF-8");
+  });
+
+  it("does not expose a Content-Type when none is known", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse()));
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(litDatasetInfo.contentType).toBeUndefined();
+  });
+
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
@@ -920,6 +956,31 @@ describe("isContainer", () => {
     };
 
     expect(isContainer(resourceInfo)).toBe(false);
+  });
+});
+
+describe("getContentType", () => {
+  it("should return the Content Type if known", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        contentType: "multipart/form-data; boundary=something",
+      },
+    };
+
+    expect(getContentType(resourceInfo)).toBe(
+      "multipart/form-data; boundary=something"
+    );
+  });
+
+  it("should return null if no Content Type is known", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+      },
+    };
+
+    expect(getContentType(resourceInfo)).toBeNull();
   });
 });
 
