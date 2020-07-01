@@ -29,6 +29,7 @@ export {
   createLitDataset,
   fetchLitDataset,
   unstable_fetchResourceInfoWithAcl,
+  isContainer,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
@@ -143,6 +144,11 @@ export {
   unstable_getAgentDefaultAccessModesAll,
   unstable_setAgentDefaultAccessModes,
 } from "./acl/agent";
+export {
+  unstable_getPublicAccessModes,
+  unstable_getPublicResourceAccessModes,
+  unstable_getPublicDefaultAccessModes,
+} from "./acl/agentClass";
 export {
   Url,
   Iri,

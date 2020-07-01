@@ -40,6 +40,7 @@ import {
   internal_fetchAcl,
   unstable_fetchLitDatasetWithAcl,
   internal_fetchResourceInfo,
+  isContainer,
   createLitDataset,
   unstable_fetchResourceInfoWithAcl,
   unstable_saveAclFor,
@@ -897,6 +898,28 @@ describe("fetchResourceInfo", () => {
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource metadata failed: 404 Not Found.")
     );
+  });
+});
+
+describe("isContainer", () => {
+  it("should recognise a Container", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/",
+      },
+    };
+
+    expect(isContainer(resourceInfo)).toBe(true);
+  });
+
+  it("should recognise non-Containers", () => {
+    const resourceInfo: WithResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/not-a-container",
+      },
+    };
+
+    expect(isContainer(resourceInfo)).toBe(false);
   });
 });
 
