@@ -46,6 +46,7 @@ import {
   unstable_getResourceAcl,
   unstable_getFallbackAcl,
   internal_removeEmptyAclRules,
+  unstable_createAclFromFallbackAcl,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -442,6 +443,128 @@ describe("getFallbackAcl", () => {
       acl: { fallbackAcl: null, resourceAcl: null },
     });
     expect(unstable_getFallbackAcl(litDataset)).toBeNull();
+  });
+});
+
+describe("createAclFromFallbackAcl", () => {
+  it("creates a new ACL including existing default rules as Resource rules", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/container/",
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/.acl",
+        isLitDataset: true,
+      },
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    const litDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/container/resource.acl",
+      },
+      acl: { fallbackAcl: aclDataset, resourceAcl: null },
+    });
+
+    const resourceAcl = unstable_createAclFromFallbackAcl(litDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads[3].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#accessTo"
+    );
+    expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.accessTo).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.resourceInfo.fetchedFrom).toBe(
+      "https://arbitrary.pod/container/resource.acl"
+    );
+  });
+
+  it("does not copy over Resource rules from the fallback ACL", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/container/",
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/.acl",
+        isLitDataset: true,
+      },
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    const litDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/container/resource.acl",
+      },
+      acl: { fallbackAcl: aclDataset, resourceAcl: null },
+    });
+
+    const resourceAcl = unstable_createAclFromFallbackAcl(litDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(0);
   });
 });
 
