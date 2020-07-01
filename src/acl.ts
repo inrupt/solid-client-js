@@ -34,6 +34,7 @@ import {
   unstable_AccessModes,
   Thing,
   IriString,
+  LitDataset,
   unstable_WithAcl,
   unstable_WithAccessibleAcl,
   unstable_WithResourceAcl,
@@ -211,6 +212,13 @@ export function unstable_getFallbackAcl(
     return null;
   }
   return dataset.acl.fallbackAcl;
+}
+
+/** @internal */
+export function internal_isAclDataset(
+  dataset: LitDataset
+): dataset is unstable_AclDataset {
+  return typeof (dataset as unstable_AclDataset).accessTo === "string";
 }
 
 /** @internal */

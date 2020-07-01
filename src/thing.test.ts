@@ -41,6 +41,8 @@ import {
   WithResourceInfo,
   WithChangeLog,
   LocalNode,
+  unstable_WithAcl,
+  unstable_AclDataset,
 } from "./interfaces";
 
 function getMockQuad(
@@ -859,6 +861,63 @@ describe("removeThing", () => {
       existingDeletion,
       thingQuad,
     ]);
+  });
+
+  it("preserves attached ACLs", () => {
+    const thingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const datasetWithFetchedAcls: LitDataset & unstable_WithAcl = Object.assign(
+      dataset(),
+      {
+        acl: {
+          resourceAcl: null,
+          fallbackAcl: null,
+        },
+      }
+    );
+    datasetWithFetchedAcls.add(thingQuad);
+
+    const thing: Thing = Object.assign(dataset(), {
+      url: "https://some.vocab/subject",
+    });
+    thing.add(thingQuad);
+
+    const updatedDataset = removeThing(datasetWithFetchedAcls, thing);
+
+    expect(updatedDataset.acl).toEqual({
+      resourceAcl: null,
+      fallbackAcl: null,
+    });
+  });
+
+  it("preserves metadata on ACL Datasets", () => {
+    const thingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/resource",
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+    });
+    aclDataset.add(thingQuad);
+
+    const thing: Thing = Object.assign(dataset(), {
+      url: "https://some.vocab/subject",
+    });
+    thing.add(thingQuad);
+
+    const updatedDataset = removeThing(aclDataset, thing);
+
+    expect(updatedDataset.accessTo).toBe("https://arbitrary.pod/resource");
+    expect(updatedDataset.resourceInfo).toEqual({
+      fetchedFrom: "https://arbitrary.pod/resource.acl",
+      isLitDataset: true,
+    });
   });
 
   it("returns a Dataset that excludes Quads with a given Subject IRI", () => {
