@@ -41,7 +41,11 @@ import {
   WithResourceInfo,
   hasChangelog,
   hasResourceInfo,
+  unstable_hasAcl,
+  unstable_WithAcl,
+  unstable_AclDataset,
 } from "./interfaces";
+import { internal_isAclDataset } from "./acl";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -219,6 +223,14 @@ function cloneLitStructs<Dataset extends LitDataset>(
     (freshDataset as LitDataset & WithResourceInfo).resourceInfo = {
       ...litDataset.resourceInfo,
     };
+  }
+  if (unstable_hasAcl(litDataset)) {
+    (freshDataset as LitDataset & unstable_WithAcl).acl = {
+      ...litDataset.acl,
+    };
+  }
+  if (internal_isAclDataset(litDataset)) {
+    (freshDataset as unstable_AclDataset).accessTo = litDataset.accessTo;
   }
 
   return freshDataset as Dataset;
