@@ -134,6 +134,7 @@ export {
   unstable_getFallbackAcl,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
+  unstable_createAclFromFallbackAcl,
 } from "./acl";
 export {
   unstable_AgentAccess,
@@ -164,6 +165,7 @@ export {
   LocalNode,
   WithResourceInfo,
   WithChangeLog,
+  unstable_hasAccessibleAcl,
   unstable_WithAccessibleAcl,
   unstable_WithAcl,
   unstable_WithFallbackAcl,

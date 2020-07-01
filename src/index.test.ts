@@ -96,6 +96,7 @@ import {
   unstable_getFallbackAcl,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
+  unstable_createAclFromFallbackAcl,
   unstable_getAgentAccessModesOne,
   unstable_getAgentAccessModesAll,
   unstable_getAgentResourceAccessModesOne,
@@ -107,6 +108,7 @@ import {
   unstable_getPublicAccessModes,
   unstable_getPublicResourceAccessModes,
   unstable_getPublicDefaultAccessModes,
+  unstable_hasAccessibleAcl,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -199,6 +201,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getFallbackAcl).toBeDefined();
   expect(unstable_hasResourceAcl).toBeDefined();
   expect(unstable_getResourceAcl).toBeDefined();
+  expect(unstable_createAclFromFallbackAcl).toBeDefined();
   expect(unstable_getAgentAccessModesOne).toBeDefined();
   expect(unstable_getAgentAccessModesAll).toBeDefined();
   expect(unstable_getAgentResourceAccessModesOne).toBeDefined();
@@ -210,6 +213,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getPublicAccessModes).toBeDefined();
   expect(unstable_getPublicResourceAccessModes).toBeDefined();
   expect(unstable_getPublicDefaultAccessModes).toBeDefined();
+  expect(unstable_hasAccessibleAcl).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
