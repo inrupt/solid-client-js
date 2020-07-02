@@ -33,6 +33,7 @@ import {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_saveAclFor,
+  unstable_deleteAclFor,
   getThingOne,
   getThingAll,
   setThing,
@@ -136,6 +137,7 @@ it("exports the public API from the entry file", () => {
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
   expect(unstable_saveAclFor).toBeDefined();
+  expect(unstable_deleteAclFor).toBeDefined();
   expect(getThingOne).toBeDefined();
   expect(getThingAll).toBeDefined();
   expect(setThing).toBeDefined();
