@@ -23,7 +23,7 @@ import {
   IriString,
   WithResourceInfo,
   unstable_WithAcl,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_AclDataset,
   unstable_AclRule,
 } from "../interfaces";
@@ -33,7 +33,7 @@ import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
-  internal_getAccessModes,
+  internal_getAccess,
   internal_combineAccessModes,
   unstable_hasResourceAcl,
   unstable_hasFallbackAcl,
@@ -49,14 +49,14 @@ import {
  * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
  * @returns Which Access Modes have been granted to everyone for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getPublicAccessModes(
+export function unstable_getPublicAccess(
   resourceInfo: unstable_WithAcl & WithResourceInfo
-): unstable_AccessModes | null {
+): unstable_Access | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getPublicResourceAccessModes(resourceInfo.acl.resourceAcl);
+    return unstable_getPublicResourceAccess(resourceInfo.acl.resourceAcl);
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getPublicDefaultAccessModes(resourceInfo.acl.fallbackAcl);
+    return unstable_getPublicDefaultAccess(resourceInfo.acl.fallbackAcl);
   }
   return null;
 }
@@ -66,16 +66,16 @@ export function unstable_getPublicAccessModes(
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[unstable_getDefaultResourceAccessModes]] for that).
+ * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[unstable_getDefaultResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @returns Which Access Modes have been granted to everyone for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getPublicResourceAccessModes(
+export function unstable_getPublicResourceAccess(
   aclDataset: unstable_AclDataset
-): unstable_AccessModes {
+): unstable_Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
@@ -85,7 +85,7 @@ export function unstable_getPublicResourceAccessModes(
     resourceRules,
     foaf.Agent
   );
-  const publicAccessModes = publicResourceRules.map(internal_getAccessModes);
+  const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
 }
 
@@ -94,16 +94,16 @@ export function unstable_getPublicResourceAccessModes(
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to the Container Resource itself (see [[unstable_getPublicResourceAccessModes]] for that).
+ * - what access anyone has to the Container Resource itself (see [[unstable_getPublicResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules for a certain Container.
  * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getPublicDefaultAccessModes(
+export function unstable_getPublicDefaultAccess(
   aclDataset: unstable_AclDataset
-): unstable_AccessModes {
+): unstable_Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
@@ -113,7 +113,7 @@ export function unstable_getPublicDefaultAccessModes(
     resourceRules,
     foaf.Agent
   );
-  const publicAccessModes = publicResourceRules.map(internal_getAccessModes);
+  const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
 }
 
