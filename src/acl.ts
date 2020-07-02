@@ -31,7 +31,7 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_AclRule,
-  unstable_AccessModes,
+  unstable_Access,
   Thing,
   IriString,
   LitDataset,
@@ -327,9 +327,7 @@ function isDefaultForResource(
 }
 
 /** @internal */
-export function internal_getAccessModes(
-  rule: unstable_AclRule
-): unstable_AccessModes {
+export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
   const ruleAccessModes = getIriAll(rule, acl.mode);
   const writeAccess = ruleAccessModes.includes(
     internal_accessModeIriStrings.write
@@ -355,8 +353,8 @@ export function internal_getAccessModes(
 
 /** @internal */
 export function internal_combineAccessModes(
-  modes: unstable_AccessModes[]
-): unstable_AccessModes {
+  modes: unstable_Access[]
+): unstable_Access {
   return modes.reduce(
     (accumulator, current) => {
       const writeAccess = accumulator.write || current.write;

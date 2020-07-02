@@ -138,19 +138,19 @@ export {
 } from "./acl";
 export {
   unstable_AgentAccess,
-  unstable_getAgentAccessModesOne,
-  unstable_getAgentAccessModesAll,
-  unstable_getAgentResourceAccessModesOne,
-  unstable_getAgentResourceAccessModesAll,
-  unstable_setAgentResourceAccessModes,
-  unstable_getAgentDefaultAccessModesOne,
-  unstable_getAgentDefaultAccessModesAll,
-  unstable_setAgentDefaultAccessModes,
+  unstable_getAgentAccessOne,
+  unstable_getAgentAccessAll,
+  unstable_getAgentResourceAccessOne,
+  unstable_getAgentResourceAccessAll,
+  unstable_setAgentResourceAccess,
+  unstable_getAgentDefaultAccessOne,
+  unstable_getAgentDefaultAccessAll,
+  unstable_setAgentDefaultAccess,
 } from "./acl/agent";
 export {
-  unstable_getPublicAccessModes,
-  unstable_getPublicResourceAccessModes,
-  unstable_getPublicDefaultAccessModes,
+  unstable_getPublicAccess,
+  unstable_getPublicResourceAccess,
+  unstable_getPublicDefaultAccess,
 } from "./acl/agentClass";
 export {
   Url,
@@ -172,6 +172,6 @@ export {
   unstable_WithResourceAcl,
   unstable_AclDataset,
   unstable_AclRule,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_UploadRequestInit,
 } from "./interfaces";

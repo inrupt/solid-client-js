@@ -86,7 +86,7 @@ export type unstable_AclRule = Thing;
  *
  * Since that specification is not finalised yet, this interface is still experimental.
  */
-export type unstable_AccessModes =
+export type unstable_Access =
   // If someone has write permissions, they also have append permissions:
   | {
       read: boolean;
@@ -102,8 +102,8 @@ export type unstable_AccessModes =
     };
 
 type unstable_WacAllow = {
-  user: unstable_AccessModes;
-  public: unstable_AccessModes;
+  user: unstable_Access;
+  public: unstable_Access;
 };
 
 /**

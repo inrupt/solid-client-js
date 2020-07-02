@@ -36,7 +36,7 @@ import {
   LocalNode,
   unstable_WithAcl,
   unstable_hasAccessibleAcl,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_AclDataset,
   unstable_WithAccessibleAcl,
 } from "./interfaces";
@@ -512,7 +512,7 @@ function resolveLocalIrisInLitDataset<
 function parseWacAllowHeader(wacAllowHeader: string) {
   function parsePermissionStatement(
     permissionStatement: string
-  ): unstable_AccessModes {
+  ): unstable_Access {
     const permissions = permissionStatement.split(" ");
     const writePermission = permissions.includes("write");
     return writePermission

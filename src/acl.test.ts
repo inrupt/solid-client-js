@@ -36,7 +36,7 @@ import { DataFactory } from "n3";
 import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
-  internal_getAccessModes,
+  internal_getAccess,
   internal_getAclRules,
   internal_getResourceAclRules,
   internal_getDefaultAclRules,
@@ -53,7 +53,7 @@ import {
   ThingPersisted,
   unstable_AclRule,
   unstable_AclDataset,
-  unstable_AccessModes,
+  unstable_Access,
 } from "./interfaces";
 
 function mockResponse(
@@ -936,7 +936,7 @@ describe("getDefaultAclRulesForResource", () => {
   });
 });
 
-describe("getAccessModes", () => {
+describe("getAccess", () => {
   it("returns true for Access Modes that are granted", () => {
     const subject = "https://arbitrary.pod/profileDoc#webId";
 
@@ -970,7 +970,7 @@ describe("getAccessModes", () => {
       )
     );
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: true,
       append: true,
       write: true,
@@ -983,7 +983,7 @@ describe("getAccessModes", () => {
 
     const mockRule = Object.assign(dataset(), { url: subject });
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: false,
       append: false,
       write: false,
@@ -1003,7 +1003,7 @@ describe("getAccessModes", () => {
       )
     );
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: false,
       append: true,
       write: true,
@@ -1014,7 +1014,7 @@ describe("getAccessModes", () => {
 
 describe("combineAccessModes", () => {
   it("returns true for Access Modes that are true in any of the given Access Mode sets", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: true, append: false, write: false, control: false },
       { read: false, append: true, write: false, control: false },
@@ -1031,7 +1031,7 @@ describe("combineAccessModes", () => {
   });
 
   it("returns false for Access Modes that are false in all of the given Access Mode sets", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: false, control: false },
@@ -1055,7 +1055,7 @@ describe("combineAccessModes", () => {
   });
 
   it("infers Append access from Write access", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: true, control: false } as any,
     ];
