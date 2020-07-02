@@ -39,6 +39,11 @@ import {
   unstable_getAgentResourceAccessModesOne,
   unstable_setAgentResourceAccessModes,
   unstable_saveAclFor,
+  unstable_hasFallbackAcl,
+  unstable_hasAccessibleAcl,
+  unstable_createAclFromFallbackAcl,
+  unstable_getPublicDefaultAccessModes,
+  unstable_getPublicResourceAccessModes,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -175,6 +180,23 @@ describe("End-to-end tests", () => {
         }
       );
       await unstable_saveAclFor(datasetWithAcl, cleanedAcl);
+    }
+  });
+
+  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
+    const dataset = await unstable_fetchLitDatasetWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
+    );
+    if (
+      unstable_hasFallbackAcl(dataset) &&
+      unstable_hasAccessibleAcl(dataset) &&
+      !unstable_hasResourceAcl(dataset)
+    ) {
+      const newResourceAcl = unstable_createAclFromFallbackAcl(dataset);
+      const existingFallbackAcl = unstable_getFallbackAcl(dataset);
+      expect(unstable_getPublicDefaultAccessModes(existingFallbackAcl)).toEqual(
+        unstable_getPublicResourceAccessModes(newResourceAcl)
+      );
     }
   });
 });
