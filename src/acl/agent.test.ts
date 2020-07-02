@@ -24,18 +24,18 @@ import { Quad } from "rdf-js";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
-  unstable_getAgentResourceAccessModesOne,
-  unstable_getAgentResourceAccessModesAll,
-  unstable_getAgentDefaultAccessModesOne,
-  unstable_getAgentDefaultAccessModesAll,
-  unstable_setAgentResourceAccessModes,
-  unstable_getAgentAccessModesOne,
-  unstable_getAgentAccessModesAll,
-  unstable_setAgentDefaultAccessModes,
+  unstable_getAgentResourceAccessOne,
+  unstable_getAgentResourceAccessAll,
+  unstable_getAgentDefaultAccessOne,
+  unstable_getAgentDefaultAccessAll,
+  unstable_setAgentResourceAccess,
+  unstable_getAgentAccessOne,
+  unstable_getAgentAccessAll,
+  unstable_setAgentDefaultAccess,
 } from "./agent";
 import {
   LitDataset,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_WithAcl,
   WithResourceInfo,
   IriString,
@@ -46,7 +46,7 @@ function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   agent: IriString,
   resource: IriString,
-  accessModes: unstable_AccessModes,
+  access: unstable_Access,
   type: "resource" | "default"
 ): unstable_AclDataset {
   const subjectIri = resource + "#" + encodeURIComponent(agent) + Math.random();
@@ -75,7 +75,7 @@ function addAclRuleQuads(
       DataFactory.namedNode(agent)
     )
   );
-  if (accessModes.read) {
+  if (access.read) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -84,7 +84,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.append) {
+  if (access.append) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -93,7 +93,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.write) {
+  if (access.write) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -102,7 +102,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.control) {
+  if (access.control) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -140,11 +140,12 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     resourceInfo: {
       fetchedFrom: fetchedFrom,
+      isLitDataset: true,
     },
   });
 }
 
-describe("getAgentAccessModesOne", () => {
+describe("getAgentAccessOne", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
@@ -160,12 +161,12 @@ describe("getAgentAccessModesOne", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesOne(
+    const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -188,12 +189,12 @@ describe("getAgentAccessModesOne", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesOne(
+    const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -212,7 +213,7 @@ describe("getAgentAccessModesOne", () => {
     );
 
     expect(
-      unstable_getAgentAccessModesOne(
+      unstable_getAgentAccessOne(
         litDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
@@ -246,12 +247,12 @@ describe("getAgentAccessModesOne", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesOne(
+    const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: true,
       append: false,
       write: false,
@@ -281,12 +282,12 @@ describe("getAgentAccessModesOne", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesOne(
+    const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: true,
       append: false,
       write: false,
@@ -316,12 +317,12 @@ describe("getAgentAccessModesOne", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesOne(
+    const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -330,7 +331,7 @@ describe("getAgentAccessModesOne", () => {
   });
 });
 
-describe("getAgentAccessModesAll", () => {
+describe("getAgentAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Agent", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
@@ -346,9 +347,9 @@ describe("getAgentAccessModesAll", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: false,
         append: false,
@@ -373,9 +374,9 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: false,
         append: false,
@@ -396,7 +397,7 @@ describe("getAgentAccessModesAll", () => {
     );
 
     expect(
-      unstable_getAgentAccessModesAll(litDatasetWithInaccessibleAcl)
+      unstable_getAgentAccessAll(litDatasetWithInaccessibleAcl)
     ).toBeNull();
   });
 
@@ -427,9 +428,9 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
         append: false,
@@ -466,11 +467,11 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     // It only includes rules for agent "https://some.pod/profileDoc#webId",
     // not for "https://some-other.pod/profileDoc#webId"
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
         append: false,
@@ -502,9 +503,9 @@ describe("getAgentAccessModesAll", () => {
       "resource"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
         append: false,
@@ -536,9 +537,9 @@ describe("getAgentAccessModesAll", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: false,
         append: false,
@@ -549,7 +550,7 @@ describe("getAgentAccessModesAll", () => {
   });
 });
 
-describe("getAgentResourceAccessModesOne", () => {
+describe("getAgentResourceAccessOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -559,7 +560,7 @@ describe("getAgentResourceAccessModesOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesOne(
+    const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -588,7 +589,7 @@ describe("getAgentResourceAccessModesOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesOne(
+    const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -610,7 +611,7 @@ describe("getAgentResourceAccessModesOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesOne(
+    const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -639,7 +640,7 @@ describe("getAgentResourceAccessModesOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesOne(
+    const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -668,7 +669,7 @@ describe("getAgentResourceAccessModesOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesOne(
+    const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
@@ -682,7 +683,7 @@ describe("getAgentResourceAccessModesOne", () => {
   });
 });
 
-describe("getAgentResourceAccessModesAll", () => {
+describe("getAgentResourceAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -699,7 +700,7 @@ describe("getAgentResourceAccessModesAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
+    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -733,7 +734,7 @@ describe("getAgentResourceAccessModesAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
+    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -762,7 +763,7 @@ describe("getAgentResourceAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
+    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -813,7 +814,7 @@ describe("getAgentResourceAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
+    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -841,7 +842,7 @@ describe("getAgentResourceAccessModesAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessModesAll(resourceAcl);
+    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -854,14 +855,14 @@ describe("getAgentResourceAccessModesAll", () => {
   });
 });
 
-describe("setAgentResourceAccessModes", () => {
+describe("setAgentResourceAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       { accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -916,7 +917,7 @@ describe("setAgentResourceAccessModes", () => {
       { accessTo: "https://arbitrary.pod/resource" }
     );
 
-    unstable_setAgentResourceAccessModes(
+    unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -936,7 +937,7 @@ describe("setAgentResourceAccessModes", () => {
       { accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -984,7 +985,7 @@ describe("setAgentResourceAccessModes", () => {
       { accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1030,7 +1031,7 @@ describe("setAgentResourceAccessModes", () => {
       "resource"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1076,7 +1077,7 @@ describe("setAgentResourceAccessModes", () => {
       "resource"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1108,7 +1109,7 @@ describe("setAgentResourceAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1164,7 +1165,7 @@ describe("setAgentResourceAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1220,7 +1221,7 @@ describe("setAgentResourceAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1274,7 +1275,7 @@ describe("setAgentResourceAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1328,7 +1329,7 @@ describe("setAgentResourceAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccessModes(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1390,7 +1391,7 @@ describe("setAgentResourceAccessModes", () => {
   });
 });
 
-describe("getAgentDefaultAccessModesOne", () => {
+describe("getAgentDefaultAccessOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
@@ -1400,7 +1401,7 @@ describe("getAgentDefaultAccessModesOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesOne(
+    const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1429,7 +1430,7 @@ describe("getAgentDefaultAccessModesOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesOne(
+    const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1451,7 +1452,7 @@ describe("getAgentDefaultAccessModesOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesOne(
+    const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -1480,7 +1481,7 @@ describe("getAgentDefaultAccessModesOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesOne(
+    const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1509,7 +1510,7 @@ describe("getAgentDefaultAccessModesOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesOne(
+    const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
@@ -1523,7 +1524,7 @@ describe("getAgentDefaultAccessModesOne", () => {
   });
 });
 
-describe("getAgentDefaultAccessModesAll", () => {
+describe("getAgentDefaultAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
@@ -1540,7 +1541,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
+    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1574,7 +1575,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
+    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1603,7 +1604,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
+    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1654,7 +1655,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
+    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1682,7 +1683,7 @@ describe("getAgentDefaultAccessModesAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessModesAll(containerAcl);
+    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1695,14 +1696,14 @@ describe("getAgentDefaultAccessModesAll", () => {
   });
 });
 
-describe("setAgentDefaultAccessModes", () => {
+describe("setAgentDefaultAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       { accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1759,7 +1760,7 @@ describe("setAgentDefaultAccessModes", () => {
       { accessTo: "https://arbitrary.pod/container/" }
     );
 
-    unstable_setAgentDefaultAccessModes(
+    unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1779,7 +1780,7 @@ describe("setAgentDefaultAccessModes", () => {
       { accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1827,7 +1828,7 @@ describe("setAgentDefaultAccessModes", () => {
       { accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1875,7 +1876,7 @@ describe("setAgentDefaultAccessModes", () => {
       "default"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1923,7 +1924,7 @@ describe("setAgentDefaultAccessModes", () => {
       "default"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1955,7 +1956,7 @@ describe("setAgentDefaultAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2011,7 +2012,7 @@ describe("setAgentDefaultAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2067,7 +2068,7 @@ describe("setAgentDefaultAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2123,7 +2124,7 @@ describe("setAgentDefaultAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2179,7 +2180,7 @@ describe("setAgentDefaultAccessModes", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccessModes(
+    const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {

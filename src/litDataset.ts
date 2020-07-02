@@ -36,7 +36,7 @@ import {
   LocalNode,
   unstable_WithAcl,
   unstable_hasAccessibleAcl,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_AclDataset,
   unstable_WithAccessibleAcl,
 } from "./interfaces";
@@ -182,10 +182,18 @@ export async function unstable_fetchResourceInfoWithAcl(
 export function parseResourceInfo(
   response: Response
 ): WithResourceInfo["resourceInfo"] {
+  const contentTypeParts =
+    response.headers.get("Content-Type")?.split(";") ?? [];
+  const isLitDataset =
+    contentTypeParts.length > 0 &&
+    ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
+
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
     fetchedFrom: response.url,
+    isLitDataset: isLitDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
+
   const linkHeader = response.headers.get("Link");
   if (linkHeader) {
     const parsedLinks = LinkHeader.parse(linkHeader);
@@ -212,6 +220,14 @@ export function parseResourceInfo(
  */
 export function isContainer(resource: WithResourceInfo): boolean {
   return resource.resourceInfo.fetchedFrom.endsWith("/");
+}
+
+/**
+ * @param resource Resource for which to check whether it contains a LitDataset.
+ * @return Whether `resource` contains a LitDataset.
+ */
+export function isLitDataset(resource: WithResourceInfo): boolean {
+  return resource.resourceInfo.isLitDataset;
 }
 
 /**
@@ -324,7 +340,7 @@ export async function saveLitDatasetAt(
     litDataset
   )
     ? { ...litDataset.resourceInfo, fetchedFrom: url }
-    : { fetchedFrom: url };
+    : { fetchedFrom: url, isLitDataset: true };
   const storedDataset: LitDataset &
     WithChangeLog &
     WithResourceInfo = Object.assign(litDataset, {
@@ -412,6 +428,7 @@ export async function saveLitDatasetInContainer(
     .href;
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
     fetchedFrom: resourceIri,
+    isLitDataset: true,
   };
   const resourceWithResourceInfo: LitDataset & WithResourceInfo = Object.assign(
     litDataset,
@@ -495,7 +512,7 @@ function resolveLocalIrisInLitDataset<
 function parseWacAllowHeader(wacAllowHeader: string) {
   function parsePermissionStatement(
     permissionStatement: string
-  ): unstable_AccessModes {
+  ): unstable_Access {
     const permissions = permissionStatement.split(" ");
     const writePermission = permissions.includes("write");
     return writePermission

@@ -28,15 +28,22 @@ import {
   setDatetime,
   setStringNoLocale,
   saveLitDatasetAt,
+  isLitDataset,
+  unstable_fetchResourceInfoWithAcl,
   unstable_fetchLitDatasetWithAcl,
   unstable_hasResourceAcl,
-  unstable_getPublicAccessModes,
-  unstable_getAgentAccessModesOne,
+  unstable_getPublicAccess,
+  unstable_getAgentAccessOne,
   unstable_getFallbackAcl,
   unstable_getResourceAcl,
-  unstable_getAgentResourceAccessModesOne,
-  unstable_setAgentResourceAccessModes,
+  unstable_getAgentResourceAccessOne,
+  unstable_setAgentResourceAccess,
   unstable_saveAclFor,
+  unstable_hasFallbackAcl,
+  unstable_hasAccessibleAcl,
+  unstable_createAclFromFallbackAcl,
+  unstable_getPublicDefaultAccess,
+  unstable_getPublicResourceAccess,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -78,6 +85,19 @@ describe("End-to-end tests", () => {
     expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
   });
 
+  it("can differentiate between RDF and non-RDF Resources", async () => {
+    const rdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
+    );
+    const nonRdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
+    );
+    expect(isLitDataset(rdfResourceInfo)).toBe(true);
+    expect(isLitDataset(nonRdfResourceInfo)).toBe(false);
+    // Fetching both Resource and Fallback ACLs takes quite a while on a bad network connection,
+    // so double Jest's default timeout of 5 seconds:
+  }, 10000);
+
   it("should be able to read and update ACLs", async () => {
     const fakeWebId =
       "https://example.com/fake-webid#" +
@@ -93,14 +113,14 @@ describe("End-to-end tests", () => {
 
     expect(unstable_hasResourceAcl(datasetWithAcl)).toBe(true);
     expect(unstable_hasResourceAcl(datasetWithoutAcl)).toBe(false);
-    expect(unstable_getPublicAccessModes(datasetWithAcl)).toEqual({
+    expect(unstable_getPublicAccess(datasetWithAcl)).toEqual({
       read: true,
       append: true,
       write: true,
       control: true,
     });
     expect(
-      unstable_getAgentAccessModesOne(
+      unstable_getAgentAccessOne(
         datasetWithAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -111,7 +131,7 @@ describe("End-to-end tests", () => {
       control: false,
     });
     expect(
-      unstable_getAgentAccessModesOne(
+      unstable_getAgentAccessOne(
         datasetWithoutAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -130,14 +150,14 @@ describe("End-to-end tests", () => {
 
     if (unstable_hasResourceAcl(datasetWithAcl)) {
       const acl = unstable_getResourceAcl(datasetWithAcl);
-      const updatedAcl = unstable_setAgentResourceAccessModes(acl, fakeWebId, {
+      const updatedAcl = unstable_setAgentResourceAccess(acl, fakeWebId, {
         read: true,
         append: false,
         write: false,
         control: false,
       });
       const savedAcl = await unstable_saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = unstable_getAgentResourceAccessModesOne(
+      const fakeWebIdAccess = unstable_getAgentResourceAccessOne(
         savedAcl,
         fakeWebId
       );
@@ -149,17 +169,30 @@ describe("End-to-end tests", () => {
       });
 
       // Cleanup
-      const cleanedAcl = unstable_setAgentResourceAccessModes(
-        savedAcl,
-        fakeWebId,
-        {
-          read: false,
-          append: false,
-          write: false,
-          control: false,
-        }
-      );
+      const cleanedAcl = unstable_setAgentResourceAccess(savedAcl, fakeWebId, {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      });
       await unstable_saveAclFor(datasetWithAcl, cleanedAcl);
+    }
+  });
+
+  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
+    const dataset = await unstable_fetchLitDatasetWithAcl(
+      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
+    );
+    if (
+      unstable_hasFallbackAcl(dataset) &&
+      unstable_hasAccessibleAcl(dataset) &&
+      !unstable_hasResourceAcl(dataset)
+    ) {
+      const newResourceAcl = unstable_createAclFromFallbackAcl(dataset);
+      const existingFallbackAcl = unstable_getFallbackAcl(dataset);
+      expect(unstable_getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+        unstable_getPublicResourceAccess(newResourceAcl)
+      );
     }
   });
 });

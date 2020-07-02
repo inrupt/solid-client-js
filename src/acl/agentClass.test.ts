@@ -23,15 +23,15 @@ import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
 import {
-  unstable_getPublicResourceAccessModes,
-  unstable_getPublicDefaultAccessModes,
-  unstable_getPublicAccessModes,
+  unstable_getPublicResourceAccess,
+  unstable_getPublicDefaultAccess,
+  unstable_getPublicAccess,
 } from "./agentClass";
 import {
   LitDataset,
   WithResourceInfo,
   IriString,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_AclDataset,
   unstable_WithAcl,
 } from "../interfaces";
@@ -39,7 +39,7 @@ import {
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   resource: IriString,
-  accessModes: unstable_AccessModes,
+  access: unstable_Access,
   type: "resource" | "default",
   agentClass:
     | "http://xmlns.com/foaf/0.1/Agent"
@@ -72,7 +72,7 @@ function addAclRuleQuads(
       DataFactory.namedNode(agentClass)
     )
   );
-  if (accessModes.read) {
+  if (access.read) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -81,7 +81,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.append) {
+  if (access.append) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -90,7 +90,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.write) {
+  if (access.write) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -99,7 +99,7 @@ function addAclRuleQuads(
       )
     );
   }
-  if (accessModes.control) {
+  if (access.control) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
@@ -137,11 +137,12 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     resourceInfo: {
       fetchedFrom: fetchedFrom,
+      isLitDataset: true,
     },
   });
 }
 
-describe("getPublicAccessModes", () => {
+describe("getPublicAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
@@ -157,9 +158,9 @@ describe("getPublicAccessModes", () => {
       "resource"
     );
 
-    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+    const access = unstable_getPublicAccess(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -182,9 +183,9 @@ describe("getPublicAccessModes", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+    const access = unstable_getPublicAccess(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -202,9 +203,7 @@ describe("getPublicAccessModes", () => {
       inaccessibleAcl
     );
 
-    expect(
-      unstable_getPublicAccessModes(litDatasetWithInaccessibleAcl)
-    ).toBeNull();
+    expect(unstable_getPublicAccess(litDatasetWithInaccessibleAcl)).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
@@ -234,9 +233,9 @@ describe("getPublicAccessModes", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+    const access = unstable_getPublicAccess(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: true,
       append: false,
       write: false,
@@ -266,9 +265,9 @@ describe("getPublicAccessModes", () => {
       "resource"
     );
 
-    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+    const access = unstable_getPublicAccess(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: true,
       append: false,
       write: false,
@@ -298,9 +297,9 @@ describe("getPublicAccessModes", () => {
       "fallback"
     );
 
-    const accessModes = unstable_getPublicAccessModes(litDatasetWithAcl);
+    const access = unstable_getPublicAccess(litDatasetWithAcl);
 
-    expect(accessModes).toEqual({
+    expect(access).toEqual({
       read: false,
       append: false,
       write: false,
@@ -309,7 +308,7 @@ describe("getPublicAccessModes", () => {
   });
 });
 
-describe("getPublicResourceAccessModes", () => {
+describe("getPublicResourceAccess", () => {
   it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -319,7 +318,7 @@ describe("getPublicResourceAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const publicAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+    const publicAccess = unstable_getPublicResourceAccess(resourceAcl);
 
     expect(publicAccess).toEqual({
       read: true,
@@ -345,7 +344,7 @@ describe("getPublicResourceAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -364,7 +363,7 @@ describe("getPublicResourceAccessModes", () => {
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -390,7 +389,7 @@ describe("getPublicResourceAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -416,7 +415,7 @@ describe("getPublicResourceAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccessModes(resourceAcl);
+    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -427,7 +426,7 @@ describe("getPublicResourceAccessModes", () => {
   });
 });
 
-describe("getPublicDefaultAccessModes", () => {
+describe("getPublicDefaultAccess", () => {
   it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
@@ -437,7 +436,7 @@ describe("getPublicDefaultAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -463,7 +462,7 @@ describe("getPublicDefaultAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -482,7 +481,7 @@ describe("getPublicDefaultAccessModes", () => {
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -508,7 +507,7 @@ describe("getPublicDefaultAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -534,7 +533,7 @@ describe("getPublicDefaultAccessModes", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccessModes(containerAcl);
+    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
