@@ -97,17 +97,19 @@ import {
   unstable_getFallbackAcl,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
-  unstable_getAgentAccessModesOne,
-  unstable_getAgentAccessModesAll,
-  unstable_getAgentResourceAccessModesOne,
-  unstable_getAgentResourceAccessModesAll,
-  unstable_setAgentResourceAccessModes,
-  unstable_getAgentDefaultAccessModesOne,
-  unstable_getAgentDefaultAccessModesAll,
-  unstable_setAgentDefaultAccessModes,
-  unstable_getPublicAccessModes,
-  unstable_getPublicResourceAccessModes,
-  unstable_getPublicDefaultAccessModes,
+  unstable_createAclFromFallbackAcl,
+  unstable_getAgentAccessOne,
+  unstable_getAgentAccessAll,
+  unstable_getAgentResourceAccessOne,
+  unstable_getAgentResourceAccessAll,
+  unstable_setAgentResourceAccess,
+  unstable_getAgentDefaultAccessOne,
+  unstable_getAgentDefaultAccessAll,
+  unstable_setAgentDefaultAccess,
+  unstable_getPublicAccess,
+  unstable_getPublicResourceAccess,
+  unstable_getPublicDefaultAccess,
+  unstable_hasAccessibleAcl,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -201,17 +203,19 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getFallbackAcl).toBeDefined();
   expect(unstable_hasResourceAcl).toBeDefined();
   expect(unstable_getResourceAcl).toBeDefined();
-  expect(unstable_getAgentAccessModesOne).toBeDefined();
-  expect(unstable_getAgentAccessModesAll).toBeDefined();
-  expect(unstable_getAgentResourceAccessModesOne).toBeDefined();
-  expect(unstable_getAgentResourceAccessModesAll).toBeDefined();
-  expect(unstable_setAgentResourceAccessModes).toBeDefined();
-  expect(unstable_getAgentDefaultAccessModesOne).toBeDefined();
-  expect(unstable_getAgentDefaultAccessModesAll).toBeDefined();
-  expect(unstable_setAgentDefaultAccessModes).toBeDefined();
-  expect(unstable_getPublicAccessModes).toBeDefined();
-  expect(unstable_getPublicResourceAccessModes).toBeDefined();
-  expect(unstable_getPublicDefaultAccessModes).toBeDefined();
+  expect(unstable_createAclFromFallbackAcl).toBeDefined();
+  expect(unstable_getAgentAccessOne).toBeDefined();
+  expect(unstable_getAgentAccessAll).toBeDefined();
+  expect(unstable_getAgentResourceAccessOne).toBeDefined();
+  expect(unstable_getAgentResourceAccessAll).toBeDefined();
+  expect(unstable_setAgentResourceAccess).toBeDefined();
+  expect(unstable_getAgentDefaultAccessOne).toBeDefined();
+  expect(unstable_getAgentDefaultAccessAll).toBeDefined();
+  expect(unstable_setAgentDefaultAccess).toBeDefined();
+  expect(unstable_getPublicAccess).toBeDefined();
+  expect(unstable_getPublicResourceAccess).toBeDefined();
+  expect(unstable_getPublicDefaultAccess).toBeDefined();
+  expect(unstable_hasAccessibleAcl).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {

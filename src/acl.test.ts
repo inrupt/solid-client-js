@@ -36,7 +36,7 @@ import { DataFactory } from "n3";
 import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
-  internal_getAccessModes,
+  internal_getAccess,
   internal_getAclRules,
   internal_getResourceAclRules,
   internal_getDefaultAclRules,
@@ -46,13 +46,14 @@ import {
   unstable_getResourceAcl,
   unstable_getFallbackAcl,
   internal_removeEmptyAclRules,
+  unstable_createAclFromFallbackAcl,
 } from "./acl";
 import {
   WithResourceInfo,
   ThingPersisted,
   unstable_AclRule,
   unstable_AclDataset,
-  unstable_AccessModes,
+  unstable_Access,
 } from "./interfaces";
 
 function mockResponse(
@@ -445,6 +446,128 @@ describe("getFallbackAcl", () => {
   });
 });
 
+describe("createAclFromFallbackAcl", () => {
+  it("creates a new ACL including existing default rules as Resource rules", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/container/",
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/.acl",
+        isLitDataset: true,
+      },
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    const litDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/container/resource.acl",
+      },
+      acl: { fallbackAcl: aclDataset, resourceAcl: null },
+    });
+
+    const resourceAcl = unstable_createAclFromFallbackAcl(litDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads[3].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#accessTo"
+    );
+    expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.accessTo).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.resourceInfo.fetchedFrom).toBe(
+      "https://arbitrary.pod/container/resource.acl"
+    );
+  });
+
+  it("does not copy over Resource rules from the fallback ACL", () => {
+    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+      accessTo: "https://arbitrary.pod/container/",
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/.acl",
+        isLitDataset: true,
+      },
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    const litDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/container/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/container/resource.acl",
+      },
+      acl: { fallbackAcl: aclDataset, resourceAcl: null },
+    });
+
+    const resourceAcl = unstable_createAclFromFallbackAcl(litDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(0);
+  });
+});
+
 describe("getAclRules", () => {
   it("only returns Things that represent ACL Rules", () => {
     const aclDataset = Object.assign(dataset(), {
@@ -813,7 +936,7 @@ describe("getDefaultAclRulesForResource", () => {
   });
 });
 
-describe("getAccessModes", () => {
+describe("getAccess", () => {
   it("returns true for Access Modes that are granted", () => {
     const subject = "https://arbitrary.pod/profileDoc#webId";
 
@@ -847,7 +970,7 @@ describe("getAccessModes", () => {
       )
     );
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: true,
       append: true,
       write: true,
@@ -860,7 +983,7 @@ describe("getAccessModes", () => {
 
     const mockRule = Object.assign(dataset(), { url: subject });
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: false,
       append: false,
       write: false,
@@ -880,7 +1003,7 @@ describe("getAccessModes", () => {
       )
     );
 
-    expect(internal_getAccessModes(mockRule)).toEqual({
+    expect(internal_getAccess(mockRule)).toEqual({
       read: false,
       append: true,
       write: true,
@@ -891,7 +1014,7 @@ describe("getAccessModes", () => {
 
 describe("combineAccessModes", () => {
   it("returns true for Access Modes that are true in any of the given Access Mode sets", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: true, append: false, write: false, control: false },
       { read: false, append: true, write: false, control: false },
@@ -908,7 +1031,7 @@ describe("combineAccessModes", () => {
   });
 
   it("returns false for Access Modes that are false in all of the given Access Mode sets", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: false, control: false },
@@ -932,7 +1055,7 @@ describe("combineAccessModes", () => {
   });
 
   it("infers Append access from Write access", () => {
-    const modes: unstable_AccessModes[] = [
+    const modes: unstable_Access[] = [
       { read: false, append: false, write: false, control: false },
       { read: false, append: false, write: true, control: false } as any,
     ];

@@ -54,19 +54,19 @@ and the ACL containing the associated access information.
 
 Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access
 everyone has, regardless of whether they are authenticated or not. You can do so using
-[`unstable_getPublicAccessModes`](../api/modules/_acl_agentclass_#unstable_getpublicaccessmodes):
+[`unstable_getPublicAccess`](../api/modules/_acl_agentclass_#unstable_getpublicaccess):
 
 ```typescript
 import {
   unstable_fetchLitDatasetWithAcl,
-  unstable_getPublicAccessModes,
+  unstable_getPublicAccess,
 } from "@solid/lit-pod";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const publicAccess = unstable_getPublicAccessModes(litDatasetWithAcl);
+const publicAccess = unstable_getPublicAccess(litDatasetWithAcl);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -79,19 +79,19 @@ Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can c
 specific agent has been granted, or get all agents for which access has been explicitly granted.
 
 To do the former, use
-[`unstable_getAgentAccessModesOne`](../api/modules/_acl_agent_#unstable_getagentaccessmodesone):
+[`unstable_getAgentAccessOne`](../api/modules/_acl_agent_#unstable_getagentaccessone):
 
 ```typescript
 import {
   unstable_fetchLitDatasetWithAcl,
-  unstable_getAgentAccessModesOne,
+  unstable_getAgentAccessOne,
 } from "@solid/lit-pod";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const agentAccess = unstable_getAgentAccessModesOne(litDatasetWithAcl, webId);
+const agentAccess = unstable_getAgentAccessOne(litDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -99,18 +99,18 @@ const agentAccess = unstable_getAgentAccessModesOne(litDatasetWithAcl, webId);
 ```
 
 To get all agents to whom access was granted, use
-[`unstable_getAgentAccessModesAll`](../api/modules/_acl_agent_#unstable_getagentaccessmodesall):
+[`unstable_getAgentAccessAll`](../api/modules/_acl_agent_#unstable_getagentaccessall):
 
 ```typescript
 import {
   unstable_fetchLitDatasetWithAcl,
-  unstable_getAgentAccessModesAll,
+  unstable_getAgentAccessAll,
 } from "@solid/lit-pod";
 
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
 );
-const accessByAgent = unstable_getAgentAccessModesAll(litDatasetWithAcl);
+const accessByAgent = unstable_getAgentAccessAll(litDatasetWithAcl);
 
 // => an object like
 //    {

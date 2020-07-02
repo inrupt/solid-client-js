@@ -31,7 +31,7 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_AclRule,
-  unstable_AccessModes,
+  unstable_Access,
   Thing,
   IriString,
   LitDataset,
@@ -40,9 +40,11 @@ import {
   unstable_WithResourceAcl,
   unstable_WithFallbackAcl,
 } from "./interfaces";
-import { getThingAll, removeThing } from "./thing";
+import { getThingAll, removeThing, setThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
-import { DataFactory } from "./rdfjs";
+import { DataFactory, dataset } from "./rdfjs";
+import { removeAll } from "./thing/remove";
+import { setIri } from "./thing/set";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
@@ -214,6 +216,45 @@ export function unstable_getFallbackAcl(
   return dataset.acl.fallbackAcl;
 }
 
+/**
+ * Create a Resource ACL for a given Resource, setting the same access permissions that currently apply to it from its Container.
+ *
+ * @param resource A Resource that does not have its own ACL (see [[unstable_hasResourceAcl]]) and a known fallback ACL (see [[unstable_hasFallbackAcl]]).
+ * @returns A Resource ACL for the given Resource, with the default ACL Rules from the fallback ACL applied as Resource Rules.
+ */
+export function unstable_createAclFromFallbackAcl(
+  resource: unstable_WithFallbackAcl &
+    WithResourceInfo &
+    unstable_WithAccessibleAcl
+): unstable_AclDataset {
+  const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
+    accessTo: resource.resourceInfo.fetchedFrom,
+    resourceInfo: {
+      fetchedFrom: resource.resourceInfo.unstable_aclUrl,
+      isLitDataset: true,
+    },
+  });
+
+  const fallbackAclRules = internal_getAclRules(resource.acl.fallbackAcl);
+  const defaultAclRules = internal_getDefaultAclRulesForResource(
+    fallbackAclRules,
+    resource.acl.fallbackAcl.accessTo
+  );
+  const resourceAclRules = defaultAclRules.map((rule) => {
+    rule = removeAll(rule, acl.default);
+    rule = setIri(rule, acl.accessTo, resource.resourceInfo.fetchedFrom);
+    return rule;
+  });
+
+  // Iterate over every ACL Rule we want to import, inserting them into `emptyResourceAcl` one by one:
+  const initialisedResourceAcl = resourceAclRules.reduce(
+    setThing,
+    emptyResourceAcl
+  );
+
+  return initialisedResourceAcl;
+}
+
 /** @internal */
 export function internal_isAclDataset(
   dataset: LitDataset
@@ -286,9 +327,7 @@ function isDefaultForResource(
 }
 
 /** @internal */
-export function internal_getAccessModes(
-  rule: unstable_AclRule
-): unstable_AccessModes {
+export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
   const ruleAccessModes = getIriAll(rule, acl.mode);
   const writeAccess = ruleAccessModes.includes(
     internal_accessModeIriStrings.write
@@ -314,8 +353,8 @@ export function internal_getAccessModes(
 
 /** @internal */
 export function internal_combineAccessModes(
-  modes: unstable_AccessModes[]
-): unstable_AccessModes {
+  modes: unstable_Access[]
+): unstable_Access {
   return modes.reduce(
     (accumulator, current) => {
       const writeAccess = accumulator.write || current.write;

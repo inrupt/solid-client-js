@@ -25,7 +25,7 @@ import {
   WithChangeLog,
   unstable_WithAcl,
   unstable_AclDataset,
-  unstable_AccessModes,
+  unstable_Access,
   unstable_AclRule,
   IriString,
 } from "../interfaces";
@@ -35,7 +35,7 @@ import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
-  internal_getAccessModes,
+  internal_getAccess,
   internal_combineAccessModes,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
@@ -49,7 +49,7 @@ import { removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
 
-export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
+export type unstable_AgentAccess = Record<WebId, unstable_Access>;
 
 /**
  * Find out what Access Modes have been granted to a given Agent specifically for a given Resource.
@@ -62,18 +62,18 @@ export type unstable_AgentAccess = Record<WebId, unstable_AccessModes>;
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getAgentAccessModesOne(
+export function unstable_getAgentAccessOne(
   resourceInfo: unstable_WithAcl & WithResourceInfo,
   agent: WebId
-): unstable_AccessModes | null {
+): unstable_Access | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getAgentResourceAccessModesOne(
+    return unstable_getAgentResourceAccessOne(
       resourceInfo.acl.resourceAcl,
       agent
     );
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getAgentDefaultAccessModesOne(
+    return unstable_getAgentDefaultAccessOne(
       resourceInfo.acl.fallbackAcl,
       agent
     );
@@ -91,16 +91,16 @@ export function unstable_getAgentAccessModesOne(
  * @param resourceInfo Information about the Resource to which Agents may have been granted access.
  * @returns Which Access Modes have been granted to which Agents specifically for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getAgentAccessModesAll(
+export function unstable_getAgentAccessAll(
   resourceInfo: unstable_WithAcl & WithResourceInfo
 ): unstable_AgentAccess | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     const resourceAcl = unstable_getResourceAcl(resourceInfo);
-    return unstable_getAgentResourceAccessModesAll(resourceAcl);
+    return unstable_getAgentResourceAccessAll(resourceAcl);
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
     const fallbackAcl = unstable_getFallbackAcl(resourceInfo);
-    return unstable_getAgentDefaultAccessModesAll(fallbackAcl);
+    return unstable_getAgentDefaultAccessAll(fallbackAcl);
   }
   return null;
 }
@@ -118,17 +118,17 @@ export function unstable_getAgentAccessModesAll(
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getAgentResourceAccessModesOne(
+export function unstable_getAgentResourceAccessOne(
   aclDataset: unstable_AclDataset,
   agent: WebId
-): unstable_AccessModes {
+): unstable_Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
     aclDataset.accessTo
   );
   const agentResourceRules = getAgentAclRulesForAgent(resourceRules, agent);
-  const agentAccessModes = agentResourceRules.map(internal_getAccessModes);
+  const agentAccessModes = agentResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(agentAccessModes);
 }
 
@@ -144,7 +144,7 @@ export function unstable_getAgentResourceAccessModesOne(
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @returns Which Access Modes have been granted to which Agents specifically for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getAgentResourceAccessModesAll(
+export function unstable_getAgentResourceAccessAll(
   aclDataset: unstable_AclDataset
 ): unstable_AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
@@ -153,7 +153,7 @@ export function unstable_getAgentResourceAccessModesAll(
     aclDataset.accessTo
   );
   const agentResourceRules = getAgentAclRules(resourceRules);
-  return getAccessModesByAgent(agentResourceRules);
+  return getAccessByAgent(agentResourceRules);
 }
 
 /**
@@ -170,12 +170,12 @@ export function unstable_getAgentResourceAccessModesAll(
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
- * @param accessModes The Access Modes to grant to the Agent.
+ * @param access The Access Modes to grant to the Agent.
  */
-export function unstable_setAgentResourceAccessModes(
+export function unstable_setAgentResourceAccess(
   aclDataset: unstable_AclDataset,
   agent: WebId,
-  accessModes: unstable_AccessModes
+  access: unstable_Access
 ): unstable_AclDataset & WithChangeLog {
   // First make sure that none of the pre-existing rules in the given ACL LitDataset
   // give the Agent access to the Resource:
@@ -196,7 +196,7 @@ export function unstable_setAgentResourceAccessModes(
   });
 
   // Create a new Rule that only grants the given Agent the given Access Modes:
-  let newRule = intialiseAclRule(accessModes);
+  let newRule = intialiseAclRule(access);
   newRule = setIri(newRule, acl.accessTo, aclDataset.accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -212,7 +212,7 @@ export function unstable_setAgentResourceAccessModes(
  *
  * Keep in mind that this function will not tell you:
  * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to the Container Resource itself (see [[unstable_getAgentResourceAccessModesOne]] for that).
+ * - what access the given Agent has to the Container Resource itself (see [[unstable_getAgentResourceAccessOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -220,17 +220,17 @@ export function unstable_setAgentResourceAccessModes(
  * @param agent WebID of the Agent for which to retrieve what access it has to the Container's children.
  * @returns Which Access Modes have been granted to the Agent specifically for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getAgentDefaultAccessModesOne(
+export function unstable_getAgentDefaultAccessOne(
   aclDataset: unstable_AclDataset,
   agent: WebId
-): unstable_AccessModes {
+): unstable_Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
     aclDataset.accessTo
   );
   const agentResourceRules = getAgentAclRulesForAgent(resourceRules, agent);
-  const agentAccessModes = agentResourceRules.map(internal_getAccessModes);
+  const agentAccessModes = agentResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(agentAccessModes);
 }
 
@@ -239,14 +239,14 @@ export function unstable_getAgentDefaultAccessModesOne(
  *
  * Keep in mind that this function will not tell you:
  * - what access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to the Container Resource itself (see [[unstable_getAgentResourceAccessModesAll]] for that).
+ * - what access arbitrary Agents have to the Container Resource itself (see [[unstable_getAgentResourceAccessAll]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @returns Which Access Modes have been granted to which Agents specifically for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getAgentDefaultAccessModesAll(
+export function unstable_getAgentDefaultAccessAll(
   aclDataset: unstable_AclDataset
 ): unstable_AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
@@ -256,7 +256,7 @@ export function unstable_getAgentDefaultAccessModesAll(
   );
   const agentResourceRules = getAgentAclRules(resourceRules);
 
-  return getAccessModesByAgent(agentResourceRules);
+  return getAccessByAgent(agentResourceRules);
 }
 
 /**
@@ -273,12 +273,12 @@ export function unstable_getAgentDefaultAccessModesAll(
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
- * @param accessModes The Access Modes to grant to the Agent.
+ * @param access The Access Modes to grant to the Agent.
  */
-export function unstable_setAgentDefaultAccessModes(
+export function unstable_setAgentDefaultAccess(
   aclDataset: unstable_AclDataset,
   agent: WebId,
-  accessModes: unstable_AccessModes
+  access: unstable_Access
 ): unstable_AclDataset & WithChangeLog {
   // First make sure that none of the pre-existing rules in the given ACL LitDataset
   // give the Agent default access to the Resource:
@@ -299,7 +299,7 @@ export function unstable_setAgentDefaultAccessModes(
   });
 
   // Create a new Rule that only grants the given Agent the given default Access Modes:
-  let newRule = intialiseAclRule(accessModes);
+  let newRule = intialiseAclRule(access);
   newRule = setIri(newRule, acl.default, aclDataset.accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -420,40 +420,38 @@ function removeAgentFromDefaultRule(
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
-function intialiseAclRule(accessModes: unstable_AccessModes): unstable_AclRule {
+function intialiseAclRule(access: unstable_Access): unstable_AclRule {
   let newRule = createThing();
   newRule = setIri(newRule, rdf.type, acl.Authorization);
-  if (accessModes.read) {
+  if (access.read) {
     newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.read);
   }
-  if (accessModes.append && !accessModes.write) {
+  if (access.append && !access.write) {
     newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.append);
   }
-  if (accessModes.write) {
+  if (access.write) {
     newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.write);
   }
-  if (accessModes.control) {
+  if (access.control) {
     newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.control);
   }
   return newRule;
 }
 
-function getAccessModesByAgent(
-  aclRules: unstable_AclRule[]
-): unstable_AgentAccess {
+function getAccessByAgent(aclRules: unstable_AclRule[]): unstable_AgentAccess {
   const agentAccess: unstable_AgentAccess = {};
 
   aclRules.forEach((rule) => {
     const ruleAgents = getIriAll(rule, acl.agent);
-    const accessModes = internal_getAccessModes(rule);
+    const access = internal_getAccess(rule);
 
     // A rule might apply to multiple agents. If multiple rules apply to the same agent, the Access
     // Modes granted by those rules should be combined:
     ruleAgents.forEach((agent) => {
       agentAccess[agent] =
         typeof agentAccess[agent] === "undefined"
-          ? accessModes
-          : internal_combineAccessModes([agentAccess[agent], accessModes]);
+          ? access
+          : internal_combineAccessModes([agentAccess[agent], access]);
     });
   });
   return agentAccess;
