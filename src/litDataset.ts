@@ -469,6 +469,42 @@ export async function unstable_saveAclFor(
   return savedAclDataset;
 }
 
+/**
+ * Remove the ACL of a Resource.
+ *
+ * @param resource The Resource for which you want to delete the Access Control List Resource.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ */
+export async function unstable_deleteAclFor<
+  Resource extends WithResourceInfo & unstable_WithAccessibleAcl
+>(
+  resource: Resource,
+  options: Partial<typeof defaultSaveOptions> = defaultSaveOptions
+): Promise<Resource & { acl: { resourceAcl: null } }> {
+  const config = {
+    ...defaultSaveOptions,
+    ...options,
+  };
+
+  const response = await config.fetch(resource.resourceInfo.unstable_aclUrl, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Deleting the ACL failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const storedResource = Object.assign(resource, {
+    acl: {
+      resourceAcl: null,
+    },
+  });
+
+  return storedResource;
+}
+
 function getNamedNodesForLocalNodes(quad: Quad): Quad {
   const subject = isLocalNode(quad.subject)
     ? getNamedNodeFromLocalNode(quad.subject)
