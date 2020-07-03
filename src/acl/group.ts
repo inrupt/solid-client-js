@@ -38,12 +38,10 @@ import {
   unstable_hasFallbackAcl,
   unstable_getResourceAcl,
   unstable_getFallbackAcl,
+  internal_getAclRulesForIri,
+  internal_getAccessByIri,
 } from "../acl";
-import {
-  getAclRulesForIri,
-  unstable_AgentAccess,
-  getAccessByIri,
-} from "./agent";
+
 import { acl } from "../constants";
 
 /**
@@ -88,7 +86,7 @@ export function unstable_getGroupAccessOne(
  */
 export function unstable_getGroupAccessAll(
   resourceInfo: unstable_WithAcl & WithResourceInfo
-): unstable_AgentAccess | null {
+): Record<IriString, unstable_Access> | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     const resourceAcl = unstable_getResourceAcl(resourceInfo);
     return unstable_getGroupResourceAccessAll(resourceAcl);
@@ -204,9 +202,11 @@ function getGroupAclRuleForGroup(
   rules: unstable_AclRule[],
   group: UrlString
 ): unstable_AclRule[] {
-  return getAclRulesForIri(rules, group, acl.agentGroup);
+  return internal_getAclRulesForIri(rules, group, acl.agentGroup);
 }
 
-function getAccessByGroup(aclRules: unstable_AclRule[]): unstable_AgentAccess {
-  return getAccessByIri(aclRules, acl.agentGroup);
+function getAccessByGroup(
+  aclRules: unstable_AclRule[]
+): Record<IriString, unstable_Access> {
+  return internal_getAccessByIri(aclRules, acl.agentGroup);
 }
