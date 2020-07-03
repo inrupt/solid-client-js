@@ -41,7 +41,7 @@ import {
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
-  group: WebId,
+  group: IriString,
   resource: IriString,
   access: unstable_Access,
   type: "resource" | "default"
