@@ -26,7 +26,7 @@ import {
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,
   unstable_getPublicAccess,
-} from "./agentClass";
+} from "./class";
 import {
   LitDataset,
   WithResourceInfo,

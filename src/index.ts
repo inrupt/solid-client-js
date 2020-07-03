@@ -160,7 +160,7 @@ export {
   unstable_getPublicAccess,
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,
-} from "./acl/agentClass";
+} from "./acl/class";
 export {
   Url,
   Iri,
