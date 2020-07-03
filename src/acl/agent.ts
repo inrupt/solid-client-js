@@ -20,7 +20,6 @@
  */
 
 import {
-  WebId,
   WithResourceInfo,
   WithChangeLog,
   unstable_WithAcl,
@@ -28,6 +27,7 @@ import {
   unstable_Access,
   unstable_AclRule,
   IriString,
+  WebId,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl, rdf } from "../constants";
@@ -43,6 +43,8 @@ import {
   unstable_getFallbackAcl,
   internal_accessModeIriStrings,
   internal_removeEmptyAclRules,
+  internal_getAclRulesForIri,
+  internal_getAccessByIri,
 } from "../acl";
 import { createThing, getThingAll, setThing } from "../thing";
 import { removeIri } from "../thing/remove";
@@ -314,11 +316,7 @@ function getAgentAclRulesForAgent(
   aclRules: unstable_AclRule[],
   agent: WebId
 ): unstable_AclRule[] {
-  return aclRules.filter((rule) => appliesToAgent(rule, agent));
-}
-
-function appliesToAgent(aclRule: unstable_AclRule, agent: WebId): boolean {
-  return getIriAll(aclRule, acl.agent).includes(agent);
+  return internal_getAclRulesForIri(aclRules, agent, acl.agent);
 }
 
 function getAgentAclRules(aclRules: unstable_AclRule[]): unstable_AclRule[] {
@@ -439,20 +437,5 @@ function intialiseAclRule(access: unstable_Access): unstable_AclRule {
 }
 
 function getAccessByAgent(aclRules: unstable_AclRule[]): unstable_AgentAccess {
-  const agentAccess: unstable_AgentAccess = {};
-
-  aclRules.forEach((rule) => {
-    const ruleAgents = getIriAll(rule, acl.agent);
-    const access = internal_getAccess(rule);
-
-    // A rule might apply to multiple agents. If multiple rules apply to the same agent, the Access
-    // Modes granted by those rules should be combined:
-    ruleAgents.forEach((agent) => {
-      agentAccess[agent] =
-        typeof agentAccess[agent] === "undefined"
-          ? access
-          : internal_combineAccessModes([agentAccess[agent], access]);
-    });
-  });
-  return agentAccess;
+  return internal_getAccessByIri(aclRules, acl.agent);
 }
