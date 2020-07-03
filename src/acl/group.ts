@@ -47,7 +47,7 @@ import { acl } from "../constants";
 /**
  * Find out what Access Modes have been granted to a given Group of agents specifically for a given Resource.
  *
- * Keep in mind that this function will not tell you what access the given Group has through other ACL rules, e.g. public permissions.
+ * Keep in mind that this function will not tell you what access members of the given Group have through other ACL rules, e.g. public permissions.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -77,7 +77,7 @@ export function unstable_getGroupAccessOne(
 /**
  * Find out what Access Modes have been granted to specific Groups of agents for a given Resource.
  *
- * Keep in mind that this function will not tell you what access each Group has through other ACL rules, e.g. public permissions.
+ * Keep in mind that this function will not tell you what access members of each Group have through other ACL rules, e.g. public permissions.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -102,8 +102,8 @@ export function unstable_getGroupAccessAll(
  * Given an ACL LitDataset, find out which access modes it provides to a Group for its associated Resource.
  *
  * Keep in mind that this function will not tell you:
- * - what access the given Group has through other ACL rules, e.g. public permissions.
- * - what access the given Group has to child Resources, in case the associated Resource is a Container (see [[unstable_getGroupDefaultAccessModesOne]] for that).
+ * - what access members of the given Group have through other ACL rules, e.g. public permissions.
+ * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[unstable_getGroupDefaultAccessModesOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -129,8 +129,8 @@ export function unstable_getGroupResourceAccessOne(
  * Given an ACL LitDataset, find out which access modes it provides to specific Groups for the associated Resource.
  *
  * Keep in mind that this function will not tell you:
- * - what access arbitrary Groups might have been given through other ACL rules, e.g. public permissions.
- * - what access arbitrary Groups have to child Resources, in case the associated Resource is a Container.
+ * - what access arbitrary members of these Groups might have been given through other ACL rules, e.g. public permissions.
+ * - what access arbitrary members of these Groups have to child Resources, in case the associated Resource is a Container.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -152,8 +152,8 @@ export function unstable_getGroupResourceAccessAll(
  * Given an ACL LitDataset, find out which access modes it provides to a given Group for the associated Container Resource's child Resources.
  *
  * Keep in mind that this function will not tell you:
- * - what access the given Group has through other ACL rules, e.g. public permissions.
- * - what access the given Group has to the Container Resource itself (see [[unstable_getGroupResourceAccessOne]] for that).
+ * - what access members of the given Group have through other ACL rules, e.g. public permissions.
+ * - what access members of the given Group have to the Container Resource itself (see [[unstable_getGroupResourceAccessOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -179,8 +179,8 @@ export function unstable_getGroupDefaultAccessOne(
  * Given an ACL LitDataset, find out which access modes it provides to specific Groups for the associated Container Resource's child Resources.
  *
  * Keep in mind that this function will not tell you:
- * - what access arbitrary Groups have through other ACL rules, e.g. public permissions.
- * - what access arbitrary Groups have to the Container Resource itself (see [[unstable_getGroupResourceAccessAll]] for that).
+ * - what access arbitrary members of these Groups have through other ACL rules, e.g. public permissions.
+ * - what access arbitrary members of these Groups have to the Container Resource itself (see [[unstable_getGroupResourceAccessAll]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
