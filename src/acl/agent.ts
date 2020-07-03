@@ -20,7 +20,6 @@
  */
 
 import {
-  WebId,
   WithResourceInfo,
   WithChangeLog,
   unstable_WithAcl,
@@ -28,6 +27,7 @@ import {
   unstable_Access,
   unstable_AclRule,
   IriString,
+  WebId,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl, rdf } from "../constants";
@@ -310,15 +310,20 @@ export function unstable_setAgentDefaultAccess(
   return cleanedAcl;
 }
 
+/** @internal */
+export function getAclRulesForIri(
+  aclRules: unstable_AclRule[],
+  iri: IriString,
+  targetType: IriString
+): unstable_AclRule[] {
+  return aclRules.filter((rule) => getIriAll(rule, targetType).includes(iri));
+}
+
 function getAgentAclRulesForAgent(
   aclRules: unstable_AclRule[],
   agent: WebId
 ): unstable_AclRule[] {
-  return aclRules.filter((rule) => appliesToAgent(rule, agent));
-}
-
-function appliesToAgent(aclRule: unstable_AclRule, agent: WebId): boolean {
-  return getIriAll(aclRule, acl.agent).includes(agent);
+  return getAclRulesForIri(aclRules, agent, acl.agent);
 }
 
 function getAgentAclRules(aclRules: unstable_AclRule[]): unstable_AclRule[] {
@@ -439,20 +444,28 @@ function intialiseAclRule(access: unstable_Access): unstable_AclRule {
 }
 
 function getAccessByAgent(aclRules: unstable_AclRule[]): unstable_AgentAccess {
-  const agentAccess: unstable_AgentAccess = {};
+  return getAccessByIri(aclRules, acl.agent);
+}
+
+/** @internal */
+export function getAccessByIri(
+  aclRules: unstable_AclRule[],
+  targetType: IriString
+): unstable_AgentAccess {
+  const targetIriAccess: Record<IriString, unstable_Access> = {};
 
   aclRules.forEach((rule) => {
-    const ruleAgents = getIriAll(rule, acl.agent);
+    const ruleTargetIri = getIriAll(rule, targetType);
     const access = internal_getAccess(rule);
 
     // A rule might apply to multiple agents. If multiple rules apply to the same agent, the Access
     // Modes granted by those rules should be combined:
-    ruleAgents.forEach((agent) => {
-      agentAccess[agent] =
-        typeof agentAccess[agent] === "undefined"
+    ruleTargetIri.forEach((targetIri) => {
+      targetIriAccess[targetIri] =
+        typeof targetIriAccess[targetIri] === "undefined"
           ? access
-          : internal_combineAccessModes([agentAccess[agent], access]);
+          : internal_combineAccessModes([targetIriAccess[targetIri], access]);
     });
   });
-  return agentAccess;
+  return targetIriAccess;
 }
