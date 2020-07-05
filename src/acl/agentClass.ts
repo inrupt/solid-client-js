@@ -27,7 +27,7 @@ import {
   unstable_AclDataset,
   unstable_AclRule,
 } from "../interfaces";
-import { acl, foaf } from "../constants";
+import { ACL, FOAF } from "@solid/lit-vocab-common-rdfext";
 import { getIriAll } from "../thing/get";
 import {
   internal_getAclRules,
@@ -83,7 +83,7 @@ export function unstable_getPublicResourceAccess(
   );
   const publicResourceRules = getAgentClassAclRulesForAgentClass(
     resourceRules,
-    foaf.Agent
+    FOAF.Agent
   );
   const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
@@ -111,7 +111,7 @@ export function unstable_getPublicDefaultAccess(
   );
   const publicResourceRules = getAgentClassAclRulesForAgentClass(
     resourceRules,
-    foaf.Agent
+    FOAF.Agent
   );
   const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
@@ -128,5 +128,5 @@ function appliesToAgentClass(
   aclRule: unstable_AclRule,
   agentClass: IriString
 ): boolean {
-  return getIriAll(aclRule, acl.agentClass).includes(agentClass);
+  return getIriAll(aclRule, ACL.agentClass).includes(agentClass);
 }

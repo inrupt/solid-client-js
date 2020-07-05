@@ -20,7 +20,8 @@
  */
 
 import { Quad } from "rdf-js";
-import { acl, rdf } from "./constants";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+
 import {
   fetchLitDataset,
   defaultFetchOptions,
@@ -76,7 +77,7 @@ export async function internal_fetchFallbackAcl(
   resource: unstable_WithAccessibleAcl,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom);
+  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom.value);
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -88,7 +89,9 @@ export async function internal_fetchFallbackAcl(
   }
 
   const containerPath = getContainerPath(resourcePath);
-  const containerIri = new URL(containerPath, resourceUrl.origin).href;
+  const containerIri = DataFactory.namedNode(
+    new URL(containerPath, resourceUrl.origin).href
+  );
   const containerInfo = {
     resourceInfo: await internal_fetchResourceInfo(containerIri, options),
   };
@@ -241,8 +244,8 @@ export function unstable_createAclFromFallbackAcl(
     resource.acl.fallbackAcl.accessTo
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
-    rule = removeAll(rule, acl.default);
-    rule = setIri(rule, acl.accessTo, resource.resourceInfo.fetchedFrom);
+    rule = removeAll(rule, ACL.default_);
+    rule = setIri(rule, ACL.accessTo, resource.resourceInfo.fetchedFrom);
     return rule;
   });
 
@@ -271,7 +274,7 @@ export function internal_getAclRules(
 }
 
 function isAclRule(thing: Thing): thing is unstable_AclRule {
-  return getIriAll(thing, rdf.type).includes(acl.Authorization);
+  return getIriAll(thing, RDF.type).includes(ACL.Authorization);
 }
 
 /** @internal */
@@ -282,7 +285,7 @@ export function internal_getResourceAclRules(
 }
 
 function isResourceAclRule(aclRule: unstable_AclRule): boolean {
-  return getIriOne(aclRule, acl.accessTo) !== null;
+  return getIriOne(aclRule, ACL.accessTo) !== null;
 }
 
 /** @internal */
@@ -297,7 +300,7 @@ function appliesToResource(
   aclRule: unstable_AclRule,
   resource: IriString
 ): boolean {
-  return getIriAll(aclRule, acl.accessTo).includes(resource);
+  return getIriAll(aclRule, ACL.accessTo).includes(resource);
 }
 
 /** @internal */
@@ -308,7 +311,7 @@ export function internal_getDefaultAclRules(
 }
 
 function isDefaultAclRule(aclRule: unstable_AclRule): boolean {
-  return getIriOne(aclRule, acl.default) !== null;
+  return getIriOne(aclRule, ACL.default_) !== null;
 }
 
 /** @internal */
@@ -323,12 +326,12 @@ function isDefaultForResource(
   aclRule: unstable_AclRule,
   resource: IriString
 ): boolean {
-  return getIriAll(aclRule, acl.default).includes(resource);
+  return getIriAll(aclRule, ACL.default_).includes(resource);
 }
 
 /** @internal */
 export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
-  const ruleAccessModes = getIriAll(rule, acl.mode);
+  const ruleAccessModes = getIriAll(rule, ACL.mode);
   const writeAccess = ruleAccessModes.includes(
     internal_accessModeIriStrings.write
   );
@@ -398,22 +401,22 @@ function isEmptyAclRule(aclRule: unstable_AclRule): boolean {
 
   // If the rule does not apply to any Resource, it is no longer working:
   if (
-    getIriOne(aclRule, acl.accessTo) === null &&
-    getIriOne(aclRule, acl.default) === null
+    getIriOne(aclRule, ACL.accessTo) === null &&
+    getIriOne(aclRule, ACL.default_) === null
   ) {
     return true;
   }
 
   // If the rule does not specify Access Modes, it is no longer working:
-  if (getIriOne(aclRule, acl.mode) === null) {
+  if (getIriOne(aclRule, ACL.mode) === null) {
     return true;
   }
 
   // If the rule does not specify whom it applies to, it is no longer working:
   if (
-    getIriOne(aclRule, acl.agent) === null &&
-    getIriOne(aclRule, acl.agentGroup) === null &&
-    getIriOne(aclRule, acl.agentClass) === null
+    getIriOne(aclRule, ACL.agent) === null &&
+    getIriOne(aclRule, ACL.agentGroup) === null &&
+    getIriOne(aclRule, ACL.agentClass) === null
   ) {
     return true;
   }
@@ -424,34 +427,28 @@ function isEmptyAclRule(aclRule: unstable_AclRule): boolean {
 function isAclQuad(quad: Quad): boolean {
   const predicate = quad.predicate;
   const object = quad.object;
-  if (
-    predicate.equals(DataFactory.namedNode(rdf.type)) &&
-    object.equals(DataFactory.namedNode(acl.Authorization))
-  ) {
+  if (predicate.equals(RDF.type) && object.equals(ACL.Authorization)) {
+    return true;
+  }
+  if (predicate.equals(ACL.accessTo) || predicate.equals(ACL.default_)) {
     return true;
   }
   if (
-    predicate.equals(DataFactory.namedNode(acl.accessTo)) ||
-    predicate.equals(DataFactory.namedNode(acl.default))
-  ) {
-    return true;
-  }
-  if (
-    predicate.equals(DataFactory.namedNode(acl.mode)) &&
+    predicate.equals(ACL.mode) &&
     Object.values(internal_accessModeIriStrings).some((mode) =>
-      object.equals(DataFactory.namedNode(mode))
+      object.equals(mode)
     )
   ) {
     return true;
   }
   if (
-    predicate.equals(DataFactory.namedNode(acl.agent)) ||
-    predicate.equals(DataFactory.namedNode(acl.agentGroup)) ||
-    predicate.equals(DataFactory.namedNode(acl.agentClass))
+    predicate.equals(ACL.agent) ||
+    predicate.equals(ACL.agentGroup) ||
+    predicate.equals(ACL.agentClass)
   ) {
     return true;
   }
-  if (predicate.equals(DataFactory.namedNode(acl.origin))) {
+  if (predicate.equals(ACL.origin)) {
     return true;
   }
   return false;
@@ -462,10 +459,10 @@ function isAclQuad(quad: Quad): boolean {
  * @internal
  */
 export const internal_accessModeIriStrings = {
-  read: "http://www.w3.org/ns/auth/acl#Read",
-  append: "http://www.w3.org/ns/auth/acl#Append",
-  write: "http://www.w3.org/ns/auth/acl#Write",
-  control: "http://www.w3.org/ns/auth/acl#Control",
+  read: ACL.Read, //"http://www.w3.org/ns/auth/acl#Read",
+  append: ACL.Append, //"http://www.w3.org/ns/auth/acl#Append",
+  write: ACL.Write, //"http://www.w3.org/ns/auth/acl#Write",
+  control: ACL.Control, //"http://www.w3.org/ns/auth/acl#Control",
 } as const;
 /** @internal */
 type AccessModeIriString = typeof internal_accessModeIriStrings[keyof typeof internal_accessModeIriStrings];
@@ -480,7 +477,7 @@ type AccessModeIriString = typeof internal_accessModeIriStrings[keyof typeof int
 export function internal_getAclRulesForIri(
   aclRules: unstable_AclRule[],
   targetIri: IriString,
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof ACL.agent | typeof ACL.agentGroup
 ): unstable_AclRule[] {
   return aclRules.filter((rule) =>
     getIriAll(rule, targetType).includes(targetIri)
@@ -495,7 +492,7 @@ export function internal_getAclRulesForIri(
  */
 export function internal_getAccessByIri(
   aclRules: unstable_AclRule[],
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof ACL.agent | typeof ACL.agentGroup
 ): Record<IriString, unstable_Access> {
   const targetIriAccess: Record<IriString, unstable_Access> = {};
 

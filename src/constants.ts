@@ -21,25 +21,25 @@
 
 // TODO: These should be replaced by auto-generated constants,
 //       if we can ensure that unused constants will be excluded from bundles.
-
-/** @internal */
-export const acl = {
-  Authorization: "http://www.w3.org/ns/auth/acl#Authorization",
-  accessTo: "http://www.w3.org/ns/auth/acl#accessTo",
-  agent: "http://www.w3.org/ns/auth/acl#agent",
-  agentGroup: "http://www.w3.org/ns/auth/acl#agentGroup",
-  agentClass: "http://www.w3.org/ns/auth/acl#agentClass",
-  default: "http://www.w3.org/ns/auth/acl#default",
-  mode: "http://www.w3.org/ns/auth/acl#mode",
-  origin: "http://www.w3.org/ns/auth/acl#origin",
-} as const;
-
-/** @internal */
-export const rdf = {
-  type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-} as const;
-
-/** @internal */
-export const foaf = {
-  Agent: "http://xmlns.com/foaf/0.1/Agent",
-} as const;
+//
+// /** @internal */
+// export const acl = {
+//   Authorization: "http://www.w3.org/ns/auth/acl#Authorization",
+//   accessTo: "http://www.w3.org/ns/auth/acl#accessTo",
+//   agent: "http://www.w3.org/ns/auth/acl#agent",
+//   agentGroup: "http://www.w3.org/ns/auth/acl#agentGroup",
+//   agentClass: "http://www.w3.org/ns/auth/acl#agentClass",
+//   default: "http://www.w3.org/ns/auth/acl#default",
+//   mode: "http://www.w3.org/ns/auth/acl#mode",
+//   origin: "http://www.w3.org/ns/auth/acl#origin",
+// } as const;
+//
+// /** @internal */
+// export const rdf = {
+//   type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+// } as const;
+//
+// /** @internal */
+// export const foaf = {
+//   Agent: "http://xmlns.com/foaf/0.1/Agent",
+// } as const;

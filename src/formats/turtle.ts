@@ -60,7 +60,7 @@ export async function turtleToTriples(
   resourceIri: IriString
 ): Promise<Quad[]> {
   const format = "text/turtle";
-  const parser = new Parser({ format: format, baseIRI: resourceIri });
+  const parser = new Parser({ format: format, baseIRI: resourceIri.value });
 
   const parsingPromise = new Promise<Quad[]>((resolve, reject) => {
     const parsedTriples: Quad[] = [];

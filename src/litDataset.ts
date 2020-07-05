@@ -72,7 +72,7 @@ export async function fetchLitDataset(
     ...options,
   };
 
-  const response = await config.fetch(url);
+  const response = await config.fetch(url.value);
   if (!response.ok) {
     throw new Error(
       `Fetching the Resource failed: ${response.status} ${response.statusText}.`
@@ -108,7 +108,7 @@ export async function internal_fetchResourceInfo(
     ...options,
   };
 
-  const response = await config.fetch(url, { method: "HEAD" });
+  const response = await config.fetch(url.value, { method: "HEAD" });
   if (!response.ok) {
     throw new Error(
       `Fetching the Resource metadata failed: ${response.status} ${response.statusText}.`
@@ -189,7 +189,7 @@ export function parseResourceInfo(
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
-    fetchedFrom: response.url,
+    fetchedFrom: DataFactory.namedNode(response.url),
     isLitDataset: isLitDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
@@ -199,10 +199,13 @@ export function parseResourceInfo(
     const parsedLinks = LinkHeader.parse(linkHeader);
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      resourceInfo.unstable_aclUrl = new URL(
-        aclLinks[0].uri,
-        resourceInfo.fetchedFrom
-      ).href;
+      resourceInfo.unstable_aclUrl = DataFactory.namedNode(
+        new URL(
+          aclLinks[0].uri,
+          // PMCB55: Could just use 'response.url'...?
+          resourceInfo.fetchedFrom.value
+        ).href
+      );
     }
   }
 
@@ -219,7 +222,7 @@ export function parseResourceInfo(
  * @returns Whether `resource` is a Container.
  */
 export function isContainer(resource: WithResourceInfo): boolean {
-  return resource.resourceInfo.fetchedFrom.endsWith("/");
+  return resource.resourceInfo.fetchedFrom.value.endsWith("/");
 }
 
 /**
@@ -328,7 +331,7 @@ export async function saveLitDatasetAt(
     };
   }
 
-  const response = await config.fetch(url, requestInit);
+  const response = await config.fetch(url.value, requestInit);
 
   if (!response.ok) {
     throw new Error(
@@ -405,7 +408,7 @@ export async function saveLitDatasetInContainer(
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await config.fetch(containerUrl, {
+  const response = await config.fetch(containerUrl.value, {
     method: "POST",
     body: rawTurtle,
     headers: headers,
@@ -424,10 +427,12 @@ export async function saveLitDatasetInContainer(
     );
   }
 
-  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
-    .href;
+  const resourceIri = new URL(
+    locationHeader,
+    new URL(containerUrl.value).origin
+  ).href;
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
-    fetchedFrom: resourceIri,
+    fetchedFrom: DataFactory.namedNode(resourceIri),
     isLitDataset: true,
   };
   const resourceWithResourceInfo: LitDataset & WithResourceInfo = Object.assign(
@@ -486,9 +491,12 @@ export async function unstable_deleteAclFor<
     ...options,
   };
 
-  const response = await config.fetch(resource.resourceInfo.unstable_aclUrl, {
-    method: "DELETE",
-  });
+  const response = await config.fetch(
+    resource.resourceInfo.unstable_aclUrl.value,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     throw new Error(

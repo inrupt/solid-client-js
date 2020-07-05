@@ -30,7 +30,7 @@ export type Iri = Url;
 /**
  * Alias to indicate where we expect to be given a URL.
  */
-export type UrlString = string;
+export type UrlString = Iri;
 /** @hidden Alias of UrlString for those who prefer to use IRI terminology. */
 export type IriString = UrlString;
 /**

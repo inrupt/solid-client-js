@@ -42,7 +42,7 @@ import {
   internal_getAccessByIri,
 } from "../acl";
 
-import { acl } from "../constants";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
 
 /**
  * Find out what Access Modes have been granted to a given Group of agents specifically for a given Resource.
@@ -202,11 +202,11 @@ function getGroupAclRuleForGroup(
   rules: unstable_AclRule[],
   group: UrlString
 ): unstable_AclRule[] {
-  return internal_getAclRulesForIri(rules, group, acl.agentGroup);
+  return internal_getAclRulesForIri(rules, group, ACL.agentGroup);
 }
 
 function getAccessByGroup(
   aclRules: unstable_AclRule[]
 ): Record<IriString, unstable_Access> {
-  return internal_getAccessByIri(aclRules, acl.agentGroup);
+  return internal_getAccessByIri(aclRules, ACL.agentGroup);
 }

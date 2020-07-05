@@ -310,7 +310,7 @@ export function resolveIriForLocalNode(
   localNode: LocalNode,
   resourceIri: IriString
 ): NamedNode {
-  return DataFactory.namedNode(resolveLocalIri(localNode.name, resourceIri));
+  return resolveLocalIri(localNode.name, resourceIri);
 }
 
 /**
@@ -328,7 +328,7 @@ export function resolveLocalIri(
       "The URL interface is not available, so an IRI cannot be determined."
     );
   }
-  const thingIri = new URL(resourceIri);
+  const thingIri = new URL(resourceIri.value);
   thingIri.hash = name;
-  return thingIri.href;
+  return DataFactory.namedNode(thingIri.href);
 }
