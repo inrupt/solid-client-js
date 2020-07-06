@@ -367,7 +367,9 @@ function isUpdate(
   return (
     hasChangelog(litDataset) &&
     hasResourceInfo(litDataset) &&
-    typeof litDataset.resourceInfo.fetchedFrom === "string" &&
+    // PMCB55: Not sure why this type check is needed...?
+    // typeof litDataset.resourceInfo.fetchedFrom === "string" &&
+    typeof litDataset.resourceInfo.fetchedFrom === "object" &&
     litDataset.resourceInfo.fetchedFrom === url
   );
 }

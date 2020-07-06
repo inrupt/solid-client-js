@@ -144,11 +144,11 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
 
 describe("getGroupAccessOne", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
       "https://some.pod/group#id",
-      "https://some.pod/container/resource",
+      INRUPT_TEST.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -172,7 +172,7 @@ describe("getGroupAccessOne", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -200,7 +200,7 @@ describe("getGroupAccessOne", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -218,11 +218,11 @@ describe("getGroupAccessOne", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
       "https://some.pod/group#id",
-      "https://some.pod/container/resource",
+      INRUPT_TEST.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -293,7 +293,7 @@ describe("getGroupAccessOne", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -330,11 +330,11 @@ describe("getGroupAccessOne", () => {
 
 describe("getGroupAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Group URL", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
       "https://some.pod/group#id",
-      "https://some.pod/container/resource",
+      INRUPT_TEST.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -357,7 +357,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -384,7 +384,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -399,11 +399,11 @@ describe("getGroupAccessAll", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
       "https://some.pod/group#id",
-      "https://some.pod/container/resource",
+      INRUPT_TEST.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -438,11 +438,11 @@ describe("getGroupAccessAll", () => {
   });
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
       "https://some.pod/group#id",
-      "https://some.pod/container/resource",
+      INRUPT_TEST.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -513,7 +513,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",

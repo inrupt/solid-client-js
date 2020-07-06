@@ -30,11 +30,21 @@ jest.mock("./fetcher.ts", () => ({
   ),
 }));
 
-import { INRUPT_TEST } from "@inrupt/vocab-common-rdfext";
-
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
+
+import { INRUPT_TEST } from "@inrupt/vocab-common-rdfext";
+
+function resourceContainerAsString(iri: Iri): string {
+  const iriAsString = iri.value;
+  return iriAsString.substring(0, iriAsString.lastIndexOf("/") + 1);
+}
+
+function resourceContainer(iri: Iri): Iri {
+  return DataFactory.namedNode(resourceContainerAsString(iri));
+}
+
 import {
   fetchLitDataset,
   saveLitDatasetAt,
@@ -63,7 +73,7 @@ import {
 
 function mockResponse(
   body?: BodyInit | null,
-  init?: ResponseInit & { url: Iri }
+  init?: ResponseInit & { url: string }
 ): Response {
   return new Response(body, init);
 }
@@ -88,7 +98,7 @@ describe("fetchLitDataset", () => {
     await fetchLitDataset(INRUPT_TEST.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST.somePodResource],
+      [INRUPT_TEST.somePodResource.value],
     ]);
   });
 
@@ -99,7 +109,7 @@ describe("fetchLitDataset", () => {
 
     await fetchLitDataset(INRUPT_TEST.somePodResource, { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls).toEqual([[INRUPT_TEST.somePodResource]]);
+    expect(mockFetch.mock.calls).toEqual([[INRUPT_TEST.somePodResource.value]]);
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
@@ -107,7 +117,7 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: INRUPT_TEST.somePodResource })
+          mockResponse(undefined, { url: INRUPT_TEST.somePodResource.value })
         )
       );
 
@@ -115,7 +125,7 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(litDataset.resourceInfo.fetchedFrom).toBe(
+    expect(litDataset.resourceInfo.fetchedFrom).toEqual(
       INRUPT_TEST.somePodResource
     );
   });
@@ -125,9 +135,9 @@ describe("fetchLitDataset", () => {
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
-            Link: '<aclresource.acl>; rel="acl"',
+            Link: `<${INRUPT_TEST.somePodResourceAcl.value}>; rel="acl"`,
           },
-          url: INRUPT_TEST.somePodResource,
+          url: INRUPT_TEST.somePodResource.value,
         })
       )
     );
@@ -136,8 +146,8 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(litDataset.resourceInfo.unstable_aclUrl).toBe(
-      "https://some.pod/container/aclresource.acl"
+    expect(litDataset.resourceInfo.unstable_aclUrl).toEqual(
+      INRUPT_TEST.somePodResourceAcl
     );
   });
 
@@ -258,7 +268,7 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(turtle, { url: INRUPT_TEST.arbitraryPodResource })
+          mockResponse(turtle, { url: INRUPT_TEST.arbitraryPodResource.value })
         )
       );
 
@@ -323,8 +333,8 @@ describe("fetchAcl", () => {
     await internal_fetchAcl(mockResourceInfo);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST.somePodResourceAcl],
-      ["https://some.pod/", { method: "HEAD" }],
+      [INRUPT_TEST.somePodResourceAcl.value],
+      ["https://inrupt.com/vocab/", { method: "HEAD" }],
     ]);
   });
 
@@ -377,26 +387,26 @@ describe("fetchAcl", () => {
 
     expect(fetchedAcl).not.toBeNull();
     expect(fetchedAcl.fallbackAcl).toBeNull();
-    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toEqual(
       INRUPT_TEST.somePodResourceAcl
     );
   });
 
   it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
     const mockFetch = jest.fn((url) => {
-      if (url === INRUPT_TEST.somePodResourceAcl) {
+      if (url === INRUPT_TEST.somePodResourceAcl.value) {
         return Promise.resolve(
           mockResponse("ACL not found", {
             status: 404,
-            url: INRUPT_TEST.somePodResourceAcl,
+            url: INRUPT_TEST.somePodResourceAcl.value,
           })
         );
       }
 
       const headers =
-        url === INRUPT_TEST.somePodResource
+        url === INRUPT_TEST.somePodResource.value
           ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
+          : url === resourceContainerAsString(INRUPT_TEST.somePodResource)
           ? { Link: '<.acl>; rel="acl"' }
           : undefined;
       return Promise.resolve(
@@ -420,8 +430,8 @@ describe("fetchAcl", () => {
     });
 
     expect(fetchedAcl.resourceAcl).toBeNull();
-    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
+    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom.value).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}.acl`
     );
   });
 });
@@ -430,9 +440,9 @@ describe("fetchLitDatasetWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
-        url === INRUPT_TEST.somePodResource
+        url === INRUPT_TEST.somePodResource.value
           ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
+          : url === resourceContainerAsString(INRUPT_TEST.somePodResource)
           ? { Link: '<.acl>; rel="acl"' }
           : undefined;
       return Promise.resolve(
@@ -448,20 +458,28 @@ describe("fetchLitDatasetWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toEqual(
       INRUPT_TEST.somePodResource
     );
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      INRUPT_TEST.somePodResourceAcl
+    expect(
+      fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom.value
+    ).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resource.acl`
     );
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
+    expect(
+      fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom.value
+    ).toBe(`${resourceContainerAsString(INRUPT_TEST.somePodResource)}.acl`);
     expect(mockFetch.mock.calls).toHaveLength(4);
-    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource);
-    expect(mockFetch.mock.calls[1][0]).toBe(INRUPT_TEST.somePodResourceAcl);
-    expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/");
-    expect(mockFetch.mock.calls[3][0]).toBe("https://some.pod/.acl");
+    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource.value);
+    expect(mockFetch.mock.calls[1][0]).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resource.acl`
+    );
+    expect(mockFetch.mock.calls[2][0]).toBe(
+      resourceContainerAsString(INRUPT_TEST.somePodResource)
+    );
+    expect(mockFetch.mock.calls[3][0]).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}.acl`
+    );
   });
 
   it("calls the included fetcher by default", async () => {
@@ -475,7 +493,7 @@ describe("fetchLitDatasetWithAcl", () => {
     await unstable_fetchLitDatasetWithAcl(INRUPT_TEST.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST.somePodResource],
+      [INRUPT_TEST.somePodResource.value],
     ]);
   });
 
@@ -488,7 +506,7 @@ describe("fetchLitDatasetWithAcl", () => {
           headers: {
             Link: "",
           },
-          url: INRUPT_TEST.somePodResource,
+          url: INRUPT_TEST.somePodResource.value,
         })
       )
     );
@@ -546,9 +564,9 @@ describe("fetchResourceInfoWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
-        url === INRUPT_TEST.somePodResource
+        url === INRUPT_TEST.somePodResource.value
           ? { Link: '<resource.acl>; rel="acl"' }
-          : url === "https://some.pod/"
+          : url === resourceContainerAsString(INRUPT_TEST.somePodResource)
           ? { Link: '<.acl>; rel="acl"' }
           : undefined;
       return Promise.resolve(
@@ -564,20 +582,28 @@ describe("fetchResourceInfoWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toEqual(
       INRUPT_TEST.somePodResource
     );
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      INRUPT_TEST.somePodResourceAcl
+    expect(
+      fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom.value
+    ).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resource.acl`
     );
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
+    expect(
+      fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom.value
+    ).toBe(`${resourceContainerAsString(INRUPT_TEST.somePodResource)}.acl`);
     expect(mockFetch.mock.calls).toHaveLength(4);
-    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource);
-    expect(mockFetch.mock.calls[1][0]).toBe(INRUPT_TEST.somePodResourceAcl);
-    expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/");
-    expect(mockFetch.mock.calls[3][0]).toBe("https://some.pod/.acl");
+    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource.value);
+    expect(mockFetch.mock.calls[1][0]).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resource.acl`
+    );
+    expect(mockFetch.mock.calls[2][0]).toBe(
+      resourceContainerAsString(INRUPT_TEST.somePodResource)
+    );
+    expect(mockFetch.mock.calls[3][0]).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}.acl`
+    );
   });
 
   it("calls the included fetcher by default", async () => {
@@ -592,7 +618,7 @@ describe("fetchResourceInfoWithAcl", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        INRUPT_TEST.somePodResource,
+        INRUPT_TEST.somePodResource.value,
         {
           method: "HEAD",
         },
@@ -609,7 +635,7 @@ describe("fetchResourceInfoWithAcl", () => {
           headers: {
             Link: "",
           },
-          url: INRUPT_TEST.somePodResource,
+          url: INRUPT_TEST.somePodResource.value,
         })
       )
     );
@@ -667,7 +693,7 @@ describe("fetchResourceInfoWithAcl", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: INRUPT_TEST.somePodResource })
+          mockResponse(undefined, { url: INRUPT_TEST.somePodResource.value })
         )
       );
 
@@ -676,7 +702,7 @@ describe("fetchResourceInfoWithAcl", () => {
     });
 
     expect(mockFetch.mock.calls).toEqual([
-      [INRUPT_TEST.somePodResource, { method: "HEAD" }],
+      [INRUPT_TEST.somePodResource.value, { method: "HEAD" }],
     ]);
   });
 });
@@ -694,7 +720,7 @@ describe("fetchResourceInfo", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      INRUPT_TEST.somePodResource
+      INRUPT_TEST.somePodResource.value
     );
   });
 
@@ -708,7 +734,7 @@ describe("fetchResourceInfo", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource);
+    expect(mockFetch.mock.calls[0][0]).toBe(INRUPT_TEST.somePodResource.value);
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
@@ -716,7 +742,7 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: INRUPT_TEST.somePodResource })
+          mockResponse(undefined, { url: INRUPT_TEST.somePodResource.value })
         )
       );
 
@@ -727,14 +753,14 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(litDatasetInfo.fetchedFrom).toBe(INRUPT_TEST.somePodResource);
+    expect(litDatasetInfo.fetchedFrom).toEqual(INRUPT_TEST.somePodResource);
   });
 
   it("knows when the Resource contains a LitDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST.arbitraryPodResource,
+          url: INRUPT_TEST.arbitraryPodResource.value,
           headers: { "Content-Type": "text/turtle" },
         })
       )
@@ -754,7 +780,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST.arbitraryPodResource,
+          url: INRUPT_TEST.arbitraryPodResource.value,
           headers: { "Content-Type": "image/svg+xml" },
         })
       )
@@ -775,7 +801,9 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: INRUPT_TEST.arbitraryPodResource })
+          mockResponse(undefined, {
+            url: INRUPT_TEST.arbitraryPodResource.value,
+          })
         )
       );
 
@@ -793,7 +821,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST.somePodResource,
+          url: INRUPT_TEST.somePodResource.value,
           headers: { "Content-Type": "text/turtle; charset=UTF-8" },
         })
       )
@@ -829,9 +857,9 @@ describe("fetchResourceInfo", () => {
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
-            Link: '<aclresource.acl>; rel="acl"',
+            Link: '<resource.acl>; rel="acl"',
           },
-          url: INRUPT_TEST.somePodResource,
+          url: INRUPT_TEST.somePodResource.value,
         })
       )
     );
@@ -841,8 +869,8 @@ describe("fetchResourceInfo", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_aclUrl).toBe(
-      "https://some.pod/container/aclresource.acl"
+    expect(litDatasetInfo.unstable_aclUrl?.value).toBe(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resource.acl`
     );
   });
 
@@ -952,7 +980,7 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: INRUPT_TEST.somePodResource })
+          mockResponse(undefined, { url: INRUPT_TEST.somePodResource.value })
         )
       );
 
@@ -961,7 +989,7 @@ describe("fetchResourceInfo", () => {
     });
 
     expect(mockFetch.mock.calls).toEqual([
-      [INRUPT_TEST.somePodResource, { method: "HEAD" }],
+      [INRUPT_TEST.somePodResource.value, { method: "HEAD" }],
     ]);
   });
 
@@ -1008,7 +1036,7 @@ describe("isContainer", () => {
   it("should recognise a Container", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST.arbitraryPodContainer,
+        fetchedFrom: resourceContainer(INRUPT_TEST.somePodResource),
         isLitDataset: true,
       },
     };
@@ -1019,9 +1047,7 @@ describe("isContainer", () => {
   it("should recognise non-Containers", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: DataFactory.namedNode(
-          "https://arbitrary.pod/container/not-a-container"
-        ),
+        fetchedFrom: INRUPT_TEST.somePodResource,
         isLitDataset: true,
       },
     };
@@ -1034,7 +1060,7 @@ describe("isLitDataset", () => {
   it("should recognise a LitDataset", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST.arbitraryPodContainer,
+        fetchedFrom: resourceContainer(INRUPT_TEST.somePodResource),
         isLitDataset: true,
       },
     };
@@ -1169,7 +1195,9 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual(INRUPT_TEST.somePodResource);
+      expect(mockFetch.mock.calls[0][0]).toEqual(
+        INRUPT_TEST.somePodResource.value
+      );
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
@@ -1242,10 +1270,10 @@ describe("saveLitDatasetAt", () => {
       );
 
       expect(Array.from(storedLitDataset)[0].subject.value).toBe(
-        "https://some.pod/resource#some-subject-name"
+        `${INRUPT_TEST.NAMESPACE}some-subject-name`
       );
       expect(Array.from(storedLitDataset)[0].object.value).toBe(
-        "https://some.pod/resource#some-object-name"
+        `${INRUPT_TEST.NAMESPACE}some-object-name`
       );
     });
 
@@ -1340,7 +1368,9 @@ describe("saveLitDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual(INRUPT_TEST.somePodResource);
+      expect(mockFetch.mock.calls[0][0]).toEqual(
+        INRUPT_TEST.somePodResource.value
+      );
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
@@ -1434,10 +1464,10 @@ describe("saveLitDatasetAt", () => {
 
       const storedQuads = Array.from(storedLitDataset);
       expect(storedQuads[storedQuads.length - 1].subject.value).toBe(
-        "https://some.pod/resource#some-subject-name"
+        `${INRUPT_TEST.NAMESPACE}some-subject-name`
       );
       expect(storedQuads[storedQuads.length - 1].object.value).toBe(
-        "https://some.pod/resource#some-object-name"
+        `${INRUPT_TEST.NAMESPACE}some-object-name`
       );
     });
 
@@ -1457,7 +1487,7 @@ describe("saveLitDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual(
-        INRUPT_TEST.someOtherPodResource
+        INRUPT_TEST.someOtherPodResource.value
       );
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       // Even though the change log is empty there should still be a body,
@@ -1573,7 +1603,7 @@ describe("saveLitDatasetInContainer", () => {
     };
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset()
     );
 
@@ -1586,7 +1616,7 @@ describe("saveLitDatasetInContainer", () => {
       .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1604,7 +1634,7 @@ describe("saveLitDatasetInContainer", () => {
       );
 
     const fetchPromise = saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1624,7 +1654,7 @@ describe("saveLitDatasetInContainer", () => {
       );
 
     const fetchPromise = saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1642,7 +1672,7 @@ describe("saveLitDatasetInContainer", () => {
       .mockReturnValue(Promise.resolve(new Response()));
 
     const fetchPromise = saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1671,7 +1701,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       mockDataset,
       {
         fetch: mockFetch,
@@ -1680,7 +1710,7 @@ describe("saveLitDatasetInContainer", () => {
 
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      INRUPT_TEST.arbitraryPodContainer
+      resourceContainerAsString(INRUPT_TEST.somePodResource)
     );
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(
@@ -1717,7 +1747,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       mockDataset,
       {
         fetch: mockFetch,
@@ -1736,7 +1766,7 @@ describe("saveLitDatasetInContainer", () => {
       .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1755,7 +1785,7 @@ describe("saveLitDatasetInContainer", () => {
       .mockReturnValue(Promise.resolve(mockResponse));
 
     await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
@@ -1777,14 +1807,14 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     const savedLitDataset = await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
       }
     );
 
-    expect(savedLitDataset.resourceInfo.fetchedFrom).toBe(
+    expect(savedLitDataset.resourceInfo.fetchedFrom).toEqual(
       INRUPT_TEST.somePodResource
     );
   });
@@ -1815,7 +1845,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     const storedLitDataset = await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       mockDataset,
       {
         fetch: mockFetch,
@@ -1823,10 +1853,10 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(Array.from(storedLitDataset)[0].subject.value).toBe(
-      "https://some.pod/container/resource#some-subject-name"
+      `${INRUPT_TEST.NAMESPACE}some-subject-name`
     );
     expect(Array.from(storedLitDataset)[0].object.value).toBe(
-      "https://some.pod/container/resource#some-object-name"
+      `${INRUPT_TEST.NAMESPACE}some-object-name`
     );
   });
 
@@ -1834,21 +1864,21 @@ describe("saveLitDatasetInContainer", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response("Arbitrary response", {
-          headers: { Location: "/container/resource" },
+          headers: { Location: "/vocab/resourceX" },
         })
       )
     );
 
     const savedLitDataset = await saveLitDatasetInContainer(
-      INRUPT_TEST.arbitraryPodContainer,
+      resourceContainer(INRUPT_TEST.somePodResource),
       dataset(),
       {
         fetch: mockFetch,
       }
     );
 
-    expect(savedLitDataset.resourceInfo.fetchedFrom).toBe(
-      INRUPT_TEST.somePodResource
+    expect(savedLitDataset.resourceInfo.fetchedFrom.value).toEqual(
+      `${resourceContainerAsString(INRUPT_TEST.somePodResource)}resourceX`
     );
   });
 });
@@ -2046,7 +2076,7 @@ describe("deleteAclFor", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        INRUPT_TEST.somePodResourceAcl,
+        INRUPT_TEST.somePodResourceAcl.value,
         {
           method: "DELETE",
         },
@@ -2071,7 +2101,7 @@ describe("deleteAclFor", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        INRUPT_TEST.somePodResourceAcl,
+        INRUPT_TEST.somePodResourceAcl.value,
         {
           method: "DELETE",
         },

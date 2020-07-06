@@ -144,10 +144,10 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
 
 describe("getPublicAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
-      "https://some.pod/container/resource",
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
+      INRUPT_TEST.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -169,7 +169,7 @@ describe("getPublicAccess", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/container/",
@@ -194,7 +194,7 @@ describe("getPublicAccess", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -207,10 +207,10 @@ describe("getPublicAccess", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
-      "https://some.pod/container/resource",
+      getMockDataset(INRUPT_TEST.somePodResourceAcl),
+      INRUPT_TEST.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -276,7 +276,7 @@ describe("getPublicAccess", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/container/",

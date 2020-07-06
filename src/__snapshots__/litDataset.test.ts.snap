@@ -18,7 +18,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
+        "value": "https://inrupt.com/vocab/test",
       },
     },
     Object {
@@ -28,7 +28,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
+        "value": "https://inrupt.com/vocab/test#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -36,7 +36,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
+        "value": "https://inrupt.com/vocab/test",
       },
     },
     Object {
@@ -46,7 +46,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
+        "value": "https://inrupt.com/vocab/test#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -54,7 +54,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
+        "value": "https://inrupt.com/vocab/test",
       },
     },
     Object {
@@ -72,7 +72,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
+        "value": "https://inrupt.com/vocab/test#me",
       },
     },
     Object {
@@ -95,13 +95,15 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
+        "value": "https://inrupt.com/vocab/test#me",
       },
     },
   },
   "resourceInfo": Object {
     "contentType": "text/plain;charset=UTF-8",
-    "fetchedFrom": "https://arbitrary.pod/resource",
+    "fetchedFrom": NamedNode {
+      "value": "https://inrupt.com/vocab/test#arbitraryPodResource",
+    },
     "isLitDataset": false,
   },
 }

@@ -244,7 +244,9 @@ export type unstable_WithAccessibleAcl<
 export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
 ): dataset is unstable_WithAccessibleAcl<Resource> {
-  return typeof dataset.resourceInfo.unstable_aclUrl === "string";
+  // PMCB55: I'm a bit confused by the relevance of the 'type' here...?!
+  // return typeof dataset.resourceInfo.unstable_aclUrl === "string";
+  return typeof dataset.resourceInfo.unstable_aclUrl === "object";
 }
 
 /**
