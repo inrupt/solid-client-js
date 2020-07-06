@@ -27,12 +27,16 @@ the fetched file as a blob. It is then up to you to decode it appropriately.
 ```typescript
 import { unstable_fetchFile } from "lit-solid";
 
-const response = await unstable_fetchFile(
+const file = await unstable_fetchFile(
   "https://example.com/some/interesting/file"
 );
-if (response.ok) {
-  const myFile = await response.blob();
-}
+// file is a Blob (see https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+console.log(
+  `Fetched a ${file.resourceInfo.contentType} file from ${file.resourceInfo.fetchedFrom}.`
+);
+console.log(
+  `The file is ${file.resourceInfo.isLitDataset ? "" : "not "}a dataset.`
+);
 ```
 
 ## Deleting a file
