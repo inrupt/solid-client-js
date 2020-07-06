@@ -493,8 +493,8 @@ export function internal_getAclRulesForIri(
 export function internal_getAccessByIri(
   aclRules: unstable_AclRule[],
   targetType: typeof ACL.agent | typeof ACL.agentGroup
-): Record<IriString, unstable_Access> {
-  const targetIriAccess: Record<IriString, unstable_Access> = {};
+): Record<string, unstable_Access> {
+  const targetIriAccess: Record<string, unstable_Access> = {};
 
   aclRules.forEach((rule) => {
     const ruleTargetIri = getIriAll(rule, targetType);
@@ -503,11 +503,15 @@ export function internal_getAccessByIri(
     // A rule might apply to multiple agents. If multiple rules apply to the same agent, the Access
     // Modes granted by those rules should be combined:
     ruleTargetIri.forEach((targetIri) => {
-      targetIriAccess[targetIri] =
-        typeof targetIriAccess[targetIri] === "undefined"
+      targetIriAccess[targetIri.value] =
+        typeof targetIriAccess[targetIri.value] === "undefined"
           ? access
-          : internal_combineAccessModes([targetIriAccess[targetIri], access]);
+          : internal_combineAccessModes([
+              targetIriAccess[targetIri.value],
+              access,
+            ]);
     });
   });
+
   return targetIriAccess;
 }

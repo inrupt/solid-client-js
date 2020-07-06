@@ -35,10 +35,11 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
-  XmlSchemaTypeIri,
-  xmlSchemaTypes,
+  // XmlSchemaTypeIri,
+  // xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
+import { XSD } from "@solid/lit-vocab-common-rdfext";
 
 /**
  * Create a new Thing with a URL added for a Predicate.
@@ -83,7 +84,7 @@ export const addBoolean: AddOfType<boolean> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeBoolean(value),
-    xmlSchemaTypes.boolean
+    XSD.boolean_
   );
 };
 
@@ -104,7 +105,7 @@ export const addDatetime: AddOfType<Date> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDatetime(value),
-    xmlSchemaTypes.dateTime
+    XSD.dateTime
   );
 };
 
@@ -125,7 +126,7 @@ export const addDecimal: AddOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDecimal(value),
-    xmlSchemaTypes.decimal
+    XSD.decimal
   );
 };
 
@@ -146,7 +147,7 @@ export const addInteger: AddOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeInteger(value),
-    xmlSchemaTypes.integer
+    XSD.integer
   );
 };
 
@@ -196,7 +197,7 @@ export const addStringNoLocale: AddOfType<string> = (
   predicate,
   value
 ) => {
-  return addLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
+  return addLiteralOfType(thing, predicate, value, XSD.string);
 };
 
 /**
@@ -263,8 +264,9 @@ function addLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Url | UrlString,
   value: string,
-  type: XmlSchemaTypeIri
+  type: UrlString
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
+
 function addLiteralOfType(
   thing: Thing,
   predicate: Url | UrlString,

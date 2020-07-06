@@ -34,10 +34,11 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
-  XmlSchemaTypeIri,
-  xmlSchemaTypes,
+  // XmlSchemaTypeIri,
+  // xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
+import { XSD } from "@solid/lit-vocab-common-rdfext";
 import { toNode } from "../thing";
 import { removeAll } from "./remove";
 
@@ -85,7 +86,7 @@ export const setBoolean: SetOfType<boolean> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeBoolean(value),
-    xmlSchemaTypes.boolean
+    XSD.boolean_
   );
 };
 
@@ -106,7 +107,7 @@ export const setDatetime: SetOfType<Date> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDatetime(value),
-    xmlSchemaTypes.dateTime
+    XSD.dateTime
   );
 };
 
@@ -127,7 +128,7 @@ export const setDecimal: SetOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeDecimal(value),
-    xmlSchemaTypes.decimal
+    XSD.decimal
   );
 };
 
@@ -148,7 +149,7 @@ export const setInteger: SetOfType<number> = (thing, predicate, value) => {
     thing,
     predicate,
     serializeInteger(value),
-    xmlSchemaTypes.integer
+    XSD.integer
   );
 };
 
@@ -198,7 +199,7 @@ export const setStringNoLocale: SetOfType<string> = (
   predicate,
   value
 ) => {
-  return setLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
+  return setLiteralOfType(thing, predicate, value, XSD.string);
 };
 
 /**
@@ -267,13 +268,13 @@ function setLiteralOfType<T extends Thing>(
   thing: T,
   predicate: Url | UrlString,
   value: string,
-  type: XmlSchemaTypeIri
+  type: Url
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function setLiteralOfType(
   thing: Thing,
   predicate: Url | UrlString,
   value: string,
-  type: XmlSchemaTypeIri
+  type: Url
 ): Thing {
   const literal = DataFactory.literal(value, type);
   return setLiteral(thing, predicate, literal);

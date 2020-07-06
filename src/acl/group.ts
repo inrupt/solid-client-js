@@ -42,7 +42,7 @@ import {
   internal_getAccessByIri,
 } from "../acl";
 
-import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { ACL } from "@solid/lit-vocab-common-rdfext";
 
 /**
  * Find out what Access Modes have been granted to a given Group of agents specifically for a given Resource.
@@ -86,7 +86,7 @@ export function unstable_getGroupAccessOne(
  */
 export function unstable_getGroupAccessAll(
   resourceInfo: unstable_WithAcl & WithResourceInfo
-): Record<IriString, unstable_Access> | null {
+): Record<string, unstable_Access> | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     const resourceAcl = unstable_getResourceAcl(resourceInfo);
     return unstable_getGroupResourceAccessAll(resourceAcl);
@@ -139,7 +139,7 @@ export function unstable_getGroupResourceAccessOne(
  */
 export function unstable_getGroupResourceAccessAll(
   aclDataset: unstable_AclDataset
-): Record<UrlString, unstable_Access> {
+): Record<string, unstable_Access> {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
@@ -189,7 +189,7 @@ export function unstable_getGroupDefaultAccessOne(
  */
 export function unstable_getGroupDefaultAccessAll(
   aclDataset: unstable_AclDataset
-): Record<UrlString, unstable_Access> {
+): Record<string, unstable_Access> {
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
@@ -207,6 +207,6 @@ function getGroupAclRuleForGroup(
 
 function getAccessByGroup(
   aclRules: unstable_AclRule[]
-): Record<IriString, unstable_Access> {
+): Record<string, unstable_Access> {
   return internal_getAccessByIri(aclRules, ACL.agentGroup);
 }

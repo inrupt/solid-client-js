@@ -20,6 +20,7 @@
  */
 
 import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
+import { ACL } from "@solid/lit-vocab-common-rdfext";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.

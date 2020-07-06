@@ -50,7 +50,7 @@ export function getUrlOne(
     return null;
   }
 
-  return matchingQuad.object.value;
+  return matchingQuad.object;
 }
 /** @hidden Alias of [[getUrlOne]] for those who prefer IRI terminology. */
 export const getIriOne = getUrlOne;
@@ -68,7 +68,7 @@ export function getUrlAll(
 
   const matchingQuads = findAll(thing, iriMatcher);
 
-  return matchingQuads.map((quad) => quad.object.value);
+  return matchingQuads.map((quad) => quad.object);
 }
 /** @hidden Alias of [[getUrlAll]] for those who prefer IRI terminology. */
 export const getIriAll = getUrlAll;

@@ -51,7 +51,10 @@ import { removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
 
-export type unstable_AgentAccess = Record<WebId, unstable_Access>;
+// PMCB55: Should revisit usage here, rather than just switching to allow
+// String.
+// export type unstable_AgentAccess = Record<WebId, unstable_Access>;
+export type unstable_AgentAccess = Record<string, unstable_Access>;
 
 /**
  * Find out what Access Modes have been granted to a given Agent specifically for a given Resource.

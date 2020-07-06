@@ -86,7 +86,7 @@ export function getThingOne(
     return thing;
   } else {
     const thing: Thing = Object.assign(thingDataset, {
-      url: subject.value,
+      url: subject,
     });
 
     return thing;
@@ -268,7 +268,7 @@ export function createThing(options: CreateThingOptions = {}): Thing {
     /* istanbul ignore else [URL is defined is the testing environment, so we cannot test this] */
     if (typeof URL !== "undefined") {
       // Throws an error if the IRI is invalid:
-      new URL(url);
+      new URL(url.value);
     }
     const thing: ThingPersisted = Object.assign(dataset(), { url: url });
     return thing;
