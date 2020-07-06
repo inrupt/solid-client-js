@@ -21,7 +21,12 @@
 
 import { fetch } from "./fetcher";
 import { Headers } from "cross-fetch";
-import { unstable_UploadRequestInit } from "./interfaces";
+import {
+  unstable_UploadRequestInit,
+  WithResourceInfo,
+  unstable_WithAcl,
+} from "./interfaces";
+import { parseResourceInfo, internal_fetchAcl } from "./litDataset";
 
 type FetchFileOptions = {
   fetch: typeof window.fetch;
@@ -52,13 +57,38 @@ function containsReserved(header: Headers): boolean {
 export async function unstable_fetchFile(
   input: RequestInfo,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
-): Promise<Response> {
+): Promise<Blob & WithResourceInfo> {
   const config = {
     ...defaultFetchFileOptions,
     ...options,
   };
-  return config.fetch(input, config.init);
+  const response = await config.fetch(input, config.init);
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the File failed: ${response.status} ${response.statusText}.`
+    );
+  }
+  const resourceInfo = parseResourceInfo(response);
+  const data = await response.blob();
+  const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(data, {
+    resourceInfo: resourceInfo,
+  });
+
+  return fileWithResourceInfo;
 }
+
+export async function unstable_fetchFileWithAcl(
+  input: RequestInfo,
+  options: Partial<FetchFileOptions> = defaultFetchFileOptions
+): Promise<Blob & WithResourceInfo & unstable_WithAcl> {
+  const file = await unstable_fetchFile(input, options);
+  const acl = await internal_fetchAcl(file, options);
+  return Object.assign(file, { acl });
+}
+
+const defaultSaveOptions = {
+  fetch: fetch,
+};
 
 /**
  * Deletes a file at a given URL
