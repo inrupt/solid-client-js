@@ -149,6 +149,14 @@ export {
   unstable_setAgentDefaultAccess,
 } from "./acl/agent";
 export {
+  unstable_getGroupAccessOne,
+  unstable_getGroupAccessAll,
+  unstable_getGroupResourceAccessOne,
+  unstable_getGroupResourceAccessAll,
+  unstable_getGroupDefaultAccessOne,
+  unstable_getGroupDefaultAccessAll,
+} from "./acl/group";
+export {
   unstable_getPublicAccess,
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,

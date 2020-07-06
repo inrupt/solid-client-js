@@ -110,6 +110,12 @@ import {
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,
   unstable_hasAccessibleAcl,
+  unstable_getGroupAccessOne,
+  unstable_getGroupAccessAll,
+  unstable_getGroupResourceAccessOne,
+  unstable_getGroupResourceAccessAll,
+  unstable_getGroupDefaultAccessOne,
+  unstable_getGroupDefaultAccessAll,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -216,6 +222,12 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getPublicResourceAccess).toBeDefined();
   expect(unstable_getPublicDefaultAccess).toBeDefined();
   expect(unstable_hasAccessibleAcl).toBeDefined();
+  expect(unstable_getGroupAccessOne).toBeDefined();
+  expect(unstable_getGroupAccessAll).toBeDefined();
+  expect(unstable_getGroupResourceAccessOne).toBeDefined();
+  expect(unstable_getGroupResourceAccessAll).toBeDefined();
+  expect(unstable_getGroupDefaultAccessOne).toBeDefined();
+  expect(unstable_getGroupDefaultAccessAll).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
