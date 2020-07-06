@@ -26,7 +26,7 @@ import {
   WithResourceInfo,
   unstable_WithAcl,
 } from "./interfaces";
-import { parseResourceInfo, internal_fetchAcl } from "./litDataset";
+import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
 
 type FetchFileOptions = {
   fetch: typeof window.fetch;
@@ -68,7 +68,7 @@ export async function unstable_fetchFile(
       `Fetching the File failed: ${response.status} ${response.statusText}.`
     );
   }
-  const resourceInfo = parseResourceInfo(response);
+  const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
   const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(data, {
     resourceInfo: resourceInfo,

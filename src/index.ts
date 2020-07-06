@@ -20,6 +20,15 @@
  */
 
 export {
+  unstable_fetchResourceInfoWithAcl,
+  isContainer,
+  isLitDataset,
+  getFetchedFrom,
+  getContentType,
+  unstable_saveAclFor,
+  unstable_deleteAclFor,
+} from "./resource";
+export {
   unstable_fetchFile,
   unstable_deleteFile,
   unstable_saveFileInContainer,
@@ -28,16 +37,9 @@ export {
 export {
   createLitDataset,
   fetchLitDataset,
-  unstable_fetchResourceInfoWithAcl,
-  isContainer,
-  isLitDataset,
-  getContentType,
-  getFetchedFrom,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
-  unstable_saveAclFor,
-  unstable_deleteAclFor,
 } from "./litDataset";
 export {
   getThingOne,

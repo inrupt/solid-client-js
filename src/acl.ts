@@ -21,12 +21,7 @@
 
 import { Quad } from "rdf-js";
 import { acl, rdf } from "./constants";
-import {
-  fetchLitDataset,
-  defaultFetchOptions,
-  internal_fetchResourceInfo,
-  getFetchedFrom,
-} from "./litDataset";
+import { fetchLitDataset } from "./litDataset";
 import {
   WithResourceInfo,
   unstable_AclDataset,
@@ -46,11 +41,18 @@ import { getIriOne, getIriAll } from "./thing/get";
 import { DataFactory, dataset } from "./rdfjs";
 import { removeAll } from "./thing/remove";
 import { setIri } from "./thing/set";
+import {
+  internal_defaultFetchOptions,
+  internal_fetchResourceInfo,
+  getFetchedFrom,
+} from "./resource";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithResourceInfo,
-  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   if (!unstable_hasAccessibleAcl(dataset)) {
     return null;
@@ -75,7 +77,9 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: unstable_WithAccessibleAcl,
-  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   const resourceUrl = new URL(getFetchedFrom(resource));
   const resourcePath = resourceUrl.pathname;
