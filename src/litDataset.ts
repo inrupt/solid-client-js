@@ -238,6 +238,10 @@ export function getContentType(resource: WithResourceInfo): string | null {
   return resource.resourceInfo.contentType ?? null;
 }
 
+export function getFetchedFrom(resource: WithResourceInfo): string {
+  return resource.resourceInfo.fetchedFrom;
+}
+
 /**
  * Experimental: fetch a LitDataset and its associated Access Control List.
  *

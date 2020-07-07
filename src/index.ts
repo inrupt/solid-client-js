@@ -32,6 +32,7 @@ export {
   isContainer,
   isLitDataset,
   getContentType,
+  getFetchedFrom,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
