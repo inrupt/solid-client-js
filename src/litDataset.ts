@@ -219,7 +219,7 @@ export function parseResourceInfo(
  * @returns Whether `resource` is a Container.
  */
 export function isContainer(resource: WithResourceInfo): boolean {
-  return resource.resourceInfo.fetchedFrom.endsWith("/");
+  return getFetchedFrom(resource).endsWith("/");
 }
 
 /**
@@ -236,6 +236,14 @@ export function isLitDataset(resource: WithResourceInfo): boolean {
  */
 export function getContentType(resource: WithResourceInfo): string | null {
   return resource.resourceInfo.contentType ?? null;
+}
+
+/**
+ * @param resource
+ * @returns The URL from which the resource has been fetched
+ */
+export function getFetchedFrom(resource: WithResourceInfo): string {
+  return resource.resourceInfo.fetchedFrom;
 }
 
 /**
@@ -463,7 +471,7 @@ export async function unstable_saveAclFor(
   );
   const savedAclDataset: unstable_AclDataset &
     typeof savedDataset = Object.assign(savedDataset, {
-    accessTo: resource.resourceInfo.fetchedFrom,
+    accessTo: getFetchedFrom(resource),
   });
 
   return savedAclDataset;
@@ -527,7 +535,7 @@ function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
 function resolveLocalIrisInLitDataset<
   Dataset extends LitDataset & WithResourceInfo
 >(litDataset: Dataset): Dataset {
-  const resourceIri = litDataset.resourceInfo.fetchedFrom;
+  const resourceIri = getFetchedFrom(litDataset);
   const unresolvedQuads = Array.from(litDataset);
 
   unresolvedQuads.forEach((unresolvedQuad) => {

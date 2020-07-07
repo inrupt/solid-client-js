@@ -25,6 +25,7 @@ import {
   fetchLitDataset,
   defaultFetchOptions,
   internal_fetchResourceInfo,
+  getFetchedFrom,
 } from "./litDataset";
 import {
   WithResourceInfo,
@@ -61,7 +62,7 @@ export async function internal_fetchResourceAcl(
       options
     );
     return Object.assign(aclLitDataset, {
-      accessTo: dataset.resourceInfo.fetchedFrom,
+      accessTo: getFetchedFrom(dataset),
     });
   } catch (e) {
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
@@ -76,7 +77,7 @@ export async function internal_fetchFallbackAcl(
   resource: unstable_WithAccessibleAcl,
   options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom);
+  const resourceUrl = new URL(getFetchedFrom(resource));
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -144,9 +145,9 @@ export function unstable_hasResourceAcl<
   unstable_WithAccessibleAcl {
   return (
     resource.acl.resourceAcl !== null &&
-    resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
+    getFetchedFrom(resource) === resource.acl.resourceAcl.accessTo &&
     resource.resourceInfo.unstable_aclUrl ===
-      resource.acl.resourceAcl.resourceInfo.fetchedFrom
+      getFetchedFrom(resource.acl.resourceAcl)
   );
 }
 
@@ -228,7 +229,7 @@ export function unstable_createAclFromFallbackAcl(
     unstable_WithAccessibleAcl
 ): unstable_AclDataset {
   const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
-    accessTo: resource.resourceInfo.fetchedFrom,
+    accessTo: getFetchedFrom(resource),
     resourceInfo: {
       fetchedFrom: resource.resourceInfo.unstable_aclUrl,
       isLitDataset: true,
@@ -242,7 +243,7 @@ export function unstable_createAclFromFallbackAcl(
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
-    rule = setIri(rule, acl.accessTo, resource.resourceInfo.fetchedFrom);
+    rule = setIri(rule, acl.accessTo, getFetchedFrom(resource));
     return rule;
   });
 

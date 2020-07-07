@@ -36,10 +36,11 @@ import {
   unstable_deleteFile,
   unstable_saveFileInContainer,
   unstable_overwriteFile,
+  unstable_fetchFileWithAcl,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
-describe("Non-RDF data fetch", () => {
+describe("unstable_fetchFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
@@ -54,12 +55,8 @@ describe("Non-RDF data fetch", () => {
       )
     );
 
-    const response = await unstable_fetchFile("https://some.url");
-
+    await unstable_fetchFile("https://some.url");
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
-    );
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
@@ -71,13 +68,231 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
+    await unstable_fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
+  });
+
+  it("should return the fetched data as a blob", async () => {
+    const init: ResponseInit & { url: string } = {
+      status: 200,
+      statusText: "OK",
+      url: "https://some.url",
+    };
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+
+    const file = await unstable_fetchFile("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(file.resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.resourceInfo.contentType).toContain("text/plain");
+    expect(file.resourceInfo.isLitDataset).toEqual(false);
+
+    const fileData = await file.text();
+    expect(fileData).toEqual("Some data");
+  });
+
+  it("should pass the request headers through", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response("Some data", { status: 200, statusText: "OK" })
+        )
+      );
+
+    const response = await unstable_fetchFile("https://some.url", {
+      init: {
+        headers: new Headers({ Accept: "text/turtle" }),
+      },
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          headers: new Headers({ Accept: "text/turtle" }),
+        },
+      ],
+    ]);
+  });
+
+  it("should throw on failure", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 400, statusText: "Bad request" })
+        )
+      );
+
+    const response = unstable_fetchFile("https://some.url", {
+      fetch: mockFetch,
+    });
+    await expect(response).rejects.toThrow(
+      "Fetching the File failed: 400 Bad request"
+    );
+  });
+});
+
+describe("unstable_fetchFileWithAcl", () => {
+  it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response("Some data", { status: 200, statusText: "OK" })
+      )
+    );
+
+    await unstable_fetchFileWithAcl("https://some.url");
+    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
+  });
+
+  it("should GET a remote resource using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response("Some data", { status: 200, statusText: "OK" })
+        )
+      );
+
+    const response = await unstable_fetchFileWithAcl("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
+  });
+
+  it("should return the fetched data as a blob, along with its ACL", async () => {
+    const init: ResponseInit & { url: string } = {
+      status: 200,
+      statusText: "OK",
+      url: "https://some.url",
+    };
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+
+    const file = await unstable_fetchFileWithAcl("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(file.resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.resourceInfo.contentType).toContain("text/plain");
+    expect(file.resourceInfo.isLitDataset).toEqual(false);
+
+    const fileData = await file.text();
+    expect(fileData).toEqual("Some data");
+  });
+
+  it("returns both the Resource's own ACL as well as its Container's", async () => {
+    const mockFetch = jest.fn((url) => {
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      const init: ResponseInit & { url: string } = {
+        headers: headers,
+        url: url,
+      };
+      return Promise.resolve(new Response(undefined, init));
+    });
+
+    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/resource.acl"
+    );
+    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/.acl"
+    );
+    expect(mockFetch.mock.calls).toHaveLength(4);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+    expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/");
+    expect(mockFetch.mock.calls[3][0]).toBe("https://some.pod/.acl");
+  });
+
+  it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    const init: ResponseInit & { url: string } = {
+      headers: {
+        Link: "",
+      },
+      url: "https://some.pod/resource",
+    };
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(new Response(undefined, init))
+    );
+
+    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const fetchPromise = unstable_fetchFileWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the File failed: 403 Forbidden.")
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 404", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not found", { status: 404 }))
+      );
+
+    const fetchPromise = unstable_fetchFileWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the File failed: 404 Not Found.")
     );
   });
 
@@ -105,12 +320,9 @@ describe("Non-RDF data fetch", () => {
         },
       ],
     ]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
-    );
   });
 
-  it("should return the response even on failure", async () => {
+  it("should throw on failure", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -119,13 +331,11 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
+    const response = unstable_fetchFile("https://some.url", {
       fetch: mockFetch,
     });
-
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response(undefined, { status: 400, statusText: "Bad request" })
+    await expect(response).rejects.toThrow(
+      "Fetching the File failed: 400 Bad request"
     );
   });
 });

@@ -29,6 +29,7 @@ import {
   setStringNoLocale,
   saveLitDatasetAt,
   isLitDataset,
+  getContentType,
   unstable_fetchResourceInfoWithAcl,
   unstable_fetchLitDatasetWithAcl,
   unstable_hasResourceAcl,
@@ -44,6 +45,7 @@ import {
   unstable_createAclFromFallbackAcl,
   unstable_getPublicDefaultAccess,
   unstable_getPublicResourceAccess,
+  unstable_fetchFile,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -194,5 +196,16 @@ describe("End-to-end tests", () => {
         unstable_getPublicResourceAccess(newResourceAcl)
       );
     }
+  });
+
+  it("can fetch a non-RDF file and its metadata", async () => {
+    const jsonFile = await unstable_fetchFile(
+      "https://lit-e2e-test.inrupt.net/public/arbitrary.json"
+    );
+
+    expect(getContentType(jsonFile)).toEqual("application/json");
+
+    const data = JSON.parse(await jsonFile.text());
+    expect(data).toEqual({ arbitrary: "json data" });
   });
 });
