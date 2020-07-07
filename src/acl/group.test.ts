@@ -30,6 +30,9 @@ import {
   WebId,
 } from "../interfaces";
 import { DataFactory } from "../rdfjs";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+// import { INRUPT_TEST_IRI } from "@inrupt/vocab-common-rdfjs";
+import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 import {
   unstable_getGroupDefaultAccessOne,
   unstable_getGroupResourceAccessOne,
@@ -46,66 +49,43 @@ function addAclRuleQuads(
   access: unstable_Access,
   type: "resource" | "default"
 ): unstable_AclDataset {
-  const subjectIri = resource + "#" + encodeURIComponent(group) + Math.random();
+  const subjectIri =
+    resource.value + "#" + encodeURIComponent(group.value) + Math.random();
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      RDF.type,
+      ACL.Authorization
     )
   );
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(
-        type === "resource"
-          ? "http://www.w3.org/ns/auth/acl#accessTo"
-          : "http://www.w3.org/ns/auth/acl#default"
-      ),
-      DataFactory.namedNode(resource)
+      type === "resource" ? ACL.accessTo : ACL.default_,
+      resource
     )
   );
   aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentGroup"),
-      DataFactory.namedNode(group)
-    )
+    DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.agentGroup, group)
   );
   if (access.read) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Read)
     );
   }
   if (access.append) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Append)
     );
   }
   if (access.write) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Write)
     );
   }
   if (access.control) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Control)
     );
   }
 
@@ -144,11 +124,13 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
 
 describe("getGroupAccessOne", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST.somePodResourceAcl),
-      "https://some.pod/group#id",
-      INRUPT_TEST.somePodResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
+      INRUPT_TEST_IRI.somePodGroupId,
+      INRUPT_TEST_IRI.somePodRootContainerResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -160,7 +142,7 @@ describe("getGroupAccessOne", () => {
 
     const access = unstable_getGroupAccessOne(
       litDatasetWithAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(access).toEqual({
@@ -172,10 +154,12 @@ describe("getGroupAccessOne", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -188,7 +172,7 @@ describe("getGroupAccessOne", () => {
 
     const access = unstable_getGroupAccessOne(
       litDatasetWithAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(access).toEqual({
@@ -200,7 +184,9 @@ describe("getGroupAccessOne", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -218,17 +204,19 @@ describe("getGroupAccessOne", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST.somePodResourceAcl),
-      "https://some.pod/group#id",
-      INRUPT_TEST.somePodResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
+      INRUPT_TEST_IRI.somePodGroupId,
+      INRUPT_TEST_IRI.somePodRootContainerResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -246,7 +234,7 @@ describe("getGroupAccessOne", () => {
 
     const access = unstable_getGroupAccessOne(
       litDatasetWithAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(access).toEqual({
@@ -261,14 +249,14 @@ describe("getGroupAccessOne", () => {
     const litDataset = getMockDataset("https://some.pod/container/");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -281,7 +269,7 @@ describe("getGroupAccessOne", () => {
 
     const access = unstable_getGroupAccessOne(
       litDatasetWithAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(access).toEqual({
@@ -293,17 +281,19 @@ describe("getGroupAccessOne", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -316,7 +306,7 @@ describe("getGroupAccessOne", () => {
 
     const access = unstable_getGroupAccessOne(
       litDatasetWithAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(access).toEqual({
@@ -330,11 +320,13 @@ describe("getGroupAccessOne", () => {
 
 describe("getGroupAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Group URL", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST.somePodResourceAcl),
-      "https://some.pod/group#id",
-      INRUPT_TEST.somePodResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
+      INRUPT_TEST_IRI.somePodGroupId,
+      INRUPT_TEST_IRI.somePodRootContainerResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -347,7 +339,7 @@ describe("getGroupAccessAll", () => {
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: false,
         write: false,
@@ -357,10 +349,12 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -374,7 +368,7 @@ describe("getGroupAccessAll", () => {
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: false,
         write: false,
@@ -384,7 +378,9 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -399,17 +395,19 @@ describe("getGroupAccessAll", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST.somePodResourceAcl),
-      "https://some.pod/group#id",
-      INRUPT_TEST.somePodResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
+      INRUPT_TEST_IRI.somePodGroupId,
+      INRUPT_TEST_IRI.somePodRootContainerResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -428,7 +426,7 @@ describe("getGroupAccessAll", () => {
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -438,11 +436,13 @@ describe("getGroupAccessAll", () => {
   });
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST.somePodResourceAcl),
-      "https://some.pod/group#id",
-      INRUPT_TEST.somePodResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
+      INRUPT_TEST_IRI.somePodGroupId,
+      INRUPT_TEST_IRI.somePodRootContainerResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -466,10 +466,10 @@ describe("getGroupAccessAll", () => {
 
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
-    // It only includes rules for agent "https://some.pod/group#id",
+    // It only includes rules for agent INRUPT_TEST_IRI.somePodGroupId,
     // not for "https://some-other.pod/profileDoc#webId"
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -482,14 +482,14 @@ describe("getGroupAccessAll", () => {
     const litDataset = getMockDataset("https://some.pod/container/");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -503,7 +503,7 @@ describe("getGroupAccessAll", () => {
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -513,17 +513,19 @@ describe("getGroupAccessAll", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset(INRUPT_TEST.somePodResource);
+    const litDataset = getMockDataset(
+      INRUPT_TEST_IRI.somePodRootContainerResource
+    );
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
@@ -537,7 +539,7 @@ describe("getGroupAccessAll", () => {
     const access = unstable_getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: false,
         write: false,
@@ -551,7 +553,7 @@ describe("getGroupResourceAccessOne", () => {
   it("returns the applicable Access Modes for a single Group", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: true },
       "resource"
@@ -559,7 +561,7 @@ describe("getGroupResourceAccessOne", () => {
 
     const groupAccess = unstable_getGroupResourceAccessOne(
       resourceAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -573,14 +575,14 @@ describe("getGroupResourceAccessOne", () => {
   it("combines Access Modes defined for a given Group in separate rules", () => {
     let resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource"
@@ -588,7 +590,7 @@ describe("getGroupResourceAccessOne", () => {
 
     const groupAccess = unstable_getGroupResourceAccessOne(
       resourceAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -602,7 +604,7 @@ describe("getGroupResourceAccessOne", () => {
   it("returns false for all Access Modes if there are no ACL rules for the given Group", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
@@ -631,7 +633,7 @@ describe("getGroupResourceAccessOne", () => {
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource"
@@ -639,7 +641,7 @@ describe("getGroupResourceAccessOne", () => {
 
     const groupAccess = unstable_getGroupResourceAccessOne(
       resourceAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -691,7 +693,7 @@ describe("getGroupResourceAccessAll", () => {
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource"
@@ -700,7 +702,7 @@ describe("getGroupResourceAccessAll", () => {
     const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: true,
         write: false,
@@ -718,14 +720,14 @@ describe("getGroupResourceAccessAll", () => {
   it("combines Access Modes defined for the same Groups in different Rules", () => {
     let resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource"
@@ -734,7 +736,7 @@ describe("getGroupResourceAccessAll", () => {
     const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: true,
         write: false,
@@ -746,7 +748,7 @@ describe("getGroupResourceAccessAll", () => {
   it("returns Access Modes for all Groups even if they are assigned in the same Rule", () => {
     let resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
@@ -763,7 +765,7 @@ describe("getGroupResourceAccessAll", () => {
     const agentAccess = unstable_getGroupResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -781,7 +783,7 @@ describe("getGroupResourceAccessAll", () => {
   it("ignores ACL rules that do not apply to a Group", () => {
     let resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
@@ -814,7 +816,7 @@ describe("getGroupResourceAccessAll", () => {
     const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -833,7 +835,7 @@ describe("getGroupResourceAccessAll", () => {
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource"
@@ -842,7 +844,7 @@ describe("getGroupResourceAccessAll", () => {
     const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: true,
         write: false,
@@ -856,7 +858,7 @@ describe("getGroupDefaultAccessOne", () => {
   it("returns the applicable Access Modes for a single Group", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: true },
       "default"
@@ -864,7 +866,7 @@ describe("getGroupDefaultAccessOne", () => {
 
     const groupAccess = unstable_getGroupDefaultAccessOne(
       containerAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -878,14 +880,14 @@ describe("getGroupDefaultAccessOne", () => {
   it("combines Access Modes defined for a given Group in separate rules", () => {
     let containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default"
@@ -893,7 +895,7 @@ describe("getGroupDefaultAccessOne", () => {
 
     const groupAccess = unstable_getGroupDefaultAccessOne(
       containerAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -907,7 +909,7 @@ describe("getGroupDefaultAccessOne", () => {
   it("returns false for all Access Modes if there are no ACL rules for the given Group", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
@@ -936,7 +938,7 @@ describe("getGroupDefaultAccessOne", () => {
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default"
@@ -944,7 +946,7 @@ describe("getGroupDefaultAccessOne", () => {
 
     const groupAccess = unstable_getGroupDefaultAccessOne(
       containerAcl,
-      "https://some.pod/group#id"
+      INRUPT_TEST_IRI.somePodGroupId
     );
 
     expect(groupAccess).toEqual({
@@ -996,7 +998,7 @@ describe("getGroupDefaultAccessAll", () => {
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default"
@@ -1005,7 +1007,7 @@ describe("getGroupDefaultAccessAll", () => {
     const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: true,
         write: false,
@@ -1023,14 +1025,14 @@ describe("getGroupDefaultAccessAll", () => {
   it("combines Access Modes defined for the same Group in different Rules", () => {
     let containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default"
@@ -1039,7 +1041,7 @@ describe("getGroupDefaultAccessAll", () => {
     const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: true,
         write: false,
@@ -1051,7 +1053,7 @@ describe("getGroupDefaultAccessAll", () => {
   it("returns Access Modes for all Groups even if they are assigned in the same Rule", () => {
     let containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acln"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
@@ -1068,7 +1070,7 @@ describe("getGroupDefaultAccessAll", () => {
     const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -1086,7 +1088,7 @@ describe("getGroupDefaultAccessAll", () => {
   it("ignores ACL rules that do not apply to a Group", () => {
     let containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
@@ -1119,7 +1121,7 @@ describe("getGroupDefaultAccessAll", () => {
     const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: true,
         append: false,
         write: false,
@@ -1138,7 +1140,7 @@ describe("getGroupDefaultAccessAll", () => {
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/group#id",
+      INRUPT_TEST_IRI.somePodGroupId,
       "https://some.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default"
@@ -1147,7 +1149,7 @@ describe("getGroupDefaultAccessAll", () => {
     const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
-      "https://some.pod/group#id": {
+      [INRUPT_TEST_IRI.somePodGroupId.value]: {
         read: false,
         append: true,
         write: false,
