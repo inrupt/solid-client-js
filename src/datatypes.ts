@@ -233,7 +233,9 @@ export function getLocalNode(name: string): LocalNode {
  * @internal Library users shouldn't need to be exposed to raw NamedNodes.
  * @param iri The IRI that should be converted into a Named Node, if it isn't one yet.
  */
-export function asNamedNode(iri: Iri | IriString): NamedNode {
+// PMCB55 - not sure about simply allowing 'string'...
+//export function asNamedNode(iri: Iri | IriString): NamedNode {
+export function asNamedNode(iri: Iri | string): NamedNode {
   if (isNamedNode(iri)) {
     return iri;
   }

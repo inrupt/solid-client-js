@@ -53,8 +53,11 @@ const INRUPT_TEST_IRI = {
   somePodRootContainer: DataFactory.namedNode(
     "https://some.pod.com/rootContainer/"
   ),
+  someOtherPodRootContainer: DataFactory.namedNode(
+    "https://some.other.pod.com/canBeAnywhere/rootContainer/"
+  ),
 
-  somePodRootContainerResource: DataFactory.namedNode(
+  somePodResource: DataFactory.namedNode(
     "https://some.pod.com/rootContainer/Resource1"
   ),
 
@@ -62,8 +65,8 @@ const INRUPT_TEST_IRI = {
   // somePodRootAcl: DataFactory.namedNode("https://some.pod.com/?ext=acl"),
   // somePodRootContainerAcl: DataFactory.namedNode("https://some.pod.com/rootContainer/?ext=acl"),
   // somePodRootContainerAclRelativePath: "?ext=acl",
-  // somePodRootContainerResourceAclRelativePath: "Resource1?ext=acl",
-  // somePodRootContainerResourceAcl: DataFactory.namedNode("https://some.pod.com/rootContainer/Resource1?ext=acl"),
+  // somePodResourceAclRelativePath: "Resource1?ext=acl",
+  // somePodResourceAcl: DataFactory.namedNode("https://some.pod.com/rootContainer/Resource1?ext=acl"),
 
   // NSS ACL convention (i.e. filename extensions)
   somePodRootAcl: DataFactory.namedNode("https://some.pod.com/.acl"),
@@ -71,8 +74,8 @@ const INRUPT_TEST_IRI = {
     "https://some.pod.com/rootContainer/.acl"
   ),
   somePodRootContainerAclRelativePath: ".acl",
-  somePodRootContainerResourceAclRelativePath: "Resource1.acl",
-  somePodRootContainerResourceAcl: DataFactory.namedNode(
+  somePodResourceAclRelativePath: "Resource1.acl",
+  somePodResourceAcl: DataFactory.namedNode(
     "https://some.pod.com/rootContainer/Resource1.acl"
   ),
 
@@ -95,9 +98,42 @@ const INRUPT_TEST_IRI = {
   /**
    * An arbitrary WebID.
    */
-  arbitraryWebId: DataFactory.namedNode(
-    "https://some.pod.com/arbitraryWebId/profile/card#me"
+  somePodWebId: DataFactory.namedNode(
+    "https://some.pod.com/somePodWebId/profile/card#me"
   ),
+  someOtherPodWebId: DataFactory.namedNode("https://some.other.pod.com#i"),
+
+  /**
+   * An arbitrary RDF subject.
+   */
+  arbitrarySubject: DataFactory.namedNode("https://some.pod/resource#subject"),
+
+  /**
+   * An arbitrary RDF predicate.
+   */
+  arbitraryPredicate: RDFJS_NAMESPACE("arbitraryPredicate"),
+
+  /**
+   * An arbitrary RDF object.
+   */
+  arbitraryObject: RDFJS_NAMESPACE("arbitraryObject"),
+
+  /**
+   * An arbitrary RDF subject.
+   */
+  arbitraryOtherSubject: DataFactory.namedNode(
+    "https://some.other.pod/resource#other-subject"
+  ),
+
+  /**
+   * An arbitrary RDF predicate.
+   */
+  arbitraryOtherPredicate: RDFJS_NAMESPACE("arbitraryOtherPredicate"),
+
+  /**
+   * An arbitrary RDF object.
+   */
+  arbitraryOtherObject: RDFJS_NAMESPACE("arbitraryOtherObject"),
 };
 
 export { INRUPT_TEST_IRI };

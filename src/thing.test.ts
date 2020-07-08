@@ -44,6 +44,7 @@ import {
   unstable_WithAcl,
   unstable_AclDataset,
 } from "./interfaces";
+import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
 function getMockQuad(
   terms: Partial<{
@@ -53,17 +54,12 @@ function getMockQuad(
     namedGraph: IriString;
   }> = {}
 ) {
-  const subject: NamedNode = DataFactory.namedNode(
-    terms.subject ?? "https://arbitrary.vocab/subject"
-  );
-  const predicate: NamedNode = DataFactory.namedNode(
-    terms.predicate ?? "https://arbitrary.vocab/predicate"
-  );
-  const object: NamedNode = DataFactory.namedNode(
-    terms.object ?? "https://arbitrary.vocab/object"
-  );
+  const subject: NamedNode = terms.subject ?? INRUPT_TEST_IRI.arbitrarySubject;
+  const predicate: NamedNode =
+    terms.predicate ?? INRUPT_TEST_IRI.arbitraryPredicate;
+  const object: NamedNode = terms.object ?? INRUPT_TEST_IRI.arbitraryObject;
   const namedGraph: NamedNode | undefined = terms.namedGraph
-    ? DataFactory.namedNode(terms.namedGraph)
+    ? terms.namedGraph
     : undefined;
   return DataFactory.quad(subject, predicate, object, namedGraph);
 }
@@ -73,7 +69,7 @@ describe("createThing", () => {
     const thing1: ThingLocal = createThing();
     const thing2: ThingLocal = createThing();
 
-    expect(typeof thing1.localSubject.name).toBe("string");
+    expect(typeof thing1.localSubject.name).toEqual("string");
     expect(thing1.localSubject.name.length).toBeGreaterThan(0);
     expect(thing1.localSubject.name).not.toEqual(thing2.localSubject.name);
   });
@@ -81,7 +77,7 @@ describe("createThing", () => {
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.localSubject.name).toBe("some-name");
+    expect(thing.localSubject.name).toEqual("some-name");
   });
 
   it("uses the given IRI, if any", () => {
@@ -89,7 +85,7 @@ describe("createThing", () => {
       url: "https://some.pod/resource#thing",
     });
 
-    expect(thing.url).toBe("https://some.pod/resource#thing");
+    expect(thing.url).toEqual("https://some.pod/resource#thing");
   });
 
   it("throws an error if the given URL is invalid", () => {
@@ -121,7 +117,7 @@ describe("getThingOne", () => {
 
     const thing = getThingOne(
       datasetWithAThing,
-      DataFactory.namedNode("https://some.vocab/subject")
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
@@ -577,14 +573,14 @@ describe("setThing", () => {
   it("does not modify Quads with unexpected Subjects", () => {
     const unexpectedQuad = DataFactory.quad(
       DataFactory.variable("Arbitrary unexpected Subject type"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.namedNode("https://arbitrary.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const datasetWithUnexpectedQuad = dataset();
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     const updatedDataset = setThing(datasetWithUnexpectedQuad, thing);
@@ -625,14 +621,14 @@ describe("setThing", () => {
 
   it("can reconcile new LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
       object: "https://some.vocab/old-object",
     });
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
         resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          fetchedFrom: INRUPT_TEST_IRI.somePodResource,
           isLitDataset: true,
         },
       }
@@ -677,14 +673,14 @@ describe("setThing", () => {
     const datasetWithLocalSubject: LitDataset &
       WithResourceInfo = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
       object: "https://some.vocab/old-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
@@ -898,9 +894,9 @@ describe("removeThing", () => {
       object: "https://some.vocab/new-object",
     });
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
-      accessTo: "https://arbitrary.pod/resource",
+      accessTo: INRUPT_TEST_IRI.somePodResource,
       resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
     });
@@ -913,9 +909,9 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(aclDataset, thing);
 
-    expect(updatedDataset.accessTo).toBe("https://arbitrary.pod/resource");
+    expect(updatedDataset.accessTo).toEqual("https://arbitrary.pod/resource");
     expect(updatedDataset.resourceInfo).toEqual({
-      fetchedFrom: "https://arbitrary.pod/resource.acl",
+      fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
       isLitDataset: true,
     });
   });
@@ -967,14 +963,14 @@ describe("removeThing", () => {
   it("does not modify Quads with unexpected Subjects", () => {
     const unexpectedQuad = DataFactory.quad(
       DataFactory.variable("Arbitrary unexpected Subject type"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.namedNode("https://arbitrary.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const datasetWithUnexpectedQuad = dataset();
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     const updatedDataset = removeThing(datasetWithUnexpectedQuad, thing);
@@ -996,7 +992,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      DataFactory.namedNode("https://some.vocab/subject")
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
@@ -1027,14 +1023,14 @@ describe("removeThing", () => {
 
   it("can reconcile given LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
       object: "https://some.vocab/old-object",
     });
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
         resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          fetchedFrom: INRUPT_TEST_IRI.somePodResource,
           isLitDataset: true,
         },
       }
@@ -1068,7 +1064,7 @@ describe("removeThing", () => {
       dataset(),
       {
         resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          fetchedFrom: INRUPT_TEST_IRI.somePodResource,
           isLitDataset: true,
         },
       }
@@ -1077,7 +1073,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithLocalNode,
-      DataFactory.namedNode("https://some.pod/resource#subject")
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(Array.from(updatedDataset)).toEqual([]);
@@ -1116,7 +1112,7 @@ describe("asIri", () => {
       url: "https://some.pod/resource#thing",
     });
 
-    expect(asUrl(persistedThing)).toBe("https://some.pod/resource#thing");
+    expect(asUrl(persistedThing)).toEqual("https://some.pod/resource#thing");
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
@@ -1125,7 +1121,7 @@ describe("asIri", () => {
     });
     const localThing = Object.assign(dataset(), { localSubject: localSubject });
 
-    expect(asUrl(localThing, "https://some.pod/resource")).toBe(
+    expect(asUrl(localThing, INRUPT_TEST_IRI.somePodResource)).toEqual(
       "https://some.pod/resource#some-name"
     );
   });
@@ -1153,6 +1149,6 @@ describe("toNode", () => {
     });
     const node1 = toNode(thing);
     const node2 = toNode(thing);
-    expect(node1.equals(node2)).toBe(true);
+    expect(node1.equals(node2)).toEqual(true);
   });
 });

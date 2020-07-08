@@ -58,7 +58,7 @@ describe("End-to-end tests", () => {
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
 
-    expect(getStringNoLocaleOne(existingThing, foaf.name)).toBe(
+    expect(getStringNoLocaleOne(existingThing, foaf.name)).toEqual(
       "Thing for first end-to-end test"
     );
 
@@ -79,10 +79,10 @@ describe("End-to-end tests", () => {
       savedDataset,
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
-    expect(getStringNoLocaleOne(savedThing, foaf.name)).toBe(
+    expect(getStringNoLocaleOne(savedThing, foaf.name)).toEqual(
       "Thing for first end-to-end test"
     );
-    expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
+    expect(getStringNoLocaleOne(savedThing, foaf.nick)).toEqual(randomNick);
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
@@ -92,8 +92,8 @@ describe("End-to-end tests", () => {
     const nonRdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
     );
-    expect(isLitDataset(rdfResourceInfo)).toBe(true);
-    expect(isLitDataset(nonRdfResourceInfo)).toBe(false);
+    expect(isLitDataset(rdfResourceInfo)).toEqual(true);
+    expect(isLitDataset(nonRdfResourceInfo)).toEqual(false);
     // Fetching both Resource and Fallback ACLs takes quite a while on a bad network connection,
     // so double Jest's default timeout of 5 seconds:
   }, 10000);
@@ -111,8 +111,8 @@ describe("End-to-end tests", () => {
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
     );
 
-    expect(unstable_hasResourceAcl(datasetWithAcl)).toBe(true);
-    expect(unstable_hasResourceAcl(datasetWithoutAcl)).toBe(false);
+    expect(unstable_hasResourceAcl(datasetWithAcl)).toEqual(true);
+    expect(unstable_hasResourceAcl(datasetWithoutAcl)).toEqual(false);
     expect(unstable_getPublicAccess(datasetWithAcl)).toEqual({
       read: true,
       append: true,
@@ -144,7 +144,7 @@ describe("End-to-end tests", () => {
     const fallbackAclForDatasetWithoutAcl = unstable_getFallbackAcl(
       datasetWithoutAcl
     );
-    expect(fallbackAclForDatasetWithoutAcl?.accessTo).toBe(
+    expect(fallbackAclForDatasetWithoutAcl?.accessTo).toEqual(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
     );
 

@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, Thing } from "../interfaces";
+import { IriString, makeIri, Thing } from "../interfaces";
 import {
   getUrlOne,
   getBooleanOne,
@@ -44,6 +44,7 @@ import {
   getLiteralAll,
   getNamedNodeAll,
 } from "./get";
+import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
@@ -51,8 +52,8 @@ function getMockQuadWithLiteralFor(
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
 ): Quad {
   const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
+    INRUPT_TEST_IRI.arbitrarySubject,
+    predicate,
     DataFactory.literal(
       literalValue,
       DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
@@ -69,7 +70,7 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
 }
 function getMockThingWithLiteralsFor(
   predicate: IriString,
@@ -91,99 +92,98 @@ function getMockThingWithLiteralsFor(
   thing.add(quad1);
   thing.add(quad2);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
 }
 
 describe("getIriOne", () => {
   function getMockQuadWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = INRUPT_TEST_IRI.arbitraryObject
   ): Quad {
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(iri)
+      INRUPT_TEST_IRI.arbitrarySubject,
+      predicate,
+      iri
     );
     return quad;
   }
   function getMockThingWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = INRUPT_TEST_IRI.arbitraryObject
   ): Thing {
     const quad = getMockQuadWithIri(predicate, iri);
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
   }
 
   it("returns the IRI value for the given Predicate", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
-    expect(getUrlOne(thingWithIri, "https://some.vocab/predicate")).toBe(
-      "https://some.vocab/object"
+    expect(getUrlOne(thingWithIri, INRUPT_TEST_IRI.arbitraryPredicate)).toEqual(
+      INRUPT_TEST_IRI.arbitraryObject
     );
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
-    expect(
-      getUrlOne(
-        thingWithIri,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe("https://some.vocab/object");
+    expect(getUrlOne(thingWithIri, INRUPT_TEST_IRI.arbitraryPredicate)).toEqual(
+      INRUPT_TEST_IRI.arbitraryObject
+    );
   });
 
   it("returns null if no IRI value was found", () => {
     const thingWithoutIri = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getUrlOne(thingWithoutIri, "https://some.vocab/predicate")
+      getUrlOne(thingWithoutIri, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-IRI values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithIri(
-        "https://some.vocab/predicate",
-        "https://some.vocab/object"
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getUrlOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe("https://some.vocab/object");
+      getUrlOne(thingWithDifferentDatatypes, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(INRUPT_TEST_IRI.arbitraryObject);
   });
 
   it("returns null if no IRI value was found for the given Predicate", () => {
-    const thingWithIri = getMockThingWithIri("https://some.vocab/predicate");
+    const thingWithIri = getMockThingWithIri(
+      INRUPT_TEST_IRI.arbitraryPredicate
+    );
 
     expect(
-      getUrlOne(thingWithIri, "https://some-other.vocab/predicate")
+      getUrlOne(thingWithIri, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toBeNull();
   });
 });
@@ -191,19 +191,19 @@ describe("getIriOne", () => {
 describe("getIriAll", () => {
   function getMockQuadWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = INRUPT_TEST_IRI.arbitraryObject
   ): Quad {
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(iri)
+      INRUPT_TEST_IRI.arbitrarySubject,
+      predicate,
+      iri
     );
     return quad;
   }
   function getMockThingWithIris(
     predicate: IriString,
-    iri1: IriString = "https://arbitrary.vocab/object1",
-    iri2: IriString = "https://arbitrary.vocab/object2"
+    iri1: IriString = makeIri("https://arbitrary.vocab/object1"),
+    iri2: IriString = makeIri("https://arbitrary.vocab/object2")
   ): Thing {
     const quad1 = getMockQuadWithIri(predicate, iri1);
     const quad2 = getMockQuadWithIri(predicate, iri2);
@@ -211,72 +211,76 @@ describe("getIriAll", () => {
     thing.add(quad1);
     thing.add(quad2);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
   }
 
   it("returns the IRI values for the given Predicate", () => {
     const thingWithIris = getMockThingWithIris(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2")
     );
 
-    expect(getUrlAll(thingWithIris, "https://some.vocab/predicate")).toEqual([
-      "https://some.vocab/object1",
-      "https://some.vocab/object2",
+    expect(
+      getUrlAll(thingWithIris, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual([
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2"),
     ]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithIris = getMockThingWithIris(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2")
     );
 
     expect(
-      getUrlAll(
-        thingWithIris,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toEqual(["https://some.vocab/object1", "https://some.vocab/object2"]);
+      getUrlAll(thingWithIris, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual([
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2"),
+    ]);
   });
 
   it("returns an empty array if no IRI value was found", () => {
     const thingWithoutIris = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
-    expect(getUrlAll(thingWithoutIris, "https://some.vocab/predicate")).toEqual(
-      []
-    );
+    expect(
+      getUrlAll(thingWithoutIris, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual([]);
   });
 
   it("does not return non-IRI values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithIri(
-        "https://some.vocab/predicate",
-        "https://some.vocab/object"
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getUrlAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toEqual(["https://some.vocab/object"]);
+      getUrlAll(thingWithDifferentDatatypes, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual([INRUPT_TEST_IRI.arbitraryObject]);
   });
 
   it("returns an empty array if no IRI value was found for the given Predicate", () => {
-    const thingWithIri = getMockThingWithIris("https://some.vocab/predicate");
+    const thingWithIri = getMockThingWithIris(
+      INRUPT_TEST_IRI.arbitraryPredicate
+    );
 
     expect(
-      getUrlAll(thingWithIri, "https://some-other.vocab/predicate")
+      getUrlAll(thingWithIri, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toEqual([]);
   });
 });
@@ -284,86 +288,90 @@ describe("getIriAll", () => {
 describe("getBooleanOne", () => {
   it("returns the boolean value for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     expect(
-      getBooleanOne(thingWithBoolean, "https://some.vocab/predicate")
-    ).toBe(true);
+      getBooleanOne(thingWithBoolean, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
       "boolean"
     );
 
     expect(
-      getBooleanOne(
-        thingWithBoolean,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe(false);
+      getBooleanOne(thingWithBoolean, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(false);
   });
 
   it("returns null if no boolean value was found", () => {
     const thingWithoutBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getBooleanOne(thingWithoutBoolean, "https://some.vocab/predicate")
+      getBooleanOne(thingWithoutBoolean, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-boolean values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "1", "boolean")
+      getMockQuadWithLiteralFor(
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        "1",
+        "boolean"
+      )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getBooleanOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe(true);
+      getBooleanOne(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
+    ).toEqual(true);
   });
 
   it("returns null if no boolean value was found for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     expect(
-      getBooleanOne(thingWithBoolean, "https://some-other.vocab/predicate")
+      getBooleanOne(thingWithBoolean, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toBeNull();
   });
 
   it("returns null if an invalid value, marked as boolean, was found for the given Predicate", () => {
     const thingWithNonBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a boolean",
       "boolean"
     );
 
     expect(
-      getBooleanOne(thingWithNonBoolean, "https://some.vocab/predicate")
+      getBooleanOne(thingWithNonBoolean, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 });
@@ -371,89 +379,93 @@ describe("getBooleanOne", () => {
 describe("getBooleanAll", () => {
   it("returns the boolean values for the given Predicate", () => {
     const thingWithBooleans = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "0",
       "boolean"
     );
 
     expect(
-      getBooleanAll(thingWithBooleans, "https://some.vocab/predicate")
+      getBooleanAll(thingWithBooleans, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([true, false]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithBooleans = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "0",
       "boolean"
     );
 
     expect(
-      getBooleanAll(
-        thingWithBooleans,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+      getBooleanAll(thingWithBooleans, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([true, false]);
   });
 
   it("returns an empty array if no boolean values were found", () => {
     const thingWithoutBooleans = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getBooleanAll(thingWithoutBooleans, "https://some.vocab/predicate")
+      getBooleanAll(thingWithoutBooleans, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([]);
   });
 
   it("does not return non-boolean values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "1", "boolean")
+      getMockQuadWithLiteralFor(
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        "1",
+        "boolean"
+      )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getBooleanAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getBooleanAll(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
     ).toEqual([true]);
   });
 
   it("returns an empty array if no boolean values were found for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     expect(
-      getBooleanAll(thingWithBoolean, "https://some-other.vocab/predicate")
+      getBooleanAll(thingWithBoolean, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toEqual([]);
   });
 
   it("does not include invalid values marked as boolean", () => {
     const thingWithNonBoolean = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a boolean",
       "0",
       "boolean"
     );
 
     expect(
-      getBooleanAll(thingWithNonBoolean, "https://some.vocab/predicate")
+      getBooleanAll(thingWithNonBoolean, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([false]);
   });
 });
@@ -461,63 +473,60 @@ describe("getBooleanAll", () => {
 describe("getDatetimeOne", () => {
   it("returns the datetime value for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeOne(thingWithDatetime, "https://some.vocab/predicate")
+      getDatetimeOne(thingWithDatetime, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual(expectedDate);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeOne(
-        thingWithDatetime,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+      getDatetimeOne(thingWithDatetime, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual(expectedDate);
   });
 
   it("returns null if no datetime value was found", () => {
     const thingWithoutDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getDatetimeOne(thingWithoutDatetime, "https://some.vocab/predicate")
+      getDatetimeOne(thingWithoutDatetime, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-datetime values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "1990-11-12T13:37:42Z",
         "dateTime"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -525,32 +534,32 @@ describe("getDatetimeOne", () => {
     expect(
       getDatetimeOne(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual(expectedDate);
   });
 
   it("returns null if no datetime value was found for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     expect(
-      getDatetimeOne(thingWithDatetime, "https://some-other.vocab/predicate")
+      getDatetimeOne(thingWithDatetime, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toBeNull();
   });
 
   it("returns null if an invalid value, marked as datetime, was found for the given Predicate", () => {
     const thingWithNonDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a datetime",
       "dateTime"
     );
 
     expect(
-      getDatetimeOne(thingWithNonDatetime, "https://some.vocab/predicate")
+      getDatetimeOne(thingWithNonDatetime, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 });
@@ -558,7 +567,7 @@ describe("getDatetimeOne", () => {
 describe("getDatetimeAll", () => {
   it("returns the datetime values for the given Predicate", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
       "1990-11-12T13:37:42Z",
       "dateTime"
@@ -567,13 +576,13 @@ describe("getDatetimeAll", () => {
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeAll(thingWithDatetimes, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithDatetimes, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
       "1990-11-12T13:37:42Z",
       "dateTime"
@@ -582,43 +591,40 @@ describe("getDatetimeAll", () => {
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeAll(
-        thingWithDatetimes,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+      getDatetimeAll(thingWithDatetimes, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
   it("returns an empty array if no datetime values were found", () => {
     const thingWithoutDatetimes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getDatetimeAll(thingWithoutDatetimes, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithoutDatetimes, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([]);
   });
 
   it("does not return non-datetime values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "1990-11-12T13:37:42Z",
         "dateTime"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -626,26 +632,26 @@ describe("getDatetimeAll", () => {
     expect(
       getDatetimeAll(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual([expectedDate]);
   });
 
   it("returns an empty array if no datetime values were found for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     expect(
-      getDatetimeAll(thingWithDatetime, "https://some-other.vocab/predicate")
+      getDatetimeAll(thingWithDatetime, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toEqual([]);
   });
 
   it("does not return invalid values marked as datetime", () => {
     const thingWithNonDatetime = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a datetime",
       "1990-11-12T13:37:42Z",
       "dateTime"
@@ -654,7 +660,7 @@ describe("getDatetimeAll", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeAll(thingWithNonDatetime, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithNonDatetime, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([expectedDate]);
   });
 });
@@ -662,78 +668,78 @@ describe("getDatetimeAll", () => {
 describe("getDecimalOne", () => {
   it("returns the decimal value for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getDecimalOne(thingWithDecimal, "https://some.vocab/predicate")
-    ).toBe(13.37);
+      getDecimalOne(thingWithDecimal, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(13.37);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getDecimalOne(
-        thingWithDecimal,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe(13.37);
+      getDecimalOne(thingWithDecimal, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(13.37);
   });
 
   it("returns null if no decimal value was found", () => {
     const thingWithoutDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getDecimalOne(thingWithoutDecimal, "https://some.vocab/predicate")
+      getDecimalOne(thingWithoutDecimal, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-decimal values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "13.37",
         "decimal"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getDecimalOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe(13.37);
+      getDecimalOne(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
+    ).toEqual(13.37);
   });
 
   it("returns null if no decimal value was found for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getDecimalOne(thingWithDecimal, "https://some-other.vocab/predicate")
+      getDecimalOne(thingWithDecimal, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toBeNull();
   });
 });
@@ -741,80 +747,80 @@ describe("getDecimalOne", () => {
 describe("getDecimalAll", () => {
   it("returns the decimal values for the given Predicate", () => {
     const thingWithDecimals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "7.2",
       "decimal"
     );
 
     expect(
-      getDecimalAll(thingWithDecimals, "https://some.vocab/predicate")
+      getDecimalAll(thingWithDecimals, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([13.37, 7.2]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDecimals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "7.2",
       "decimal"
     );
 
     expect(
-      getDecimalAll(
-        thingWithDecimals,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+      getDecimalAll(thingWithDecimals, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([13.37, 7.2]);
   });
 
   it("returns an empty array if no decimal values were found", () => {
     const thingWithoutDecimals = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getDecimalAll(thingWithoutDecimals, "https://some.vocab/predicate")
+      getDecimalAll(thingWithoutDecimals, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([]);
   });
 
   it("does not return non-decimal values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "13.37",
         "decimal"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getDecimalAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDecimalAll(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
     ).toEqual([13.37]);
   });
 
   it("returns an empty array if no decimal values were found for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate")
+      getDecimalAll(thingWithDecimal, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toEqual([]);
   });
 });
@@ -822,74 +828,78 @@ describe("getDecimalAll", () => {
 describe("getIntegerOne", () => {
   it("returns the integer value for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getIntegerOne(thingWithInteger, "https://some.vocab/predicate")
-    ).toBe(42);
+      getIntegerOne(thingWithInteger, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(42);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getIntegerOne(
-        thingWithInteger,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toBe(42);
+      getIntegerOne(thingWithInteger, INRUPT_TEST_IRI.arbitraryPredicate)
+    ).toEqual(42);
   });
 
   it("returns null if no integer value was found", () => {
     const thingWithoutInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getIntegerOne(thingWithoutInteger, "https://some.vocab/predicate")
+      getIntegerOne(thingWithoutInteger, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-integer values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
+      getMockQuadWithLiteralFor(
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        "42",
+        "integer"
+      )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getIntegerOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toBe(42);
+      getIntegerOne(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
+    ).toEqual(42);
   });
 
   it("returns null if no integer value was found for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getIntegerOne(thingWithInteger, "https://some-other.vocab/predicate")
+      getIntegerOne(thingWithInteger, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toBeNull();
   });
 });
@@ -897,76 +907,80 @@ describe("getIntegerOne", () => {
 describe("getIntegerAll", () => {
   it("returns the integer values for the given Predicate", () => {
     const thingWithIntegers = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "1337",
       "integer"
     );
 
     expect(
-      getIntegerAll(thingWithIntegers, "https://some.vocab/predicate")
+      getIntegerAll(thingWithIntegers, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([42, 1337]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithIntegers = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "1337",
       "integer"
     );
 
     expect(
-      getIntegerAll(
-        thingWithIntegers,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+      getIntegerAll(thingWithIntegers, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([42, 1337]);
   });
 
   it("returns an empty array if no integer values were found", () => {
     const thingWithoutIntegers = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     expect(
-      getIntegerAll(thingWithoutIntegers, "https://some.vocab/predicate")
+      getIntegerAll(thingWithoutIntegers, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([]);
   });
 
   it("does not return non-integer values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
     thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
+      getMockQuadWithLiteralFor(
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        "42",
+        "integer"
+      )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
-      getIntegerAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getIntegerAll(
+        thingWithDifferentDatatypes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
     ).toEqual([42]);
   });
 
   it("returns an empty array if no integer values were found for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     expect(
-      getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate")
+      getIntegerAll(thingWithInteger, INRUPT_TEST_IRI.arbitraryOtherPredicate)
     ).toEqual([]);
   });
 });
@@ -975,72 +989,72 @@ describe("getStringWithLocaleOne", () => {
   it("returns the string value for the given Predicate in the given locale", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleOne(
         thingWithLocaleString,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleOne(
         thingWithLocaleString,
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("supports matching locales with different casing", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleOne(
         thingWithLocaleString,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "NL-nL"
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("returns null if no locale string value was found", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -1048,7 +1062,7 @@ describe("getStringWithLocaleOne", () => {
     expect(
       getStringWithLocaleOne(
         thingWithoutStringNoLocale,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
     ).toBeNull();
@@ -1057,27 +1071,27 @@ describe("getStringWithLocaleOne", () => {
   it("returns null if no locale string with the requested locale was found", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleOne(
         thingWithDifferentLocaleString,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "en-GB"
       )
     ).toBeNull();
     expect(
       getStringWithLocaleOne(
         thingWithDifferentLocaleString,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl"
       )
     ).toBeNull();
@@ -1086,50 +1100,50 @@ describe("getStringWithLocaleOne", () => {
   it("does not return non-locale-string values", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(quadWithLocaleString);
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       getStringWithLocaleOne(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("returns null if no locale string was found for the given Predicate", () => {
     const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleOne(
         thingWithLocaleString,
-        "https://some-other.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         "nl-NL"
       )
     ).toBeNull();
@@ -1140,27 +1154,27 @@ describe("getStringsWithLocaleAll", () => {
   it("returns the string values for the given Predicate in the given locale", () => {
     const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
     const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale1
     );
     const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
     const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale2
     );
     const thing = dataset();
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleAll(
         thingWithLocaleStrings,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
     ).toEqual(["Some value 1", "Some value 2"]);
@@ -1169,27 +1183,27 @@ describe("getStringsWithLocaleAll", () => {
   it("accepts Predicates as Named Nodes", () => {
     const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
     const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale1
     );
     const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
     const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale2
     );
     const thing = dataset();
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleAll(
         thingWithLocaleStrings,
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
     ).toEqual(["Some value 1", "Some value 2"]);
@@ -1198,20 +1212,20 @@ describe("getStringsWithLocaleAll", () => {
   it("supports matching locales with different casing", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleAll(
         thingWithLocaleString,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "NL-nL"
       )
     ).toEqual(["Some value"]);
@@ -1219,7 +1233,7 @@ describe("getStringsWithLocaleAll", () => {
 
   it("returns an empty array if no locale string values were found", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -1227,7 +1241,7 @@ describe("getStringsWithLocaleAll", () => {
     expect(
       getStringWithLocaleAll(
         thingWithoutStringNoLocales,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
     ).toEqual([]);
@@ -1236,27 +1250,27 @@ describe("getStringsWithLocaleAll", () => {
   it("returns an empty array if no locale strings with the requested locale were found", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "en-GB"
       )
     ).toEqual([]);
     expect(
       getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl"
       )
     ).toEqual([]);
@@ -1265,28 +1279,28 @@ describe("getStringsWithLocaleAll", () => {
   it("does not return non-locale-string values", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(quadWithLocaleString);
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       getStringWithLocaleAll(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "nl-NL"
       )
     ).toEqual(["Some value"]);
@@ -1295,20 +1309,20 @@ describe("getStringsWithLocaleAll", () => {
   it("returns an empty array if no locale strings were found for the given Predicate", () => {
     const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       literalWithLocale
     );
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
       getStringWithLocaleAll(
         thingWithLocaleString,
-        "https://some-other.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         "nl-NL"
       )
     ).toEqual([]);
@@ -1318,7 +1332,7 @@ describe("getStringsWithLocaleAll", () => {
 describe("getStringNoLocaleOne", () => {
   it("returns the string value for the given Predicate", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value",
       "string"
     );
@@ -1326,14 +1340,14 @@ describe("getStringNoLocaleOne", () => {
     expect(
       getStringNoLocaleOne(
         thingWithStringNoLocale,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value",
       "string"
     );
@@ -1341,14 +1355,14 @@ describe("getStringNoLocaleOne", () => {
     expect(
       getStringNoLocaleOne(
         thingWithStringNoLocale,
-        DataFactory.namedNode("https://some.vocab/predicate")
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("returns null if no string value was found", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -1356,43 +1370,43 @@ describe("getStringNoLocaleOne", () => {
     expect(
       getStringNoLocaleOne(
         thingWithoutStringNoLocale,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toBeNull();
   });
 
   it("does not return non-string values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "Some value",
         "string"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       getStringNoLocaleOne(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
-    ).toBe("Some value");
+    ).toEqual("Some value");
   });
 
   it("returns null if no string value was found for the given Predicate", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
@@ -1400,7 +1414,7 @@ describe("getStringNoLocaleOne", () => {
     expect(
       getStringNoLocaleOne(
         thingWithStringNoLocale,
-        "https://some-other.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryOtherPredicate
       )
     ).toBeNull();
   });
@@ -1409,7 +1423,7 @@ describe("getStringNoLocaleOne", () => {
 describe("getStringNoLocaleAll", () => {
   it("returns the string values for the given Predicate", () => {
     const thingWithStringNoLocales = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value 1",
       "Some value 2",
       "string"
@@ -1418,14 +1432,14 @@ describe("getStringNoLocaleAll", () => {
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocales,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithStringNoLocales = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value 1",
       "Some value 2",
       "string"
@@ -1434,14 +1448,14 @@ describe("getStringNoLocaleAll", () => {
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocales,
-        DataFactory.namedNode("https://some.vocab/predicate")
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
   it("returns an empty array if no string values were found", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -1449,43 +1463,43 @@ describe("getStringNoLocaleAll", () => {
     expect(
       getStringNoLocaleAll(
         thingWithoutStringNoLocales,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual([]);
   });
 
   it("does not return non-string values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
+        INRUPT_TEST_IRI.arbitraryPredicate,
         "Some value",
         "string"
       )
     );
     thingWithDifferentDatatypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       getStringNoLocaleAll(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       )
     ).toEqual(["Some value"]);
   });
 
   it("returns an empty array if no string values were found for the given Predicate", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
       "string"
     );
@@ -1493,7 +1507,7 @@ describe("getStringNoLocaleAll", () => {
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocale,
-        "https://some-other.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryOtherPredicate
       )
     ).toEqual([]);
   });
@@ -1502,75 +1516,75 @@ describe("getStringNoLocaleAll", () => {
 describe("getLiteralOne", () => {
   it("returns the Literal for the given Predicate", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "string"
     );
 
     const foundLiteral = getLiteralOne(
       thingWithLiteral,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundLiteral).not.toBeNull();
-    expect((foundLiteral as Literal).termType).toBe("Literal");
-    expect((foundLiteral as Literal).value).toBe("Some string");
+    expect((foundLiteral as Literal).termType).toEqual("Literal");
+    expect((foundLiteral as Literal).value).toEqual("Some string");
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "string"
     );
 
     const foundLiteral = getLiteralOne(
       thingWithLiteral,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundLiteral).not.toBeNull();
-    expect((foundLiteral as Literal).termType).toBe("Literal");
-    expect((foundLiteral as Literal).value).toBe("Some string");
+    expect((foundLiteral as Literal).termType).toEqual("Literal");
+    expect((foundLiteral as Literal).value).toEqual("Some string");
   });
 
   it("returns null if no Literal value was found", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiteral: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
-      getLiteralOne(thingWithoutLiteral, "https://some.vocab/predicate")
+      getLiteralOne(thingWithoutLiteral, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-Literal values", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
       "string"
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       (getLiteralOne(
         thingWithDifferentTermTypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       ) as Literal).termType
-    ).toBe("Literal");
+    ).toEqual("Literal");
   });
 });
 
 describe("getLiteralAll", () => {
   it("returns the Literals for the given Predicate", () => {
     const thingWithLiterals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string 1",
       "Some string 2",
       "string"
@@ -1578,18 +1592,18 @@ describe("getLiteralAll", () => {
 
     const foundLiterals = getLiteralAll(
       thingWithLiterals,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundLiterals).toHaveLength(2);
-    expect(foundLiterals[0].termType).toBe("Literal");
-    expect(foundLiterals[0].value).toBe("Some string 1");
-    expect(foundLiterals[1].termType).toBe("Literal");
-    expect(foundLiterals[1].value).toBe("Some string 2");
+    expect(foundLiterals[0].termType).toEqual("Literal");
+    expect(foundLiterals[0].value).toEqual("Some string 1");
+    expect(foundLiterals[1].termType).toEqual("Literal");
+    expect(foundLiterals[1].value).toEqual("Some string 2");
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithLiterals = getMockThingWithLiteralsFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string 1",
       "Some string 2",
       "string"
@@ -1597,48 +1611,48 @@ describe("getLiteralAll", () => {
 
     const foundLiterals = getLiteralAll(
       thingWithLiterals,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundLiterals).toHaveLength(2);
-    expect(foundLiterals[0].termType).toBe("Literal");
-    expect(foundLiterals[0].value).toBe("Some string 1");
-    expect(foundLiterals[1].termType).toBe("Literal");
-    expect(foundLiterals[1].value).toBe("Some string 2");
+    expect(foundLiterals[0].termType).toEqual("Literal");
+    expect(foundLiterals[0].value).toEqual("Some string 1");
+    expect(foundLiterals[1].termType).toEqual("Literal");
+    expect(foundLiterals[1].value).toEqual("Some string 2");
   });
 
   it("returns an empty array if no Literal values were found", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiterals: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
-      getLiteralAll(thingWithoutLiterals, "https://some.vocab/predicate")
+      getLiteralAll(thingWithoutLiterals, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([]);
   });
 
   it("does not return non-Literal values", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
       "string"
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     const foundLiterals = getLiteralAll(
       thingWithDifferentTermTypes,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(foundLiterals).toHaveLength(1);
-    expect(foundLiterals[0].termType).toBe("Literal");
+    expect(foundLiterals[0].termType).toEqual("Literal");
   });
 });
 
@@ -1647,9 +1661,9 @@ function getMockQuadWithNamedNode(
   object: IriString
 ): Quad {
   const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object)
+    INRUPT_TEST_IRI.arbitrarySubject,
+    predicate,
+    object
   );
   return quad;
 }
@@ -1662,7 +1676,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    url: "https://arbitrary.vocab/subject",
+    url: INRUPT_TEST_IRI.arbitrarySubject,
   });
   return thing;
 }
@@ -1670,35 +1684,35 @@ function getMockThingWithNamedNode(
 describe("getNamedNodeOne", () => {
   it("returns the Named Node for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const foundNamedNode = getNamedNodeOne(
       thingWithNamedNode,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundNamedNode).not.toBeNull();
-    expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
-    expect((foundNamedNode as NamedNode).value).toBe(
-      "https://some.vocab/object"
+    expect((foundNamedNode as NamedNode).termType).toEqual("NamedNode");
+    expect((foundNamedNode as NamedNode).value).toEqual(
+      INRUPT_TEST_IRI.arbitraryObject
     );
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const foundNamedNode = getNamedNodeOne(
       thingWithNamedNode,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundNamedNode).not.toBeNull();
-    expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
-    expect((foundNamedNode as NamedNode).value).toBe(
-      "https://some.vocab/object"
+    expect((foundNamedNode as NamedNode).termType).toEqual("NamedNode");
+    expect((foundNamedNode as NamedNode).value).toEqual(
+      INRUPT_TEST_IRI.arbitraryObject
     );
   });
 
@@ -1706,34 +1720,34 @@ describe("getNamedNodeOne", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNode: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
-      getNamedNodeOne(thingWithoutNamedNode, "https://some.vocab/predicate")
+      getNamedNodeOne(thingWithoutNamedNode, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toBeNull();
   });
 
   it("does not return non-NamedNode values", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
       "string"
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     expect(
       (getNamedNodeOne(
         thingWithDifferentTermTypes,
-        "https://some.vocab/predicate"
+        INRUPT_TEST_IRI.arbitraryPredicate
       ) as NamedNode).termType
-    ).toBe("NamedNode");
+    ).toEqual("NamedNode");
   });
 });
 
@@ -1745,91 +1759,94 @@ describe("getNamedNodeAll", () => {
   ): Thing {
     const plainDataset = dataset();
     const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(object1)
+      INRUPT_TEST_IRI.arbitrarySubject,
+      predicate,
+      object1
     );
     const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(object2)
+      INRUPT_TEST_IRI.arbitrarySubject,
+      predicate,
+      object2
     );
     plainDataset.add(quad1);
     plainDataset.add(quad2);
 
     const thing: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     return thing;
   }
 
   it("returns the Named Nodes for the given Predicate", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2")
     );
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithNamedNodes,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundNamedNodes).toHaveLength(2);
-    expect(foundNamedNodes[0].termType).toBe("NamedNode");
-    expect(foundNamedNodes[0].value).toBe("https://some.vocab/object1");
-    expect(foundNamedNodes[1].termType).toBe("NamedNode");
-    expect(foundNamedNodes[1].value).toBe("https://some.vocab/object2");
+    expect(foundNamedNodes[0].termType).toEqual("NamedNode");
+    expect(foundNamedNodes[0].value).toEqual("https://some.vocab/object1");
+    expect(foundNamedNodes[1].termType).toEqual("NamedNode");
+    expect(foundNamedNodes[1].value).toEqual("https://some.vocab/object2");
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/object1"),
+      makeIri("https://some.vocab/object2")
     );
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithNamedNodes,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundNamedNodes).toHaveLength(2);
-    expect(foundNamedNodes[0].termType).toBe("NamedNode");
-    expect(foundNamedNodes[0].value).toBe("https://some.vocab/object1");
-    expect(foundNamedNodes[1].termType).toBe("NamedNode");
-    expect(foundNamedNodes[1].value).toBe("https://some.vocab/object2");
+    expect(foundNamedNodes[0].termType).toEqual("NamedNode");
+    expect(foundNamedNodes[0].value).toEqual("https://some.vocab/object1");
+    expect(foundNamedNodes[1].termType).toEqual("NamedNode");
+    expect(foundNamedNodes[1].value).toEqual("https://some.vocab/object2");
   });
 
   it("returns an empty array if no Named Node values were found", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNodes: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     expect(
-      getNamedNodeAll(thingWithoutNamedNodes, "https://some.vocab/predicate")
+      getNamedNodeAll(
+        thingWithoutNamedNodes,
+        INRUPT_TEST_IRI.arbitraryPredicate
+      )
     ).toEqual([]);
   });
 
   it("does not return non-NamedNode values", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
       "string"
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithDifferentTermTypes,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
     expect(foundNamedNodes).toHaveLength(1);
-    expect(foundNamedNodes[0].termType).toBe("NamedNode");
+    expect(foundNamedNodes[0].termType).toEqual("NamedNode");
   });
 });

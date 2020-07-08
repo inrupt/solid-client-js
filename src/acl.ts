@@ -262,7 +262,8 @@ export function unstable_createAclFromFallbackAcl(
 export function internal_isAclDataset(
   dataset: LitDataset
 ): dataset is unstable_AclDataset {
-  return typeof (dataset as unstable_AclDataset).accessTo === "string";
+  // return typeof (dataset as unstable_AclDataset).accessTo === "string";
+  return typeof (dataset as unstable_AclDataset).accessTo === "object";
 }
 
 /** @internal */

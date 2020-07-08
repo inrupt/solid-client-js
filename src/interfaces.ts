@@ -20,7 +20,7 @@
  */
 
 import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
-import { ACL } from "@solid/lit-vocab-common-rdfext";
+import { DataFactory } from "./rdfjs";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
@@ -253,3 +253,13 @@ export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
  * A RequestInit restriction where the method is set by the library
  */
 export type unstable_UploadRequestInit = Omit<RequestInit, "method">;
+
+/**
+ * Simply creates an IRI based on the specified string value.
+ *
+ * @param iriAsString The string to use as an IRI.
+ * @returns The string value as an IRI.
+ */
+export function makeIri(iriAsString: string): Iri {
+  return DataFactory.namedNode(iriAsString);
+}

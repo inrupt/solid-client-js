@@ -20,7 +20,7 @@
  */
 
 import { Quad_Object, Quad, NamedNode, Literal } from "rdf-js";
-import { Thing, Url, UrlString } from "../interfaces";
+import { Iri, Thing, Url, UrlString } from "../interfaces";
 import {
   asNamedNode,
   isNamedNode,
@@ -29,9 +29,8 @@ import {
   deserializeDatetime,
   deserializeDecimal,
   deserializeInteger,
-  xmlSchemaTypes,
-  XmlSchemaTypeIri,
 } from "../datatypes";
+import { RDF, XSD } from "@solid/lit-vocab-common-rdfext";
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
@@ -82,11 +81,7 @@ export function getBooleanOne(
   thing: Thing,
   predicate: Url | UrlString
 ): boolean | null {
-  const literalString = getLiteralOneOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.boolean
-  );
+  const literalString = getLiteralOneOfType(thing, predicate, XSD.boolean_);
 
   if (literalString === null) {
     return null;
@@ -104,11 +99,7 @@ export function getBooleanAll(
   thing: Thing,
   predicate: Url | UrlString
 ): boolean[] {
-  const literalStrings = getLiteralAllOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.boolean
-  );
+  const literalStrings = getLiteralAllOfType(thing, predicate, XSD.boolean_);
 
   return literalStrings
     .map(deserializeBoolean)
@@ -124,11 +115,7 @@ export function getDatetimeOne(
   thing: Thing,
   predicate: Url | UrlString
 ): Date | null {
-  const literalString = getLiteralOneOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.dateTime
-  );
+  const literalString = getLiteralOneOfType(thing, predicate, XSD.dateTime);
 
   if (literalString === null) {
     return null;
@@ -146,11 +133,7 @@ export function getDatetimeAll(
   thing: Thing,
   predicate: Url | UrlString
 ): Date[] {
-  const literalStrings = getLiteralAllOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.dateTime
-  );
+  const literalStrings = getLiteralAllOfType(thing, predicate, XSD.dateTime);
 
   return literalStrings
     .map(deserializeDatetime)
@@ -166,11 +149,7 @@ export function getDecimalOne(
   thing: Thing,
   predicate: Url | UrlString
 ): number | null {
-  const literalString = getLiteralOneOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.decimal
-  );
+  const literalString = getLiteralOneOfType(thing, predicate, XSD.decimal);
 
   if (literalString === null) {
     return null;
@@ -188,11 +167,7 @@ export function getDecimalAll(
   thing: Thing,
   predicate: Url | UrlString
 ): number[] {
-  const literalStrings = getLiteralAllOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.decimal
-  );
+  const literalStrings = getLiteralAllOfType(thing, predicate, XSD.decimal);
 
   return literalStrings
     .map((literalString) => deserializeDecimal(literalString))
@@ -208,11 +183,7 @@ export function getIntegerOne(
   thing: Thing,
   predicate: Url | UrlString
 ): number | null {
-  const literalString = getLiteralOneOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.integer
-  );
+  const literalString = getLiteralOneOfType(thing, predicate, XSD.integer);
 
   if (literalString === null) {
     return null;
@@ -230,11 +201,7 @@ export function getIntegerAll(
   thing: Thing,
   predicate: Url | UrlString
 ): number[] {
-  const literalStrings = getLiteralAllOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.integer
-  );
+  const literalStrings = getLiteralAllOfType(thing, predicate, XSD.integer);
 
   return literalStrings
     .map((literalString) => deserializeInteger(literalString))
@@ -290,11 +257,7 @@ export function getStringNoLocaleOne(
   thing: Thing,
   predicate: Url | UrlString
 ): string | null {
-  const literalString = getLiteralOneOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.string
-  );
+  const literalString = getLiteralOneOfType(thing, predicate, XSD.string);
 
   return literalString;
 }
@@ -308,11 +271,7 @@ export function getStringNoLocaleAll(
   thing: Thing,
   predicate: Url | UrlString
 ): string[] {
-  const literalStrings = getLiteralAllOfType(
-    thing,
-    predicate,
-    xmlSchemaTypes.string
-  );
+  const literalStrings = getLiteralAllOfType(thing, predicate, XSD.string);
 
   return literalStrings;
 }
@@ -455,29 +414,29 @@ function getLiteralMatcher(predicate: Url | UrlString): Matcher<Literal> {
   return matcher;
 }
 
-type LiteralOfType<Type extends XmlSchemaTypeIri> = Literal & {
-  datatype: { value: Type };
+type LiteralOfType<Iri> = Literal & {
+  datatype: { value: Iri };
 };
-function getLiteralOfTypeMatcher<Datatype extends XmlSchemaTypeIri>(
+function getLiteralOfTypeMatcher(
   predicate: Url | UrlString,
-  datatype: Datatype
-): Matcher<LiteralOfType<Datatype>> {
+  datatype: Iri
+): Matcher<LiteralOfType<Iri>> {
   const predicateNode = asNamedNode(predicate);
 
   const matcher = function matcher(
     quad: Quad
-  ): quad is QuadWithObject<LiteralOfType<Datatype>> {
+  ): quad is QuadWithObject<LiteralOfType<Iri>> {
     return (
       predicateNode.equals(quad.predicate) &&
       isLiteral(quad.object) &&
-      quad.object.datatype.value === datatype
+      quad.object.datatype === datatype
     );
   };
   return matcher;
 }
 
 type LiteralLocaleString = Literal & {
-  datatype: { value: typeof xmlSchemaTypes.langString };
+  datatype: { value: typeof RDF.langString };
   language: string;
 };
 function getLocaleStringMatcher(
@@ -492,7 +451,7 @@ function getLocaleStringMatcher(
     return (
       predicateNode.equals(quad.predicate) &&
       isLiteral(quad.object) &&
-      quad.object.datatype.value === xmlSchemaTypes.langString &&
+      quad.object.datatype === RDF.langString &&
       quad.object.language.toLowerCase() === locale.toLowerCase()
     );
   };
@@ -505,10 +464,10 @@ function getLocaleStringMatcher(
  * @param literalType Set type of the Literal data.
  * @returns The stringified value for the given Predicate and type, if present, or null otherwise.
  */
-function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
+function getLiteralOneOfType(
   thing: Thing,
   predicate: Url | UrlString,
-  literalType: Datatype
+  literalType: Iri
 ): string | null {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
 
@@ -527,10 +486,10 @@ function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
  * @param literalType Set type of the Literal data.
  * @returns The stringified values for the given Predicate and type.
  */
-function getLiteralAllOfType<Datatype extends XmlSchemaTypeIri>(
+function getLiteralAllOfType(
   thing: Thing,
   predicate: Url | UrlString,
-  literalType: Datatype
+  literalType: Iri
 ): string[] {
   const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
 

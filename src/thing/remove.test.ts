@@ -23,7 +23,13 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, Thing, ThingLocal, ThingPersisted } from "../interfaces";
+import {
+  IriString,
+  makeIri,
+  Thing,
+  ThingLocal,
+  ThingPersisted,
+} from "../interfaces";
 import {
   removeAll,
   removeUrl,
@@ -36,6 +42,7 @@ import {
   removeLiteral,
   removeNamedNode,
 } from "./remove";
+import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
@@ -43,8 +50,8 @@ function getMockQuadWithLiteralFor(
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
 ): Quad {
   const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
+    INRUPT_TEST_IRI.arbitrarySubject,
+    predicate,
     DataFactory.literal(
       literalValue,
       DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
@@ -61,16 +68,16 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
 }
 function getMockQuadWithNamedNode(
   predicate: IriString,
   object: IriString
 ): Quad {
   const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object)
+    INRUPT_TEST_IRI.arbitrarySubject,
+    predicate,
+    object
   );
   return quad;
 }
@@ -83,7 +90,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    url: "https://arbitrary.vocab/subject",
+    url: INRUPT_TEST_IRI.arbitrarySubject,
   });
   return thing;
 }
@@ -91,11 +98,11 @@ function getMockThingWithNamedNode(
 describe("removeAll", () => {
   it("removes all values for the given Predicate", () => {
     const quadWithIri = getMockQuadWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://arbitrary.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const thingWithStringAndIri = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
       "string"
     );
@@ -103,7 +110,7 @@ describe("removeAll", () => {
 
     const updatedThing = removeAll(
       thingWithStringAndIri,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -111,14 +118,14 @@ describe("removeAll", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
       "string"
     );
 
     const updatedThing = removeAll(
       thingWithString,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -126,14 +133,14 @@ describe("removeAll", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
       "string"
     );
 
     const updatedThing = removeAll(
       thingWithString,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(Array.from(thingWithString)).toHaveLength(1);
@@ -147,8 +154,8 @@ describe("removeAll", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.pod/resource#name")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
@@ -156,21 +163,24 @@ describe("removeAll", () => {
       localSubject: localSubject,
     });
 
-    const updatedThing = removeAll(thingLocal, "https://some.vocab/predicate");
+    const updatedThing = removeAll(
+      thingLocal,
+      INRUPT_TEST_IRI.arbitraryPredicate
+    );
 
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
   it("removes multiple instances of the same value for the same Predicate", () => {
     const thingWithDuplicateIri = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
 
     const updatedThing = removeAll(
       thingWithDuplicateIri,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -178,18 +188,18 @@ describe("removeAll", () => {
 
   it("does not remove Quads with different Predicates", () => {
     const thingWithIri = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithNamedNode(
-      "https://some-other.vocab/predicate",
-      "https://arbitrary.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithIri.add(mockQuadWithDifferentPredicate);
 
     const updatedThing = removeAll(
       thingWithIri,
-      "https://some.vocab/predicate"
+      INRUPT_TEST_IRI.arbitraryPredicate
     );
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithDifferentPredicate]);
@@ -199,31 +209,31 @@ describe("removeAll", () => {
 describe("removeIri", () => {
   function getMockQuadWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = INRUPT_TEST_IRI.arbitraryObject
   ): Quad {
     return getMockQuadWithNamedNode(predicate, iri);
   }
   function getMockThingWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = INRUPT_TEST_IRI.arbitraryObject
   ): ThingPersisted {
     const quad = getMockQuadWithIri(predicate, iri);
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
   }
 
   it("removes the given IRI value for the given Predicate", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeUrl(
       thingWithIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -231,14 +241,14 @@ describe("removeIri", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeUrl(
       thingWithIri,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -246,14 +256,14 @@ describe("removeIri", () => {
 
   it("accepts IRI's as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeUrl(
       thingWithIri,
-      "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/resource#name")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -261,14 +271,14 @@ describe("removeIri", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeUrl(
       thingWithIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(thingWithIri)).toHaveLength(1);
@@ -282,8 +292,8 @@ describe("removeIri", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.pod/resource#name")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
@@ -293,8 +303,8 @@ describe("removeIri", () => {
 
     const updatedThing = removeUrl(
       thingLocal,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -302,15 +312,15 @@ describe("removeIri", () => {
 
   it("removes multiple instances of the same IRI for the same Predicate", () => {
     const thingWithDuplicateIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithDuplicateIri.add(Array.from(thingWithDuplicateIri)[0]);
 
     const updatedThing = removeUrl(
       thingWithDuplicateIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -318,24 +328,24 @@ describe("removeIri", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const mockQuadWithDifferentIri = getMockQuadWithIri(
-      "https://some.vocab/predicate",
-      "https://some-other.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithIri(
-      "https://some-other.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithIri.add(mockQuadWithDifferentIri);
     thingWithIri.add(mockQuadWithDifferentPredicate);
 
     const updatedThing = removeUrl(
       thingWithIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([
@@ -346,46 +356,47 @@ describe("removeIri", () => {
 
   it("does not remove Quads with non-IRI Objects", () => {
     const thingWithIri = getMockThingWithIri(
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const mockQuadWithString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some non-IRI Object")
     );
     thingWithIri.add(mockQuadWithString);
 
     const updatedThing = removeUrl(
       thingWithIri,
-      "https://some.vocab/predicate",
-      "https://some.pod/resource#name"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithString]);
   });
 
   it("resolves ThingPersisteds", () => {
+    const thingIri = makeIri("https://some.pod/resource#thing");
     const thingPersisted: ThingPersisted = Object.assign(dataset(), {
-      url: "https://some.pod/resource#thing",
+      url: thingIri,
     });
     const quadWithThingPersistedIri = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.pod/resource#thing")
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      thingIri
     );
     const datasetWithThingPersistedIri = dataset();
     datasetWithThingPersistedIri.add(quadWithThingPersistedIri);
     const thingWithThingPersistedIri: Thing = Object.assign(
       datasetWithThingPersistedIri,
       {
-        url: "https://arbitrary.vocab/subject",
+        url: INRUPT_TEST_IRI.arbitrarySubject,
       }
     );
 
     const updatedThing = removeUrl(
       thingWithThingPersistedIri,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       thingPersisted
     );
 
@@ -396,14 +407,14 @@ describe("removeIri", () => {
 describe("removeBoolean", () => {
   it("removes the given boolean value for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     const updatedThing = removeBoolean(
       thingWithBoolean,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -412,14 +423,14 @@ describe("removeBoolean", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
       "boolean"
     );
 
     const updatedThing = removeBoolean(
       thingWithBoolean,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       false
     );
 
@@ -428,14 +439,14 @@ describe("removeBoolean", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     const updatedThing = removeBoolean(
       thingWithBoolean,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -450,7 +461,7 @@ describe("removeBoolean", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "1",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")
@@ -464,7 +475,7 @@ describe("removeBoolean", () => {
 
     const updatedThing = removeBoolean(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -473,7 +484,7 @@ describe("removeBoolean", () => {
 
   it("removes multiple instances of the same boolean for the same Predicate", () => {
     const thingWithDuplicateBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
@@ -481,7 +492,7 @@ describe("removeBoolean", () => {
 
     const updatedThing = removeBoolean(
       thingWithDuplicateBoolean,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -490,18 +501,18 @@ describe("removeBoolean", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
       "boolean"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "1",
       "boolean"
     );
@@ -510,7 +521,7 @@ describe("removeBoolean", () => {
 
     const updatedThing = removeBoolean(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -522,20 +533,20 @@ describe("removeBoolean", () => {
 
   it("does not remove Quads with non-boolean Objects", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
     const mockQuadWithIntegerNotBoolean = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("1", "http://www.w3.org/2001/XMLSchema#integer")
     );
     thingWithString.add(mockQuadWithIntegerNotBoolean);
 
     const updatedThing = removeBoolean(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -546,14 +557,14 @@ describe("removeBoolean", () => {
 describe("removeDatetime", () => {
   it("removes the given datetime value for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     const updatedThing = removeDatetime(
       thingWithDatetime,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -562,14 +573,14 @@ describe("removeDatetime", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     const updatedThing = removeDatetime(
       thingWithDatetime,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -578,14 +589,14 @@ describe("removeDatetime", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     const updatedThing = removeDatetime(
       thingWithDatetime,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -600,7 +611,7 @@ describe("removeDatetime", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "1990-11-12T13:37:42Z",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#dateTime")
@@ -614,7 +625,7 @@ describe("removeDatetime", () => {
 
     const updatedThing = removeDatetime(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -623,7 +634,7 @@ describe("removeDatetime", () => {
 
   it("removes multiple instances of the same datetime for the same Predicate", () => {
     const thingWithDuplicateDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
@@ -631,7 +642,7 @@ describe("removeDatetime", () => {
 
     const updatedThing = removeDatetime(
       thingWithDuplicateDatetime,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -640,18 +651,18 @@ describe("removeDatetime", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
       "dateTime"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
@@ -660,7 +671,7 @@ describe("removeDatetime", () => {
 
     const updatedThing = removeDatetime(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -672,13 +683,13 @@ describe("removeDatetime", () => {
 
   it("does not remove Quads with non-datetime Objects", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
     const mockQuadWithStringNotDatetime = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "1990-11-12T13:37:42Z",
         "http://www.w3.org/2001/XMLSchema#string"
@@ -688,7 +699,7 @@ describe("removeDatetime", () => {
 
     const updatedThing = removeDatetime(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -699,14 +710,14 @@ describe("removeDatetime", () => {
 describe("removeDecimal", () => {
   it("removes the given decimal value for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     const updatedThing = removeDecimal(
       thingWithDecimal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -715,14 +726,14 @@ describe("removeDecimal", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     const updatedThing = removeDecimal(
       thingWithDecimal,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -731,14 +742,14 @@ describe("removeDecimal", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     const updatedThing = removeDecimal(
       thingWithDecimal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -753,7 +764,7 @@ describe("removeDecimal", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "13.37",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#decimal")
@@ -767,7 +778,7 @@ describe("removeDecimal", () => {
 
     const updatedThing = removeDecimal(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -776,7 +787,7 @@ describe("removeDecimal", () => {
 
   it("removes multiple instances of the same decimal for the same Predicate", () => {
     const thingWithDuplicateDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
@@ -784,7 +795,7 @@ describe("removeDecimal", () => {
 
     const updatedThing = removeDecimal(
       thingWithDuplicateDecimal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -793,18 +804,18 @@ describe("removeDecimal", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "4.2",
       "decimal"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "13.37",
       "decimal"
     );
@@ -813,7 +824,7 @@ describe("removeDecimal", () => {
 
     const updatedThing = removeDecimal(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -825,20 +836,20 @@ describe("removeDecimal", () => {
 
   it("does not remove Quads with non-decimal Objects", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
     const mockQuadWithStringNotDecimal = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("13.37", "http://www.w3.org/2001/XMLSchema#string")
     );
     thingWithString.add(mockQuadWithStringNotDecimal);
 
     const updatedThing = removeDecimal(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -849,14 +860,14 @@ describe("removeDecimal", () => {
 describe("removeInteger", () => {
   it("removes the given integer value for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeInteger(
       thingWithInteger,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -865,14 +876,14 @@ describe("removeInteger", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeInteger(
       thingWithInteger,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -881,14 +892,14 @@ describe("removeInteger", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeInteger(
       thingWithInteger,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -903,7 +914,7 @@ describe("removeInteger", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -917,7 +928,7 @@ describe("removeInteger", () => {
 
     const updatedThing = removeInteger(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -926,7 +937,7 @@ describe("removeInteger", () => {
 
   it("removes multiple instances of the same integer for the same Predicate", () => {
     const thingWithDuplicateInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -934,7 +945,7 @@ describe("removeInteger", () => {
 
     const updatedThing = removeInteger(
       thingWithDuplicateInteger,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -943,18 +954,18 @@ describe("removeInteger", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1337",
       "integer"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "42",
       "integer"
     );
@@ -963,7 +974,7 @@ describe("removeInteger", () => {
 
     const updatedThing = removeInteger(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -975,20 +986,20 @@ describe("removeInteger", () => {
 
   it("does not remove Quads with non-integer Objects", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     const mockQuadWithStringNotInteger = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#string")
     );
     thingWithString.add(mockQuadWithStringNotInteger);
 
     const updatedThing = removeInteger(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -1003,8 +1014,8 @@ describe("removeStringWithLocale", () => {
     locale: string
   ): Quad {
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      predicate,
       DataFactory.literal(literalValue, locale)
     );
     return quad;
@@ -1022,18 +1033,18 @@ describe("removeStringWithLocale", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, { url: INRUPT_TEST_IRI.arbitrarySubject });
   }
   it("removes the given localised string for the given Predicate", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Une chaîne de caractères quelconque",
       "fr-fr"
     );
 
     const updatedThing = removeStringWithLocale(
       thingWithStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Une chaîne de caractères quelconque",
       "fr-fr"
     );
@@ -1043,14 +1054,14 @@ describe("removeStringWithLocale", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
 
     const updatedThing = removeStringWithLocale(
       thingWithStringWithLocale,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1060,14 +1071,14 @@ describe("removeStringWithLocale", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
 
     const updatedThing = removeStringWithLocale(
       thingWithStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1083,7 +1094,7 @@ describe("removeStringWithLocale", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some arbitrary string", "en-us")
     );
     const datasetWithThingLocal = dataset();
@@ -1094,7 +1105,7 @@ describe("removeStringWithLocale", () => {
 
     const updatedThing = removeStringWithLocale(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1104,7 +1115,7 @@ describe("removeStringWithLocale", () => {
 
   it("removes multiple instances of the same localised string for the same Predicate", () => {
     const thingWithDuplicateStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1114,7 +1125,7 @@ describe("removeStringWithLocale", () => {
 
     const updatedThing = removeStringWithLocale(
       thingWithDuplicateStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1124,25 +1135,25 @@ describe("removeStringWithLocale", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
 
     const mockQuadWithDifferentStringInSameLocale = getMockQuadWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some other arbitrary string",
       "en-us"
     );
 
     const mockQuadWithSameStringInDifferentLocale = getMockQuadWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-uk"
     );
 
     const mockQuadWithDifferentPredicate = getMockQuadWithStringWithLocaleFor(
-      "https://some.other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "Some arbitrary string",
       "en-us"
     );
@@ -1152,7 +1163,7 @@ describe("removeStringWithLocale", () => {
 
     const updatedThing = removeStringWithLocale(
       thingWithStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-US"
     );
@@ -1166,13 +1177,13 @@ describe("removeStringWithLocale", () => {
 
   it("removes Quads when the locale casing mismatch", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-us"
     );
 
     const mockQuadWithStringInDifferentLocale = getMockQuadWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-US"
     );
@@ -1181,7 +1192,7 @@ describe("removeStringWithLocale", () => {
 
     const updatedThing = removeStringWithLocale(
       thingWithStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-US"
     );
@@ -1191,20 +1202,20 @@ describe("removeStringWithLocale", () => {
 
   it("does not remove Quads with non-string Objects", () => {
     const thingWithLocalizedString = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-US"
     );
     const mockQuadWithInteger = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#integer")
     );
     thingWithLocalizedString.add(mockQuadWithInteger);
 
     const updatedThing = removeStringWithLocale(
       thingWithLocalizedString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "en-US"
     );
@@ -1216,14 +1227,14 @@ describe("removeStringWithLocale", () => {
 describe("removeStringNoLocale", () => {
   it("removes the given string value for the given Predicate", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeStringNoLocale(
       thingWithStringNoLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1232,14 +1243,14 @@ describe("removeStringNoLocale", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeStringNoLocale(
       thingWithStringNoLocale,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1248,14 +1259,14 @@ describe("removeStringNoLocale", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeStringNoLocale(
       thingWithStringNoLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1270,7 +1281,7 @@ describe("removeStringNoLocale", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "Some arbitrary string",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
@@ -1284,7 +1295,7 @@ describe("removeStringNoLocale", () => {
 
     const updatedThing = removeStringNoLocale(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1293,7 +1304,7 @@ describe("removeStringNoLocale", () => {
 
   it("removes multiple instances of the same string for the same Predicate", () => {
     const thingWithDuplicateString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
@@ -1301,7 +1312,7 @@ describe("removeStringNoLocale", () => {
 
     const updatedThing = removeStringNoLocale(
       thingWithDuplicateString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1310,18 +1321,18 @@ describe("removeStringNoLocale", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some other arbitrary string",
       "string"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "Some arbitrary string",
       "string"
     );
@@ -1330,7 +1341,7 @@ describe("removeStringNoLocale", () => {
 
     const updatedThing = removeStringNoLocale(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1342,20 +1353,20 @@ describe("removeStringNoLocale", () => {
 
   it("does not remove Quads with non-string Objects", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
     const mockQuadWithInteger = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#integer")
     );
     thingWithString.add(mockQuadWithInteger);
 
     const updatedThing = removeStringNoLocale(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string"
     );
 
@@ -1366,14 +1377,14 @@ describe("removeStringNoLocale", () => {
 describe("removeLiteral", () => {
   it("accepts unlocalised strings as Literal", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
       "string"
     );
 
     const updatedThing = removeLiteral(
       thingWithStringNoLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "Some arbitrary string",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
@@ -1385,20 +1396,20 @@ describe("removeLiteral", () => {
 
   it("accepts localised strings as Literal", () => {
     const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some arbitrary string", "en-US")
     );
     const thing = dataset();
     thing.add(quad);
 
     const thingWithStringWithLocale = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
 
     const updatedThing = removeLiteral(
       thingWithStringWithLocale,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some arbitrary string", "en-US")
     );
 
@@ -1407,14 +1418,14 @@ describe("removeLiteral", () => {
 
   it("accepts integers as Literal", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeLiteral(
       thingWithInteger,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1426,14 +1437,14 @@ describe("removeLiteral", () => {
 
   it("accepts decimal as Literal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "decimal"
     );
 
     const updatedThing = removeLiteral(
       thingWithDecimal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "13.37",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#decimal")
@@ -1445,14 +1456,14 @@ describe("removeLiteral", () => {
 
   it("accepts boolean as Literal", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "boolean"
     );
 
     const updatedThing = removeLiteral(
       thingWithBoolean,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "1",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")
@@ -1464,14 +1475,14 @@ describe("removeLiteral", () => {
 
   it("accepts datetime as Literal", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
 
     const updatedThing = removeLiteral(
       thingWithDatetime,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "1990-11-12T13:37:42Z",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#dateTime")
@@ -1483,14 +1494,14 @@ describe("removeLiteral", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeLiteral(
       thingWithInteger,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1502,14 +1513,14 @@ describe("removeLiteral", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const updatedThing = removeLiteral(
       thingWithInteger,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1527,7 +1538,7 @@ describe("removeLiteral", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1541,7 +1552,7 @@ describe("removeLiteral", () => {
 
     const updatedThing = removeLiteral(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1553,7 +1564,7 @@ describe("removeLiteral", () => {
 
   it("removes multiple instances of the same Literal for the same Predicate", () => {
     const thingWithDuplicateInteger = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
@@ -1561,7 +1572,7 @@ describe("removeLiteral", () => {
 
     const updatedThing = removeLiteral(
       thingWithDuplicateInteger,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1573,18 +1584,18 @@ describe("removeLiteral", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "1337",
       "integer"
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
-      "https://some-other.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "42",
       "integer"
     );
@@ -1593,7 +1604,7 @@ describe("removeLiteral", () => {
 
     const updatedThing = removeLiteral(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1608,20 +1619,20 @@ describe("removeLiteral", () => {
 
   it("does not remove Quads with Literal Objects with different types", () => {
     const thingWithString = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "integer"
     );
     const mockQuadWithStringNotInteger = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitrarySubject,
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("42", "http://www.w3.org/2001/XMLSchema#string")
     );
     thingWithString.add(mockQuadWithStringNotInteger);
 
     const updatedThing = removeLiteral(
       thingWithString,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal(
         "42",
         DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
@@ -1635,14 +1646,14 @@ describe("removeLiteral", () => {
 describe("removeNamedNode", () => {
   it("removes the given NamedNode value for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeNamedNode(
       thingWithNamedNode,
-      "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -1650,14 +1661,14 @@ describe("removeNamedNode", () => {
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeNamedNode(
       thingWithNamedNode,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -1665,14 +1676,14 @@ describe("removeNamedNode", () => {
 
   it("does not modify the input Thing", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const updatedThing = removeNamedNode(
       thingWithNamedNode,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(thingWithNamedNode)).toHaveLength(1);
@@ -1686,8 +1697,8 @@ describe("removeNamedNode", () => {
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
@@ -1697,8 +1708,8 @@ describe("removeNamedNode", () => {
 
     const updatedThing = removeNamedNode(
       thingLocal,
-      "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -1706,15 +1717,15 @@ describe("removeNamedNode", () => {
 
   it("removes multiple instances of the same NamedNode for the same Predicate", () => {
     const thingWithDuplicateNamedNode = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithDuplicateNamedNode.add(Array.from(thingWithDuplicateNamedNode)[0]);
 
     const updatedThing = removeNamedNode(
       thingWithDuplicateNamedNode,
-      "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
@@ -1722,25 +1733,25 @@ describe("removeNamedNode", () => {
 
   it("does not remove Quads with different Predicates or Objects", () => {
     const thingWithOtherQuads = getMockThingWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithNamedNode(
-      "https://some.vocab/predicate",
-      "https://some-other.vocab/object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithNamedNode(
-      "https://some-other.vocab/predicate",
-      "https://some.vocab/object"
+      INRUPT_TEST_IRI.arbitraryOtherPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
     const updatedThing = removeNamedNode(
       thingWithOtherQuads,
-      "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.vocab/object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryObject
     );
 
     expect(Array.from(updatedThing)).toEqual([

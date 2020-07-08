@@ -50,8 +50,8 @@ function addAclRuleQuads(
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      RDF.type,
+      ACL.Authorization
     )
   );
   aclDataset.add(
@@ -68,33 +68,25 @@ function addAclRuleQuads(
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
+      ACL.agentClass,
       DataFactory.namedNode(agentClass)
     )
   );
   if (access.read) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Read)
     );
   }
   if (access.append) {
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Append)
     );
   }
   if (access.write) {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        ACL.mode,
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
       )
     );
@@ -103,7 +95,7 @@ function addAclRuleQuads(
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        ACL.mode,
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
       )
     );
@@ -144,12 +136,10 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
 
 describe("getPublicAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -171,12 +161,10 @@ describe("getPublicAccess", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -198,9 +186,7 @@ describe("getPublicAccess", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -213,19 +199,17 @@ describe("getPublicAccess", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -252,17 +236,17 @@ describe("getPublicAccess", () => {
   });
 
   it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/");
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodRootContainer);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -284,19 +268,17 @@ describe("getPublicAccess", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -321,8 +303,8 @@ describe("getPublicAccess", () => {
 describe("getPublicResourceAccess", () => {
   it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: true },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -340,15 +322,15 @@ describe("getPublicResourceAccess", () => {
 
   it("combines Access Modes defined for the Agent Class foaf:Agent in separate rules", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -366,8 +348,8 @@ describe("getPublicResourceAccess", () => {
 
   it("returns false for all Access Modes if there are no ACL rules for the Agent Class foaf:Agent", () => {
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
@@ -385,15 +367,15 @@ describe("getPublicResourceAccess", () => {
 
   it("ignores ACL rules that apply to a different Agent Class", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -411,15 +393,15 @@ describe("getPublicResourceAccess", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/resource.acl"),
-      "https://some-other.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.someOtherPodResource,
       { read: true, append: false, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://some.pod/resource",
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -439,8 +421,8 @@ describe("getPublicResourceAccess", () => {
 describe("getPublicDefaultAccess", () => {
   it("returns the applicable Access Modes for the Agent Class foaf:Agent", () => {
     const containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -458,15 +440,15 @@ describe("getPublicDefaultAccess", () => {
 
   it("combines Access Modes defined for the Agent Class foaf:Agent in separate rules", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -484,8 +466,8 @@ describe("getPublicDefaultAccess", () => {
 
   it("returns false for all Access Modes if there are no ACL rules for the Agent Class foaf:Agent", () => {
     const containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
@@ -503,15 +485,15 @@ describe("getPublicDefaultAccess", () => {
 
   it("ignores ACL rules that apply to a different Agent Class", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
@@ -529,15 +511,15 @@ describe("getPublicDefaultAccess", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some-other.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.someOtherPodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default",
       "http://xmlns.com/foaf/0.1/Agent"

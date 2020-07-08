@@ -22,7 +22,7 @@
 import { describe, it, expect } from "@jest/globals";
 import { Quad } from "rdf-js";
 import { dataset } from "@rdfjs/dataset";
-import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfext";
 // import { INRUPT_TEST_IRI } from "@inrupt/vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 import { DataFactory } from "n3";
@@ -127,13 +127,11 @@ function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
 
 describe("getAgentAccessOne", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -145,7 +143,7 @@ describe("getAgentAccessOne", () => {
 
     const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(access).toEqual({
@@ -157,13 +155,11 @@ describe("getAgentAccessOne", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -175,7 +171,7 @@ describe("getAgentAccessOne", () => {
 
     const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(access).toEqual({
@@ -187,9 +183,7 @@ describe("getAgentAccessOne", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -201,26 +195,24 @@ describe("getAgentAccessOne", () => {
     expect(
       unstable_getAgentAccessOne(
         litDatasetWithInaccessibleAcl,
-        "https://arbitrary.pod/profileDoc#webId"
+        INRUPT_TEST_IRI.somePodWebId
       )
     ).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -237,7 +229,7 @@ describe("getAgentAccessOne", () => {
 
     const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(access).toEqual({
@@ -249,18 +241,18 @@ describe("getAgentAccessOne", () => {
   });
 
   it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/");
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodRootContainer);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -272,7 +264,7 @@ describe("getAgentAccessOne", () => {
 
     const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(access).toEqual({
@@ -284,20 +276,18 @@ describe("getAgentAccessOne", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -309,7 +299,7 @@ describe("getAgentAccessOne", () => {
 
     const access = unstable_getAgentAccessOne(
       litDatasetWithAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(access).toEqual({
@@ -323,13 +313,11 @@ describe("getAgentAccessOne", () => {
 
 describe("getAgentAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Agent", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
@@ -342,7 +330,7 @@ describe("getAgentAccessAll", () => {
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: false,
         write: false,
@@ -352,13 +340,11 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -371,7 +357,7 @@ describe("getAgentAccessAll", () => {
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: false,
         write: false,
@@ -381,9 +367,7 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const inaccessibleAcl: unstable_WithAcl = {
       acl: { fallbackAcl: null, resourceAcl: null },
     };
@@ -398,20 +382,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -429,7 +411,7 @@ describe("getAgentAccessAll", () => {
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -439,20 +421,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerResourceAcl),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://some-other.pod/profileDoc#webId",
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.someOtherPodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -469,10 +449,10 @@ describe("getAgentAccessAll", () => {
 
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
-    // It only includes rules for agent INRUPT_TEST_IRI.arbitraryWebId,
-    // not for "https://some-other.pod/profileDoc#webId"
+    // It only includes rules for agent INRUPT_TEST_IRI.somePodWebId,
+    // not for INRUPT_TEST_IRI.someOtherPodWebId
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -482,18 +462,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/");
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodRootContainer);
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -506,7 +486,7 @@ describe("getAgentAccessAll", () => {
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -516,20 +496,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    const litDataset = getMockDataset(INRUPT_TEST_IRI.somePodResource);
     const fallbackAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
@@ -542,7 +520,7 @@ describe("getAgentAccessAll", () => {
     const access = unstable_getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: false,
         write: false,
@@ -555,16 +533,16 @@ describe("getAgentAccessAll", () => {
 describe("getAgentResourceAccessOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: true },
       "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -577,23 +555,23 @@ describe("getAgentResourceAccessOne", () => {
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -606,16 +584,16 @@ describe("getAgentResourceAccessOne", () => {
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
     const resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
-      "https://some-other.pod/profileDoc#webId"
+      INRUPT_TEST_IRI.someOtherPodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -628,23 +606,23 @@ describe("getAgentResourceAccessOne", () => {
 
   it("ignores ACL rules that apply to a different Agent", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.someOtherPodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -657,23 +635,23 @@ describe("getAgentResourceAccessOne", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/resource.acl"),
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.someOtherPodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
 
     const agentAccess = unstable_getAgentResourceAccessOne(
       resourceAcl,
-      "https://arbitrary.pod/profileDoc#webId"
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -688,16 +666,16 @@ describe("getAgentResourceAccessOne", () => {
 describe("getAgentResourceAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.someOtherPodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
@@ -705,13 +683,13 @@ describe("getAgentResourceAccessAll", () => {
     const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: true,
         write: false,
         control: false,
       },
-      "https://some-other.pod/profileDoc#webId": {
+      [INRUPT_TEST_IRI.someOtherPodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -722,16 +700,16 @@ describe("getAgentResourceAccessAll", () => {
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
@@ -739,7 +717,7 @@ describe("getAgentResourceAccessAll", () => {
     const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: true,
         write: false,
@@ -750,9 +728,9 @@ describe("getAgentResourceAccessAll", () => {
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -760,21 +738,21 @@ describe("getAgentResourceAccessAll", () => {
     resourceAcl.add(
       DataFactory.quad(
         oneQuad.subject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
         control: false,
       },
-      "https://some-other.pod/profileDoc#webId": {
+      [INRUPT_TEST_IRI.someOtherPodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -785,9 +763,9 @@ describe("getAgentResourceAccessAll", () => {
 
   it("ignores ACL rules that do not apply to an Agent", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -795,31 +773,29 @@ describe("getAgentResourceAccessAll", () => {
     resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+        RDF.type,
+        ACL.Authorization
       )
     );
     resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
+        ACL.accessTo,
+        INRUPT_TEST_IRI.somePodResource
       )
     );
     resourceAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
+        ACL.agentClass,
+        FOAF.Agent
       )
     );
 
     const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -830,16 +806,16 @@ describe("getAgentResourceAccessAll", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let resourceAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/resource.acl"),
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.someOtherPodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/resource",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: true, write: false, control: false },
       "resource"
     );
@@ -847,7 +823,7 @@ describe("getAgentResourceAccessAll", () => {
     const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: true,
         write: false,
@@ -860,13 +836,13 @@ describe("getAgentResourceAccessAll", () => {
 describe("setAgentResourceAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodResource }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: true,
@@ -877,49 +853,47 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(6);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[1].object.value).toBe(
+    expect(updatedQuads[1].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[2].object.value).toBe(
+    expect(updatedQuads[2].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Write"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
+    expect(updatedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[3].object.value).toBe(
+    expect(updatedQuads[3].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Control"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
+    expect(updatedQuads[4].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[4].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[5].predicate.value).toBe(
+    expect(updatedQuads[4].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[5].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(updatedQuads[5].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[5].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodResource }
     );
 
     unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -933,13 +907,13 @@ describe("setAgentResourceAccess", () => {
 
   it("keeps a log of changes made to the ACL", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodResource }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -952,26 +926,24 @@ describe("setAgentResourceAccess", () => {
     expect(deletedQuads).toEqual([]);
     const addedQuads = updatedDataset.changeLog.additions;
     expect(addedQuads).toHaveLength(4);
-    expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(addedQuads[0].object.value).toBe(
+    expect(addedQuads[0].predicate).toEqual(RDF.type);
+    expect(addedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(addedQuads[1].predicate.value).toBe(
+    expect(addedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(addedQuads[1].object.value).toBe(
+    expect(addedQuads[1].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(addedQuads[2].predicate.value).toBe(
+    expect(addedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
-    expect(addedQuads[3].predicate.value).toBe(
+    expect(addedQuads[2].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(addedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(addedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(addedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not forget to add a Quad for Append access if Write access is not given", () => {
@@ -979,13 +951,13 @@ describe("setAgentResourceAccess", () => {
     // if we ever try to be clever about inferring Append access
     // (but we should be able to leave that to the server).
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodResource }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: true,
@@ -996,40 +968,36 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[1].object.value).toBe(
+    expect(updatedQuads[1].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[2].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: false, append: false, write: false, control: true },
       "resource"
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -1040,40 +1008,38 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[1].object.value).toBe(
+    expect(updatedQuads[1].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[3].predicate.value).toBe(
+    expect(updatedQuads[2].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1088,9 +1054,9 @@ describe("setAgentResourceAccess", () => {
 
   it("does not remove ACL rules that apply to the Agent but also act as default rules", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -1098,14 +1064,14 @@ describe("setAgentResourceAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
+        ACL.default_,
+        INRUPT_TEST_IRI.somePodRootContainer
       )
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1116,35 +1082,23 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not remove ACL rules that apply to the Agent but also apply to a different Resource", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -1152,14 +1106,14 @@ describe("setAgentResourceAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
+        ACL.accessTo,
         DataFactory.namedNode("https://arbitrary.pod/other-resource")
       )
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1170,35 +1124,23 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.accessTo);
+    expect(updatedQuads[1].object.value).toEqual(
       "https://arbitrary.pod/other-resource"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -1206,14 +1148,14 @@ describe("setAgentResourceAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1224,50 +1166,42 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[1].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[2].object.value).toBe(
+    expect(updatedQuads[2].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
+    expect(updatedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(updatedQuads[3].object.value).toBe(
-      "https://some-other.pod/profileDoc#webId"
-    );
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.someOtherPodWebId);
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const aclRuleSubject = Array.from(sourceDataset)[0].subject;
     sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+      DataFactory.quad(aclRuleSubject, ACL.agentClass, FOAF.Agent)
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1278,35 +1212,33 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[1].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[2].object.value).toBe(
+    expect(updatedQuads[2].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
+    expect(updatedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
-    expect(updatedQuads[3].object.value).toBe(
+    expect(updatedQuads[3].object.value).toEqual(
       "http://xmlns.com/foaf/0.1/Agent"
     );
   });
 
   it("does not change ACL rules that also apply to other Agents", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/resource",
+      getMockDataset(INRUPT_TEST_IRI.somePodResourceAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodResource,
       { read: true, append: false, write: false, control: false },
       "resource"
     );
@@ -1314,14 +1246,14 @@ describe("setAgentResourceAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: true,
@@ -1332,66 +1264,62 @@ describe("setAgentResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(8);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
+    expect(updatedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
+    expect(updatedQuads[1].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[2].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[2].object.value).toBe(
+    expect(updatedQuads[2].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
+    expect(updatedQuads[3].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(updatedQuads[3].object.value).toBe(
-      "https://some-other.pod/profileDoc#webId"
-    );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[4].object.value).toBe(
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.someOtherPodWebId);
+    expect(updatedQuads[4].predicate).toEqual(RDF.type);
+    expect(updatedQuads[4].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[5].predicate.value).toBe(
+    expect(updatedQuads[5].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(updatedQuads[5].object.value).toBe(
+    expect(updatedQuads[5].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[6].predicate.value).toBe(
+    expect(updatedQuads[6].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
-    expect(updatedQuads[6].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[7].predicate.value).toBe(
+    expect(updatedQuads[6].object).toEqual(INRUPT_TEST_IRI.somePodResource);
+    expect(updatedQuads[7].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    expect(updatedQuads[7].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[7].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
     // Make sure the Access Modes granted in 2 and 5 are in separate ACL Rules:
-    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toBe(false);
+    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toEqual(
+      false
+    );
   });
 });
 
 describe("getAgentDefaultAccessOne", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: true },
       "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -1404,23 +1332,23 @@ describe("getAgentDefaultAccessOne", () => {
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -1433,16 +1361,16 @@ describe("getAgentDefaultAccessOne", () => {
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
     const containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
-      "https://some-other.pod/profileDoc#webId"
+      INRUPT_TEST_IRI.someOtherPodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -1455,23 +1383,23 @@ describe("getAgentDefaultAccessOne", () => {
 
   it("ignores ACL rules that apply to a different Agent", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.someOtherPodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -1484,23 +1412,23 @@ describe("getAgentDefaultAccessOne", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.someOtherPodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
 
     const agentAccess = unstable_getAgentDefaultAccessOne(
       containerAcl,
-      "https://arbitrary.pod/profileDoc#webId"
+      INRUPT_TEST_IRI.somePodWebId
     );
 
     expect(agentAccess).toEqual({
@@ -1515,16 +1443,16 @@ describe("getAgentDefaultAccessOne", () => {
 describe("getAgentDefaultAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      "https://some-other.pod/profileDoc#webId",
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.someOtherPodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
@@ -1532,13 +1460,13 @@ describe("getAgentDefaultAccessAll", () => {
     const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: true,
         write: false,
         control: false,
       },
-      "https://some-other.pod/profileDoc#webId": {
+      [INRUPT_TEST_IRI.someOtherPodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -1549,16 +1477,16 @@ describe("getAgentDefaultAccessAll", () => {
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
@@ -1566,7 +1494,7 @@ describe("getAgentDefaultAccessAll", () => {
     const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: true,
         write: false,
@@ -1577,9 +1505,9 @@ describe("getAgentDefaultAccessAll", () => {
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acln"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -1587,21 +1515,21 @@ describe("getAgentDefaultAccessAll", () => {
     containerAcl.add(
       DataFactory.quad(
         oneQuad.subject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
         control: false,
       },
-      "https://some-other.pod/profileDoc#webId": {
+      [INRUPT_TEST_IRI.someOtherPodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -1612,9 +1540,9 @@ describe("getAgentDefaultAccessAll", () => {
 
   it("ignores ACL rules that do not apply to an Agent", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -1622,31 +1550,29 @@ describe("getAgentDefaultAccessAll", () => {
     containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+        RDF.type,
+        ACL.Authorization
       )
     );
     containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
+        ACL.default_,
+        INRUPT_TEST_IRI.somePodRootContainer
       )
     );
     containerAcl.add(
       DataFactory.quad(
         DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
+        ACL.agentClass,
+        FOAF.Agent
       )
     );
 
     const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: true,
         append: false,
         write: false,
@@ -1657,16 +1583,16 @@ describe("getAgentDefaultAccessAll", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let containerAcl = addAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
-      "https://arbitrary.pod/profileDoc#webId",
-      "https://some-other.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.someOtherPodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://some.pod/container/",
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: true, write: false, control: false },
       "default"
     );
@@ -1674,7 +1600,7 @@ describe("getAgentDefaultAccessAll", () => {
     const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
-      [INRUPT_TEST_IRI.arbitraryWebId.value]: {
+      [INRUPT_TEST_IRI.somePodWebId.value]: {
         read: false,
         append: true,
         write: false,
@@ -1687,13 +1613,13 @@ describe("getAgentDefaultAccessAll", () => {
 describe("setAgentDefaultAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodRootContainer }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: true,
@@ -1704,51 +1630,31 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(6);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[1].object).toEqual(ACL.Read);
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Write);
+    expect(updatedQuads[3].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[3].object).toEqual(ACL.Control);
+    expect(updatedQuads[4].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[4].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Write"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[3].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Control"
-    );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[4].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[5].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[5].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[5].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodRootContainer }
     );
 
     unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -1762,13 +1668,13 @@ describe("setAgentDefaultAccess", () => {
 
   it("keeps a log of changes made to the ACL", () => {
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodRootContainer }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -1781,26 +1687,20 @@ describe("setAgentDefaultAccess", () => {
     expect(deletedQuads).toEqual([]);
     const addedQuads = updatedDataset.changeLog.additions;
     expect(addedQuads).toHaveLength(4);
-    expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(addedQuads[0].object.value).toBe(
+    expect(addedQuads[0].predicate).toEqual(RDF.type);
+    expect(addedQuads[0].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(addedQuads[1].predicate.value).toBe(
+    expect(addedQuads[1].predicate.value).toEqual(
       "http://www.w3.org/ns/auth/acl#mode"
     );
-    expect(addedQuads[1].object.value).toBe(
+    expect(addedQuads[1].object.value).toEqual(
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(addedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/container/");
-    expect(addedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(addedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(addedQuads[2].predicate).toEqual(ACL.default_);
+    expect(addedQuads[2].object).toEqual(INRUPT_TEST_IRI.somePodRootContainer);
+    expect(addedQuads[3].predicate).toEqual(ACL.agent);
+    expect(addedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not forget to add a Quad for Append access if Write access is not given", () => {
@@ -1808,13 +1708,13 @@ describe("setAgentDefaultAccess", () => {
     // if we ever try to be clever about inferring Append access
     // (but we should be able to leave that to the server).
     const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      { accessTo: INRUPT_TEST_IRI.somePodRootContainer }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: true,
@@ -1825,42 +1725,30 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[1].object).toEqual(ACL.Append);
+    expect(updatedQuads[2].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[2].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Append"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: false, append: false, write: false, control: true },
       "default"
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: true,
         append: false,
@@ -1871,42 +1759,30 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[1].object).toEqual(ACL.Read);
+    expect(updatedQuads[2].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[2].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1921,9 +1797,9 @@ describe("setAgentDefaultAccess", () => {
 
   it("does not remove ACL rules that apply to the Agent but also act as resource rules", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -1931,14 +1807,14 @@ describe("setAgentDefaultAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
+        ACL.accessTo,
+        INRUPT_TEST_IRI.somePodRootContainer
       )
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -1949,35 +1825,23 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.accessTo);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not remove ACL rules that apply to the Agent but also apply to a different Container", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -1985,14 +1849,14 @@ describe("setAgentDefaultAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/other-container/")
+        ACL.default_,
+        INRUPT_TEST_IRI.someOtherPodRootContainer
       )
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -2003,35 +1867,23 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.someOtherPodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/other-container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -2039,14 +1891,14 @@ describe("setAgentDefaultAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -2057,52 +1909,34 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(
-      "https://some-other.pod/profileDoc#webId"
-    );
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.someOtherPodWebId);
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
     const aclRuleSubject = Array.from(sourceDataset)[0].subject;
     sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+      DataFactory.quad(aclRuleSubject, ACL.agentClass, FOAF.Agent)
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: false,
@@ -2113,37 +1947,23 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentClass"
-    );
-    expect(updatedQuads[3].object.value).toBe(
-      "http://xmlns.com/foaf/0.1/Agent"
-    );
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agentClass);
+    expect(updatedQuads[3].object).toEqual(FOAF.Agent);
   });
 
   it("does not change ACL rules that also apply to other Agents", () => {
     const sourceDataset = addAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      INRUPT_TEST_IRI.arbitraryWebId,
-      "https://arbitrary.pod/container/",
+      getMockDataset(INRUPT_TEST_IRI.somePodRootContainerAcl),
+      INRUPT_TEST_IRI.somePodWebId,
+      INRUPT_TEST_IRI.somePodRootContainer,
       { read: true, append: false, write: false, control: false },
       "default"
     );
@@ -2151,14 +1971,14 @@ describe("setAgentDefaultAccess", () => {
     sourceDataset.add(
       DataFactory.quad(
         aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
+        ACL.agent,
+        INRUPT_TEST_IRI.someOtherPodWebId
       )
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
       sourceDataset,
-      INRUPT_TEST_IRI.arbitraryWebId,
+      INRUPT_TEST_IRI.somePodWebId,
       {
         read: false,
         append: true,
@@ -2169,53 +1989,29 @@ describe("setAgentDefaultAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toHaveLength(8);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedQuads[0].predicate).toEqual(RDF.type);
+    expect(updatedQuads[0].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[1].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[1].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+    expect(updatedQuads[2].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[2].object).toEqual(ACL.Read);
+    expect(updatedQuads[3].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[3].object).toEqual(INRUPT_TEST_IRI.someOtherPodWebId);
+    expect(updatedQuads[4].predicate).toEqual(RDF.type);
+    expect(updatedQuads[4].object).toEqual(ACL.Authorization);
+    expect(updatedQuads[5].predicate).toEqual(ACL.mode);
+    expect(updatedQuads[5].object).toEqual(ACL.Append);
+    expect(updatedQuads[6].predicate).toEqual(ACL.default_);
+    expect(updatedQuads[6].object).toEqual(
+      INRUPT_TEST_IRI.somePodRootContainer
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
-    );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[3].object.value).toBe(
-      "https://some-other.pod/profileDoc#webId"
-    );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[4].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[5].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Append"
-    );
-    expect(updatedQuads[6].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[6].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[7].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[7].object.value).toBe(INRUPT_TEST_IRI.arbitraryWebId);
+    expect(updatedQuads[7].predicate).toEqual(ACL.agent);
+    expect(updatedQuads[7].object).toEqual(INRUPT_TEST_IRI.somePodWebId);
     // Make sure the default Access Modes granted in 2 and 5 are in separate ACL Rules:
-    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toBe(false);
+    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toEqual(
+      false
+    );
   });
 });

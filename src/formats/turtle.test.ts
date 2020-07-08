@@ -77,7 +77,7 @@ describe("triplesToTurtle", () => {
 
     const turtle = await triplesToTurtle(triples);
 
-    expect(turtle.trim()).toBe(
+    expect(turtle.trim()).toEqual(
       '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".'
     );
   });
@@ -94,7 +94,7 @@ describe("triplesToTurtle", () => {
 
     const turtle = await triplesToTurtle(triples);
 
-    expect(turtle.trim()).toBe(
+    expect(turtle.trim()).toEqual(
       '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".'
     );
   });

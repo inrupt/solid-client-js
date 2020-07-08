@@ -25,7 +25,7 @@ jest.mock("./fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: {
-          Location: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          Location: INRUPT_TEST_IRI.somePodResource.value,
         },
       })
     )
@@ -89,10 +89,10 @@ describe("fetchLitDataset", () => {
       >;
     };
 
-    await fetchLitDataset(INRUPT_TEST_IRI.somePodRootContainerResource);
+    await fetchLitDataset(INRUPT_TEST_IRI.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResource.value],
+      [INRUPT_TEST_IRI.somePodResource.value],
     ]);
   });
 
@@ -101,35 +101,30 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchLitDataset(INRUPT_TEST_IRI.somePodRootContainerResource, {
+    await fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResource.value],
+      [INRUPT_TEST_IRI.somePodResource.value],
     ]);
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
-          })
-        )
-      );
-
-    const litDataset = await fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: INRUPT_TEST_IRI.somePodResource.value,
+        })
+      )
     );
 
+    const litDataset = await fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
+
     expect(litDataset.resourceInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResource
+      INRUPT_TEST_IRI.somePodResource
     );
   });
 
@@ -138,22 +133,19 @@ describe("fetchLitDataset", () => {
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
-            Link: `<${INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value}>; rel="acl"`,
+            Link: `<${INRUPT_TEST_IRI.somePodResourceAcl.value}>; rel="acl"`,
           },
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
         })
       )
     );
 
-    const litDataset = await fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
-    );
+    const litDataset = await fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
 
     expect(litDataset.resourceInfo.unstable_aclUrl).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResourceAcl
+      INRUPT_TEST_IRI.somePodResourceAcl
     );
   });
 
@@ -168,12 +160,9 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
-    );
+    const litDataset = await fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
 
     expect(litDataset.resourceInfo.unstable_aclUrl).toBeUndefined();
   });
@@ -273,24 +262,19 @@ describe("fetchLitDataset", () => {
         a foaf:Person;
         vcard:fn "Vincent".
     `;
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(turtle, {
-            url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
-          })
-        )
-      );
-
-    const litDataset = await fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(turtle, {
+          url: INRUPT_TEST_IRI.somePodResource.value,
+        })
+      )
     );
 
-    expect(litDataset.size).toBe(5);
+    const litDataset = await fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
+
+    expect(litDataset.size).toEqual(5);
     expect(litDataset).toMatchSnapshot();
   });
 
@@ -301,12 +285,9 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource failed: 403 Forbidden.")
@@ -320,12 +301,9 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchLitDataset(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = fetchLitDataset(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the Resource failed: 404 Not Found.")
@@ -344,16 +322,16 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
     await internal_fetchAcl(mockResourceInfo);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value],
+      [INRUPT_TEST_IRI.somePodResourceAcl.value],
       [INRUPT_TEST_IRI.somePodRootContainer.value, { method: "HEAD" }],
     ]);
   });
@@ -363,7 +341,7 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
       },
     };
@@ -380,7 +358,7 @@ describe("fetchAcl", () => {
   it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
-        url === INRUPT_TEST_IRI.somePodRootContainerResource
+        url === INRUPT_TEST_IRI.somePodResource
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: "" }
@@ -395,9 +373,9 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -408,25 +386,25 @@ describe("fetchAcl", () => {
     expect(fetchedAcl).not.toBeNull();
     expect(fetchedAcl.fallbackAcl).toBeNull();
     expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResourceAcl
+      INRUPT_TEST_IRI.somePodResourceAcl
     );
   });
 
   it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
     const mockFetch = jest.fn((url) => {
-      if (url === INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value) {
+      if (url === INRUPT_TEST_IRI.somePodResourceAcl.value) {
         return Promise.resolve(
           mockResponse("ACL not found", {
             status: 404,
-            url: INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value,
+            url: INRUPT_TEST_IRI.somePodResourceAcl.value,
           })
         );
       }
 
       const headers =
-        url === INRUPT_TEST_IRI.somePodRootContainerResource.value
+        url === INRUPT_TEST_IRI.somePodResource.value
           ? {
-              Link: `<${INRUPT_TEST_IRI.somePodRootContainerResourceAclRelativePath}>; rel="acl"`,
+              Link: `<${INRUPT_TEST_IRI.somePodResourceAclRelativePath}>; rel="acl"`,
             }
           : url === INRUPT_TEST_IRI.somePodRootContainer.value
           ? {
@@ -443,9 +421,9 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -464,9 +442,9 @@ describe("fetchLitDatasetWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
-        url === INRUPT_TEST_IRI.somePodRootContainerResource.value
+        url === INRUPT_TEST_IRI.somePodResource.value
           ? {
-              Link: `<${INRUPT_TEST_IRI.somePodRootContainerResourceAclRelativePath}>; rel="acl"`,
+              Link: `<${INRUPT_TEST_IRI.somePodResourceAclRelativePath}>; rel="acl"`,
             }
           : url === INRUPT_TEST_IRI.somePodRootContainer.value
           ? {
@@ -482,32 +460,32 @@ describe("fetchLitDatasetWithAcl", () => {
     });
 
     const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
     expect(fetchedLitDataset.resourceInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResource
+      INRUPT_TEST_IRI.somePodResource
     );
     expect(
       fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom.value
     ).toEqual(
-      `${INRUPT_TEST_IRI.somePodRootContainer.value}${INRUPT_TEST_IRI.somePodRootContainerResourceAclRelativePath}`
+      `${INRUPT_TEST_IRI.somePodRootContainer.value}${INRUPT_TEST_IRI.somePodResourceAclRelativePath}`
     );
     expect(
       fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom
     ).toEqual(INRUPT_TEST_IRI.somePodRootContainerAcl);
     expect(mockFetch.mock.calls).toHaveLength(4);
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResource.value
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResource.value
     );
-    expect(mockFetch.mock.calls[1][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResourceAcl.value
     );
-    expect(mockFetch.mock.calls[2][0]).toBe(
+    expect(mockFetch.mock.calls[2][0]).toEqual(
       INRUPT_TEST_IRI.somePodRootContainer.value
     );
-    expect(mockFetch.mock.calls[3][0]).toBe(
+    expect(mockFetch.mock.calls[3][0]).toEqual(
       INRUPT_TEST_IRI.somePodRootContainerAcl.value
     );
   });
@@ -520,12 +498,10 @@ describe("fetchLitDatasetWithAcl", () => {
       >;
     };
 
-    await unstable_fetchLitDatasetWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    await unstable_fetchLitDatasetWithAcl(INRUPT_TEST_IRI.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResource.value],
+      [INRUPT_TEST_IRI.somePodResource.value],
     ]);
   });
 
@@ -538,13 +514,13 @@ describe("fetchLitDatasetWithAcl", () => {
           headers: {
             Link: "",
           },
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
         })
       )
     );
 
     const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
@@ -561,7 +537,7 @@ describe("fetchLitDatasetWithAcl", () => {
       );
 
     const fetchPromise = unstable_fetchLitDatasetWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -580,7 +556,7 @@ describe("fetchLitDatasetWithAcl", () => {
       );
 
     const fetchPromise = unstable_fetchLitDatasetWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -596,9 +572,9 @@ describe("fetchResourceInfoWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
-        url === INRUPT_TEST_IRI.somePodRootContainerResource.value
+        url === INRUPT_TEST_IRI.somePodResource.value
           ? {
-              Link: `<${INRUPT_TEST_IRI.somePodRootContainerResourceAclRelativePath}>; rel="acl"`,
+              Link: `<${INRUPT_TEST_IRI.somePodResourceAclRelativePath}>; rel="acl"`,
             }
           : url === INRUPT_TEST_IRI.somePodRootContainer.value
           ? {
@@ -614,30 +590,30 @@ describe("fetchResourceInfoWithAcl", () => {
     });
 
     const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
     expect(fetchedLitDataset.resourceInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResource
+      INRUPT_TEST_IRI.somePodResource
     );
     expect(
       fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom
-    ).toEqual(INRUPT_TEST_IRI.somePodRootContainerResourceAcl);
+    ).toEqual(INRUPT_TEST_IRI.somePodResourceAcl);
     expect(
       fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom
     ).toEqual(INRUPT_TEST_IRI.somePodRootContainerAcl);
     expect(mockFetch.mock.calls).toHaveLength(4);
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResource.value
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResource.value
     );
-    expect(mockFetch.mock.calls[1][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResourceAcl.value
     );
-    expect(mockFetch.mock.calls[2][0]).toBe(
+    expect(mockFetch.mock.calls[2][0]).toEqual(
       INRUPT_TEST_IRI.somePodRootContainer.value
     );
-    expect(mockFetch.mock.calls[3][0]).toBe(
+    expect(mockFetch.mock.calls[3][0]).toEqual(
       INRUPT_TEST_IRI.somePodRootContainerAcl.value
     );
   });
@@ -650,13 +626,11 @@ describe("fetchResourceInfoWithAcl", () => {
       >;
     };
 
-    await unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    await unstable_fetchResourceInfoWithAcl(INRUPT_TEST_IRI.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        INRUPT_TEST_IRI.somePodRootContainerResource.value,
+        INRUPT_TEST_IRI.somePodResource.value,
         {
           method: "HEAD",
         },
@@ -673,13 +647,13 @@ describe("fetchResourceInfoWithAcl", () => {
           headers: {
             Link: "",
           },
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
         })
       )
     );
 
     const fetchedLitDataset = await unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
@@ -696,7 +670,7 @@ describe("fetchResourceInfoWithAcl", () => {
       );
 
     const fetchPromise = unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -715,7 +689,7 @@ describe("fetchResourceInfoWithAcl", () => {
       );
 
     const fetchPromise = unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -727,25 +701,20 @@ describe("fetchResourceInfoWithAcl", () => {
   });
 
   it("does not request the actual data from the server", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
-          })
-        )
-      );
-
-    await unstable_fetchResourceInfoWithAcl(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: INRUPT_TEST_IRI.somePodResource.value,
+        })
+      )
     );
 
+    await unstable_fetchResourceInfoWithAcl(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
+
     expect(mockFetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResource.value, { method: "HEAD" }],
+      [INRUPT_TEST_IRI.somePodResource.value, { method: "HEAD" }],
     ]);
   });
 });
@@ -759,13 +728,11 @@ describe("fetchResourceInfo", () => {
       >;
     };
 
-    await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    await internal_fetchResourceInfo(INRUPT_TEST_IRI.somePodResource);
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResource.value
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResource.value
     );
   });
 
@@ -774,119 +741,112 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
-    );
+    await internal_fetchResourceInfo(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResource.value
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      INRUPT_TEST_IRI.somePodResource.value
     );
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
-          })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: INRUPT_TEST_IRI.somePodResource.value,
+        })
+      )
+    );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    expect(litDatasetInfo.fetchedFrom).toEqual(INRUPT_TEST_IRI.somePodResource);
   });
 
   it("knows when the Resource contains a LitDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
           headers: { "Content-Type": "text/turtle" },
         })
       )
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(true);
+    expect(litDatasetInfo.isLitDataset).toEqual(true);
   });
 
   it("knows when the Resource does not contain a LitDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
           headers: { "Content-Type": "image/svg+xml" },
         })
       )
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(false);
+    expect(litDatasetInfo.isLitDataset).toEqual(false);
   });
 
   it("marks a Resource as not a LitDataset when its Content Type is unknown", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
         })
       )
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(false);
+    expect(litDatasetInfo.isLitDataset).toEqual(false);
   });
 
   it("exposes the Content Type when known", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
           headers: { "Content-Type": "text/turtle; charset=UTF-8" },
         })
       )
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.contentType).toBe("text/turtle; charset=UTF-8");
+    expect(litDatasetInfo.contentType).toEqual("text/turtle; charset=UTF-8");
   });
 
   it("does not expose a Content-Type when none is known", async () => {
@@ -895,7 +855,7 @@ describe("fetchResourceInfo", () => {
       .mockReturnValue(Promise.resolve(mockResponse()));
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -911,17 +871,17 @@ describe("fetchResourceInfo", () => {
           headers: {
             Link: '<resource.acl>; rel="acl"',
           },
-          url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+          url: INRUPT_TEST_IRI.somePodResource.value,
         })
       )
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.unstable_aclUrl?.value).toBe(
+    expect(litDatasetInfo.unstable_aclUrl?.value).toEqual(
       `${INRUPT_TEST_IRI.somePodRootContainer.value}resource.acl`
     );
   });
@@ -938,7 +898,7 @@ describe("fetchResourceInfo", () => {
     );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       { fetch: mockFetch }
     );
 
@@ -1028,25 +988,20 @@ describe("fetchResourceInfo", () => {
   });
 
   it("does not request the actual data from the server", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: INRUPT_TEST_IRI.somePodRootContainerResource.value,
-          })
-        )
-      );
-
-    await internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      {
-        fetch: mockFetch,
-      }
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: INRUPT_TEST_IRI.somePodResource.value,
+        })
+      )
     );
 
+    await internal_fetchResourceInfo(INRUPT_TEST_IRI.somePodResource, {
+      fetch: mockFetch,
+    });
+
     expect(mockFetch.mock.calls).toEqual([
-      [INRUPT_TEST_IRI.somePodRootContainerResource.value, { method: "HEAD" }],
+      [INRUPT_TEST_IRI.somePodResource.value, { method: "HEAD" }],
     ]);
   });
 
@@ -1058,7 +1013,7 @@ describe("fetchResourceInfo", () => {
       );
 
     const fetchPromise = internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -1077,7 +1032,7 @@ describe("fetchResourceInfo", () => {
       );
 
     const fetchPromise = internal_fetchResourceInfo(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       {
         fetch: mockFetch,
       }
@@ -1098,18 +1053,18 @@ describe("isContainer", () => {
       },
     };
 
-    expect(isContainer(resourceInfo)).toBe(true);
+    expect(isContainer(resourceInfo)).toEqual(true);
   });
 
   it("should recognise non-Containers", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
       },
     };
 
-    expect(isContainer(resourceInfo)).toBe(false);
+    expect(isContainer(resourceInfo)).toEqual(false);
   });
 });
 
@@ -1122,7 +1077,7 @@ describe("isLitDataset", () => {
       },
     };
 
-    expect(isLitDataset(resourceInfo)).toBe(true);
+    expect(isLitDataset(resourceInfo)).toEqual(true);
   });
 
   it("should recognise non-RDF Resources", () => {
@@ -1135,7 +1090,7 @@ describe("isLitDataset", () => {
       },
     };
 
-    expect(isLitDataset(resourceInfo)).toBe(false);
+    expect(isLitDataset(resourceInfo)).toEqual(false);
   });
 });
 
@@ -1143,13 +1098,13 @@ describe("getContentType", () => {
   it("should return the Content Type if known", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
         contentType: "multipart/form-data; boundary=something",
       },
     };
 
-    expect(getContentType(resourceInfo)).toBe(
+    expect(getContentType(resourceInfo)).toEqual(
       "multipart/form-data; boundary=something"
     );
   });
@@ -1157,7 +1112,7 @@ describe("getContentType", () => {
   it("should return null if no Content Type is known", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
       },
     };
@@ -1175,10 +1130,7 @@ describe("saveLitDatasetAt", () => {
       >;
     };
 
-    await saveLitDatasetAt(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      dataset()
-    );
+    await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, dataset());
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
@@ -1188,13 +1140,9 @@ describe("saveLitDatasetAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await saveLitDatasetAt(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
+    await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, dataset(), {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
@@ -1207,7 +1155,7 @@ describe("saveLitDatasetAt", () => {
       );
 
     const fetchPromise = saveLitDatasetAt(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       dataset(),
       {
         fetch: mockFetch,
@@ -1227,7 +1175,7 @@ describe("saveLitDatasetAt", () => {
       );
 
     const fetchPromise = saveLitDatasetAt(
-      INRUPT_TEST_IRI.somePodRootContainerResource,
+      INRUPT_TEST_IRI.somePodResource,
       dataset(),
       {
         fetch: mockFetch,
@@ -1247,36 +1195,32 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
-          DataFactory.namedNode("https://arbitrary.vocab/subject"),
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object"),
+          INRUPT_TEST_IRI.arbitrarySubject,
+          INRUPT_TEST_IRI.arbitraryPredicate,
+          INRUPT_TEST_IRI.arbitraryObject,
           undefined
         )
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual(
-        INRUPT_TEST_IRI.somePodRootContainerResource.value
+        INRUPT_TEST_IRI.somePodResource.value
       );
-      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[0][1]?.method).toEqual("PUT");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
         ]
-      ).toBe("text/turtle");
+      ).toEqual("text/turtle");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
-      ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
-      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+      ).toEqual('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toEqual(
+        "<https://some.pod/resource#subject> <https://inrupt.com/vocab/test#arbitraryPredicate> <https://inrupt.com/vocab/test#arbitraryObject>."
       );
     });
 
@@ -1294,19 +1238,15 @@ describe("saveLitDatasetAt", () => {
       mockDataset.add(
         DataFactory.quad(
           subjectLocal,
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+          INRUPT_TEST_IRI.arbitraryPredicate,
           objectLocal,
           undefined
         )
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]?.body).toMatch("#some-subject-name");
@@ -1327,25 +1267,25 @@ describe("saveLitDatasetAt", () => {
       mockDataset.add(
         DataFactory.quad(
           subjectLocal,
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+          INRUPT_TEST_IRI.arbitraryPredicate,
           objectLocal,
           undefined
         )
       );
 
       const storedLitDataset = await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
+        INRUPT_TEST_IRI.somePodResource,
         mockDataset,
         {
           fetch: mockFetch,
         }
       );
 
-      expect(Array.from(storedLitDataset)[0].subject.value).toBe(
-        `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-subject-name`
+      expect(Array.from(storedLitDataset)[0].subject.value).toEqual(
+        `${INRUPT_TEST_IRI.somePodResource.value}#some-subject-name`
       );
-      expect(Array.from(storedLitDataset)[0].object.value).toBe(
-        `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-object-name`
+      expect(Array.from(storedLitDataset)[0].object.value).toEqual(
+        `${INRUPT_TEST_IRI.somePodResource.value}#some-object-name`
       );
     });
 
@@ -1353,7 +1293,7 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = dataset();
 
       const storedLitDataset = await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
+        INRUPT_TEST_IRI.somePodResource,
         mockDataset
       );
 
@@ -1368,13 +1308,9 @@ describe("saveLitDatasetAt", () => {
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        dataset(),
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, dataset(), {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
         "If-None-Match": "*",
@@ -1390,9 +1326,9 @@ describe("saveLitDatasetAt", () => {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
-          DataFactory.namedNode("https://arbitrary.vocab/subject"),
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object"),
+          INRUPT_TEST_IRI.arbitrarySubject,
+          INRUPT_TEST_IRI.arbitraryPredicate,
+          INRUPT_TEST_IRI.arbitraryObject,
           undefined
         )
       );
@@ -1421,43 +1357,39 @@ describe("saveLitDatasetAt", () => {
         {
           additions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://some.vocab/subject"),
-              DataFactory.namedNode("https://some.vocab/predicate"),
-              DataFactory.namedNode("https://some.vocab/object"),
+              INRUPT_TEST_IRI.arbitrarySubject,
+              INRUPT_TEST_IRI.arbitraryPredicate,
+              INRUPT_TEST_IRI.arbitraryObject,
               undefined
             ),
           ],
           deletions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://some-other.vocab/subject"),
-              DataFactory.namedNode("https://some-other.vocab/predicate"),
-              DataFactory.namedNode("https://some-other.vocab/object"),
+              INRUPT_TEST_IRI.arbitraryOtherSubject,
+              INRUPT_TEST_IRI.arbitraryOtherPredicate,
+              INRUPT_TEST_IRI.arbitraryOtherObject,
               undefined
             ),
           ],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual(
-        INRUPT_TEST_IRI.somePodRootContainerResource.value
+        INRUPT_TEST_IRI.somePodResource.value
       );
-      expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
+      expect(mockFetch.mock.calls[0][1]?.method).toEqual("PATCH");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
         ]
-      ).toBe("application/sparql-update");
-      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
+      ).toEqual("application/sparql-update");
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toEqual(
         "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
           "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
       );
@@ -1479,7 +1411,7 @@ describe("saveLitDatasetAt", () => {
           additions: [
             DataFactory.quad(
               subjectLocal,
-              DataFactory.namedNode("https://some.vocab/predicate"),
+              INRUPT_TEST_IRI.arbitraryPredicate,
               objectLocal,
               undefined
             ),
@@ -1487,22 +1419,18 @@ describe("saveLitDatasetAt", () => {
           deletions: [
             DataFactory.quad(
               subjectLocal,
-              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              INRUPT_TEST_IRI.arbitraryOtherPredicate,
               objectLocal,
               undefined
             ),
           ],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       const [deleteStatement, insertStatement] = (mockFetch.mock.calls[0][1]!
         .body as string).split(";");
@@ -1528,18 +1456,18 @@ describe("saveLitDatasetAt", () => {
           additions: [
             DataFactory.quad(
               subjectLocal,
-              DataFactory.namedNode("https://some.vocab/predicate"),
+              INRUPT_TEST_IRI.arbitraryPredicate,
               objectLocal,
               undefined
             ),
           ],
           deletions: [],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
       const storedLitDataset = await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
+        INRUPT_TEST_IRI.somePodResource,
         mockDataset,
         {
           fetch: mockFetch,
@@ -1547,11 +1475,11 @@ describe("saveLitDatasetAt", () => {
       );
 
       const storedQuads = Array.from(storedLitDataset);
-      expect(storedQuads[storedQuads.length - 1].subject.value).toBe(
-        `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-subject-name`
+      expect(storedQuads[storedQuads.length - 1].subject.value).toEqual(
+        `${INRUPT_TEST_IRI.somePodResource.value}#some-subject-name`
       );
-      expect(storedQuads[storedQuads.length - 1].object.value).toBe(
-        `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-object-name`
+      expect(storedQuads[storedQuads.length - 1].object.value).toEqual(
+        `${INRUPT_TEST_IRI.somePodResource.value}#some-object-name`
       );
     });
 
@@ -1562,7 +1490,7 @@ describe("saveLitDatasetAt", () => {
 
       const mockDataset = getMockUpdatedDataset(
         { additions: [], deletions: [] },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
       await saveLitDatasetAt(
@@ -1577,7 +1505,7 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][0]).toEqual(
         INRUPT_TEST_IRI.someOtherPodResource.value
       );
-      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[0][1]?.method).toEqual("PUT");
       // Even though the change log is empty there should still be a body,
       // since the Dataset itself is not empty:
       expect(
@@ -1594,24 +1522,20 @@ describe("saveLitDatasetAt", () => {
         {
           additions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://arbitrary.vocab/subject"),
-              DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              INRUPT_TEST_IRI.arbitrarySubject,
+              INRUPT_TEST_IRI.arbitraryPredicate,
+              INRUPT_TEST_IRI.arbitraryObject,
               undefined
             ),
           ],
           deletions: [],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]?.body as string).not.toMatch("DELETE");
@@ -1627,23 +1551,19 @@ describe("saveLitDatasetAt", () => {
           additions: [],
           deletions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://arbitrary.vocab/subject"),
-              DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              INRUPT_TEST_IRI.arbitrarySubject,
+              INRUPT_TEST_IRI.arbitraryPredicate,
+              INRUPT_TEST_IRI.arbitraryObject,
               undefined
             ),
           ],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
-      await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
-        mockDataset,
-        {
-          fetch: mockFetch,
-        }
-      );
+      await saveLitDatasetAt(INRUPT_TEST_IRI.somePodResource, mockDataset, {
+        fetch: mockFetch,
+      });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][1]?.body as string).not.toMatch("INSERT");
@@ -1654,9 +1574,9 @@ describe("saveLitDatasetAt", () => {
         {
           additions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://arbitrary.vocab/subject"),
-              DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary.vocab/object"),
+              INRUPT_TEST_IRI.arbitrarySubject,
+              INRUPT_TEST_IRI.arbitraryPredicate,
+              INRUPT_TEST_IRI.arbitraryObject,
               undefined
             ),
           ],
@@ -1669,11 +1589,11 @@ describe("saveLitDatasetAt", () => {
             ),
           ],
         },
-        INRUPT_TEST_IRI.somePodRootContainerResource
+        INRUPT_TEST_IRI.somePodResource
       );
 
       const storedLitDataset = await saveLitDatasetAt(
-        INRUPT_TEST_IRI.somePodRootContainerResource,
+        INRUPT_TEST_IRI.somePodResource,
         mockDataset
       );
 
@@ -1789,9 +1709,9 @@ describe("saveLitDatasetInContainer", () => {
     const mockDataset = dataset();
     mockDataset.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
+        INRUPT_TEST_IRI.arbitraryObject,
         undefined
       )
     );
@@ -1808,17 +1728,17 @@ describe("saveLitDatasetInContainer", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual(
       INRUPT_TEST_IRI.somePodRootContainer.value
     );
-    expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
+    expect(mockFetch.mock.calls[0][1]?.method).toEqual("POST");
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
         "Content-Type"
       ]
-    ).toBe("text/turtle");
+    ).toEqual("text/turtle");
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
-    ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
-    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-      "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+    ).toEqual('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
+    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toEqual(
+      "<https://some.pod/resource#subject> <https://inrupt.com/vocab/test#arbitraryPredicate> <https://inrupt.com/vocab/test#arbitraryObject>."
     );
   });
 
@@ -1836,7 +1756,7 @@ describe("saveLitDatasetInContainer", () => {
     mockDataset.add(
       DataFactory.quad(
         subjectLocal,
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitraryPredicate,
         objectLocal,
         undefined
       )
@@ -1851,8 +1771,8 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-      "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
+    expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toEqual(
+      "<#some-subject-name> <https://inrupt.com/vocab/test#arbitraryPredicate> <#some-object-name>."
     );
   });
 
@@ -1898,7 +1818,7 @@ describe("saveLitDatasetInContainer", () => {
       Promise.resolve(
         new Response("Arbitrary response", {
           headers: {
-            Location: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+            Location: INRUPT_TEST_IRI.somePodResource.value,
           },
         })
       )
@@ -1913,7 +1833,7 @@ describe("saveLitDatasetInContainer", () => {
     );
 
     expect(savedLitDataset.resourceInfo.fetchedFrom).toEqual(
-      INRUPT_TEST_IRI.somePodRootContainerResource
+      INRUPT_TEST_IRI.somePodResource
     );
   });
 
@@ -1922,7 +1842,7 @@ describe("saveLitDatasetInContainer", () => {
       Promise.resolve(
         new Response("Arbitrary response", {
           headers: {
-            Location: INRUPT_TEST_IRI.somePodRootContainerResource.value,
+            Location: INRUPT_TEST_IRI.somePodResource.value,
           },
         })
       )
@@ -1938,7 +1858,7 @@ describe("saveLitDatasetInContainer", () => {
     mockDataset.add(
       DataFactory.quad(
         subjectLocal,
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitraryPredicate,
         objectLocal,
         undefined
       )
@@ -1952,11 +1872,11 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(Array.from(storedLitDataset)[0].subject.value).toBe(
-      `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-subject-name`
+    expect(Array.from(storedLitDataset)[0].subject.value).toEqual(
+      `${INRUPT_TEST_IRI.somePodResource.value}#some-subject-name`
     );
-    expect(Array.from(storedLitDataset)[0].object.value).toBe(
-      `${INRUPT_TEST_IRI.somePodRootContainerResource.value}#some-object-name`
+    expect(Array.from(storedLitDataset)[0].object.value).toEqual(
+      `${INRUPT_TEST_IRI.somePodResource.value}#some-object-name`
     );
   });
 
@@ -1993,17 +1913,17 @@ describe("saveAclFor", () => {
     };
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
-      accessTo: INRUPT_TEST_IRI.somePodRootContainerResource,
+      accessTo: INRUPT_TEST_IRI.somePodResource,
     });
 
     await unstable_saveAclFor(withResourceInfo, aclResource);
@@ -2017,17 +1937,17 @@ describe("saveAclFor", () => {
       .mockReturnValue(Promise.resolve(new Response()));
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
-      accessTo: INRUPT_TEST_IRI.somePodRootContainerResource,
+      accessTo: INRUPT_TEST_IRI.somePodResource,
     });
 
     await unstable_saveAclFor(withResourceInfo, aclResource, {
@@ -2045,17 +1965,17 @@ describe("saveAclFor", () => {
       );
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
-      accessTo: INRUPT_TEST_IRI.somePodRootContainerResource,
+      accessTo: INRUPT_TEST_IRI.somePodResource,
     });
 
     const fetchPromise = unstable_saveAclFor(withResourceInfo, aclResource, {
@@ -2073,14 +1993,14 @@ describe("saveAclFor", () => {
       .mockReturnValue(Promise.resolve(new Response()));
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
       accessTo: INRUPT_TEST_IRI.someOtherPodResource,
@@ -2090,9 +2010,7 @@ describe("saveAclFor", () => {
       fetch: mockFetch,
     });
 
-    expect(savedAcl.accessTo).toBe(
-      INRUPT_TEST_IRI.somePodRootContainerResource
-    );
+    expect(savedAcl.accessTo).toEqual(INRUPT_TEST_IRI.somePodResource);
   });
 
   it("sends a PATCH if the ACL contains a ChangeLog and was originally fetched from the same location", async () => {
@@ -2101,17 +2019,17 @@ describe("saveAclFor", () => {
       .mockReturnValue(Promise.resolve(new Response()));
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
       },
-      accessTo: INRUPT_TEST_IRI.somePodRootContainerResource,
+      accessTo: INRUPT_TEST_IRI.somePodResource,
       changeLog: {
         additions: [],
         deletions: [],
@@ -2122,7 +2040,7 @@ describe("saveAclFor", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
+    expect(mockFetch.mock.calls[0][1]?.method).toEqual("PATCH");
   });
 
   it("sends a PUT if the ACL contains a ChangeLog but was originally fetched from a different location", async () => {
@@ -2131,9 +2049,9 @@ describe("saveAclFor", () => {
       .mockReturnValue(Promise.resolve(new Response()));
     const withResourceInfo = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: true,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
@@ -2143,7 +2061,7 @@ describe("saveAclFor", () => {
         ),
         isLitDataset: true,
       },
-      accessTo: INRUPT_TEST_IRI.somePodRootContainerResource,
+      accessTo: INRUPT_TEST_IRI.somePodResource,
       changeLog: {
         additions: [],
         deletions: [],
@@ -2154,7 +2072,7 @@ describe("saveAclFor", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+    expect(mockFetch.mock.calls[0][1]?.method).toEqual("PUT");
   });
 });
 
@@ -2168,9 +2086,9 @@ describe("deleteAclFor", () => {
     };
     const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: false,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -2178,7 +2096,7 @@ describe("deleteAclFor", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value,
+        INRUPT_TEST_IRI.somePodResourceAcl.value,
         {
           method: "DELETE",
         },
@@ -2193,9 +2111,9 @@ describe("deleteAclFor", () => {
 
     const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: false,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -2203,7 +2121,7 @@ describe("deleteAclFor", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        INRUPT_TEST_IRI.somePodRootContainerResourceAcl.value,
+        INRUPT_TEST_IRI.somePodResourceAcl.value,
         {
           method: "DELETE",
         },
@@ -2218,9 +2136,9 @@ describe("deleteAclFor", () => {
 
     const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: false,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -2240,9 +2158,9 @@ describe("deleteAclFor", () => {
 
     const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: false,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 
@@ -2264,9 +2182,9 @@ describe("deleteAclFor", () => {
 
     const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
       resourceInfo: {
-        fetchedFrom: INRUPT_TEST_IRI.somePodRootContainerResource,
+        fetchedFrom: INRUPT_TEST_IRI.somePodResource,
         isLitDataset: false,
-        unstable_aclUrl: INRUPT_TEST_IRI.somePodRootContainerResourceAcl,
+        unstable_aclUrl: INRUPT_TEST_IRI.somePodResourceAcl,
       },
     };
 

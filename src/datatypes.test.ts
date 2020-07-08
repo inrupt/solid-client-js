@@ -45,20 +45,20 @@ import { LocalNode } from "./interfaces";
 
 describe("serializeBoolean", () => {
   it("serializes true as `1`", () => {
-    expect(serializeBoolean(true)).toBe("1");
+    expect(serializeBoolean(true)).toEqual("1");
   });
 
   it("serializes false as `0`", () => {
-    expect(serializeBoolean(false)).toBe("0");
+    expect(serializeBoolean(false)).toEqual("0");
   });
 });
 describe("deserializeBoolean", () => {
   it("parses `1` as true", () => {
-    expect(deserializeBoolean("1")).toBe(true);
+    expect(deserializeBoolean("1")).toEqual(true);
   });
 
   it("parses `0` as false", () => {
-    expect(deserializeBoolean("0")).toBe(false);
+    expect(deserializeBoolean("0")).toEqual(false);
   });
 
   it("returns null if a value is not a serialised boolean", () => {
@@ -71,7 +71,7 @@ describe("serializeDatetime", () => {
   it("properly serialises a given datetime", () => {
     expect(
       serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)))
-    ).toBe("1990-11-12T13:37:42Z");
+    ).toEqual("1990-11-12T13:37:42Z");
   });
 });
 describe("deserializeDatetime", () => {
@@ -88,12 +88,12 @@ describe("deserializeDatetime", () => {
 
 describe("serializeDecimal", () => {
   it("properly serialises a given decimal", () => {
-    expect(serializeDecimal(13.37)).toBe("13.37");
+    expect(serializeDecimal(13.37)).toEqual("13.37");
   });
 });
 describe("deserializeDecimal", () => {
   it("properly parses a serialised decimal", () => {
-    expect(deserializeDecimal("13.37")).toBe(13.37);
+    expect(deserializeDecimal("13.37")).toEqual(13.37);
   });
 
   it("return null if a value is not a serialised decimal", () => {
@@ -103,12 +103,12 @@ describe("deserializeDecimal", () => {
 
 describe("serializeInteger", () => {
   it("properly serialises a given integer", () => {
-    expect(serializeInteger(42)).toBe("42");
+    expect(serializeInteger(42)).toEqual("42");
   });
 });
 describe("deserializeInteger", () => {
   it("properly parses a serialised integer", () => {
-    expect(deserializeInteger("42")).toBe(42);
+    expect(deserializeInteger("42")).toEqual(42);
   });
 
   it("return null if a value is not a serialised integer", () => {
@@ -120,8 +120,8 @@ describe("normalizeLocale", () => {
   // The RDF/JS spec mandates lowercase locales:
   // https://rdf.js.org/data-model-spec/#dom-literal-language
   it("lowercases a given locale", () => {
-    expect(normalizeLocale("EN-GB")).toBe("en-gb");
-    expect(normalizeLocale("nl-NL")).toBe("nl-nl");
+    expect(normalizeLocale("EN-GB")).toEqual("en-gb");
+    expect(normalizeLocale("nl-NL")).toEqual("nl-nl");
   });
 });
 
@@ -129,35 +129,35 @@ describe("isNamedNode", () => {
   it("recognises a NamedNode", () => {
     expect(
       isNamedNode(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("recognises non-NamedNodes", () => {
-    expect(isNamedNode(DataFactory.blankNode())).toBe(false);
+    expect(isNamedNode(DataFactory.blankNode())).toEqual(false);
     expect(
       isNamedNode(Object.assign(DataFactory.blankNode(), { name: "localNode" }))
-    ).toBe(false);
-    expect(isNamedNode(DataFactory.literal("Arbitrary value"))).toBe(false);
-    expect(isNamedNode(DataFactory.variable("Arbitrary name"))).toBe(false);
-    expect(isNamedNode("Arbitrary string")).toBe(false);
+    ).toEqual(false);
+    expect(isNamedNode(DataFactory.literal("Arbitrary value"))).toEqual(false);
+    expect(isNamedNode(DataFactory.variable("Arbitrary name"))).toEqual(false);
+    expect(isNamedNode("Arbitrary string")).toEqual(false);
   });
 });
 
 describe("isLiteral", () => {
   it("recognises a Literal", () => {
-    expect(isLiteral(DataFactory.literal("Arbitrary value"))).toBe(true);
+    expect(isLiteral(DataFactory.literal("Arbitrary value"))).toEqual(true);
   });
 
   it("recognises non-Literals", () => {
-    expect(isLiteral(DataFactory.blankNode())).toBe(false);
+    expect(isLiteral(DataFactory.blankNode())).toEqual(false);
     expect(
       isLiteral(Object.assign(DataFactory.blankNode(), { name: "localNode" }))
-    ).toBe(false);
+    ).toEqual(false);
     expect(
       isLiteral(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
-    ).toBe(false);
-    expect(isLiteral(DataFactory.variable("Arbitrary name"))).toBe(false);
-    expect(isLiteral("Arbitrary string")).toBe(false);
+    ).toEqual(false);
+    expect(isLiteral(DataFactory.variable("Arbitrary name"))).toEqual(false);
+    expect(isLiteral("Arbitrary string")).toEqual(false);
   });
 });
 
@@ -165,33 +165,33 @@ describe("isLocalNode", () => {
   it("recognises a LocalNode", () => {
     expect(
       isLocalNode(Object.assign(DataFactory.blankNode(), { name: "localNode" }))
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("recognises non-LocalNodes", () => {
-    expect(isLocalNode(DataFactory.blankNode())).toBe(false);
+    expect(isLocalNode(DataFactory.blankNode())).toEqual(false);
     expect(
       isLocalNode(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
-    ).toBe(false);
-    expect(isLocalNode(DataFactory.literal("Arbitrary value"))).toBe(false);
-    expect(isLocalNode(DataFactory.variable("Arbitrary name"))).toBe(false);
-    expect(isLocalNode("Arbitrary string")).toBe(false);
+    ).toEqual(false);
+    expect(isLocalNode(DataFactory.literal("Arbitrary value"))).toEqual(false);
+    expect(isLocalNode(DataFactory.variable("Arbitrary name"))).toEqual(false);
+    expect(isLocalNode("Arbitrary string")).toEqual(false);
   });
 });
 
 describe("getLocalNode", () => {
   it("constructs a proper LocalNode", () => {
     const localNode = getLocalNode("some-name");
-    expect(localNode.termType).toBe("BlankNode");
-    expect(localNode.name).toBe("some-name");
+    expect(localNode.termType).toEqual("BlankNode");
+    expect(localNode.name).toEqual("some-name");
   });
 });
 
 describe("asNamedNode", () => {
   it("constructs a proper NamedNode from an IRI", () => {
     const namedNode = asNamedNode("https://some.pod/resource#node");
-    expect(namedNode.termType).toBe("NamedNode");
-    expect(namedNode.value).toBe("https://some.pod/resource#node");
+    expect(namedNode.termType).toEqual("NamedNode");
+    expect(namedNode.value).toEqual("https://some.pod/resource#node");
   });
 
   it("preserves an existing NamedNode", () => {
@@ -215,12 +215,12 @@ describe("isEqual", () => {
     const localNode2: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "some-name",
     });
-    expect(isEqual(localNode1, localNode2)).toBe(true);
+    expect(isEqual(localNode1, localNode2)).toEqual(true);
   });
   it("recognises two equal NamedNodes without needing a Resource IRI", () => {
     const namedNode1 = DataFactory.namedNode("https://some.pod/resource#node");
     const namedNode2 = DataFactory.namedNode("https://some.pod/resource#node");
-    expect(isEqual(namedNode1, namedNode2)).toBe(true);
+    expect(isEqual(namedNode1, namedNode2)).toEqual(true);
   });
   it("recognises the equality of a LocalNode with the same resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -231,14 +231,14 @@ describe("isEqual", () => {
     );
     expect(
       isEqual(localNode, namedNode, {
-        resourceIri: "https://some.pod/resource",
+        resourceIri: INRUPT_TEST_IRI.somePodResource,
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       isEqual(namedNode, localNode, {
-        resourceIri: "https://some.pod/resource",
+        resourceIri: INRUPT_TEST_IRI.somePodResource,
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
   it("recognises the inequality of a LocalNode with a different resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -249,14 +249,14 @@ describe("isEqual", () => {
     );
     expect(
       isEqual(localNode, namedNode, {
-        resourceIri: "https://some-other.pod/resource",
+        resourceIri: INRUPT_TEST_IRI.someOtherPodResource,
       })
-    ).toBe(false);
+    ).toEqual(false);
     expect(
       isEqual(namedNode, localNode, {
-        resourceIri: "https://some-other.pod/resource",
+        resourceIri: INRUPT_TEST_IRI.someOtherPodResource,
       })
-    ).toBe(false);
+    ).toEqual(false);
   });
   it("does not mark a LocalNode as equal to a NamedNode if no resource IRI is known", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
@@ -265,8 +265,8 @@ describe("isEqual", () => {
     const namedNode = DataFactory.namedNode(
       "https://some.pod/resource#some-name"
     );
-    expect(isEqual(localNode, namedNode)).toBe(false);
-    expect(isEqual(namedNode, localNode)).toBe(false);
+    expect(isEqual(localNode, namedNode)).toEqual(false);
+    expect(isEqual(namedNode, localNode)).toEqual(false);
   });
 });
 
@@ -280,34 +280,34 @@ describe("resolveIriForLocalNodes", () => {
     });
     const quad = DataFactory.quad(
       localNodeSubject,
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       localNodeObject
     );
     const resolvedQuad = resolveIriForLocalNodes(
       quad,
-      "https://some.pod/resource"
+      INRUPT_TEST_IRI.somePodResource
     );
-    expect(resolvedQuad.subject.value).toBe(
+    expect(resolvedQuad.subject.value).toEqual(
       "https://some.pod/resource#some-subject"
     );
-    expect(resolvedQuad.object.value).toBe(
+    expect(resolvedQuad.object.value).toEqual(
       "https://some.pod/resource#some-object"
     );
   });
   it("does not resolve the IRI for NamedNodes", () => {
     const quad = DataFactory.quad(
       DataFactory.namedNode("https://some.pod/resource#some-subject"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/resource#some-object")
     );
     const resolvedQuad = resolveIriForLocalNodes(
       quad,
-      "https://arbitrary.pod/resource"
+      INRUPT_TEST_IRI.somePodResource
     );
-    expect(resolvedQuad.subject.value).toBe(
+    expect(resolvedQuad.subject.value).toEqual(
       "https://some.pod/resource#some-subject"
     );
-    expect(resolvedQuad.object.value).toBe(
+    expect(resolvedQuad.object.value).toEqual(
       "https://some.pod/resource#some-object"
     );
   });
@@ -319,15 +319,15 @@ describe("resolveIriForLocalNode", () => {
       name: "some-name",
     });
     expect(
-      resolveIriForLocalNode(localNode, "https://some.pod/resource").value
-    ).toBe("https://some.pod/resource#some-name");
+      resolveIriForLocalNode(localNode, INRUPT_TEST_IRI.somePodResource).value
+    ).toEqual("https://some.pod/resource#some-name");
   });
 });
 
 describe("resolveLocalIri", () => {
   it("properly resolves the IRI for a given name and resource IRI", () => {
-    expect(resolveLocalIri("some-name", "https://some.pod/resource")).toBe(
-      "https://some.pod/resource#some-name"
-    );
+    expect(
+      resolveLocalIri("some-name", INRUPT_TEST_IRI.somePodResource)
+    ).toEqual("https://some.pod/resource#some-name");
   });
 });

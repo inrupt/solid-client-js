@@ -35,8 +35,9 @@ import {
   addNamedNode,
   addLiteral,
 } from "./add";
+import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 
-function getMockEmptyThing(iri = "https://arbitrary.vocab/subject") {
+function getMockEmptyThing(iri = INRUPT_TEST_IRI.arbitrarySubject) {
   const thing = dataset();
   return Object.assign(thing, { url: iri });
 }
@@ -74,11 +75,11 @@ function quadHas(
 
 describe("addIri", () => {
   it("adds the given IRI value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "https://some.pod/other-resource#object"
     );
 
@@ -86,19 +87,19 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts values as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
@@ -106,22 +107,22 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts values as ThingPersisteds", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     const targetThing = getMockEmptyThing(
       "https://some.pod/other-resource#object"
     );
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       targetThing
     );
 
@@ -129,15 +130,15 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts values as ThingLocals", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
       { name: "localObject" }
@@ -149,7 +150,7 @@ describe("addIri", () => {
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       thingLocal
     );
 
@@ -157,19 +158,19 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
       })
-    ).toBe(true);
-    expect((updatedQuads[0].object as LocalNode).name).toBe("localObject");
+    ).toEqual(true);
+    expect((updatedQuads[0].object as LocalNode).name).toEqual("localObject");
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addUrl(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "https://some.pod/other-resource#object"
     );
 
@@ -177,11 +178,11 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -209,7 +210,7 @@ describe("addIri", () => {
 
     const updatedThing = addUrl(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "https://some.pod/other-resource#object"
     );
 
@@ -217,26 +218,26 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         DataFactory.namedNode("https://some.pod/other-resource#object")
       )
     );
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "https://some.pod/yet-another-resource#object"
     );
 
@@ -244,35 +245,35 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode(
           "https://some.pod/yet-another-resource#object"
         ),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addUrl(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "https://some.pod/other-resource#object"
     );
 
@@ -280,28 +281,28 @@ describe("addIri", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addBoolean", () => {
   it("adds the given boolean value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addBoolean(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -309,19 +310,19 @@ describe("addBoolean", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "1"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addBoolean(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       false
     );
 
@@ -329,11 +330,11 @@ describe("addBoolean", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "0"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -361,7 +362,7 @@ describe("addBoolean", () => {
 
     const updatedThing = addBoolean(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -369,26 +370,26 @@ describe("addBoolean", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "1"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         literalOfType("boolean", "0")
       )
     );
 
     const updatedThing = addBoolean(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -396,33 +397,33 @@ describe("addBoolean", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "0"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "1"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addBoolean(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -430,28 +431,28 @@ describe("addBoolean", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("boolean", "1"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addDatetime", () => {
   it("adds the given datetime value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addDatetime(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -459,19 +460,19 @@ describe("addDatetime", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addDatetime(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -479,11 +480,11 @@ describe("addDatetime", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -511,7 +512,7 @@ describe("addDatetime", () => {
 
     const updatedThing = addDatetime(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -519,26 +520,26 @@ describe("addDatetime", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         literalOfType("dateTime", "1955-06-08T13:37:42Z")
       )
     );
 
     const updatedThing = addDatetime(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -546,33 +547,33 @@ describe("addDatetime", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1955-06-08T13:37:42Z"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addDatetime(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -580,28 +581,28 @@ describe("addDatetime", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addDecimal", () => {
   it("adds the given decimal value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addDecimal(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -609,19 +610,19 @@ describe("addDecimal", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addDecimal(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -629,11 +630,11 @@ describe("addDecimal", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -661,7 +662,7 @@ describe("addDecimal", () => {
 
     const updatedThing = addDecimal(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -669,26 +670,26 @@ describe("addDecimal", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         literalOfType("decimal", "4.2")
       )
     );
 
     const updatedThing = addDecimal(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -696,33 +697,33 @@ describe("addDecimal", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "4.2"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addDecimal(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -730,44 +731,28 @@ describe("addDecimal", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addInteger", () => {
   it("adds the given integer value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
-
-    const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
-
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
-    expect(
-      quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("integer", "42"),
-      })
-    ).toBe(true);
-  });
-
-  it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addInteger(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -775,11 +760,31 @@ describe("addInteger", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toEqual(true);
+  });
+
+  it("accepts Predicates as Named Nodes", () => {
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
+
+    const updatedThing = addInteger(
+      thing,
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      42
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(1);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
+        object: literalOfType("integer", "42"),
+      })
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -807,7 +812,7 @@ describe("addInteger", () => {
 
     const updatedThing = addInteger(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -815,81 +820,89 @@ describe("addInteger", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         literalOfType("integer", "1337")
       )
     );
 
-    const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
+    const updatedThing = addInteger(
+      thing,
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      42
+    );
 
     const updatedQuads = Array.from(updatedThing);
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("integer", "1337"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
-    const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
+    const updatedThing = addInteger(
+      thing,
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      42
+    );
 
     const updatedQuads = Array.from(updatedThing);
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addStringWithLocale", () => {
   it("adds the given localised string value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addStringWithLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -898,19 +911,19 @@ describe("addStringWithLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "en-gb"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addStringWithLocale(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -919,11 +932,11 @@ describe("addStringWithLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "en-gb"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -931,7 +944,7 @@ describe("addStringWithLocale", () => {
 
     const updatedThing = addStringWithLocale(
       thing,
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -952,7 +965,7 @@ describe("addStringWithLocale", () => {
 
     const updatedThing = addStringWithLocale(
       thingLocal,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -961,26 +974,26 @@ describe("addStringWithLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "en-gb"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         DataFactory.literal("Some string", "nl-NL")
       )
     );
 
     const updatedThing = addStringWithLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -989,33 +1002,33 @@ describe("addStringWithLocale", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "nl-nl"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "en-gb"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addStringWithLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
       "en-GB"
     );
@@ -1024,28 +1037,28 @@ describe("addStringWithLocale", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string", "en-gb"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addStringNoLocale", () => {
   it("adds the given unlocalised string value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addStringNoLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string value"
     );
 
@@ -1053,19 +1066,19 @@ describe("addStringNoLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addStringNoLocale(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string value"
     );
 
@@ -1073,11 +1086,11 @@ describe("addStringNoLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -1105,7 +1118,7 @@ describe("addStringNoLocale", () => {
 
     const updatedThing = addStringNoLocale(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string value"
     );
 
@@ -1113,26 +1126,26 @@ describe("addStringNoLocale", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         literalOfType("string", "Some other string value")
       )
     );
 
     const updatedThing = addStringNoLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string value"
     );
 
@@ -1140,33 +1153,33 @@ describe("addStringNoLocale", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some other string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("integer", "42")
       )
     );
 
     const updatedThing = addStringNoLocale(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string value"
     );
 
@@ -1174,28 +1187,28 @@ describe("addStringNoLocale", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addNamedNode", () => {
   it("adds the given NamedNode value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addNamedNode(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
@@ -1203,19 +1216,19 @@ describe("addNamedNode", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addNamedNode(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
@@ -1223,11 +1236,11 @@ describe("addNamedNode", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -1255,7 +1268,7 @@ describe("addNamedNode", () => {
 
     const updatedThing = addNamedNode(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
@@ -1263,26 +1276,26 @@ describe("addNamedNode", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         DataFactory.namedNode("https://some.pod/other-resource#object")
       )
     );
 
     const updatedThing = addNamedNode(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/yet-another-resource#object")
     );
 
@@ -1290,35 +1303,35 @@ describe("addNamedNode", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode(
           "https://some.pod/yet-another-resource#object"
         ),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("string", "Some other value")
       )
     );
 
     const updatedThing = addNamedNode(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
@@ -1326,28 +1339,28 @@ describe("addNamedNode", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("string", "Some other value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
 
 describe("addLiteral", () => {
   it("adds the given Literal value for the given predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addLiteral(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some string value")
     );
 
@@ -1355,19 +1368,19 @@ describe("addLiteral", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("accepts Predicates as Named Nodes", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
 
     const updatedThing = addLiteral(
       thing,
-      DataFactory.namedNode("https://some.vocab/predicate"),
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some string value")
     );
 
@@ -1375,11 +1388,11 @@ describe("addLiteral", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
@@ -1407,7 +1420,7 @@ describe("addLiteral", () => {
 
     const updatedThing = addLiteral(
       thingLocal,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some string value")
     );
 
@@ -1415,26 +1428,26 @@ describe("addLiteral", () => {
     expect(updatedQuads).toHaveLength(1);
     expect(
       quadHas(updatedQuads[0], {
-        predicate: "https://some.vocab/predicate",
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    ).toEqual(true);
+    expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
   });
 
   it("preserves existing values for the same Predicate", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryPredicate,
         DataFactory.literal("Some other string value")
       )
     );
 
     const updatedThing = addLiteral(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some string value")
     );
 
@@ -1442,33 +1455,33 @@ describe("addLiteral", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some other string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
     thing.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://some.pod/resource#subject"),
-        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        INRUPT_TEST_IRI.arbitrarySubject,
+        INRUPT_TEST_IRI.arbitraryOtherPredicate,
         literalOfType("integer", "42")
       )
     );
 
     const updatedThing = addLiteral(
       thing,
-      "https://some.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Some string value")
     );
 
@@ -1476,17 +1489,17 @@ describe("addLiteral", () => {
     expect(updatedQuads).toHaveLength(2);
     expect(
       quadHas(updatedQuads[0], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some-other.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        predicate: INRUPT_TEST_IRI.arbitraryPredicate,
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toEqual(true);
   });
 });
