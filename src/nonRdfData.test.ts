@@ -36,10 +36,13 @@ import {
   unstable_deleteFile,
   unstable_saveFileInContainer,
   unstable_overwriteFile,
+  unstable_fetchFileWithAcl,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
+import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
+import { makeString } from "./interfaces";
 
-describe("Non-RDF data fetch", () => {
+describe("unstable_fetchFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("./fetcher") as {
       fetch: jest.Mock<
@@ -54,12 +57,10 @@ describe("Non-RDF data fetch", () => {
       )
     );
 
-    const response = await unstable_fetchFile("https://some.url");
-
-    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
-    );
+    await unstable_fetchFile(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+    ]);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
@@ -71,13 +72,270 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
+    await unstable_fetchFile(makeString(INRUPT_TEST_IRI.someNonRdfResource), {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
+    expect(mockFetch.mock.calls).toEqual([
+      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+    ]);
+  });
+
+  it("should return the fetched data as a blob", async () => {
+    const init: ResponseInit & { url: string } = {
+      status: 200,
+      statusText: "OK",
+      url: makeString(INRUPT_TEST_IRI.someNonRdfResource),
+    };
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+
+    const file = await unstable_fetchFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(file.resourceInfo.fetchedFrom).toEqual(
+      INRUPT_TEST_IRI.someNonRdfResource
+    );
+    expect(file.resourceInfo.contentType).toContain("text/plain");
+    expect(file.resourceInfo.isLitDataset).toEqual(false);
+
+    const fileData = await file.text();
+    expect(fileData).toEqual("Some data");
+  });
+
+  it("should pass the request headers through", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response("Some data", { status: 200, statusText: "OK" })
+        )
+      );
+
+    const response = await unstable_fetchFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        init: {
+          headers: new Headers({ Accept: "text/turtle" }),
+        },
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        {
+          headers: new Headers({ Accept: "text/turtle" }),
+        },
+      ],
+    ]);
+  });
+
+  it("should throw on failure", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 400, statusText: "Bad request" })
+        )
+      );
+
+    const response = unstable_fetchFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
+    await expect(response).rejects.toThrow(
+      "Fetching the File failed: 400 Bad request"
+    );
+  });
+});
+
+describe("unstable_fetchFileWithAcl", () => {
+  it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("./fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        new Response("Some data", { status: 200, statusText: "OK" })
+      )
+    );
+
+    await unstable_fetchFileWithAcl(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+    ]);
+  });
+
+  it("should GET a remote resource using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response("Some data", { status: 200, statusText: "OK" })
+        )
+      );
+
+    const response = await unstable_fetchFileWithAcl(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls).toEqual([
+      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+    ]);
+  });
+
+  it("should return the fetched data as a blob, along with its ACL", async () => {
+    const init: ResponseInit & { url: string } = {
+      status: 200,
+      statusText: "OK",
+      url: makeString(INRUPT_TEST_IRI.someNonRdfResource),
+    };
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+
+    const file = await unstable_fetchFileWithAcl(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(file.resourceInfo.fetchedFrom).toEqual(
+      INRUPT_TEST_IRI.someNonRdfResource
+    );
+    expect(file.resourceInfo.contentType).toContain("text/plain");
+    expect(file.resourceInfo.isLitDataset).toEqual(false);
+
+    const fileData = await file.text();
+    expect(fileData).toEqual("Some data");
+  });
+
+  it("returns both the Resource's own ACL as well as its Container's", async () => {
+    const mockFetch = jest.fn((url) => {
+      const headers =
+        url === INRUPT_TEST_IRI.somePodResource.value
+          ? {
+              Link: `<${INRUPT_TEST_IRI.somePodResourceAclRelativePath}>; rel="acl"`,
+            }
+          : url === INRUPT_TEST_IRI.somePodRootContainer.value
+          ? {
+              Link: `<${INRUPT_TEST_IRI.somePodRootContainerAclRelativePath}>; rel="acl"`,
+            }
+          : undefined;
+      const init: ResponseInit & { url: string } = {
+        headers: headers,
+        url: url,
+      };
+      return Promise.resolve(new Response(undefined, init));
+    });
+
+    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+      makeString(INRUPT_TEST_IRI.somePodResource),
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toEqual(
+      INRUPT_TEST_IRI.somePodResource
+    );
+    expect(
+      fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom
+    ).toEqual(INRUPT_TEST_IRI.somePodResourceAcl);
+    expect(
+      fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom
+    ).toEqual(INRUPT_TEST_IRI.somePodRootContainerAcl);
+    expect(mockFetch.mock.calls).toHaveLength(4);
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      makeString(INRUPT_TEST_IRI.somePodResource)
+    );
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      makeString(INRUPT_TEST_IRI.somePodResourceAcl)
+    );
+    expect(mockFetch.mock.calls[2][0]).toEqual(
+      makeString(INRUPT_TEST_IRI.somePodRootContainer)
+    );
+    expect(mockFetch.mock.calls[3][0]).toEqual(
+      makeString(INRUPT_TEST_IRI.somePodRootContainerAcl)
+    );
+  });
+
+  it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    const init: ResponseInit & { url: string } = {
+      headers: {
+        Link: "",
+      },
+      url: makeString(INRUPT_TEST_IRI.somePodResource),
+    };
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(new Response(undefined, init))
+    );
+
+    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+      makeString(INRUPT_TEST_IRI.somePodResource),
+      { fetch: mockFetch }
+    );
+
+    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const fetchPromise = unstable_fetchFileWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the File failed: 403 Forbidden.")
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 404", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not found", { status: 404 }))
+      );
+
+    const fetchPromise = unstable_fetchFileWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Fetching the File failed: 404 Not Found.")
     );
   });
 
@@ -90,27 +348,27 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
-      init: {
-        headers: new Headers({ Accept: "text/turtle" }),
-      },
-      fetch: mockFetch,
-    });
+    const response = await unstable_fetchFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        init: {
+          headers: new Headers({ Accept: "text/turtle" }),
+        },
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           headers: new Headers({ Accept: "text/turtle" }),
         },
       ],
     ]);
-    expect(response).toEqual(
-      new Response("Some data", { status: 200, statusText: "OK" })
-    );
   });
 
-  it("should return the response even on failure", async () => {
+  it("should throw on failure", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -119,13 +377,14 @@ describe("Non-RDF data fetch", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
-      fetch: mockFetch,
-    });
-
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
-    expect(response).toEqual(
-      new Response(undefined, { status: 400, statusText: "Bad request" })
+    const response = unstable_fetchFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
+    await expect(response).rejects.toThrow(
+      "Fetching the File failed: 400 Bad request"
     );
   });
 });
@@ -145,11 +404,13 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await unstable_deleteFile("https://some.url");
+    const response = await unstable_deleteFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
 
     expect(fetcher.fetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
         },
@@ -169,13 +430,16 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    const response = await unstable_deleteFile("https://some.url", {
-      fetch: mockFetch,
-    });
+    const response = await unstable_deleteFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
         },
@@ -195,7 +459,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await unstable_deleteFile("https://some.url", {
+    await unstable_deleteFile(makeString(INRUPT_TEST_IRI.someNonRdfResource), {
       fetch: mockFetch,
       init: {
         mode: "same-origin",
@@ -204,7 +468,7 @@ describe("Non-RDF data deletion", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
           mode: "same-origin",
@@ -222,9 +486,12 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await unstable_deleteFile("https://some.url", {
-      fetch: mockFetch,
-    });
+    const response = await unstable_deleteFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(response).toEqual(
       new Response(undefined, {
@@ -255,7 +522,7 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const response = await unstable_saveFileInContainer(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
@@ -277,12 +544,12 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const response = await unstable_saveFileInContainer(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -305,7 +572,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
@@ -323,13 +590,13 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(mockCall[1]?.headers).toEqual(
       new Headers({ "Content-Type": "binary" })
     );
@@ -350,7 +617,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       {
         fetch: mockFetch,
@@ -359,7 +626,7 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -383,14 +650,18 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     await expect(
-      unstable_saveFileInContainer("https://some.url", mockBlob, {
-        fetch: mockFetch,
-        init: {
-          headers: {
-            Slug: "someFileName",
+      unstable_saveFileInContainer(
+        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        mockBlob,
+        {
+          fetch: mockFetch,
+          init: {
+            headers: {
+              Slug: "someFileName",
+            },
           },
-        },
-      })
+        }
+      )
     ).rejects.toThrow(/reserved header/);
   });
 });
@@ -414,7 +685,10 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    await unstable_overwriteFile("https://some.url", mockBlob);
+    await unstable_overwriteFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      mockBlob
+    );
 
     expect(fetcher.fetch).toHaveBeenCalled();
   });
@@ -433,10 +707,13 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    const response = await unstable_overwriteFile("https://some.url", mockBlob);
+    const response = await unstable_overwriteFile(
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      mockBlob
+    );
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -460,7 +737,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       );
 
     const response = await unstable_overwriteFile(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
@@ -478,13 +755,13 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       );
 
     const response = await unstable_overwriteFile(
-      "https://some.url",
+      makeString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(mockCall[1]?.headers).toEqual(
       new Headers({ "Content-Type": "binary" })
     );

@@ -49,43 +49,43 @@ const INRUPT_TEST_IRI = {
   },
   // NS: _NS,
 
-  somePodRoot: DataFactory.namedNode("https://some.pod.com/"),
+  somePodRoot: DataFactory.namedNode("https://some.pod/"),
   somePodRootContainer: DataFactory.namedNode(
-    "https://some.pod.com/rootContainer/"
+    "https://some.pod/rootContainer/"
   ),
   someOtherPodRootContainer: DataFactory.namedNode(
     "https://some.other.pod.com/canBeAnywhere/rootContainer/"
   ),
 
   somePodResource: DataFactory.namedNode(
-    "https://some.pod.com/rootContainer/Resource1"
+    "https://some.pod/rootContainer/Resource1"
   ),
 
   hashSomeSubject: "some-subject", // Value must match hash in IRI...
   somePodResourceHashSomeSubject: DataFactory.namedNode(
-    `https://some.pod.com/rootContainer/Resource1#some-subject`
+    `https://some.pod/rootContainer/Resource1#some-subject`
   ),
   hashSomeObject: "some-object", // Value must match hash in IRI...
   somePodResourceHashSomeObject: DataFactory.namedNode(
-    `https://some.pod.com/rootContainer/Resource1#some-object`
+    `https://some.pod/rootContainer/Resource1#some-object`
   ),
 
   // // ESS ACL convention (i.e. query params)
-  // somePodRootAcl: DataFactory.namedNode("https://some.pod.com/?ext=acl"),
-  // somePodRootContainerAcl: DataFactory.namedNode("https://some.pod.com/rootContainer/?ext=acl"),
+  // somePodRootAcl: DataFactory.namedNode("https://some.pod/?ext=acl"),
+  // somePodRootContainerAcl: DataFactory.namedNode("https://some.pod/rootContainer/?ext=acl"),
   // somePodRootContainerAclRelativePath: "?ext=acl",
   // somePodResourceAclRelativePath: "Resource1?ext=acl",
-  // somePodResourceAcl: DataFactory.namedNode("https://some.pod.com/rootContainer/Resource1?ext=acl"),
+  // somePodResourceAcl: DataFactory.namedNode("https://some.pod/rootContainer/Resource1?ext=acl"),
 
   // NSS ACL convention (i.e. filename extensions)
-  somePodRootAcl: DataFactory.namedNode("https://some.pod.com/.acl"),
+  somePodRootAcl: DataFactory.namedNode("https://some.pod/.acl"),
   somePodRootContainerAcl: DataFactory.namedNode(
-    "https://some.pod.com/rootContainer/.acl"
+    "https://some.pod/rootContainer/.acl"
   ),
   somePodRootContainerAclRelativePath: ".acl",
   somePodResourceAclRelativePath: "Resource1.acl",
   somePodResourceAcl: DataFactory.namedNode(
-    "https://some.pod.com/rootContainer/Resource1.acl"
+    "https://some.pod/rootContainer/Resource1.acl"
   ),
 
   somePodGroupId: DataFactory.namedNode("https://some.pod/group#id"),
@@ -104,14 +104,14 @@ const INRUPT_TEST_IRI = {
    * An arbitrary RDF named graph.
    */
   arbitraryNamedGraph: DataFactory.namedNode(
-    "https://some.pod.com/arbitraryNamedGraph"
+    "https://some.pod/arbitraryNamedGraph"
   ),
 
   /**
    * An arbitrary WebID.
    */
   somePodWebId: DataFactory.namedNode(
-    "https://some.pod.com/somePodWebId/profile/card#me"
+    "https://some.pod/somePodWebId/profile/card#me"
   ),
   someOtherPodWebId: DataFactory.namedNode("https://some.other.pod.com#i"),
 
@@ -152,6 +152,13 @@ const INRUPT_TEST_IRI = {
    */
   arbitraryOtherNamedGraph: DataFactory.namedNode(
     "https://some.other.pod.com/arbitraryOtherNamedGraph"
+  ),
+
+  /**
+   * An arbitrary non-RDF resource.
+   */
+  someNonRdfResource: DataFactory.namedNode(
+    "https://some.pod/someNonRdfResource"
   ),
 };
 

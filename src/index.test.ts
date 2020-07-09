@@ -30,6 +30,7 @@ import {
   isContainer,
   isLitDataset,
   getContentType,
+  getFetchedFrom,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_saveAclFor,
@@ -128,6 +129,7 @@ import {
   setStringInLocale,
   removeStringInLocale,
 } from "./index";
+import { expects } from "rdf-namespaces/dist/hydra";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
@@ -142,6 +144,7 @@ it("exports the public API from the entry file", () => {
   expect(isContainer).toBeDefined();
   expect(isLitDataset).toBeDefined();
   expect(getContentType).toBeDefined();
+  expect(getFetchedFrom).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
   expect(unstable_saveAclFor).toBeDefined();

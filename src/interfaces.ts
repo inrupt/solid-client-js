@@ -257,11 +257,21 @@ export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
 export type unstable_UploadRequestInit = Omit<RequestInit, "method">;
 
 /**
- * Simply creates an IRI based on the specified string value.
+ * Creates an IRI based on the specified string value.
  *
  * @param iriAsString The string to use as an IRI.
  * @returns The string value as an IRI.
  */
 export function makeIri(iriAsString: string): Iri {
   return DataFactory.namedNode(iriAsString);
+}
+
+/**
+ * Returns the specified IRI as a string.
+ *
+ * @param stringAsIri The IRI to return as a string.
+ * @returns The IRI value as a string.
+ */
+export function makeString(stringAsIri: Iri): string {
+  return stringAsIri.value;
 }

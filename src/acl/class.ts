@@ -81,7 +81,7 @@ export function unstable_getPublicResourceAccess(
     allRules,
     aclDataset.accessTo
   );
-  const publicResourceRules = getAgentClassAclRulesForAgentClass(
+  const publicResourceRules = getClassAclRulesForClass(
     resourceRules,
     FOAF.Agent
   );
@@ -109,7 +109,7 @@ export function unstable_getPublicDefaultAccess(
     allRules,
     aclDataset.accessTo
   );
-  const publicResourceRules = getAgentClassAclRulesForAgentClass(
+  const publicResourceRules = getClassAclRulesForClass(
     resourceRules,
     FOAF.Agent
   );
@@ -117,14 +117,14 @@ export function unstable_getPublicDefaultAccess(
   return internal_combineAccessModes(publicAccessModes);
 }
 
-function getAgentClassAclRulesForAgentClass(
+function getClassAclRulesForClass(
   aclRules: unstable_AclRule[],
   agentClass: IriString
 ): unstable_AclRule[] {
-  return aclRules.filter((rule) => appliesToAgentClass(rule, agentClass));
+  return aclRules.filter((rule) => appliesToClass(rule, agentClass));
 }
 
-function appliesToAgentClass(
+function appliesToClass(
   aclRule: unstable_AclRule,
   agentClass: IriString
 ): boolean {

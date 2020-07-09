@@ -23,6 +23,8 @@ import { it, expect } from "@jest/globals";
 jest.mock("cross-fetch");
 
 import { fetch } from "./fetcher";
+import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
+import { makeString } from "./interfaces";
 
 it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
   const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
@@ -30,7 +32,9 @@ it("should fallback to cross-fetch if no Solid-specific fetcher is available", a
     [RequestInfo, RequestInit]
   >;
 
-  await fetch("https://some.url");
+  await fetch(makeString(INRUPT_TEST_IRI.someNonRdfResource));
 
-  expect(crossFetch.mock.calls).toEqual([["https://some.url", undefined]]);
+  expect(crossFetch.mock.calls).toEqual([
+    [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+  ]);
 });

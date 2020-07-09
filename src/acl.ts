@@ -22,11 +22,7 @@
 import { Quad } from "rdf-js";
 import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
 
-import {
-  fetchLitDataset,
-  defaultFetchOptions,
-  internal_fetchResourceInfo,
-} from "./litDataset";
+import { fetchLitDataset } from "./litDataset";
 import {
   WithResourceInfo,
   unstable_AclDataset,
@@ -46,11 +42,18 @@ import { getIriOne, getIriAll } from "./thing/get";
 import { DataFactory, dataset } from "./rdfjs";
 import { removeAll } from "./thing/remove";
 import { setIri } from "./thing/set";
+import {
+  internal_defaultFetchOptions,
+  internal_fetchResourceInfo,
+  getFetchedFrom,
+} from "./resource";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithResourceInfo,
-  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
   if (!unstable_hasAccessibleAcl(dataset)) {
     return null;
@@ -62,7 +65,7 @@ export async function internal_fetchResourceAcl(
       options
     );
     return Object.assign(aclLitDataset, {
-      accessTo: dataset.resourceInfo.fetchedFrom,
+      accessTo: getFetchedFrom(dataset),
     });
   } catch (e) {
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
@@ -75,9 +78,11 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: unstable_WithAccessibleAcl,
-  options: Partial<typeof defaultFetchOptions> = defaultFetchOptions
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ): Promise<unstable_AclDataset | null> {
-  const resourceUrl = new URL(resource.resourceInfo.fetchedFrom.value);
+  const resourceUrl = new URL(getFetchedFrom(resource).value);
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -145,18 +150,12 @@ export function unstable_hasResourceAcl<
 ): resource is Resource &
   unstable_WithResourceAcl &
   unstable_WithAccessibleAcl {
-  const oldValue =
-    resource.acl.resourceAcl !== null &&
-    resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
-    resource.resourceInfo.unstable_aclUrl ===
-      resource.acl.resourceAcl.resourceInfo.fetchedFrom;
-
+  // PMCB55: Need to be careful here - 'resource.resourceInfo.unstable_aclUrl'
+  // may be undefined, so make sure we don't attempt to call '.equals()' on it.
   return (
     resource.acl.resourceAcl !== null &&
-    resource.resourceInfo.fetchedFrom.equals(
-      resource.acl.resourceAcl.accessTo
-    ) &&
-    resource.acl.resourceAcl.resourceInfo.fetchedFrom.equals(
+    getFetchedFrom(resource).equals(resource.acl.resourceAcl.accessTo) &&
+    getFetchedFrom(resource.acl.resourceAcl).equals(
       resource.resourceInfo.unstable_aclUrl
     )
   );
@@ -240,7 +239,7 @@ export function unstable_createAclFromFallbackAcl(
     unstable_WithAccessibleAcl
 ): unstable_AclDataset {
   const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
-    accessTo: resource.resourceInfo.fetchedFrom,
+    accessTo: getFetchedFrom(resource),
     resourceInfo: {
       fetchedFrom: resource.resourceInfo.unstable_aclUrl,
       isLitDataset: true,
@@ -254,7 +253,7 @@ export function unstable_createAclFromFallbackAcl(
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, ACL.default_);
-    rule = setIri(rule, ACL.accessTo, resource.resourceInfo.fetchedFrom);
+    rule = setIri(rule, ACL.accessTo, getFetchedFrom(resource));
     return rule;
   });
 

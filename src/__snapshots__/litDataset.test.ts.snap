@@ -18,7 +18,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1",
+        "value": "https://some.pod/rootContainer/Resource1",
       },
     },
     Object {
@@ -28,7 +28,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1#me",
+        "value": "https://some.pod/rootContainer/Resource1#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -36,7 +36,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1",
+        "value": "https://some.pod/rootContainer/Resource1",
       },
     },
     Object {
@@ -46,7 +46,7 @@ DatasetCore {
       },
       "object": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1#me",
+        "value": "https://some.pod/rootContainer/Resource1#me",
       },
       "predicate": Object {
         "termType": "NamedNode",
@@ -54,7 +54,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1",
+        "value": "https://some.pod/rootContainer/Resource1",
       },
     },
     Object {
@@ -72,7 +72,7 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1#me",
+        "value": "https://some.pod/rootContainer/Resource1#me",
       },
     },
     Object {
@@ -95,14 +95,14 @@ DatasetCore {
       },
       "subject": Object {
         "termType": "NamedNode",
-        "value": "https://some.pod.com/rootContainer/Resource1#me",
+        "value": "https://some.pod/rootContainer/Resource1#me",
       },
     },
   },
   "resourceInfo": Object {
     "contentType": "text/plain;charset=UTF-8",
     "fetchedFrom": NamedNode {
-      "value": "https://some.pod.com/rootContainer/Resource1",
+      "value": "https://some.pod/rootContainer/Resource1",
     },
     "isLitDataset": false,
   },
