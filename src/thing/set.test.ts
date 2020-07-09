@@ -22,8 +22,15 @@
 import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
-import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode, Iri } from "../interfaces";
+import { DataFactory } from "../rdfjs";
+import {
+  IriString,
+  ThingLocal,
+  LocalNode,
+  Iri,
+  Thing,
+  ThingPersisted,
+} from "../interfaces";
 import {
   setUrl,
   setBoolean,
@@ -45,10 +52,18 @@ function getMockQuad(
 ): Quad {
   return DataFactory.quad(subject, predicate, object);
 }
-function getMockThing(quad: Quad) {
+function getMockThing(quad: Quad): ThingPersisted {
   const thing = dataset();
   thing.add(quad);
-  return Object.assign(thing, { url: quad.subject });
+  // PMCB55: This was failing because our Thing type (in fact ThingPersisted)
+  // adds to the RDF/JS Dataset type an 'url' variable which can have a type of
+  // NamedNode, whereas RDF/JS Quad Subjects are typed as (NamedNode, BlankNode
+  // or Variable). Therefore we need to explicitly force our Quad Subject to
+  // explicitly be a NamedNode (and only a NamedNode).
+  // return Object.assign(thing, { url: quad.subject });
+  return Object.assign(thing, {
+    url: DataFactory.namedNode(quad.subject.value),
+  });
 }
 function literalOfType(literalType: Iri, literalValue: string) {
   return DataFactory.literal(literalValue, literalType);

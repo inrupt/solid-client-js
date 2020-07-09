@@ -19,8 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
-import { DataFactory } from "./rdfjs";
+import { DatasetCore, Quad, NamedNode, BlankNode, Quad_Subject } from "rdf-js";
+import { DataFactory, dataset } from "./rdfjs";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
@@ -53,10 +53,12 @@ export type Thing = DatasetCore &
  * A [[Thing]] for which we know what the full Subject URL is.
  */
 export type ThingPersisted = Thing & { url: UrlString };
+
 /**
  * A [[Thing]] whose full Subject URL will be determined when it is persisted.
  */
 export type ThingLocal = Thing & { localSubject: LocalNode };
+
 /**
  * Represents the BlankNode that will be initialised to a NamedNode when persisted.
  *

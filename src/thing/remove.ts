@@ -81,11 +81,13 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   value
 ) => {
   const predicateNode = asNamedNode(predicate);
+
   const iriNode = isNamedNode(value)
     ? value
-    : typeof value === "string"
-    ? asNamedNode(value)
-    : asNamedNode(asIri(value));
+    : // PMCB55: No longer required (as the compiler prevents it ever happening)!
+      // : typeof value === "string"
+      // ? asNamedNode(value)
+      asNamedNode(asIri(value));
 
   const updatedThing = filterThing(thing, (quad) => {
     return (

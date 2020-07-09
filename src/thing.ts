@@ -327,9 +327,10 @@ export function toNode(
   if (isNamedNode(thing) || isLocalNode(thing)) {
     return thing;
   }
-  if (typeof thing === "string") {
-    return asNamedNode(thing);
-  }
+  // PMCB55: No longer required (as the compiler prevents it ever happening)!
+  // if (typeof thing === "string") {
+  //   return asNamedNode(thing);
+  // }
   if (isThingLocal(thing)) {
     return thing.localSubject;
   }
