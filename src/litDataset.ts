@@ -370,7 +370,7 @@ function isUpdate(
     // PMCB55: Not sure why this type check is needed...?
     // typeof litDataset.resourceInfo.fetchedFrom === "string" &&
     typeof litDataset.resourceInfo.fetchedFrom === "object" &&
-    litDataset.resourceInfo.fetchedFrom === url
+    litDataset.resourceInfo.fetchedFrom.equals(url)
   );
 }
 

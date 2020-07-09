@@ -22,6 +22,7 @@
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
 import { triplesToTurtle, turtleToTriples } from "./turtle";
+import { makeIri } from "../interfaces";
 
 describe("turtleToTriples", () => {
   it("should correctly find all triples in raw Turtle", async () => {
@@ -32,7 +33,7 @@ describe("turtleToTriples", () => {
 
       :someSubject a foaf:Person; foaf:name "Some name".
     `,
-      "https://example.com/some-path"
+      makeIri("https://example.com/some-path")
     );
 
     const expectedTriple1 = DataFactory.quad(
@@ -59,7 +60,7 @@ describe("turtleToTriples", () => {
     `;
 
     await expect(
-      turtleToTriples(turtle, "https://example.com/some-path")
+      turtleToTriples(turtle, makeIri("https://example.com/some-path"))
     ).rejects.toThrow();
   });
 });

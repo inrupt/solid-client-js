@@ -145,11 +145,20 @@ export function unstable_hasResourceAcl<
 ): resource is Resource &
   unstable_WithResourceAcl &
   unstable_WithAccessibleAcl {
-  return (
+  const oldValue =
     resource.acl.resourceAcl !== null &&
     resource.resourceInfo.fetchedFrom === resource.acl.resourceAcl.accessTo &&
     resource.resourceInfo.unstable_aclUrl ===
-      resource.acl.resourceAcl.resourceInfo.fetchedFrom
+      resource.acl.resourceAcl.resourceInfo.fetchedFrom;
+
+  return (
+    resource.acl.resourceAcl !== null &&
+    resource.resourceInfo.fetchedFrom.equals(
+      resource.acl.resourceAcl.accessTo
+    ) &&
+    resource.acl.resourceAcl.resourceInfo.fetchedFrom.equals(
+      resource.resourceInfo.unstable_aclUrl
+    )
   );
 }
 

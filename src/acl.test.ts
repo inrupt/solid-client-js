@@ -584,7 +584,7 @@ describe("getAclRules", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://arbitrary.pod/not-an-acl-rule"),
         INRUPT_TEST_IRI.arbitraryPredicate,
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+        INRUPT_TEST_IRI.arbitraryObject
       )
     );
 

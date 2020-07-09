@@ -37,9 +37,9 @@ import namespace from "@rdfjs/namespace";
 const RDFJS_NAMESPACE = namespace("https://inrupt.com/vocab/test#");
 
 const _NAMESPACE = "https://inrupt.com/vocab/test#";
-function _NS(localName: string) {
-  return _NAMESPACE + localName;
-}
+// function _NS(localName: string) {
+//   return _NAMESPACE + localName;
+// }
 
 const INRUPT_TEST_IRI = {
   PREFIX: "inrupt_test_iri",
@@ -47,7 +47,7 @@ const INRUPT_TEST_IRI = {
   PREFIX_AND_NAMESPACE: {
     inrupt_test_iri: "https://inrupt.com/vocab/test/iri#",
   },
-  NS: _NS,
+  // NS: _NS,
 
   somePodRoot: DataFactory.namedNode("https://some.pod.com/"),
   somePodRootContainer: DataFactory.namedNode(
@@ -59,6 +59,15 @@ const INRUPT_TEST_IRI = {
 
   somePodResource: DataFactory.namedNode(
     "https://some.pod.com/rootContainer/Resource1"
+  ),
+
+  hashSomeSubject: "some-subject", // Value must match hash in IRI...
+  somePodResourceHashSomeSubject: DataFactory.namedNode(
+    `https://some.pod.com/rootContainer/Resource1#some-subject`
+  ),
+  hashSomeObject: "some-object", // Value must match hash in IRI...
+  somePodResourceHashSomeObject: DataFactory.namedNode(
+    `https://some.pod.com/rootContainer/Resource1#some-object`
   ),
 
   // // ESS ACL convention (i.e. query params)
@@ -80,6 +89,9 @@ const INRUPT_TEST_IRI = {
   ),
 
   somePodGroupId: DataFactory.namedNode("https://some.pod/group#id"),
+  somePodOtherGroupId: DataFactory.namedNode(
+    "https://some.other.pod/otherGroup#other-id"
+  ),
 
   /**
    * Identifies the IRI of another generic Pod resource.
@@ -134,6 +146,13 @@ const INRUPT_TEST_IRI = {
    * An arbitrary RDF object.
    */
   arbitraryOtherObject: RDFJS_NAMESPACE("arbitraryOtherObject"),
+
+  /**
+   * An arbitrary RDF named graph.
+   */
+  arbitraryOtherNamedGraph: DataFactory.namedNode(
+    "https://some.other.pod.com/arbitraryOtherNamedGraph"
+  ),
 };
 
 export { INRUPT_TEST_IRI };

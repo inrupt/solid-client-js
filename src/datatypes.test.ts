@@ -41,7 +41,8 @@ import {
   deserializeInteger,
   normalizeLocale,
 } from "./datatypes";
-import { LocalNode } from "./interfaces";
+import { LocalNode, makeIri } from "./interfaces";
+import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
 describe("serializeBoolean", () => {
   it("serializes true as `1`", () => {
@@ -217,18 +218,22 @@ describe("isEqual", () => {
     });
     expect(isEqual(localNode1, localNode2)).toEqual(true);
   });
+
   it("recognises two equal NamedNodes without needing a Resource IRI", () => {
     const namedNode1 = DataFactory.namedNode("https://some.pod/resource#node");
     const namedNode2 = DataFactory.namedNode("https://some.pod/resource#node");
     expect(isEqual(namedNode1, namedNode2)).toEqual(true);
   });
+
   it("recognises the equality of a LocalNode with the same resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      name: INRUPT_TEST_IRI.hashSomeSubject,
     });
-    const namedNode = DataFactory.namedNode(
-      "https://some.pod/resource#some-name"
-    );
+
+    // We need the subject of our quad to be a hash-something IRI relative to
+    // our resource.
+    const namedNode = INRUPT_TEST_IRI.somePodResourceHashSomeSubject;
+
     expect(
       isEqual(localNode, namedNode, {
         resourceIri: INRUPT_TEST_IRI.somePodResource,
@@ -240,6 +245,7 @@ describe("isEqual", () => {
       })
     ).toEqual(true);
   });
+
   it("recognises the inequality of a LocalNode with a different resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "some-name",
@@ -258,6 +264,7 @@ describe("isEqual", () => {
       })
     ).toEqual(false);
   });
+
   it("does not mark a LocalNode as equal to a NamedNode if no resource IRI is known", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
       name: "some-name",
@@ -273,10 +280,10 @@ describe("isEqual", () => {
 describe("resolveIriForLocalNodes", () => {
   it("properly resolves the IRI for the Subject and the Object", () => {
     const localNodeSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-subject",
+      name: INRUPT_TEST_IRI.hashSomeSubject,
     });
     const localNodeObject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-object",
+      name: INRUPT_TEST_IRI.hashSomeObject,
     });
     const quad = DataFactory.quad(
       localNodeSubject,
@@ -287,13 +294,14 @@ describe("resolveIriForLocalNodes", () => {
       quad,
       INRUPT_TEST_IRI.somePodResource
     );
-    expect(resolvedQuad.subject.value).toEqual(
-      "https://some.pod/resource#some-subject"
+    expect(resolvedQuad.subject).toEqual(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
     );
-    expect(resolvedQuad.object.value).toEqual(
-      "https://some.pod/resource#some-object"
+    expect(resolvedQuad.object).toEqual(
+      INRUPT_TEST_IRI.somePodResourceHashSomeObject
     );
   });
+
   it("does not resolve the IRI for NamedNodes", () => {
     const quad = DataFactory.quad(
       DataFactory.namedNode("https://some.pod/resource#some-subject"),
@@ -316,18 +324,21 @@ describe("resolveIriForLocalNodes", () => {
 describe("resolveIriForLocalNode", () => {
   it("properly resolves the IRI for a LocalNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      name: INRUPT_TEST_IRI.hashSomeSubject,
     });
     expect(
-      resolveIriForLocalNode(localNode, INRUPT_TEST_IRI.somePodResource).value
-    ).toEqual("https://some.pod/resource#some-name");
+      resolveIriForLocalNode(localNode, INRUPT_TEST_IRI.somePodResource)
+    ).toEqual(INRUPT_TEST_IRI.somePodResourceHashSomeSubject);
   });
 });
 
 describe("resolveLocalIri", () => {
   it("properly resolves the IRI for a given name and resource IRI", () => {
     expect(
-      resolveLocalIri("some-name", INRUPT_TEST_IRI.somePodResource)
-    ).toEqual("https://some.pod/resource#some-name");
+      resolveLocalIri(
+        INRUPT_TEST_IRI.hashSomeSubject,
+        INRUPT_TEST_IRI.somePodResource
+      )
+    ).toEqual(INRUPT_TEST_IRI.somePodResourceHashSomeSubject);
   });
 });

@@ -1390,8 +1390,8 @@ describe("saveLitDatasetAt", () => {
         ]
       ).toEqual("application/sparql-update");
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toEqual(
-        "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
-          "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
+        "DELETE DATA {<https://some.other.pod/resource#other-subject> <https://inrupt.com/vocab/test#arbitraryOtherPredicate> <https://inrupt.com/vocab/test#arbitraryOtherObject>.}; " +
+          "INSERT DATA {<https://some.pod/resource#subject> <https://inrupt.com/vocab/test#arbitraryPredicate> <https://inrupt.com/vocab/test#arbitraryObject>.};"
       );
     });
 
@@ -1582,9 +1582,9 @@ describe("saveLitDatasetAt", () => {
           ],
           deletions: [
             DataFactory.quad(
-              DataFactory.namedNode("https://arbitrary-other.vocab/subject"),
-              DataFactory.namedNode("https://arbitrary-other.vocab/predicate"),
-              DataFactory.namedNode("https://arbitrary-other.vocab/object"),
+              INRUPT_TEST_IRI.arbitraryOtherSubject,
+              INRUPT_TEST_IRI.arbitraryOtherPredicate,
+              INRUPT_TEST_IRI.arbitraryOtherObject,
               undefined
             ),
           ],

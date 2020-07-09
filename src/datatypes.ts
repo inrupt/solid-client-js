@@ -22,22 +22,22 @@
 import { NamedNode, Literal, Quad } from "rdf-js";
 import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./interfaces";
-
-// PMCB55: Remove these completely once generated terms move finished.
+// import { RDF, XSD } from "@solid/lit-vocab-common-rdfext";
+//
 // /**
 //  * IRIs of the XML Schema data types we support
 //  * @internal
 //  */
-// export const xmlSchemaTypes = {
-//   boolean: "http://www.w3.org/2001/XMLSchema#boolean",
-//   dateTime: "http://www.w3.org/2001/XMLSchema#dateTime",
-//   decimal: "http://www.w3.org/2001/XMLSchema#decimal",
-//   integer: "http://www.w3.org/2001/XMLSchema#integer",
-//   string: "http://www.w3.org/2001/XMLSchema#string",
-//   langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+// export const supportedDatatype = {
+//   boolean: XSD.boolean_,
+//   dateTime: XSD.dateTime,
+//   decimal: XSD.decimal,
+//   integer: XSD.integer,
+//   string: XSD.string,
+//   langString: RDF.langString,
 // } as const;
 // /** @internal */
-// export type XmlSchemaTypeIri = typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
+// export type SupportedDatatypeIri = typeof supportedDatatype[keyof typeof supportedDatatype];
 
 /**
  * @internal
@@ -68,7 +68,7 @@ export function deserializeBoolean(value: string): boolean | null {
  * @returns String representation of `value`.
  */
 export function serializeDatetime(value: Date): string {
-  // To align with rdflib, we ignore miliseconds:
+  // To align with rdflib, we ignore milliseconds:
   // https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L74
   const roundedDate = new Date(
     Date.UTC(

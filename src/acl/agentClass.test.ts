@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { DataFactory } from "n3";
+import { DataFactory } from "../rdfjs";
 import { dataset } from "@rdfjs/dataset";
 import {
   unstable_getPublicResourceAccess,
@@ -34,7 +34,10 @@ import {
   unstable_Access,
   unstable_AclDataset,
   unstable_WithAcl,
+  makeIri,
 } from "../interfaces";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
@@ -45,60 +48,36 @@ function addAclRuleQuads(
     | "http://xmlns.com/foaf/0.1/Agent"
     | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
 ): unstable_AclDataset {
-  const subjectIri =
-    resource + "#" + encodeURIComponent(agentClass) + Math.random();
+  const subjectIri = makeIri(
+    resource.value + "#" + encodeURIComponent(agentClass) + Math.random()
+  );
+
+  aclDataset.add(DataFactory.quad(subjectIri, RDF.type, ACL.Authorization));
   aclDataset.add(
     DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      RDF.type,
-      ACL.Authorization
+      subjectIri,
+      type === "resource" ? ACL.accessTo : ACL.default_,
+      resource
     )
   );
   aclDataset.add(
     DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(
-        type === "resource"
-          ? "http://www.w3.org/ns/auth/acl#accessTo"
-          : "http://www.w3.org/ns/auth/acl#default"
-      ),
-      DataFactory.namedNode(resource)
-    )
-  );
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
+      subjectIri,
       ACL.agentClass,
       DataFactory.namedNode(agentClass)
     )
   );
   if (access.read) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Read)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Read));
   }
   if (access.append) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Append)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Append));
   }
   if (access.write) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        ACL.mode,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Write));
   }
   if (access.control) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        ACL.mode,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Control));
   }
 
   return Object.assign(aclDataset, { accessTo: resource });

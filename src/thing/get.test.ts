@@ -22,8 +22,10 @@
 import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
-import { DataFactory } from "n3";
-import { IriString, makeIri, Thing } from "../interfaces";
+// import { DataFactory } from "n3";
+import { DataFactory } from "../rdfjs";
+
+import { Iri, IriString, makeIri, Thing } from "../interfaces";
 import {
   getUrlOne,
   getBooleanOne,
@@ -45,26 +47,24 @@ import {
   getNamedNodeAll,
 } from "./get";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
+import { XSD } from "@solid/lit-vocab-common-rdfext";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType: Iri
 ): Quad {
   const quad = DataFactory.quad(
     INRUPT_TEST_IRI.arbitrarySubject,
     predicate,
-    DataFactory.literal(
-      literalValue,
-      DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
-    )
+    DataFactory.literal(literalValue, literalType)
   );
   return quad;
 }
 function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType: Iri
 ): Thing {
   const quad = getMockQuadWithLiteralFor(predicate, literalValue, literalType);
   const thing = dataset();
@@ -76,7 +76,7 @@ function getMockThingWithLiteralsFor(
   predicate: IriString,
   literal1Value: string,
   literal2Value: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType: Iri
 ): Thing {
   const quad1 = getMockQuadWithLiteralFor(
     predicate,
@@ -144,7 +144,7 @@ describe("getIriOne", () => {
     const thingWithoutIri = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -156,7 +156,7 @@ describe("getIriOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithIri(
@@ -248,7 +248,7 @@ describe("getIriAll", () => {
     const thingWithoutIris = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -260,7 +260,7 @@ describe("getIriAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithIri(
@@ -290,7 +290,7 @@ describe("getBooleanOne", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -302,7 +302,7 @@ describe("getBooleanOne", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -314,7 +314,7 @@ describe("getBooleanOne", () => {
     const thingWithoutBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -326,13 +326,13 @@ describe("getBooleanOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "1",
-        "boolean"
+        XSD.boolean_
       )
     );
     thingWithDifferentDatatypes.add(
@@ -355,7 +355,7 @@ describe("getBooleanOne", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -367,7 +367,7 @@ describe("getBooleanOne", () => {
     const thingWithNonBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a boolean",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -382,7 +382,7 @@ describe("getBooleanAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "0",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -395,7 +395,7 @@ describe("getBooleanAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
       "0",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -407,7 +407,7 @@ describe("getBooleanAll", () => {
     const thingWithoutBooleans = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -419,13 +419,13 @@ describe("getBooleanAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "1",
-        "boolean"
+        XSD.boolean_
       )
     );
     thingWithDifferentDatatypes.add(
@@ -448,7 +448,7 @@ describe("getBooleanAll", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -461,7 +461,7 @@ describe("getBooleanAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a boolean",
       "0",
-      "boolean"
+      XSD.boolean_
     );
 
     expect(
@@ -475,7 +475,7 @@ describe("getDatetimeOne", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
@@ -488,7 +488,7 @@ describe("getDatetimeOne", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
@@ -501,7 +501,7 @@ describe("getDatetimeOne", () => {
     const thingWithoutDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -513,13 +513,13 @@ describe("getDatetimeOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "1990-11-12T13:37:42Z",
-        "dateTime"
+        XSD.dateTime
       )
     );
     thingWithDifferentDatatypes.add(
@@ -543,7 +543,7 @@ describe("getDatetimeOne", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     expect(
@@ -555,7 +555,7 @@ describe("getDatetimeOne", () => {
     const thingWithNonDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a datetime",
-      "dateTime"
+      XSD.dateTime
     );
 
     expect(
@@ -570,7 +570,7 @@ describe("getDatetimeAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -585,7 +585,7 @@ describe("getDatetimeAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -599,7 +599,7 @@ describe("getDatetimeAll", () => {
     const thingWithoutDatetimes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -611,13 +611,13 @@ describe("getDatetimeAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "1990-11-12T13:37:42Z",
-        "dateTime"
+        XSD.dateTime
       )
     );
     thingWithDifferentDatatypes.add(
@@ -641,7 +641,7 @@ describe("getDatetimeAll", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     expect(
@@ -654,7 +654,7 @@ describe("getDatetimeAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Not a datetime",
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -670,7 +670,7 @@ describe("getDecimalOne", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -682,7 +682,7 @@ describe("getDecimalOne", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -694,7 +694,7 @@ describe("getDecimalOne", () => {
     const thingWithoutDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -706,13 +706,13 @@ describe("getDecimalOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "13.37",
-        "decimal"
+        XSD.decimal
       )
     );
     thingWithDifferentDatatypes.add(
@@ -735,7 +735,7 @@ describe("getDecimalOne", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -750,7 +750,7 @@ describe("getDecimalAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "7.2",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -763,7 +763,7 @@ describe("getDecimalAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
       "7.2",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -775,7 +775,7 @@ describe("getDecimalAll", () => {
     const thingWithoutDecimals = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -787,13 +787,13 @@ describe("getDecimalAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "13.37",
-        "decimal"
+        XSD.decimal
       )
     );
     thingWithDifferentDatatypes.add(
@@ -816,7 +816,7 @@ describe("getDecimalAll", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -830,7 +830,7 @@ describe("getIntegerOne", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -842,7 +842,7 @@ describe("getIntegerOne", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -854,7 +854,7 @@ describe("getIntegerOne", () => {
     const thingWithoutInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -866,13 +866,13 @@ describe("getIntegerOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "42",
-        "integer"
+        XSD.integer
       )
     );
     thingWithDifferentDatatypes.add(
@@ -895,7 +895,7 @@ describe("getIntegerOne", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -910,7 +910,7 @@ describe("getIntegerAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "1337",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -923,7 +923,7 @@ describe("getIntegerAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
       "1337",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -935,7 +935,7 @@ describe("getIntegerAll", () => {
     const thingWithoutIntegers = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     expect(
@@ -947,13 +947,13 @@ describe("getIntegerAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "42",
-        "integer"
+        XSD.integer
       )
     );
     thingWithDifferentDatatypes.add(
@@ -976,7 +976,7 @@ describe("getIntegerAll", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -1056,7 +1056,7 @@ describe("getStringWithLocaleOne", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -1107,7 +1107,7 @@ describe("getStringWithLocaleOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(quadWithLocaleString);
     thingWithDifferentDatatypes.add(
@@ -1235,7 +1235,7 @@ describe("getStringsWithLocaleAll", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -1286,7 +1286,7 @@ describe("getStringsWithLocaleAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(quadWithLocaleString);
     thingWithDifferentDatatypes.add(
@@ -1334,7 +1334,7 @@ describe("getStringNoLocaleOne", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1349,7 +1349,7 @@ describe("getStringNoLocaleOne", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1364,7 +1364,7 @@ describe("getStringNoLocaleOne", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -1379,13 +1379,13 @@ describe("getStringNoLocaleOne", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "Some value",
-        "string"
+        XSD.string
       )
     );
     thingWithDifferentDatatypes.add(
@@ -1408,7 +1408,7 @@ describe("getStringNoLocaleOne", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1426,7 +1426,7 @@ describe("getStringNoLocaleAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value 1",
       "Some value 2",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1442,7 +1442,7 @@ describe("getStringNoLocaleAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some value 1",
       "Some value 2",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1457,7 +1457,7 @@ describe("getStringNoLocaleAll", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     expect(
@@ -1472,13 +1472,13 @@ describe("getStringNoLocaleAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         INRUPT_TEST_IRI.arbitraryPredicate,
         "Some value",
-        "string"
+        XSD.string
       )
     );
     thingWithDifferentDatatypes.add(
@@ -1501,7 +1501,7 @@ describe("getStringNoLocaleAll", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary value",
-      "string"
+      XSD.string
     );
 
     expect(
@@ -1518,7 +1518,7 @@ describe("getLiteralOne", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
-      "string"
+      XSD.string
     );
 
     const foundLiteral = getLiteralOne(
@@ -1534,7 +1534,7 @@ describe("getLiteralOne", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string",
-      "string"
+      XSD.string
     );
 
     const foundLiteral = getLiteralOne(
@@ -1562,7 +1562,7 @@ describe("getLiteralOne", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
@@ -1587,7 +1587,7 @@ describe("getLiteralAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string 1",
       "Some string 2",
-      "string"
+      XSD.string
     );
 
     const foundLiterals = getLiteralAll(
@@ -1606,7 +1606,7 @@ describe("getLiteralAll", () => {
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some string 1",
       "Some string 2",
-      "string"
+      XSD.string
     );
 
     const foundLiterals = getLiteralAll(
@@ -1636,7 +1636,7 @@ describe("getLiteralAll", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
@@ -1694,9 +1694,7 @@ describe("getNamedNodeOne", () => {
     );
     expect(foundNamedNode).not.toBeNull();
     expect((foundNamedNode as NamedNode).termType).toEqual("NamedNode");
-    expect((foundNamedNode as NamedNode).value).toEqual(
-      INRUPT_TEST_IRI.arbitraryObject
-    );
+    expect(foundNamedNode).toEqual(INRUPT_TEST_IRI.arbitraryObject);
   });
 
   it("accepts Predicates as Named Nodes", () => {
@@ -1711,9 +1709,10 @@ describe("getNamedNodeOne", () => {
     );
     expect(foundNamedNode).not.toBeNull();
     expect((foundNamedNode as NamedNode).termType).toEqual("NamedNode");
-    expect((foundNamedNode as NamedNode).value).toEqual(
-      INRUPT_TEST_IRI.arbitraryObject
-    );
+    // expect((foundNamedNode as NamedNode).value).toEqual(
+    //   INRUPT_TEST_IRI.arbitraryObject
+    // );
+    expect(foundNamedNode).toEqual(INRUPT_TEST_IRI.arbitraryObject);
   });
 
   it("returns null if no Named Node value was found", () => {
@@ -1732,7 +1731,7 @@ describe("getNamedNodeOne", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(
@@ -1832,7 +1831,7 @@ describe("getNamedNodeAll", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithDifferentTermTypes.add(
       DataFactory.quad(

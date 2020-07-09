@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../interfaces";
+import { IriString, ThingLocal, LocalNode, Iri, makeIri } from "../interfaces";
 import {
   addUrl,
   addBoolean,
@@ -36,35 +36,24 @@ import {
   addLiteral,
 } from "./add";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
+import { XSD } from "@solid/lit-vocab-common-rdfext";
 
 function getMockEmptyThing(iri = INRUPT_TEST_IRI.arbitrarySubject) {
   const thing = dataset();
   return Object.assign(thing, { url: iri });
 }
-function literalOfType(
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime",
-  literalValue: string
-) {
-  return DataFactory.literal(
-    literalValue,
-    DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
-  );
+function literalOfType(literalType: Iri, literalValue: string) {
+  return DataFactory.literal(literalValue, literalType);
 }
 
 function quadHas(
   quad: Quad,
   values: { subject?: IriString; predicate?: IriString; object?: Term }
 ): boolean {
-  if (
-    values.subject &&
-    !DataFactory.namedNode(values.subject).equals(quad.subject)
-  ) {
+  if (values.subject && !values.subject.equals(quad.subject)) {
     return false;
   }
-  if (
-    values.predicate &&
-    !DataFactory.namedNode(values.predicate).equals(quad.predicate)
-  ) {
+  if (values.predicate && !values.predicate.equals(quad.predicate)) {
     return false;
   }
   if (values.object && !values.object.equals(quad.object)) {
@@ -80,7 +69,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      "https://some.pod/other-resource#object"
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -89,7 +78,7 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
@@ -100,7 +89,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -109,16 +98,14 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
 
   it("accepts values as ThingPersisteds", () => {
     const thing = getMockEmptyThing(INRUPT_TEST_IRI.arbitrarySubject);
-    const targetThing = getMockEmptyThing(
-      "https://some.pod/other-resource#object"
-    );
+    const targetThing = getMockEmptyThing(INRUPT_TEST_IRI.arbitraryOtherObject);
 
     const updatedThing = addUrl(
       thing,
@@ -132,7 +119,7 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
@@ -171,7 +158,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      "https://some.pod/other-resource#object"
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -180,18 +167,20 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addUrl(
       thing,
-      "https://arbitrary.vocab/predicate",
-      "https://arbitrary.pod/other-resource#object"
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     expect(Array.from(thing)).toHaveLength(0);
@@ -211,7 +200,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thingLocal,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      "https://some.pod/other-resource#object"
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -219,7 +208,7 @@ describe("addIri", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -231,14 +220,14 @@ describe("addIri", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        DataFactory.namedNode("https://some.pod/other-resource#object")
+        INRUPT_TEST_IRI.arbitraryOtherObject
       )
     );
 
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      "https://some.pod/yet-another-resource#object"
+      makeIri("https://some.pod/yet-another-resource#object")
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -247,16 +236,14 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode(
-          "https://some.pod/yet-another-resource#object"
-        ),
+        object: makeIri("https://some.pod/yet-another-resource#object"),
       })
     ).toEqual(true);
   });
@@ -267,14 +254,14 @@ describe("addIri", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      "https://some.pod/other-resource#object"
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -283,14 +270,14 @@ describe("addIri", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
@@ -312,7 +299,7 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "1"),
+        object: literalOfType(XSD.boolean_, "1"),
       })
     ).toEqual(true);
   });
@@ -332,17 +319,19 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "0"),
+        object: literalOfType(XSD.boolean_, "0"),
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addBoolean(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       true
     );
 
@@ -371,7 +360,7 @@ describe("addBoolean", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "1"),
+        object: literalOfType(XSD.boolean_, "1"),
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -383,7 +372,7 @@ describe("addBoolean", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        literalOfType("boolean", "0")
+        literalOfType(XSD.boolean_, "0")
       )
     );
 
@@ -399,14 +388,14 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "0"),
+        object: literalOfType(XSD.boolean_, "0"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "1"),
+        object: literalOfType(XSD.boolean_, "1"),
       })
     ).toEqual(true);
   });
@@ -417,7 +406,7 @@ describe("addBoolean", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
@@ -433,14 +422,14 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("boolean", "1"),
+        object: literalOfType(XSD.boolean_, "1"),
       })
     ).toEqual(true);
   });
@@ -462,7 +451,7 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1990-11-12T13:37:42Z"),
       })
     ).toEqual(true);
   });
@@ -482,17 +471,19 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1990-11-12T13:37:42Z"),
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addDatetime(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
@@ -521,7 +512,7 @@ describe("addDatetime", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1990-11-12T13:37:42Z"),
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -533,7 +524,7 @@ describe("addDatetime", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        literalOfType("dateTime", "1955-06-08T13:37:42Z")
+        literalOfType(XSD.dateTime, "1955-06-08T13:37:42Z")
       )
     );
 
@@ -549,14 +540,14 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1955-06-08T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1955-06-08T13:37:42Z"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1990-11-12T13:37:42Z"),
       })
     ).toEqual(true);
   });
@@ -567,7 +558,7 @@ describe("addDatetime", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
@@ -583,14 +574,14 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType(XSD.dateTime, "1990-11-12T13:37:42Z"),
       })
     ).toEqual(true);
   });
@@ -612,7 +603,7 @@ describe("addDecimal", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "13.37"),
+        object: literalOfType(XSD.decimal, "13.37"),
       })
     ).toEqual(true);
   });
@@ -632,17 +623,19 @@ describe("addDecimal", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "13.37"),
+        object: literalOfType(XSD.decimal, "13.37"),
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addDecimal(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       13.37
     );
 
@@ -671,7 +664,7 @@ describe("addDecimal", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "13.37"),
+        object: literalOfType(XSD.decimal, "13.37"),
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -683,7 +676,7 @@ describe("addDecimal", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        literalOfType("decimal", "4.2")
+        literalOfType(XSD.decimal, "4.2")
       )
     );
 
@@ -699,14 +692,14 @@ describe("addDecimal", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "4.2"),
+        object: literalOfType(XSD.decimal, "4.2"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "13.37"),
+        object: literalOfType(XSD.decimal, "13.37"),
       })
     ).toEqual(true);
   });
@@ -717,7 +710,7 @@ describe("addDecimal", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
@@ -733,14 +726,14 @@ describe("addDecimal", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("decimal", "13.37"),
+        object: literalOfType(XSD.decimal, "13.37"),
       })
     ).toEqual(true);
   });
@@ -762,7 +755,7 @@ describe("addInteger", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
   });
@@ -782,17 +775,19 @@ describe("addInteger", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addInteger(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       42
     );
 
@@ -821,7 +816,7 @@ describe("addInteger", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -833,7 +828,7 @@ describe("addInteger", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        literalOfType("integer", "1337")
+        literalOfType(XSD.integer, "1337")
       )
     );
 
@@ -849,14 +844,14 @@ describe("addInteger", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "1337"),
+        object: literalOfType(XSD.integer, "1337"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
   });
@@ -867,7 +862,7 @@ describe("addInteger", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
@@ -883,14 +878,14 @@ describe("addInteger", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
   });
@@ -940,7 +935,9 @@ describe("addStringWithLocale", () => {
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addStringWithLocale(
       thing,
@@ -1022,7 +1019,7 @@ describe("addStringWithLocale", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
@@ -1039,7 +1036,7 @@ describe("addStringWithLocale", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
@@ -1068,7 +1065,7 @@ describe("addStringNoLocale", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some string value"),
+        object: literalOfType(XSD.string, "Some string value"),
       })
     ).toEqual(true);
   });
@@ -1088,17 +1085,19 @@ describe("addStringNoLocale", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some string value"),
+        object: literalOfType(XSD.string, "Some string value"),
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addStringNoLocale(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value"
     );
 
@@ -1127,7 +1126,7 @@ describe("addStringNoLocale", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some string value"),
+        object: literalOfType(XSD.string, "Some string value"),
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -1139,7 +1138,7 @@ describe("addStringNoLocale", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        literalOfType("string", "Some other string value")
+        literalOfType(XSD.string, "Some other string value")
       )
     );
 
@@ -1155,14 +1154,14 @@ describe("addStringNoLocale", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some other string value"),
+        object: literalOfType(XSD.string, "Some other string value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some string value"),
+        object: literalOfType(XSD.string, "Some string value"),
       })
     ).toEqual(true);
   });
@@ -1173,7 +1172,7 @@ describe("addStringNoLocale", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("integer", "42")
+        literalOfType(XSD.integer, "42")
       )
     );
 
@@ -1189,14 +1188,14 @@ describe("addStringNoLocale", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: literalOfType("string", "Some string value"),
+        object: literalOfType(XSD.string, "Some string value"),
       })
     ).toEqual(true);
   });
@@ -1209,7 +1208,7 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1218,7 +1217,7 @@ describe("addNamedNode", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
@@ -1229,7 +1228,7 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1238,18 +1237,20 @@ describe("addNamedNode", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addNamedNode(
       thing,
-      "https://arbitrary.vocab/predicate",
-      DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     expect(Array.from(thing)).toHaveLength(0);
@@ -1269,7 +1270,7 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thingLocal,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1277,7 +1278,7 @@ describe("addNamedNode", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
     expect((updatedQuads[0].subject as LocalNode).name).toEqual("localSubject");
@@ -1289,14 +1290,14 @@ describe("addNamedNode", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryPredicate,
-        DataFactory.namedNode("https://some.pod/other-resource#object")
+        INRUPT_TEST_IRI.arbitraryOtherObject
       )
     );
 
     const updatedThing = addNamedNode(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/yet-another-resource#object")
+      makeIri("https://some.pod/yet-another-resource#object")
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1305,16 +1306,14 @@ describe("addNamedNode", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode(
-          "https://some.pod/yet-another-resource#object"
-        ),
+        object: makeIri("https://some.pod/yet-another-resource#object"),
       })
     ).toEqual(true);
   });
@@ -1325,14 +1324,14 @@ describe("addNamedNode", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("string", "Some other value")
+        literalOfType(XSD.string, "Some other value")
       )
     );
 
     const updatedThing = addNamedNode(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      INRUPT_TEST_IRI.arbitraryOtherObject
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1341,14 +1340,14 @@ describe("addNamedNode", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("string", "Some other value"),
+        object: literalOfType(XSD.string, "Some other value"),
       })
     ).toEqual(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: INRUPT_TEST_IRI.arbitraryOtherObject,
       })
     ).toEqual(true);
   });
@@ -1396,11 +1395,13 @@ describe("addLiteral", () => {
   });
 
   it("does not modify the input Thing", () => {
-    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+    const thing = getMockEmptyThing(
+      INRUPT_TEST_IRI.somePodResourceHashSomeSubject
+    );
 
     const updatedThing = addLiteral(
       thing,
-      "https://arbitrary.vocab/predicate",
+      INRUPT_TEST_IRI.arbitraryPredicate,
       DataFactory.literal("Arbitrary string value")
     );
 
@@ -1475,7 +1476,7 @@ describe("addLiteral", () => {
       DataFactory.quad(
         INRUPT_TEST_IRI.arbitrarySubject,
         INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        literalOfType("integer", "42")
+        literalOfType(XSD.integer, "42")
       )
     );
 
@@ -1491,7 +1492,7 @@ describe("addLiteral", () => {
       quadHas(updatedQuads[0], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryOtherPredicate,
-        object: literalOfType("integer", "42"),
+        object: literalOfType(XSD.integer, "42"),
       })
     ).toEqual(true);
     expect(

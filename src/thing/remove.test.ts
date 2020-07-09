@@ -24,6 +24,7 @@ import { dataset } from "@rdfjs/dataset";
 import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
 import {
+  Iri,
   IriString,
   makeIri,
   Thing,
@@ -43,26 +44,24 @@ import {
   removeNamedNode,
 } from "./remove";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
+import { XSD } from "@solid/lit-vocab-common-rdfext";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType: Iri
 ): Quad {
   const quad = DataFactory.quad(
     INRUPT_TEST_IRI.arbitrarySubject,
     predicate,
-    DataFactory.literal(
-      literalValue,
-      DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
-    )
+    DataFactory.literal(literalValue, literalType)
   );
   return quad;
 }
 function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType: Iri
 ): Thing {
   const quad = getMockQuadWithLiteralFor(predicate, literalValue, literalType);
   const thing = dataset();
@@ -104,7 +103,7 @@ describe("removeAll", () => {
     const thingWithStringAndIri = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
-      "string"
+      XSD.string
     );
     thingWithStringAndIri.add(quadWithIri);
 
@@ -120,7 +119,7 @@ describe("removeAll", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeAll(
@@ -135,7 +134,7 @@ describe("removeAll", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Arbitrary string value",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeAll(
@@ -409,7 +408,7 @@ describe("removeBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     const updatedThing = removeBoolean(
@@ -425,7 +424,7 @@ describe("removeBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
-      "boolean"
+      XSD.boolean_
     );
 
     const updatedThing = removeBoolean(
@@ -441,7 +440,7 @@ describe("removeBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     const updatedThing = removeBoolean(
@@ -486,7 +485,7 @@ describe("removeBoolean", () => {
     const thingWithDuplicateBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
     thingWithDuplicateBoolean.add(Array.from(thingWithDuplicateBoolean)[0]);
 
@@ -503,18 +502,18 @@ describe("removeBoolean", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "0",
-      "boolean"
+      XSD.boolean_
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -535,7 +534,7 @@ describe("removeBoolean", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
     const mockQuadWithIntegerNotBoolean = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,
@@ -559,7 +558,7 @@ describe("removeDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const updatedThing = removeDatetime(
@@ -575,7 +574,7 @@ describe("removeDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const updatedThing = removeDatetime(
@@ -591,7 +590,7 @@ describe("removeDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const updatedThing = removeDatetime(
@@ -636,7 +635,7 @@ describe("removeDatetime", () => {
     const thingWithDuplicateDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     thingWithDuplicateDatetime.add(Array.from(thingWithDuplicateDatetime)[0]);
 
@@ -653,18 +652,18 @@ describe("removeDatetime", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1955-06-08T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -685,7 +684,7 @@ describe("removeDatetime", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
     const mockQuadWithStringNotDatetime = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,
@@ -712,7 +711,7 @@ describe("removeDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     const updatedThing = removeDecimal(
@@ -728,7 +727,7 @@ describe("removeDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     const updatedThing = removeDecimal(
@@ -744,7 +743,7 @@ describe("removeDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     const updatedThing = removeDecimal(
@@ -789,7 +788,7 @@ describe("removeDecimal", () => {
     const thingWithDuplicateDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
     thingWithDuplicateDecimal.add(Array.from(thingWithDuplicateDecimal)[0]);
 
@@ -806,18 +805,18 @@ describe("removeDecimal", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "4.2",
-      "decimal"
+      XSD.decimal
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -838,7 +837,7 @@ describe("removeDecimal", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
     const mockQuadWithStringNotDecimal = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,
@@ -862,7 +861,7 @@ describe("removeInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeInteger(
@@ -878,7 +877,7 @@ describe("removeInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeInteger(
@@ -894,7 +893,7 @@ describe("removeInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeInteger(
@@ -939,7 +938,7 @@ describe("removeInteger", () => {
     const thingWithDuplicateInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDuplicateInteger.add(Array.from(thingWithDuplicateInteger)[0]);
 
@@ -956,18 +955,18 @@ describe("removeInteger", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1337",
-      "integer"
+      XSD.integer
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -988,7 +987,7 @@ describe("removeInteger", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     const mockQuadWithStringNotInteger = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,
@@ -1229,7 +1228,7 @@ describe("removeStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeStringNoLocale(
@@ -1245,7 +1244,7 @@ describe("removeStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeStringNoLocale(
@@ -1261,7 +1260,7 @@ describe("removeStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeStringNoLocale(
@@ -1306,7 +1305,7 @@ describe("removeStringNoLocale", () => {
     const thingWithDuplicateString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithDuplicateString.add(Array.from(thingWithDuplicateString)[0]);
 
@@ -1323,18 +1322,18 @@ describe("removeStringNoLocale", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some other arbitrary string",
-      "string"
+      XSD.string
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -1355,7 +1354,7 @@ describe("removeStringNoLocale", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
     const mockQuadWithInteger = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,
@@ -1379,7 +1378,7 @@ describe("removeLiteral", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "Some arbitrary string",
-      "string"
+      XSD.string
     );
 
     const updatedThing = removeLiteral(
@@ -1420,7 +1419,7 @@ describe("removeLiteral", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeLiteral(
@@ -1439,7 +1438,7 @@ describe("removeLiteral", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "13.37",
-      "decimal"
+      XSD.decimal
     );
 
     const updatedThing = removeLiteral(
@@ -1458,7 +1457,7 @@ describe("removeLiteral", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1",
-      "boolean"
+      XSD.boolean_
     );
 
     const updatedThing = removeLiteral(
@@ -1477,7 +1476,7 @@ describe("removeLiteral", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1990-11-12T13:37:42Z",
-      "dateTime"
+      XSD.dateTime
     );
 
     const updatedThing = removeLiteral(
@@ -1496,7 +1495,7 @@ describe("removeLiteral", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeLiteral(
@@ -1515,7 +1514,7 @@ describe("removeLiteral", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const updatedThing = removeLiteral(
@@ -1566,7 +1565,7 @@ describe("removeLiteral", () => {
     const thingWithDuplicateInteger = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithDuplicateInteger.add(Array.from(thingWithDuplicateInteger)[0]);
 
@@ -1586,18 +1585,18 @@ describe("removeLiteral", () => {
     const thingWithOtherQuads = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
 
     const mockQuadWithDifferentObject = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "1337",
-      "integer"
+      XSD.integer
     );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryOtherPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
@@ -1621,7 +1620,7 @@ describe("removeLiteral", () => {
     const thingWithString = getMockThingWithLiteralFor(
       INRUPT_TEST_IRI.arbitraryPredicate,
       "42",
-      "integer"
+      XSD.integer
     );
     const mockQuadWithStringNotInteger = DataFactory.quad(
       INRUPT_TEST_IRI.arbitrarySubject,

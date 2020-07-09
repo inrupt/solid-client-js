@@ -22,7 +22,8 @@
 import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode } from "rdf-js";
-import { DataFactory } from "n3";
+// import { DataFactory } from "n3";
+import { DataFactory } from "./rdfjs";
 import {
   getThingOne,
   getThingAll,
@@ -43,6 +44,7 @@ import {
   LocalNode,
   unstable_WithAcl,
   unstable_AclDataset,
+  makeIri,
 } from "./interfaces";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
@@ -82,36 +84,40 @@ describe("createThing", () => {
 
   it("uses the given IRI, if any", () => {
     const thing: ThingPersisted = createThing({
-      url: "https://some.pod/resource#thing",
+      url: makeIri("https://some.pod/resource#thing"),
     });
 
-    expect(thing.url).toEqual("https://some.pod/resource#thing");
+    expect(thing.url).toEqual(makeIri("https://some.pod/resource#thing"));
   });
 
   it("throws an error if the given URL is invalid", () => {
-    expect(() => createThing({ url: "Invalid IRI" })).toThrow();
+    expect(() => createThing({ url: makeIri("Invalid IRI") })).toThrow();
   });
 });
 
 describe("getThingOne", () => {
   it("returns a Dataset with just Quads in there with the given Subject", () => {
-    const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
+    const relevantQuad = getMockQuad({
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+    });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(relevantQuad);
     datasetWithMultipleThings.add(
-      getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
+      getMockQuad({ subject: INRUPT_TEST_IRI.arbitraryOtherSubject })
     );
 
     const thing = getThingOne(
       datasetWithMultipleThings,
-      "https://some.vocab/subject"
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
 
   it("accepts a Named Node as the Subject identifier", () => {
-    const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
+    const relevantQuad = getMockQuad({
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+    });
     const datasetWithAThing = dataset();
     datasetWithAThing.add(relevantQuad);
 
@@ -140,11 +146,11 @@ describe("getThingOne", () => {
 
   it("returns Quads from all Named Graphs if no scope was specified", () => {
     const quadInDefaultGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
     });
     const quadInArbitraryGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://arbitrary.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
@@ -152,7 +158,7 @@ describe("getThingOne", () => {
 
     const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject"
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(thing.size).toEqual(2);
@@ -162,22 +168,22 @@ describe("getThingOne", () => {
 
   it("is able to limit the Thing's scope to a single Named Graph", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        namedGraph: INRUPT_TEST_IRI.arbitraryOtherNamedGraph,
       })
     );
 
     const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: "https://some.vocab/namedGraph" }
+      INRUPT_TEST_IRI.arbitrarySubject,
+      { scope: INRUPT_TEST_IRI.arbitraryNamedGraph }
     );
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
@@ -185,22 +191,22 @@ describe("getThingOne", () => {
 
   it("ignores Quads in the default graph when specifying an explicit scope", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
         namedGraph: undefined,
       })
     );
 
     const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: "https://some.vocab/namedGraph" }
+      INRUPT_TEST_IRI.arbitrarySubject,
+      { scope: INRUPT_TEST_IRI.arbitraryNamedGraph }
     );
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
@@ -208,22 +214,22 @@ describe("getThingOne", () => {
 
   it("is able to specify the scope using a Named Node", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        namedGraph: INRUPT_TEST_IRI.arbitraryOtherNamedGraph,
       })
     );
 
     const thing = getThingOne(
       datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
+      INRUPT_TEST_IRI.arbitrarySubject,
+      { scope: INRUPT_TEST_IRI.arbitraryNamedGraph }
     );
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
@@ -232,9 +238,11 @@ describe("getThingOne", () => {
 
 describe("getThingAll", () => {
   it("returns multiple Datasets, each with Quads with the same Subject", () => {
-    const thing1Quad = getMockQuad({ subject: "https://some.vocab/subject" });
+    const thing1Quad = getMockQuad({
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+    });
     const thing2Quad = getMockQuad({
-      subject: "https://some-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thing1Quad);
@@ -248,15 +256,15 @@ describe("getThingAll", () => {
 
   it("returns one Thing per unique Subject", () => {
     const thing1Quad1 = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/object1",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/object1"),
     });
     const thing1Quad2 = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/object2",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/object2"),
     });
     const thing2Quad = getMockQuad({
-      subject: "https://some-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thing1Quad1);
@@ -272,11 +280,11 @@ describe("getThingAll", () => {
 
   it("returns Quads from all Named Graphs if no scope was specified", () => {
     const quadInDefaultGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
     });
     const quadInArbitraryGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://arbitrary.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
@@ -290,20 +298,20 @@ describe("getThingAll", () => {
 
   it("is able to limit the Things' scope to a single Named Graph", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        namedGraph: INRUPT_TEST_IRI.arbitraryOtherNamedGraph,
       })
     );
 
     const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: "https://some.vocab/namedGraph",
+      scope: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
 
     expect(Array.from(things[0])).toEqual([relevantQuad]);
@@ -311,20 +319,20 @@ describe("getThingAll", () => {
 
   it("ignores Quads in the default graph when specifying an explicit scope", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
         namedGraph: undefined,
       })
     );
 
     const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: "https://some.vocab/namedGraph",
+      scope: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
 
     expect(Array.from(things[0])).toEqual([relevantQuad]);
@@ -332,20 +340,20 @@ describe("getThingAll", () => {
 
   it("is able to specify the scope using a Named Node", () => {
     const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      namedGraph: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
     const datasetWithMultipleNamedGraphs = dataset();
     datasetWithMultipleNamedGraphs.add(relevantQuad);
     datasetWithMultipleNamedGraphs.add(
       getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+        subject: INRUPT_TEST_IRI.arbitrarySubject,
+        namedGraph: INRUPT_TEST_IRI.arbitraryOtherNamedGraph,
       })
     );
 
     const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: DataFactory.namedNode("https://some.vocab/namedGraph"),
+      scope: INRUPT_TEST_IRI.arbitraryNamedGraph,
     });
 
     expect(Array.from(things[0])).toEqual([relevantQuad]);
@@ -353,7 +361,7 @@ describe("getThingAll", () => {
 
   it("only returns Things whose Subject has an IRI, or is a LocalNode", () => {
     const quadWithNamedSubject = getMockQuad({
-      subject: "https://some.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
     });
     const quadWithBlankSubject = getMockQuad();
     quadWithBlankSubject.subject = DataFactory.blankNode(
@@ -381,22 +389,22 @@ describe("getThingAll", () => {
 describe("setThing", () => {
   it("returns a Dataset with only the Thing's Quads having the Thing's Subject", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(oldThingQuad);
     datasetWithMultipleThings.add(otherQuad);
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     newThing.add(newThingQuad);
 
@@ -407,22 +415,22 @@ describe("setThing", () => {
 
   it("keeps track of additions and deletions in the attached change log", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(oldThingQuad);
     datasetWithMultipleThings.add(otherQuad);
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     newThing.add(newThingQuad);
 
@@ -434,19 +442,19 @@ describe("setThing", () => {
 
   it("reconciles deletions and additions in the change log", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const addedQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/previously-added-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/previously-added-object"),
     });
     const deletedQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/previously-deleted-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/previously-deleted-object"),
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(oldThingQuad);
@@ -463,11 +471,11 @@ describe("setThing", () => {
     );
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     newThing.add(newThingQuad);
     newThing.add(deletedQuad);
@@ -480,17 +488,17 @@ describe("setThing", () => {
 
   it("preserves existing change logs", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
+      object: makeIri("https://some.vocab/addition-object"),
     });
     const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
+      object: makeIri("https://some.vocab/deletion-object"),
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
@@ -503,11 +511,11 @@ describe("setThing", () => {
     datasetWithExistingChangeLog.add(otherQuad);
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     newThing.add(newThingQuad);
 
@@ -525,17 +533,17 @@ describe("setThing", () => {
 
   it("does not modify the original LitDataset", () => {
     const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
+      object: makeIri("https://some.vocab/addition-object"),
     });
     const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
+      object: makeIri("https://some.vocab/deletion-object"),
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
@@ -548,11 +556,11 @@ describe("setThing", () => {
     datasetWithExistingChangeLog.add(otherQuad);
 
     const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     newThing.add(newThingQuad);
 
@@ -593,21 +601,18 @@ describe("setThing", () => {
       DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "localSubject" }
     );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
     const oldThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/old-object")
     );
     const datasetWithLocalSubject = dataset();
     datasetWithLocalSubject.add(oldThingQuad);
 
     const newThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
       localSubject: localSubject,
@@ -620,9 +625,13 @@ describe("setThing", () => {
   });
 
   it("can reconcile new LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
+    // We need the subject of our quad to be a hash-something IRI relative to
+    // our resource.
+    const subject = INRUPT_TEST_IRI.somePodResourceHashSomeSubject;
+
     const oldThingQuad = getMockQuad({
-      subject: INRUPT_TEST_IRI.arbitrarySubject,
-      object: "https://some.vocab/old-object",
+      subject: subject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
@@ -637,15 +646,12 @@ describe("setThing", () => {
 
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
+      { name: INRUPT_TEST_IRI.hashSomeSubject }
     );
     const newThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
       localSubject: localSubject,
@@ -662,13 +668,10 @@ describe("setThing", () => {
       DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "subject" }
     );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
     const oldThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/new-object")
     );
     const datasetWithLocalSubject: LitDataset &
       WithResourceInfo = Object.assign(dataset(), {
@@ -681,7 +684,7 @@ describe("setThing", () => {
 
     const newThingQuad = getMockQuad({
       subject: INRUPT_TEST_IRI.arbitrarySubject,
-      object: "https://some.vocab/old-object",
+      object: makeIri("https://some.vocab/old-object"),
     });
     const newThing: Thing = Object.assign(dataset(), {
       localSubject: localSubject,
@@ -698,16 +701,13 @@ describe("setThing", () => {
       DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "localSubject" }
     );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
     const oldThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/old-object")
     );
     const similarSubjectQuad = getMockQuad({
-      subject: "https://some.pod/resource#localSubject",
+      subject: makeIri("https://some.pod/resource#localSubject"),
     });
     const datasetWithLocalSubject = dataset();
     datasetWithLocalSubject.add(oldThingQuad);
@@ -715,8 +715,8 @@ describe("setThing", () => {
 
     const newThingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
       localSubject: localSubject,
@@ -735,15 +735,15 @@ describe("setThing", () => {
 describe("removeThing", () => {
   it("returns a Dataset that excludes Quads with the Thing's Subject", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -751,7 +751,7 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
@@ -762,15 +762,15 @@ describe("removeThing", () => {
 
   it("keeps track of deletions in the attached change log", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -778,7 +778,7 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
@@ -792,15 +792,15 @@ describe("removeThing", () => {
 
   it("reconciles deletions in the change log with additions", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -814,7 +814,7 @@ describe("removeThing", () => {
     });
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
@@ -827,14 +827,14 @@ describe("removeThing", () => {
 
   it("preserves existing change logs", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
+      object: makeIri("https://some.vocab/addition-object"),
     });
     const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
+      object: makeIri("https://some.vocab/deletion-object"),
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
@@ -846,7 +846,7 @@ describe("removeThing", () => {
     datasetWithExistingChangeLog.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
@@ -861,8 +861,8 @@ describe("removeThing", () => {
 
   it("preserves attached ACLs", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const datasetWithFetchedAcls: LitDataset & unstable_WithAcl = Object.assign(
       dataset(),
@@ -876,7 +876,7 @@ describe("removeThing", () => {
     datasetWithFetchedAcls.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
@@ -890,8 +890,8 @@ describe("removeThing", () => {
 
   it("preserves metadata on ACL Datasets", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
       accessTo: INRUPT_TEST_IRI.somePodResource,
@@ -903,13 +903,13 @@ describe("removeThing", () => {
     aclDataset.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      url: INRUPT_TEST_IRI.arbitrarySubject,
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(aclDataset, thing);
 
-    expect(updatedDataset.accessTo).toEqual("https://arbitrary.pod/resource");
+    expect(updatedDataset.accessTo).toEqual(INRUPT_TEST_IRI.somePodResource);
     expect(updatedDataset.resourceInfo).toEqual({
       fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
       isLitDataset: true,
@@ -918,11 +918,11 @@ describe("removeThing", () => {
 
   it("returns a Dataset that excludes Quads with a given Subject IRI", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -930,7 +930,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      "https://some.vocab/subject"
+      INRUPT_TEST_IRI.arbitrarySubject
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
@@ -939,17 +939,17 @@ describe("removeThing", () => {
 
   it("does not modify the original LitDataset", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
     datasetWithMultipleThings.add(otherQuad);
 
-    removeThing(datasetWithMultipleThings, "https://some.vocab/subject");
+    removeThing(datasetWithMultipleThings, INRUPT_TEST_IRI.arbitrarySubject);
 
     expect(Array.from(datasetWithMultipleThings)).toEqual([
       thingQuad,
@@ -980,11 +980,11 @@ describe("removeThing", () => {
 
   it("returns a Dataset that excludes Quads with a given NamedNode as their Subject", () => {
     const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
+      subject: INRUPT_TEST_IRI.arbitrarySubject,
+      object: makeIri("https://some.vocab/new-object"),
     });
     const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
+      subject: INRUPT_TEST_IRI.arbitraryOtherSubject,
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -1004,13 +1004,10 @@ describe("removeThing", () => {
       DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "localSubject" }
     );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
     const thingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/old-object")
     );
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -1023,8 +1020,10 @@ describe("removeThing", () => {
 
   it("can reconcile given LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
     const oldThingQuad = getMockQuad({
-      subject: INRUPT_TEST_IRI.arbitrarySubject,
-      object: "https://some.vocab/old-object",
+      // We need the subject of our quad to be a hash-something IRI relative to
+      // our resource.
+      subject: INRUPT_TEST_IRI.somePodResourceHashSomeSubject,
+      object: makeIri("https://some.vocab/old-object"),
     });
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
@@ -1039,7 +1038,7 @@ describe("removeThing", () => {
 
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
+      { name: INRUPT_TEST_IRI.hashSomeSubject }
     );
 
     const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
@@ -1050,15 +1049,12 @@ describe("removeThing", () => {
   it("can reconcile given NamedNodes with existing LocalNodes if the LitDataset has a resource IRI attached", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
+      { name: INRUPT_TEST_IRI.hashSomeSubject }
     );
     const thingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/new-object")
     );
     const datasetWithLocalNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
@@ -1071,10 +1067,11 @@ describe("removeThing", () => {
     );
     datasetWithLocalNode.add(thingQuad);
 
-    const updatedDataset = removeThing(
-      datasetWithLocalNode,
-      INRUPT_TEST_IRI.arbitrarySubject
-    );
+    // We need the subject of our quad to be a hash-something IRI relative to
+    // our resource.
+    const subject = INRUPT_TEST_IRI.somePodResourceHashSomeSubject;
+
+    const updatedDataset = removeThing(datasetWithLocalNode, subject);
 
     expect(Array.from(updatedDataset)).toEqual([]);
   });
@@ -1084,16 +1081,13 @@ describe("removeThing", () => {
       DataFactory.blankNode("Blank node representing a LocalNode"),
       { name: "localSubject" }
     );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
     const thingQuad = DataFactory.quad(
       localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
+      INRUPT_TEST_IRI.arbitraryPredicate,
+      makeIri("https://some.vocab/old-object")
     );
     const similarSubjectQuad = getMockQuad({
-      subject: "https://some.pod/resource#localSubject",
+      subject: makeIri("https://some.pod/resource#localSubject"),
     });
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(thingQuad);
@@ -1109,10 +1103,12 @@ describe("removeThing", () => {
 describe("asIri", () => {
   it("returns the IRI of a persisted Thing", () => {
     const persistedThing: Thing = Object.assign(dataset(), {
-      url: "https://some.pod/resource#thing",
+      url: makeIri("https://some.pod/resource#thing"),
     });
 
-    expect(asUrl(persistedThing)).toEqual("https://some.pod/resource#thing");
+    expect(asUrl(persistedThing)).toEqual(
+      makeIri("https://some.pod/resource#thing")
+    );
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
@@ -1121,8 +1117,8 @@ describe("asIri", () => {
     });
     const localThing = Object.assign(dataset(), { localSubject: localSubject });
 
-    expect(asUrl(localThing, INRUPT_TEST_IRI.somePodResource)).toEqual(
-      "https://some.pod/resource#some-name"
+    expect(asUrl(localThing, INRUPT_TEST_IRI.somePodResource).value).toEqual(
+      `${INRUPT_TEST_IRI.somePodResource.value}#some-name`
     );
   });
 

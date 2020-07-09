@@ -77,6 +77,9 @@ export const getIriAll = getUrlAll;
  * @param predicate The given Predicate for which you want the boolean value.
  * @returns A boolean value for the given Predicate, if present, or null otherwise.
  */
+
+import { DataFactory } from "n3";
+
 export function getBooleanOne(
   thing: Thing,
   predicate: Url | UrlString
@@ -451,7 +454,7 @@ function getLocaleStringMatcher(
     return (
       predicateNode.equals(quad.predicate) &&
       isLiteral(quad.object) &&
-      quad.object.datatype === RDF.langString &&
+      quad.object.datatype.equals(RDF.langString) &&
       quad.object.language.toLowerCase() === locale.toLowerCase()
     );
   };

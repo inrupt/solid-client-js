@@ -20,14 +20,21 @@
  */
 
 import { DatasetCore, Quad } from "rdf-js";
-import { quad, literal, namedNode, blankNode, dataset } from "@rdfjs/dataset";
+import {
+  quad,
+  literal,
+  namedNode,
+  blankNode,
+  variable,
+  dataset,
+} from "@rdfjs/dataset";
 
 export { dataset } from "@rdfjs/dataset";
 
 /**
  * @internal
  */
-export const DataFactory = { quad, literal, namedNode, blankNode };
+export const DataFactory = { quad, literal, namedNode, blankNode, variable };
 
 /**
  * Clone a Dataset.
