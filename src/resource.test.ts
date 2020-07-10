@@ -325,15 +325,13 @@ describe("fetchResourceInfoWithAcl", () => {
   });
 
   it("does not request the actual data from the server", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: makeString(INRUPT_TEST_IRI.somePodResource),
-          })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: makeString(INRUPT_TEST_IRI.somePodResource),
+        })
+      )
+    );
 
     await unstable_fetchResourceInfoWithAcl(INRUPT_TEST_IRI.somePodResource, {
       fetch: mockFetch,
@@ -378,15 +376,13 @@ describe("fetchResourceInfo", () => {
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: makeString(INRUPT_TEST_IRI.somePodResource),
-          })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: makeString(INRUPT_TEST_IRI.somePodResource),
+        })
+      )
+    );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
       INRUPT_TEST_IRI.somePodResource,
@@ -439,15 +435,13 @@ describe("fetchResourceInfo", () => {
   });
 
   it("marks a Resource as not a LitDataset when its Content Type is unknown", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: makeString(INRUPT_TEST_IRI.somePodResource),
-          })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: makeString(INRUPT_TEST_IRI.somePodResource),
+        })
+      )
+    );
 
     const litDatasetInfo = await internal_fetchResourceInfo(
       INRUPT_TEST_IRI.somePodResource,
@@ -618,15 +612,13 @@ describe("fetchResourceInfo", () => {
   });
 
   it("does not request the actual data from the server", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {
-            url: makeString(INRUPT_TEST_IRI.somePodResource),
-          })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: makeString(INRUPT_TEST_IRI.somePodResource),
+        })
+      )
+    );
 
     await internal_fetchResourceInfo(INRUPT_TEST_IRI.somePodResource, {
       fetch: mockFetch,
