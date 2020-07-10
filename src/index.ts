@@ -165,6 +165,10 @@ export {
   unstable_getPublicDefaultAccess,
 } from "./acl/class";
 export {
+  unstable_discoverInbox,
+  unstable_fetchInbox,
+} from "./notifications/ldn";
+export {
   Url,
   Iri,
   UrlString,
