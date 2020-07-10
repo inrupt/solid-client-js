@@ -128,6 +128,8 @@ import {
   addStringInLocale,
   setStringInLocale,
   removeStringInLocale,
+  unstable_discoverInbox,
+  unstable_fetchInbox,
 } from "./index";
 import { expects } from "rdf-namespaces/dist/hydra";
 
@@ -231,6 +233,8 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getGroupResourceAccessAll).toBeDefined();
   expect(unstable_getGroupDefaultAccessOne).toBeDefined();
   expect(unstable_getGroupDefaultAccessAll).toBeDefined();
+  expect(unstable_discoverInbox).toBeDefined(),
+    expect(unstable_fetchInbox).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
