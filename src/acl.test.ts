@@ -529,31 +529,21 @@ describe("createAclFromFallbackAcl", () => {
         isLitDataset: true,
       },
     });
-    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        RDF.type,
-        ACL.Authorization
-      )
+    const subjectIri = makeIri(
+      "https://arbitrary.pod/container/.acl#" + Math.random()
     );
+    aclDataset.add(DataFactory.quad(subjectIri, RDF.type, ACL.Authorization));
     aclDataset.add(
       DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
+        subjectIri,
         ACL.accessTo,
         INRUPT_TEST_IRI.somePodRootContainer
       )
     );
     aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        ACL.agent,
-        INRUPT_TEST_IRI.somePodWebId
-      )
+      DataFactory.quad(subjectIri, ACL.agent, INRUPT_TEST_IRI.somePodWebId)
     );
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Read)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Read));
     const litDataset = Object.assign(dataset(), {
       resourceInfo: {
         fetchedFrom: INRUPT_TEST_IRI.somePodResource,
@@ -582,7 +572,7 @@ describe("getAclRules", () => {
 
     aclDataset.add(
       DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/not-an-acl-rule"),
+        makeIri("https://arbitrary.pod/not-an-acl-rule"),
         INRUPT_TEST_IRI.arbitraryPredicate,
         INRUPT_TEST_IRI.arbitraryObject
       )
