@@ -25,7 +25,7 @@ import { fetch } from "../fetcher";
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
- * resource content. If the inbox is only advsertised in the resource metadata, it won't be
+ * resource content. If the inbox is only advertised in the resource metadata, it won't be
  * discovered.
  *
  * @param resource The IRI of the resource for which we are searching for the inbox
