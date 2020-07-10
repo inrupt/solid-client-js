@@ -432,7 +432,7 @@ function getLiteralOfTypeMatcher(
     return (
       predicateNode.equals(quad.predicate) &&
       isLiteral(quad.object) &&
-      quad.object.datatype === datatype
+      quad.object.datatype.equals(datatype)
     );
   };
   return matcher;

@@ -76,7 +76,7 @@ export async function fetchLitDataset(
   const data = await response.text();
   const triples = await turtleToTriples(data, url);
   const resource = dataset();
-  triples.forEach((triple) => resource.add(triple));
+  triples.forEach((quad) => resource.add(quad));
 
   const resourceInfo = internal_parseResourceInfo(response);
 
