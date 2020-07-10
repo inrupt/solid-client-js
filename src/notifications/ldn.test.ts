@@ -20,6 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import {
   unstable_discoverInbox,
   unstable_sendNotification,
@@ -29,6 +30,7 @@ import {
 } from "./ldn";
 import { DataFactory, dataset } from "../rdfjs";
 import Dataset from "@rdfjs/dataset";
+import { option } from "rdf-namespaces/dist/sched";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -39,43 +41,188 @@ jest.mock("../fetcher.ts", () => ({
   ),
 }));
 
+function mockResponse(
+  body?: BodyInit | null,
+  init?: ResponseInit & { url: string }
+): Response {
+  return new Response(body, init);
+}
+
 describe("unstable_discoverInbox", () => {
   it("should return the inbox IRI for a given resource", () => {
-    unstable_discoverInbox(
-      DataFactory.namedNode("https://some.pod/resource"),
-      dataset()
+    let myData = dataset();
+    myData.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
+        DataFactory.namedNode("https://www.w3.org/ns/ldp#inbox"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/inbox")
+      )
     );
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    const inbox = unstable_discoverInbox(
+      DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
+      myData
+    );
+    expect(inbox).toEqual("https://my.pod/some/arbitrary/inbox");
   });
 
   it("should return null if no inbox is available in the dataset", () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    let myData = dataset();
+    myData.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
+      )
+    );
+    const inbox = unstable_discoverInbox(
+      DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
+      myData
+    );
+    expect(inbox).toBeNull();
   });
 
   it("should ignore inboxes for other resources", () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    let myData = dataset();
+    myData.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/other/subject"),
+        DataFactory.namedNode("https://www.w3.org/ns/ldp#inbox"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/inbox")
+      )
+    );
+    const inbox = unstable_discoverInbox(
+      DataFactory.namedNode("https://my.pod/some/other/subject"),
+      myData
+    );
+    expect(inbox).toEqual("https://my.pod/some/arbitrary/inbox");
   });
 });
 
 describe("unstable_fetchInbox", () => {
-  it("should return the inbox IRI for a given resource", async () => {
-    await unstable_fetchInbox(
-      DataFactory.namedNode("https://some.pod/resource")
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    await unstable_fetchInbox("https://some.pod/resource");
+
+    expect(mockedFetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await unstable_fetchInbox("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should support string IRIs", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse("", {
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+          },
+          url: "https://some.pod/",
+        })
+      )
     );
-    expect(null).toBeNull();
+    const inbox = await unstable_fetchInbox("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
+    expect(inbox).toEqual("https://some.pod/inbox");
   });
 
-  it("should return null if no inbox is available in the dataset", () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("should return the inbox IRI for a given resource found in a Link header", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse("", {
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+          },
+          url: "https://some.pod/",
+        })
+      )
+    );
+    const inbox = await unstable_fetchInbox(
+      DataFactory.namedNode("https://some.pod/resource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(inbox).toEqual("https://some.pod/inbox");
   });
 
-  it("should ignore inboxes for other resources", () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("should return the inbox IRI for a given resource found in its content", async () => {
+    const turtle = `
+      @prefix : <#>.
+      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+
+      :aResource ldp:inbox :anInbox.
+    `;
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse("", {
+            url: "https://some.pod/",
+          })
+        )
+      )
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse(turtle, {
+            url: "https://some.pod/",
+          })
+        )
+      );
+    const inbox = await unstable_fetchInbox(
+      DataFactory.namedNode("https://some.pod#aResource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(inbox).toEqual("https://some.pod#anInbox");
+  });
+
+  it("should ignore inboxes for other resources", async () => {
+    const turtle = `
+      @prefix : <#>.
+      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+
+      :anotherResource ldp:inbox :anInbox.
+    `;
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse("", {
+            url: "https://some.pod/",
+          })
+        )
+      )
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse(turtle, {
+            url: "https://some.pod/",
+          })
+        )
+      );
+    const inbox = await unstable_fetchInbox(
+      DataFactory.namedNode("https://some.pod/aResource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(inbox).toBeNull();
   });
 });
 
