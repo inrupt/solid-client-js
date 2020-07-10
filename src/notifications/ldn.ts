@@ -22,6 +22,15 @@
 import { LitDataset, Iri, Thing, IriString } from "../interfaces";
 import { dataset, DataFactory } from "../rdfjs";
 import { fetch } from "../fetcher";
+import {
+  internal_fetchResourceInfo,
+  hasInboxInfo,
+  getInboxInfo,
+} from "../resource";
+import { fetchLitDataset } from "../litDataset";
+import { getThingOne } from "../thing";
+import { getIriOne } from "../thing/get";
+import { ldp } from "../constants";
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
@@ -34,8 +43,9 @@ import { fetch } from "../fetcher";
 export function unstable_discoverInbox(
   resource: Iri | IriString,
   dataset: LitDataset
-): Iri {
-  return DataFactory.namedNode("unimplemented");
+): string | null {
+  const inbox = getIriOne(getThingOne(dataset, resource), ldp.inbox);
+  return inbox;
 }
 
 /**
@@ -45,8 +55,21 @@ export function unstable_discoverInbox(
  * @param resource The IRI of the resource for which we are searching for the inbox
  * @param dataset The dataset where the inbox may be found (typically fetched at the resource IRI)
  */
-export async function unstable_fetchInbox(resource: Iri | IriString) {
-  return DataFactory.namedNode("unimplemented");
+export async function unstable_fetchInbox(
+  resource: Iri | IriString,
+  options?: {
+    fetch: typeof fetch;
+  }
+): Promise<string | null> {
+  const resourceIri = typeof resource === "string" ? resource : resource.value;
+  // First, try to get a Link header to the inbox
+  const resourceInfo = await internal_fetchResourceInfo(resourceIri, options);
+  if (hasInboxInfo({ resourceInfo: resourceInfo })) {
+    return getInboxInfo({ resourceInfo: resourceInfo });
+  }
+  // If no Link header is defined, look up the resource content
+  const resourceContent = await fetchLitDataset(resourceIri, options);
+  return unstable_discoverInbox(resource, resourceContent);
 }
 
 export function unstable_buildNotification(
