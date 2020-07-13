@@ -28,7 +28,8 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_Access,
-  Url,
+  IriString,
+  Iri,
 } from "./interfaces";
 import { saveLitDatasetAt } from "./litDataset";
 import { fetch } from "./fetcher";
@@ -336,4 +337,8 @@ function parseWacAllowHeader(wacAllowHeader: string) {
     user: parsePermissionStatement(getStatementFor(wacAllowHeader, "user")),
     public: parsePermissionStatement(getStatementFor(wacAllowHeader, "public")),
   };
+}
+
+export function internal_toString(iri: Iri | IriString): string {
+  return typeof iri === "string" ? iri : iri.value;
 }
