@@ -82,9 +82,9 @@ export function unstable_discoverInbox(
  */
 export async function unstable_fetchInbox(
   resource: Url | UrlString,
-  options?: {
-    fetch: typeof fetch;
-  }
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ): Promise<string | null> {
   const resourceIri = typeof resource === "string" ? resource : resource.value;
   // First, try to get a Link header to the inbox
@@ -191,6 +191,11 @@ export async function unstable_sendNotification(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ) {
-  // NOTE: Unimplemented
-  void 0;
+  const inbox = await unstable_fetchInbox(receiver, options);
+  if (inbox === null) {
+    throw new Error(
+      `No inbox discovered for resource [${internal_toString(receiver)}]`
+    );
+  }
+  return unstable_sendNotificationToInbox(notification, inbox, options);
 }

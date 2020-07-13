@@ -34,6 +34,7 @@ import { getThingOne, createThing } from "../thing";
 import { getUrlOne } from "../thing/get";
 import { as, rdf } from "../constants";
 import { addUrl } from "../thing/add";
+import { turtleToTriples } from "../formats/turtle";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -227,6 +228,32 @@ describe("unstable_fetchInbox", () => {
     );
     expect(inbox).toBeNull();
   });
+
+  it("should return null if no inbox are found", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse("", {
+            url: "https://some.pod/",
+          })
+        )
+      )
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse("", {
+            url: "https://some.pod/",
+          })
+        )
+      );
+    const inbox = await unstable_fetchInbox(
+      DataFactory.namedNode("https://some.pod/aResource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(inbox).toBeNull();
+  });
 });
 
 describe("unstable_buildNotification", () => {
@@ -378,28 +405,161 @@ describe("unstable_buildNotification", () => {
 });
 
 describe("unstable_sendNotification", () => {
-  it("should use the provided fetcher if applicable", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedFetcher.fetch.mockReturnValue(
+      Promise.resolve(
+        mockResponse("", {
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Location: "https://arbitrary.pod/resource",
+          },
+          url: "https://some.pod/",
+        })
+      )
+    );
+
+    await unstable_sendNotification(dataset(), "https://some.pod/resource");
+
+    expect(mockedFetcher.fetch).toHaveBeenCalled();
   });
 
-  it("should default to the fallback fetcher if no other is provided", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("uses the given fetcher if provided", async () => {
+    const mockedResponse = mockResponse("", {
+      headers: {
+        Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+        Location: "https://arbitrary.pod/resource",
+      },
+      url: "https://some.pod/",
+    });
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockedResponse));
+
+    await unstable_sendNotification(dataset(), "https://some.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should send the notification to the inbox of the given resource if found in a Link header", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse("", {
+          status: 201,
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Location: "https://arbitrary.pod/inbox/notification_01",
+          },
+          url: "https://some.pod/",
+        })
+      )
+    );
+    await unstable_sendNotification(
+      dataset(),
+      DataFactory.namedNode("https://some.pod/resource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(mockFetch.mock.calls[1][0]).toEqual("https://some.pod/inbox");
+  });
+
+  it("should send the notification to the inbox of the given resource if found in its content", async () => {
+    const turtle = `
+      @prefix : <#>.
+      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+
+      :aResource ldp:inbox :anInbox.
+    `;
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(turtle, {
+          url: "https://some.pod/",
+          headers: {
+            Location: "https://some.pod/anInbox/notification",
+          },
+        })
+      )
+    );
+    await unstable_sendNotification(
+      dataset(),
+      DataFactory.namedNode("https://some.pod#aResource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(mockFetch.mock.calls[2][0]).toEqual("https://some.pod#anInbox");
   });
 
   it("should send the provided notification to the inbox of the target resource", async () => {
-    await unstable_sendNotification(
-      dataset(),
-      Dataset.namedNode("https://your.pod/webId#you")
+    let notification = dataset();
+    notification.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/notification"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
+      )
     );
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse("", {
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Location: "https://some.pod/anInbox/notification",
+          },
+          url: "https://some.pod/",
+        })
+      )
+    );
+    await unstable_sendNotification(
+      notification,
+      DataFactory.namedNode("https://some.pod#resource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    const sentBody = mockFetch.mock.calls[1][1]?.body?.toString();
+    expect(sentBody).not.toBeUndefined();
+    if (sentBody) {
+      const sentQuads = await turtleToTriples(sentBody, "https://my.pod");
+      expect(sentQuads).toHaveLength(1);
+      expect(sentQuads[0].subject.value).toEqual(
+        "https://my.pod/some/notification"
+      );
+      expect(sentQuads[0].predicate.value).toEqual(
+        "https://my.pod/some/arbitrary/predicate"
+      );
+      expect(sentQuads[0].object.value).toEqual(
+        "https://my.pod/some/arbitrary/object"
+      );
+    }
   });
 
   it("should fail if inbox discovery fails", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse("", {
+          url: "https://some.pod/",
+        })
+      )
+    );
+    const sendPromise = unstable_sendNotification(
+      dataset(),
+      DataFactory.namedNode("https://some.pod/resource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    await expect(sendPromise).rejects.toThrow(
+      "No inbox discovered for resource [https://some.pod/resource]"
+    );
   });
 });
 
