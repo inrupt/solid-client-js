@@ -21,14 +21,15 @@
 
 import {
   LitDataset,
-  Iri,
+  Url,
   Thing,
   IriString,
   WithResourceInfo,
   WebId,
   LocalNode,
+  UrlString,
 } from "../interfaces";
-import { dataset, DataFactory } from "../rdfjs";
+import { dataset } from "../rdfjs";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceInfo,
@@ -38,10 +39,16 @@ import {
 } from "../resource";
 import { 
   fetchLitDataset, 
-  saveLitDatasetInContainer, 
-  getNamedNodeFromLocalNode
+  saveLitDatasetInContainer,
+  getNamedNodeFromLocalNode, 
 } from "../litDataset";
-import { getThingOne, createThing, asUrl, isThingLocal, setThing } from "../thing";
+import { 
+  getThingOne, 
+  createThing, 
+  isThingLocal, 
+  setThing, 
+  cloneThing
+} from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 
@@ -56,11 +63,11 @@ import { addUrl } from "../thing/add";
  * resource content. If the inbox is only advertised in the resource metadata, it won't be
  * discovered.
  *
- * @param resource The IRI of the resource for which we are searching for the inbox
+ * @param resource The URL of the resource for which we are searching for the inbox
  * @param dataset The dataset where the inbox may be found (typically fetched at the resource IRI)
  */
 export function unstable_discoverInbox(
-  resource: Iri | IriString,
+  resource: Url | UrlString,
   dataset: LitDataset
 ): string | null {
   const inbox = getIriOne(getThingOne(dataset, resource), ldp.inbox);
@@ -71,7 +78,7 @@ export function unstable_discoverInbox(
  * Perform complete inbox discovery (https://www.w3.org/TR/ldn/#discovery) by checking both
  * resource metedata (i.e. Link headers) and resource content.
  *
- * @param resource The IRI of the resource for which we are searching for the inbox
+ * @param resource The URL of the resource for which we are searching for the inbox
  * @param dataset The dataset where the inbox may be found (typically fetched at the resource IRI)
  */
 export async function unstable_fetchInbox(
@@ -98,40 +105,42 @@ export async function unstable_fetchInbox(
  * @param sender The URL identifying the sender of the resource (typically, a WebID)
  * @param target The URL identifying the receiver of the resource (typically, a WebID)
  * @param type The type of notification, typically a type from [[https://www.w3.org/TR/activitystreams-vocabulary/#activity-types]]
- * @param options Additional data for the notification
+ * @param options Additional data for the notification. If `body` is set, the provided Thing is used as an initial value for the notification. This makes it easier to set custom properties on a notification. If `subthings` is set, the provided [[Thing]]s are associated to the notification using the provided URLs.
  */
 export function unstable_buildNotification(
-  sender: Iri | WebId,
-  target: Iri | WebId,
-  type: Iri | IriString,
-  options?: {
-    body: Record<IriString, Thing>;
-  }
-): LitDataset & { notification: LocalNode } {
+  sender: Url | WebId,
+  target: Url | WebId,
+  type: Url | UrlString,
+  options?: Partial<{
+    subthings: Record<UrlString, Thing>;
+    body: Thing;
+  }>
+): LitDataset & { notification: UrlString | LocalNode } {
   let notificationData = dataset();
-  let notification = createThing();
+  let notification: Thing;
+  if (options && options.body) {
+    notification = options.body;
+    notificationData = setThing(notificationData, notification);
+  } else {
+    notification = createThing();
+  }
+  // Set the mandatory notification properties
   notification = addUrl(notification, as.actor, sender);
   notification = addUrl(notification, as.target, target);
   notification = addUrl(notification, rdf.type, type);
-  if (options !== undefined) {
-    Object.entries(options.body).forEach((entry) => {
+  // Set the optional additional notification information
+  if (options !== undefined && options.subthings !== undefined) {
+    Object.entries(options.subthings).forEach((entry) => {
       // All the quads of the notification subpart are added to the notification data
-      notificationData = setThing(notificationData, entry[1]);
-      // The notification subpart is linked to the notification IRI using the given predicate
-      if (isThingLocal(entry[1])) {
-        notification = addUrl(
-          notification,
-          entry[0],
-          getNamedNodeFromLocalNode(entry[1].localSubject)
-        );
-      } else {
-        notification = addUrl(notification, entry[0], entry[1].url);
-      }
+      notificationData = setThing(notification, entry[1]);
+      notification = addThingToNotification(notification, entry[0], entry[1]);
     });
   }
   notificationData = setThing(notificationData, notification);
   return Object.assign(notificationData, {
-    notification: notification.localSubject,
+    notification: isThingLocal(notification)
+      ? notification.localSubject
+      : notification.url,
   });
 }
 
@@ -155,6 +164,25 @@ export async function unstable_sendNotificationToInbox(
     notification,
     options
   );
+}
+
+function addThingToNotification(
+  notification: Thing,
+  property: UrlString,
+  thing: Thing
+): Thing {
+  let result = cloneThing(notification);
+  // The notification subpart is linked to the notification IRI using the given predicate
+  if (isThingLocal(thing)) {
+    result = addUrl(
+      result,
+      property,
+      getNamedNodeFromLocalNode(thing.localSubject)
+    );
+  } else {
+    result = addUrl(notification, property, thing.url);
+  }
+  return result;
 }
 
 export async function unstable_sendNotification(
