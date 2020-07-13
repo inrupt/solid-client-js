@@ -305,7 +305,11 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
   };
 }
 
-function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
+/**
+ * @internal
+ * @param localNode
+ */
+export function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
   return DataFactory.namedNode("#" + localNode.name);
 }
 
