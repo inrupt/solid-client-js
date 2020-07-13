@@ -23,7 +23,6 @@ import {
   LitDataset,
   Url,
   Thing,
-  IriString,
   WithResourceInfo,
   WebId,
   LocalNode,
@@ -35,19 +34,19 @@ import {
   internal_fetchResourceInfo,
   hasInboxInfo,
   getInboxInfo,
-  internal_toString
+  internal_toString,
 } from "../resource";
-import { 
-  fetchLitDataset, 
+import {
+  fetchLitDataset,
   saveLitDatasetInContainer,
-  getNamedNodeFromLocalNode, 
+  getNamedNodeFromLocalNode,
 } from "../litDataset";
-import { 
-  getThingOne, 
-  createThing, 
-  isThingLocal, 
-  setThing, 
-  cloneThing
+import {
+  getThingOne,
+  createThing,
+  isThingLocal,
+  setThing,
+  cloneThing,
 } from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
@@ -64,7 +63,7 @@ import { addUrl } from "../thing/add";
  * discovered.
  *
  * @param resource The URL of the resource for which we are searching for the inbox
- * @param dataset The dataset where the inbox may be found (typically fetched at the resource IRI)
+ * @param dataset The dataset where the inbox may be found (typically fetched at the resource Url)
  */
 export function unstable_discoverInbox(
   resource: Url | UrlString,
@@ -79,10 +78,10 @@ export function unstable_discoverInbox(
  * resource metedata (i.e. Link headers) and resource content.
  *
  * @param resource The URL of the resource for which we are searching for the inbox
- * @param dataset The dataset where the inbox may be found (typically fetched at the resource IRI)
+ * @param dataset The dataset where the inbox may be found (typically fetched at the resource Url)
  */
 export async function unstable_fetchInbox(
-  resource: Iri | IriString,
+  resource: Url | UrlString,
   options?: {
     fetch: typeof fetch;
   }
@@ -100,7 +99,7 @@ export async function unstable_fetchInbox(
 
 /**
  * Creates a dataset describing a notification. The obtained notification has a relative
- * IRI that is resolved when it is sent to an inbox.
+ * Url that is resolved when it is sent to an inbox.
  *
  * @param sender The URL identifying the sender of the resource (typically, a WebID)
  * @param target The URL identifying the receiver of the resource (typically, a WebID)
@@ -154,7 +153,7 @@ export function unstable_buildNotification(
  */
 export async function unstable_sendNotificationToInbox(
   notification: LitDataset,
-  inbox: Iri | IriString,
+  inbox: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -172,7 +171,7 @@ function addThingToNotification(
   thing: Thing
 ): Thing {
   let result = cloneThing(notification);
-  // The notification subpart is linked to the notification IRI using the given predicate
+  // The notification subpart is linked to the notification Url using the given predicate
   if (isThingLocal(thing)) {
     result = addUrl(
       result,
@@ -187,7 +186,7 @@ function addThingToNotification(
 
 export async function unstable_sendNotification(
   notification: LitDataset,
-  receiver: Iri | IriString,
+  receiver: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
