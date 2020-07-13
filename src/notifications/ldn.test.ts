@@ -271,27 +271,85 @@ describe("unstable_sendNotification", () => {
 });
 
 describe("unstable_sendNotificationToInbox", () => {
-  it("should use the provided fetcher if applicable", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    await unstable_sendNotificationToInbox(
+      dataset(),
+      "https://some.pod/resource"
+    );
+
+    expect(mockedFetcher.fetch).toHaveBeenCalled();
   });
 
-  it("should default to the fallback fetcher if no other is provided", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+  it("uses the given fetcher if provided", async () => {
+    const mockResponse = new Response("Arbitrary response", {
+      headers: { Location: "https://arbitrary.pod/container/resource" },
+    });
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
+
+    await unstable_sendNotificationToInbox(
+      dataset(),
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("should not attempt inbox discovery", async () => {
+    const mockResponse = new Response("Arbitrary response", {
+      headers: { Location: "https://arbitrary.pod/container/resource" },
+    });
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
+    await unstable_sendNotificationToInbox(
+      dataset(),
+      Dataset.namedNode("https://your.pod/inbox"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("should send the provided notification to the target inbox", async () => {
-    await unstable_sendNotificationToInbox(
-      dataset(),
-      Dataset.namedNode("https://your.pod/inbox")
+    const mockResponse = new Response("Arbitrary response", {
+      headers: { Location: "https://arbitrary.pod/container/resource" },
+    });
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockDataset = dataset();
+    mockDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.vocab/subject"),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.namedNode("https://arbitrary.vocab/object"),
+        undefined
+      )
     );
-    // TODO: Unimplemented
-    expect(null).toBeNull();
-  });
-
-  it("should not perform inbox discovery", async () => {
-    // TODO: Unimplemented
-    expect(null).toBeNull();
+    await unstable_sendNotificationToInbox(
+      mockDataset,
+      Dataset.namedNode("https://your.pod/inbox"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://your.pod/inbox");
+    expect(mockFetch.mock.calls[0][1]?.method).toEqual("POST");
+    expect(mockFetch.mock.calls[0][1]?.body).toContain(
+      "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>"
+    );
   });
 });

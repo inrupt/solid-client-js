@@ -19,18 +19,34 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LitDataset, Iri, Thing, IriString } from "../interfaces";
+import {
+  LitDataset,
+  Iri,
+  Thing,
+  IriString,
+  WithResourceInfo,
+} from "../interfaces";
 import { dataset, DataFactory } from "../rdfjs";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceInfo,
   hasInboxInfo,
   getInboxInfo,
+  internal_toString
 } from "../resource";
-import { fetchLitDataset } from "../litDataset";
+import { 
+  fetchLitDataset, 
+  saveLitDatasetInContainer 
+} from "../litDataset";
 import { getThingOne } from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp } from "../constants";
+import { triplesToTurtle } from "../formats/turtle";
+
+/** @internal */
+export const internal_defaultFetchOptions = {
+  fetch: fetch,
+};
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
@@ -84,23 +100,34 @@ export function unstable_buildNotification(
   return dataset();
 }
 
+/**
+ * Send a notification to a given target inbox, without performing any discovery.
+ *
+ * @param notification The [[LitDataset]] containing the notification data.
+ * @param inbox URL of the target inbox.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new notification Resource, or rejecting if saving it failed.
+ */
 export async function unstable_sendNotificationToInbox(
   notification: LitDataset,
   inbox: Iri | IriString,
-  options?: {
-    fetch: typeof fetch;
-  }
-) {
-  // NOTE: Unimplemented
-  void 0;
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<LitDataset & WithResourceInfo> {
+  return saveLitDatasetInContainer(
+    internal_toString(inbox),
+    notification,
+    options
+  );
 }
 
 export async function unstable_sendNotification(
   notification: LitDataset,
   receiver: Iri | IriString,
-  options?: {
-    fetch: typeof fetch;
-  }
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
 ) {
   // NOTE: Unimplemented
   void 0;
