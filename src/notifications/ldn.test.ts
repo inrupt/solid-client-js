@@ -30,7 +30,10 @@ import {
 } from "./ldn";
 import { DataFactory, dataset } from "../rdfjs";
 import Dataset from "@rdfjs/dataset";
-
+import { getThingOne, createThing } from "../thing";
+import { getUrlOne } from "../thing/get";
+import { as, rdf } from "../constants";
+import { addUrl } from "../thing/add";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -228,19 +231,108 @@ describe("unstable_fetchInbox", () => {
 
 describe("unstable_buildNotification", () => {
   it("should create a notification with the provided values", () => {
-    unstable_buildNotification(
+    const notificationData = unstable_buildNotification(
       DataFactory.namedNode("https://my.pod/webId#me"),
       DataFactory.namedNode("https://your.pod/webId#you"),
-      // TODO: replace with a constant ?
-      DataFactory.namedNode("https://www.w3.org/ns/activitystreams/Event")
+      DataFactory.namedNode(as.Event)
     );
-    // TODO: test for provided values
-    expect(null).toBeNull();
+    const notification = getThingOne(
+      notificationData,
+      notificationData.notification
+    );
+    expect(getUrlOne(notification, as.actor)).toEqual(
+      "https://my.pod/webId#me"
+    );
+    expect(getUrlOne(notification, as.target)).toEqual(
+      "https://your.pod/webId#you"
+    );
+    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
   });
 
   it("should complete the notification with the optional body if provided", () => {
-    // TODO: Test for provided body
-    expect(null).toBeNull();
+    let body = dataset();
+    body.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
+      )
+    );
+    const bodyThing = getThingOne(
+      body,
+      "https://my.pod/some/arbitrary/subject"
+    );
+    const notificationData = unstable_buildNotification(
+      DataFactory.namedNode("https://my.pod/webId#me"),
+      DataFactory.namedNode("https://your.pod/webId#you"),
+      DataFactory.namedNode(as.Event),
+      {
+        body: { "https://some.other/predicate": bodyThing },
+      }
+    );
+    const notification = getThingOne(
+      notificationData,
+      notificationData.notification
+    );
+
+    // The core notification elements should not be changed
+    expect(getUrlOne(notification, as.actor)).toEqual(
+      "https://my.pod/webId#me"
+    );
+    expect(getUrlOne(notification, as.target)).toEqual(
+      "https://your.pod/webId#you"
+    );
+    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
+    // The body should be added
+    expect(getUrlOne(notification, "https://some.other/predicate")).toEqual(
+      "https://my.pod/some/arbitrary/subject"
+    );
+    expect(
+      getUrlOne(
+        getThingOne(notificationData, "https://my.pod/some/arbitrary/subject"),
+        "https://my.pod/some/arbitrary/predicate"
+      )
+    ).toEqual("https://my.pod/some/arbitrary/object");
+  });
+
+  it("should support local Things for the notification optional body", () => {
+    let body = createThing({ name: "notificationBody" });
+    body = addUrl(
+      body,
+      "https://my.pod/some/arbitrary/predicate",
+      "https://my.pod/some/arbitrary/object"
+    );
+    const notificationData = unstable_buildNotification(
+      DataFactory.namedNode("https://my.pod/webId#me"),
+      DataFactory.namedNode("https://your.pod/webId#you"),
+      DataFactory.namedNode(as.Event),
+      {
+        body: { "https://some.other/predicate": body },
+      }
+    );
+    const notification = getThingOne(
+      notificationData,
+      notificationData.notification
+    );
+
+    // The core notification elements should not be changed
+    expect(getUrlOne(notification, as.actor)).toEqual(
+      "https://my.pod/webId#me"
+    );
+    expect(getUrlOne(notification, as.target)).toEqual(
+      "https://your.pod/webId#you"
+    );
+    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
+    // The body should be added
+    expect(getUrlOne(notification, "https://some.other/predicate")).toEqual(
+      "#notificationBody"
+    );
+    expect(
+      getUrlOne(
+        getThingOne(notificationData, body.localSubject),
+        "https://my.pod/some/arbitrary/predicate"
+      )
+    ).toEqual("https://my.pod/some/arbitrary/object");
   });
 });
 
