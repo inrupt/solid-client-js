@@ -30,7 +30,7 @@ import {
 } from "./ldn";
 import { DataFactory, dataset } from "../rdfjs";
 import Dataset from "@rdfjs/dataset";
-import { option } from "rdf-namespaces/dist/sched";
+
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(

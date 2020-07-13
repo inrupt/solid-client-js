@@ -131,7 +131,6 @@ import {
   unstable_discoverInbox,
   unstable_fetchInbox,
 } from "./index";
-import { expects } from "rdf-namespaces/dist/hydra";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
