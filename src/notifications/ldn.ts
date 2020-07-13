@@ -184,6 +184,14 @@ function addThingToNotification(
   return result;
 }
 
+/**
+ * Discovers the inbox of the provided target resource, and then sends the provided notification to that inbox.
+ * Fails if no inbox is discovered.
+ * @param notification The content of thoe notification
+ * @param receiver The target resource (e.g. a WebID)
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new notification Resource, or rejecting if saving it failed.
+ */
 export async function unstable_sendNotification(
   notification: LitDataset,
   receiver: Url | UrlString,
