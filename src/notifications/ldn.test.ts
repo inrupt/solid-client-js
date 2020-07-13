@@ -249,7 +249,7 @@ describe("unstable_buildNotification", () => {
     expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
   });
 
-  it("should complete the notification with the optional body if provided", () => {
+  it("should complete the notification with the optional subthings if provided", () => {
     let body = dataset();
     body.add(
       DataFactory.quad(
@@ -267,7 +267,7 @@ describe("unstable_buildNotification", () => {
       DataFactory.namedNode("https://your.pod/webId#you"),
       DataFactory.namedNode(as.Event),
       {
-        body: { "https://some.other/predicate": bodyThing },
+        subthings: { "https://some.other/predicate": bodyThing },
       }
     );
     const notification = getThingOne(
@@ -307,7 +307,7 @@ describe("unstable_buildNotification", () => {
       DataFactory.namedNode("https://your.pod/webId#you"),
       DataFactory.namedNode(as.Event),
       {
-        body: { "https://some.other/predicate": body },
+        subthings: { "https://some.other/predicate": body },
       }
     );
     const notification = getThingOne(
@@ -332,6 +332,47 @@ describe("unstable_buildNotification", () => {
         getThingOne(notificationData, body.localSubject),
         "https://my.pod/some/arbitrary/predicate"
       )
+    ).toEqual("https://my.pod/some/arbitrary/object");
+  });
+
+  it("should use the provided optional body if provided", () => {
+    let body = dataset();
+    body.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/notification"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
+      )
+    );
+    const bodyThing = getThingOne(body, "https://my.pod/some/notification");
+    const notificationData = unstable_buildNotification(
+      DataFactory.namedNode("https://my.pod/webId#me"),
+      DataFactory.namedNode("https://your.pod/webId#you"),
+      DataFactory.namedNode(as.Event),
+      {
+        body: bodyThing,
+      }
+    );
+    const notification = getThingOne(
+      notificationData,
+      notificationData.notification
+    );
+
+    // The core notification elements should not be changed
+    expect(getUrlOne(notification, as.actor)).toEqual(
+      "https://my.pod/webId#me"
+    );
+    expect(getUrlOne(notification, as.target)).toEqual(
+      "https://your.pod/webId#you"
+    );
+    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
+    // The provided IRI should be used
+    expect(notificationData.notification).toEqual(
+      "https://my.pod/some/notification"
+    );
+    // The body should be added
+    expect(
+      getUrlOne(notification, "https://my.pod/some/arbitrary/predicate")
     ).toEqual("https://my.pod/some/arbitrary/object");
   });
 });
