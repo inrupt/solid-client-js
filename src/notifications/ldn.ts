@@ -25,6 +25,8 @@ import {
   Thing,
   IriString,
   WithResourceInfo,
+  WebId,
+  LocalNode,
 } from "../interfaces";
 import { dataset, DataFactory } from "../rdfjs";
 import { fetch } from "../fetcher";
@@ -36,17 +38,18 @@ import {
 } from "../resource";
 import { 
   fetchLitDataset, 
-  saveLitDatasetInContainer 
+  saveLitDatasetInContainer, 
+  getNamedNodeFromLocalNode
 } from "../litDataset";
-import { getThingOne } from "../thing";
+import { getThingOne, createThing, asUrl, isThingLocal, setThing } from "../thing";
 import { getIriOne } from "../thing/get";
-import { ldp } from "../constants";
-import { triplesToTurtle } from "../formats/turtle";
+import { ldp, as, rdf } from "../constants";
 
 /** @internal */
 export const internal_defaultFetchOptions = {
   fetch: fetch,
 };
+import { addUrl } from "../thing/add";
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
@@ -88,16 +91,48 @@ export async function unstable_fetchInbox(
   return unstable_discoverInbox(resource, resourceContent);
 }
 
+/**
+ * Creates a dataset describing a notification. The obtained notification has a relative
+ * IRI that is resolved when it is sent to an inbox.
+ *
+ * @param sender The URL identifying the sender of the resource (typically, a WebID)
+ * @param target The URL identifying the receiver of the resource (typically, a WebID)
+ * @param type The type of notification, typically a type from [[https://www.w3.org/TR/activitystreams-vocabulary/#activity-types]]
+ * @param options Additional data for the notification
+ */
 export function unstable_buildNotification(
-  sender: Iri | IriString,
-  target: Iri | IriString,
+  sender: Iri | WebId,
+  target: Iri | WebId,
   type: Iri | IriString,
   options?: {
-    body: LitDataset;
+    body: Record<IriString, Thing>;
   }
-): LitDataset {
-  // NOTE: Unimplemented
-  return dataset();
+): LitDataset & { notification: LocalNode } {
+  let notificationData = dataset();
+  let notification = createThing();
+  notification = addUrl(notification, as.actor, sender);
+  notification = addUrl(notification, as.target, target);
+  notification = addUrl(notification, rdf.type, type);
+  if (options !== undefined) {
+    Object.entries(options.body).forEach((entry) => {
+      // All the quads of the notification subpart are added to the notification data
+      notificationData = setThing(notificationData, entry[1]);
+      // The notification subpart is linked to the notification IRI using the given predicate
+      if (isThingLocal(entry[1])) {
+        notification = addUrl(
+          notification,
+          entry[0],
+          getNamedNodeFromLocalNode(entry[1].localSubject)
+        );
+      } else {
+        notification = addUrl(notification, entry[0], entry[1].url);
+      }
+    });
+  }
+  notificationData = setThing(notificationData, notification);
+  return Object.assign(notificationData, {
+    notification: notification.localSubject,
+  });
 }
 
 /**

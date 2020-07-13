@@ -48,3 +48,10 @@ export const foaf = {
 export const ldp = {
   inbox: "https://www.w3.org/ns/ldp#inbox",
 } as const;
+
+/** @internal */
+export const as = {
+  actor: "https://www.w3.org/ns/activitystreams#actor",
+  target: "https://www.w3.org/ns/activitystreams#target",
+  Event: "https://www.w3.org/ns/activitystreams#Event",
+} as const;
