@@ -24,9 +24,21 @@ import { describe, it, expect } from "@jest/globals";
 // import { INRUPT_TEST_IRI } from "@inrupt/vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
-import { arrayContainsIri } from "./interfaces";
+import { arrayContainsIri, iriAsString, stringAsIri } from "./interfaces";
 
 describe("interfaces", () => {
+  it("should convert IRI to string", () => {
+    expect(iriAsString(INRUPT_TEST_IRI.somePodResource)).toEqual(
+      INRUPT_TEST_IRI.somePodResource.value
+    );
+  });
+
+  it("should convert string to IRI", () => {
+    expect(stringAsIri(INRUPT_TEST_IRI.somePodResource.value)).toEqual(
+      INRUPT_TEST_IRI.somePodResource
+    );
+  });
+
   it("should determine if array contains IRI", () => {
     expect(arrayContainsIri([], INRUPT_TEST_IRI.somePodResource)).toEqual(
       false

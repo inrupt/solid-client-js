@@ -128,6 +128,9 @@ import {
   addStringInLocale,
   setStringInLocale,
   removeStringInLocale,
+  stringAsIri,
+  iriAsString,
+  arrayContainsIri,
 } from "./index";
 import { expects } from "rdf-namespaces/dist/hydra";
 
@@ -244,4 +247,7 @@ it("still exports deprecated methods", () => {
   expect(setStringUnlocalized).toBeDefined();
   expect(removeStringInLocale).toBeDefined();
   expect(removeStringUnlocalized).toBeDefined();
+  expect(stringAsIri).toBeDefined();
+  expect(iriAsString).toBeDefined();
+  expect(arrayContainsIri).toBeDefined();
 });
