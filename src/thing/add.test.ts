@@ -23,7 +23,13 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode, Iri, makeIri } from "../interfaces";
+import {
+  IriString,
+  ThingLocal,
+  LocalNode,
+  Iri,
+  stringAsIri,
+} from "../interfaces";
 import {
   addUrl,
   addBoolean,
@@ -227,7 +233,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.pod/yet-another-resource#object")
+      stringAsIri("https://some.pod/yet-another-resource#object")
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -243,7 +249,7 @@ describe("addIri", () => {
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: makeIri("https://some.pod/yet-another-resource#object"),
+        object: stringAsIri("https://some.pod/yet-another-resource#object"),
       })
     ).toEqual(true);
   });
@@ -1297,7 +1303,7 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.pod/yet-another-resource#object")
+      stringAsIri("https://some.pod/yet-another-resource#object")
     );
 
     const updatedQuads = Array.from(updatedThing);
@@ -1313,7 +1319,7 @@ describe("addNamedNode", () => {
       quadHas(updatedQuads[1], {
         subject: INRUPT_TEST_IRI.arbitrarySubject,
         predicate: INRUPT_TEST_IRI.arbitraryPredicate,
-        object: makeIri("https://some.pod/yet-another-resource#object"),
+        object: stringAsIri("https://some.pod/yet-another-resource#object"),
       })
     ).toEqual(true);
   });

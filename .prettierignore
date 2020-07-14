@@ -1,2 +1,2 @@
 resources/
-src/__snapshots__/
+*.snap

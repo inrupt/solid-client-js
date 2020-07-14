@@ -28,7 +28,7 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_Access,
-  makeIri,
+  stringAsIri,
 } from "./interfaces";
 import { saveLitDatasetAt } from "./litDataset";
 import { fetch } from "./fetcher";
@@ -143,7 +143,7 @@ export function internal_parseResourceInfo(
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
   const resourceInfo: WithResourceInfo["resourceInfo"] = {
-    fetchedFrom: makeIri(response.url),
+    fetchedFrom: stringAsIri(response.url),
     isLitDataset: isLitDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
@@ -153,7 +153,7 @@ export function internal_parseResourceInfo(
     const parsedLinks = LinkHeader.parse(linkHeader);
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      resourceInfo.unstable_aclUrl = makeIri(
+      resourceInfo.unstable_aclUrl = stringAsIri(
         new URL(aclLinks[0].uri, resourceInfo.fetchedFrom.value).href
       );
     }

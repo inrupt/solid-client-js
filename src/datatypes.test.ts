@@ -41,7 +41,7 @@ import {
   deserializeInteger,
   normalizeLocale,
 } from "./datatypes";
-import { LocalNode, makeIri } from "./interfaces";
+import { LocalNode, stringAsIri } from "./interfaces";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
 describe("serializeBoolean", () => {

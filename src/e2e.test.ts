@@ -47,20 +47,22 @@ import {
   unstable_getPublicResourceAccess,
   unstable_fetchFile,
 } from "./index";
-import { makeIri } from "./interfaces";
+import { stringAsIri } from "./interfaces";
 
 describe("End-to-end tests", () => {
-  const testWebId = makeIri("https://vincentt.inrupt.net/profile/card#me");
+  const testWebId = stringAsIri("https://vincentt.inrupt.net/profile/card#me");
 
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
     const dataset = await fetchLitDataset(
-      makeIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl")
+      stringAsIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl")
     );
     const existingThing = getThingOne(
       dataset,
-      makeIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1")
+      stringAsIri(
+        "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
+      )
     );
 
     expect(getStringNoLocaleOne(existingThing, FOAF.name)).toEqual(
@@ -69,20 +71,22 @@ describe("End-to-end tests", () => {
 
     let updatedThing = setDatetime(
       existingThing,
-      makeIri("http://schema.org/dateModified"),
+      stringAsIri("http://schema.org/dateModified"),
       new Date()
     );
     updatedThing = setStringNoLocale(updatedThing, FOAF.nick, randomNick);
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveLitDatasetAt(
-      makeIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"),
+      stringAsIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"),
       updatedDataset
     );
 
     const savedThing = getThingOne(
       savedDataset,
-      makeIri("https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1")
+      stringAsIri(
+        "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
+      )
     );
     expect(getStringNoLocaleOne(savedThing, FOAF.name)).toEqual(
       "Thing for first end-to-end test"
@@ -92,12 +96,12 @@ describe("End-to-end tests", () => {
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
     const rdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
-      makeIri(
+      stringAsIri(
         "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
       )
     );
     const nonRdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
-      makeIri(
+      stringAsIri(
         "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
       )
     );
@@ -107,21 +111,20 @@ describe("End-to-end tests", () => {
     // so double Jest's default timeout of 5 seconds:
   }, 10000);
 
-  // PMCB55: Just skip this one test until after PodManager testing...
-  it.skip("should be able to read and update ACLs", async () => {
-    const fakeWebId = makeIri(
+  it("should be able to read and update ACLs", async () => {
+    const fakeWebId = stringAsIri(
       "https://example.com/fake-webid#" +
         Date.now().toString() +
         Math.random().toString()
     );
 
     const datasetWithAcl = await unstable_fetchLitDatasetWithAcl(
-      makeIri(
+      stringAsIri(
         "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
       )
     );
     const datasetWithoutAcl = await unstable_fetchLitDatasetWithAcl(
-      makeIri(
+      stringAsIri(
         "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
       )
     );
@@ -150,7 +153,7 @@ describe("End-to-end tests", () => {
       datasetWithoutAcl
     );
     expect(fallbackAclForDatasetWithoutAcl?.accessTo).toEqual(
-      makeIri("https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/")
+      stringAsIri("https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/")
     );
 
     if (unstable_hasResourceAcl(datasetWithAcl)) {
@@ -186,7 +189,7 @@ describe("End-to-end tests", () => {
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
     const dataset = await unstable_fetchLitDatasetWithAcl(
-      makeIri(
+      stringAsIri(
         "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
       )
     );

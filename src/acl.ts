@@ -283,7 +283,12 @@ export function internal_getAclRules(
 }
 
 function isAclRule(thing: Thing): thing is unstable_AclRule {
-  return getIriAll(thing, RDF.type).includes(ACL.Authorization);
+  // PMCB55: this only works for strings, for an array of objects we need to use
+  // the `.equals()` method.
+  // return getIriAll(thing, RDF.type).includes(ACL.Authorization);
+  return getIriAll(thing, RDF.type).some((iri) =>
+    iri.equals(ACL.Authorization)
+  );
 }
 
 /** @internal */
@@ -309,7 +314,10 @@ function appliesToResource(
   aclRule: unstable_AclRule,
   resource: IriString
 ): boolean {
-  return getIriAll(aclRule, ACL.accessTo).includes(resource);
+  // PMCB55: this only works for strings, for an array of objects we need to use
+  // the `.equals()` method.
+  // return getIriAll(aclRule, ACL.accessTo).includes(resource);
+  return getIriAll(aclRule, ACL.accessTo).some((iri) => iri.equals(resource));
 }
 
 /** @internal */
@@ -335,15 +343,25 @@ function isDefaultForResource(
   aclRule: unstable_AclRule,
   resource: IriString
 ): boolean {
-  return getIriAll(aclRule, ACL.default_).includes(resource);
+  // PMCB55: this only works for strings, for an array of objects we need to use
+  // the `.equals()` method.
+  // return getIriAll(aclRule, ACL.default_).includes(resource);
+  return getIriAll(aclRule, ACL.default_).some((iri) => iri.equals(resource));
 }
 
 /** @internal */
 export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
+  // PMCB55: this only works for strings, for an array of objects we need to use
+  // the `.equals()` method.
+  // const ruleAccessModes = getIriAll(rule, ACL.mode);
+  // const writeAccess = ruleAccessModes.includes(
+  //     internal_accessModeIriStrings.write
+  // );
   const ruleAccessModes = getIriAll(rule, ACL.mode);
-  const writeAccess = ruleAccessModes.includes(
-    internal_accessModeIriStrings.write
+  const writeAccess = ruleAccessModes.some((iri) =>
+    iri.equals(internal_accessModeIriStrings.write)
   );
+
   return writeAccess
     ? {
         read: ruleAccessModes.includes(internal_accessModeIriStrings.read),
@@ -488,8 +506,13 @@ export function internal_getAclRulesForIri(
   targetIri: IriString,
   targetType: typeof ACL.agent | typeof ACL.agentGroup
 ): unstable_AclRule[] {
+  // PMCB55: this only works for strings, for an array of objects we need to use
+  // the `.equals()` method.
+  // return aclRules.filter((rule) =>
+  //     getIriAll(rule, targetType).includes(targetIri)
+  // );
   return aclRules.filter((rule) =>
-    getIriAll(rule, targetType).includes(targetIri)
+    getIriAll(rule, targetType).some((iri) => iri.equals(targetIri))
   );
 }
 

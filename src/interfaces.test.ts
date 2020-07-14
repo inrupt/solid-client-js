@@ -19,22 +19,29 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { it, expect } from "@jest/globals";
-jest.mock("cross-fetch");
+import { describe, it, expect } from "@jest/globals";
 
-import { fetch } from "./fetcher";
+// import { INRUPT_TEST_IRI } from "@inrupt/vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
-import { iriAsString } from "./interfaces";
 
-it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
-    ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit]
-  >;
+import { arrayContainsIri } from "./interfaces";
 
-  await fetch(iriAsString(INRUPT_TEST_IRI.someNonRdfResource));
-
-  expect(crossFetch.mock.calls).toEqual([
-    [iriAsString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
-  ]);
+describe("interfaces", () => {
+  it("should determine if array contains IRI", () => {
+    expect(arrayContainsIri([], INRUPT_TEST_IRI.somePodResource)).toEqual(
+      false
+    );
+    expect(
+      arrayContainsIri(
+        [INRUPT_TEST_IRI.somePodResource],
+        INRUPT_TEST_IRI.somePodResource
+      )
+    ).toEqual(true);
+    expect(
+      arrayContainsIri(
+        [INRUPT_TEST_IRI.somePodRootContainer],
+        INRUPT_TEST_IRI.somePodResource
+      )
+    ).toEqual(false);
+  });
 });

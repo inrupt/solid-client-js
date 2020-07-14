@@ -24,7 +24,7 @@ jest.mock("./fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
       new Response(undefined, {
-        headers: { Location: makeString(INRUPT_TEST_IRI.somePodResource) },
+        headers: { Location: iriAsString(INRUPT_TEST_IRI.somePodResource) },
       })
     )
   ),
@@ -49,8 +49,8 @@ import {
   WithResourceInfo,
   unstable_AclDataset,
   unstable_WithAccessibleAcl,
-  makeString,
-  makeIri,
+  iriAsString,
+  stringAsIri,
 } from "./interfaces";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
@@ -81,8 +81,8 @@ describe("fetchAcl", () => {
     await internal_fetchAcl(mockResourceInfo);
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [makeString(INRUPT_TEST_IRI.somePodResourceAcl)],
-      [makeString(INRUPT_TEST_IRI.somePodRootContainer), { method: "HEAD" }],
+      [iriAsString(INRUPT_TEST_IRI.somePodResourceAcl)],
+      [iriAsString(INRUPT_TEST_IRI.somePodRootContainer), { method: "HEAD" }],
     ]);
   });
 
@@ -146,11 +146,11 @@ describe("fetchAcl", () => {
 
   it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
     const mockFetch = jest.fn((url) => {
-      if (url === makeString(INRUPT_TEST_IRI.somePodResourceAcl)) {
+      if (url === iriAsString(INRUPT_TEST_IRI.somePodResourceAcl)) {
         return Promise.resolve(
           mockResponse("ACL not found", {
             status: 404,
-            url: makeString(INRUPT_TEST_IRI.somePodResourceAcl),
+            url: iriAsString(INRUPT_TEST_IRI.somePodResourceAcl),
           })
         );
       }
@@ -229,16 +229,16 @@ describe("fetchResourceInfoWithAcl", () => {
     ).toEqual(INRUPT_TEST_IRI.somePodRootContainerAcl);
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResource)
+      iriAsString(INRUPT_TEST_IRI.somePodResource)
     );
     expect(mockFetch.mock.calls[1][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResourceAcl)
+      iriAsString(INRUPT_TEST_IRI.somePodResourceAcl)
     );
     expect(mockFetch.mock.calls[2][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodRootContainer)
+      iriAsString(INRUPT_TEST_IRI.somePodRootContainer)
     );
     expect(mockFetch.mock.calls[3][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodRootContainerAcl)
+      iriAsString(INRUPT_TEST_IRI.somePodRootContainerAcl)
     );
   });
 
@@ -254,7 +254,7 @@ describe("fetchResourceInfoWithAcl", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.somePodResource),
+        iriAsString(INRUPT_TEST_IRI.somePodResource),
         {
           method: "HEAD",
         },
@@ -271,7 +271,7 @@ describe("fetchResourceInfoWithAcl", () => {
           headers: {
             Link: "",
           },
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -328,7 +328,7 @@ describe("fetchResourceInfoWithAcl", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -356,7 +356,7 @@ describe("fetchResourceInfo", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResource)
+      iriAsString(INRUPT_TEST_IRI.somePodResource)
     );
   });
 
@@ -371,7 +371,7 @@ describe("fetchResourceInfo", () => {
 
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResource)
+      iriAsString(INRUPT_TEST_IRI.somePodResource)
     );
   });
 
@@ -379,7 +379,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -398,7 +398,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
           headers: { "Content-Type": "text/turtle" },
         })
       )
@@ -418,7 +418,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
           headers: { "Content-Type": "image/svg+xml" },
         })
       )
@@ -438,7 +438,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -457,7 +457,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
           headers: { "Content-Type": "text/turtle; charset=UTF-8" },
         })
       )
@@ -495,7 +495,7 @@ describe("fetchResourceInfo", () => {
           headers: {
             Link: `<${INRUPT_TEST_IRI.somePodResourceAclRelativePath}>; rel="acl"`,
           },
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -615,7 +615,7 @@ describe("fetchResourceInfo", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
-          url: makeString(INRUPT_TEST_IRI.somePodResource),
+          url: iriAsString(INRUPT_TEST_IRI.somePodResource),
         })
       )
     );
@@ -683,7 +683,9 @@ describe("isContainer", () => {
   it("should recognise non-Containers", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: makeIri("https://arbitrary.pod/container/not-a-container"),
+        fetchedFrom: stringAsIri(
+          "https://arbitrary.pod/container/not-a-container"
+        ),
         isLitDataset: true,
       },
     };
@@ -707,7 +709,7 @@ describe("isLitDataset", () => {
   it("should recognise non-RDF Resources", () => {
     const resourceInfo: WithResourceInfo = {
       resourceInfo: {
-        fetchedFrom: makeIri(
+        fetchedFrom: stringAsIri(
           "https://arbitrary.pod/container/not-a-litdataset.png"
         ),
         isLitDataset: false,
@@ -898,7 +900,7 @@ describe("saveAclFor", () => {
     };
     const aclResource: unstable_AclDataset = Object.assign(dataset(), {
       resourceInfo: {
-        fetchedFrom: makeIri("https://arbitrary-other.pod/resource.acl"),
+        fetchedFrom: stringAsIri("https://arbitrary-other.pod/resource.acl"),
         isLitDataset: true,
       },
       accessTo: INRUPT_TEST_IRI.somePodResource,
@@ -936,7 +938,7 @@ describe("deleteAclFor", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.somePodResourceAcl),
+        iriAsString(INRUPT_TEST_IRI.somePodResourceAcl),
         {
           method: "DELETE",
         },
@@ -961,7 +963,7 @@ describe("deleteAclFor", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.somePodResourceAcl),
+        iriAsString(INRUPT_TEST_IRI.somePodResourceAcl),
         {
           method: "DELETE",
         },

@@ -26,7 +26,7 @@ import { DataFactory } from "n3";
 import {
   Iri,
   IriString,
-  makeIri,
+  stringAsIri,
   Thing,
   ThingLocal,
   ThingPersisted,
@@ -375,7 +375,7 @@ describe("removeIri", () => {
   });
 
   it("resolves ThingPersisteds", () => {
-    const thingIri = makeIri("https://some.pod/resource#thing");
+    const thingIri = stringAsIri("https://some.pod/resource#thing");
     const thingPersisted: ThingPersisted = Object.assign(dataset(), {
       url: thingIri,
     });

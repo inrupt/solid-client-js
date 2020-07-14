@@ -40,7 +40,7 @@ import {
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
-import { makeString } from "./interfaces";
+import { iriAsString } from "./interfaces";
 
 describe("unstable_fetchFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
@@ -57,9 +57,9 @@ describe("unstable_fetchFile", () => {
       )
     );
 
-    await unstable_fetchFile(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    await unstable_fetchFile(iriAsString(INRUPT_TEST_IRI.someNonRdfResource));
     expect(fetcher.fetch.mock.calls).toEqual([
-      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+      [iriAsString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
     ]);
   });
 
@@ -72,12 +72,12 @@ describe("unstable_fetchFile", () => {
         )
       );
 
-    await unstable_fetchFile(makeString(INRUPT_TEST_IRI.someNonRdfResource), {
+    await unstable_fetchFile(iriAsString(INRUPT_TEST_IRI.someNonRdfResource), {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toEqual([
-      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+      [iriAsString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
     ]);
   });
 
@@ -85,7 +85,7 @@ describe("unstable_fetchFile", () => {
     const init: ResponseInit & { url: string } = {
       status: 200,
       statusText: "OK",
-      url: makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      url: iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
     };
 
     const mockFetch = jest
@@ -93,7 +93,7 @@ describe("unstable_fetchFile", () => {
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
     const file = await unstable_fetchFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -119,7 +119,7 @@ describe("unstable_fetchFile", () => {
       );
 
     const response = await unstable_fetchFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         init: {
           headers: new Headers({ Accept: "text/turtle" }),
@@ -130,7 +130,7 @@ describe("unstable_fetchFile", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           headers: new Headers({ Accept: "text/turtle" }),
         },
@@ -148,7 +148,7 @@ describe("unstable_fetchFile", () => {
       );
 
     const response = unstable_fetchFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -175,10 +175,10 @@ describe("unstable_fetchFileWithAcl", () => {
     );
 
     await unstable_fetchFileWithAcl(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource)
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
     );
     expect(fetcher.fetch.mock.calls).toEqual([
-      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+      [iriAsString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
     ]);
   });
 
@@ -192,14 +192,14 @@ describe("unstable_fetchFileWithAcl", () => {
       );
 
     const response = await unstable_fetchFileWithAcl(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
     );
 
     expect(mockFetch.mock.calls).toEqual([
-      [makeString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
+      [iriAsString(INRUPT_TEST_IRI.someNonRdfResource), undefined],
     ]);
   });
 
@@ -207,7 +207,7 @@ describe("unstable_fetchFileWithAcl", () => {
     const init: ResponseInit & { url: string } = {
       status: 200,
       statusText: "OK",
-      url: makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      url: iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
     };
 
     const mockFetch = jest
@@ -215,7 +215,7 @@ describe("unstable_fetchFileWithAcl", () => {
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
     const file = await unstable_fetchFileWithAcl(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -251,7 +251,7 @@ describe("unstable_fetchFileWithAcl", () => {
     });
 
     const fetchedLitDataset = await unstable_fetchFileWithAcl(
-      makeString(INRUPT_TEST_IRI.somePodResource),
+      iriAsString(INRUPT_TEST_IRI.somePodResource),
       { fetch: mockFetch }
     );
 
@@ -266,16 +266,16 @@ describe("unstable_fetchFileWithAcl", () => {
     ).toEqual(INRUPT_TEST_IRI.somePodRootContainerAcl);
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResource)
+      iriAsString(INRUPT_TEST_IRI.somePodResource)
     );
     expect(mockFetch.mock.calls[1][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodResourceAcl)
+      iriAsString(INRUPT_TEST_IRI.somePodResourceAcl)
     );
     expect(mockFetch.mock.calls[2][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodRootContainer)
+      iriAsString(INRUPT_TEST_IRI.somePodRootContainer)
     );
     expect(mockFetch.mock.calls[3][0]).toEqual(
-      makeString(INRUPT_TEST_IRI.somePodRootContainerAcl)
+      iriAsString(INRUPT_TEST_IRI.somePodRootContainerAcl)
     );
   });
 
@@ -285,14 +285,14 @@ describe("unstable_fetchFileWithAcl", () => {
       headers: {
         Link: "",
       },
-      url: makeString(INRUPT_TEST_IRI.somePodResource),
+      url: iriAsString(INRUPT_TEST_IRI.somePodResource),
     };
     mockFetch.mockReturnValueOnce(
       Promise.resolve(new Response(undefined, init))
     );
 
     const fetchedLitDataset = await unstable_fetchFileWithAcl(
-      makeString(INRUPT_TEST_IRI.somePodResource),
+      iriAsString(INRUPT_TEST_IRI.somePodResource),
       { fetch: mockFetch }
     );
 
@@ -349,7 +349,7 @@ describe("unstable_fetchFileWithAcl", () => {
       );
 
     const response = await unstable_fetchFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         init: {
           headers: new Headers({ Accept: "text/turtle" }),
@@ -360,7 +360,7 @@ describe("unstable_fetchFileWithAcl", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           headers: new Headers({ Accept: "text/turtle" }),
         },
@@ -378,7 +378,7 @@ describe("unstable_fetchFileWithAcl", () => {
       );
 
     const response = unstable_fetchFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -405,12 +405,12 @@ describe("Non-RDF data deletion", () => {
     );
 
     const response = await unstable_deleteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource)
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
     );
 
     expect(fetcher.fetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
         },
@@ -431,7 +431,7 @@ describe("Non-RDF data deletion", () => {
       );
 
     const response = await unstable_deleteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -439,7 +439,7 @@ describe("Non-RDF data deletion", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
         },
@@ -459,7 +459,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await unstable_deleteFile(makeString(INRUPT_TEST_IRI.someNonRdfResource), {
+    await unstable_deleteFile(iriAsString(INRUPT_TEST_IRI.someNonRdfResource), {
       fetch: mockFetch,
       init: {
         mode: "same-origin",
@@ -468,7 +468,7 @@ describe("Non-RDF data deletion", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         {
           method: "DELETE",
           mode: "same-origin",
@@ -487,7 +487,7 @@ describe("Non-RDF data deletion", () => {
     );
 
     const response = await unstable_deleteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       {
         fetch: mockFetch,
       }
@@ -522,7 +522,7 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const response = await unstable_saveFileInContainer(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
@@ -544,12 +544,14 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const response = await unstable_saveFileInContainer(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(mockCall[0]).toEqual(
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -572,7 +574,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
@@ -590,13 +592,15 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(mockCall[0]).toEqual(
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
     expect(mockCall[1]?.headers).toEqual(
       new Headers({ "Content-Type": "binary" })
     );
@@ -617,7 +621,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     const response = await unstable_saveFileInContainer(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       {
         fetch: mockFetch,
@@ -626,7 +630,9 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(mockCall[0]).toEqual(
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -651,7 +657,7 @@ describe("Write non-RDF data into a folder", () => {
 
     await expect(
       unstable_saveFileInContainer(
-        makeString(INRUPT_TEST_IRI.someNonRdfResource),
+        iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
         mockBlob,
         {
           fetch: mockFetch,
@@ -686,7 +692,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     );
 
     await unstable_overwriteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
@@ -708,12 +714,14 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     );
 
     const response = await unstable_overwriteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob
     );
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(mockCall[0]).toEqual(
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
     expect(mockCall[1]?.headers).toEqual(
       new Headers({
         "Content-Type": "binary",
@@ -737,7 +745,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       );
 
     const response = await unstable_overwriteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
@@ -755,13 +763,15 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       );
 
     const response = await unstable_overwriteFile(
-      makeString(INRUPT_TEST_IRI.someNonRdfResource),
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource),
       mockBlob,
       { fetch: mockFetch }
     );
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual(makeString(INRUPT_TEST_IRI.someNonRdfResource));
+    expect(mockCall[0]).toEqual(
+      iriAsString(INRUPT_TEST_IRI.someNonRdfResource)
+    );
     expect(mockCall[1]?.headers).toEqual(
       new Headers({ "Content-Type": "binary" })
     );

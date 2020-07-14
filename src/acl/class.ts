@@ -128,8 +128,6 @@ function appliesToClass(
   aclRule: unstable_AclRule,
   agentClass: IriString
 ): boolean {
-  const x = getIriAll(aclRule, ACL.agentClass);
-
   // PMCB55: this only works for strings, for an array of objects we need to use
   // the `.equals()` method.
   // return getIriAll(aclRule, ACL.agentClass).includes(agentClass);

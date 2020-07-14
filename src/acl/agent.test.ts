@@ -43,6 +43,8 @@ import {
   WithResourceInfo,
   IriString,
   unstable_AclDataset,
+  iriAsString,
+  stringAsIri,
 } from "../interfaces";
 
 function addAclRuleQuads(
@@ -52,44 +54,33 @@ function addAclRuleQuads(
   access: unstable_Access,
   type: "resource" | "default"
 ): unstable_AclDataset {
-  const subjectIri =
-    resource + "#" + encodeURIComponent(agent.value) + Math.random();
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      RDF.type,
-      ACL.Authorization
-    )
+  const subjectIri = stringAsIri(
+    iriAsString(resource) +
+      "#" +
+      encodeURIComponent(agent.value) +
+      Math.random()
   );
+
+  aclDataset.add(DataFactory.quad(subjectIri, RDF.type, ACL.Authorization));
   aclDataset.add(
     DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
+      subjectIri,
       type === "resource" ? ACL.accessTo : ACL.default_,
       resource
     )
   );
-  aclDataset.add(
-    DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.agent, agent)
-  );
+  aclDataset.add(DataFactory.quad(subjectIri, ACL.agent, agent));
   if (access.read) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Read)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Read));
   }
   if (access.append) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Append)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Append));
   }
   if (access.write) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Write)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Write));
   }
   if (access.control) {
-    aclDataset.add(
-      DataFactory.quad(DataFactory.namedNode(subjectIri), ACL.mode, ACL.Control)
-    );
+    aclDataset.add(DataFactory.quad(subjectIri, ACL.mode, ACL.Control));
   }
 
   return Object.assign(aclDataset, { accessTo: resource });

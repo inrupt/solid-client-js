@@ -262,16 +262,26 @@ export type unstable_UploadRequestInit = Omit<RequestInit, "method">;
  * @param iriAsString The string to use as an IRI.
  * @returns The string value as an IRI.
  */
-export function makeIri(iriAsString: string): Iri {
+export function stringAsIri(iriAsString: string): Iri {
   return DataFactory.namedNode(iriAsString);
 }
 
 /**
  * Returns the specified IRI as a string.
  *
- * @param stringAsIri The IRI to return as a string.
+ * @param iri The IRI to return as a string.
  * @returns The IRI value as a string.
  */
-export function makeString(stringAsIri: Iri): string {
-  return stringAsIri.value;
+export function iriAsString(iri: Iri): string {
+  return iri.value;
+}
+
+/**
+ * Returns true if the specified array of IRIs contains the specified IRI.
+ *
+ * @param array the array to check
+ * @param iri the IRI to check for
+ */
+export function arrayContainsIri(array: Iri[], iri: Iri): boolean {
+  return array.some((elem) => elem.equals(iri));
 }

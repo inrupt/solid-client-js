@@ -21,7 +21,7 @@
 
 import { Writer, Parser } from "n3";
 import { Quad } from "rdf-js";
-import { IriString, makeString } from "../interfaces";
+import { IriString, iriAsString } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 
 /**
@@ -62,7 +62,7 @@ export async function turtleToTriples(
   const format = "text/turtle";
   const parser = new Parser({
     format: format,
-    baseIRI: makeString(resourceIri),
+    baseIRI: iriAsString(resourceIri),
   });
 
   const parsingPromise = new Promise<Quad[]>((resolve, reject) => {

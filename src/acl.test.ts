@@ -55,7 +55,7 @@ import {
   unstable_AclDataset,
   unstable_Access,
   Iri,
-  makeIri,
+  stringAsIri,
 } from "./interfaces";
 import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfext";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
@@ -233,12 +233,14 @@ describe("fetchFallbackAcl", () => {
   it("travels up multiple levels if no ACL was found on the levels in between", async () => {
     const sourceDataset = {
       resourceInfo: {
-        fetchedFrom: makeIri("https://some.pod/with-acl/without-acl/resource"),
+        fetchedFrom: stringAsIri(
+          "https://some.pod/with-acl/without-acl/resource"
+        ),
         isLitDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclUrl: makeIri(
+        unstable_aclUrl: stringAsIri(
           "https://arbitrary.pod/with-acl/without-acl/resource.acl"
         ),
       },
@@ -281,9 +283,11 @@ describe("fetchFallbackAcl", () => {
       fetch: mockFetch,
     });
 
-    expect(fetchedAcl?.accessTo).toEqual(makeIri("https://some.pod/with-acl/"));
+    expect(fetchedAcl?.accessTo).toEqual(
+      stringAsIri("https://some.pod/with-acl/")
+    );
     expect(fetchedAcl?.resourceInfo.fetchedFrom).toEqual(
-      makeIri("https://some.pod/with-acl/.acl")
+      stringAsIri("https://some.pod/with-acl/.acl")
     );
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toEqual(
@@ -303,14 +307,14 @@ describe("fetchFallbackAcl", () => {
   it("returns null if one of the Containers on the way up does not advertise an ACL", async () => {
     const sourceDataset = {
       resourceInfo: {
-        fetchedFrom: makeIri(
+        fetchedFrom: stringAsIri(
           "https://some.pod/arbitrary-parent/no-control-access/resource"
         ),
         isLitDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given LitDataset to have one known:
-        unstable_aclUrl: makeIri(
+        unstable_aclUrl: stringAsIri(
           "https://arbitrary.pod/arbitrary-parent/no-control-access/resource.acl"
         ),
       },
@@ -421,7 +425,7 @@ describe("getResourceAcl", () => {
 
   it("returns null if the attached ACL does not pertain to the given Resource", () => {
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
-      accessTo: makeIri("https://arbitrary.pod/other-resource"),
+      accessTo: stringAsIri("https://arbitrary.pod/other-resource"),
       resourceInfo: {
         fetchedFrom: INRUPT_TEST_IRI.somePodResourceAcl,
         isLitDataset: true,
@@ -453,9 +457,9 @@ describe("getResourceAcl", () => {
 describe("getFallbackAcl", () => {
   it("returns the attached Fallback ACL Dataset", () => {
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
-      accessTo: makeIri("https://arbitrary.pod/"),
+      accessTo: stringAsIri("https://arbitrary.pod/"),
       resourceInfo: {
-        fetchedFrom: makeIri("https://arbitrary.pod/.acl"),
+        fetchedFrom: stringAsIri("https://arbitrary.pod/.acl"),
         isLitDataset: true,
       },
     });
@@ -483,8 +487,8 @@ describe("createAclFromFallbackAcl", () => {
       },
     });
 
-    // const subjectIri = makeIri("https://arbitrary.pod/container/.acl#" + Math.random());
-    const subjectIri = makeIri(
+    // const subjectIri = stringAsIri("https://arbitrary.pod/container/.acl#" + Math.random());
+    const subjectIri = stringAsIri(
       `${INRUPT_TEST_IRI.somePodRootContainerAcl.value}#${Math.random()}`
     );
     aclDataset.add(DataFactory.quad(subjectIri, RDF.type, ACL.Authorization));
@@ -529,7 +533,7 @@ describe("createAclFromFallbackAcl", () => {
         isLitDataset: true,
       },
     });
-    const subjectIri = makeIri(
+    const subjectIri = stringAsIri(
       "https://arbitrary.pod/container/.acl#" + Math.random()
     );
     aclDataset.add(DataFactory.quad(subjectIri, RDF.type, ACL.Authorization));
@@ -572,13 +576,13 @@ describe("getAclRules", () => {
 
     aclDataset.add(
       DataFactory.quad(
-        makeIri("https://arbitrary.pod/not-an-acl-rule"),
+        stringAsIri("https://arbitrary.pod/not-an-acl-rule"),
         INRUPT_TEST_IRI.arbitraryPredicate,
         INRUPT_TEST_IRI.arbitraryObject
       )
     );
 
-    const agentClassRuleSubjectIri = makeIri(
+    const agentClassRuleSubjectIri = stringAsIri(
       "https://some.pod/resource.acl#agentClassRule"
     );
     aclDataset.add(
@@ -598,7 +602,7 @@ describe("getAclRules", () => {
       DataFactory.quad(agentClassRuleSubjectIri, ACL.mode, ACL.Append)
     );
 
-    const agentRuleSubjectIri = makeIri(
+    const agentRuleSubjectIri = stringAsIri(
       "https://some.pod/resource.acl#agentRule"
     );
     aclDataset.add(
@@ -636,7 +640,7 @@ describe("getAclRules", () => {
       accessTo: INRUPT_TEST_IRI.somePodResource,
     });
 
-    const ruleWithMultipleTypesSubjectIri = makeIri(
+    const ruleWithMultipleTypesSubjectIri = stringAsIri(
       "https://some.pod/resource.acl#agentClassRule"
     );
     aclDataset.add(
@@ -683,7 +687,7 @@ describe("getAclRules", () => {
 describe("getResourceAclRules", () => {
   it("only returns ACL Rules that apply to a Resource", () => {
     const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      url: makeIri("https://arbitrary.pod/resource.acl#rule1"),
+      url: stringAsIri("https://arbitrary.pod/resource.acl#rule1"),
     });
     resourceAclRule1.add(
       DataFactory.quad(
@@ -694,7 +698,7 @@ describe("getResourceAclRules", () => {
     );
 
     const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
-      url: makeIri("https://arbitrary.pod/container/.acl#rule2"),
+      url: stringAsIri("https://arbitrary.pod/container/.acl#rule2"),
     });
     defaultAclRule1.add(
       DataFactory.quad(
@@ -705,7 +709,7 @@ describe("getResourceAclRules", () => {
     );
 
     const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      url: makeIri("https://arbitrary.pod/resource.acl#rule3"),
+      url: stringAsIri("https://arbitrary.pod/resource.acl#rule3"),
     });
     resourceAclRule2.add(
       DataFactory.quad(
@@ -716,7 +720,7 @@ describe("getResourceAclRules", () => {
     );
 
     const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
-      url: makeIri("https://arbitrary.pod/container/.acl#rule4"),
+      url: stringAsIri("https://arbitrary.pod/container/.acl#rule4"),
     });
     defaultAclRule2.add(
       DataFactory.quad(
@@ -741,7 +745,7 @@ describe("getResourceAclRules", () => {
 
 describe("getResourceAclRulesForResource", () => {
   it("only returns ACL Rules that apply to a given Resource", () => {
-    const rule1 = makeIri("https://arbitrary.pod/resource.acl#rule1");
+    const rule1 = stringAsIri("https://arbitrary.pod/resource.acl#rule1");
     const targetResourceAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule1,
     });
@@ -749,7 +753,7 @@ describe("getResourceAclRulesForResource", () => {
       DataFactory.quad(rule1, ACL.accessTo, INRUPT_TEST_IRI.somePodResource)
     );
 
-    const rule2 = makeIri("https://arbitrary.pod/resource.acl#rule2");
+    const rule2 = stringAsIri("https://arbitrary.pod/resource.acl#rule2");
     const defaultAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule2,
     });
@@ -761,7 +765,7 @@ describe("getResourceAclRulesForResource", () => {
       )
     );
 
-    const rule3 = makeIri("https://arbitrary.pod/resource.acl#rule3");
+    const rule3 = stringAsIri("https://arbitrary.pod/resource.acl#rule3");
     const otherResourceAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule3,
     });
@@ -790,7 +794,7 @@ describe("getResourceAclRulesForResource", () => {
 
 describe("getDefaultAclRules", () => {
   it("only returns ACL Rules that are the default for a Container", () => {
-    const rule1 = makeIri("https://arbitrary.pod/resource.acl#rule1");
+    const rule1 = stringAsIri("https://arbitrary.pod/resource.acl#rule1");
     const resourceAclRule1: unstable_AclRule = Object.assign(dataset(), {
       url: rule1,
     });
@@ -802,7 +806,7 @@ describe("getDefaultAclRules", () => {
       )
     );
 
-    const rule2 = makeIri("https://arbitrary.pod/resource.acl#rule2");
+    const rule2 = stringAsIri("https://arbitrary.pod/resource.acl#rule2");
     const defaultAclRule1: unstable_AclRule = Object.assign(dataset(), {
       url: rule2,
     });
@@ -814,7 +818,7 @@ describe("getDefaultAclRules", () => {
       )
     );
 
-    const rule3 = makeIri("https://arbitrary.pod/resource.acl#rule3");
+    const rule3 = stringAsIri("https://arbitrary.pod/resource.acl#rule3");
     const resourceAclRule2: unstable_AclRule = Object.assign(dataset(), {
       url: rule3,
     });
@@ -826,7 +830,7 @@ describe("getDefaultAclRules", () => {
       )
     );
 
-    const rule4 = makeIri("https://arbitrary.pod/resource.acl#rule4");
+    const rule4 = stringAsIri("https://arbitrary.pod/resource.acl#rule4");
     const defaultAclRule2: unstable_AclRule = Object.assign(dataset(), {
       url: rule4,
     });
@@ -853,7 +857,7 @@ describe("getDefaultAclRules", () => {
 
 describe("getDefaultAclRulesForResource", () => {
   it("only returns ACL Rules that are the default for children of a given Container", () => {
-    const rule1 = makeIri("https://arbitrary.pod/resource.acl#rule1");
+    const rule1 = stringAsIri("https://arbitrary.pod/resource.acl#rule1");
     const resourceAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule1,
     });
@@ -861,7 +865,7 @@ describe("getDefaultAclRulesForResource", () => {
       DataFactory.quad(rule1, ACL.accessTo, INRUPT_TEST_IRI.somePodResource)
     );
 
-    const rule2 = makeIri("https://arbitrary.pod/resource.acl#rule2");
+    const rule2 = stringAsIri("https://arbitrary.pod/resource.acl#rule2");
     const targetDefaultAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule2,
     });
@@ -873,7 +877,7 @@ describe("getDefaultAclRulesForResource", () => {
       )
     );
 
-    const rule3 = makeIri("https://arbitrary.pod/resource.acl#rule3");
+    const rule3 = stringAsIri("https://arbitrary.pod/resource.acl#rule3");
     const otherDefaultAclRule: unstable_AclRule = Object.assign(dataset(), {
       url: rule3,
     });

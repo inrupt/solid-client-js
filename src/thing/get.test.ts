@@ -25,7 +25,7 @@ import { NamedNode, Quad, Literal } from "rdf-js";
 // import { DataFactory } from "n3";
 import { DataFactory } from "../rdfjs";
 
-import { Iri, IriString, makeIri, Thing } from "../interfaces";
+import { Iri, IriString, stringAsIri, Thing } from "../interfaces";
 import {
   getUrlOne,
   getBooleanOne,
@@ -202,8 +202,8 @@ describe("getIriAll", () => {
   }
   function getMockThingWithIris(
     predicate: IriString,
-    iri1: IriString = makeIri("https://arbitrary.vocab/object1"),
-    iri2: IriString = makeIri("https://arbitrary.vocab/object2")
+    iri1: IriString = stringAsIri("https://arbitrary.vocab/object1"),
+    iri2: IriString = stringAsIri("https://arbitrary.vocab/object2")
   ): Thing {
     const quad1 = getMockQuadWithIri(predicate, iri1);
     const quad2 = getMockQuadWithIri(predicate, iri2);
@@ -217,30 +217,30 @@ describe("getIriAll", () => {
   it("returns the IRI values for the given Predicate", () => {
     const thingWithIris = getMockThingWithIris(
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2")
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2")
     );
 
     expect(
       getUrlAll(thingWithIris, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2"),
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2"),
     ]);
   });
 
   it("accepts Predicates as Named Nodes", () => {
     const thingWithIris = getMockThingWithIris(
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2")
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2")
     );
 
     expect(
       getUrlAll(thingWithIris, INRUPT_TEST_IRI.arbitraryPredicate)
     ).toEqual([
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2"),
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2"),
     ]);
   });
 
@@ -1779,8 +1779,8 @@ describe("getNamedNodeAll", () => {
   it("returns the Named Nodes for the given Predicate", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2")
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2")
     );
 
     const foundNamedNodes = getNamedNodeAll(
@@ -1797,8 +1797,8 @@ describe("getNamedNodeAll", () => {
   it("accepts Predicates as Named Nodes", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       INRUPT_TEST_IRI.arbitraryPredicate,
-      makeIri("https://some.vocab/object1"),
-      makeIri("https://some.vocab/object2")
+      stringAsIri("https://some.vocab/object1"),
+      stringAsIri("https://some.vocab/object2")
     );
 
     const foundNamedNodes = getNamedNodeAll(

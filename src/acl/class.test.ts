@@ -34,7 +34,7 @@ import {
   unstable_Access,
   unstable_AclDataset,
   unstable_WithAcl,
-  makeIri,
+  stringAsIri,
 } from "../interfaces";
 import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
@@ -48,7 +48,7 @@ function addAclRuleQuads(
     | "http://xmlns.com/foaf/0.1/Agent"
     | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
 ): unstable_AclDataset {
-  const subjectIri = makeIri(
+  const subjectIri = stringAsIri(
     resource.value + "#" + encodeURIComponent(agentClass) + Math.random()
   );
 
