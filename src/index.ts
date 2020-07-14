@@ -19,6 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { DataFactory } from "./rdfjs";
+import { Iri } from "./interfaces";
+
 export {
   unstable_fetchResourceInfoWithAcl,
   isContainer,
@@ -186,4 +189,7 @@ export {
   unstable_AclRule,
   unstable_Access,
   unstable_UploadRequestInit,
+  stringAsIri,
+  iriAsString,
+  arrayContainsIri,
 } from "./interfaces";
