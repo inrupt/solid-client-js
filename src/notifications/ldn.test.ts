@@ -473,29 +473,30 @@ describe("unstable_sendNotification", () => {
 
   it("should send the notification to the inbox of the given resource if found in its content", async () => {
     const turtle = `
-      @prefix : <#>.
       @prefix ldp: <https://www.w3.org/ns/ldp#>.
 
-      :aResource ldp:inbox :anInbox.
+      </aContainer/aResource> ldp:inbox </anotherContainer/anInbox>.
     `;
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(turtle, {
           url: "https://some.pod/",
           headers: {
-            Location: "https://some.pod/anInbox/notification",
+            Location: "https://some.pod/aContainer/anInbox/notification",
           },
         })
       )
     );
     await unstable_sendNotification(
       dataset(),
-      DataFactory.namedNode("https://some.pod#aResource"),
+      DataFactory.namedNode("https://some.pod/aContainer/aResource"),
       {
         fetch: mockFetch,
       }
     );
-    expect(mockFetch.mock.calls[2][0]).toEqual("https://some.pod#anInbox");
+    expect(mockFetch.mock.calls[2][0]).toEqual(
+      "https://some.pod/anotherContainer/anInbox"
+    );
   });
 
   it("should send the provided notification to the inbox of the target resource", async () => {
