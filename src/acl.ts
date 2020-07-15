@@ -36,6 +36,7 @@ import {
   unstable_WithAccessibleAcl,
   unstable_WithResourceAcl,
   unstable_WithFallbackAcl,
+  arrayContainsIri,
 } from "./interfaces";
 import { getThingAll, removeThing, setThing } from "./thing";
 import { getIriOne, getIriAll } from "./thing/get";
@@ -286,9 +287,7 @@ function isAclRule(thing: Thing): thing is unstable_AclRule {
   // PMCB55: this only works for strings, for an array of objects we need to use
   // the `.equals()` method.
   // return getIriAll(thing, RDF.type).includes(ACL.Authorization);
-  return getIriAll(thing, RDF.type).some((iri) =>
-    iri.equals(ACL.Authorization)
-  );
+  return arrayContainsIri(getIriAll(thing, RDF.type), ACL.Authorization);
 }
 
 /** @internal */
@@ -317,7 +316,7 @@ function appliesToResource(
   // PMCB55: this only works for strings, for an array of objects we need to use
   // the `.equals()` method.
   // return getIriAll(aclRule, ACL.accessTo).includes(resource);
-  return getIriAll(aclRule, ACL.accessTo).some((iri) => iri.equals(resource));
+  return arrayContainsIri(getIriAll(aclRule, ACL.accessTo), resource);
 }
 
 /** @internal */
@@ -346,7 +345,7 @@ function isDefaultForResource(
   // PMCB55: this only works for strings, for an array of objects we need to use
   // the `.equals()` method.
   // return getIriAll(aclRule, ACL.default_).includes(resource);
-  return getIriAll(aclRule, ACL.default_).some((iri) => iri.equals(resource));
+  return arrayContainsIri(getIriAll(aclRule, ACL.default_), resource);
 }
 
 /** @internal */
@@ -358,26 +357,20 @@ export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
   //     internal_accessModeIriStrings.write
   // );
   const ruleAccessModes = getIriAll(rule, ACL.mode);
-  const writeAccess = ruleAccessModes.some((iri) =>
-    iri.equals(internal_accessModeIriStrings.write)
-  );
+  const writeAccess = arrayContainsIri(ruleAccessModes, ACL.Write);
 
   return writeAccess
     ? {
-        read: ruleAccessModes.includes(internal_accessModeIriStrings.read),
+        read: arrayContainsIri(ruleAccessModes, ACL.Read),
         append: true,
         write: true,
-        control: ruleAccessModes.includes(
-          internal_accessModeIriStrings.control
-        ),
+        control: arrayContainsIri(ruleAccessModes, ACL.Control),
       }
     : {
-        read: ruleAccessModes.includes(internal_accessModeIriStrings.read),
-        append: ruleAccessModes.includes(internal_accessModeIriStrings.append),
+        read: arrayContainsIri(ruleAccessModes, ACL.Read),
+        append: arrayContainsIri(ruleAccessModes, ACL.Append),
         write: false,
-        control: ruleAccessModes.includes(
-          internal_accessModeIriStrings.control
-        ),
+        control: arrayContainsIri(ruleAccessModes, ACL.Control),
       };
 }
 
@@ -512,7 +505,7 @@ export function internal_getAclRulesForIri(
   //     getIriAll(rule, targetType).includes(targetIri)
   // );
   return aclRules.filter((rule) =>
-    getIriAll(rule, targetType).some((iri) => iri.equals(targetIri))
+    arrayContainsIri(getIriAll(rule, targetType), targetIri)
   );
 }
 

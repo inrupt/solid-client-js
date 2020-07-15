@@ -26,6 +26,7 @@ import {
   unstable_Access,
   unstable_AclDataset,
   unstable_AclRule,
+  arrayContainsIri,
 } from "../interfaces";
 import { ACL, FOAF } from "@solid/lit-vocab-common-rdfext";
 import { getIriAll } from "../thing/get";
@@ -131,7 +132,5 @@ function appliesToClass(
   // PMCB55: this only works for strings, for an array of objects we need to use
   // the `.equals()` method.
   // return getIriAll(aclRule, ACL.agentClass).includes(agentClass);
-  return getIriAll(aclRule, ACL.agentClass).some((iri) =>
-    iri.equals(agentClass)
-  );
+  return arrayContainsIri(getIriAll(aclRule, ACL.agentClass), agentClass);
 }

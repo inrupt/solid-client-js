@@ -425,16 +425,16 @@ function intialiseAclRule(access: unstable_Access): unstable_AclRule {
   let newRule = createThing();
   newRule = setIri(newRule, RDF.type, ACL.Authorization);
   if (access.read) {
-    newRule = addIri(newRule, ACL.mode, internal_accessModeIriStrings.read);
+    newRule = addIri(newRule, ACL.mode, ACL.Read);
   }
   if (access.append && !access.write) {
-    newRule = addIri(newRule, ACL.mode, internal_accessModeIriStrings.append);
+    newRule = addIri(newRule, ACL.mode, ACL.Append);
   }
   if (access.write) {
-    newRule = addIri(newRule, ACL.mode, internal_accessModeIriStrings.write);
+    newRule = addIri(newRule, ACL.mode, ACL.Write);
   }
   if (access.control) {
-    newRule = addIri(newRule, ACL.mode, internal_accessModeIriStrings.control);
+    newRule = addIri(newRule, ACL.mode, ACL.Control);
   }
   return newRule;
 }
