@@ -237,7 +237,7 @@ export function asNamedNode(iri: Iri | IriString): NamedNode {
     return iri;
   }
   // If the runtime environment supports URL, instantiate one.
-  // If thte given IRI is not a valid URL, it will throw an error.
+  // If the given IRI is not a valid URL, it will throw an error.
   // See: https://developer.mozilla.org/en-US/docs/Web/API/URL
   /* istanbul ignore else [URL is available in our testing environment, so we cannot test the alternative] */
   if (typeof URL !== "undefined") {

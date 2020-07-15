@@ -14,3 +14,4 @@ First release! What's possible with this first release:
 - Manipulate data in datasets.
 - Inspect a user's, group's and public permissions w.r.t. a given Resource or child Resources of a Container. (Experimental.)
 - Retrieve, delete and/or write any file (including non-RDF) from/to a Pod. (Experimental.)
+- Create and send an asynchronous notification

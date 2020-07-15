@@ -114,6 +114,7 @@ export type WithResourceInfo = {
     fetchedFrom: UrlString;
     isLitDataset: boolean;
     contentType?: string;
+    inbox?: string;
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might
      * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
