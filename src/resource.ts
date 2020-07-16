@@ -28,10 +28,13 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_Access,
+  IriString,
+  Iri,
 } from "./interfaces";
 import { saveLitDatasetAt } from "./litDataset";
 import { fetch } from "./fetcher";
 import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
+import { ldp } from "./constants";
 
 /** @internal */
 export const internal_defaultFetchOptions = {
@@ -150,10 +153,19 @@ export function internal_parseResourceInfo(
   const linkHeader = response.headers.get("Link");
   if (linkHeader) {
     const parsedLinks = LinkHeader.parse(linkHeader);
+    // Set ACL link
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
       resourceInfo.unstable_aclUrl = new URL(
         aclLinks[0].uri,
+        resourceInfo.fetchedFrom
+      ).href;
+    }
+    // Set inbox link
+    const inboxLinks = parsedLinks.get("rel", ldp.inbox);
+    if (inboxLinks.length === 1) {
+      resourceInfo.inbox = new URL(
+        inboxLinks[0].uri,
         resourceInfo.fetchedFrom
       ).href;
     }
@@ -197,6 +209,14 @@ export function getContentType(resource: WithResourceInfo): string | null {
  */
 export function getFetchedFrom(resource: WithResourceInfo): string {
   return resource.resourceInfo.fetchedFrom;
+}
+
+export function hasInboxInfo(resource: WithResourceInfo): boolean {
+  return typeof resource.resourceInfo.inbox === "string";
+}
+
+export function getInboxInfo(resource: WithResourceInfo): string | null {
+  return resource.resourceInfo.inbox ?? null;
 }
 
 /**
@@ -317,4 +337,8 @@ function parseWacAllowHeader(wacAllowHeader: string) {
     user: parsePermissionStatement(getStatementFor(wacAllowHeader, "user")),
     public: parsePermissionStatement(getStatementFor(wacAllowHeader, "public")),
   };
+}
+
+export function internal_toString(iri: Iri | IriString): string {
+  return typeof iri === "string" ? iri : iri.value;
 }
