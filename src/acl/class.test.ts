@@ -36,7 +36,7 @@ import {
   unstable_WithAcl,
   stringAsIri,
 } from "../interfaces";
-import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 
 function addAclRuleQuads(

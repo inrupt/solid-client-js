@@ -43,7 +43,7 @@ import {
   setLiteral,
 } from "./set";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
-import { XSD } from "@solid/lit-vocab-common-rdfext";
+import { XSD } from "@solid/lit-vocab-common-rdfjs";
 
 function getMockQuad(
   subject: IriString,

@@ -30,7 +30,7 @@ import {
   WebId,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
-import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfjs";
 import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,

@@ -57,7 +57,7 @@ import {
   Iri,
   stringAsIri,
 } from "./interfaces";
-import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "./GENERATED/INRUPT_TEST_IRI";
 
 function mockResponse(

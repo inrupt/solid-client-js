@@ -22,7 +22,7 @@
 import { NamedNode, Literal, Quad } from "rdf-js";
 import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./interfaces";
-// import { RDF, XSD } from "@solid/lit-vocab-common-rdfext";
+// import { RDF, XSD } from "@solid/lit-vocab-common-rdfjs";
 //
 // /**
 //  * IRIs of the XML Schema data types we support

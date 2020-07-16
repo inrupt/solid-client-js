@@ -30,7 +30,7 @@ import {
   deserializeDecimal,
   deserializeInteger,
 } from "../datatypes";
-import { RDF, XSD } from "@solid/lit-vocab-common-rdfext";
+import { RDF, XSD } from "@solid/lit-vocab-common-rdfjs";
 
 /**
  * @param thing The [[Thing]] to read a URL value from.

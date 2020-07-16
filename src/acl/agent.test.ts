@@ -22,7 +22,7 @@
 import { describe, it, expect } from "@jest/globals";
 import { Quad } from "rdf-js";
 import { dataset } from "@rdfjs/dataset";
-import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF, FOAF } from "@solid/lit-vocab-common-rdfjs";
 // import { INRUPT_TEST_IRI } from "@inrupt/vocab-common-rdfjs";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
 import { DataFactory } from "n3";

@@ -42,7 +42,7 @@ import {
   internal_getAccessByIri,
 } from "../acl";
 
-import { ACL } from "@solid/lit-vocab-common-rdfext";
+import { ACL } from "@solid/lit-vocab-common-rdfjs";
 
 /**
  * Find out what Access Modes have been granted to a given Group of agents specifically for a given Resource.

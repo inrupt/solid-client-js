@@ -44,7 +44,7 @@ import {
   removeNamedNode,
 } from "./remove";
 import { INRUPT_TEST_IRI } from "../GENERATED/INRUPT_TEST_IRI";
-import { XSD } from "@solid/lit-vocab-common-rdfext";
+import { XSD } from "@solid/lit-vocab-common-rdfjs";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,

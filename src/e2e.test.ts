@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { FOAF } from "@solid/lit-vocab-common-rdfext";
+import { FOAF } from "@solid/lit-vocab-common-rdfjs";
 import {
   fetchLitDataset,
   setThing,
@@ -187,7 +187,7 @@ describe("End-to-end tests", () => {
     }
     // Fetching both Resource and Fallback ACLs takes quite a while on a bad network connection,
     // so double Jest's default timeout of 5 seconds:
-  }, 10000);
+  }, 15000);
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
     const dataset = await unstable_fetchLitDatasetWithAcl(

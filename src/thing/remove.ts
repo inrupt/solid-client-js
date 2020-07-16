@@ -39,7 +39,7 @@ import {
   normalizeLocale,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { XSD } from "@solid/lit-vocab-common-rdfext";
+import { XSD } from "@solid/lit-vocab-common-rdfjs";
 import { filterThing } from "../thing";
 
 /**

@@ -28,7 +28,7 @@ import {
   unstable_AclRule,
   arrayContainsIri,
 } from "../interfaces";
-import { ACL, FOAF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, FOAF } from "@solid/lit-vocab-common-rdfjs";
 import { getIriAll } from "../thing/get";
 import {
   internal_getAclRules,

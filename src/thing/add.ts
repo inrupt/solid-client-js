@@ -39,7 +39,7 @@ import {
   // xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { XSD } from "@solid/lit-vocab-common-rdfext";
+import { XSD } from "@solid/lit-vocab-common-rdfjs";
 
 /**
  * Create a new Thing with a URL added for a Predicate.

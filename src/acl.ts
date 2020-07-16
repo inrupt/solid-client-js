@@ -20,7 +20,7 @@
  */
 
 import { Quad } from "rdf-js";
-import { ACL, RDF } from "@solid/lit-vocab-common-rdfext";
+import { ACL, RDF } from "@solid/lit-vocab-common-rdfjs";
 
 import { fetchLitDataset } from "./litDataset";
 import {
