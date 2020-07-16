@@ -128,8 +128,12 @@ import {
   addStringInLocale,
   setStringInLocale,
   removeStringInLocale,
+  unstable_discoverInbox,
+  unstable_fetchInbox,
+  unstable_buildNotification,
+  unstable_sendNotification,
+  unstable_sendNotificationToInbox,
 } from "./index";
-import { expects } from "rdf-namespaces/dist/hydra";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
@@ -231,6 +235,11 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getGroupResourceAccessAll).toBeDefined();
   expect(unstable_getGroupDefaultAccessOne).toBeDefined();
   expect(unstable_getGroupDefaultAccessAll).toBeDefined();
+  expect(unstable_discoverInbox).toBeDefined(),
+    expect(unstable_fetchInbox).toBeDefined();
+  expect(unstable_buildNotification).toBeDefined();
+  expect(unstable_sendNotification).toBeDefined();
+  expect(unstable_sendNotificationToInbox).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
