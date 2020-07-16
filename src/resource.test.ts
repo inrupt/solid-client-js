@@ -37,6 +37,7 @@ import {
   internal_fetchResourceInfo,
   unstable_saveAclFor,
   unstable_deleteAclFor,
+  getInboxInfo,
 } from "./resource";
 
 import {
@@ -461,6 +462,45 @@ describe("fetchResourceInfo", () => {
     );
 
     expect(litDatasetInfo.contentType).toBeUndefined();
+  });
+
+  it("exposes the LDP inbox when known", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: {
+            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+          },
+        })
+      )
+    );
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(getInboxInfo({ resourceInfo: litDatasetInfo })).toBe(
+      "https://some.pod/inbox"
+    );
+  });
+
+  it("does not expose an LDP inbox when none is known", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(mockResponse()));
+
+    const litDatasetInfo = await internal_fetchResourceInfo(
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(getInboxInfo({ resourceInfo: litDatasetInfo })).toBeNull();
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
