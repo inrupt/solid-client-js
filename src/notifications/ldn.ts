@@ -50,7 +50,7 @@ import { ldp, as, rdf } from "../constants";
 export const internal_defaultFetchOptions = {
   fetch: fetch,
 };
-import { addUrl } from "../thing/add";
+import { addIri } from "../thing/add";
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
@@ -119,15 +119,15 @@ export function unstable_buildNotification(
     notification = createThing();
   }
   // Set the mandatory notification properties
-  notification = addUrl(notification, as.actor, sender);
-  notification = addUrl(notification, as.target, target);
-  notification = addUrl(notification, rdf.type, type);
+  notification = addIri(notification, as.actor, sender);
+  notification = addIri(notification, as.target, target);
+  notification = addIri(notification, rdf.type, type);
   // Set the optional additional notification information
   if (options !== undefined && options.subthings !== undefined) {
     Object.entries(options.subthings).forEach((entry) => {
       // All the quads of the notification subpart are added to the notification data
       notificationData = setThing(notification, entry[1]);
-      notification = addUrl(notification, entry[0], entry[1]);
+      notification = addIri(notification, entry[0], entry[1]);
     });
   }
   notificationData = setThing(notificationData, notification);
