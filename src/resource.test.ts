@@ -37,7 +37,7 @@ import {
   internal_fetchResourceInfo,
   unstable_saveAclFor,
   unstable_deleteAclFor,
-  getInboxInfo,
+  getInboxUrl,
 } from "./resource";
 
 import {
@@ -483,7 +483,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(getInboxInfo({ resourceInfo: litDatasetInfo })).toBe(
+    expect(getInboxUrl({ resourceInfo: litDatasetInfo })).toBe(
       "https://some.pod/inbox"
     );
   });
@@ -500,7 +500,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(getInboxInfo({ resourceInfo: litDatasetInfo })).toBeNull();
+    expect(getInboxUrl({ resourceInfo: litDatasetInfo })).toBeNull();
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
