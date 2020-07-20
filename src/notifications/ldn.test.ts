@@ -58,7 +58,7 @@ describe("unstable_discoverInbox", () => {
     myData.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
-        DataFactory.namedNode("https://www.w3.org/ns/ldp#inbox"),
+        DataFactory.namedNode("http://www.w3.org/ns/ldp#inbox"),
         DataFactory.namedNode("https://my.pod/some/arbitrary/inbox")
       )
     );
@@ -90,7 +90,7 @@ describe("unstable_discoverInbox", () => {
     myData.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/other/subject"),
-        DataFactory.namedNode("https://www.w3.org/ns/ldp#inbox"),
+        DataFactory.namedNode("http://www.w3.org/ns/ldp#inbox"),
         DataFactory.namedNode("https://my.pod/some/arbitrary/inbox")
       )
     );
@@ -133,7 +133,7 @@ describe("unstable_fetchInbox", () => {
       Promise.resolve(
         mockResponse("", {
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
           },
           url: "https://some.pod/",
         })
@@ -150,7 +150,7 @@ describe("unstable_fetchInbox", () => {
       Promise.resolve(
         mockResponse("", {
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
           },
           url: "https://some.pod/",
         })
@@ -168,7 +168,7 @@ describe("unstable_fetchInbox", () => {
   it("should return the inbox IRI for a given resource found in its content", async () => {
     const turtle = `
       @prefix : <#>.
-      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+      @prefix ldp: <http://www.w3.org/ns/ldp#>.
 
       :aResource ldp:inbox :anInbox.
     `;
@@ -200,7 +200,7 @@ describe("unstable_fetchInbox", () => {
   it("should ignore inboxes for other resources", async () => {
     const turtle = `
       @prefix : <#>.
-      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+      @prefix ldp: <http://www.w3.org/ns/ldp#>.
 
       :anotherResource ldp:inbox :anInbox.
     `;
@@ -376,7 +376,7 @@ describe("unstable_sendNotification", () => {
       Promise.resolve(
         mockResponse("", {
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
             Location: "https://arbitrary.pod/resource",
           },
           url: "https://some.pod/",
@@ -392,7 +392,7 @@ describe("unstable_sendNotification", () => {
   it("uses the given fetcher if provided", async () => {
     const mockedResponse = mockResponse("", {
       headers: {
-        Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+        Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
         Location: "https://arbitrary.pod/resource",
       },
       url: "https://some.pod/",
@@ -414,7 +414,7 @@ describe("unstable_sendNotification", () => {
         mockResponse("", {
           status: 201,
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
             Location: "https://arbitrary.pod/inbox/notification_01",
           },
           url: "https://some.pod/",
@@ -433,7 +433,7 @@ describe("unstable_sendNotification", () => {
 
   it("should send the notification to the inbox of the given resource if found in its content", async () => {
     const turtle = `
-      @prefix ldp: <https://www.w3.org/ns/ldp#>.
+      @prefix ldp: <http://www.w3.org/ns/ldp#>.
 
       </aContainer/aResource> ldp:inbox </anotherContainer/anInbox>.
     `;
@@ -472,7 +472,7 @@ describe("unstable_sendNotification", () => {
       Promise.resolve(
         mockResponse("", {
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
             Location: "https://some.pod/anInbox/notification",
           },
           url: "https://some.pod/",

@@ -470,7 +470,7 @@ describe("fetchResourceInfo", () => {
         mockResponse(undefined, {
           url: "https://some.pod/resource",
           headers: {
-            Link: '<../inbox>; rel="https://www.w3.org/ns/ldp#inbox"',
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
           },
         })
       )
