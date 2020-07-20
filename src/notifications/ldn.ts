@@ -31,8 +31,8 @@ import {
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceInfo,
-  hasInboxInfo,
-  getInboxInfo,
+  hasInboxUrl,
+  getInboxUrl,
   internal_toString,
 } from "../resource";
 import {
@@ -82,8 +82,8 @@ export async function unstable_fetchInbox(
   const resourceIri = typeof resource === "string" ? resource : resource.value;
   // First, try to get a Link header to the inbox
   const resourceInfo = await internal_fetchResourceInfo(resourceIri, options);
-  if (hasInboxInfo({ resourceInfo: resourceInfo })) {
-    return getInboxInfo({ resourceInfo: resourceInfo });
+  if (hasInboxUrl({ resourceInfo: resourceInfo })) {
+    return getInboxUrl({ resourceInfo: resourceInfo });
   }
   // If no Link header is defined, look up the resource content
   const resourceContent = await fetchLitDataset(resourceIri, options);

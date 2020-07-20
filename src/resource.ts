@@ -211,7 +211,7 @@ export function getFetchedFrom(resource: WithResourceInfo): string {
   return resource.resourceInfo.fetchedFrom;
 }
 
-export function hasInboxInfo(
+export function hasInboxUrl(
   resource: WithResourceInfo
 ): resource is WithResourceInfo & {
   resourceInfo: {
@@ -221,7 +221,7 @@ export function hasInboxInfo(
   return typeof resource.resourceInfo.inbox === "string";
 }
 
-export function getInboxInfo(resource: WithResourceInfo): string | null {
+export function getInboxUrl(resource: WithResourceInfo): UrlString | null {
   return resource.resourceInfo.inbox ?? null;
 }
 
