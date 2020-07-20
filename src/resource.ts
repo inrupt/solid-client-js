@@ -211,7 +211,13 @@ export function getFetchedFrom(resource: WithResourceInfo): string {
   return resource.resourceInfo.fetchedFrom;
 }
 
-export function hasInboxInfo(resource: WithResourceInfo): boolean {
+export function hasInboxInfo(
+  resource: WithResourceInfo
+): resource is WithResourceInfo & {
+  resourceInfo: {
+    inbox: Exclude<WithResourceInfo["resourceInfo"]["inbox"], undefined>;
+  };
+} {
   return typeof resource.resourceInfo.inbox === "string";
 }
 
