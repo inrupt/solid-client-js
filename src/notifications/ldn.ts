@@ -41,13 +41,7 @@ import {
   saveLitDatasetInContainer,
   getNamedNodeFromLocalNode,
 } from "../litDataset";
-import {
-  getThingOne,
-  createThing,
-  isThingLocal,
-  setThing,
-  cloneThing,
-} from "../thing";
+import { getThingOne, createThing, isThingLocal, setThing } from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 
