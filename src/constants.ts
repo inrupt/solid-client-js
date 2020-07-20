@@ -46,7 +46,7 @@ export const foaf = {
 
 /** @internal */
 export const ldp = {
-  inbox: "https://www.w3.org/ns/ldp#inbox",
+  inbox: "http://www.w3.org/ns/ldp#inbox",
 } as const;
 
 /** @internal */
