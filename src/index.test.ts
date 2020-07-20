@@ -117,6 +117,11 @@ import {
   unstable_getGroupResourceAccessAll,
   unstable_getGroupDefaultAccessOne,
   unstable_getGroupDefaultAccessAll,
+  unstable_discoverInbox,
+  unstable_fetchInbox,
+  unstable_buildNotification,
+  unstable_sendNotification,
+  unstable_sendNotificationToInbox,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -128,11 +133,6 @@ import {
   addStringInLocale,
   setStringInLocale,
   removeStringInLocale,
-  unstable_discoverInbox,
-  unstable_fetchInbox,
-  unstable_buildNotification,
-  unstable_sendNotification,
-  unstable_sendNotificationToInbox,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
