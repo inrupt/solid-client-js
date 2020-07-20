@@ -235,8 +235,8 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getGroupResourceAccessAll).toBeDefined();
   expect(unstable_getGroupDefaultAccessOne).toBeDefined();
   expect(unstable_getGroupDefaultAccessAll).toBeDefined();
-  expect(unstable_discoverInbox).toBeDefined(),
-    expect(unstable_fetchInbox).toBeDefined();
+  expect(unstable_discoverInbox).toBeDefined();
+  expect(unstable_fetchInbox).toBeDefined();
   expect(unstable_buildNotification).toBeDefined();
   expect(unstable_sendNotification).toBeDefined();
   expect(unstable_sendNotificationToInbox).toBeDefined();
