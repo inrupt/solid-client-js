@@ -68,7 +68,7 @@ export function unstable_discoverInbox(
 
 /**
  * Perform complete inbox discovery (https://www.w3.org/TR/ldn/#discovery) by checking both
- * resource metedata (i.e. Link headers) and resource content.
+ * resource metadata (i.e. Link headers) and resource content.
  *
  * @param resource The URL of the resource for which we are searching for the inbox
  * @param dataset The dataset where the inbox may be found (typically fetched at the resource Url)
