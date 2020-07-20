@@ -322,46 +322,6 @@ describe("unstable_buildNotification", () => {
     ).toEqual("https://my.pod/some/arbitrary/object");
   });
 
-  it("should support local Things for the notification optional body", () => {
-    let body = createThing({ name: "notificationBody" });
-    body = addUrl(
-      body,
-      "https://my.pod/some/arbitrary/predicate",
-      "https://my.pod/some/arbitrary/object"
-    );
-    const notificationData = unstable_buildNotification(
-      DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode("https://your.pod/webId#you"),
-      DataFactory.namedNode(as.Event),
-      {
-        subthings: { "https://some.other/predicate": body },
-      }
-    );
-    const notification = getThingOne(
-      notificationData,
-      notificationData.notification
-    );
-
-    // The core notification elements should not be changed
-    expect(getUrlOne(notification, as.actor)).toEqual(
-      "https://my.pod/webId#me"
-    );
-    expect(getUrlOne(notification, as.target)).toEqual(
-      "https://your.pod/webId#you"
-    );
-    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
-    // The body should be added
-    expect(getUrlOne(notification, "https://some.other/predicate")).toEqual(
-      "#notificationBody"
-    );
-    expect(
-      getUrlOne(
-        getThingOne(notificationData, body.localSubject),
-        "https://my.pod/some/arbitrary/predicate"
-      )
-    ).toEqual("https://my.pod/some/arbitrary/object");
-  });
-
   it("should use the provided optional body if provided", () => {
     let body = dataset();
     body.add(
