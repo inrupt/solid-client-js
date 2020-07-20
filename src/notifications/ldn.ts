@@ -61,7 +61,7 @@ import { addIri } from "../thing/add";
 export function unstable_discoverInbox(
   resource: Url | UrlString,
   dataset: LitDataset
-): string | null {
+): UrlString | null {
   const inbox = getIriOne(getThingOne(dataset, resource), ldp.inbox);
   return inbox;
 }
@@ -78,7 +78,7 @@ export async function unstable_fetchInbox(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<string | null> {
+): Promise<UrlString | null> {
   const resourceIri = typeof resource === "string" ? resource : resource.value;
   // First, try to get a Link header to the inbox
   const resourceInfo = await internal_fetchResourceInfo(resourceIri, options);
