@@ -122,10 +122,10 @@ export function unstable_buildNotification(
   notification = addIri(notification, rdf.type, type);
   // Set the optional additional notification information
   if (options !== undefined && options.subthings !== undefined) {
-    Object.entries(options.subthings).forEach((entry) => {
+    Object.entries(options.subthings).forEach(([predicate, value]) => {
       // All the quads of the notification subpart are added to the notification data
-      notificationData = setThing(notification, entry[1]);
-      notification = addIri(notification, entry[0], entry[1]);
+      notificationData = setThing(notification, value);
+      notification = addIri(notification, predicate, value);
     });
   }
   notificationData = setThing(notificationData, notification);
