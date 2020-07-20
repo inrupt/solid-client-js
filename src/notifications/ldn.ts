@@ -28,7 +28,6 @@ import {
   LocalNode,
   UrlString,
 } from "../interfaces";
-import { dataset } from "../rdfjs";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceInfo,
@@ -36,13 +35,12 @@ import {
   getInboxInfo,
   internal_toString,
 } from "../resource";
-import { fetchLitDataset, saveLitDatasetInContainer } from "../litDataset";
 import {
-  getThingOne,
-  createThing,
-  isThingLocal,
-  setThing,
-} from "../thing";
+  fetchLitDataset,
+  saveLitDatasetInContainer,
+  createLitDataset,
+} from "../litDataset";
+import { getThingOne, createThing, isThingLocal, setThing } from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 
@@ -110,7 +108,7 @@ export function unstable_buildNotification(
     body: Thing;
   }>
 ): LitDataset & { notification: UrlString | LocalNode } {
-  let notificationData = dataset();
+  let notificationData = createLitDataset();
   let notification: Thing;
   if (options && options.body) {
     notification = options.body;
