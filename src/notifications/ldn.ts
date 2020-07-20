@@ -36,12 +36,13 @@ import {
   getInboxInfo,
   internal_toString,
 } from "../resource";
+import { fetchLitDataset, saveLitDatasetInContainer } from "../litDataset";
 import {
-  fetchLitDataset,
-  saveLitDatasetInContainer,
-  getNamedNodeFromLocalNode,
-} from "../litDataset";
-import { getThingOne, createThing, isThingLocal, setThing } from "../thing";
+  getThingOne,
+  createThing,
+  isThingLocal,
+  setThing,
+} from "../thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 
@@ -126,7 +127,7 @@ export function unstable_buildNotification(
     Object.entries(options.subthings).forEach((entry) => {
       // All the quads of the notification subpart are added to the notification data
       notificationData = setThing(notification, entry[1]);
-      notification = addThingToNotification(notification, entry[0], entry[1]);
+      notification = addUrl(notification, entry[0], entry[1]);
     });
   }
   notificationData = setThing(notificationData, notification);
@@ -157,25 +158,6 @@ export async function unstable_sendNotificationToInbox(
     notification,
     options
   );
-}
-
-function addThingToNotification(
-  notification: Thing,
-  property: UrlString,
-  thing: Thing
-): Thing {
-  let result = cloneThing(notification);
-  // The notification subpart is linked to the notification Url using the given predicate
-  if (isThingLocal(thing)) {
-    result = addUrl(
-      result,
-      property,
-      getNamedNodeFromLocalNode(thing.localSubject)
-    );
-  } else {
-    result = addUrl(notification, property, thing.url);
-  }
-  return result;
 }
 
 /**
