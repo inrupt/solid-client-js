@@ -96,7 +96,6 @@ export async function unstable_fetchInbox(
  * Url that is resolved when it is sent to an inbox.
  *
  * @param sender The URL identifying the sender of the resource (typically, a WebID)
- * @param target The URL identifying the resource the notification is about
  * @param type The type of notification, typically a type from https://www.w3.org/TR/activitystreams-vocabulary/#activity-types
  * @param options Additional data for the notification. If `body` is set, the provided Thing is used as an initial value for the notification. This makes it easier to set custom properties on a notification. If `subthings` is set, the provided [[Thing]]s are associated to the notification using the provided URLs.
  */
