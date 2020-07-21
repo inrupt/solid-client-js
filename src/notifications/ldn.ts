@@ -27,6 +27,7 @@ import {
   WebId,
   UrlString,
   internal_toIriString,
+  ThingPersisted,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -46,6 +47,7 @@ import {
   isThingLocal,
   setThing,
   getThingAll,
+  toNode,
 } from "../thing";
 import { getIriOne, getIriAll } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
@@ -165,23 +167,19 @@ export async function unstable_sendNotificationToInbox(
  */
 export async function unstable_sendNotification(
   notification: Thing,
-  receiver: Url | UrlString,
+  receiver: Url | UrlString | ThingPersisted,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ) {
-  const inbox = await unstable_fetchInbox(receiver, options);
+  // TODO: Change `fetchInbox` to take a `ThingPersisted` and just read the inbox from it directly:
+  const receiverIri = internal_toIriString(toNode(receiver));
+  const inbox = await unstable_fetchInbox(receiverIri, options);
   if (inbox === null) {
-    throw new Error(
-      `No inbox discovered for Resource [${internal_toIriString(receiver)}]`
-    );
+    throw new Error(`No inbox discovered for Resource [${receiverIri}]`);
   }
 
-  const notificationWithTarget = setIri(
-    notification,
-    as.target,
-    internal_toIriString(receiver)
-  );
+  const notificationWithTarget = setIri(notification, as.target, receiver);
 
   let litDataset = createLitDataset();
   litDataset = setThing(litDataset, notificationWithTarget);
