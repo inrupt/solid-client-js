@@ -29,12 +29,10 @@ import {
   unstable_sendNotificationToInbox,
 } from "./ldn";
 import { DataFactory, dataset } from "../rdfjs";
-import Dataset from "@rdfjs/dataset";
-import { getThingOne, createThing } from "../thing";
 import { getUrlOne } from "../thing/get";
 import { as, rdf } from "../constants";
-import { addUrl } from "../thing/add";
 import { turtleToTriples } from "../formats/turtle";
+import { LitDataset } from "../interfaces";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -54,7 +52,7 @@ function mockResponse(
 
 describe("unstable_discoverInbox", () => {
   it("should return the inbox IRI for a given resource", () => {
-    let myData = dataset();
+    const myData: LitDataset = dataset();
     myData.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
@@ -63,14 +61,14 @@ describe("unstable_discoverInbox", () => {
       )
     );
     const inbox = unstable_discoverInbox(
-      DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
-      myData
+      myData,
+      "https://my.pod/some/arbitrary/subject"
     );
     expect(inbox).toEqual("https://my.pod/some/arbitrary/inbox");
   });
 
   it("should return null if no inbox is available in the dataset", () => {
-    let myData = dataset();
+    const myData: LitDataset = dataset();
     myData.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
@@ -79,14 +77,14 @@ describe("unstable_discoverInbox", () => {
       )
     );
     const inbox = unstable_discoverInbox(
-      DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
-      myData
+      myData,
+      "https://my.pod/some/arbitrary/subject"
     );
     expect(inbox).toBeNull();
   });
 
   it("should ignore inboxes for other resources", () => {
-    let myData = dataset();
+    const myData: LitDataset = dataset();
     myData.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/other/subject"),
@@ -95,8 +93,8 @@ describe("unstable_discoverInbox", () => {
       )
     );
     const inbox = unstable_discoverInbox(
-      DataFactory.namedNode("https://my.pod/some/other/subject"),
-      myData
+      myData,
+      "https://my.pod/some/other/subject"
     );
     expect(inbox).toEqual("https://my.pod/some/arbitrary/inbox");
   });
@@ -178,6 +176,7 @@ describe("unstable_fetchInbox", () => {
         Promise.resolve(
           mockResponse("", {
             url: "https://some.pod/",
+            headers: { "Content-Type": "text/turtle" },
           })
         )
       )
@@ -254,17 +253,31 @@ describe("unstable_fetchInbox", () => {
     );
     expect(inbox).toBeNull();
   });
+
+  it("should not attempt to fetch the body of a Resource if it does not contain RDF", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse("", {
+          url: "https://some.pod/",
+          headers: { "Content-Type": "image/png" },
+        })
+      )
+    );
+    const inbox = await unstable_fetchInbox(
+      DataFactory.namedNode("https://some.pod#aResource"),
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("unstable_buildNotification", () => {
   it("should create a notification with the provided values", () => {
-    const notificationData = unstable_buildNotification(
-      DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode(as.Event)
-    );
-    const notification = getThingOne(
-      notificationData,
-      notificationData.notification
+    const notification = unstable_buildNotification(
+      "https://my.pod/webId#me",
+      as.Event
     );
     expect(getUrlOne(notification, as.actor)).toEqual(
       "https://my.pod/webId#me"
@@ -273,94 +286,11 @@ describe("unstable_buildNotification", () => {
   });
 
   it("should support not having a target provided", () => {
-    const notificationData = unstable_buildNotification(
-      DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode(as.Event)
-    );
-    const notification = getThingOne(
-      notificationData,
-      notificationData.notification
+    const notification = unstable_buildNotification(
+      "https://my.pod/webId#me",
+      as.Event
     );
     expect(getUrlOne(notification, as.target)).toBeNull();
-  });
-
-  it("should complete the notification with the optional subthings if provided", () => {
-    let body = dataset();
-    body.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://my.pod/some/arbitrary/subject"),
-        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
-        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
-      )
-    );
-    const bodyThing = getThingOne(
-      body,
-      "https://my.pod/some/arbitrary/subject"
-    );
-    const notificationData = unstable_buildNotification(
-      DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode(as.Event),
-      {
-        subthings: { "https://some.other/predicate": bodyThing },
-      }
-    );
-    const notification = getThingOne(
-      notificationData,
-      notificationData.notification
-    );
-
-    // The core notification elements should not be changed
-    expect(getUrlOne(notification, as.actor)).toEqual(
-      "https://my.pod/webId#me"
-    );
-    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
-    // The body should be added
-    expect(getUrlOne(notification, "https://some.other/predicate")).toEqual(
-      "https://my.pod/some/arbitrary/subject"
-    );
-    expect(
-      getUrlOne(
-        getThingOne(notificationData, "https://my.pod/some/arbitrary/subject"),
-        "https://my.pod/some/arbitrary/predicate"
-      )
-    ).toEqual("https://my.pod/some/arbitrary/object");
-  });
-
-  it("should use the provided optional body if provided", () => {
-    let body = dataset();
-    body.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://my.pod/some/notification"),
-        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
-        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
-      )
-    );
-    const bodyThing = getThingOne(body, "https://my.pod/some/notification");
-    const notificationData = unstable_buildNotification(
-      DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode(as.Event),
-      {
-        body: bodyThing,
-      }
-    );
-    const notification = getThingOne(
-      notificationData,
-      notificationData.notification
-    );
-
-    // The core notification elements should not be changed
-    expect(getUrlOne(notification, as.actor)).toEqual(
-      "https://my.pod/webId#me"
-    );
-    expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
-    // The provided IRI should be used
-    expect(notificationData.notification).toEqual(
-      "https://my.pod/some/notification"
-    );
-    // The body should be added
-    expect(
-      getUrlOne(notification, "https://my.pod/some/arbitrary/predicate")
-    ).toEqual("https://my.pod/some/arbitrary/object");
   });
 });
 
@@ -383,8 +313,14 @@ describe("unstable_sendNotification", () => {
         })
       )
     );
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
 
-    await unstable_sendNotification(dataset(), "https://some.pod/resource");
+    await unstable_sendNotification(
+      mockNotification,
+      "https://some.pod/resource"
+    );
 
     expect(mockedFetcher.fetch).toHaveBeenCalled();
   });
@@ -400,10 +336,17 @@ describe("unstable_sendNotification", () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockedResponse));
-
-    await unstable_sendNotification(dataset(), "https://some.pod/resource", {
-      fetch: mockFetch,
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
     });
+
+    await unstable_sendNotification(
+      mockNotification,
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch).toHaveBeenCalled();
   });
@@ -421,8 +364,12 @@ describe("unstable_sendNotification", () => {
         })
       )
     );
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
+
     await unstable_sendNotification(
-      dataset(),
+      mockNotification,
       DataFactory.namedNode("https://some.pod/resource"),
       {
         fetch: mockFetch,
@@ -443,12 +390,17 @@ describe("unstable_sendNotification", () => {
           url: "https://some.pod/",
           headers: {
             Location: "https://some.pod/aContainer/anInbox/notification",
+            "Content-Type": "text/turtle",
           },
         })
       )
     );
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
+
     await unstable_sendNotification(
-      dataset(),
+      mockNotification,
       DataFactory.namedNode("https://some.pod/aContainer/aResource"),
       {
         fetch: mockFetch,
@@ -460,17 +412,16 @@ describe("unstable_sendNotification", () => {
   });
 
   it("should send the provided notification to the inbox of the target resource", async () => {
-    let notification = dataset();
-    notification.add(
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://my.pod/some/notification",
+    });
+    mockNotification.add(
       DataFactory.quad(
         DataFactory.namedNode("https://my.pod/some/notification"),
         DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
         DataFactory.namedNode("https://my.pod/some/arbitrary/object")
       )
     );
-    notification = Object.assign(notification, {
-      notification: "https://my.pod/some/notification",
-    });
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse("", {
@@ -483,7 +434,7 @@ describe("unstable_sendNotification", () => {
       )
     );
     await unstable_sendNotification(
-      notification,
+      mockNotification,
       DataFactory.namedNode("https://some.pod#resource"),
       {
         fetch: mockFetch,
@@ -520,15 +471,19 @@ describe("unstable_sendNotification", () => {
         })
       )
     );
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
+
     const sendPromise = unstable_sendNotification(
-      dataset(),
+      mockNotification,
       DataFactory.namedNode("https://some.pod/resource"),
       {
         fetch: mockFetch,
       }
     );
     await expect(sendPromise).rejects.toThrow(
-      "No inbox discovered for resource [https://some.pod/resource]"
+      "No inbox discovered for Resource [https://some.pod/resource]"
     );
   });
 });
@@ -541,9 +496,12 @@ describe("unstable_sendNotificationToInbox", () => {
         [RequestInfo, RequestInit?]
       >;
     };
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
 
     await unstable_sendNotificationToInbox(
-      dataset(),
+      mockNotification,
       "https://some.pod/resource"
     );
 
@@ -557,9 +515,12 @@ describe("unstable_sendNotificationToInbox", () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://arbitrary.pod/inbox#notification",
+    });
 
     await unstable_sendNotificationToInbox(
-      dataset(),
+      mockNotification,
       "https://some.pod/resource",
       {
         fetch: mockFetch,
@@ -576,9 +537,12 @@ describe("unstable_sendNotificationToInbox", () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://your.pod/inbox#notification",
+    });
     await unstable_sendNotificationToInbox(
-      dataset(),
-      Dataset.namedNode("https://your.pod/inbox"),
+      mockNotification,
+      "https://your.pod/inbox",
       {
         fetch: mockFetch,
       }
@@ -593,8 +557,10 @@ describe("unstable_sendNotificationToInbox", () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
-    const mockDataset = dataset();
-    mockDataset.add(
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://your.pod",
+    });
+    mockNotification.add(
       DataFactory.quad(
         DataFactory.namedNode("https://arbitrary.vocab/subject"),
         DataFactory.namedNode("https://arbitrary.vocab/predicate"),
@@ -603,8 +569,8 @@ describe("unstable_sendNotificationToInbox", () => {
       )
     );
     await unstable_sendNotificationToInbox(
-      mockDataset,
-      Dataset.namedNode("https://your.pod/inbox"),
+      mockNotification,
+      "https://your.pod/inbox",
       {
         fetch: mockFetch,
       }
