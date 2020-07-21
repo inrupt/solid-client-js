@@ -45,8 +45,8 @@ import {
   internal_removeEmptyAclRules,
   internal_getAclRulesForIri,
   internal_getAccessByIri,
-} from "../acl";
-import { createThing, getThingAll, setThing } from "../thing";
+} from "./acl";
+import { createThing, getThingAll, setThing } from "../thing/thing";
 import { removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
