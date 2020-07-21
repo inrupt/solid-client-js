@@ -463,6 +463,59 @@ describe("unstable_sendNotification", () => {
     }
   });
 
+  it("accepts a Thing as the target", async () => {
+    const mockNotification = Object.assign(dataset(), {
+      url: "https://my.pod/some/notification",
+    });
+    mockNotification.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://my.pod/some/notification"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/predicate"),
+        DataFactory.namedNode("https://my.pod/some/arbitrary/object")
+      )
+    );
+    const mockTarget = Object.assign(dataset(), {
+      url: "https://some.pod/resource#thing",
+    });
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse("", {
+          headers: {
+            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
+            Location: "https://some.pod/anInbox/notification",
+          },
+          url: "https://some.pod/",
+        })
+      )
+    );
+    await unstable_sendNotification(mockNotification, mockTarget, {
+      fetch: mockFetch,
+    });
+    const sentBody = mockFetch.mock.calls[1][1]?.body?.toString();
+    expect(sentBody).not.toBeUndefined();
+    if (sentBody) {
+      const sentQuads = await turtleToTriples(sentBody, "https://my.pod");
+      expect(sentQuads).toHaveLength(2);
+      expect(sentQuads[0].subject.value).toEqual(
+        "https://my.pod/some/notification"
+      );
+      expect(sentQuads[0].predicate.value).toEqual(
+        "https://my.pod/some/arbitrary/predicate"
+      );
+      expect(sentQuads[0].object.value).toEqual(
+        "https://my.pod/some/arbitrary/object"
+      );
+
+      expect(sentQuads[1].subject.value).toEqual(
+        "https://my.pod/some/notification"
+      );
+      expect(sentQuads[1].predicate.value).toEqual(as.target);
+      expect(sentQuads[1].object.value).toEqual(
+        "https://some.pod/resource#thing"
+      );
+    }
+  });
+
   it("should fail if inbox discovery fails", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(

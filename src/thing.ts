@@ -322,6 +322,11 @@ export function isThingLocal(
  * @param thing The Thing whose Subject Node you're interested in.
  * @returns A Node that can be used as the Subject for this Thing's Quads.
  */
+export function toNode(thing: UrlString | Url | ThingPersisted): NamedNode;
+export function toNode(thing: LocalNode | ThingLocal): LocalNode;
+export function toNode(
+  thing: UrlString | Url | LocalNode | Thing
+): NamedNode | LocalNode;
 export function toNode(
   thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode {
