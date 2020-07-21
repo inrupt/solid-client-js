@@ -49,7 +49,7 @@ export {
   createThing,
   asUrl,
   asIri,
-} from "./thing";
+} from "./thing/thing";
 export {
   getUrlOne,
   getIriOne,
@@ -139,7 +139,7 @@ export {
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
   unstable_createAclFromFallbackAcl,
-} from "./acl";
+} from "./acl/acl";
 export {
   unstable_AgentAccess,
   unstable_getAgentAccessOne,

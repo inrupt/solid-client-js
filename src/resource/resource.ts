@@ -31,7 +31,10 @@ import {
 } from "../interfaces";
 import { saveLitDatasetAt } from "./litDataset";
 import { fetch } from "../fetcher";
-import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "../acl";
+import {
+  internal_fetchResourceAcl,
+  internal_fetchFallbackAcl,
+} from "../acl/acl";
 import { ldp } from "../constants";
 
 /** @internal */

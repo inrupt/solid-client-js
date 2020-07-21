@@ -37,7 +37,7 @@ import {
   internal_combineAccessModes,
   unstable_hasResourceAcl,
   unstable_hasFallbackAcl,
-} from "../acl";
+} from "./acl";
 
 /**
  * Find out what Access Modes have been granted to everyone for a given Resource.

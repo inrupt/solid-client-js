@@ -38,7 +38,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { toNode } from "../thing";
+import { toNode } from "./thing";
 import { removeAll } from "./remove";
 
 /**

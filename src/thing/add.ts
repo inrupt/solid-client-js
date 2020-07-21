@@ -27,7 +27,7 @@ import {
   ThingPersisted,
   Url,
 } from "../interfaces";
-import { cloneThing, toNode } from "../thing";
+import { cloneThing, toNode } from "./thing";
 import {
   asNamedNode,
   serializeBoolean,

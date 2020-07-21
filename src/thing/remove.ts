@@ -41,7 +41,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { filterThing } from "../thing";
+import { filterThing } from "./thing";
 
 /**
  * Create a new Thing with all values removed for the given Predicate.

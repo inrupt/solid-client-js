@@ -41,12 +41,7 @@ import {
   saveLitDatasetInContainer,
   createLitDataset,
 } from "../resource/litDataset";
-import {
-  getThingOne,
-  createThing,
-  setThing,
-  toNode,
-} from "../thing";
+import { getThingOne, createThing, setThing, toNode } from "../thing/thing";
 import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 

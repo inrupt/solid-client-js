@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-jest.mock("./fetcher.ts", () => ({
+jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
       new Response(undefined, {
@@ -54,7 +54,7 @@ import {
   unstable_AclRule,
   unstable_AclDataset,
   unstable_Access,
-} from "./interfaces";
+} from "../interfaces";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -100,7 +100,7 @@ describe("fetchResourceAcl", () => {
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -199,7 +199,7 @@ describe("fetchFallbackAcl", () => {
         unstable_aclUrl: "https://some.pod/resource.acl",
       },
     };
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]

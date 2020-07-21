@@ -40,7 +40,7 @@ import {
   unstable_getFallbackAcl,
   internal_getAclRulesForIri,
   internal_getAccessByIri,
-} from "../acl";
+} from "./acl";
 
 import { acl } from "../constants";
 

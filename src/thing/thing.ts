@@ -20,7 +20,7 @@
  */
 
 import { NamedNode, Quad } from "rdf-js";
-import { dataset, filter, clone } from "./rdfjs";
+import { dataset, filter, clone } from "../rdfjs";
 import {
   isLocalNode,
   isEqual,
@@ -28,7 +28,7 @@ import {
   getLocalNode,
   asNamedNode,
   resolveLocalIri,
-} from "./datatypes";
+} from "../datatypes";
 import {
   LitDataset,
   UrlString,
@@ -44,9 +44,9 @@ import {
   unstable_hasAcl,
   unstable_WithAcl,
   unstable_AclDataset,
-} from "./interfaces";
-import { internal_isAclDataset } from "./acl";
-import { getFetchedFrom } from "./resource/resource";
+} from "../interfaces";
+import { internal_isAclDataset } from "../acl/acl";
+import { getFetchedFrom } from "../resource/resource";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.

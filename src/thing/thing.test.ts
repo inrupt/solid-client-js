@@ -43,7 +43,7 @@ import {
   LocalNode,
   unstable_WithAcl,
   unstable_AclDataset,
-} from "./interfaces";
+} from "../interfaces";
 
 function getMockQuad(
   terms: Partial<{

@@ -20,8 +20,8 @@
  */
 
 import { Quad } from "rdf-js";
-import { acl, rdf } from "./constants";
-import { fetchLitDataset } from "./resource/litDataset";
+import { acl, rdf } from "../constants";
+import { fetchLitDataset } from "../resource/litDataset";
 import {
   WithResourceInfo,
   unstable_AclDataset,
@@ -35,17 +35,17 @@ import {
   unstable_WithAccessibleAcl,
   unstable_WithResourceAcl,
   unstable_WithFallbackAcl,
-} from "./interfaces";
-import { getThingAll, removeThing, setThing } from "./thing";
-import { getIriOne, getIriAll } from "./thing/get";
-import { DataFactory, dataset } from "./rdfjs";
-import { removeAll } from "./thing/remove";
-import { setIri } from "./thing/set";
+} from "../interfaces";
+import { getThingAll, removeThing, setThing } from "../thing/thing";
+import { getIriOne, getIriAll } from "../thing/get";
+import { DataFactory, dataset } from "../rdfjs";
+import { removeAll } from "../thing/remove";
+import { setIri } from "../thing/set";
 import {
   internal_defaultFetchOptions,
   internal_fetchResourceInfo,
   getFetchedFrom,
-} from "./resource/resource";
+} from "../resource/resource";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
