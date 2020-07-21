@@ -227,7 +227,6 @@ describe("End-to-end tests", () => {
     if (inboxUrl) {
       const notification = unstable_buildNotification(
         "https://arbitrary.pod/sender#webId",
-        "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox-referrer.ttl",
         as.Read
       );
       const sentNotification = await unstable_sendNotificationToInbox(
