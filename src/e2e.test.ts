@@ -48,9 +48,8 @@ import {
   unstable_fetchFile,
   unstable_deleteFile,
   getFetchedFrom,
-  unstable_discoverInbox,
   unstable_buildNotification,
-  unstable_sendNotificationToInbox,
+  unstable_sendNotification,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -214,31 +213,23 @@ describe("End-to-end tests", () => {
 
   it("can find and send a notification to an LDN Inbox", async () => {
     expect.assertions(1);
-    const datasetReferringToInbox = await fetchLitDataset(
-      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox-referrer.ttl"
-    );
-    const inboxUrl = unstable_discoverInbox(
-      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox-referrer.ttl#referrer-thing",
-      datasetReferringToInbox
-    );
     const as = {
       Read: "https://www.w3.org/ns/activitystreams#Read",
     };
-    if (inboxUrl) {
-      const notification = unstable_buildNotification(
-        "https://arbitrary.pod/sender#webId",
-        as.Read
-      );
-      const sentNotification = await unstable_sendNotificationToInbox(
-        notification,
-        inboxUrl
-      );
-      expect(getFetchedFrom(sentNotification)).toMatch(
-        "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox/"
-      );
+    const notification = unstable_buildNotification(
+      "https://arbitrary.pod/sender#webId",
+      as.Read
+    );
+    // Alternatively, accept a LitDataset instead of the UrlString:
+    const sentNotificationDataset = await unstable_sendNotification(
+      notification,
+      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox-referrer.ttl#referrer-thing"
+    );
+    expect(getFetchedFrom(sentNotificationDataset)).toMatch(
+      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox/"
+    );
 
-      // Clean up:
-      await unstable_deleteFile(getFetchedFrom(sentNotification));
-    }
+    // Clean up:
+    await unstable_deleteFile(getFetchedFrom(sentNotificationDataset));
   });
 });
