@@ -25,19 +25,15 @@ import {
   Thing,
   WithResourceInfo,
   WebId,
-  LocalNode,
   UrlString,
-  IriString,
-  hasResourceInfo,
+  internal_toIriString,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceInfo,
   hasInboxUrl,
   getInboxUrl,
-  internal_toString,
   isLitDataset,
-  getFetchedFrom,
 } from "../resource";
 import {
   fetchLitDataset,
@@ -74,7 +70,7 @@ export function unstable_discoverInbox(
   dataset: LitDataset,
   receiverUrl: Url | UrlString
 ): UrlString | null {
-  const thingUrl = internal_toString(receiverUrl);
+  const thingUrl = internal_toIriString(receiverUrl);
   const resourceThing = getThingOne(dataset, thingUrl);
   return getIriOne(resourceThing, ldp.inbox);
 }
@@ -92,7 +88,7 @@ export async function unstable_fetchInbox(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<UrlString | null> {
-  const resourceIriString = internal_toString(resourceUrl);
+  const resourceIriString = internal_toIriString(resourceUrl);
   // First, try to get a Link header to the inbox:
   const resourceInfo = await internal_fetchResourceInfo(
     resourceIriString,
@@ -152,7 +148,7 @@ export async function unstable_sendNotificationToInbox(
   litDataset = setThing(litDataset, notification);
 
   return saveLitDatasetInContainer(
-    internal_toString(inbox),
+    internal_toIriString(inbox),
     notification,
     options
   );
@@ -177,14 +173,14 @@ export async function unstable_sendNotification(
   const inbox = await unstable_fetchInbox(receiver, options);
   if (inbox === null) {
     throw new Error(
-      `No inbox discovered for Resource [${internal_toString(receiver)}]`
+      `No inbox discovered for Resource [${internal_toIriString(receiver)}]`
     );
   }
 
   const notificationWithTarget = setIri(
     notification,
     as.target,
-    internal_toString(receiver)
+    internal_toIriString(receiver)
   );
 
   let litDataset = createLitDataset();
