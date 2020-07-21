@@ -27,20 +27,20 @@ export {
   getContentType,
   unstable_saveAclFor,
   unstable_deleteAclFor,
-} from "./resource";
+} from "./resource/resource";
 export {
   unstable_fetchFile,
   unstable_deleteFile,
   unstable_saveFileInContainer,
   unstable_overwriteFile,
-} from "./nonRdfData";
+} from "./resource/nonRdfData";
 export {
   createLitDataset,
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   unstable_fetchLitDatasetWithAcl,
-} from "./litDataset";
+} from "./resource/litDataset";
 export {
   getThingOne,
   getThingAll,

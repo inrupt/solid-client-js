@@ -19,13 +19,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { fetch } from "./fetcher";
+import { fetch } from "../fetcher";
 import { Headers } from "cross-fetch";
 import {
   unstable_UploadRequestInit,
   WithResourceInfo,
   unstable_WithAcl,
-} from "./interfaces";
+} from "../interfaces";
 import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
 
 type FetchFileOptions = {
