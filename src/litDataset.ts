@@ -32,6 +32,8 @@ import {
   hasResourceInfo,
   LocalNode,
   unstable_WithAcl,
+  Url,
+  internal_toIriString,
 } from "./interfaces";
 import {
   internal_parseResourceInfo,
@@ -57,11 +59,12 @@ export function createLitDataset(): LitDataset {
  * @returns Promise resolving to a [[LitDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
  */
 export async function fetchLitDataset(
-  url: UrlString,
+  url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<LitDataset & WithResourceInfo> {
+  url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -106,7 +109,7 @@ export async function fetchLitDataset(
  * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
  */
 export async function unstable_fetchLitDatasetWithAcl(
-  url: UrlString,
+  url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -125,12 +128,13 @@ export async function unstable_fetchLitDatasetWithAcl(
  * @returns A Promise resolving to a [[LitDataset]] containing the stored data, or rejecting if saving it failed.
  */
 export async function saveLitDatasetAt(
-  url: UrlString,
+  url: UrlString | Url,
   litDataset: LitDataset,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<LitDataset & WithResourceInfo & WithChangeLog> {
+  url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -232,7 +236,7 @@ type SaveInContainerOptions = Partial<
  * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
  */
 export async function saveLitDatasetInContainer(
-  containerUrl: UrlString,
+  containerUrl: UrlString | Url,
   litDataset: LitDataset,
   options: SaveInContainerOptions = internal_defaultFetchOptions
 ): Promise<LitDataset & WithResourceInfo> {
@@ -240,6 +244,7 @@ export async function saveLitDatasetInContainer(
     ...internal_defaultFetchOptions,
     ...options,
   };
+  containerUrl = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
     Array.from(litDataset).map(getNamedNodesForLocalNodes)

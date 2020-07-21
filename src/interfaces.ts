@@ -177,6 +177,11 @@ export type unstable_WithFallbackAcl<
   };
 };
 
+/** @internal */
+export function internal_toIriString(iri: Iri | IriString): IriString {
+  return typeof iri === "string" ? iri : iri.value;
+}
+
 /**
  * Verify whether a given LitDataset includes metadata about where it was retrieved from.
  *
