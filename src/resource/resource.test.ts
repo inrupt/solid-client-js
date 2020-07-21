@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-jest.mock("./fetcher.ts", () => ({
+jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
       new Response(undefined, {
@@ -50,7 +50,7 @@ import {
   WithResourceInfo,
   unstable_AclDataset,
   unstable_WithAccessibleAcl,
-} from "./interfaces";
+} from "../interfaces";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -61,7 +61,7 @@ function mockResponse(
 
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -221,7 +221,7 @@ describe("fetchResourceInfoWithAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -323,7 +323,7 @@ describe("fetchResourceInfoWithAcl", () => {
 
 describe("fetchResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -760,7 +760,7 @@ describe("getContentType", () => {
 
 describe("saveAclFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -931,7 +931,7 @@ describe("saveAclFor", () => {
 
 describe("deleteAclFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("./fetcher.ts") as {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]

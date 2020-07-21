@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-jest.mock("./fetcher", () => ({
+jest.mock("../fetcher", () => ({
   fetch: jest
     .fn()
     .mockImplementation(() =>
@@ -42,7 +42,7 @@ import { Headers, Response } from "cross-fetch";
 
 describe("unstable_fetchFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -144,7 +144,7 @@ describe("unstable_fetchFile", () => {
 
 describe("unstable_fetchFileWithAcl", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -342,7 +342,7 @@ describe("unstable_fetchFileWithAcl", () => {
 
 describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -451,7 +451,7 @@ describe("Write non-RDF data into a folder", () => {
   } as Blob;
 
   it("should default to the included fetcher if no other is available", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -473,7 +473,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should POST to a remote resource the included fetcher, and return the response", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -611,7 +611,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   } as Blob;
 
   it("should default to the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
@@ -630,7 +630,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   });
 
   it("should PUT to a remote resource when using the included fetcher, and return the response", async () => {
-    const fetcher = jest.requireMock("./fetcher") as {
+    const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]

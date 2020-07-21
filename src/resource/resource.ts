@@ -28,13 +28,11 @@ import {
   unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_Access,
-  IriString,
-  Iri,
-} from "./interfaces";
+} from "../interfaces";
 import { saveLitDatasetAt } from "./litDataset";
-import { fetch } from "./fetcher";
-import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "./acl";
-import { ldp } from "./constants";
+import { fetch } from "../fetcher";
+import { internal_fetchResourceAcl, internal_fetchFallbackAcl } from "../acl";
+import { ldp } from "../constants";
 
 /** @internal */
 export const internal_defaultFetchOptions = {

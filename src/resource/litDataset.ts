@@ -20,9 +20,9 @@
  */
 
 import { Quad, NamedNode } from "rdf-js";
-import { dataset, DataFactory } from "./rdfjs";
-import { turtleToTriples, triplesToTurtle } from "./formats/turtle";
-import { isLocalNode, resolveIriForLocalNodes } from "./datatypes";
+import { dataset, DataFactory } from "../rdfjs";
+import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
+import { isLocalNode, resolveIriForLocalNodes } from "../datatypes";
 import {
   UrlString,
   LitDataset,
@@ -34,7 +34,7 @@ import {
   unstable_WithAcl,
   Url,
   internal_toIriString,
-} from "./interfaces";
+} from "../interfaces";
 import {
   internal_parseResourceInfo,
   internal_defaultFetchOptions,

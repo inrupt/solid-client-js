@@ -21,7 +21,7 @@
 
 import { Quad } from "rdf-js";
 import { acl, rdf } from "./constants";
-import { fetchLitDataset } from "./litDataset";
+import { fetchLitDataset } from "./resource/litDataset";
 import {
   WithResourceInfo,
   unstable_AclDataset,
@@ -45,7 +45,7 @@ import {
   internal_defaultFetchOptions,
   internal_fetchResourceInfo,
   getFetchedFrom,
-} from "./resource";
+} from "./resource/resource";
 
 /** @internal */
 export async function internal_fetchResourceAcl(

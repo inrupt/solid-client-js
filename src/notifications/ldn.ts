@@ -35,21 +35,19 @@ import {
   hasInboxUrl,
   getInboxUrl,
   isLitDataset,
-} from "../resource";
+} from "../resource/resource";
 import {
   fetchLitDataset,
   saveLitDatasetInContainer,
   createLitDataset,
-} from "../litDataset";
+} from "../resource/litDataset";
 import {
   getThingOne,
   createThing,
-  isThingLocal,
   setThing,
-  getThingAll,
   toNode,
 } from "../thing";
-import { getIriOne, getIriAll } from "../thing/get";
+import { getIriOne } from "../thing/get";
 import { ldp, as, rdf } from "../constants";
 
 /** @internal */
