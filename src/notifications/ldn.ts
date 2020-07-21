@@ -49,6 +49,7 @@ export const internal_defaultFetchOptions = {
   fetch: fetch,
 };
 import { addIri } from "../thing/add";
+import { setIri } from "../thing/set";
 
 /**
  * Perform partial inbox discovery (https://www.w3.org/TR/ldn/#discovery) by only checking
@@ -101,7 +102,6 @@ export async function unstable_fetchInbox(
  */
 export function unstable_buildNotification(
   sender: Url | WebId,
-  target: Url | UrlString,
   type: Url | UrlString,
   options?: Partial<{
     subthings: Record<UrlString, Thing>;
@@ -118,7 +118,6 @@ export function unstable_buildNotification(
   }
   // Set the mandatory notification properties
   notification = addIri(notification, as.actor, sender);
-  notification = addIri(notification, as.target, target);
   notification = addIri(notification, rdf.type, type);
   // Set the optional additional notification information
   if (options !== undefined && options.subthings !== undefined) {
@@ -167,17 +166,26 @@ export async function unstable_sendNotificationToInbox(
  * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new notification Resource, or rejecting if saving it failed.
  */
 export async function unstable_sendNotification(
-  notification: LitDataset,
+  notification: LitDataset & Partial<{ notification: UrlString | LocalNode }>,
   receiver: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ) {
+  let notificationToSend = notification;
   const inbox = await unstable_fetchInbox(receiver, options);
   if (inbox === null) {
     throw new Error(
       `No inbox discovered for resource [${internal_toString(receiver)}]`
     );
   }
-  return unstable_sendNotificationToInbox(notification, inbox, options);
+  if (notification.notification !== undefined) {
+    let notificationThing = getThingOne(
+      notification,
+      notification.notification
+    );
+    notificationThing = setIri(notificationThing, as.target, receiver);
+    notificationToSend = setThing(notificationToSend, notificationThing);
+  }
+  return unstable_sendNotificationToInbox(notificationToSend, inbox, options);
 }

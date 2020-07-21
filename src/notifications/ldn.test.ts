@@ -260,7 +260,6 @@ describe("unstable_buildNotification", () => {
   it("should create a notification with the provided values", () => {
     const notificationData = unstable_buildNotification(
       DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode("https://your.pod/webId#you"),
       DataFactory.namedNode(as.Event)
     );
     const notification = getThingOne(
@@ -270,10 +269,19 @@ describe("unstable_buildNotification", () => {
     expect(getUrlOne(notification, as.actor)).toEqual(
       "https://my.pod/webId#me"
     );
-    expect(getUrlOne(notification, as.target)).toEqual(
-      "https://your.pod/webId#you"
-    );
     expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
+  });
+
+  it("should support not having a target provided", () => {
+    const notificationData = unstable_buildNotification(
+      DataFactory.namedNode("https://my.pod/webId#me"),
+      DataFactory.namedNode(as.Event)
+    );
+    const notification = getThingOne(
+      notificationData,
+      notificationData.notification
+    );
+    expect(getUrlOne(notification, as.target)).toBeNull();
   });
 
   it("should complete the notification with the optional subthings if provided", () => {
@@ -291,7 +299,6 @@ describe("unstable_buildNotification", () => {
     );
     const notificationData = unstable_buildNotification(
       DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode("https://your.pod/webId#you"),
       DataFactory.namedNode(as.Event),
       {
         subthings: { "https://some.other/predicate": bodyThing },
@@ -305,9 +312,6 @@ describe("unstable_buildNotification", () => {
     // The core notification elements should not be changed
     expect(getUrlOne(notification, as.actor)).toEqual(
       "https://my.pod/webId#me"
-    );
-    expect(getUrlOne(notification, as.target)).toEqual(
-      "https://your.pod/webId#you"
     );
     expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
     // The body should be added
@@ -334,7 +338,6 @@ describe("unstable_buildNotification", () => {
     const bodyThing = getThingOne(body, "https://my.pod/some/notification");
     const notificationData = unstable_buildNotification(
       DataFactory.namedNode("https://my.pod/webId#me"),
-      DataFactory.namedNode("https://your.pod/webId#you"),
       DataFactory.namedNode(as.Event),
       {
         body: bodyThing,
@@ -348,9 +351,6 @@ describe("unstable_buildNotification", () => {
     // The core notification elements should not be changed
     expect(getUrlOne(notification, as.actor)).toEqual(
       "https://my.pod/webId#me"
-    );
-    expect(getUrlOne(notification, as.target)).toEqual(
-      "https://your.pod/webId#you"
     );
     expect(getUrlOne(notification, rdf.type)).toEqual(as.Event);
     // The provided IRI should be used
@@ -468,6 +468,9 @@ describe("unstable_sendNotification", () => {
         DataFactory.namedNode("https://my.pod/some/arbitrary/object")
       )
     );
+    notification = Object.assign(notification, {
+      notification: "https://my.pod/some/notification",
+    });
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse("", {
@@ -490,7 +493,7 @@ describe("unstable_sendNotification", () => {
     expect(sentBody).not.toBeUndefined();
     if (sentBody) {
       const sentQuads = await turtleToTriples(sentBody, "https://my.pod");
-      expect(sentQuads).toHaveLength(1);
+      expect(sentQuads).toHaveLength(2);
       expect(sentQuads[0].subject.value).toEqual(
         "https://my.pod/some/notification"
       );
@@ -500,6 +503,12 @@ describe("unstable_sendNotification", () => {
       expect(sentQuads[0].object.value).toEqual(
         "https://my.pod/some/arbitrary/object"
       );
+
+      expect(sentQuads[1].subject.value).toEqual(
+        "https://my.pod/some/notification"
+      );
+      expect(sentQuads[1].predicate.value).toEqual(as.target);
+      expect(sentQuads[1].object.value).toEqual("https://some.pod#resource");
     }
   });
 
