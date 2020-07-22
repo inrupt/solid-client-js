@@ -747,7 +747,7 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    let resourceAcl = addAclRuleQuads(
+    const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -782,7 +782,7 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    let resourceAcl = addAclRuleQuads(
+    const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1588,7 +1588,7 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    let containerAcl = addAclRuleQuads(
+    const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acln"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1623,7 +1623,7 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    let containerAcl = addAclRuleQuads(
+    const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
