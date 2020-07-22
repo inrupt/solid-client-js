@@ -98,6 +98,7 @@ import {
   unstable_getFallbackAcl,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
+  unstable_createAcl,
   unstable_createAclFromFallbackAcl,
   unstable_getAgentAccessOne,
   unstable_getAgentAccessAll,
@@ -216,6 +217,7 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getFallbackAcl).toBeDefined();
   expect(unstable_hasResourceAcl).toBeDefined();
   expect(unstable_getResourceAcl).toBeDefined();
+  expect(unstable_createAcl).toBeDefined();
   expect(unstable_createAclFromFallbackAcl).toBeDefined();
   expect(unstable_getAgentAccessOne).toBeDefined();
   expect(unstable_getAgentAccessAll).toBeDefined();

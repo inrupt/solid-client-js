@@ -136,6 +136,7 @@ export {
   unstable_getFallbackAcl,
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
+  unstable_createAcl,
   unstable_createAclFromFallbackAcl,
   unstable_saveAclFor,
   unstable_deleteAclFor,

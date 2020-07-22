@@ -49,6 +49,7 @@ import {
   unstable_createAclFromFallbackAcl,
   unstable_saveAclFor,
   unstable_deleteAclFor,
+  unstable_createAcl,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -446,6 +447,28 @@ describe("getFallbackAcl", () => {
       acl: { fallbackAcl: null, resourceAcl: null },
     });
     expect(unstable_getFallbackAcl(litDataset)).toBeNull();
+  });
+});
+
+describe("createAcl", () => {
+  it("creates a new empty ACL", () => {
+    const litDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/container/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://some.pod/container/resource.acl",
+      },
+      acl: { fallbackAcl: null, resourceAcl: null },
+    });
+
+    const resourceAcl = unstable_createAcl(litDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(0);
+    expect(resourceAcl.accessTo).toBe("https://some.pod/container/resource");
+    expect(resourceAcl.resourceInfo.fetchedFrom).toBe(
+      "https://some.pod/container/resource.acl"
+    );
   });
 });
 
