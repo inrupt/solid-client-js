@@ -1,0 +1,47 @@
+{% extends "pydata_sphinx_theme/layout.html" %}
+
+{% set css_files = css_files + [ "_static/css/inrupt.css" ] %}
+
+{%- block extrahead %}
+  {% if theme_robots_index %}
+    <meta name="robots" content="index" />
+  {% else %}
+    <meta name="robots" content="noindex,nofollow" />
+  {% endif %}
+
+  {{ super() }}
+
+{%- endblock %}
+
+{# 
+   breadcrumb(): equivalent to relbar() in basic without 
+   prev|next|index to the right 
+#}
+
+{%- macro breadcrumb() %}
+  <div class="related">
+    {% if parents %}
+      <ul>
+        {%- for parent in parents %}
+          <li><a href="{{ parent.link|e }}">{{ parent.title }}</a><span class="bcpoint"> {{ reldelim1 }} </span></li>
+            {% if loop.last %}<li>{{title}}</li>{% endif %}
+        {%- endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{# 
+   Overwrite docs_body block to add breadcrumb to the body
+#}
+
+{% block docs_body %}
+  {{ breadcrumb() }}
+  
+  {%- if theme_banner %}
+      <div class="alert alert-info">
+         <span class="alert-message">{{theme_banner_msg}}</span>
+      </div>
+  {%- endif %}
+  {{ super() }}
+{% endblock %}
