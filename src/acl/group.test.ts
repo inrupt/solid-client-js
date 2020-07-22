@@ -744,7 +744,7 @@ describe("getGroupResourceAccessAll", () => {
   });
 
   it("returns Access Modes for all Groups even if they are assigned in the same Rule", () => {
-    let resourceAcl = addAclRuleQuads(
+    const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
@@ -779,7 +779,7 @@ describe("getGroupResourceAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to a Group", () => {
-    let resourceAcl = addAclRuleQuads(
+    const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
@@ -1049,7 +1049,7 @@ describe("getGroupDefaultAccessAll", () => {
   });
 
   it("returns Access Modes for all Groups even if they are assigned in the same Rule", () => {
-    let containerAcl = addAclRuleQuads(
+    const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acln"),
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
@@ -1084,7 +1084,7 @@ describe("getGroupDefaultAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to a Group", () => {
-    let containerAcl = addAclRuleQuads(
+    const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
