@@ -31,8 +31,8 @@
   "devDependencies": {
     "@types/http-link-header": "^1.0.1",
     "@types/jest": "^26.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.34.0",
-    "@typescript-eslint/parser": "^2.34.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
     "eslint": "^7.2.0",
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-license-header": "^0.2.0",

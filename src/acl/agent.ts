@@ -375,7 +375,7 @@ function removeAgentFromResourceRule(
   resourceIri: IriString
 ): [unstable_AclRule, unstable_AclRule] {
   // The existing rule will keep applying to Agents other than the given one:
-  let ruleWithoutAgent = removeIri(rule, acl.agent, agent);
+  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
   // The new rule will...
   let ruleForOtherTargets = duplicateAclRule(rule);
   // ...*only* apply to the given Agent (because the existing Rule covers the others)...
@@ -404,7 +404,7 @@ function removeAgentFromDefaultRule(
   containerIri: IriString
 ): [unstable_AclRule, unstable_AclRule] {
   // The existing rule will keep applying to Agents other than the given one:
-  let ruleWithoutAgent = removeIri(rule, acl.agent, agent);
+  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
   // The new rule will...
   let ruleForOtherTargets = duplicateAclRule(rule);
   // ...*only* apply to the given Agent (because the existing Rule covers the others)...
