@@ -47,6 +47,8 @@ import {
   unstable_getFallbackAcl,
   internal_removeEmptyAclRules,
   unstable_createAclFromFallbackAcl,
+  unstable_saveAclFor,
+  unstable_deleteAclFor,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -54,6 +56,7 @@ import {
   unstable_AclRule,
   unstable_AclDataset,
   unstable_Access,
+  unstable_WithAccessibleAcl,
 } from "../interfaces";
 
 function mockResponse(
@@ -1552,5 +1555,298 @@ describe("removeEmptyAclRules", () => {
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
     expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+  });
+});
+
+describe("saveAclFor", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+
+    await unstable_saveAclFor(withResourceInfo, aclResource);
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+
+    await unstable_saveAclFor(withResourceInfo, aclResource, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toHaveLength(1);
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://arbitrary.pod/resource",
+    });
+
+    const fetchPromise = unstable_saveAclFor(withResourceInfo, aclResource, {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Storing the Resource failed: 403 Forbidden.")
+    );
+  });
+
+  it("marks the stored ACL as applying to the given Resource", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://some-other.pod/resource",
+    });
+
+    const savedAcl = await unstable_saveAclFor(withResourceInfo, aclResource, {
+      fetch: mockFetch,
+    });
+
+    expect(savedAcl.accessTo).toBe("https://some.pod/resource");
+  });
+
+  it("sends a PATCH if the ACL contains a ChangeLog and was originally fetched from the same location", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://arbitrary.pod/resource",
+      changeLog: {
+        additions: [],
+        deletions: [],
+      },
+    });
+
+    await unstable_saveAclFor(withResourceInfo, aclResource, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
+  });
+
+  it("sends a PUT if the ACL contains a ChangeLog but was originally fetched from a different location", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+    const withResourceInfo = {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary.pod/resource",
+        isLitDataset: true,
+        unstable_aclUrl: "https://arbitrary.pod/resource.acl",
+      },
+    };
+    const aclResource: unstable_AclDataset = Object.assign(dataset(), {
+      resourceInfo: {
+        fetchedFrom: "https://arbitrary-other.pod/resource.acl",
+        isLitDataset: true,
+      },
+      accessTo: "https://arbitrary.pod/resource",
+      changeLog: {
+        additions: [],
+        deletions: [],
+      },
+    });
+
+    await unstable_saveAclFor(withResourceInfo, aclResource, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+  });
+});
+
+describe("deleteAclFor", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: false,
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    await unstable_deleteAclFor(mockResource);
+
+    expect(mockedFetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.pod/resource.acl",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: false,
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    await unstable_deleteAclFor(mockResource, { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/resource.acl",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+  });
+
+  it("returns the input Resource without a Resource ACL", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: false,
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    const savedResource = await unstable_deleteAclFor(mockResource, {
+      fetch: mockFetch,
+    });
+
+    expect(savedResource.acl.resourceAcl).toBeNull();
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: false,
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    const fetchPromise = unstable_deleteAclFor(mockResource, {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Deleting the ACL failed: 403 Forbidden.")
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 404", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not found", { status: 404 }))
+      );
+
+    const mockResource: WithResourceInfo & unstable_WithAccessibleAcl = {
+      resourceInfo: {
+        fetchedFrom: "https://some.pod/resource",
+        isLitDataset: false,
+        unstable_aclUrl: "https://some.pod/resource.acl",
+      },
+    };
+
+    const fetchPromise = unstable_deleteAclFor(mockResource, {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Deleting the ACL failed: 404 Not Found.")
+    );
   });
 });

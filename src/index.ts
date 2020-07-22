@@ -25,8 +25,6 @@ export {
   isLitDataset,
   getFetchedFrom,
   getContentType,
-  unstable_saveAclFor,
-  unstable_deleteAclFor,
 } from "./resource/resource";
 export {
   unstable_fetchFile,
@@ -139,6 +137,8 @@ export {
   unstable_hasResourceAcl,
   unstable_getResourceAcl,
   unstable_createAclFromFallbackAcl,
+  unstable_saveAclFor,
+  unstable_deleteAclFor,
 } from "./acl/acl";
 export {
   unstable_AgentAccess,
