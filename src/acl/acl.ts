@@ -222,6 +222,26 @@ export function unstable_getFallbackAcl(
 }
 
 /**
+ * Initialise an empty Resource ACL for a given Resource.
+ *
+ * @param targetResource A Resource that does not have its own ACL yet (see [[unstable_hasResourceAcl]]).
+ * @returns A Resource ACL for the given Resource, with no ACL Rules defined yet.
+ */
+export function unstable_createAcl(
+  targetResource: WithResourceInfo & unstable_WithAccessibleAcl
+): unstable_AclDataset {
+  const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
+    accessTo: getFetchedFrom(targetResource),
+    resourceInfo: {
+      fetchedFrom: targetResource.resourceInfo.unstable_aclUrl,
+      isLitDataset: true,
+    },
+  });
+
+  return emptyResourceAcl;
+}
+
+/**
  * Create a Resource ACL for a given Resource, setting the same access permissions that currently apply to it from its Container.
  *
  * @param resource A Resource that does not have its own ACL (see [[unstable_hasResourceAcl]]) and a known fallback ACL (see [[unstable_hasFallbackAcl]]).
@@ -232,13 +252,7 @@ export function unstable_createAclFromFallbackAcl(
     WithResourceInfo &
     unstable_WithAccessibleAcl
 ): unstable_AclDataset {
-  const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
-    accessTo: getFetchedFrom(resource),
-    resourceInfo: {
-      fetchedFrom: resource.resourceInfo.unstable_aclUrl,
-      isLitDataset: true,
-    },
-  });
+  const emptyResourceAcl: unstable_AclDataset = unstable_createAcl(resource);
 
   const fallbackAclRules = internal_getAclRules(resource.acl.fallbackAcl);
   const defaultAclRules = internal_getDefaultAclRulesForResource(
