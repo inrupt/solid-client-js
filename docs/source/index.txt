@@ -1,0 +1,60 @@
+==============================
+Inrupt |product| Documentation
+==============================
+
+
+Inrupt |product| is a client library for accessing data stored in
+`Solid <https://solidproject.org/>`_ Pods.
+
+|product| is designed to make it easy for developers to create `Solid
+<https://solidproject.org/>`_ applications. |product| provides an
+abstraction layer on top of both `Solid`_ and `Resource Description
+Framework (RDF) <https://www.w3.org/TR/rdf11-concepts/>`_ principles
+and is compatible with the `RDF/JS specification
+<https://rdf.js.org/>`_.
+
+You can use |product| in Node.js using CommonJS modules and in the
+browser with a bundler like `Webpack <https://webpack.js.org>`_,
+`Rollup <https://rollupjs.org>`_, or `Parcel <https://parceljs.org>`_.
+
+
+Getting Started
+===============
+
+To get started, see the following pages in the documentation:
+
+.. list-table::
+
+   * - :doc:`/installation`
+
+     - Install |product| using ``npm``.
+
+   * - :doc:`/tutorial/read-write-data`
+
+     - Use |product| to read and write data.
+
+   * - :doc:`/tutorial/manage-access-control-list`
+
+     - Manage access to your Pod.
+
+   * - `API <https://inrupt.github.io/lit-pod/docs/api/index/>`_
+
+     - Go to the API documentation.
+
+Issues & Help
+=============
+
+.. include:: /includes/table-issues-help.rst
+
+.. toctree::
+   :titlesonly:
+   :hidden:
+
+   /installation
+   /tutorial/read-write-data
+   /tutorial/manage-access-control-list
+   /reference
+   API <https://inrupt.github.io/lit-pod/docs/api/index>
+   Source on GitHub <https://github.com/inrupt/lit-pod>
+   /issues-help
+
