@@ -24,12 +24,9 @@ import {
   UrlString,
   WithResourceInfo,
   unstable_WithAcl,
-  unstable_WithAccessibleAcl,
-  unstable_AclDataset,
   unstable_hasAccessibleAcl,
   unstable_Access,
 } from "../interfaces";
-import { saveLitDatasetAt } from "./litDataset";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceAcl,
@@ -224,71 +221,6 @@ export function hasInboxUrl(
 
 export function getInboxUrl(resource: WithResourceInfo): UrlString | null {
   return resource.resourceInfo.inbox ?? null;
-}
-
-/**
- * Save the ACL for a Resource.
- *
- * @param resource The Resource to which the given ACL applies.
- * @param resourceAcl An [[unstable_AclDataset]] whose ACL Rules will apply to `resource`.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- */
-export async function unstable_saveAclFor(
-  resource: unstable_WithAccessibleAcl,
-  resourceAcl: unstable_AclDataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): Promise<unstable_AclDataset & WithResourceInfo> {
-  const savedDataset = await saveLitDatasetAt(
-    resource.resourceInfo.unstable_aclUrl,
-    resourceAcl,
-    options
-  );
-  const savedAclDataset: unstable_AclDataset &
-    typeof savedDataset = Object.assign(savedDataset, {
-    accessTo: getFetchedFrom(resource),
-  });
-
-  return savedAclDataset;
-}
-
-/**
- * Remove the ACL of a Resource.
- *
- * @param resource The Resource for which you want to delete the Access Control List Resource.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- */
-export async function unstable_deleteAclFor<
-  Resource extends WithResourceInfo & unstable_WithAccessibleAcl
->(
-  resource: Resource,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): Promise<Resource & { acl: { resourceAcl: null } }> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const response = await config.fetch(resource.resourceInfo.unstable_aclUrl, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Deleting the ACL failed: ${response.status} ${response.statusText}.`
-    );
-  }
-
-  const storedResource = Object.assign(resource, {
-    acl: {
-      resourceAcl: null,
-    },
-  });
-
-  return storedResource;
 }
 
 /**
