@@ -32,7 +32,6 @@ import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
 } from "../acl/acl";
-import { ldp } from "../constants";
 
 /** @internal */
 export const internal_defaultFetchOptions = {
@@ -159,14 +158,6 @@ export function internal_parseResourceInfo(
         resourceInfo.fetchedFrom
       ).href;
     }
-    // Set inbox link
-    const inboxLinks = parsedLinks.get("rel", ldp.inbox);
-    if (inboxLinks.length === 1) {
-      resourceInfo.inbox = new URL(
-        inboxLinks[0].uri,
-        resourceInfo.fetchedFrom
-      ).href;
-    }
   }
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
@@ -207,20 +198,6 @@ export function getContentType(resource: WithResourceInfo): string | null {
  */
 export function getFetchedFrom(resource: WithResourceInfo): string {
   return resource.resourceInfo.fetchedFrom;
-}
-
-export function hasInboxUrl(
-  resource: WithResourceInfo
-): resource is WithResourceInfo & {
-  resourceInfo: {
-    inbox: Exclude<WithResourceInfo["resourceInfo"]["inbox"], undefined>;
-  };
-} {
-  return typeof resource.resourceInfo.inbox === "string";
-}
-
-export function getInboxUrl(resource: WithResourceInfo): UrlString | null {
-  return resource.resourceInfo.inbox ?? null;
 }
 
 /**
