@@ -50,6 +50,22 @@ An **Access Control List**. For an overview of how they work in Solid, see
 
 A term with which we typically mean a person, but which could also refer to e.g. bots.
 
+#### Default access
+
+[Access](#access) rules that apply not to the [Container](#container) Resource directly, but recursively to its
+children, their children if applicable, so on and so forth.
+
+#### Fallback ACL
+
+If a Resource does not have [an ACL that applies to it directly](#resource-acl), the fallback ACL is
+the ACL of the Container closest to that Resource that has its own Resource ACL. Only the [default
+access](#default-access) rules in the fallback ACL apply.
+
+#### Resource ACL
+
+The [ACL](#acl) that applies to a given Resource. If none exists, the [fallback ACL](#fallback-acl)
+applies.
+
 ### Data
 
 See also the tutorial [Working with Data](./tutorials/working-with-data.md).
