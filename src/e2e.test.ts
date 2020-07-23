@@ -46,10 +46,6 @@ import {
   unstable_getPublicDefaultAccess,
   unstable_getPublicResourceAccess,
   unstable_fetchFile,
-  unstable_deleteFile,
-  getFetchedFrom,
-  unstable_buildNotification,
-  unstable_sendNotification,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -209,27 +205,5 @@ describe("End-to-end tests", () => {
 
     const data = JSON.parse(await jsonFile.text());
     expect(data).toEqual({ arbitrary: "json data" });
-  });
-
-  it("can find and send a notification to an LDN Inbox", async () => {
-    expect.assertions(1);
-    const as = {
-      Read: "https://www.w3.org/ns/activitystreams#Read",
-    };
-    const notification = unstable_buildNotification(
-      "https://arbitrary.pod/sender#webId",
-      as.Read
-    );
-    // Alternatively, accept a LitDataset instead of the UrlString:
-    const sentNotificationDataset = await unstable_sendNotification(
-      notification,
-      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox-referrer.ttl#referrer-thing"
-    );
-    expect(getFetchedFrom(sentNotificationDataset)).toMatch(
-      "https://lit-e2e-test.inrupt.net/public/inbox-test/inbox/"
-    );
-
-    // Clean up:
-    await unstable_deleteFile(getFetchedFrom(sentNotificationDataset));
   });
 });

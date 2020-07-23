@@ -89,6 +89,18 @@ describe("fetchLitDataset", () => {
     expect(mockFetch.mock.calls).toEqual([["https://some.pod/resource"]]);
   });
 
+  it("can be called with NamedNodes", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await fetchLitDataset(DataFactory.namedNode("https://some.pod/resource"), {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([["https://some.pod/resource"]]);
+  });
+
   it("keeps track of where the LitDataset was fetched from", async () => {
     const mockFetch = jest
       .fn(window.fetch)

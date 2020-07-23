@@ -31,11 +31,7 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import {
-  internal_fetchAcl,
-  internal_fetchResourceInfo,
-  getInboxUrl,
-} from "./resource";
+import { internal_fetchAcl, internal_fetchResourceInfo } from "./resource";
 
 import {
   isContainer,
@@ -455,45 +451,6 @@ describe("fetchResourceInfo", () => {
     );
 
     expect(litDatasetInfo.contentType).toBeUndefined();
-  });
-
-  it("exposes the LDP inbox when known", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: {
-            Link: '<../inbox>; rel="http://www.w3.org/ns/ldp#inbox"',
-          },
-        })
-      )
-    );
-
-    const litDatasetInfo = await internal_fetchResourceInfo(
-      "https://some.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    expect(getInboxUrl({ resourceInfo: litDatasetInfo })).toBe(
-      "https://some.pod/inbox"
-    );
-  });
-
-  it("does not expose an LDP inbox when none is known", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse()));
-
-    const litDatasetInfo = await internal_fetchResourceInfo(
-      "https://some.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    expect(getInboxUrl({ resourceInfo: litDatasetInfo })).toBeNull();
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
