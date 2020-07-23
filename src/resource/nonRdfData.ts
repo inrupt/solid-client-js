@@ -71,7 +71,7 @@ export async function unstable_fetchFile(
   const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
   const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(data, {
-    resourceInfo: resourceInfo,
+    internal_resourceInfo: resourceInfo,
   });
 
   return fileWithResourceInfo;
@@ -83,7 +83,7 @@ export async function unstable_fetchFileWithAcl(
 ): Promise<Blob & WithResourceInfo & unstable_WithAcl> {
   const file = await unstable_fetchFile(input, options);
   const acl = await internal_fetchAcl(file, options);
-  return Object.assign(file, { acl });
+  return Object.assign(file, { internal_acl: acl });
 }
 
 const defaultSaveOptions = {

@@ -204,7 +204,7 @@ export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
     typeof value === "object" &&
     typeof (value as LocalNode).termType === "string" &&
     (value as LocalNode).termType === "BlankNode" &&
-    typeof (value as LocalNode).name === "string"
+    typeof (value as LocalNode).internal_name === "string"
   );
 }
 
@@ -217,7 +217,7 @@ export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
  */
 export function getLocalNode(name: string): LocalNode {
   const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-    name: name,
+    internal_name: name,
   });
   return localNode;
 }
@@ -263,7 +263,7 @@ export function isEqual(
     return node1.equals(node2);
   }
   if (isLocalNode(node1) && isLocalNode(node2)) {
-    return node1.name === node2.name;
+    return node1.internal_name === node2.internal_name;
   }
   if (typeof options.resourceIri === "undefined") {
     // If we don't know what IRI to resolve the LocalNode to,
@@ -310,7 +310,9 @@ export function resolveIriForLocalNode(
   localNode: LocalNode,
   resourceIri: IriString
 ): NamedNode {
-  return DataFactory.namedNode(resolveLocalIri(localNode.name, resourceIri));
+  return DataFactory.namedNode(
+    resolveLocalIri(localNode.internal_name, resourceIri)
+  );
 }
 
 /**

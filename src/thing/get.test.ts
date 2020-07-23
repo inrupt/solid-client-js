@@ -69,7 +69,9 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, {
+    internal_url: "https://arbitrary.vocab/subject",
+  });
 }
 function getMockThingWithLiteralsFor(
   predicate: IriString,
@@ -91,7 +93,9 @@ function getMockThingWithLiteralsFor(
   thing.add(quad1);
   thing.add(quad2);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, {
+    internal_url: "https://arbitrary.vocab/subject",
+  });
 }
 
 describe("getIriOne", () => {
@@ -114,7 +118,9 @@ describe("getIriOne", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
   }
 
   it("returns the IRI value for the given Predicate", () => {
@@ -211,7 +217,9 @@ describe("getIriAll", () => {
     thing.add(quad1);
     thing.add(quad2);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
   }
 
   it("returns the IRI values for the given Predicate", () => {
@@ -982,7 +990,7 @@ describe("getStringWithLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1004,7 +1012,7 @@ describe("getStringWithLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1026,7 +1034,7 @@ describe("getStringWithLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1064,7 +1072,7 @@ describe("getStringWithLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1123,7 +1131,7 @@ describe("getStringWithLocaleOne", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1154,7 +1162,7 @@ describe("getStringsWithLocaleAll", () => {
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1183,7 +1191,7 @@ describe("getStringsWithLocaleAll", () => {
     thing.add(quad1);
     thing.add(quad2);
     const thingWithLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1205,7 +1213,7 @@ describe("getStringsWithLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1243,7 +1251,7 @@ describe("getStringsWithLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithDifferentLocaleStrings = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1302,7 +1310,7 @@ describe("getStringsWithLocaleAll", () => {
     const thing = dataset();
     thing.add(quad);
     const thingWithLocaleString = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1536,7 +1544,7 @@ describe("getLiteralOne", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiteral: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1610,7 +1618,7 @@ describe("getLiteralAll", () => {
     const plainDataset = dataset();
 
     const thingWithoutLiterals: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1662,7 +1670,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    url: "https://arbitrary.vocab/subject",
+    internal_url: "https://arbitrary.vocab/subject",
   });
   return thing;
 }
@@ -1706,7 +1714,7 @@ describe("getNamedNodeOne", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNode: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(
@@ -1758,7 +1766,7 @@ describe("getNamedNodeAll", () => {
     plainDataset.add(quad2);
 
     const thing: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
     return thing;
   }
@@ -1803,7 +1811,7 @@ describe("getNamedNodeAll", () => {
     const plainDataset = dataset();
 
     const thingWithoutNamedNodes: Thing = Object.assign(plainDataset, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     expect(

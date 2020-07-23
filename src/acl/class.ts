@@ -53,10 +53,14 @@ export function unstable_getPublicAccess(
   resourceInfo: unstable_WithAcl & WithResourceInfo
 ): unstable_Access | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getPublicResourceAccess(resourceInfo.acl.resourceAcl);
+    return unstable_getPublicResourceAccess(
+      resourceInfo.internal_acl.resourceAcl
+    );
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getPublicDefaultAccess(resourceInfo.acl.fallbackAcl);
+    return unstable_getPublicDefaultAccess(
+      resourceInfo.internal_acl.fallbackAcl
+    );
   }
   return null;
 }
@@ -79,7 +83,7 @@ export function unstable_getPublicResourceAccess(
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   const publicResourceRules = getClassAclRulesForClass(
     resourceRules,
@@ -107,7 +111,7 @@ export function unstable_getPublicDefaultAccess(
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   const publicResourceRules = getClassAclRulesForClass(
     resourceRules,

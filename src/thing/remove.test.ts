@@ -61,7 +61,9 @@ function getMockThingWithLiteralFor(
   const thing = dataset();
   thing.add(quad);
 
-  return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+  return Object.assign(thing, {
+    internal_url: "https://arbitrary.vocab/subject",
+  });
 }
 function getMockQuadWithNamedNode(
   predicate: IriString,
@@ -83,7 +85,7 @@ function getMockThingWithNamedNode(
   plainDataset.add(quad);
 
   const thing: Thing = Object.assign(plainDataset, {
-    url: "https://arbitrary.vocab/subject",
+    internal_url: "https://arbitrary.vocab/subject",
   });
   return thing;
 }
@@ -143,7 +145,7 @@ describe("removeAll", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -153,7 +155,7 @@ describe("removeAll", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeAll(thingLocal, "https://some.vocab/predicate");
@@ -211,7 +213,9 @@ describe("removeIri", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
   }
 
   it("removes the given IRI value for the given Predicate", () => {
@@ -278,7 +282,7 @@ describe("removeIri", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -288,7 +292,7 @@ describe("removeIri", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeUrl(
@@ -367,7 +371,7 @@ describe("removeIri", () => {
 
   it("resolves ThingPersisteds", () => {
     const thingPersisted: ThingPersisted = Object.assign(dataset(), {
-      url: "https://some.pod/resource#thing",
+      internal_url: "https://some.pod/resource#thing",
     });
     const quadWithThingPersistedIri = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.vocab/subject"),
@@ -379,7 +383,7 @@ describe("removeIri", () => {
     const thingWithThingPersistedIri: Thing = Object.assign(
       datasetWithThingPersistedIri,
       {
-        url: "https://arbitrary.vocab/subject",
+        internal_url: "https://arbitrary.vocab/subject",
       }
     );
 
@@ -446,7 +450,7 @@ describe("removeBoolean", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -459,7 +463,7 @@ describe("removeBoolean", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeBoolean(
@@ -596,7 +600,7 @@ describe("removeDatetime", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -609,7 +613,7 @@ describe("removeDatetime", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeDatetime(
@@ -749,7 +753,7 @@ describe("removeDecimal", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -762,7 +766,7 @@ describe("removeDecimal", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeDecimal(
@@ -899,7 +903,7 @@ describe("removeInteger", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -912,7 +916,7 @@ describe("removeInteger", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeInteger(
@@ -1022,7 +1026,9 @@ describe("removeStringWithLocale", () => {
     const thing = dataset();
     thing.add(quad);
 
-    return Object.assign(thing, { url: "https://arbitrary.vocab/subject" });
+    return Object.assign(thing, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
   }
   it("removes the given localised string for the given Predicate", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
@@ -1079,7 +1085,7 @@ describe("removeStringWithLocale", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -1089,7 +1095,7 @@ describe("removeStringWithLocale", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeStringWithLocale(
@@ -1266,7 +1272,7 @@ describe("removeStringNoLocale", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -1279,7 +1285,7 @@ describe("removeStringNoLocale", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeStringNoLocale(
@@ -1393,7 +1399,7 @@ describe("removeLiteral", () => {
     thing.add(quad);
 
     const thingWithStringWithLocale = Object.assign(thing, {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     const updatedThing = removeLiteral(
@@ -1523,7 +1529,7 @@ describe("removeLiteral", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -1536,7 +1542,7 @@ describe("removeLiteral", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeLiteral(
@@ -1682,7 +1688,7 @@ describe("removeNamedNode", () => {
   it("also works on ThingLocals", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const quadWithLocalSubject = DataFactory.quad(
       localSubject,
@@ -1692,7 +1698,7 @@ describe("removeNamedNode", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = removeNamedNode(

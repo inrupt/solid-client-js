@@ -58,7 +58,7 @@ describe("fetchAcl", () => {
     };
 
     const mockResourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
@@ -77,7 +77,7 @@ describe("fetchAcl", () => {
     const mockFetch = jest.fn(window.fetch);
 
     const mockResourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         isLitDataset: true,
       },
@@ -109,7 +109,7 @@ describe("fetchAcl", () => {
     });
 
     const mockResourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
@@ -122,7 +122,7 @@ describe("fetchAcl", () => {
 
     expect(fetchedAcl).not.toBeNull();
     expect(fetchedAcl.fallbackAcl).toBeNull();
-    expect(fetchedAcl.resourceAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.resourceAcl?.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -153,7 +153,7 @@ describe("fetchAcl", () => {
     });
 
     const mockResourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         isLitDataset: true,
         unstable_aclUrl: "https://some.pod/resource.acl",
@@ -165,7 +165,7 @@ describe("fetchAcl", () => {
     });
 
     expect(fetchedAcl.resourceAcl).toBeNull();
-    expect(fetchedAcl.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.fallbackAcl?.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/.acl"
     );
   });
@@ -193,15 +193,17 @@ describe("fetchResourceInfoWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/resource.acl"
-    );
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
+    expect(
+      fetchedLitDataset.internal_acl?.resourceAcl?.internal_resourceInfo
+        .fetchedFrom
+    ).toBe("https://some.pod/resource.acl");
+    expect(
+      fetchedLitDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
+        .fetchedFrom
+    ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
@@ -249,8 +251,8 @@ describe("fetchResourceInfoWithAcl", () => {
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
+    expect(fetchedLitDataset.internal_acl.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.internal_acl.fallbackAcl).toBeNull();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -636,7 +638,7 @@ describe("fetchResourceInfo", () => {
 describe("isContainer", () => {
   it("should recognise a Container", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/",
         isLitDataset: true,
       },
@@ -647,7 +649,7 @@ describe("isContainer", () => {
 
   it("should recognise non-Containers", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/not-a-container",
         isLitDataset: true,
       },
@@ -660,7 +662,7 @@ describe("isContainer", () => {
 describe("isLitDataset", () => {
   it("should recognise a LitDataset", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/",
         isLitDataset: true,
       },
@@ -671,7 +673,7 @@ describe("isLitDataset", () => {
 
   it("should recognise non-RDF Resources", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/not-a-litdataset.png",
         isLitDataset: false,
       },
@@ -684,7 +686,7 @@ describe("isLitDataset", () => {
 describe("getContentType", () => {
   it("should return the Content Type if known", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
         isLitDataset: true,
         contentType: "multipart/form-data; boundary=something",
@@ -698,7 +700,7 @@ describe("getContentType", () => {
 
   it("should return null if no Content Type is known", () => {
     const resourceInfo: WithResourceInfo = {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
         isLitDataset: true,
       },

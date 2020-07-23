@@ -2,6 +2,11 @@
 
 exports[`fetchLitDataset returns a LitDataset representing the fetched Turtle 1`] = `
 DatasetCore {
+  "internal_resourceInfo": Object {
+    "contentType": "text/plain;charset=UTF-8",
+    "fetchedFrom": "https://arbitrary.pod/resource",
+    "isLitDataset": false,
+  },
   "quads": Set {
     Object {
       "graph": Object {
@@ -98,11 +103,6 @@ DatasetCore {
         "value": "https://arbitrary.pod/resource#me",
       },
     },
-  },
-  "resourceInfo": Object {
-    "contentType": "text/plain;charset=UTF-8",
-    "fetchedFrom": "https://arbitrary.pod/resource",
-    "isLitDataset": false,
   },
 }
 `;
