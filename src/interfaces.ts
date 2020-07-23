@@ -47,15 +47,15 @@ export type LitDataset = DatasetCore;
  * Graph, from a single Resource.
  */
 export type Thing = DatasetCore &
-  ({ url: UrlString } | { localSubject: LocalNode });
+  ({ internal_url: UrlString } | { internal_localSubject: LocalNode });
 /**
  * A [[Thing]] for which we know what the full Subject URL is.
  */
-export type ThingPersisted = Thing & { url: UrlString };
+export type ThingPersisted = Thing & { internal_url: UrlString };
 /**
  * A [[Thing]] whose full Subject URL will be determined when it is persisted.
  */
-export type ThingLocal = Thing & { localSubject: LocalNode };
+export type ThingLocal = Thing & { internal_localSubject: LocalNode };
 /**
  * Represents the BlankNode that will be initialised to a NamedNode when persisted.
  *
@@ -64,7 +64,7 @@ export type ThingLocal = Thing & { localSubject: LocalNode };
  *
  * @internal Utility method; library users should not need to interact with LocalNodes directly.
  */
-export type LocalNode = BlankNode & { name: string };
+export type LocalNode = BlankNode & { internal_name: string };
 
 /**
  * A [[LitDataset]] containing Access Control rules for another LitDataset.
@@ -73,7 +73,7 @@ export type LocalNode = BlankNode & { name: string };
  * function is still experimental and can change in a non-major release.
  */
 export type unstable_AclDataset = LitDataset &
-  WithResourceInfo & { accessTo: UrlString };
+  WithResourceInfo & { internal_accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
@@ -110,7 +110,7 @@ type unstable_WacAllow = {
  * [[LitDataset]]s fetched by lit-pod include this metadata describing its relation to a Pod Resource.
  */
 export type WithResourceInfo = {
-  resourceInfo: {
+  internal_resourceInfo: {
     fetchedFrom: UrlString;
     isLitDataset: boolean;
     contentType?: string;
@@ -138,7 +138,7 @@ export type WithResourceInfo = {
  * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
 export type WithChangeLog = {
-  changeLog: {
+  internal_changeLog: {
     additions: Quad[];
     deletions: Quad[];
   };
@@ -148,7 +148,7 @@ export type WithChangeLog = {
  * @hidden Developers should use [[unstable_getResourceAcl]] and [[unstable_getFallbackAcl]] to access these.
  */
 export type unstable_WithAcl = {
-  acl: {
+  internal_acl: {
     resourceAcl: unstable_AclDataset | null;
     fallbackAcl: unstable_AclDataset | null;
   };
@@ -160,8 +160,8 @@ export type unstable_WithAcl = {
 export type unstable_WithResourceAcl<
   Resource extends unstable_WithAcl = unstable_WithAcl
 > = Resource & {
-  acl: {
-    resourceAcl: Exclude<unstable_WithAcl["acl"]["resourceAcl"], null>;
+  internal_acl: {
+    resourceAcl: Exclude<unstable_WithAcl["internal_acl"]["resourceAcl"], null>;
   };
 };
 
@@ -171,8 +171,8 @@ export type unstable_WithResourceAcl<
 export type unstable_WithFallbackAcl<
   Resource extends unstable_WithAcl = unstable_WithAcl
 > = Resource & {
-  acl: {
-    fallbackAcl: Exclude<unstable_WithAcl["acl"]["fallbackAcl"], null>;
+  internal_acl: {
+    fallbackAcl: Exclude<unstable_WithAcl["internal_acl"]["fallbackAcl"], null>;
   };
 };
 
@@ -191,7 +191,7 @@ export function hasResourceInfo<T extends LitDataset>(
   dataset: T
 ): dataset is T & WithResourceInfo {
   const potentialResourceInfo = dataset as T & WithResourceInfo;
-  return typeof potentialResourceInfo.resourceInfo === "object";
+  return typeof potentialResourceInfo.internal_resourceInfo === "object";
 }
 
 /** @internal */
@@ -200,9 +200,9 @@ export function hasChangelog<T extends LitDataset>(
 ): dataset is T & WithChangeLog {
   const potentialChangeLog = dataset as T & WithChangeLog;
   return (
-    typeof potentialChangeLog.changeLog === "object" &&
-    Array.isArray(potentialChangeLog.changeLog.additions) &&
-    Array.isArray(potentialChangeLog.changeLog.deletions)
+    typeof potentialChangeLog.internal_changeLog === "object" &&
+    Array.isArray(potentialChangeLog.internal_changeLog.additions) &&
+    Array.isArray(potentialChangeLog.internal_changeLog.deletions)
   );
 }
 
@@ -218,7 +218,7 @@ export function unstable_hasAcl<T extends object>(
   dataset: T
 ): dataset is T & unstable_WithAcl {
   const potentialAcl = dataset as T & unstable_WithAcl;
-  return typeof potentialAcl.acl === "object";
+  return typeof potentialAcl.internal_acl === "object";
 }
 
 /**
@@ -227,9 +227,9 @@ export function unstable_hasAcl<T extends object>(
 export type unstable_WithAccessibleAcl<
   Resource extends WithResourceInfo = WithResourceInfo
 > = Resource & {
-  resourceInfo: {
+  internal_resourceInfo: {
     unstable_aclUrl: Exclude<
-      WithResourceInfo["resourceInfo"]["unstable_aclUrl"],
+      WithResourceInfo["internal_resourceInfo"]["unstable_aclUrl"],
       undefined
     >;
   };
@@ -248,7 +248,7 @@ export type unstable_WithAccessibleAcl<
 export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
 ): dataset is unstable_WithAccessibleAcl<Resource> {
-  return typeof dataset.resourceInfo.unstable_aclUrl === "string";
+  return typeof dataset.internal_resourceInfo.unstable_aclUrl === "string";
 }
 
 /**

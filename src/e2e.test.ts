@@ -144,7 +144,7 @@ describe("End-to-end tests", () => {
     const fallbackAclForDatasetWithoutAcl = unstable_getFallbackAcl(
       datasetWithoutAcl
     );
-    expect(fallbackAclForDatasetWithoutAcl?.accessTo).toBe(
+    expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
     );
 

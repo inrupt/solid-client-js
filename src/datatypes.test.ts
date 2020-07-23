@@ -164,7 +164,9 @@ describe("isLiteral", () => {
 describe("isLocalNode", () => {
   it("recognises a LocalNode", () => {
     expect(
-      isLocalNode(Object.assign(DataFactory.blankNode(), { name: "localNode" }))
+      isLocalNode(
+        Object.assign(DataFactory.blankNode(), { internal_name: "localNode" })
+      )
     ).toBe(true);
   });
 
@@ -183,7 +185,7 @@ describe("getLocalNode", () => {
   it("constructs a proper LocalNode", () => {
     const localNode = getLocalNode("some-name");
     expect(localNode.termType).toBe("BlankNode");
-    expect(localNode.name).toBe("some-name");
+    expect(localNode.internal_name).toBe("some-name");
   });
 });
 
@@ -210,10 +212,10 @@ describe("asNamedNode", () => {
 describe("isEqual", () => {
   it("recognises two equal LocalNodes without needing a Resource IRI", () => {
     const localNode1: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     const localNode2: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     expect(isEqual(localNode1, localNode2)).toBe(true);
   });
@@ -224,7 +226,7 @@ describe("isEqual", () => {
   });
   it("recognises the equality of a LocalNode with the same resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     const namedNode = DataFactory.namedNode(
       "https://some.pod/resource#some-name"
@@ -242,7 +244,7 @@ describe("isEqual", () => {
   });
   it("recognises the inequality of a LocalNode with a different resource IRI to a NamedNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     const namedNode = DataFactory.namedNode(
       "https://some.pod/resource#some-name"
@@ -260,7 +262,7 @@ describe("isEqual", () => {
   });
   it("does not mark a LocalNode as equal to a NamedNode if no resource IRI is known", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     const namedNode = DataFactory.namedNode(
       "https://some.pod/resource#some-name"
@@ -273,10 +275,10 @@ describe("isEqual", () => {
 describe("resolveIriForLocalNodes", () => {
   it("properly resolves the IRI for the Subject and the Object", () => {
     const localNodeSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-subject",
+      internal_name: "some-subject",
     });
     const localNodeObject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-object",
+      internal_name: "some-object",
     });
     const quad = DataFactory.quad(
       localNodeSubject,
@@ -316,7 +318,7 @@ describe("resolveIriForLocalNodes", () => {
 describe("resolveIriForLocalNode", () => {
   it("properly resolves the IRI for a LocalNode", () => {
     const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
     expect(
       resolveIriForLocalNode(localNode, "https://some.pod/resource").value

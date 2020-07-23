@@ -109,7 +109,7 @@ function addAclRuleQuads(
     );
   }
 
-  return Object.assign(aclDataset, { accessTo: resource });
+  return Object.assign(aclDataset, { internal_accessTo: resource });
 }
 
 function addAclDatasetToLitDataset(
@@ -117,25 +117,25 @@ function addAclDatasetToLitDataset(
   aclDataset: unstable_AclDataset,
   type: "resource" | "fallback"
 ): LitDataset & WithResourceInfo & unstable_WithAcl {
-  const acl: unstable_WithAcl["acl"] = {
+  const acl: unstable_WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
+    ...(((litDataset as any) as unstable_WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.resourceInfo.unstable_aclUrl =
-      aclDataset.resourceInfo.fetchedFrom;
-    aclDataset.accessTo = litDataset.resourceInfo.fetchedFrom;
+    litDataset.internal_resourceInfo.unstable_aclUrl =
+      aclDataset.internal_resourceInfo.fetchedFrom;
+    aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
   }
-  return Object.assign(litDataset, { acl: acl });
+  return Object.assign(litDataset, { internal_acl: acl });
 }
 
 function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
-    resourceInfo: {
+    internal_resourceInfo: {
       fetchedFrom: fetchedFrom,
       isLitDataset: true,
     },
@@ -196,7 +196,7 @@ describe("getPublicAccess", () => {
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: unstable_WithAcl = {
-      acl: { fallbackAcl: null, resourceAcl: null },
+      internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
       litDataset,
