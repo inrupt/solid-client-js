@@ -16,16 +16,16 @@ Hence, all functions are marked as `unstable_` and may break in future non-major
 
 ## Access Control in Solid
 
-In Solid, who has what access to a [Resource](../glossary#resource) is defined in an Access Control
-List ([ACL](../glossary#acl)). These may be defined in separate Resources, so if you want to be able
+In Solid, who has what access to a [Resource](../glossary.md#resource) is defined in an Access Control
+List ([ACL](../glossary.md#acl)). These may be defined in separate Resources, so if you want to be able
 to access the ACLs for a Resource in addition to the Resource itself, you'll have to explicitly
 fetch them using
-[`unstable_fetchLitDatasetWithAcl`](../api/modules/_litdataset_#unstable_fetchlitdatasetwithacl) —
+[`unstable_fetchLitDatasetWithAcl`](../api/modules/_litdataset_.md#unstable_fetchlitdatasetwithacl) —
 but be aware that this may result in several extra HTTP requests being sent.
 
-The possible [Access Modes](../glossary#access-modes) that can be granted are
-[Read](../glossary#read-access), [Append](../glossary#append-access),
-[Write](../glossary#write-access) and [Control](../glossary#control-access),
+The possible [Access Modes](../glossary.md#access-modes) that can be granted are
+[Read](../glossary.md#read-access), [Append](../glossary.md#append-access),
+[Write](../glossary.md#write-access) and [Control](../glossary.md#control-access),
 
 :::note A note about access to ACLs
 
@@ -34,14 +34,14 @@ A Resource's or Container's ACL is only accessible to your app if the following 
 1. The authenticated user must have authorised your app to manage access on their behalf. At the
    time of writing, the most common Solid server has that permission unchecked by default, i.e.
    users will need to have actively given your app this permission.
-2. The authenticated user should have [Control access](../glossary#control-access) to the
+2. The authenticated user should have [Control access](../glossary.md#control-access) to the
    applicable Resource or Container.
 
 :::
 
 ## Finding out who has access
 
-Access can be granted to individual [agents](../glossary#agent), to groups, or even to everyone.
+Access can be granted to individual [agents](../glossary.md#agent), to groups, or even to everyone.
 We currently only support reading what access has been granted to individual agents specifically.
 
 ### Fetching access information
@@ -52,9 +52,9 @@ and the ACL containing the associated access information.
 
 ### Reading public access
 
-Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access
+Given a [LitDataset](../glossary.md#litdataset) that has an ACL attached, you can check what access
 everyone has, regardless of whether they are authenticated or not. You can do so using
-[`unstable_getPublicAccess`](../api/modules/_acl_agentclass_#unstable_getpublicaccess):
+[`unstable_getPublicAccess`](../api/modules/_acl_agentclass_.md#unstable_getpublicaccess):
 
 ```typescript
 import {
@@ -75,11 +75,11 @@ const publicAccess = unstable_getPublicAccess(litDatasetWithAcl);
 
 ### Reading agent access
 
-Given a [LitDataset](../glossary#litdataset) that has an ACL attached, you can check what access a
+Given a [LitDataset](../glossary.md#litdataset) that has an ACL attached, you can check what access a
 specific agent has been granted, or get all agents for which access has been explicitly granted.
 
 To do the former, use
-[`unstable_getAgentAccessOne`](../api/modules/_acl_agent_#unstable_getagentaccessone):
+[`unstable_getAgentAccessOne`](../api/modules/_acl_agent_.md#unstable_getagentaccessone):
 
 ```typescript
 import {
@@ -99,7 +99,7 @@ const agentAccess = unstable_getAgentAccessOne(litDatasetWithAcl, webId);
 ```
 
 To get all agents to whom access was granted, use
-[`unstable_getAgentAccessAll`](../api/modules/_acl_agent_#unstable_getagentaccessall):
+[`unstable_getAgentAccessAll`](../api/modules/_acl_agent_.md#unstable_getagentaccessall):
 
 ```typescript
 import {
@@ -132,7 +132,7 @@ This section is still being written.
 ### Two types of ACL
 
 A Resource _can_ have an ACL that applies to just that Resource. However, if no such ACL exists, the
-Pod server will fall back to the ACL of its [Container](../glossary#container) — or its Container's
+Pod server will fall back to the ACL of its [Container](../glossary.md#container) — or its Container's
 Container's, or its Container's Container's Container's, etc.
 
 Thus, an ACL can control both access to a specific Resource or Container directly, and provide
