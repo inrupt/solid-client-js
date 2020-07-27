@@ -20,13 +20,13 @@ npm install @solid/lit-pod
 
 If [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
 lit-pod will automatically use it to make authenticated requests.
-If no such authenticated fetcher is provided, only public [Resources](./glossary#resource) can be accessed.
+If no such authenticated fetcher is provided, only public [Resources](./glossary.md#resource) can be accessed.
 
 ## Quick start
 
 :::info
 
-If you are looking for a more thorough introduction, you can work your way through the full [Guide](./guide/installation).
+If you are looking for a more thorough introduction, you can work your way through the full [Guide](./guide/installation.md).
 
 :::
 
@@ -53,7 +53,7 @@ const profile = getThingOne(
 const name = getStringNoLocaleOne(profileResource, foaf.name);
 ```
 
-For more details, see [Working with Data](./tutorials/working-with-data#reading-data).
+For more details, see [Working with Data](./tutorials/working-with-data.md#reading-data).
 
 ### Writing data
 
@@ -74,4 +74,4 @@ await saveLitDatasetAt(
 );
 ```
 
-For more details, see [Working with Data](./tutorials/working-with-data#writing-data).
+For more details, see [Working with Data](./tutorials/working-with-data.md#writing-data).

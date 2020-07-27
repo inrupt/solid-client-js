@@ -4,10 +4,10 @@ title: Working with Files
 sidebar_label: Working with Files
 ---
 
-Even if the core Solid data model is **structured** data (see [Working with data](./working-with-data)), a Solid Pod
+Even if the core Solid data model is **structured** data (see [Working with data](./working-with-data.md)), a Solid Pod
 can also act as a regular general-purpose data store. Besides your profile document, your friend list and the likes, your
-Pod can also store your photos, PDFs and any other type of file. Note that the [access restrictions](./managing-access)
-apply to files the same way they apply to any other [Resource](../glossary#resource).
+Pod can also store your photos, PDFs and any other type of file. Note that the [access restrictions](./managing-access.md)
+apply to files the same way they apply to any other [Resource](../glossary.md#resource).
 
 Like anything else in your Pod, each file is a resource with a distinct URL, which may or may not contain a hint
 such as a `.jpg` extension for a photo. You'll find that the functions available to read and write files to/from
@@ -62,7 +62,7 @@ if (response.ok) {
 There are two approaches to writing files:
 
 1. you know exactly at which URL your file should be saved (potentially overwriting any data that sat there previously)
-2. you know what [Container](../glossary#container) should be the parent of your file, like saving it into a folder.
+2. you know what [Container](../glossary.md#container) should be the parent of your file, like saving it into a folder.
 
 ### Writing a file directly at a URL
 

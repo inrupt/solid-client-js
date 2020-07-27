@@ -8,11 +8,11 @@ Now that you know the general principles behind lit-pod, it's time to do some ac
 
 ## Learn about common tasks
 
-By far the most common task you will do with lit-pod is reading and writing data, so a recommended starting point is the tutorial [Working with Data](../tutorials/working-with-data).
+By far the most common task you will do with lit-pod is reading and writing data, so a recommended starting point is the tutorial [Working with Data](../tutorials/working-with-data.md).
 
 ## Read the API documentation
 
-After you have a high-level overview of how to work with lit-pod, but want to know what functionality is available or what parameters you need to pass to a given function, the [API documentation](../api/index) is a good place to go.
+After you have a high-level overview of how to work with lit-pod, but want to know what functionality is available or what parameters you need to pass to a given function, the [API documentation](../api/index.md) is a good place to go.
 
 ## Connect with the community
 

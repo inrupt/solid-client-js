@@ -6,12 +6,12 @@ sidebar_label: Working with Data
 
 The two most important data structures when working with data in lit-pod are the `Thing` and the `LitDataset`:
 
-- A [**`Thing`**](../api/modules/_interfaces_#thing) is the most basic store of data about a particular subject.
+- A [**`Thing`**](../api/modules/_interfaces_.md#thing) is the most basic store of data about a particular subject.
   Each Thing has its own URL to identify it. For example, the URL of the Thing about yours truly is:
 
   `https://vincentt.inrupt.net/profile/card#me`.
 
-- A [**`LitDataset`**](../api/modules/_interfaces_#litdataset) is a set of Things.
+- A [**`LitDataset`**](../api/modules/_interfaces_.md#litdataset) is a set of Things.
   It is primarily useful to be able to store multiple Things at the same location.
 
 Typically, all the Things in a LitDataset will have URLs relative to the location of that LitDataset.
@@ -26,7 +26,7 @@ I could even add a Thing with the URL of the LitDataset itself, e.g. to keep a l
 :::note A note about interoperability
 
 You might be wondering why we're not working with plain Javascript objects, storing them as JSON.
-And while [you _can_ do that](./working-with-files), there is one primary advantage of our approach:
+And while [you _can_ do that](./working-with-files.md), there is one primary advantage of our approach:
 **interoperability**.
 
 By giving every Thing its own URL, it can be combined with other data by linking to it. For example,
@@ -48,8 +48,8 @@ Let's go over those steps one by one.
 ### 1. Fetch a LitDataset
 
 To fetch a LitDataset, pass its URL to
-[`fetchLitDataset`](../api/modules/_litdataset_#fetchlitdataset). Usually, the first LitDataset to
-fetch will be the one at the authenticated user's [WebID](../glossary#webid), which will contain
+[`fetchLitDataset`](../api/modules/_litdataset_.md#fetchlitdataset). Usually, the first LitDataset to
+fetch will be the one at the authenticated user's [WebID](../glossary.md#webid), which will contain
 links to other potentially relevant LitDatasets.
 
 ```typescript
@@ -64,8 +64,8 @@ const litDataset = await fetchLitDataset(
 
 Given a LitDataset, you can either extract a single Thing for which you know its URL (e.g. because
 you found that URL on another Thing) using
-[`getThingOne`](../api/modules/_thing_#getthingone), or simply take all the
-Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_#getthingall)
+[`getThingOne`](../api/modules/_thing_.md#getthingone), or simply take all the
+Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_.md#getthingall)
 
 ```typescript
 import { getThingOne } from "@solid/lit-pod";
@@ -138,12 +138,12 @@ const acquaintances = getUrlAll(thing, "http://xmlns.com/foaf/0.1/knows");
 // => an array of URLs, presumably pointing to the Things describing acquaintances.
 ```
 
-For an overview of all data access functions, see [`thing/get`](../api/modules/_thing_get_).
+For an overview of all data access functions, see [`thing/get`](../api/modules/_thing_get_.md).
 
 ### Reading data - full example
 
 Putting it all together, here's an example of fetching the nickname of someone with a known
-[WebID](../glossary#webid) (`https://vincentt.inrupt.net/profile/card#me`):
+[WebID](../glossary.md#webid) (`https://vincentt.inrupt.net/profile/card#me`):
 
 ```typescript
 import {
@@ -210,8 +210,8 @@ let updatedThing = addStringNoLocale(
 Alternatively, if we want to replace existing values, we use the `set*` functions.
 Likewise, for removing data there are `remove*` functions.
 See which are available for which data type at
-[`thing/add`](../api/modules/_thing_add_), [`thing/set`](../api/modules/_thing_set_) and
-[`thing/remove`](../api/modules/_thing_remove_).
+[`thing/add`](../api/modules/_thing_add_.md), [`thing/set`](../api/modules/_thing_set_.md) and
+[`thing/remove`](../api/modules/_thing_remove_.md).
 
 :::tip A heads-up about immutability
 
@@ -242,7 +242,7 @@ const updatedDataset = setThing(litDataset, updatedThing);
 ### 3. Send the LitDataset to a Pod
 
 To save the updated LitDataset to a Pod, use
-[`saveLitDatasetAt`](../api/modules/_litdataset_#savelitdatasetat).
+[`saveLitDatasetAt`](../api/modules/_litdataset_.md#savelitdatasetat).
 If the given location already contains data, that will be updated to match the given LitDataset.
 
 ```typescript
@@ -297,6 +297,6 @@ Writing to a Pod is subject to access restriction:
 if you try to run this _exact_ example it will fail,
 because not everyone can write data into `https://vincentt.inrupt.net/profile/card`.
 It is, after all, my personal profile!
-For more details about access management, see [Managing Access](./managing-access).
+For more details about access management, see [Managing Access](./managing-access.md).
 
 :::
