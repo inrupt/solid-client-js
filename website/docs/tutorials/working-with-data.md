@@ -49,7 +49,7 @@ Let's go over those steps one by one.
 
 To fetch a LitDataset, pass its URL to
 [`fetchLitDataset`](../api/modules/_resource_litdataset_.md#fetchlitdataset). Usually, the first LitDataset to
-fetch will be the one at the authenticated user's [WebID](../glossary.md#webid), which will contain
+fetch will be the one at the authenticated user's [WebID](../glossary.mdx#webid), which will contain
 links to other potentially relevant LitDatasets.
 
 ```typescript
@@ -143,7 +143,7 @@ For an overview of all data access functions, see [`thing/get`](../api/modules/_
 ### Reading data - full example
 
 Putting it all together, here's an example of fetching the nickname of someone with a known
-[WebID](../glossary.md#webid) (`https://vincentt.inrupt.net/profile/card#me`):
+[WebID](../glossary.mdx#webid) (`https://vincentt.inrupt.net/profile/card#me`):
 
 ```typescript
 import {

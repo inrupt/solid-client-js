@@ -20,7 +20,7 @@ npm install @solid/lit-pod
 
 If [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
 lit-pod will automatically use it to make authenticated requests.
-If no such authenticated fetcher is provided, only public [Resources](./glossary.md#resource) can be accessed.
+If no such authenticated fetcher is provided, only public [Resources](./glossary.mdx#resource) can be accessed.
 
 ## Quick start
 
