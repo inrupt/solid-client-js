@@ -38,7 +38,7 @@ import {
 
 function getMockEmptyThing(iri = "https://arbitrary.vocab/subject") {
   const thing = dataset();
-  return Object.assign(thing, { url: iri });
+  return Object.assign(thing, { internal_url: iri });
 }
 function literalOfType(
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime",
@@ -140,11 +140,11 @@ describe("addIri", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localObject" }
+      { internal_name: "localObject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addUrl(
@@ -161,7 +161,9 @@ describe("addIri", () => {
         predicate: "https://some.vocab/predicate",
       })
     ).toBe(true);
-    expect((updatedQuads[0].object as LocalNode).name).toBe("localObject");
+    expect((updatedQuads[0].object as LocalNode).internal_name).toBe(
+      "localObject"
+    );
   });
 
   it("accepts Predicates as Named Nodes", () => {
@@ -200,11 +202,11 @@ describe("addIri", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addUrl(
@@ -221,7 +223,9 @@ describe("addIri", () => {
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -352,11 +356,11 @@ describe("addBoolean", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addBoolean(
@@ -373,7 +377,9 @@ describe("addBoolean", () => {
         object: literalOfType("boolean", "1"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -502,11 +508,11 @@ describe("addDatetime", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addDatetime(
@@ -523,7 +529,9 @@ describe("addDatetime", () => {
         object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -652,11 +660,11 @@ describe("addDecimal", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addDecimal(
@@ -673,7 +681,9 @@ describe("addDecimal", () => {
         object: literalOfType("decimal", "13.37"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -798,11 +808,11 @@ describe("addInteger", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addInteger(
@@ -819,7 +829,9 @@ describe("addInteger", () => {
         object: literalOfType("integer", "42"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -943,11 +955,11 @@ describe("addStringWithLocale", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addStringWithLocale(
@@ -965,7 +977,9 @@ describe("addStringWithLocale", () => {
         object: DataFactory.literal("Some string", "en-gb"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -1096,11 +1110,11 @@ describe("addStringNoLocale", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addStringNoLocale(
@@ -1117,7 +1131,9 @@ describe("addStringNoLocale", () => {
         object: literalOfType("string", "Some string value"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -1246,11 +1262,11 @@ describe("addNamedNode", () => {
   it("also works on ThingLocals", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const datasetWithThingLocal = dataset();
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addNamedNode(
@@ -1267,7 +1283,9 @@ describe("addNamedNode", () => {
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {
@@ -1399,10 +1417,10 @@ describe("addLiteral", () => {
     const datasetWithThingLocal = dataset();
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
 
     const updatedThing = addLiteral(
@@ -1419,7 +1437,9 @@ describe("addLiteral", () => {
         object: DataFactory.literal("Some string value"),
       })
     ).toBe(true);
-    expect((updatedQuads[0].subject as LocalNode).name).toBe("localSubject");
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
   });
 
   it("preserves existing values for the same Predicate", () => {

@@ -46,7 +46,7 @@ module.exports = {
     {
       type: "category",
       label: "Other",
-      items: ["glossary"],
+      items: ["glossary", "faq"],
     },
   ],
 };

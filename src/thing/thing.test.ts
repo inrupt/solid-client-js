@@ -73,15 +73,19 @@ describe("createThing", () => {
     const thing1: ThingLocal = createThing();
     const thing2: ThingLocal = createThing();
 
-    expect(typeof thing1.localSubject.name).toBe("string");
-    expect(thing1.localSubject.name.length).toBeGreaterThan(0);
-    expect(thing1.localSubject.name).not.toEqual(thing2.localSubject.name);
+    expect(typeof thing1.internal_localSubject.internal_name).toBe("string");
+    expect(thing1.internal_localSubject.internal_name.length).toBeGreaterThan(
+      0
+    );
+    expect(thing1.internal_localSubject.internal_name).not.toEqual(
+      thing2.internal_localSubject.internal_name
+    );
   });
 
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.localSubject.name).toBe("some-name");
+    expect(thing.internal_localSubject.internal_name).toBe("some-name");
   });
 
   it("uses the given IRI, if any", () => {
@@ -89,7 +93,7 @@ describe("createThing", () => {
       url: "https://some.pod/resource#thing",
     });
 
-    expect(thing.url).toBe("https://some.pod/resource#thing");
+    expect(thing.internal_url).toBe("https://some.pod/resource#thing");
   });
 
   it("throws an error if the given URL is invalid", () => {
@@ -131,7 +135,7 @@ describe("getThingOne", () => {
     const quadWithLocalSubject = getMockQuad();
     const localSubject = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     quadWithLocalSubject.subject = localSubject;
     const datasetWithThingLocal = dataset();
@@ -366,7 +370,7 @@ describe("getThingAll", () => {
     const quadWithLocalSubject = getMockQuad();
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     quadWithLocalSubject.subject = localSubject;
     const datasetWithMultipleThings = dataset();
@@ -400,7 +404,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -426,14 +430,14 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithMultipleThings, newThing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([newThingQuad]);
-    expect(updatedDataset.changeLog.deletions).toEqual([oldThingQuad]);
+    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([oldThingQuad]);
   });
 
   it("reconciles deletions and additions in the change log", () => {
@@ -459,7 +463,7 @@ describe("setThing", () => {
     const datasetWithExistingChangeLog = Object.assign(
       datasetWithMultipleThings,
       {
-        changeLog: {
+        internal_changeLog: {
           additions: [addedQuad],
           deletions: [deletedQuad],
         },
@@ -471,15 +475,15 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
     newThing.add(deletedQuad);
 
     const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([newThingQuad]);
-    expect(updatedDataset.changeLog.deletions).toEqual([oldThingQuad]);
+    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([oldThingQuad]);
   });
 
   it("preserves existing change logs", () => {
@@ -498,7 +502,7 @@ describe("setThing", () => {
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
-      changeLog: {
+      internal_changeLog: {
         additions: [existingAddition],
         deletions: [existingDeletion],
       },
@@ -511,17 +515,17 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
     const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([
+    expect(updatedDataset.internal_changeLog.additions).toEqual([
       existingAddition,
       newThingQuad,
     ]);
-    expect(updatedDataset.changeLog.deletions).toEqual([
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([
       existingDeletion,
       oldThingQuad,
     ]);
@@ -543,7 +547,7 @@ describe("setThing", () => {
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
-      changeLog: {
+      internal_changeLog: {
         additions: [existingAddition],
         deletions: [existingDeletion],
       },
@@ -556,7 +560,7 @@ describe("setThing", () => {
       object: "https://some.vocab/new-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     newThing.add(newThingQuad);
 
@@ -566,10 +570,10 @@ describe("setThing", () => {
       oldThingQuad,
       otherQuad,
     ]);
-    expect(datasetWithExistingChangeLog.changeLog.additions).toEqual([
+    expect(datasetWithExistingChangeLog.internal_changeLog.additions).toEqual([
       existingAddition,
     ]);
-    expect(datasetWithExistingChangeLog.changeLog.deletions).toEqual([
+    expect(datasetWithExistingChangeLog.internal_changeLog.deletions).toEqual([
       existingDeletion,
     ]);
   });
@@ -584,7 +588,7 @@ describe("setThing", () => {
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     const updatedDataset = setThing(datasetWithUnexpectedQuad, thing);
@@ -595,7 +599,7 @@ describe("setThing", () => {
   it("can recognise LocalNodes", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -614,7 +618,7 @@ describe("setThing", () => {
       DataFactory.namedNode("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
     newThing.add(newThingQuad);
 
@@ -631,7 +635,7 @@ describe("setThing", () => {
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: {
+        internal_resourceInfo: {
           fetchedFrom: "https://some.pod/resource",
           isLitDataset: true,
         },
@@ -641,7 +645,7 @@ describe("setThing", () => {
 
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
+      { internal_name: "subject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -652,7 +656,7 @@ describe("setThing", () => {
       DataFactory.namedNode("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
     newThing.add(newThingQuad);
 
@@ -664,7 +668,7 @@ describe("setThing", () => {
   it("can reconcile new NamedNodes with existing LocalNodes if the LitDataset has a resource IRI attached", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
+      { internal_name: "subject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -676,7 +680,7 @@ describe("setThing", () => {
     );
     const datasetWithLocalSubject: LitDataset &
       WithResourceInfo = Object.assign(dataset(), {
-      resourceInfo: {
+      internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
         isLitDataset: true,
       },
@@ -688,7 +692,7 @@ describe("setThing", () => {
       object: "https://some.vocab/old-object",
     });
     const newThing: Thing = Object.assign(dataset(), {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
     newThing.add(newThingQuad);
 
@@ -700,7 +704,7 @@ describe("setThing", () => {
   it("only updates LocalNodes if the LitDataset has no known IRI", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -723,7 +727,7 @@ describe("setThing", () => {
       DataFactory.namedNode("https://some.vocab/new-object")
     );
     const newThing: Thing = Object.assign(dataset(), {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
     newThing.add(newThingQuad);
 
@@ -755,7 +759,7 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
@@ -782,16 +786,18 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(otherQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(datasetWithMultipleThings, thing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([]);
-    expect(updatedDataset.changeLog.deletions).toHaveLength(2);
-    expect(updatedDataset.changeLog.deletions).toContain(sameSubjectQuad);
-    expect(updatedDataset.changeLog.deletions).toContain(thingQuad);
+    expect(updatedDataset.internal_changeLog.additions).toEqual([]);
+    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(2);
+    expect(updatedDataset.internal_changeLog.deletions).toContain(
+      sameSubjectQuad
+    );
+    expect(updatedDataset.internal_changeLog.deletions).toContain(thingQuad);
   });
 
   it("reconciles deletions in the change log with additions", () => {
@@ -811,22 +817,24 @@ describe("removeThing", () => {
     datasetWithMultipleThings.add(sameSubjectQuad);
     datasetWithMultipleThings.add(otherQuad);
     const datasetWithChangelog = Object.assign(datasetWithMultipleThings, {
-      changeLog: {
+      internal_changeLog: {
         additions: [thingQuad],
         deletions: [],
       },
     });
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(datasetWithChangelog, thing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([]);
-    expect(updatedDataset.changeLog.deletions).toHaveLength(1);
-    expect(updatedDataset.changeLog.deletions).toContain(sameSubjectQuad);
+    expect(updatedDataset.internal_changeLog.additions).toEqual([]);
+    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(1);
+    expect(updatedDataset.internal_changeLog.deletions).toContain(
+      sameSubjectQuad
+    );
   });
 
   it("preserves existing change logs", () => {
@@ -842,7 +850,7 @@ describe("removeThing", () => {
     });
     const datasetWithExistingChangeLog: LitDataset &
       WithChangeLog = Object.assign(dataset(), {
-      changeLog: {
+      internal_changeLog: {
         additions: [existingAddition],
         deletions: [existingDeletion],
       },
@@ -850,14 +858,16 @@ describe("removeThing", () => {
     datasetWithExistingChangeLog.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(datasetWithExistingChangeLog, thing);
 
-    expect(updatedDataset.changeLog.additions).toEqual([existingAddition]);
-    expect(updatedDataset.changeLog.deletions).toEqual([
+    expect(updatedDataset.internal_changeLog.additions).toEqual([
+      existingAddition,
+    ]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([
       existingDeletion,
       thingQuad,
     ]);
@@ -871,7 +881,7 @@ describe("removeThing", () => {
     const datasetWithFetchedAcls: LitDataset & unstable_WithAcl = Object.assign(
       dataset(),
       {
-        acl: {
+        internal_acl: {
           resourceAcl: null,
           fallbackAcl: null,
         },
@@ -880,13 +890,13 @@ describe("removeThing", () => {
     datasetWithFetchedAcls.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(datasetWithFetchedAcls, thing);
 
-    expect(updatedDataset.acl).toEqual({
+    expect(updatedDataset.internal_acl).toEqual({
       resourceAcl: null,
       fallbackAcl: null,
     });
@@ -898,8 +908,8 @@ describe("removeThing", () => {
       object: "https://some.vocab/new-object",
     });
     const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
-      accessTo: "https://arbitrary.pod/resource",
-      resourceInfo: {
+      internal_accessTo: "https://arbitrary.pod/resource",
+      internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
         isLitDataset: true,
       },
@@ -907,14 +917,16 @@ describe("removeThing", () => {
     aclDataset.add(thingQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://some.vocab/subject",
+      internal_url: "https://some.vocab/subject",
     });
     thing.add(thingQuad);
 
     const updatedDataset = removeThing(aclDataset, thing);
 
-    expect(updatedDataset.accessTo).toBe("https://arbitrary.pod/resource");
-    expect(updatedDataset.resourceInfo).toEqual({
+    expect(updatedDataset.internal_accessTo).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(updatedDataset.internal_resourceInfo).toEqual({
       fetchedFrom: "https://arbitrary.pod/resource.acl",
       isLitDataset: true,
     });
@@ -938,7 +950,7 @@ describe("removeThing", () => {
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("does not modify the original LitDataset", () => {
@@ -960,7 +972,8 @@ describe("removeThing", () => {
       otherQuad,
     ]);
     expect(
-      (datasetWithMultipleThings as LitDataset & WithChangeLog).changeLog
+      (datasetWithMultipleThings as LitDataset & WithChangeLog)
+        .internal_changeLog
     ).toBeUndefined();
   });
 
@@ -974,7 +987,7 @@ describe("removeThing", () => {
     datasetWithUnexpectedQuad.add(unexpectedQuad);
 
     const thing: Thing = Object.assign(dataset(), {
-      url: "https://arbitrary.vocab/subject",
+      internal_url: "https://arbitrary.vocab/subject",
     });
 
     const updatedDataset = removeThing(datasetWithUnexpectedQuad, thing);
@@ -1000,13 +1013,13 @@ describe("removeThing", () => {
     );
 
     expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("can recognise LocalNodes", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -1022,7 +1035,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
     expect(Array.from(updatedDataset)).toEqual([]);
-    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 
   it("can reconcile given LocalNodes with existing NamedNodes if the LitDataset has a resource IRI attached", () => {
@@ -1033,7 +1046,7 @@ describe("removeThing", () => {
     const datasetWithNamedNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: {
+        internal_resourceInfo: {
           fetchedFrom: "https://some.pod/resource",
           isLitDataset: true,
         },
@@ -1043,7 +1056,7 @@ describe("removeThing", () => {
 
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
+      { internal_name: "subject" }
     );
 
     const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
@@ -1054,7 +1067,7 @@ describe("removeThing", () => {
   it("can reconcile given NamedNodes with existing LocalNodes if the LitDataset has a resource IRI attached", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "subject" }
+      { internal_name: "subject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -1067,7 +1080,7 @@ describe("removeThing", () => {
     const datasetWithLocalNode: LitDataset & WithResourceInfo = Object.assign(
       dataset(),
       {
-        resourceInfo: {
+        internal_resourceInfo: {
           fetchedFrom: "https://some.pod/resource",
           isLitDataset: true,
         },
@@ -1086,7 +1099,7 @@ describe("removeThing", () => {
   it("only removes LocalNodes if the LitDataset has no known IRI", () => {
     const localSubject = Object.assign(
       DataFactory.blankNode("Blank node representing a LocalNode"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
@@ -1106,14 +1119,14 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
     expect(Array.from(updatedDataset)).toEqual([similarSubjectQuad]);
-    expect(updatedDataset.changeLog.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 });
 
 describe("asIri", () => {
   it("returns the IRI of a persisted Thing", () => {
     const persistedThing: Thing = Object.assign(dataset(), {
-      url: "https://some.pod/resource#thing",
+      internal_url: "https://some.pod/resource#thing",
     });
 
     expect(asUrl(persistedThing)).toBe("https://some.pod/resource#thing");
@@ -1121,9 +1134,11 @@ describe("asIri", () => {
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
     const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
-    const localThing = Object.assign(dataset(), { localSubject: localSubject });
+    const localThing = Object.assign(dataset(), {
+      internal_localSubject: localSubject,
+    });
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
@@ -1132,9 +1147,11 @@ describe("asIri", () => {
 
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      name: "some-name",
+      internal_name: "some-name",
     });
-    const localThing = Object.assign(dataset(), { localSubject: localSubject });
+    const localThing = Object.assign(dataset(), {
+      internal_localSubject: localSubject,
+    });
 
     expect(() => asUrl(localThing, undefined as any)).toThrow(
       "The URL of a Thing that has not been persisted cannot be determined without a base URL."
@@ -1146,10 +1163,10 @@ describe("toNode", () => {
   it("should result in equal LocalNodes for the same ThingLocal", () => {
     const localSubject: LocalNode = Object.assign(
       DataFactory.blankNode("Arbitrary blank node"),
-      { name: "localSubject" }
+      { internal_name: "localSubject" }
     );
     const thing: ThingLocal = Object.assign(dataset(), {
-      localSubject: localSubject,
+      internal_localSubject: localSubject,
     });
     const node1 = toNode(thing);
     const node2 = toNode(thing);

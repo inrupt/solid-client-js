@@ -51,7 +51,7 @@ export async function internal_fetchResourceInfo(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo["resourceInfo"]> {
+): Promise<WithResourceInfo["internal_resourceInfo"]> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -82,7 +82,7 @@ export async function internal_fetchAcl(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<unstable_WithAcl["acl"]> {
+): Promise<unstable_WithAcl["internal_acl"]> {
   if (!unstable_hasAccessibleAcl(resourceInfo)) {
     return {
       resourceAcl: null,
@@ -125,8 +125,14 @@ export async function unstable_fetchResourceInfoWithAcl(
   > = internal_defaultFetchOptions
 ): Promise<WithResourceInfo & unstable_WithAcl> {
   const resourceInfo = await internal_fetchResourceInfo(url, options);
-  const acl = await internal_fetchAcl({ resourceInfo }, options);
-  return Object.assign({ resourceInfo }, { acl });
+  const acl = await internal_fetchAcl(
+    { internal_resourceInfo: resourceInfo },
+    options
+  );
+  return Object.assign(
+    { internal_resourceInfo: resourceInfo },
+    { internal_acl: acl }
+  );
 }
 
 /**
@@ -134,14 +140,14 @@ export async function unstable_fetchResourceInfoWithAcl(
  */
 export function internal_parseResourceInfo(
   response: Response
-): WithResourceInfo["resourceInfo"] {
+): WithResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
   const isLitDataset =
     contentTypeParts.length > 0 &&
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
-  const resourceInfo: WithResourceInfo["resourceInfo"] = {
+  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
     fetchedFrom: response.url,
     isLitDataset: isLitDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
@@ -181,7 +187,7 @@ export function isContainer(resource: WithResourceInfo): boolean {
  * @return Whether `resource` contains a LitDataset.
  */
 export function isLitDataset(resource: WithResourceInfo): boolean {
-  return resource.resourceInfo.isLitDataset;
+  return resource.internal_resourceInfo.isLitDataset;
 }
 
 /**
@@ -189,7 +195,7 @@ export function isLitDataset(resource: WithResourceInfo): boolean {
  * @returns The Content Type, if known, or null if not known.
  */
 export function getContentType(resource: WithResourceInfo): string | null {
-  return resource.resourceInfo.contentType ?? null;
+  return resource.internal_resourceInfo.contentType ?? null;
 }
 
 /**
@@ -197,7 +203,7 @@ export function getContentType(resource: WithResourceInfo): string | null {
  * @returns The URL from which the resource has been fetched
  */
 export function getFetchedFrom(resource: WithResourceInfo): string {
-  return resource.resourceInfo.fetchedFrom;
+  return resource.internal_resourceInfo.fetchedFrom;
 }
 
 /**

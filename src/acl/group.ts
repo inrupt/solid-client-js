@@ -61,13 +61,13 @@ export function unstable_getGroupAccessOne(
 ): unstable_Access | null {
   if (unstable_hasResourceAcl(resourceInfo)) {
     return unstable_getGroupResourceAccessOne(
-      resourceInfo.acl.resourceAcl,
+      resourceInfo.internal_acl.resourceAcl,
       group
     );
   }
   if (unstable_hasFallbackAcl(resourceInfo)) {
     return unstable_getGroupDefaultAccessOne(
-      resourceInfo.acl.fallbackAcl,
+      resourceInfo.internal_acl.fallbackAcl,
       group
     );
   }
@@ -118,7 +118,7 @@ export function unstable_getGroupResourceAccessOne(
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   const groupResourceRules = getGroupAclRuleForGroup(resourceRules, group);
   const groupAccessModes = groupResourceRules.map(internal_getAccess);
@@ -143,7 +143,7 @@ export function unstable_getGroupResourceAccessAll(
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   return getAccessByGroup(resourceRules);
 }
@@ -168,7 +168,7 @@ export function unstable_getGroupDefaultAccessOne(
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   const groupDefaultRules = getGroupAclRuleForGroup(defaultRules, group);
   const groupAccessModes = groupDefaultRules.map(internal_getAccess);
@@ -193,7 +193,7 @@ export function unstable_getGroupDefaultAccessAll(
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.accessTo
+    aclDataset.internal_accessTo
   );
   return getAccessByGroup(defaultRules);
 }

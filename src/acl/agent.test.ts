@@ -112,7 +112,7 @@ function addAclRuleQuads(
     );
   }
 
-  return Object.assign(aclDataset, { accessTo: resource });
+  return Object.assign(aclDataset, { internal_accessTo: resource });
 }
 
 function addAclDatasetToLitDataset(
@@ -120,25 +120,25 @@ function addAclDatasetToLitDataset(
   aclDataset: unstable_AclDataset,
   type: "resource" | "fallback"
 ): LitDataset & WithResourceInfo & unstable_WithAcl {
-  const acl: unstable_WithAcl["acl"] = {
+  const acl: unstable_WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as unstable_WithAcl).acl ?? {}),
+    ...(((litDataset as any) as unstable_WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.resourceInfo.unstable_aclUrl =
-      aclDataset.resourceInfo.fetchedFrom;
-    aclDataset.accessTo = litDataset.resourceInfo.fetchedFrom;
+    litDataset.internal_resourceInfo.unstable_aclUrl =
+      aclDataset.internal_resourceInfo.fetchedFrom;
+    aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
   }
-  return Object.assign(litDataset, { acl: acl });
+  return Object.assign(litDataset, { internal_acl: acl });
 }
 
 function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
   return Object.assign(dataset(), {
-    resourceInfo: {
+    internal_resourceInfo: {
       fetchedFrom: fetchedFrom,
       isLitDataset: true,
     },
@@ -205,7 +205,7 @@ describe("getAgentAccessOne", () => {
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: unstable_WithAcl = {
-      acl: { fallbackAcl: null, resourceAcl: null },
+      internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
       litDataset,
@@ -389,7 +389,7 @@ describe("getAgentAccessAll", () => {
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: unstable_WithAcl = {
-      acl: { fallbackAcl: null, resourceAcl: null },
+      internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
       litDataset,
@@ -859,7 +859,7 @@ describe("setAgentResourceAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
@@ -914,7 +914,7 @@ describe("setAgentResourceAccess", () => {
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
     unstable_setAgentResourceAccess(
@@ -934,7 +934,7 @@ describe("setAgentResourceAccess", () => {
   it("keeps a log of changes made to the ACL", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
@@ -948,9 +948,9 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    const deletedQuads = updatedDataset.changeLog.deletions;
+    const deletedQuads = updatedDataset.internal_changeLog.deletions;
     expect(deletedQuads).toEqual([]);
-    const addedQuads = updatedDataset.changeLog.additions;
+    const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -982,7 +982,7 @@ describe("setAgentResourceAccess", () => {
     // (but we should be able to leave that to the server).
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
-      { accessTo: "https://arbitrary.pod/resource" }
+      { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
@@ -1700,7 +1700,7 @@ describe("setAgentDefaultAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
@@ -1757,7 +1757,7 @@ describe("setAgentDefaultAccess", () => {
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
     unstable_setAgentDefaultAccess(
@@ -1777,7 +1777,7 @@ describe("setAgentDefaultAccess", () => {
   it("keeps a log of changes made to the ACL", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
@@ -1791,9 +1791,9 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    const deletedQuads = updatedDataset.changeLog.deletions;
+    const deletedQuads = updatedDataset.internal_changeLog.deletions;
     expect(deletedQuads).toEqual([]);
-    const addedQuads = updatedDataset.changeLog.additions;
+    const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -1825,7 +1825,7 @@ describe("setAgentDefaultAccess", () => {
     // (but we should be able to leave that to the server).
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/container/.acl"),
-      { accessTo: "https://arbitrary.pod/container/" }
+      { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(

@@ -90,9 +90,9 @@ describe("unstable_fetchFile", () => {
       fetch: mockFetch,
     });
 
-    expect(file.resourceInfo.fetchedFrom).toEqual("https://some.url");
-    expect(file.resourceInfo.contentType).toContain("text/plain");
-    expect(file.resourceInfo.isLitDataset).toEqual(false);
+    expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.contentType).toContain("text/plain");
+    expect(file.internal_resourceInfo.isLitDataset).toEqual(false);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -192,9 +192,9 @@ describe("unstable_fetchFileWithAcl", () => {
       fetch: mockFetch,
     });
 
-    expect(file.resourceInfo.fetchedFrom).toEqual("https://some.url");
-    expect(file.resourceInfo.contentType).toContain("text/plain");
-    expect(file.resourceInfo.isLitDataset).toEqual(false);
+    expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.contentType).toContain("text/plain");
+    expect(file.internal_resourceInfo.isLitDataset).toEqual(false);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -220,15 +220,17 @@ describe("unstable_fetchFileWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.resourceInfo.fetchedFrom).toBe(
+    expect(fetchedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
-    expect(fetchedLitDataset.acl?.resourceAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/resource.acl"
-    );
-    expect(fetchedLitDataset.acl?.fallbackAcl?.resourceInfo.fetchedFrom).toBe(
-      "https://some.pod/.acl"
-    );
+    expect(
+      fetchedLitDataset.internal_acl?.resourceAcl?.internal_resourceInfo
+        .fetchedFrom
+    ).toBe("https://some.pod/resource.acl");
+    expect(
+      fetchedLitDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
+        .fetchedFrom
+    ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
@@ -254,8 +256,8 @@ describe("unstable_fetchFileWithAcl", () => {
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.acl.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.acl.fallbackAcl).toBeNull();
+    expect(fetchedLitDataset.internal_acl.resourceAcl).toBeNull();
+    expect(fetchedLitDataset.internal_acl.fallbackAcl).toBeNull();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {

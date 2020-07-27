@@ -60,11 +60,11 @@ export async function internal_fetchResourceAcl(
 
   try {
     const aclLitDataset = await fetchLitDataset(
-      dataset.resourceInfo.unstable_aclUrl,
+      dataset.internal_resourceInfo.unstable_aclUrl,
       options
     );
     return Object.assign(aclLitDataset, {
-      accessTo: getFetchedFrom(dataset),
+      internal_accessTo: getFetchedFrom(dataset),
     });
   } catch (e) {
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
@@ -95,7 +95,10 @@ export async function internal_fetchFallbackAcl(
   const containerPath = getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
   const containerInfo = {
-    resourceInfo: await internal_fetchResourceInfo(containerIri, options),
+    internal_resourceInfo: await internal_fetchResourceInfo(
+      containerIri,
+      options
+    ),
   };
 
   if (!unstable_hasAccessibleAcl(containerInfo)) {
@@ -148,10 +151,11 @@ export function unstable_hasResourceAcl<
   unstable_WithResourceAcl &
   unstable_WithAccessibleAcl {
   return (
-    resource.acl.resourceAcl !== null &&
-    getFetchedFrom(resource) === resource.acl.resourceAcl.accessTo &&
-    resource.resourceInfo.unstable_aclUrl ===
-      getFetchedFrom(resource.acl.resourceAcl)
+    resource.internal_acl.resourceAcl !== null &&
+    getFetchedFrom(resource) ===
+      resource.internal_acl.resourceAcl.internal_accessTo &&
+    resource.internal_resourceInfo.unstable_aclUrl ===
+      getFetchedFrom(resource.internal_acl.resourceAcl)
   );
 }
 
@@ -176,7 +180,7 @@ export function unstable_getResourceAcl(
   if (!unstable_hasResourceAcl(resource)) {
     return null;
   }
-  return resource.acl.resourceAcl;
+  return resource.internal_acl.resourceAcl;
 }
 
 /**
@@ -194,7 +198,7 @@ export function unstable_getResourceAcl(
 export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
   resource: Resource
 ): resource is Resource & unstable_WithFallbackAcl {
-  return resource.acl.fallbackAcl !== null;
+  return resource.internal_acl.fallbackAcl !== null;
 }
 
 /**
@@ -218,7 +222,7 @@ export function unstable_getFallbackAcl(
   if (!unstable_hasFallbackAcl(dataset)) {
     return null;
   }
-  return dataset.acl.fallbackAcl;
+  return dataset.internal_acl.fallbackAcl;
 }
 
 /**
@@ -231,9 +235,9 @@ export function unstable_createAcl(
   targetResource: WithResourceInfo & unstable_WithAccessibleAcl
 ): unstable_AclDataset {
   const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
-    accessTo: getFetchedFrom(targetResource),
-    resourceInfo: {
-      fetchedFrom: targetResource.resourceInfo.unstable_aclUrl,
+    internal_accessTo: getFetchedFrom(targetResource),
+    internal_resourceInfo: {
+      fetchedFrom: targetResource.internal_resourceInfo.unstable_aclUrl,
       isLitDataset: true,
     },
   });
@@ -254,10 +258,12 @@ export function unstable_createAclFromFallbackAcl(
 ): unstable_AclDataset {
   const emptyResourceAcl: unstable_AclDataset = unstable_createAcl(resource);
 
-  const fallbackAclRules = internal_getAclRules(resource.acl.fallbackAcl);
+  const fallbackAclRules = internal_getAclRules(
+    resource.internal_acl.fallbackAcl
+  );
   const defaultAclRules = internal_getDefaultAclRulesForResource(
     fallbackAclRules,
-    resource.acl.fallbackAcl.accessTo
+    resource.internal_acl.fallbackAcl.internal_accessTo
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
@@ -278,7 +284,7 @@ export function unstable_createAclFromFallbackAcl(
 export function internal_isAclDataset(
   dataset: LitDataset
 ): dataset is unstable_AclDataset {
-  return typeof (dataset as unstable_AclDataset).accessTo === "string";
+  return typeof (dataset as unstable_AclDataset).internal_accessTo === "string";
 }
 
 /** @internal */
@@ -549,13 +555,13 @@ export async function unstable_saveAclFor(
   > = internal_defaultFetchOptions
 ): Promise<unstable_AclDataset & WithResourceInfo> {
   const savedDataset = await saveLitDatasetAt(
-    resource.resourceInfo.unstable_aclUrl,
+    resource.internal_resourceInfo.unstable_aclUrl,
     resourceAcl,
     options
   );
   const savedAclDataset: unstable_AclDataset &
     typeof savedDataset = Object.assign(savedDataset, {
-    accessTo: getFetchedFrom(resource),
+    internal_accessTo: getFetchedFrom(resource),
   });
 
   return savedAclDataset;
@@ -580,9 +586,12 @@ export async function unstable_deleteAclFor<
     ...options,
   };
 
-  const response = await config.fetch(resource.resourceInfo.unstable_aclUrl, {
-    method: "DELETE",
-  });
+  const response = await config.fetch(
+    resource.internal_resourceInfo.unstable_aclUrl,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     throw new Error(

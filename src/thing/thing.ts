@@ -81,13 +81,13 @@ export function getThingOne(
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
-      localSubject: subject,
+      internal_localSubject: subject,
     });
 
     return thing;
   } else {
     const thing: Thing = Object.assign(thingDataset, {
-      url: subject.value,
+      internal_url: subject.value,
     });
 
     return thing;
@@ -146,12 +146,12 @@ export function setThing<Dataset extends LitDataset>(
 
   for (const quad of thing) {
     newDataset.add(quad);
-    if (newDataset.changeLog.deletions.includes(quad)) {
-      newDataset.changeLog.deletions = newDataset.changeLog.deletions.filter(
+    if (newDataset.internal_changeLog.deletions.includes(quad)) {
+      newDataset.internal_changeLog.deletions = newDataset.internal_changeLog.deletions.filter(
         (deletion) => deletion !== quad
       );
     } else {
-      newDataset.changeLog.additions.push(quad);
+      newDataset.internal_changeLog.additions.push(quad);
     }
   }
 
@@ -185,15 +185,15 @@ export function removeThing<Dataset extends LitDataset>(
       !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
     ) {
       newLitDataset.add(quad);
-    } else if (newLitDataset.changeLog.additions.includes(quad)) {
+    } else if (newLitDataset.internal_changeLog.additions.includes(quad)) {
       // If this Quad was added to the LitDataset since it was fetched from the Pod,
       // remove it from the additions rather than adding it to the deletions,
       // to avoid asking the Pod to remove a Quad that does not exist there:
-      newLitDataset.changeLog.additions = newLitDataset.changeLog.additions.filter(
+      newLitDataset.internal_changeLog.additions = newLitDataset.internal_changeLog.additions.filter(
         (addition) => addition != quad
       );
     } else {
-      newLitDataset.changeLog.deletions.push(quad);
+      newLitDataset.internal_changeLog.deletions.push(quad);
     }
   }
   return newLitDataset;
@@ -205,7 +205,7 @@ function withChangeLog<Dataset extends LitDataset>(
   const newLitDataset: Dataset & WithChangeLog = hasChangelog(litDataset)
     ? litDataset
     : Object.assign(litDataset, {
-        changeLog: { additions: [], deletions: [] },
+        internal_changeLog: { additions: [], deletions: [] },
       });
   return newLitDataset;
 }
@@ -215,23 +215,24 @@ function cloneLitStructs<Dataset extends LitDataset>(
 ): Dataset {
   const freshDataset = dataset();
   if (hasChangelog(litDataset)) {
-    (freshDataset as LitDataset & WithChangeLog).changeLog = {
-      additions: [...litDataset.changeLog.additions],
-      deletions: [...litDataset.changeLog.deletions],
+    (freshDataset as LitDataset & WithChangeLog).internal_changeLog = {
+      additions: [...litDataset.internal_changeLog.additions],
+      deletions: [...litDataset.internal_changeLog.deletions],
     };
   }
   if (hasResourceInfo(litDataset)) {
-    (freshDataset as LitDataset & WithResourceInfo).resourceInfo = {
-      ...litDataset.resourceInfo,
+    (freshDataset as LitDataset & WithResourceInfo).internal_resourceInfo = {
+      ...litDataset.internal_resourceInfo,
     };
   }
   if (unstable_hasAcl(litDataset)) {
-    (freshDataset as LitDataset & unstable_WithAcl).acl = {
-      ...litDataset.acl,
+    (freshDataset as LitDataset & unstable_WithAcl).internal_acl = {
+      ...litDataset.internal_acl,
     };
   }
   if (internal_isAclDataset(litDataset)) {
-    (freshDataset as unstable_AclDataset).accessTo = litDataset.accessTo;
+    (freshDataset as unstable_AclDataset).internal_accessTo =
+      litDataset.internal_accessTo;
   }
 
   return freshDataset as Dataset;
@@ -271,13 +272,15 @@ export function createThing(options: CreateThingOptions = {}): Thing {
       // Throws an error if the IRI is invalid:
       new URL(url);
     }
-    const thing: ThingPersisted = Object.assign(dataset(), { url: url });
+    const thing: ThingPersisted = Object.assign(dataset(), {
+      internal_url: url,
+    });
     return thing;
   }
   const name = (options as CreateThingLocalOptions).name ?? generateName();
   const localSubject: LocalNode = getLocalNode(name);
   const thing: ThingLocal = Object.assign(dataset(), {
-    localSubject: localSubject,
+    internal_localSubject: localSubject,
   });
   return thing;
 }
@@ -297,10 +300,10 @@ export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
         "The URL of a Thing that has not been persisted cannot be determined without a base URL."
       );
     }
-    return resolveLocalIri(thing.localSubject.name, baseUrl);
+    return resolveLocalIri(thing.internal_localSubject.internal_name, baseUrl);
   }
 
-  return thing.url;
+  return thing.internal_url;
 }
 /** @hidden Alias of [[asUrl]] for those who prefer IRI terminology. */
 export const asIri = asUrl;
@@ -313,8 +316,8 @@ export function isThingLocal(
   thing: ThingPersisted | ThingLocal
 ): thing is ThingLocal {
   return (
-    typeof (thing as ThingLocal).localSubject?.name === "string" &&
-    typeof (thing as ThingPersisted).url === "undefined"
+    typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
+      "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
   );
 }
 /**
@@ -337,7 +340,7 @@ export function toNode(
     return asNamedNode(thing);
   }
   if (isThingLocal(thing)) {
-    return thing.localSubject;
+    return thing.internal_localSubject;
   }
   return asNamedNode(asUrl(thing));
 }
@@ -353,10 +356,10 @@ export function cloneThing<T extends Thing>(
 export function cloneThing(thing: Thing): Thing {
   const cloned = clone(thing);
   if (isThingLocal(thing)) {
-    (cloned as ThingLocal).localSubject = thing.localSubject;
+    (cloned as ThingLocal).internal_localSubject = thing.internal_localSubject;
     return cloned as ThingLocal;
   }
-  (cloned as ThingPersisted).url = thing.url;
+  (cloned as ThingPersisted).internal_url = thing.internal_url;
   return cloned as ThingPersisted;
 }
 
@@ -376,10 +379,11 @@ export function filterThing(
 ): Thing {
   const filtered = filter(thing, callback);
   if (isThingLocal(thing)) {
-    (filtered as ThingLocal).localSubject = thing.localSubject;
+    (filtered as ThingLocal).internal_localSubject =
+      thing.internal_localSubject;
     return filtered as ThingLocal;
   }
-  (filtered as ThingPersisted).url = thing.url;
+  (filtered as ThingPersisted).internal_url = thing.internal_url;
   return filtered as ThingPersisted;
 }
 
