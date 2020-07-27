@@ -54,7 +54,7 @@ and the ACL containing the associated access information.
 
 Given a [LitDataset](../glossary.mdx#litdataset) that has an ACL attached, you can check what access
 everyone has, regardless of whether they are authenticated or not. You can do so using
-[`unstable_getPublicAccess`](../api/modules/_acl_agentclass_.md#unstable_getpublicaccess):
+[`unstable_getPublicAccess`](../api/modules/_acl_class_.md#unstable_getpublicaccess):
 
 ```typescript
 import {
