@@ -6,7 +6,7 @@ sidebar_label: Core Concepts
 
 ## Fetching data
 
-In general, working with data using lit-pod involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`LitDataset`](../glossary.md#litdataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.md#thing)).
+In general, working with data using lit-pod involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`LitDataset`](../glossary.mdx#litdataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.mdx#thing)).
 
 <!--
 
