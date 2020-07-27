@@ -34,7 +34,8 @@ const features = [
     description: (
       <>
         Tailored specifically to <a href="https://solidproject.org">Solid</a>,
-        lit-pod makes it a breeze to store your users' data in their Solid Pods.
+        solid-client makes it a breeze to store your users' data in their Solid
+        Pods.
       </>
     ),
   },
@@ -48,9 +49,10 @@ const features = [
     imageUrl: "img/inrupt-logo.svg",
     description: (
       <>
-        lit-pod is used and supported by <a href="https://inrupt.com">Inrupt</a>
-        , the company founded by Sir Tim Berners-Lee to take Solid from the
-        vision of a few to the reality of many.
+        solid-client is used and supported by{" "}
+        <a href="https://inrupt.com">Inrupt</a>, the company founded by Sir Tim
+        Berners-Lee to take Solid from the vision of a few to the reality of
+        many.
       </>
     ),
   },

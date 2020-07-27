@@ -60,7 +60,7 @@ everyone has, regardless of whether they are authenticated or not. You can do so
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getPublicAccess,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
@@ -85,7 +85,7 @@ To do the former, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessOne,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
@@ -105,7 +105,7 @@ To get all agents to whom access was granted, use
 import {
   unstable_fetchLitDatasetWithAcl,
   unstable_getAgentAccessAll,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
   "https://example.com"
@@ -177,7 +177,7 @@ import {
   unstable_getResourceAcl,
   unstable_setAgentResourceAccess,
   unstable_saveAclFor,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 // Fetch the LitDataset and its associated ACLs, if available:
 const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
@@ -222,7 +222,7 @@ await unstable_saveAclFor(litDatasetWithAcl, updatedAcl);
 
 :::note
 
-lit-pod currently does not support setting public access.
+solid-client currently does not support setting public access.
 
 :::
 
@@ -237,7 +237,7 @@ To do the former, use
 ```typescript
 import {
   unstable_setAgentResourceAccess,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const resourceAcl = /* Obtained previously as described above: */;
 const webId = "https://example.com/profile#webid";
@@ -258,7 +258,7 @@ To grant Access Modes to the Agent for the Resource's children, use
 ```typescript
 import {
   unstable_setAgentDefaultAccess,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const resourceAcl = /* Obtained previously as described above: */;
 const webId = "https://example.com/profile#webid";

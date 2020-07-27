@@ -37,18 +37,18 @@ prismTheme.styles = prismTheme.styles.map((style) => {
 });
 
 module.exports = {
-  title: "lit-pod",
+  title: "solid-client",
   tagline: pkg.description,
   url: "https://inrupt.github.io",
-  baseUrl: process.env.CI ? "/lit-pod/" : "/",
+  baseUrl: process.env.CI ? "/solid-client-js/" : "/",
   favicon: "img/favicon.ico",
   organizationName: "inrupt", // Usually your GitHub org/user name.
-  projectName: "lit-pod", // Usually your repo name.
+  projectName: "solid-client-js", // Usually your repo name.
   themeConfig: {
     announcementBar: {
       id: "alpha-warning", // Any value that will identify this message.
       content:
-        "Both lit-pod and this website are still in alpha. Expect things to change.",
+        "Both solid-client and this website are still in alpha. Expect things to change.",
       // Same as --ifm-color-warning in custom.css:
       backgroundColor: "#ffa600", // Defaults to `#fff`.
       textColor: "#000", // Defaults to `#000`.
@@ -58,7 +58,7 @@ module.exports = {
       theme: prismTheme,
     },
     navbar: {
-      title: "lit-pod",
+      title: "solid-client",
       // logo: {
       //   alt: "My Site Logo",
       //   src: "img/logo.svg",
@@ -83,7 +83,7 @@ module.exports = {
           position: "left",
         },
         {
-          href: "https://github.com/inrupt/lit-pod",
+          href: "https://github.com/inrupt/solid-client-js",
           label: "GitHub",
           position: "right",
         },
@@ -135,11 +135,11 @@ module.exports = {
           items: [
             {
               label: "Source code",
-              href: "https://github.com/inrupt/lit-pod",
+              href: "https://github.com/inrupt/solid-client-js",
             },
             {
               label: "Report a bug",
-              href: "https://github.com/inrupt/lit-pod/issues",
+              href: "https://github.com/inrupt/solid-client-js/issues",
             },
           ],
         },
@@ -156,7 +156,8 @@ module.exports = {
           homePageId: "getting-started",
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
-          editUrl: "https://github.com/inrupt/lit-pod/edit/master/website/",
+          editUrl:
+            "https://github.com/inrupt/solid-client-js/edit/master/website/",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),

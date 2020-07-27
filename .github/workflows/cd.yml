@@ -71,7 +71,7 @@ jobs:
         npm publish --access public --tag "$TAG_SLUG"
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm install @solid/lit-pod@$TAG_SLUG"
+        echo "    npm install @inrupt/solid-client@$TAG_SLUG"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
@@ -82,8 +82,8 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        environment_url: 'https://www.npmjs.com/package/@solid/lit-pod/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
-        description: "Published to npm. To install, run: npm install @solid/lit-pod@${{ needs.prepare-deployment.outputs.tag-slug }}"
+        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
+        description: "Published to npm. To install, run: npm install @inrupt/solid-client@${{ needs.prepare-deployment.outputs.tag-slug }}"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         mediaType: '{"previews": ["flash", "ant-man"]}'
         state: success

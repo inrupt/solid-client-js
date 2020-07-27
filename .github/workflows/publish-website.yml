@@ -29,7 +29,7 @@ jobs:
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email $GITHUB_ACTOR@users.noreply.github.com
-        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/inrupt/lit-pod.git
+        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/inrupt/solid-client-js.git
         git fetch --no-recurse-submodules
         cd website
         git worktree add ./gh-pages gh-pages
