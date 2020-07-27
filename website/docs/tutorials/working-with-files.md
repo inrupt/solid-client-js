@@ -30,7 +30,7 @@ import {
   isLitDataset,
   getContentType,
   getFetchedFrom,
-} from "lit-solid";
+} from "@inrupt/solid-client";
 
 const file = await unstable_fetchFile(
   "https://example.com/some/interesting/file"
@@ -47,7 +47,7 @@ console.log(`The file is ${isLitDataset(file) ? "" : "not "}a dataset.`);
 Deleting a file is also a simple operation: you just erase the content available at a certain URL.
 
 ```typescript
-import { unstable_fetchFile } from "lit-solid";
+import { unstable_fetchFile } from "@inrupt/solid-client";
 
 const response = await unstable_deleteFile(
   "https://example.com/some/boring/file"
@@ -69,7 +69,7 @@ There are two approaches to writing files:
 With this approach, if the request succeeds, you know exactly what the URL of your file is.
 
 ```typescript
-import { unstable_overwriteFile } from "lit-solid";
+import { unstable_overwriteFile } from "@inrupt/solid-client";
 
 const response = await unstable_overwriteFile(
   "https://example.com/some/new/file",
@@ -93,7 +93,7 @@ This means that you don't control the final name of your file though. To keep tr
 file, you'll have to look up the `Location` header in the response, as shown in the code snippet below:
 
 ```typescript
-import { unstable_saveFileInContainer } from "lit-solid";
+import { unstable_saveFileInContainer } from "@inrupt/solid-client";
 
 const response = await unstable_saveFileInContainer(
   "https://example.com/some/folder",
@@ -116,7 +116,7 @@ If you need to customize the request eventually sent to the server, you can do s
 header.
 
 ```typescript
-import { unstable_fetchFile } from "lit-solid";
+import { unstable_fetchFile } from "@inrupt/solid-client";
 
 const response = await unstable_deleteFile(
   "https://example.com/some/boring/file",

@@ -6,7 +6,7 @@ sidebar_label: Core Concepts
 
 ## Fetching data
 
-In general, working with data using lit-pod involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`LitDataset`](../glossary.mdx#litdataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.mdx#thing)).
+In general, working with data using solid-client involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`LitDataset`](../glossary.mdx#litdataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.mdx#thing)).
 
 <!--
 
@@ -22,7 +22,7 @@ For a more extensive overview of fetching and manipulating data, see the tutoria
 
 ## Immutability
 
-The functions exposed in lit-pod are designed to take data as input, apply some transformation, and return the transformed data as output **without changing the input data**. That makes it easier for you to write unit tests, and enables frameworks that want to be notified of changes to data (like most modern front-end frameworks) to apply performance optimizations like memoisation, checking for updates by references rather than doing deep comparisons. However, it is good to be aware of this fact; when you're seeing stale data, that is likely the result of a variable pointing to an input value, rather than to the returned result.
+The functions exposed in solid-client are designed to take data as input, apply some transformation, and return the transformed data as output **without changing the input data**. That makes it easier for you to write unit tests, and enables frameworks that want to be notified of changes to data (like most modern front-end frameworks) to apply performance optimizations like memoisation, checking for updates by references rather than doing deep comparisons. However, it is good to be aware of this fact; when you're seeing stale data, that is likely the result of a variable pointing to an input value, rather than to the returned result.
 
 <!--
 
