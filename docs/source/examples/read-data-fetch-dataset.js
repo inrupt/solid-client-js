@@ -22,7 +22,7 @@
 // BEGIN-EXAMPLE-FETCH-DATASET
 
 
-import { fetchLitDataset } from "@solid/lit-pod";
+import { fetchLitDataset } from "@inrupt/solid-client";
 
 // Fetch the Dataset located at the specified URL.
 

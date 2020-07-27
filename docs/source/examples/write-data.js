@@ -23,7 +23,7 @@ import {
   fetchLitDataset,
   getThingOne,
   getStringNoLocaleOne,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 const profileResource = await fetchLitDataset(
   "https://vincentt.inrupt.net/profile/card"
@@ -41,7 +41,7 @@ import {
   setStringUnlocalised,
   setThing,
   saveLitDatasetAt,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 import { foaf } from "rdf-namespaces";
 
 /*

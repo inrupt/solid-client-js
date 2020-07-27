@@ -21,7 +21,7 @@
 
 // BEGIN-EXAMPLE-WRITE-DATA-SET-THING
 
-import { setThing } from "@solid/lit-pod";
+import { setThing } from "@inrupt/solid-client";
 
 const updatedDataset = setThing(litDataset, updatedThing);
 

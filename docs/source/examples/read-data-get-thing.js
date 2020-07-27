@@ -22,7 +22,7 @@
 // BEGIN-EXAMPLE-GET-THING
 
 
-import { getThingOne } from "@solid/lit-pod";
+import { getThingOne } from "@inrupt/solid-client";
 
 //  From a fetched dataset, retrieve the Thing at the specified URL.
 

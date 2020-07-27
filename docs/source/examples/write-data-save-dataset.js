@@ -21,7 +21,7 @@
 
 // BEGIN-EXAMPLE-WRITE-DATA-SAVE-DATASET
 
-import { saveLitDatasetAt } from "@solid/lit-pod";
+import { saveLitDatasetAt } from "@inrupt/solid-client";
 
 const savedLitDataset = await saveLitDatasetAt(
   "https://example.com/some/interesting/resource",

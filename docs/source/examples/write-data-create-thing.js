@@ -21,7 +21,7 @@
 
 // BEGIN-EXAMPLE-WRITE-DATA-CREATE-THING
 
-import { createThing } from "@solid/lit-pod";
+import { createThing } from "@inrupt/solid-client";
 
 const thing = createThing();
 

@@ -9,7 +9,7 @@ You can install |product| using `npm <https://www.npmjs.com/>`_:
 
 .. code-block:: sh
 
-   npm install @solid/lit-pod
+   npm install @solid/solid-client
 
 By default, |product| only enables access to public data on Solid Pods.
 To access data that has been restricted to specific users, you can use
