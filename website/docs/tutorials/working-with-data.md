@@ -48,7 +48,7 @@ Let's go over those steps one by one.
 ### 1. Fetch a LitDataset
 
 To fetch a LitDataset, pass its URL to
-[`fetchLitDataset`](../api/modules/_litdataset_.md#fetchlitdataset). Usually, the first LitDataset to
+[`fetchLitDataset`](../api/modules/_resource_litdataset_.md#fetchlitdataset). Usually, the first LitDataset to
 fetch will be the one at the authenticated user's [WebID](../glossary.md#webid), which will contain
 links to other potentially relevant LitDatasets.
 
@@ -64,8 +64,8 @@ const litDataset = await fetchLitDataset(
 
 Given a LitDataset, you can either extract a single Thing for which you know its URL (e.g. because
 you found that URL on another Thing) using
-[`getThingOne`](../api/modules/_thing_.md#getthingone), or simply take all the
-Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_.md#getthingall)
+[`getThingOne`](../api/modules/_thing_thing_.md#getthingone), or simply take all the
+Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_thing_.md#getthingall)
 
 ```typescript
 import { getThingOne } from "@solid/lit-pod";
@@ -242,7 +242,7 @@ const updatedDataset = setThing(litDataset, updatedThing);
 ### 3. Send the LitDataset to a Pod
 
 To save the updated LitDataset to a Pod, use
-[`saveLitDatasetAt`](../api/modules/_litdataset_.md#savelitdatasetat).
+[`saveLitDatasetAt`](../api/modules/_resource_litdataset_.md#savelitdatasetat).
 If the given location already contains data, that will be updated to match the given LitDataset.
 
 ```typescript
