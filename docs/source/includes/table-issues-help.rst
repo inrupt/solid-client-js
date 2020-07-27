@@ -13,4 +13,5 @@
 
    * - Bugs and Feature Requests (Documentation)
            To report a documentation bug or make a documentation
-           request, please file a JIRA ticket.
+           request, please use the feedback
+           widget to create a JIRA ticket.
