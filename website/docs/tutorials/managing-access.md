@@ -20,7 +20,7 @@ In Solid, who has what access to a [Resource](../glossary.md#resource) is define
 List ([ACL](../glossary.md#acl)). These may be defined in separate Resources, so if you want to be able
 to access the ACLs for a Resource in addition to the Resource itself, you'll have to explicitly
 fetch them using
-[`unstable_fetchLitDatasetWithAcl`](../api/modules/_litdataset_.md#unstable_fetchlitdatasetwithacl) —
+[`unstable_fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#unstable_fetchlitdatasetwithacl) —
 but be aware that this may result in several extra HTTP requests being sent.
 
 The possible [Access Modes](../glossary.md#access-modes) that can be granted are
