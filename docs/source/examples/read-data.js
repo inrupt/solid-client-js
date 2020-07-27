@@ -25,7 +25,7 @@ import {
   fetchLitDataset,
   getThingOne,
   getStringNoLocaleOne,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 import { foaf } from "rdf-namespaces";
 
 /* 

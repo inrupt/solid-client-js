@@ -25,7 +25,7 @@ import {
   getStringNoLocaleAll,
   getStringNoLocaleOne,
   getUrlAll,
-} from "@solid/lit-pod";
+} from "@inrupt/solid-client";
 
 // Get data from a retrieved Thing.
 // - Specifically, get the name (http://xmlns.com/foaf/0.1/name).

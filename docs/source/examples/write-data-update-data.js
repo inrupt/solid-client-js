@@ -21,7 +21,7 @@
 
 // BEGIN-EXAMPLE-WRITE-DATA-UPDATE-DATA
 
-import { addStringNoLocale } from "@solid/lit-pod";
+import { addStringNoLocale } from "@inrupt/solid-client";
 
 let updatedThing = addStringNoLocale(
   thing,

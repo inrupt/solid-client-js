@@ -21,10 +21,11 @@ copyright = '2020-present, Inrupt Inc.'
 # -- General configuration ---------------------------------------------------
 
 
-# -- Can change product name, also change html-title -----
-# -- Note exception: the github_repo is hardcoded below as lit-pod --
+# -- product name -----
+# -- Separately update code samples and toc links and docs-navbar since not using substitutions--
 
-name = 'solid-core'
+name = 'solid-client'
+repo_name = '{0}-js'.format(name)
 replacement_string = '.. |product|  replace:: ``{0}``'.format(name)
 
 rst_epilog = '\n'.join([
@@ -54,7 +55,7 @@ extensions = [
 ]
 
 extlinks = {
-    'apimodule': ('https://inrupt.github.io/lit-pod/docs/api/modules/%s',''),
+    'apimodule': ('https://inrupt.github.io/{0}/docs/api/modules/%s'.format(repo_name),''),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -88,10 +89,10 @@ html_theme_options = {
     'robots_index': False,
     'github_editable': True,
     'github_org': 'inrupt',
-    'github_repo': 'lit-pod',
+    'github_repo': repo_name,
     'github_branch': 'master',
     'ess_docs': 'https://docs.inrupt.com/ess/',
-    'clientlibjs_docs': 'https://docs.inrupt.com/client-libraries/solid-core/',
+    'clientlibjs_docs': 'https://docs.inrupt.com/client-libraries/{0}/'.format(repo_name),
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -9,7 +9,7 @@
    * - Bugs and Feature Requests (Product)
            To report a bug or to request a new feature, please file an
            `Issue on Github
-           <https://github.com/inrupt/lit-pod/issues/new/choose>`_.
+           <https://github.com/inrupt/solid-client-js/issues/new/choose>`_.
 
    * - Bugs and Feature Requests (Documentation)
            To report a documentation bug or make a documentation

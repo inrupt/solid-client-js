@@ -37,7 +37,7 @@ To get started, see the following pages in the documentation:
 
      - Manage access to your Pod.
 
-   * - `API <https://inrupt.github.io/lit-pod/docs/api/index/>`_
+   * - `API <https://inrupt.github.io/solid-client-js/docs/api/index/>`_
 
      - Go to the API documentation.
 
@@ -54,7 +54,7 @@ Issues & Help
    /tutorial/read-write-data
    /tutorial/manage-access-control-list
    /reference
-   API <https://inrupt.github.io/lit-pod/docs/api/index>
-   Source on GitHub <https://github.com/inrupt/lit-pod>
+   API <https://inrupt.github.io/solid-client-js/docs/api/index>
+   Source on GitHub <https://github.com/inrupt/solid-client-js>
    /issues-help
 
