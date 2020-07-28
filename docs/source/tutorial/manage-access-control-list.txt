@@ -37,7 +37,7 @@ As such, the ACL for a Resource may be defined in separate Resource,
 and retrieving a Resource with its ACL may result in extra HTTP
 requests being sent.
 
-.. note::
+.. topic:: Trusted Applications
 
    An application can access a Resource's or Container's ACL only if an
    Authenticated User with :term:`Control Access` to

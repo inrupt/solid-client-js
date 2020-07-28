@@ -187,3 +187,15 @@ ul ol {
 p.caption {
   text-align: left;
 }
+
+/* Override basic.css's 10px margin-top */
+
+p.topic-title {
+   margin-top: 0px;
+}
+
+/* Override background-color to white to lessen prominence*/
+
+.topic {
+   background-color: #fff;
+}
