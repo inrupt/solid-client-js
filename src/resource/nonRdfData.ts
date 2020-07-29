@@ -25,6 +25,9 @@ import {
   unstable_UploadRequestInit,
   WithResourceInfo,
   unstable_WithAcl,
+  Url,
+  UrlString,
+  internal_toIriString,
 } from "../interfaces";
 import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
 
@@ -55,14 +58,15 @@ function containsReserved(header: Headers): boolean {
  * @param options Fetching options: a custom fetcher and/or headers.
  */
 export async function unstable_fetchFile(
-  input: RequestInfo,
+  input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Blob & WithResourceInfo> {
   const config = {
     ...defaultFetchFileOptions,
     ...options,
   };
-  const response = await config.fetch(input, config.init);
+  const url = internal_toIriString(input);
+  const response = await config.fetch(url, config.init);
   if (!response.ok) {
     throw new Error(
       `Fetching the File failed: ${response.status} ${response.statusText}.`
@@ -97,7 +101,7 @@ export async function unstable_fetchFile(
  * @returns A file and the ACLs that apply to it, if available to the authenticated user.
  */
 export async function unstable_fetchFileWithAcl(
-  input: RequestInfo,
+  input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Blob & WithResourceInfo & unstable_WithAcl> {
   const file = await unstable_fetchFile(input, options);
@@ -117,14 +121,15 @@ const defaultSaveOptions = {
  * @param input The URL of the file to delete
  */
 export async function unstable_deleteFile(
-  input: RequestInfo,
+  input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<void> {
   const config = {
     ...defaultFetchFileOptions,
     ...options,
   };
-  const response = await config.fetch(input, {
+  const url = internal_toIriString(input);
+  const response = await config.fetch(url, {
     ...config.init,
     method: "DELETE",
   });
@@ -150,7 +155,7 @@ type SaveFileOptions = FetchFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug)
  */
 export async function unstable_saveFileInContainer(
-  folderUrl: RequestInfo,
+  folderUrl: Url | UrlString,
   file: Blob,
   options: Partial<SaveFileOptions> = defaultFetchFileOptions
 ): Promise<Response> {
@@ -165,7 +170,7 @@ export async function unstable_saveFileInContainer(
  * @param options Additional parameters for file creation (e.g. a slug)
  */
 export async function unstable_overwriteFile(
-  fileUrl: RequestInfo,
+  fileUrl: Url | UrlString,
   file: Blob,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Response> {
@@ -182,7 +187,7 @@ export async function unstable_overwriteFile(
  * @param options Additional parameters for file creation (e.g. a slug)
  */
 async function writeFile(
-  targetUrl: RequestInfo,
+  targetUrl: Url | UrlString,
   file: Blob,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
@@ -206,7 +211,9 @@ async function writeFile(
   }
   headers.append("Content-Type", file.type);
 
-  return await config.fetch(targetUrl, {
+  const targetUrlString = internal_toIriString(targetUrl);
+
+  return await config.fetch(targetUrlString, {
     ...config.init,
     headers,
     method,
