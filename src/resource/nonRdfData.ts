@@ -77,6 +77,25 @@ export async function unstable_fetchFile(
   return fileWithResourceInfo;
 }
 
+/**
+ * Experimental: fetch a file and its associated Access Control List.
+ *
+ * This is an experimental function that fetches both a file, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
+ * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
+ * provide this info in a single request. Therefore, and because this function is still
+ * experimental, prefer [[unstable_fetchFile]] instead.
+ *
+ * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
+ * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
+ * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
+ * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
+ * authenticated user.
+ *
+ * @param url The URL of the fetched file
+ * @param options Fetching options: a custom fetcher and/or headers.
+ * @returns A file and the ACLs that apply to it, if available to the authenticated user.
+ */
 export async function unstable_fetchFileWithAcl(
   input: RequestInfo,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
