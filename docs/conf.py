@@ -36,7 +36,7 @@ pygments_style = 'sphinx'
 
 # -- Using .txt instead of .rst for restructured text -----------------------
 source_suffix = {
-    '.txt': 'restructuredtext',
+    '.rst': 'restructuredtext',
 }
 
 # -- Add lexers
