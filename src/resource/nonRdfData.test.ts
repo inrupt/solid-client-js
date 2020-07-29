@@ -367,9 +367,7 @@ describe("Non-RDF data deletion", () => {
         },
       ],
     ]);
-    expect(response).toEqual(
-      new Response(undefined, { status: 200, statusText: "Deleted" })
-    );
+    expect(response).toBeUndefined();
   });
 
   it("should DELETE a remote resource using the provided fetcher", async () => {
@@ -393,9 +391,7 @@ describe("Non-RDF data deletion", () => {
         },
       ],
     ]);
-    expect(response).toEqual(
-      new Response(undefined, { status: 200, statusText: "Deleted" })
-    );
+    expect(response).toBeUndefined();
   });
 
   it("should pass through the request init if it is set by the user", async () => {
@@ -424,7 +420,7 @@ describe("Non-RDF data deletion", () => {
       ],
     ]);
   });
-  it("should return the response on a failed request", async () => {
+  it("should throw an error on a failed request", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
@@ -434,15 +430,12 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await unstable_deleteFile("https://some.url", {
+    const deletionPromise = unstable_deleteFile("https://some.url", {
       fetch: mockFetch,
     });
 
-    expect(response).toEqual(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      })
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the file failed: 400 Bad request"
     );
   });
 });

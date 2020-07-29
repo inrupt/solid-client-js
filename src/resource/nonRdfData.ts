@@ -119,15 +119,21 @@ const defaultSaveOptions = {
 export async function unstable_deleteFile(
   input: RequestInfo,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
-): Promise<Response> {
+): Promise<void> {
   const config = {
     ...defaultFetchFileOptions,
     ...options,
   };
-  return config.fetch(input, {
+  const response = await config.fetch(input, {
     ...config.init,
     method: "DELETE",
   });
+
+  if (!response.ok) {
+    throw new Error(
+      `Deleting the file failed: ${response.status} ${response.statusText}.`
+    );
+  }
 }
 
 type SaveFileOptions = FetchFileOptions & {
