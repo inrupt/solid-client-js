@@ -864,7 +864,7 @@ describe("setAgentResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    let updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = unstable_setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -991,7 +991,7 @@ describe("setAgentResourceAccess", () => {
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
-      let agents = getIriAll(
+      const agents = getIriAll(
         thing,
         "http://www.w3.org/ns/auth/acl#agent"
       ).filter((agent) => agent === "https://some.pod/profileDoc#webId");
