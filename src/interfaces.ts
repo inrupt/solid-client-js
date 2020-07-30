@@ -62,7 +62,7 @@ export type ThingLocal = Thing & { internal_localSubject: LocalNode };
  * This is a Blank Node with a `name` property attached, which will be used to construct this
  * Node's full URL once it is persisted, where it will transform into a Named Node.
  *
- * @internal Utility method; library users should not need to interact with LocalNodes directly.
+ * @hidden Utility type; library users should not need to interact with LocalNodes directly.
  */
 export type LocalNode = BlankNode & { internal_name: string };
 
@@ -135,7 +135,7 @@ export type WithResourceInfo = {
 };
 
 /**
- * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
+ * @hidden Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
 export type WithChangeLog = {
   internal_changeLog: {
