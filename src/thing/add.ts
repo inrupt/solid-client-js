@@ -41,23 +41,23 @@ import {
 import { DataFactory } from "../rdfjs";
 
 /**
- * Create a new Thing with a URL added for a Predicate.
+ * Create a new Thing with a URL added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setUrl]].
+ * This preserves existing values for the given Property. To replace them, see [[setUrl]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add a URL value to.
- * @param predicate Predicate for which to add the given URL value.
- * @param url URL to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given URL value.
+ * @param url URL to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
 export const addUrl: AddOfType<Url | UrlString | Thing> = (
   thing,
-  predicate,
+  property,
   url
 ) => {
-  const predicateNode = asNamedNode(predicate);
+  const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
   newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(url)));
@@ -67,162 +67,162 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
 export const addIri = addUrl;
 
 /**
- * Create a new Thing with a boolean added for a Predicate.
+ * Create a new Thing with a boolean added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setBoolean]].
+ * This preserves existing values for the given Property. To replace them, see [[setBoolean]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add a boolean value to.
- * @param predicate Predicate for which to add the given boolean value.
- * @param value Boolean to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given boolean value.
+ * @param value Boolean to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addBoolean: AddOfType<boolean> = (thing, predicate, value) => {
+export const addBoolean: AddOfType<boolean> = (thing, property, value) => {
   return addLiteralOfType(
     thing,
-    predicate,
+    property,
     serializeBoolean(value),
     xmlSchemaTypes.boolean
   );
 };
 
 /**
- * Create a new Thing with a datetime added for a Predicate.
+ * Create a new Thing with a datetime added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setDatetime]].
+ * This preserves existing values for the given Property. To replace them, see [[setDatetime]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add a datetime value to.
- * @param predicate Predicate for which to add the given datetime value.
- * @param value Datetime to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given datetime value.
+ * @param value Datetime to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addDatetime: AddOfType<Date> = (thing, predicate, value) => {
+export const addDatetime: AddOfType<Date> = (thing, property, value) => {
   return addLiteralOfType(
     thing,
-    predicate,
+    property,
     serializeDatetime(value),
     xmlSchemaTypes.dateTime
   );
 };
 
 /**
- * Create a new Thing with a decimal added for a Predicate.
+ * Create a new Thing with a decimal added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setDecimal]].
+ * This preserves existing values for the given Property. To replace them, see [[setDecimal]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add a decimal value to.
- * @param predicate Predicate for which to add the given decimal value.
- * @param value Decimal to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given decimal value.
+ * @param value Decimal to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addDecimal: AddOfType<number> = (thing, predicate, value) => {
+export const addDecimal: AddOfType<number> = (thing, property, value) => {
   return addLiteralOfType(
     thing,
-    predicate,
+    property,
     serializeDecimal(value),
     xmlSchemaTypes.decimal
   );
 };
 
 /**
- * Create a new Thing with an integer added for a Predicate.
+ * Create a new Thing with an integer added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setInteger]].
+ * This preserves existing values for the given Property. To replace them, see [[setInteger]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add an integer value to.
- * @param predicate Predicate for which to add the given integer value.
- * @param value Integer to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given integer value.
+ * @param value Integer to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addInteger: AddOfType<number> = (thing, predicate, value) => {
+export const addInteger: AddOfType<number> = (thing, property, value) => {
   return addLiteralOfType(
     thing,
-    predicate,
+    property,
     serializeInteger(value),
     xmlSchemaTypes.integer
   );
 };
 
 /**
- * Create a new Thing with a localised string added for a Predicate.
+ * Create a new Thing with a localised string added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setStringWithLocale]].
+ * This preserves existing values for the given Property. To replace them, see [[setStringWithLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add a localised string value to.
- * @param predicate Predicate for which to add the given string value.
- * @param value String to add to `thing` for the given `predicate`.
+ * @param property Property for which to add the given string value.
+ * @param value String to add to `thing` for the given `property`.
  * @param locale Locale of the added string.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
 export function addStringWithLocale<T extends Thing>(
   thing: T,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: string,
   locale: string
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addStringWithLocale(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: string,
   locale: string
 ): Thing {
   const literal = DataFactory.literal(value, normalizeLocale(locale));
-  return addLiteral(thing, predicate, literal);
+  return addLiteral(thing, property, literal);
 }
 
 /**
- * Create a new Thing with an unlocalised string added for a Predicate.
+ * Create a new Thing with an unlocalised string added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setStringNoLocale]].
+ * This preserves existing values for the given Property. To replace them, see [[setStringNoLocale]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @param thing Thing to add an unlocalised string value to.
- * @param predicate Predicate for which to add the given string value.
- * @param value String to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @param property Property for which to add the given string value.
+ * @param value String to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
 export const addStringNoLocale: AddOfType<string> = (
   thing,
-  predicate,
+  property,
   value
 ) => {
-  return addLiteralOfType(thing, predicate, value, xmlSchemaTypes.string);
+  return addLiteralOfType(thing, property, value, xmlSchemaTypes.string);
 };
 
 /**
- * Create a new Thing with a Named Node added for a Predicate.
+ * Create a new Thing with a Named Node added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setNamedNode]].
+ * This preserves existing values for the given Property. To replace them, see [[setNamedNode]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Named Node to.
- * @param predicate Predicate for which to add a value.
+ * @param property Property for which to add a value.
  * @param value The Named Node to add.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
 export function addNamedNode<T extends Thing>(
   thing: T,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: NamedNode
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addNamedNode(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: NamedNode
 ): Thing {
-  const predicateNode = asNamedNode(predicate);
+  const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
   newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
@@ -230,29 +230,29 @@ export function addNamedNode(
 }
 
 /**
- * Create a new Thing with a Literal added for a Predicate.
+ * Create a new Thing with a Literal added for a Property.
  *
- * This preserves existing values for the given Predicate. To replace them, see [[setLiteral]].
+ * This preserves existing values for the given Property. To replace them, see [[setLiteral]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Literal to.
- * @param predicate Predicate for which to add a value.
+ * @param property Property for which to add a value.
  * @param value The Literal to add.
- * @returns A new Thing equal to the input Thing with the given value added for the given Predicate.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
 export function addLiteral<T extends Thing>(
   thing: T,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: Literal
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 export function addLiteral(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: Literal
 ): Thing {
-  const predicateNode = asNamedNode(predicate);
+  const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
   newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
@@ -261,28 +261,28 @@ export function addLiteral(
 
 function addLiteralOfType<T extends Thing>(
   thing: T,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
 ): T extends ThingLocal ? ThingLocal : ThingPersisted;
 function addLiteralOfType(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: string,
   type: UrlString
 ): Thing {
   const literal = DataFactory.literal(value, type);
-  return addLiteral(thing, predicate, literal);
+  return addLiteral(thing, property, literal);
 }
 
 /**
  * @param thing Thing to add a value to.
- * @param predicate Predicate on which to add the given value.
- * @param value Value to add to `thing` for the given `predicate`.
- * @returns A new Thing equal to the input Thing with the given value removed for the given Predicate.
+ * @param property Property on which to add the given value.
+ * @param value Value to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 type AddOfType<Type> = <T extends Thing>(
   thing: T,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   value: Type
 ) => T extends ThingLocal ? ThingLocal : ThingPersisted;

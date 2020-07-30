@@ -201,7 +201,7 @@ describe("setIri", () => {
     );
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -334,7 +334,7 @@ describe("setBoolean", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -474,7 +474,7 @@ describe("setDatetime", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -614,7 +614,7 @@ describe("setDecimal", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -750,7 +750,7 @@ describe("setInteger", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -891,7 +891,7 @@ describe("setStringWithLocale", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -1035,7 +1035,7 @@ describe("setStringNoLocale", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -1175,7 +1175,7 @@ describe("setNamedNode", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",
@@ -1309,7 +1309,7 @@ describe("setLiteral", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const existingQuad = getMockQuad(
       "https://some.pod/resource#subject",
       "https://some.vocab/predicate",

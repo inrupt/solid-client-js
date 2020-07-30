@@ -84,6 +84,13 @@ and <NoWrap>`https://cleopatra.solid.community/`</NoWrap> are Containers.
 A [`LitDataset`](./api/modules/_interfaces_.md#litdataset) represents all the [Things](#thing) that are
 (to be) stored in a specific [Resource](#resource).
 
+#### Property
+
+Like JavaScript objects, [Thing](#thing)s have _properties_. Unlike JavaScript, these properties are
+not identified by just any strings, but, like so many things in Solid, by URLs. This ensures that
+whichever app uses these URLs intends them to mean the same, rather than e.g. one app understanding
+`name` to be just the family name, whereas the other uses it for one's full name.
+
 #### Resource
 
 The thing that's sent to you when you type a URL into a web browser.

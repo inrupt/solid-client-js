@@ -166,7 +166,7 @@ describe("addIri", () => {
     );
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addUrl(
@@ -320,7 +320,7 @@ describe("addBoolean", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addBoolean(
@@ -472,7 +472,7 @@ describe("addDatetime", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addDatetime(
@@ -624,7 +624,7 @@ describe("addDecimal", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addDecimal(
@@ -772,7 +772,7 @@ describe("addInteger", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addInteger(
@@ -917,7 +917,7 @@ describe("addStringWithLocale", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addStringWithLocale(
@@ -1074,7 +1074,7 @@ describe("addStringNoLocale", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addStringNoLocale(
@@ -1226,7 +1226,7 @@ describe("addNamedNode", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addNamedNode(
@@ -1380,7 +1380,7 @@ describe("addLiteral", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thing = getMockEmptyThing("https://some.pod/resource#subject");
 
     const updatedThing = addLiteral(

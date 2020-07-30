@@ -341,10 +341,10 @@ function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
   function copyIris(
     inputRule: typeof sourceRule,
     outputRule: typeof targetRule,
-    predicate: IriString
+    property: IriString
   ) {
-    return getIriAll(inputRule, predicate).reduce(
-      (outputRule, iriTarget) => addIri(outputRule, predicate, iriTarget),
+    return getIriAll(inputRule, property).reduce(
+      (outputRule, iriTarget) => addIri(outputRule, property, iriTarget),
       outputRule
     );
   }

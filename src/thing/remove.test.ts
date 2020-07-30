@@ -111,7 +111,7 @@ describe("removeAll", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithString = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary string value",
@@ -233,7 +233,7 @@ describe("removeIri", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
@@ -414,7 +414,7 @@ describe("removeBoolean", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "0",
@@ -564,7 +564,7 @@ describe("removeDatetime", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42Z",
@@ -717,7 +717,7 @@ describe("removeDecimal", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
@@ -867,7 +867,7 @@ describe("removeInteger", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
@@ -1047,7 +1047,7 @@ describe("removeStringWithLocale", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithStringWithLocale = getMockThingWithStringWithLocaleFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1236,7 +1236,7 @@ describe("removeStringNoLocale", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some arbitrary string",
@@ -1487,7 +1487,7 @@ describe("removeLiteral", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
@@ -1654,7 +1654,7 @@ describe("removeNamedNode", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.vocab/object"

@@ -85,9 +85,9 @@ There are three things to know about data in Solid:
 3. There can be zero, one or more values for each characteristic.
 
 As an example, in my profile, an app can look for my name using the URL `http://xmlns.com/foaf/0.1/name`.
-This is explicitly understood to be a name, and not just a family name or a given name.
-Additionally, it is understood that the name is a string, and that something can have more than one
-names.
+This [property](../glossary.mdx#property) is explicitly understood to be a name, and not just a family
+name or a given name. Additionally, it is understood that the name is a string, and that something
+can have more than one names.
 
 :::note Who decides on these URLs?
 
