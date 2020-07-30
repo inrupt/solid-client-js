@@ -150,6 +150,8 @@ type SaveFileOptions = FetchFileOptions & {
  * filename (which may or may not be the given `slug`), it will return it in
  * the response's Location header.
  *
+ * If something went wrong saving the file, the returned Promise will be rejected with an Error.
+ *
  * @param folderUrl The URL of the folder where the new file is saved
  * @param file The file to be written
  * @param options Additional parameters for file creation (e.g. a slug)
@@ -158,12 +160,39 @@ export async function unstable_saveFileInContainer(
   folderUrl: Url | UrlString,
   file: Blob,
   options: Partial<SaveFileOptions> = defaultFetchFileOptions
-): Promise<Response> {
-  return writeFile(folderUrl, file, "POST", options);
+): Promise<Blob & WithResourceInfo> {
+  const folderUrlString = internal_toIriString(folderUrl);
+  const response = await writeFile(folderUrlString, file, "POST", options);
+
+  if (!response.ok) {
+    throw new Error(
+      `Saving the file failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const locationHeader = response.headers.get("Location");
+  if (locationHeader === null) {
+    throw new Error(
+      "Could not determine the location for the newly saved file."
+    );
+  }
+
+  const fileIri = new URL(locationHeader, new URL(folderUrlString).origin).href;
+
+  const blobClone = new Blob([file]);
+
+  return Object.assign(blobClone, {
+    internal_resourceInfo: {
+      fetchedFrom: fileIri,
+      isLitDataset: false,
+    },
+  });
 }
 
 /**
  * Saves a file at a given URL, erasing any previous content.
+ *
+ * If something went wrong saving the file, the returned Promise will be rejected with an Error.
  *
  * @param fileUrl The URL where the file is saved
  * @param file The file to be written
@@ -173,8 +202,24 @@ export async function unstable_overwriteFile(
   fileUrl: Url | UrlString,
   file: Blob,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
-): Promise<Response> {
-  return writeFile(fileUrl, file, "PUT", options);
+): Promise<Blob & WithResourceInfo> {
+  const fileUrlString = internal_toIriString(fileUrl);
+  const response = await writeFile(fileUrlString, file, "PUT", options);
+
+  if (!response.ok) {
+    throw new Error(
+      `Saving the file failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const blobClone = new Blob([file]);
+
+  return Object.assign(blobClone, {
+    internal_resourceInfo: {
+      fetchedFrom: fileUrlString,
+      isLitDataset: false,
+    },
+  });
 }
 
 /**
@@ -187,7 +232,7 @@ export async function unstable_overwriteFile(
  * @param options Additional parameters for file creation (e.g. a slug)
  */
 async function writeFile(
-  targetUrl: Url | UrlString,
+  targetUrl: UrlString,
   file: Blob,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
