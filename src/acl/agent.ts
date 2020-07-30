@@ -386,6 +386,21 @@ function removeAgentFromResourceRule(
     acl.accessTo,
     resourceIri
   );
+  const agentHasDefaultAccess =
+    getIriAll(rule, acl.agent).filter(
+      (originalAgent) => originalAgent === agent
+    ).length > 0;
+  if (!agentHasDefaultAccess) {
+    // If the original rule if both a resource and a default rule, and did **not**
+    // give default access to the agent whose access are being set, only the resource
+    // access should be duplicated (not the default ones)
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.default,
+      resourceIri
+    );
+  }
+
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
