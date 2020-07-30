@@ -497,10 +497,10 @@ type AccessModeIriString = typeof internal_accessModeIriStrings[keyof typeof int
 
 /** @internal
  * This function finds, among a set of ACL rules, the ones granting access to a given entity (the target)
- * and identifying it with a specific predicate (`acl:agent` or `acl:agentGroup`).
+ * and identifying it with a specific property (`acl:agent` or `acl:agentGroup`).
  * @param aclRules The set of rules to filter
  * @param targetIri The IRI of the target
- * @param targetType The predicate linking the rule to the target
+ * @param targetType The property linking the rule to the target
  */
 export function internal_getAclRulesForIri(
   aclRules: unstable_AclRule[],
@@ -515,7 +515,7 @@ export function internal_getAclRulesForIri(
 /** @internal
  * This function transforms a given set of rules into a map associating the IRIs
  * of the entities to which permissions are granted by these rules, and the permissions
- * granted to them. Additionnally, it filters these entities based on the predicate
+ * granted to them. Additionnally, it filters these entities based on the property
  * that refers to them in the rule.
  */
 export function internal_getAccessByIri(

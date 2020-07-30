@@ -35,14 +35,14 @@ import {
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
- * @param predicate The given Predicate for which you want the URL value.
- * @returns A URL value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the URL value.
+ * @returns A URL value for the given Property, if present, or null otherwise.
  */
 export function getUrlOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): UrlString | null {
-  const namedNodeMatcher = getNamedNodeMatcher(predicate);
+  const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuad = findOne(thing, namedNodeMatcher);
 
@@ -57,14 +57,14 @@ export const getIriOne = getUrlOne;
 
 /**
  * @param thing The [[Thing]] to read the URL values from.
- * @param predicate The given Predicate for which you want the URL values.
- * @returns The URL values for the given Predicate.
+ * @param property The given Property for which you want the URL values.
+ * @returns The URL values for the given Property.
  */
 export function getUrlAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): UrlString[] {
-  const iriMatcher = getNamedNodeMatcher(predicate);
+  const iriMatcher = getNamedNodeMatcher(property);
 
   const matchingQuads = findAll(thing, iriMatcher);
 
@@ -75,16 +75,16 @@ export const getIriAll = getUrlAll;
 
 /**
  * @param thing The [[Thing]] to read a boolean value from.
- * @param predicate The given Predicate for which you want the boolean value.
- * @returns A boolean value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the boolean value.
+ * @returns A boolean value for the given Property, if present, or null otherwise.
  */
 export function getBooleanOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): boolean | null {
   const literalString = getLiteralOneOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.boolean
   );
 
@@ -97,16 +97,16 @@ export function getBooleanOne(
 
 /**
  * @param thing The [[Thing]] to read the boolean values from.
- * @param predicate The given Predicate for which you want the boolean values.
- * @returns The boolean values for the given Predicate.
+ * @param property The given Property for which you want the boolean values.
+ * @returns The boolean values for the given Property.
  */
 export function getBooleanAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): boolean[] {
   const literalStrings = getLiteralAllOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.boolean
   );
 
@@ -117,16 +117,16 @@ export function getBooleanAll(
 
 /**
  * @param thing The [[Thing]] to read a datetime value from.
- * @param predicate The given Predicate for which you want the datetime value.
- * @returns A datetime value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the datetime value.
+ * @returns A datetime value for the given Property, if present, or null otherwise.
  */
 export function getDatetimeOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): Date | null {
   const literalString = getLiteralOneOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.dateTime
   );
 
@@ -139,16 +139,16 @@ export function getDatetimeOne(
 
 /**
  * @param thing The [[Thing]] to read the datetime values from.
- * @param predicate The given Predicate for which you want the datetime values.
- * @returns The datetime values for the given Predicate.
+ * @param property The given Property for which you want the datetime values.
+ * @returns The datetime values for the given Property.
  */
 export function getDatetimeAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): Date[] {
   const literalStrings = getLiteralAllOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.dateTime
   );
 
@@ -159,16 +159,16 @@ export function getDatetimeAll(
 
 /**
  * @param thing The [[Thing]] to read a decimal value from.
- * @param predicate The given Predicate for which you want the decimal value.
- * @returns A decimal value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the decimal value.
+ * @returns A decimal value for the given Property, if present, or null otherwise.
  */
 export function getDecimalOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): number | null {
   const literalString = getLiteralOneOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.decimal
   );
 
@@ -181,16 +181,16 @@ export function getDecimalOne(
 
 /**
  * @param thing The [[Thing]] to read the decimal values from.
- * @param predicate The given Predicate for which you want the decimal values.
- * @returns The decimal values for the given Predicate.
+ * @param property The given Property for which you want the decimal values.
+ * @returns The decimal values for the given Property.
  */
 export function getDecimalAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): number[] {
   const literalStrings = getLiteralAllOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.decimal
   );
 
@@ -201,16 +201,16 @@ export function getDecimalAll(
 
 /**
  * @param thing The [[Thing]] to read an integer value from.
- * @param predicate The given Predicate for which you want the integer value.
- * @returns An integer value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the integer value.
+ * @returns An integer value for the given Property, if present, or null otherwise.
  */
 export function getIntegerOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): number | null {
   const literalString = getLiteralOneOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.integer
   );
 
@@ -223,16 +223,16 @@ export function getIntegerOne(
 
 /**
  * @param thing The [[Thing]] to read the integer values from.
- * @param predicate The given Predicate for which you want the integer values.
- * @returns The integer values for the given Predicate.
+ * @param property The given Property for which you want the integer values.
+ * @returns The integer values for the given Property.
  */
 export function getIntegerAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): number[] {
   const literalStrings = getLiteralAllOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.integer
   );
 
@@ -243,16 +243,16 @@ export function getIntegerAll(
 
 /**
  * @param thing The [[Thing]] to read a localised string value from.
- * @param predicate The given Predicate for which you want the localised string value.
+ * @param property The given Property for which you want the localised string value.
  * @param locale The desired locale for the string value.
- * @returns A localised string value for the given Predicate, if present in `locale`, or null otherwise.
+ * @returns A localised string value for the given Property, if present in `locale`, or null otherwise.
  */
 export function getStringWithLocaleOne(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   locale: string
 ): string | null {
-  const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
+  const localeStringMatcher = getLocaleStringMatcher(property, locale);
 
   const matchingQuad = findOne(thing, localeStringMatcher);
 
@@ -265,16 +265,16 @@ export function getStringWithLocaleOne(
 
 /**
  * @param thing The [[Thing]] to read the localised string values from.
- * @param predicate The given Predicate for which you want the localised string values.
+ * @param property The given Property for which you want the localised string values.
  * @param locale The desired locale for the string values.
- * @returns The localised string values for the given Predicate.
+ * @returns The localised string values for the given Property.
  */
 export function getStringWithLocaleAll(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   locale: string
 ): string[] {
-  const localeStringMatcher = getLocaleStringMatcher(predicate, locale);
+  const localeStringMatcher = getLocaleStringMatcher(property, locale);
 
   const matchingQuads = findAll(thing, localeStringMatcher);
 
@@ -283,16 +283,16 @@ export function getStringWithLocaleAll(
 
 /**
  * @param thing The [[Thing]] to read a string value from.
- * @param predicate The given Predicate for which you want the string value.
- * @returns A string value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the string value.
+ * @returns A string value for the given Property, if present, or null otherwise.
  */
 export function getStringNoLocaleOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): string | null {
   const literalString = getLiteralOneOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.string
   );
 
@@ -301,16 +301,16 @@ export function getStringNoLocaleOne(
 
 /**
  * @param thing The [[Thing]] to read the string values from.
- * @param predicate The given Predicate for which you want the string values.
- * @returns The string values for the given Predicate.
+ * @param property The given Property for which you want the string values.
+ * @returns The string values for the given Property.
  */
 export function getStringNoLocaleAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): string[] {
   const literalStrings = getLiteralAllOfType(
     thing,
-    predicate,
+    property,
     xmlSchemaTypes.string
   );
 
@@ -319,15 +319,15 @@ export function getStringNoLocaleAll(
 
 /**
  * @param thing The [[Thing]] to read a NamedNode value from.
- * @param predicate The given Predicate for which you want the NamedNode value.
- * @returns A NamedNode value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the NamedNode value.
+ * @returns A NamedNode value for the given Property, if present, or null otherwise.
  * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
 export function getNamedNodeOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): NamedNode | null {
-  const namedNodeMatcher = getNamedNodeMatcher(predicate);
+  const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuad = findOne(thing, namedNodeMatcher);
 
@@ -340,15 +340,15 @@ export function getNamedNodeOne(
 
 /**
  * @param thing The [[Thing]] to read the NamedNode values from.
- * @param predicate The given Predicate for which you want the NamedNode values.
- * @returns The NamedNode values for the given Predicate.
+ * @param property The given Property for which you want the NamedNode values.
+ * @returns The NamedNode values for the given Property.
  * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
 export function getNamedNodeAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): NamedNode[] {
-  const namedNodeMatcher = getNamedNodeMatcher(predicate);
+  const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuads = findAll(thing, namedNodeMatcher);
 
@@ -357,15 +357,15 @@ export function getNamedNodeAll(
 
 /**
  * @param thing The [[Thing]] to read a Literal value from.
- * @param predicate The given Predicate for which you want the Literal value.
- * @returns A Literal value for the given Predicate, if present, or null otherwise.
+ * @param property The given Property for which you want the Literal value.
+ * @returns A Literal value for the given Property, if present, or null otherwise.
  * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
 export function getLiteralOne(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): Literal | null {
-  const literalMatcher = getLiteralMatcher(predicate);
+  const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuad = findOne(thing, literalMatcher);
 
@@ -378,15 +378,15 @@ export function getLiteralOne(
 
 /**
  * @param thing The [[Thing]] to read the Literal values from.
- * @param predicate The given Predicate for which you want the Literal values.
- * @returns The Literal values for the given Predicate.
+ * @param property The given Property for which you want the Literal values.
+ * @returns The Literal values for the given Property.
  * @ignore This should not be needed due to the other get*All() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
 export function getLiteralAll(
   thing: Thing,
-  predicate: Url | UrlString
+  property: Url | UrlString
 ): Literal[] {
-  const literalMatcher = getLiteralMatcher(predicate);
+  const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuads = findAll(thing, literalMatcher);
 
@@ -433,8 +433,8 @@ function findAll<Object extends Quad_Object>(
   return matched;
 }
 
-function getNamedNodeMatcher(predicate: Url | UrlString): Matcher<NamedNode> {
-  const predicateNode = asNamedNode(predicate);
+function getNamedNodeMatcher(property: Url | UrlString): Matcher<NamedNode> {
+  const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
     quad: Quad
@@ -444,8 +444,8 @@ function getNamedNodeMatcher(predicate: Url | UrlString): Matcher<NamedNode> {
   return matcher;
 }
 
-function getLiteralMatcher(predicate: Url | UrlString): Matcher<Literal> {
-  const predicateNode = asNamedNode(predicate);
+function getLiteralMatcher(property: Url | UrlString): Matcher<Literal> {
+  const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
     quad: Quad
@@ -459,10 +459,10 @@ type LiteralOfType<Type extends XmlSchemaTypeIri> = Literal & {
   datatype: { value: Type };
 };
 function getLiteralOfTypeMatcher<Datatype extends XmlSchemaTypeIri>(
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   datatype: Datatype
 ): Matcher<LiteralOfType<Datatype>> {
-  const predicateNode = asNamedNode(predicate);
+  const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
     quad: Quad
@@ -481,10 +481,10 @@ type LiteralLocaleString = Literal & {
   language: string;
 };
 function getLocaleStringMatcher(
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   locale: string
 ): Matcher<LiteralLocaleString> {
-  const predicateNode = asNamedNode(predicate);
+  const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
     quad: Quad
@@ -501,16 +501,16 @@ function getLocaleStringMatcher(
 
 /**
  * @param thing The [Thing]] to read a Literal of the given type from.
- * @param predicate The given Predicate for which you want the Literal value.
+ * @param property The given Property for which you want the Literal value.
  * @param literalType Set type of the Literal data.
- * @returns The stringified value for the given Predicate and type, if present, or null otherwise.
+ * @returns The stringified value for the given Property and type, if present, or null otherwise.
  */
 function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   literalType: Datatype
 ): string | null {
-  const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
+  const literalOfTypeMatcher = getLiteralOfTypeMatcher(property, literalType);
 
   const matchingQuad = findOne(thing, literalOfTypeMatcher);
 
@@ -523,16 +523,16 @@ function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
 
 /**
  * @param thing The [Thing]] to read the Literals of the given type from.
- * @param predicate The given Predicate for which you want the Literal values.
+ * @param property The given Property for which you want the Literal values.
  * @param literalType Set type of the Literal data.
- * @returns The stringified values for the given Predicate and type.
+ * @returns The stringified values for the given Property and type.
  */
 function getLiteralAllOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
-  predicate: Url | UrlString,
+  property: Url | UrlString,
   literalType: Datatype
 ): string[] {
-  const literalOfTypeMatcher = getLiteralOfTypeMatcher(predicate, literalType);
+  const literalOfTypeMatcher = getLiteralOfTypeMatcher(property, literalType);
 
   const matchingQuads = findAll(thing, literalOfTypeMatcher);
 

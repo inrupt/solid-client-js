@@ -123,7 +123,7 @@ describe("getIriOne", () => {
     });
   }
 
-  it("returns the IRI value for the given Predicate", () => {
+  it("returns the IRI value for the given Property", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
       "https://some.vocab/object"
@@ -134,7 +134,7 @@ describe("getIriOne", () => {
     );
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
       "https://some.vocab/object"
@@ -235,7 +235,7 @@ describe("getIriAll", () => {
     ]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithIris = getMockThingWithIris(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
@@ -302,7 +302,7 @@ describe("getBooleanOne", () => {
     ).toBe(true);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "0",
@@ -390,7 +390,7 @@ describe("getBooleanAll", () => {
     ).toEqual([true, false]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithBooleans = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "1",
@@ -480,7 +480,7 @@ describe("getDatetimeOne", () => {
     ).toEqual(expectedDate);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42Z",
@@ -579,7 +579,7 @@ describe("getDatetimeAll", () => {
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "1955-06-08T13:37:42Z",
@@ -680,7 +680,7 @@ describe("getDecimalOne", () => {
     ).toBe(13.37);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
@@ -760,7 +760,7 @@ describe("getDecimalAll", () => {
     ).toEqual([13.37, 7.2]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithDecimals = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "13.37",
@@ -840,7 +840,7 @@ describe("getIntegerOne", () => {
     ).toBe(42);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
@@ -916,7 +916,7 @@ describe("getIntegerAll", () => {
     ).toEqual([42, 1337]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithIntegers = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "42",
@@ -1002,7 +1002,7 @@ describe("getStringWithLocaleOne", () => {
     ).toBe("Some value");
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.vocab/subject"),
@@ -1174,7 +1174,7 @@ describe("getStringsWithLocaleAll", () => {
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
     const quad1 = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.vocab/subject"),
@@ -1339,7 +1339,7 @@ describe("getStringNoLocaleOne", () => {
     ).toBe("Some value");
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some value",
@@ -1431,7 +1431,7 @@ describe("getStringNoLocaleAll", () => {
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithStringNoLocales = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "Some value 1",
@@ -1524,7 +1524,7 @@ describe("getLiteralOne", () => {
     expect((foundLiteral as Literal).value).toBe("Some string");
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some string",
@@ -1595,7 +1595,7 @@ describe("getLiteralAll", () => {
     expect(foundLiterals[1].value).toBe("Some string 2");
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithLiterals = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "Some string 1",
@@ -1693,7 +1693,7 @@ describe("getNamedNodeOne", () => {
     );
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.vocab/object"
@@ -1789,7 +1789,7 @@ describe("getNamedNodeAll", () => {
     expect(foundNamedNodes[1].value).toBe("https://some.vocab/object2");
   });
 
-  it("accepts Predicates as Named Nodes", () => {
+  it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
