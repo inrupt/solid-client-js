@@ -931,13 +931,6 @@ describe("setAgentResourceAccess", () => {
     sourceDataset.add(
       DataFactory.triple(
         namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/2000/01/rdf-schema#label"),
-        literal("Owner ACL", "en")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
         namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
         namedNode("https://arbitrary.pod/resource")
       )
@@ -1005,7 +998,7 @@ describe("setAgentResourceAccess", () => {
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(13);
+    expect(updatedQuads).toHaveLength(12);
   });
 
   it("does not alter the input LitDataset", () => {
