@@ -164,6 +164,8 @@ export {
   unstable_getPublicAccess,
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,
+  unstable_setPublicResourceAccess,
+  unstable_setPublicDefaultAccess,
 } from "./acl/class";
 export {
   Url,

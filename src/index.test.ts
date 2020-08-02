@@ -111,6 +111,8 @@ import {
   unstable_getPublicAccess,
   unstable_getPublicResourceAccess,
   unstable_getPublicDefaultAccess,
+  unstable_setPublicResourceAccess,
+  unstable_setPublicDefaultAccess,
   unstable_hasAccessibleAcl,
   unstable_getGroupAccessOne,
   unstable_getGroupAccessAll,
@@ -225,6 +227,8 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getPublicAccess).toBeDefined();
   expect(unstable_getPublicResourceAccess).toBeDefined();
   expect(unstable_getPublicDefaultAccess).toBeDefined();
+  expect(unstable_setPublicResourceAccess).toBeDefined();
+  expect(unstable_setPublicDefaultAccess).toBeDefined();
   expect(unstable_hasAccessibleAcl).toBeDefined();
   expect(unstable_getGroupAccessOne).toBeDefined();
   expect(unstable_getGroupAccessAll).toBeDefined();

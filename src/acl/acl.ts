@@ -515,7 +515,7 @@ export function internal_getAclRulesForIri(
 /** @internal
  * This function transforms a given set of rules into a map associating the IRIs
  * of the entities to which permissions are granted by these rules, and the permissions
- * granted to them. Additionnally, it filters these entities based on the property
+ * granted to them. Additionally, it filters these entities based on the predicate
  * that refers to them in the rule.
  */
 export function internal_getAccessByIri(

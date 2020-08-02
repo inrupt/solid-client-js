@@ -200,7 +200,7 @@ export function unstable_setAgentResourceAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given Access Modes:
-  let newRule = intialiseAclRule(access);
+  let newRule = initialiseAclRule(access);
   newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -304,7 +304,7 @@ export function unstable_setAgentDefaultAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given default Access Modes:
-  let newRule = intialiseAclRule(access);
+  let newRule = initialiseAclRule(access);
   newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -337,7 +337,9 @@ function isAgentAclRule(aclRule: unstable_AclRule): boolean {
  *
  * @param sourceRule ACL rule to duplicate.
  */
-function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
+export function duplicateAclRule(
+  sourceRule: unstable_AclRule
+): unstable_AclRule {
   let targetRule = createThing();
   targetRule = setIri(targetRule, rdf.type, acl.Authorization);
 
@@ -404,7 +406,7 @@ function removeAgentFromRule(
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
-function intialiseAclRule(access: unstable_Access): unstable_AclRule {
+export function initialiseAclRule(access: unstable_Access): unstable_AclRule {
   let newRule = createThing();
   newRule = setIri(newRule, rdf.type, acl.Authorization);
   if (access.read) {
