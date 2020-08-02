@@ -88,18 +88,12 @@ export type unstable_AclRule = Thing;
  */
 export type unstable_Access =
   // If someone has write permissions, they also have append permissions:
-  | {
-      read: boolean;
-      append: true;
-      write: true;
-      control: boolean;
-    }
-  | {
-      read: boolean;
-      append: boolean;
-      write: false;
-      control: boolean;
-    };
+  {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
 
 type unstable_WacAllow = {
   user: unstable_Access;
