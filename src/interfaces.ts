@@ -62,7 +62,7 @@ export type ThingLocal = Thing & { internal_localSubject: LocalNode };
  * This is a Blank Node with a `name` property attached, which will be used to construct this
  * Node's full URL once it is persisted, where it will transform into a Named Node.
  *
- * @internal Utility method; library users should not need to interact with LocalNodes directly.
+ * @hidden Utility type; library users should not need to interact with LocalNodes directly.
  */
 export type LocalNode = BlankNode & { internal_name: string };
 
@@ -88,18 +88,12 @@ export type unstable_AclRule = Thing;
  */
 export type unstable_Access =
   // If someone has write permissions, they also have append permissions:
-  | {
-      read: boolean;
-      append: true;
-      write: true;
-      control: boolean;
-    }
-  | {
-      read: boolean;
-      append: boolean;
-      write: false;
-      control: boolean;
-    };
+  {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
 
 type unstable_WacAllow = {
   user: unstable_Access;
@@ -135,7 +129,7 @@ export type WithResourceInfo = {
 };
 
 /**
- * @internal Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
+ * @hidden Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
 export type WithChangeLog = {
   internal_changeLog: {
@@ -243,7 +237,6 @@ export type unstable_WithAccessibleAcl<
  *
  * @param dataset A [[LitDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
- * @hidden The generic in the return type is causing problems for Docusaurus: https://github.com/tgreyuk/typedoc-plugin-markdown/pull/128
  */
 export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
