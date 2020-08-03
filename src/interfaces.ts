@@ -243,7 +243,6 @@ export type unstable_WithAccessibleAcl<
  *
  * @param dataset A [[LitDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
- * @hidden The generic in the return type is causing problems for Docusaurus: https://github.com/tgreyuk/typedoc-plugin-markdown/pull/128
  */
 export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
