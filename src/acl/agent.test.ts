@@ -43,15 +43,18 @@ import {
 } from "../interfaces";
 import { getThingAll } from "../thing/thing";
 import { getIriAll } from "../thing/get";
+import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   agent: IriString,
   resource: IriString,
   access: unstable_Access,
-  type: "resource" | "default"
+  type: "resource" | "default",
+  rule?: IriString
 ): unstable_AclDataset {
-  const subjectIri = resource + "#" + encodeURIComponent(agent) + Math.random();
+  const subjectIri =
+    rule ?? resource + "#" + encodeURIComponent(agent) + Math.random();
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
@@ -914,61 +917,21 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
-    const sourceDataset = Object.assign(dataset(), {
-      internal_accessTo: "https://arbitrary.pod/resource",
-      internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/resource/?ext=acl#owner",
-        isLitDataset: true,
-      },
-    });
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-        namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "resource",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        namedNode("https://arbitrary.pod/resource")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#default"),
-        namedNode("https://arbitrary.pod/resource")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/resource/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
     );
 
     const updatedDataset = unstable_setAgentResourceAccess(
@@ -984,21 +947,26 @@ describe("setAgentResourceAccess", () => {
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
-      const agents = getIriAll(
-        thing,
-        "http://www.w3.org/ns/auth/acl#agent"
-      ).filter((agent) => agent === "https://some.pod/profileDoc#webId");
-      if (agents.length > 0) {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
         // The agent given resource access should not have default access
         expect(
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
         ).toHaveLength(0);
+      } else {
+        // The pre-existing agent should still have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(1);
       }
     });
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(12);
+    expect(updatedQuads).toHaveLength(13);
   });
 
   it("does not alter the input LitDataset", () => {
@@ -1845,61 +1813,21 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
-    const sourceDataset = Object.assign(dataset(), {
-      internal_accessTo: "https://arbitrary.pod/container/",
-      internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/?ext=acl#owner",
-        isLitDataset: true,
-      },
-    });
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-        namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "resource",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#resource"),
-        namedNode("https://arbitrary.pod/container/")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#default"),
-        namedNode("https://arbitrary.pod/container/")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
-    );
-    sourceDataset.add(
-      DataFactory.triple(
-        namedNode("https://arbitrary.pod/container/?ext=acl#owner"),
-        namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
     );
 
     const updatedDataset = unstable_setAgentDefaultAccess(
@@ -1915,17 +1843,26 @@ describe("setAgentDefaultAccess", () => {
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
-      const agents = getIriAll(
-        thing,
-        "http://www.w3.org/ns/auth/acl#agent"
-      ).filter((agent) => agent === "https://some.pod/profileDoc#webId");
-      if (agents.length > 0) {
-        // The agent given resource access should not have resource access
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
+        // The agent given default access should not have resource access
         expect(
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
         ).toHaveLength(0);
+      } else {
+        // The pre-existing agent should still have resource access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(1);
       }
     });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(13);
   });
 
   it("does not alter the input LitDataset", () => {
