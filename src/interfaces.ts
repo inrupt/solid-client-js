@@ -88,18 +88,12 @@ export type unstable_AclRule = Thing;
  */
 export type unstable_Access =
   // If someone has write permissions, they also have append permissions:
-  | {
-      read: boolean;
-      append: true;
-      write: true;
-      control: boolean;
-    }
-  | {
-      read: boolean;
-      append: boolean;
-      write: false;
-      control: boolean;
-    };
+  {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
 
 type unstable_WacAllow = {
   user: unstable_Access;
@@ -243,7 +237,6 @@ export type unstable_WithAccessibleAcl<
  *
  * @param dataset A [[LitDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
- * @hidden The generic in the return type is causing problems for Docusaurus: https://github.com/tgreyuk/typedoc-plugin-markdown/pull/128
  */
 export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
