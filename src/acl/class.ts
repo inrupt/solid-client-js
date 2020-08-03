@@ -133,7 +133,7 @@ export function unstable_getPublicDefaultAccess(
  * to the public, those will be overridden by the given Access Modes.
  *
  * Keep in mind that this function will not modify:
- * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
+ * - access arbitrary Agents might have been given through other ACL rules, e.g. agent- or group-specific permissions.
  * - what access arbitrary Agents have to child Resources.
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
