@@ -28,6 +28,7 @@ import {
   unstable_AclRule,
   IriString,
   WebId,
+  Iri,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl, rdf } from "../constants";
@@ -188,10 +189,11 @@ export function unstable_setAgentResourceAccess(
     // that do not pertain to the given Agent-Resource combination.
     // Note that usually, the latter will no longer include any meaningful statements;
     // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removeAgentFromResourceRule(
+    const [filteredRule, remainingRule] = removeAgentFromRule(
       aclRule,
       agent,
-      aclDataset.internal_accessTo
+      aclDataset.internal_accessTo,
+      "resource"
     );
     filteredAcl = setThing(filteredAcl, filteredRule);
     filteredAcl = setThing(filteredAcl, remainingRule);
@@ -291,10 +293,11 @@ export function unstable_setAgentDefaultAccess(
     // that do not pertain to the given Agent-Resource default combination.
     // Note that usually, the latter will no longer include any meaningful statements;
     // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removeAgentFromDefaultRule(
+    const [filteredRule, remainingRule] = removeAgentFromRule(
       aclRule,
       agent,
-      aclDataset.internal_accessTo
+      aclDataset.internal_accessTo,
+      "default"
     );
     filteredAcl = setThing(filteredAcl, filteredRule);
     filteredAcl = setThing(filteredAcl, remainingRule);
@@ -369,52 +372,35 @@ function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
  * @param resourceIri The Resource to which the Rule should no longer apply for the given Agent.
  * @returns A tuple with the original ACL Rule sans the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
  */
-function removeAgentFromResourceRule(
+function removeAgentFromRule(
   rule: unstable_AclRule,
   agent: WebId,
-  resourceIri: IriString
+  resourceIri: IriString,
+  ruleType: "resource" | "default"
 ): [unstable_AclRule, unstable_AclRule] {
   // The existing rule will keep applying to Agents other than the given one:
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
-  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
-  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
-  // ...but not to the given Resource:
+  let ruleForOtherTargets: unstable_AclRule;
+  if (!getIriAll(rule, acl.agent).includes(agent)) {
+    const emptyRule = intialiseAclRule({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+    return [ruleWithoutAgent, emptyRule];
+  }
+  // The agent already had some access in the rule, so duplicate it...
+  ruleForOtherTargets = duplicateAclRule(rule);
+  // ...but remove access to the original Resource:
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
-    acl.accessTo,
+    ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
-  return [ruleWithoutAgent, ruleForOtherTargets];
-}
-
-/**
- * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
- * except for giving the given Agent default access to the given Container.
- *
- * @param rule The ACL Rule that should no longer apply for a given Agent as default for a given Container.
- * @param agent The Agent that should be removed from the Rule for the given Container.
- * @param containerIri The Container to which the Rule should no longer apply as default for the given Agent.
- * @returns A tuple with the original ACL Rule sans the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
- */
-function removeAgentFromDefaultRule(
-  rule: unstable_AclRule,
-  agent: WebId,
-  containerIri: IriString
-): [unstable_AclRule, unstable_AclRule] {
-  // The existing rule will keep applying to Agents other than the given one:
-  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
-  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
+  // Only apply the new Rule to the given Agent (because the existing Rule covers the others)
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
-  // ...but not as a default for the given Container:
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    acl.default,
-    containerIri
-  );
+
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
 

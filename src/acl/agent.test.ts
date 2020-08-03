@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { Quad } from "rdf-js";
-import { dataset } from "@rdfjs/dataset";
+import { dataset, namedNode, literal } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
   unstable_getAgentResourceAccessOne,
@@ -41,15 +41,20 @@ import {
   IriString,
   unstable_AclDataset,
 } from "../interfaces";
+import { getThingAll } from "../thing/thing";
+import { getIriAll } from "../thing/get";
+import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   agent: IriString,
   resource: IriString,
   access: unstable_Access,
-  type: "resource" | "default"
+  type: "resource" | "default",
+  rule?: IriString
 ): unstable_AclDataset {
-  const subjectIri = resource + "#" + encodeURIComponent(agent) + Math.random();
+  const subjectIri =
+    rule ?? resource + "#" + encodeURIComponent(agent) + Math.random();
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
@@ -911,6 +916,59 @@ describe("setAgentResourceAccess", () => {
     );
   });
 
+  it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "resource",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = unstable_setAgentResourceAccess(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      {
+        read: true,
+        append: true,
+        write: false,
+        control: false,
+      }
+    );
+
+    // Explicitly check that the agent given resource access doesn't get additional privilege
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+      } else {
+        // The pre-existing agent should still have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(1);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(13);
+  });
+
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -1752,6 +1810,59 @@ describe("setAgentDefaultAccess", () => {
     expect(updatedQuads[5].object.value).toBe(
       "https://some.pod/profileDoc#webId"
     );
+  });
+
+  it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "resource",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = unstable_setAgentDefaultAccess(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      {
+        read: true,
+        append: true,
+        write: false,
+        control: false,
+      }
+    );
+
+    // Explicitly check that the agent given resource access doesn't get additional privilege
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
+        // The agent given default access should not have resource access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(0);
+      } else {
+        // The pre-existing agent should still have resource access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(1);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(13);
   });
 
   it("does not alter the input LitDataset", () => {
