@@ -28,6 +28,7 @@ import {
   unstable_AclRule,
   IriString,
   WebId,
+  Iri,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl, rdf } from "../constants";
@@ -360,6 +361,31 @@ function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
   return targetRule;
 }
 
+function removeUndueAccess(
+  originalRule: unstable_AclRule,
+  duplicateRule: unstable_AclRule,
+  agent: WebId,
+  resourceIri: IriString,
+  targetRuleType: "default" | "resource"
+): unstable_AclRule {
+  const agentOriginallyHasAccess =
+    getIriAll(originalRule, acl.agent).filter(
+      (originalAgent) => originalAgent === agent
+    ).length > 0;
+  if (!agentOriginallyHasAccess) {
+    // If the original rule if both a resource and a default rule, and did **not**
+    // give access to the agent whose access are being set, only the target
+    // access type should be duplicated (i.e. not give default access for a target
+    // resource rule)
+    return removeIri(
+      duplicateRule,
+      targetRuleType === "default" ? acl.accessTo : acl.default,
+      resourceIri
+    );
+  }
+  return duplicateRule;
+}
+
 /**
  * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
  * except for giving the given Agent access to the given Resource.
@@ -386,20 +412,13 @@ function removeAgentFromResourceRule(
     acl.accessTo,
     resourceIri
   );
-  const agentHasDefaultAccess =
-    getIriAll(rule, acl.agent).filter(
-      (originalAgent) => originalAgent === agent
-    ).length > 0;
-  if (!agentHasDefaultAccess) {
-    // If the original rule if both a resource and a default rule, and did **not**
-    // give default access to the agent whose access are being set, only the resource
-    // access should be duplicated (not the default ones)
-    ruleForOtherTargets = removeIri(
-      ruleForOtherTargets,
-      acl.default,
-      resourceIri
-    );
-  }
+  ruleForOtherTargets = removeUndueAccess(
+    rule,
+    ruleForOtherTargets,
+    agent,
+    resourceIri,
+    "resource"
+  );
 
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
@@ -429,6 +448,13 @@ function removeAgentFromDefaultRule(
     ruleForOtherTargets,
     acl.default,
     containerIri
+  );
+  ruleForOtherTargets = removeUndueAccess(
+    rule,
+    ruleForOtherTargets,
+    agent,
+    containerIri,
+    "default"
   );
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
