@@ -39,9 +39,10 @@ import {
   unstable_hasResourceAcl,
   unstable_hasFallbackAcl,
   internal_removeEmptyAclRules,
+  initialiseAclRule,
+  duplicateAclRule,
 } from "./acl";
 import { getThingAll, removeIri, setIri, setThing } from "..";
-import { duplicateAclRule, initialiseAclRule } from "./agent";
 
 /**
  * Find out what Access Modes have been granted to everyone for a given Resource.
