@@ -23,29 +23,35 @@ import { Quad } from "rdf-js";
 import { acl, rdf } from "../constants";
 import { fetchLitDataset, saveLitDatasetAt } from "../resource/litDataset";
 import {
-  WithResourceInfo,
-  unstable_AclDataset,
-  unstable_hasAccessibleAcl,
-  unstable_AclRule,
-  unstable_Access,
-  Thing,
   IriString,
   LitDataset,
-  unstable_WithAcl,
+  Thing,
+  unstable_Access,
+  unstable_AclDataset,
+  unstable_AclRule,
+  unstable_hasAccessibleAcl,
   unstable_WithAccessibleAcl,
-  unstable_WithResourceAcl,
+  unstable_WithAcl,
   unstable_WithFallbackAcl,
+  unstable_WithResourceAcl,
+  WithResourceInfo,
 } from "../interfaces";
-import { getThingAll, removeThing, setThing } from "../thing/thing";
-import { getIriOne, getIriAll } from "../thing/get";
+import {
+  createThing,
+  getThingAll,
+  removeThing,
+  setThing,
+} from "../thing/thing";
+import { getIriAll, getIriOne } from "../thing/get";
 import { DataFactory, dataset } from "../rdfjs";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 import {
+  getFetchedFrom,
   internal_defaultFetchOptions,
   internal_fetchResourceInfo,
-  getFetchedFrom,
 } from "../resource/resource";
+import { addIri } from "..";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
@@ -515,7 +521,7 @@ export function internal_getAclRulesForIri(
 /** @internal
  * This function transforms a given set of rules into a map associating the IRIs
  * of the entities to which permissions are granted by these rules, and the permissions
- * granted to them. Additionnally, it filters these entities based on the property
+ * granted to them. Additionally, it filters these entities based on the predicate
  * that refers to them in the rule.
  */
 export function internal_getAccessByIri(
@@ -606,4 +612,57 @@ export async function unstable_deleteAclFor<
   });
 
   return storedResource;
+}
+
+export function initialiseAclRule(access: unstable_Access): unstable_AclRule {
+  let newRule = createThing();
+  newRule = setIri(newRule, rdf.type, acl.Authorization);
+  if (access.read) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.read);
+  }
+  if (access.append && !access.write) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.append);
+  }
+  if (access.write) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.write);
+  }
+  if (access.control) {
+    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.control);
+  }
+  return newRule;
+}
+
+/**
+ * Create a new ACL Rule with the same ACL values as the input ACL Rule, but having a different IRI.
+ *
+ * Note that non-ACL values will not be copied over.
+ *
+ * @param sourceRule ACL rule to duplicate.
+ */
+export function duplicateAclRule(
+  sourceRule: unstable_AclRule
+): unstable_AclRule {
+  let targetRule = createThing();
+  targetRule = setIri(targetRule, rdf.type, acl.Authorization);
+
+  function copyIris(
+    inputRule: typeof sourceRule,
+    outputRule: typeof targetRule,
+    predicate: IriString
+  ) {
+    return getIriAll(inputRule, predicate).reduce(
+      (outputRule, iriTarget) => addIri(outputRule, predicate, iriTarget),
+      outputRule
+    );
+  }
+
+  targetRule = copyIris(sourceRule, targetRule, acl.accessTo);
+  targetRule = copyIris(sourceRule, targetRule, acl.default);
+  targetRule = copyIris(sourceRule, targetRule, acl.agent);
+  targetRule = copyIris(sourceRule, targetRule, acl.agentGroup);
+  targetRule = copyIris(sourceRule, targetRule, acl.agentClass);
+  targetRule = copyIris(sourceRule, targetRule, acl.origin);
+  targetRule = copyIris(sourceRule, targetRule, acl.mode);
+
+  return targetRule;
 }

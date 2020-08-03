@@ -26,6 +26,7 @@ import {
   unstable_Access,
   unstable_AclDataset,
   unstable_AclRule,
+  WithChangeLog,
 } from "../interfaces";
 import { acl, foaf } from "../constants";
 import { getIriAll } from "../thing/get";
@@ -37,7 +38,11 @@ import {
   internal_combineAccessModes,
   unstable_hasResourceAcl,
   unstable_hasFallbackAcl,
+  internal_removeEmptyAclRules,
+  initialiseAclRule,
+  duplicateAclRule,
 } from "./acl";
+import { getThingAll, removeIri, setIri, setThing } from "..";
 
 /**
  * Find out what Access Modes have been granted to everyone for a given Resource.
@@ -119,6 +124,154 @@ export function unstable_getPublicDefaultAccess(
   );
   const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
+}
+
+/**
+ * Given an ACL LitDataset, modify the ACL Rules to set specific Access Modes for the public.
+ *
+ * If the given ACL LitDataset already includes ACL Rules that grant a certain set of Access Modes
+ * to the public, those will be overridden by the given Access Modes.
+ *
+ * Keep in mind that this function will not modify:
+ * - access arbitrary Agents might have been given through other ACL rules, e.g. agent- or group-specific permissions.
+ * - what access arbitrary Agents have to child Resources.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param access The Access Modes to grant to the public.
+ */
+export function unstable_setPublicResourceAccess(
+  aclDataset: unstable_AclDataset,
+  access: unstable_Access
+): unstable_AclDataset & WithChangeLog {
+  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // give the public access to the Resource:
+  let filteredAcl = aclDataset;
+  getThingAll(aclDataset).forEach((aclRule) => {
+    // Obtain both the Rule that no longer includes the public,
+    // and a new Rule that includes all ACL Quads
+    // that do not pertain to the given Public-Resource combination.
+    // Note that usually, the latter will no longer include any meaningful statements;
+    // we'll clean them up afterwards.
+    const [filteredRule, remainingRule] = removePublicFromResourceRule(
+      aclRule,
+      aclDataset.internal_accessTo
+    );
+    filteredAcl = setThing(filteredAcl, filteredRule);
+    filteredAcl = setThing(filteredAcl, remainingRule);
+  });
+
+  // Create a new Rule that only grants the public the given Access Modes:
+  let newRule = initialiseAclRule(access);
+  newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
+  newRule = setIri(newRule, acl.agentClass, foaf.Agent);
+  const updatedAcl = setThing(filteredAcl, newRule);
+
+  // Remove any remaining Rules that do not contain any meaningful statements:
+  return internal_removeEmptyAclRules(updatedAcl);
+}
+
+/**
+ * Given an ACL LitDataset, modify the ACL Rules to set specific default Access Modes for the public.
+ *
+ * If the given ACL LitDataset already includes ACL Rules that grant a certain set of default Access Modes
+ * to the public, those will be overridden by the given Access Modes.
+ *
+ * Keep in mind that this function will not modify:
+ * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
+ * - what access arbitrary Agents have to the Container itself.
+ *
+ * Also, please note that this function is still experimental: its API can change in non-major releases.
+ *
+ * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param access The Access Modes to grant to the public.
+ */
+export function unstable_setPublicDefaultAccess(
+  aclDataset: unstable_AclDataset,
+  access: unstable_Access
+): unstable_AclDataset & WithChangeLog {
+  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // give the public default access to the Resource:
+  let filteredAcl = aclDataset;
+  getThingAll(aclDataset).forEach((aclRule) => {
+    // Obtain both the Rule that no longer includes the public,
+    // and a new Rule that includes all ACL Quads
+    // that do not pertain to the given Public-Resource default combination.
+    // Note that usually, the latter will no longer include any meaningful statements;
+    // we'll clean them up afterwards.
+    const [filteredRule, remainingRule] = removePublicFromDefaultRule(
+      aclRule,
+      aclDataset.internal_accessTo
+    );
+    filteredAcl = setThing(filteredAcl, filteredRule);
+    filteredAcl = setThing(filteredAcl, remainingRule);
+  });
+
+  // Create a new Rule that only grants the public the given default Access Modes:
+  let newRule = initialiseAclRule(access);
+  newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
+  newRule = setIri(newRule, acl.agentClass, foaf.Agent);
+  const updatedAcl = setThing(filteredAcl, newRule);
+
+  // Remove any remaining Rules that do not contain any meaningful statements:
+  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
+
+  return cleanedAcl;
+}
+
+/**
+ * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
+ * except for giving the public access to the given Resource.
+ *
+ * @param rule The ACL Rule that should no longer apply for the public to a given Resource.
+ * @param resourceIri The Resource to which the Rule should no longer apply for the public.
+ * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
+ */
+function removePublicFromResourceRule(
+  rule: unstable_AclRule,
+  resourceIri: IriString
+): [unstable_AclRule, unstable_AclRule] {
+  // The existing rule will keep applying to the public:
+  const ruleWithoutPublic = removeIri(rule, acl.agentClass, foaf.Agent);
+  // The new rule will...
+  let ruleForOtherTargets = duplicateAclRule(rule);
+  // ...*only* apply to the public (because the existing Rule covers the others)...
+  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
+  // ...but not to the given Resource:
+  ruleForOtherTargets = removeIri(
+    ruleForOtherTargets,
+    acl.accessTo,
+    resourceIri
+  );
+  return [ruleWithoutPublic, ruleForOtherTargets];
+}
+
+/**
+ * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
+ * except for giving the public default access to the given Container.
+ *
+ * @param rule The ACL Rule that should no longer apply for the public as default for a given Container.
+ * @param containerIri The Container to which the Rule should no longer apply as default for the public.
+ * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
+ */
+function removePublicFromDefaultRule(
+  rule: unstable_AclRule,
+  containerIri: IriString
+): [unstable_AclRule, unstable_AclRule] {
+  // The existing rule will keep applying to the public:
+  const ruleWithoutAgent = removeIri(rule, acl.agentClass, foaf.Agent);
+  // The new rule will...
+  let ruleForOtherTargets = duplicateAclRule(rule);
+  // ...*only* apply to the public (because the existing Rule covers the others)...
+  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
+  // ...but not as a default for the given Container:
+  ruleForOtherTargets = removeIri(
+    ruleForOtherTargets,
+    acl.default,
+    containerIri
+  );
+  return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
 function getClassAclRulesForClass(

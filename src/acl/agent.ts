@@ -20,37 +20,36 @@
  */
 
 import {
-  WithResourceInfo,
-  WithChangeLog,
-  unstable_WithAcl,
-  unstable_AclDataset,
-  unstable_Access,
-  unstable_AclRule,
   IriString,
+  unstable_Access,
+  unstable_AclDataset,
+  unstable_AclRule,
+  unstable_WithAcl,
   WebId,
-  Iri,
+  WithChangeLog,
+  WithResourceInfo,
 } from "../interfaces";
 import { getIriOne, getIriAll } from "../thing/get";
-import { acl, rdf } from "../constants";
+import { acl } from "../constants";
 import {
-  internal_getAclRules,
-  internal_getResourceAclRulesForResource,
-  internal_getDefaultAclRulesForResource,
-  internal_getAccess,
+  duplicateAclRule,
+  initialiseAclRule,
   internal_combineAccessModes,
-  unstable_hasResourceAcl,
+  internal_getAccess,
+  internal_getAccessByIri,
+  internal_getAclRules,
+  internal_getAclRulesForIri,
+  internal_getDefaultAclRulesForResource,
+  internal_getResourceAclRulesForResource,
+  internal_removeEmptyAclRules,
+  unstable_getFallbackAcl,
   unstable_getResourceAcl,
   unstable_hasFallbackAcl,
-  unstable_getFallbackAcl,
-  internal_accessModeIriStrings,
-  internal_removeEmptyAclRules,
-  internal_getAclRulesForIri,
-  internal_getAccessByIri,
+  unstable_hasResourceAcl,
 } from "./acl";
-import { createThing, getThingAll, setThing } from "../thing/thing";
+import { getThingAll, setThing } from "../thing/thing";
 import { removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
-import { addIri } from "../thing/add";
 
 export type unstable_AgentAccess = Record<WebId, unstable_Access>;
 
@@ -200,7 +199,7 @@ export function unstable_setAgentResourceAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given Access Modes:
-  let newRule = intialiseAclRule(access);
+  let newRule = initialiseAclRule(access);
   newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -304,7 +303,7 @@ export function unstable_setAgentDefaultAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given default Access Modes:
-  let newRule = intialiseAclRule(access);
+  let newRule = initialiseAclRule(access);
   newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -331,39 +330,6 @@ function isAgentAclRule(aclRule: unstable_AclRule): boolean {
 }
 
 /**
- * Create a new ACL Rule with the same ACL values as the input ACL Rule, but having a different IRI.
- *
- * Note that non-ACL values will not be copied over.
- *
- * @param sourceRule ACL rule to duplicate.
- */
-function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
-  let targetRule = createThing();
-  targetRule = setIri(targetRule, rdf.type, acl.Authorization);
-
-  function copyIris(
-    inputRule: typeof sourceRule,
-    outputRule: typeof targetRule,
-    property: IriString
-  ) {
-    return getIriAll(inputRule, property).reduce(
-      (outputRule, iriTarget) => addIri(outputRule, property, iriTarget),
-      outputRule
-    );
-  }
-
-  targetRule = copyIris(sourceRule, targetRule, acl.accessTo);
-  targetRule = copyIris(sourceRule, targetRule, acl.default);
-  targetRule = copyIris(sourceRule, targetRule, acl.agent);
-  targetRule = copyIris(sourceRule, targetRule, acl.agentGroup);
-  targetRule = copyIris(sourceRule, targetRule, acl.agentClass);
-  targetRule = copyIris(sourceRule, targetRule, acl.origin);
-  targetRule = copyIris(sourceRule, targetRule, acl.mode);
-
-  return targetRule;
-}
-
-/**
  * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
  * except for giving the given Agent access to the given Resource.
  *
@@ -382,7 +348,7 @@ function removeAgentFromRule(
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
   let ruleForOtherTargets: unstable_AclRule;
   if (!getIriAll(rule, acl.agent).includes(agent)) {
-    const emptyRule = intialiseAclRule({
+    const emptyRule = initialiseAclRule({
       read: false,
       append: false,
       write: false,
@@ -402,24 +368,6 @@ function removeAgentFromRule(
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
 
   return [ruleWithoutAgent, ruleForOtherTargets];
-}
-
-function intialiseAclRule(access: unstable_Access): unstable_AclRule {
-  let newRule = createThing();
-  newRule = setIri(newRule, rdf.type, acl.Authorization);
-  if (access.read) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.read);
-  }
-  if (access.append && !access.write) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.append);
-  }
-  if (access.write) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.write);
-  }
-  if (access.control) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.control);
-  }
-  return newRule;
 }
 
 function getAccessByAgent(aclRules: unstable_AclRule[]): unstable_AgentAccess {
