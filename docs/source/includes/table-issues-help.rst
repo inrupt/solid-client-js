@@ -10,8 +10,6 @@
            To report a bug or to request a new product feature, please
            file a ticket via the `Service Desk
            <https://inrupt.atlassian.net/servicedesk>`_.
-                    
-           <https://github.com/inrupt/solid-client-js/issues/new/choose>`_.
 
    * - Bugs and Feature Requests (Documentation)
            To report a documentation bug or make a documentation
