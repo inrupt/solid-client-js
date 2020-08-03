@@ -361,30 +361,6 @@ function duplicateAclRule(sourceRule: unstable_AclRule): unstable_AclRule {
   return targetRule;
 }
 
-function removeUndueAccess(
-  originalRule: unstable_AclRule,
-  duplicateRule: unstable_AclRule,
-  agent: WebId,
-  resourceIri: IriString,
-  targetRuleType: "default" | "resource"
-): unstable_AclRule {
-  const agentOriginallyHasAccess = getIriAll(originalRule, acl.agent).includes(
-    agent
-  );
-  if (!agentOriginallyHasAccess) {
-    // If the original rule is both a resource and a default rule, and did **not**
-    // give access to the agent whose access is being set, only the target
-    // access type should be duplicated (i.e. not give default access for a target
-    // resource rule)
-    return removeIri(
-      duplicateRule,
-      targetRuleType === "default" ? acl.accessTo : acl.default,
-      resourceIri
-    );
-  }
-  return duplicateRule;
-}
-
 /**
  * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
  * except for giving the given Agent access to the given Resource.
@@ -401,23 +377,27 @@ function removeAgentFromResourceRule(
 ): [unstable_AclRule, unstable_AclRule] {
   // The existing rule will keep applying to Agents other than the given one:
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
-  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
+  let ruleForOtherTargets: unstable_AclRule;
+  if (getIriAll(rule, acl.agent).includes(agent)) {
+    // The agent already had some access in the rule, so duplicate it...
+    ruleForOtherTargets = duplicateAclRule(rule);
+    // ...but remove access to the original Resource:
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.accessTo,
+      resourceIri
+    );
+  } else {
+    // If the agent had no access, the new ACL rule is empty
+    ruleForOtherTargets = intialiseAclRule({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  }
+  // Only apply the new Rule to the given Agent (because the existing Rule covers the others)...
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
-  // ...but not to the given Resource:
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    acl.accessTo,
-    resourceIri
-  );
-  ruleForOtherTargets = removeUndueAccess(
-    rule,
-    ruleForOtherTargets,
-    agent,
-    resourceIri,
-    "resource"
-  );
 
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
@@ -438,23 +418,28 @@ function removeAgentFromDefaultRule(
 ): [unstable_AclRule, unstable_AclRule] {
   // The existing rule will keep applying to Agents other than the given one:
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
-  // ...*only* apply to the given Agent (because the existing Rule covers the others)...
+  let ruleForOtherTargets: unstable_AclRule;
+  if (getIriAll(rule, acl.agent).includes(agent)) {
+    // The agent already had some access in the rule, so duplicate it...
+    ruleForOtherTargets = duplicateAclRule(rule);
+    // ...but remove default access to the original Container:
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.default,
+      containerIri
+    );
+  } else {
+    // If the agent had no access, the new ACL rule is empty
+    ruleForOtherTargets = intialiseAclRule({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  }
+  // Only apply the new Rule to the given Agent (because the existing Rule covers the others)...
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
-  // ...but not as a default for the given Container:
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    acl.default,
-    containerIri
-  );
-  ruleForOtherTargets = removeUndueAccess(
-    rule,
-    ruleForOtherTargets,
-    agent,
-    containerIri,
-    "default"
-  );
+
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
