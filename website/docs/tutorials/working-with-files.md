@@ -26,15 +26,13 @@ the fetched file as a blob. It is then up to you to decode it appropriately.
 
 ```typescript
 import {
-  unstable_fetchFile,
+  fetchFile,
   isLitDataset,
   getContentType,
   getFetchedFrom,
 } from "@inrupt/solid-client";
 
-const file = await unstable_fetchFile(
-  "https://example.com/some/interesting/file"
-);
+const file = await fetchFile("https://example.com/some/interesting/file");
 // file is a Blob (see https://developer.mozilla.org/en-US/docs/Web/API/Blob)
 console.log(
   `Fetched a ${getContentType(file)} file from ${getFetchedFrom(file)}.`
@@ -47,11 +45,9 @@ console.log(`The file is ${isLitDataset(file) ? "" : "not "}a dataset.`);
 Deleting a file is also a simple operation: you just erase the content available at a certain URL.
 
 ```typescript
-import { unstable_fetchFile } from "@inrupt/solid-client";
+import { fetchFile } from "@inrupt/solid-client";
 
-const response = await unstable_deleteFile(
-  "https://example.com/some/boring/file"
-);
+const response = await deleteFile("https://example.com/some/boring/file");
 if (response.ok) {
   console.log("File deleted !");
 }
@@ -69,9 +65,9 @@ There are two approaches to writing files:
 With this approach, if the request succeeds, you know exactly what the URL of your file is.
 
 ```typescript
-import { unstable_overwriteFile } from "@inrupt/solid-client";
+import { overwriteFile } from "@inrupt/solid-client";
 
-const response = await unstable_overwriteFile(
+const response = await overwriteFile(
   "https://example.com/some/new/file",
   new Blob(["This is a plain piece of text"], { type: "plain/text" })
   // Or in Node:
@@ -93,9 +89,9 @@ This means that you don't control the final name of your file though. To keep tr
 file, you'll have to look up the `Location` header in the response, as shown in the code snippet below:
 
 ```typescript
-import { unstable_saveFileInContainer } from "@inrupt/solid-client";
+import { saveFileInContainer } from "@inrupt/solid-client";
 
-const response = await unstable_saveFileInContainer(
+const response = await saveFileInContainer(
   "https://example.com/some/folder",
   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
   { slug: "new-file" }
@@ -116,18 +112,15 @@ If you need to customize the request eventually sent to the server, you can do s
 header.
 
 ```typescript
-import { unstable_fetchFile } from "@inrupt/solid-client";
+import { fetchFile } from "@inrupt/solid-client";
 
-const response = await unstable_deleteFile(
-  "https://example.com/some/boring/file",
-  {
-    init: {
-      headers: {
-        "My-Custom-Header": "Some fancy value",
-      },
+const response = await deleteFile("https://example.com/some/boring/file", {
+  init: {
+    headers: {
+      "My-Custom-Header": "Some fancy value",
     },
-  }
-);
+  },
+});
 ```
 
 Note that some headers are used by the library, and should not be set manually:

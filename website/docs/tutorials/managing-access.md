@@ -9,8 +9,7 @@ sidebar_label: Managing Access
 The Solid specification has not settled yet, and access management specifically is expected to
 change in the future.
 
-As a result, the API's described here are expected to change as well.
-Hence, all functions are marked as `unstable_` and may break in future non-major releases.
+As a result, the API's described here are expected to change in future non-major releases.
 
 :::
 
@@ -20,7 +19,7 @@ In Solid, who has what access to a [Resource](../glossary.mdx#resource) is defin
 List ([ACL](../glossary.mdx#acl)). These may be defined in separate Resources, so if you want to be able
 to access the ACLs for a Resource in addition to the Resource itself, you'll have to explicitly
 fetch them using
-[`unstable_fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#unstable_fetchlitdatasetwithacl) —
+[`fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#fetchlitdatasetwithacl) —
 but be aware that this may result in several extra HTTP requests being sent.
 
 The possible [Access Modes](../glossary.mdx#access-modes) that can be granted are
@@ -47,26 +46,21 @@ We currently only support reading what access has been granted to individual age
 ### Fetching access information
 
 Getting access information when fetching a resource may result in an additional request to the server. To avoid
-unecessary requests, the API makes it explicit when you get access information along your resource: `unstable_fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
+unecessary requests, the API makes it explicit when you get access information along your resource: `fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
 and the ACL containing the associated access information.
 
 ### Reading public access
 
 Given a [LitDataset](../glossary.mdx#litdataset) that has an ACL attached, you can check what access
 everyone has, regardless of whether they are authenticated or not. You can do so using
-[`unstable_getPublicAccess`](../api/modules/_acl_class_.md#unstable_getpublicaccess):
+[`getPublicAccess`](../api/modules/_acl_class_.md#getpublicaccess):
 
 ```typescript
-import {
-  unstable_fetchLitDatasetWithAcl,
-  unstable_getPublicAccess,
-} from "@inrupt/solid-client";
+import { fetchLitDatasetWithAcl, getPublicAccess } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
-  "https://example.com"
-);
-const publicAccess = unstable_getPublicAccess(litDatasetWithAcl);
+const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
+const publicAccess = getPublicAccess(litDatasetWithAcl);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -79,19 +73,17 @@ Given a [LitDataset](../glossary.mdx#litdataset) that has an ACL attached, you c
 specific agent has been granted, or get all agents for which access has been explicitly granted.
 
 To do the former, use
-[`unstable_getAgentAccessOne`](../api/modules/_acl_agent_.md#unstable_getagentaccessone):
+[`getAgentAccessOne`](../api/modules/_acl_agent_.md#getagentaccessone):
 
 ```typescript
 import {
-  unstable_fetchLitDatasetWithAcl,
-  unstable_getAgentAccessOne,
+  fetchLitDatasetWithAcl,
+  getAgentAccessOne,
 } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
-  "https://example.com"
-);
-const agentAccess = unstable_getAgentAccessOne(litDatasetWithAcl, webId);
+const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
+const agentAccess = getAgentAccessOne(litDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -99,18 +91,16 @@ const agentAccess = unstable_getAgentAccessOne(litDatasetWithAcl, webId);
 ```
 
 To get all agents to whom access was granted, use
-[`unstable_getAgentAccessAll`](../api/modules/_acl_agent_.md#unstable_getagentaccessall):
+[`getAgentAccessAll`](../api/modules/_acl_agent_.md#getagentaccessall):
 
 ```typescript
 import {
-  unstable_fetchLitDatasetWithAcl,
-  unstable_getAgentAccessAll,
+  fetchLitDatasetWithAcl,
+  getAgentAccessAll,
 } from "@inrupt/solid-client";
 
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
-  "https://example.com"
-);
-const accessByAgent = unstable_getAgentAccessAll(litDatasetWithAcl);
+const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
+const accessByAgent = getAgentAccessAll(litDatasetWithAcl);
 
 // => an object like
 //    {
@@ -142,9 +132,9 @@ its children.
 
 To modify access to a Resource, you will need to obtain its ACL. Assuming you have fetched the
 Resource using
-[`unstable_fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#unstable_fetchlitdatasetwithacl),
+[`fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#fetchlitdatasetwithacl),
 you can call
-[`unstable_getResourceACL`](../api/modules/_acl_acl_.md#unstable_getresourceacl) to obtain its ACL — or
+[`getResourceACL`](../api/modules/_acl_acl_.md#getresourceacl) to obtain its ACL — or
 `null` if it does not exist.
 
 If it exists, that's great, and you can move on to the next section. You can create a new ACL if it
@@ -153,7 +143,7 @@ to the Resource via the default access rules of its fallback ACL, as described i
 section.
 
 A new empty ACL can be initialised using
-[`unstable_createAcl`](api/modules/_acl_acl_.md#unstable_createacl), given that the current user has
+[`createAcl`](api/modules/_acl_acl_.md#createacl), given that the current user has
 the rights to do so (i.e. [Control](../glossary.mdx#control-access) access on the target Resource).
 However, keep in mind that this ACL will override any ACL that currently applies to it. The
 consequence is that if you do not give someone Control access before saving it to the Pod, nobody
@@ -168,54 +158,52 @@ The general process of changing access to a Resource is as follows:
 
 ```typescript
 import {
-  unstable_fetchLitDatasetWithAcl,
-  unstable_hasResourceAcl,
-  unstable_hasFallbackAcl,
-  unstable_hasAccessibleAcl,
-  unstable_createAcl,
-  unstable_createAclFromFallbackAcl,
-  unstable_getResourceAcl,
-  unstable_setAgentResourceAccess,
-  unstable_saveAclFor,
+  fetchLitDatasetWithAcl,
+  hasResourceAcl,
+  hasFallbackAcl,
+  hasAccessibleAcl,
+  createAcl,
+  createAclFromFallbackAcl,
+  getResourceAcl,
+  setAgentResourceAccess,
+  saveAclFor,
 } from "@inrupt/solid-client";
 
 // Fetch the LitDataset and its associated ACLs, if available:
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
-  "https://example.com"
-);
+const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
 
 // Obtain the LitDataset's own ACL, if available,
 // or initialise a new one, if possible:
 let resourceAcl;
-if (!unstable_hasResourceAcl(litDatasetWithAcl)) {
-  if (!unstable_hasAccessibleAcl(litDatasetWithAcl)) {
+if (!hasResourceAcl(litDatasetWithAcl)) {
+  if (!hasAccessibleAcl(litDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to change access rights to this Resource."
     );
   }
-  if (!unstable_hasFallbackAcl(litDatasetWithAcl)) {
+  if (!hasFallbackAcl(litDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to see who currently has access to this Resource."
     );
     // Alternatively, initialise a new empty ACL as follows,
     // but be aware that if you do not give someone Control access,
     // **nobody will ever be able to change Access permissions in the future**:
-    // resourceAcl = unstable_createAcl(litDatasetWithAcl);
+    // resourceAcl = createAcl(litDatasetWithAcl);
   }
-  resourceAcl = unstable_createAclFromFallbackAcl(litDatasetWithAcl);
+  resourceAcl = createAclFromFallbackAcl(litDatasetWithAcl);
 } else {
-  resourceAcl = unstable_getResourceAcl(litDatasetWithAcl);
+  resourceAcl = getResourceAcl(litDatasetWithAcl);
 }
 
 // Give someone Control access to the given Resource:
-const updatedAcl = unstable_setAgentResourceAccess(
+const updatedAcl = setAgentResourceAccess(
   resourceAcl,
   "https://some.pod/profile#webId",
   { read: false, append: false, write: false, control: true }
 );
 
 // Now save the ACL:
-await unstable_saveAclFor(litDatasetWithAcl, updatedAcl);
+await saveAclFor(litDatasetWithAcl, updatedAcl);
 ```
 
 ### Setting public access
@@ -232,43 +220,42 @@ Given a Resource's ACL obtained as [described previously](#modifying-the-acl), y
 Modes to an Agent for the Resource itself, and/or to its children if the Resource is a Container.
 
 To do the former, use
-[`unstable_setAgentResourceAccess`](../api/modules/_acl_agent_.md#unstable_setagentresourceaccess):
+[`setAgentResourceAccess`](../api/modules/_acl_agent_.md#setagentresourceaccess):
 
 ```typescript
 import {
-  unstable_setAgentResourceAccess,
+  setAgentResourceAccess,
 } from "@inrupt/solid-client";
 
 const resourceAcl = /* Obtained previously as described above: */;
 const webId = "https://example.com/profile#webid";
 
-const updatedAcl = unstable_setAgentResourceAccess(
+const updatedAcl = setAgentResourceAccess(
   resourceAcl,
   webId,
   { read: true, append: true, write: false, control: false },
 );
 
-// `updatedAcl` can now be saved back to the Pod
-// using `unstable_saveAclFor()`.
+// `updatedAcl` can now be saved back to the Pod using `saveAclFor()`.
 ```
 
 To grant Access Modes to the Agent for the Resource's children, use
-[`unstable_setAgentDefaultAccess`](../api/modules/_acl_agent_.md#unstable_setagentdefaultaccess):
+[`setAgentDefaultAccess`](../api/modules/_acl_agent_.md#setagentdefaultaccess):
 
 ```typescript
 import {
-  unstable_setAgentDefaultAccess,
+  setAgentDefaultAccess,
 } from "@inrupt/solid-client";
 
 const resourceAcl = /* Obtained previously as described above: */;
 const webId = "https://example.com/profile#webid";
 
-const updatedAcl = unstable_setAgentDefaultAccess(
+const updatedAcl = setAgentDefaultAccess(
   resourceAcl,
   webId,
   { read: true, append: true, write: false, control: false },
 );
 
 // `updatedAcl` can now be saved back to the Pod
-// using `unstable_saveAclFor()`.
+// using `saveAclFor()`.
 ```

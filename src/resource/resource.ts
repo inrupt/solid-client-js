@@ -23,9 +23,9 @@ import LinkHeader from "http-link-header";
 import {
   UrlString,
   WithResourceInfo,
-  unstable_WithAcl,
-  unstable_hasAccessibleAcl,
-  unstable_Access,
+  WithAcl,
+  hasAccessibleAcl,
+  Access,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -82,8 +82,8 @@ export async function internal_fetchAcl(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<unstable_WithAcl["internal_acl"]> {
-  if (!unstable_hasAccessibleAcl(resourceInfo)) {
+): Promise<WithAcl["internal_acl"]> {
+  if (!hasAccessibleAcl(resourceInfo)) {
     return {
       resourceAcl: null,
       fallbackAcl: null,
@@ -106,8 +106,7 @@ export async function internal_fetchAcl(
  * This is an experimental function that fetches both a Resource's metadata, the linked ACL Resource (if
  * available), and the ACL that applies to it if the linked ACL Resource is not available (if accessible). This can
  * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
- * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[fetchLitDataset]] instead.
+ * provide this info in a single request.
  *
  * If the Resource's linked ACL Resource could not be fetched (because it does not exist, or because
  * the authenticated user does not have access to it), `acl.resourceAcl` will be `null`. If the
@@ -118,12 +117,12 @@ export async function internal_fetchAcl(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
  */
-export async function unstable_fetchResourceInfoWithAcl(
+export async function fetchResourceInfoWithAcl(
   url: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo & unstable_WithAcl> {
+): Promise<WithResourceInfo & WithAcl> {
   const resourceInfo = await internal_fetchResourceInfo(url, options);
   const acl = await internal_fetchAcl(
     { internal_resourceInfo: resourceInfo },
@@ -159,7 +158,7 @@ export function internal_parseResourceInfo(
     // Set ACL link
     const aclLinks = parsedLinks.get("rel", "acl");
     if (aclLinks.length === 1) {
-      resourceInfo.unstable_aclUrl = new URL(
+      resourceInfo.aclUrl = new URL(
         aclLinks[0].uri,
         resourceInfo.fetchedFrom
       ).href;
@@ -168,7 +167,7 @@ export function internal_parseResourceInfo(
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
   if (wacAllowHeader) {
-    resourceInfo.unstable_permissions = parseWacAllowHeader(wacAllowHeader);
+    resourceInfo.permissions = parseWacAllowHeader(wacAllowHeader);
   }
 
   return resourceInfo;
@@ -213,9 +212,7 @@ export function getFetchedFrom(resource: WithResourceInfo): string {
  * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
  */
 function parseWacAllowHeader(wacAllowHeader: string) {
-  function parsePermissionStatement(
-    permissionStatement: string
-  ): unstable_Access {
+  function parsePermissionStatement(permissionStatement: string): Access {
     const permissions = permissionStatement.split(" ");
     const writePermission = permissions.includes("write");
     return writePermission

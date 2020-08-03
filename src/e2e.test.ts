@@ -30,22 +30,22 @@ import {
   saveLitDatasetAt,
   isLitDataset,
   getContentType,
-  unstable_fetchResourceInfoWithAcl,
-  unstable_fetchLitDatasetWithAcl,
-  unstable_hasResourceAcl,
-  unstable_getPublicAccess,
-  unstable_getAgentAccessOne,
-  unstable_getFallbackAcl,
-  unstable_getResourceAcl,
-  unstable_getAgentResourceAccessOne,
-  unstable_setAgentResourceAccess,
-  unstable_saveAclFor,
-  unstable_hasFallbackAcl,
-  unstable_hasAccessibleAcl,
-  unstable_createAclFromFallbackAcl,
-  unstable_getPublicDefaultAccess,
-  unstable_getPublicResourceAccess,
-  unstable_fetchFile,
+  fetchResourceInfoWithAcl,
+  fetchLitDatasetWithAcl,
+  hasResourceAcl,
+  getPublicAccess,
+  getAgentAccessOne,
+  getFallbackAcl,
+  getResourceAcl,
+  getAgentResourceAccessOne,
+  setAgentResourceAccess,
+  saveAclFor,
+  hasFallbackAcl,
+  hasAccessibleAcl,
+  createAclFromFallbackAcl,
+  getPublicDefaultAccess,
+  getPublicResourceAccess,
+  fetchFile,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -88,10 +88,10 @@ describe("End-to-end tests", () => {
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
-    const rdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+    const rdfResourceInfo = await fetchResourceInfoWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
     );
-    const nonRdfResourceInfo = await unstable_fetchResourceInfoWithAcl(
+    const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
     );
     expect(isLitDataset(rdfResourceInfo)).toBe(true);
@@ -104,23 +104,23 @@ describe("End-to-end tests", () => {
       Date.now().toString() +
       Math.random().toString();
 
-    const datasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+    const datasetWithAcl = await fetchLitDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
     );
-    const datasetWithoutAcl = await unstable_fetchLitDatasetWithAcl(
+    const datasetWithoutAcl = await fetchLitDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
     );
 
-    expect(unstable_hasResourceAcl(datasetWithAcl)).toBe(true);
-    expect(unstable_hasResourceAcl(datasetWithoutAcl)).toBe(false);
-    expect(unstable_getPublicAccess(datasetWithAcl)).toEqual({
+    expect(hasResourceAcl(datasetWithAcl)).toBe(true);
+    expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
+    expect(getPublicAccess(datasetWithAcl)).toEqual({
       read: true,
       append: true,
       write: true,
       control: true,
     });
     expect(
-      unstable_getAgentAccessOne(
+      getAgentAccessOne(
         datasetWithAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -131,7 +131,7 @@ describe("End-to-end tests", () => {
       control: false,
     });
     expect(
-      unstable_getAgentAccessOne(
+      getAgentAccessOne(
         datasetWithoutAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -141,26 +141,21 @@ describe("End-to-end tests", () => {
       write: false,
       control: false,
     });
-    const fallbackAclForDatasetWithoutAcl = unstable_getFallbackAcl(
-      datasetWithoutAcl
-    );
+    const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
     expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
     );
 
-    if (unstable_hasResourceAcl(datasetWithAcl)) {
-      const acl = unstable_getResourceAcl(datasetWithAcl);
-      const updatedAcl = unstable_setAgentResourceAccess(acl, fakeWebId, {
+    if (hasResourceAcl(datasetWithAcl)) {
+      const acl = getResourceAcl(datasetWithAcl);
+      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
         read: true,
         append: false,
         write: false,
         control: false,
       });
-      const savedAcl = await unstable_saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = unstable_getAgentResourceAccessOne(
-        savedAcl,
-        fakeWebId
-      );
+      const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
+      const fakeWebIdAccess = getAgentResourceAccessOne(savedAcl, fakeWebId);
       expect(fakeWebIdAccess).toEqual({
         read: true,
         append: false,
@@ -169,35 +164,35 @@ describe("End-to-end tests", () => {
       });
 
       // Cleanup
-      const cleanedAcl = unstable_setAgentResourceAccess(savedAcl, fakeWebId, {
+      const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
         read: false,
         append: false,
         write: false,
         control: false,
       });
-      await unstable_saveAclFor(datasetWithAcl, cleanedAcl);
+      await saveAclFor(datasetWithAcl, cleanedAcl);
     }
   });
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
-    const dataset = await unstable_fetchLitDatasetWithAcl(
+    const dataset = await fetchLitDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
     );
     if (
-      unstable_hasFallbackAcl(dataset) &&
-      unstable_hasAccessibleAcl(dataset) &&
-      !unstable_hasResourceAcl(dataset)
+      hasFallbackAcl(dataset) &&
+      hasAccessibleAcl(dataset) &&
+      !hasResourceAcl(dataset)
     ) {
-      const newResourceAcl = unstable_createAclFromFallbackAcl(dataset);
-      const existingFallbackAcl = unstable_getFallbackAcl(dataset);
-      expect(unstable_getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-        unstable_getPublicResourceAccess(newResourceAcl)
+      const newResourceAcl = createAclFromFallbackAcl(dataset);
+      const existingFallbackAcl = getFallbackAcl(dataset);
+      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+        getPublicResourceAccess(newResourceAcl)
       );
     }
   });
 
   it("can fetch a non-RDF file and its metadata", async () => {
-    const jsonFile = await unstable_fetchFile(
+    const jsonFile = await fetchFile(
       "https://lit-e2e-test.inrupt.net/public/arbitrary.json"
     );
 

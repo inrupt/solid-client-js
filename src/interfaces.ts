@@ -72,13 +72,13 @@ export type LocalNode = BlankNode & { internal_name: string };
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type unstable_AclDataset = LitDataset &
+export type AclDataset = LitDataset &
   WithResourceInfo & { internal_accessTo: UrlString };
 
 /**
  * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
  */
-export type unstable_AclRule = Thing;
+export type AclRule = Thing;
 
 /**
  * An object with the boolean properties `read`, `append`, `write` and `control`, representing the
@@ -86,7 +86,7 @@ export type unstable_AclRule = Thing;
  *
  * Since that specification is not finalised yet, this interface is still experimental.
  */
-export type unstable_Access =
+export type Access =
   // If someone has write permissions, they also have append permissions:
   {
     read: boolean;
@@ -95,9 +95,9 @@ export type unstable_Access =
     control: boolean;
   };
 
-type unstable_WacAllow = {
-  user: unstable_Access;
-  public: unstable_Access;
+type internal_WacAllow = {
+  user: Access;
+  public: Access;
 };
 
 /**
@@ -115,7 +115,7 @@ export type WithResourceInfo = {
      * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
      *         in this API changing as well.
      */
-    unstable_aclUrl?: UrlString;
+    aclUrl?: UrlString;
     /**
      * Access permissions for the current user and the general public for this resource.
      *
@@ -124,7 +124,7 @@ export type WithResourceInfo = {
      * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
      * @see https://github.com/solid/specification/issues/171
      */
-    unstable_permissions?: unstable_WacAllow;
+    permissions?: internal_WacAllow;
   };
 };
 
@@ -139,34 +139,39 @@ export type WithChangeLog = {
 };
 
 /**
- * @hidden Developers should use [[unstable_getResourceAcl]] and [[unstable_getFallbackAcl]] to access these.
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @hidden Developers should use [[getResourceAcl]] and [[getFallbackAcl]] to access these.
  */
-export type unstable_WithAcl = {
+export type WithAcl = {
   internal_acl: {
-    resourceAcl: unstable_AclDataset | null;
-    fallbackAcl: unstable_AclDataset | null;
+    resourceAcl: AclDataset | null;
+    fallbackAcl: AclDataset | null;
   };
 };
 
 /**
  * If this type applies to a Resource, an Access Control List that applies to it exists and is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  */
-export type unstable_WithResourceAcl<
-  Resource extends unstable_WithAcl = unstable_WithAcl
-> = Resource & {
+export type WithResourceAcl<Resource extends WithAcl = WithAcl> = Resource & {
   internal_acl: {
-    resourceAcl: Exclude<unstable_WithAcl["internal_acl"]["resourceAcl"], null>;
+    resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
   };
 };
 
 /**
  * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  */
-export type unstable_WithFallbackAcl<
-  Resource extends unstable_WithAcl = unstable_WithAcl
-> = Resource & {
+export type WithFallbackAcl<Resource extends WithAcl = WithAcl> = Resource & {
   internal_acl: {
-    fallbackAcl: Exclude<unstable_WithAcl["internal_acl"]["fallbackAcl"], null>;
+    fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
   };
 };
 
@@ -203,27 +208,29 @@ export function hasChangelog<T extends LitDataset>(
 /**
  * Verify whether a given LitDataset was fetched together with its Access Control List.
  *
- * Note that this function is still experimental and may be removed in a future non-major release.
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  *
  * @param dataset A [[LitDataset]] that may have its ACLs attached.
  * @returns True if `dataset` was fetched together with its ACLs.
  */
-export function unstable_hasAcl<T extends object>(
-  dataset: T
-): dataset is T & unstable_WithAcl {
-  const potentialAcl = dataset as T & unstable_WithAcl;
+export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
+  const potentialAcl = dataset as T & WithAcl;
   return typeof potentialAcl.internal_acl === "object";
 }
 
 /**
  * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  */
-export type unstable_WithAccessibleAcl<
+export type WithAccessibleAcl<
   Resource extends WithResourceInfo = WithResourceInfo
 > = Resource & {
   internal_resourceInfo: {
-    unstable_aclUrl: Exclude<
-      WithResourceInfo["internal_resourceInfo"]["unstable_aclUrl"],
+    aclUrl: Exclude<
+      WithResourceInfo["internal_resourceInfo"]["aclUrl"],
       undefined
     >;
   };
@@ -233,18 +240,23 @@ export type unstable_WithAccessibleAcl<
  * Given a [[LitDataset]], verify whether its Access Control List is accessible to the current user.
  *
  * This should generally only be true for LitDatasets fetched by
- * [[unstable_fetchLitDatasetWithAcl]].
+ * [[fetchLitDatasetWithAcl]].
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  *
  * @param dataset A [[LitDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
  */
-export function unstable_hasAccessibleAcl<Resource extends WithResourceInfo>(
+export function hasAccessibleAcl<Resource extends WithResourceInfo>(
   dataset: Resource
-): dataset is unstable_WithAccessibleAcl<Resource> {
-  return typeof dataset.internal_resourceInfo.unstable_aclUrl === "string";
+): dataset is WithAccessibleAcl<Resource> {
+  return typeof dataset.internal_resourceInfo.aclUrl === "string";
 }
 
 /**
  * A RequestInit restriction where the method is set by the library
+ *
+ * Please note that this function is still experimental and can change in a non-major release.
  */
-export type unstable_UploadRequestInit = Omit<RequestInit, "method">;
+export type UploadRequestInit = Omit<RequestInit, "method">;

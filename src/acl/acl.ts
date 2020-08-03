@@ -23,18 +23,18 @@ import { Quad } from "rdf-js";
 import { acl, rdf } from "../constants";
 import { fetchLitDataset, saveLitDatasetAt } from "../resource/litDataset";
 import {
+  WithResourceInfo,
+  AclDataset,
+  hasAccessibleAcl,
+  AclRule,
+  Access,
+  Thing,
   IriString,
   LitDataset,
-  Thing,
-  unstable_Access,
-  unstable_AclDataset,
-  unstable_AclRule,
-  unstable_hasAccessibleAcl,
-  unstable_WithAccessibleAcl,
-  unstable_WithAcl,
-  unstable_WithFallbackAcl,
-  unstable_WithResourceAcl,
-  WithResourceInfo,
+  WithAcl,
+  WithAccessibleAcl,
+  WithResourceAcl,
+  WithFallbackAcl,
 } from "../interfaces";
 import {
   createThing,
@@ -59,14 +59,14 @@ export async function internal_fetchResourceAcl(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<unstable_AclDataset | null> {
-  if (!unstable_hasAccessibleAcl(dataset)) {
+): Promise<AclDataset | null> {
+  if (!hasAccessibleAcl(dataset)) {
     return null;
   }
 
   try {
     const aclLitDataset = await fetchLitDataset(
-      dataset.internal_resourceInfo.unstable_aclUrl,
+      dataset.internal_resourceInfo.aclUrl,
       options
     );
     return Object.assign(aclLitDataset, {
@@ -82,11 +82,11 @@ export async function internal_fetchResourceAcl(
 
 /** @internal */
 export async function internal_fetchFallbackAcl(
-  resource: unstable_WithAccessibleAcl,
+  resource: WithAccessibleAcl,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<unstable_AclDataset | null> {
+): Promise<AclDataset | null> {
   const resourceUrl = new URL(getFetchedFrom(resource));
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
@@ -107,7 +107,7 @@ export async function internal_fetchFallbackAcl(
     ),
   };
 
-  if (!unstable_hasAccessibleAcl(containerInfo)) {
+  if (!hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,
     // we cannot determine whether its ACL is the one that applies. Thus, return null:
     return null;
@@ -139,28 +139,27 @@ function getContainerPath(resourcePath: string): string {
 /**
  * Verify whether an ACL was found for the given Resource.
  *
- * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have a resource ACL attached, but
+ * A Resource fetched with its ACL (e.g. using [[fetchLitDatasetWithAcl]]) _might_ have a resource ACL attached, but
  * we cannot be sure: it might be that none exists for this specific Resource (in which case the
  * fallback ACL applies), or the currently authenticated user (if any) might not have Control access
  * to the fetched Resource.
  *
  * This function verifies that the Resource's ACL is accessible.
  *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
  * @param resource A Resource that might have an ACL attached.
  * @returns Whether `dataset` has an ACL attached.
  */
-export function unstable_hasResourceAcl<
-  Resource extends unstable_WithAcl & WithResourceInfo
->(
+export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
   resource: Resource
-): resource is Resource &
-  unstable_WithResourceAcl &
-  unstable_WithAccessibleAcl {
+): resource is Resource & WithResourceAcl & WithAccessibleAcl {
   return (
     resource.internal_acl.resourceAcl !== null &&
     getFetchedFrom(resource) ===
       resource.internal_acl.resourceAcl.internal_accessTo &&
-    resource.internal_resourceInfo.unstable_aclUrl ===
+    resource.internal_resourceInfo.aclUrl ===
       getFetchedFrom(resource.internal_acl.resourceAcl)
   );
 }
@@ -169,21 +168,24 @@ export function unstable_hasResourceAcl<
  * Access the ACL attached to a Resource.
  *
  * Given a Resource that has an ACL attached, this function will give you access to that ACL. To
- * verify whether the ACL is available, see [[unstable_hasResourceAcl]].
+ * verify whether the ACL is available, see [[hasResourceAcl]].
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  *
  * @param resource A Resource with potentially an ACL attached.
  * @returns The ACL, if available, and undefined if not.
  */
-export function unstable_getResourceAcl(
-  resource: unstable_WithAcl & WithResourceInfo & unstable_WithResourceAcl
-): unstable_AclDataset;
-export function unstable_getResourceAcl(
-  resource: unstable_WithAcl & WithResourceInfo
-): unstable_AclDataset | null;
-export function unstable_getResourceAcl(
-  resource: unstable_WithAcl & WithResourceInfo
-): unstable_AclDataset | null {
-  if (!unstable_hasResourceAcl(resource)) {
+export function getResourceAcl(
+  resource: WithAcl & WithResourceInfo & WithResourceAcl
+): AclDataset;
+export function getResourceAcl(
+  resource: WithAcl & WithResourceInfo
+): AclDataset | null;
+export function getResourceAcl(
+  resource: WithAcl & WithResourceInfo
+): AclDataset | null {
+  if (!hasResourceAcl(resource)) {
     return null;
   }
   return resource.internal_acl.resourceAcl;
@@ -192,18 +194,21 @@ export function unstable_getResourceAcl(
 /**
  * Verify whether a fallback ACL was found for the given Resource.
  *
- * A Resource fetched with its ACL (e.g. using [[unstable_fetchLitDatasetWithAcl]]) _might_ have a fallback ACL
+ * A Resource fetched with its ACL (e.g. using [[fetchLitDatasetWithAcl]]) _might_ have a fallback ACL
  * attached, but we cannot be sure: the currently authenticated user (if any) might not have Control
  * access to one of the fetched Resource's Containers.
  *
  * This function verifies that the fallback ACL is accessible.
  *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
  * @param resource A [[LitDataset]] that might have a fallback ACL attached.
  * @returns Whether `dataset` has a fallback ACL attached.
  */
-export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
+export function hasFallbackAcl<Resource extends WithAcl>(
   resource: Resource
-): resource is Resource & unstable_WithFallbackAcl {
+): resource is Resource & WithFallbackAcl {
   return resource.internal_acl.fallbackAcl !== null;
 }
 
@@ -211,21 +216,18 @@ export function unstable_hasFallbackAcl<Resource extends unstable_WithAcl>(
  * Access the fallback ACL attached to a Resource.
  *
  * Given a Resource that has a fallback ACL attached, this function will give you access to that
- * ACL. To verify whether the fallback ACL is available, see [[unstable_hasFallbackAcl]].
+ * ACL. To verify whether the fallback ACL is available, see [[hasFallbackAcl]].
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
  *
  * @param resource A Resource with potentially a fallback ACL attached.
  * @returns The fallback ACL, or null if it coult not be accessed.
  */
-export function unstable_getFallbackAcl(
-  resource: unstable_WithFallbackAcl
-): unstable_AclDataset;
-export function unstable_getFallbackAcl(
-  dataset: unstable_WithAcl
-): unstable_AclDataset | null;
-export function unstable_getFallbackAcl(
-  dataset: unstable_WithAcl
-): unstable_AclDataset | null {
-  if (!unstable_hasFallbackAcl(dataset)) {
+export function getFallbackAcl(resource: WithFallbackAcl): AclDataset;
+export function getFallbackAcl(dataset: WithAcl): AclDataset | null;
+export function getFallbackAcl(dataset: WithAcl): AclDataset | null {
+  if (!hasFallbackAcl(dataset)) {
     return null;
   }
   return dataset.internal_acl.fallbackAcl;
@@ -234,16 +236,19 @@ export function unstable_getFallbackAcl(
 /**
  * Initialise an empty Resource ACL for a given Resource.
  *
- * @param targetResource A Resource that does not have its own ACL yet (see [[unstable_hasResourceAcl]]).
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param targetResource A Resource that does not have its own ACL yet (see [[hasResourceAcl]]).
  * @returns A Resource ACL for the given Resource, with no ACL Rules defined yet.
  */
-export function unstable_createAcl(
-  targetResource: WithResourceInfo & unstable_WithAccessibleAcl
-): unstable_AclDataset {
-  const emptyResourceAcl: unstable_AclDataset = Object.assign(dataset(), {
+export function createAcl(
+  targetResource: WithResourceInfo & WithAccessibleAcl
+): AclDataset {
+  const emptyResourceAcl: AclDataset = Object.assign(dataset(), {
     internal_accessTo: getFetchedFrom(targetResource),
     internal_resourceInfo: {
-      fetchedFrom: targetResource.internal_resourceInfo.unstable_aclUrl,
+      fetchedFrom: targetResource.internal_resourceInfo.aclUrl,
       isLitDataset: true,
     },
   });
@@ -254,15 +259,16 @@ export function unstable_createAcl(
 /**
  * Create a Resource ACL for a given Resource, setting the same access permissions that currently apply to it from its Container.
  *
- * @param resource A Resource that does not have its own ACL (see [[unstable_hasResourceAcl]]) and a known fallback ACL (see [[unstable_hasFallbackAcl]]).
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param resource A Resource that does not have its own ACL (see [[hasResourceAcl]]) and a known fallback ACL (see [[hasFallbackAcl]]).
  * @returns A Resource ACL for the given Resource, with the default ACL Rules from the fallback ACL applied as Resource Rules.
  */
-export function unstable_createAclFromFallbackAcl(
-  resource: unstable_WithFallbackAcl &
-    WithResourceInfo &
-    unstable_WithAccessibleAcl
-): unstable_AclDataset {
-  const emptyResourceAcl: unstable_AclDataset = unstable_createAcl(resource);
+export function createAclFromFallbackAcl(
+  resource: WithFallbackAcl & WithResourceInfo & WithAccessibleAcl
+): AclDataset {
+  const emptyResourceAcl: AclDataset = createAcl(resource);
 
   const fallbackAclRules = internal_getAclRules(
     resource.internal_acl.fallbackAcl
@@ -289,76 +295,64 @@ export function unstable_createAclFromFallbackAcl(
 /** @internal */
 export function internal_isAclDataset(
   dataset: LitDataset
-): dataset is unstable_AclDataset {
-  return typeof (dataset as unstable_AclDataset).internal_accessTo === "string";
+): dataset is AclDataset {
+  return typeof (dataset as AclDataset).internal_accessTo === "string";
 }
 
 /** @internal */
-export function internal_getAclRules(
-  aclDataset: unstable_AclDataset
-): unstable_AclRule[] {
+export function internal_getAclRules(aclDataset: AclDataset): AclRule[] {
   const things = getThingAll(aclDataset);
   return things.filter(isAclRule);
 }
 
-function isAclRule(thing: Thing): thing is unstable_AclRule {
+function isAclRule(thing: Thing): thing is AclRule {
   return getIriAll(thing, rdf.type).includes(acl.Authorization);
 }
 
 /** @internal */
-export function internal_getResourceAclRules(
-  aclRules: unstable_AclRule[]
-): unstable_AclRule[] {
+export function internal_getResourceAclRules(aclRules: AclRule[]): AclRule[] {
   return aclRules.filter(isResourceAclRule);
 }
 
-function isResourceAclRule(aclRule: unstable_AclRule): boolean {
+function isResourceAclRule(aclRule: AclRule): boolean {
   return getIriOne(aclRule, acl.accessTo) !== null;
 }
 
 /** @internal */
 export function internal_getResourceAclRulesForResource(
-  aclRules: unstable_AclRule[],
+  aclRules: AclRule[],
   resource: IriString
-): unstable_AclRule[] {
+): AclRule[] {
   return aclRules.filter((rule) => appliesToResource(rule, resource));
 }
 
-function appliesToResource(
-  aclRule: unstable_AclRule,
-  resource: IriString
-): boolean {
+function appliesToResource(aclRule: AclRule, resource: IriString): boolean {
   return getIriAll(aclRule, acl.accessTo).includes(resource);
 }
 
 /** @internal */
-export function internal_getDefaultAclRules(
-  aclRules: unstable_AclRule[]
-): unstable_AclRule[] {
+export function internal_getDefaultAclRules(aclRules: AclRule[]): AclRule[] {
   return aclRules.filter(isDefaultAclRule);
 }
 
-function isDefaultAclRule(aclRule: unstable_AclRule): boolean {
+function isDefaultAclRule(aclRule: AclRule): boolean {
   return getIriOne(aclRule, acl.default) !== null;
 }
 
 /** @internal */
 export function internal_getDefaultAclRulesForResource(
-  aclRules: unstable_AclRule[],
+  aclRules: AclRule[],
   resource: IriString
-): unstable_AclRule[] {
+): AclRule[] {
   return aclRules.filter((rule) => isDefaultForResource(rule, resource));
 }
 
-function isDefaultForResource(
-  aclRule: unstable_AclRule,
-  resource: IriString
-): boolean {
+function isDefaultForResource(aclRule: AclRule, resource: IriString): boolean {
   return getIriAll(aclRule, acl.default).includes(resource);
 }
 
 /** @internal */
-export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
+export function internal_getAccess(rule: AclRule): Access {
   const ruleAccessModes = getIriAll(rule, acl.mode);
   const writeAccess = ruleAccessModes.includes(
     internal_accessModeIriStrings.write
@@ -383,9 +377,7 @@ export function internal_getAccess(rule: unstable_AclRule): unstable_Access {
 }
 
 /** @internal */
-export function internal_combineAccessModes(
-  modes: unstable_Access[]
-): unstable_Access {
+export function internal_combineAccessModes(modes: Access[]): Access {
   return modes.reduce(
     (accumulator, current) => {
       const writeAccess = accumulator.write || current.write;
@@ -408,9 +400,9 @@ export function internal_combineAccessModes(
 }
 
 /** @internal */
-export function internal_removeEmptyAclRules<
-  Dataset extends unstable_AclDataset
->(aclDataset: Dataset): Dataset {
+export function internal_removeEmptyAclRules<Dataset extends AclDataset>(
+  aclDataset: Dataset
+): Dataset {
   const aclRules = internal_getAclRules(aclDataset);
   const aclRulesToRemove = aclRules.filter(isEmptyAclRule);
 
@@ -420,7 +412,7 @@ export function internal_removeEmptyAclRules<
   return updatedAclDataset;
 }
 
-function isEmptyAclRule(aclRule: unstable_AclRule): boolean {
+function isEmptyAclRule(aclRule: AclRule): boolean {
   // If there are Quads in there unrelated to Access Control,
   // this is not an empty ACL rule that can be deleted:
   if (Array.from(aclRule).some((quad) => !isAclQuad(quad))) {
@@ -509,10 +501,10 @@ type AccessModeIriString = typeof internal_accessModeIriStrings[keyof typeof int
  * @param targetType The property linking the rule to the target
  */
 export function internal_getAclRulesForIri(
-  aclRules: unstable_AclRule[],
+  aclRules: AclRule[],
   targetIri: IriString,
   targetType: typeof acl.agent | typeof acl.agentGroup
-): unstable_AclRule[] {
+): AclRule[] {
   return aclRules.filter((rule) =>
     getIriAll(rule, targetType).includes(targetIri)
   );
@@ -525,10 +517,10 @@ export function internal_getAclRulesForIri(
  * that refers to them in the rule.
  */
 export function internal_getAccessByIri(
-  aclRules: unstable_AclRule[],
+  aclRules: AclRule[],
   targetType: typeof acl.agent | typeof acl.agentGroup
-): Record<IriString, unstable_Access> {
-  const targetIriAccess: Record<IriString, unstable_Access> = {};
+): Record<IriString, Access> {
+  const targetIriAccess: Record<IriString, Access> = {};
 
   aclRules.forEach((rule) => {
     const ruleTargetIri = getIriAll(rule, targetType);
@@ -549,26 +541,31 @@ export function internal_getAccessByIri(
 /**
  * Save the ACL for a Resource.
  *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
  * @param resource The Resource to which the given ACL applies.
- * @param resourceAcl An [[unstable_AclDataset]] whose ACL Rules will apply to `resource`.
+ * @param resourceAcl An [[AclDataset]] whose ACL Rules will apply to `resource`.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  */
-export async function unstable_saveAclFor(
-  resource: unstable_WithAccessibleAcl,
-  resourceAcl: unstable_AclDataset,
+export async function saveAclFor(
+  resource: WithAccessibleAcl,
+  resourceAcl: AclDataset,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<unstable_AclDataset & WithResourceInfo> {
+): Promise<AclDataset & WithResourceInfo> {
   const savedDataset = await saveLitDatasetAt(
-    resource.internal_resourceInfo.unstable_aclUrl,
+    resource.internal_resourceInfo.aclUrl,
     resourceAcl,
     options
   );
-  const savedAclDataset: unstable_AclDataset &
-    typeof savedDataset = Object.assign(savedDataset, {
-    internal_accessTo: getFetchedFrom(resource),
-  });
+  const savedAclDataset: AclDataset & typeof savedDataset = Object.assign(
+    savedDataset,
+    {
+      internal_accessTo: getFetchedFrom(resource),
+    }
+  );
 
   return savedAclDataset;
 }
@@ -576,11 +573,14 @@ export async function unstable_saveAclFor(
 /**
  * Remove the ACL of a Resource.
  *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
  * @param resource The Resource for which you want to delete the Access Control List Resource.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  */
-export async function unstable_deleteAclFor<
-  Resource extends WithResourceInfo & unstable_WithAccessibleAcl
+export async function deleteAclFor<
+  Resource extends WithResourceInfo & WithAccessibleAcl
 >(
   resource: Resource,
   options: Partial<
@@ -592,12 +592,9 @@ export async function unstable_deleteAclFor<
     ...options,
   };
 
-  const response = await config.fetch(
-    resource.internal_resourceInfo.unstable_aclUrl,
-    {
-      method: "DELETE",
-    }
-  );
+  const response = await config.fetch(resource.internal_resourceInfo.aclUrl, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     throw new Error(
@@ -614,7 +611,7 @@ export async function unstable_deleteAclFor<
   return storedResource;
 }
 
-export function initialiseAclRule(access: unstable_Access): unstable_AclRule {
+export function initialiseAclRule(access: Access): AclRule {
   let newRule = createThing();
   newRule = setIri(newRule, rdf.type, acl.Authorization);
   if (access.read) {
@@ -640,8 +637,8 @@ export function initialiseAclRule(access: unstable_Access): unstable_AclRule {
  * @param sourceRule ACL rule to duplicate.
  */
 export function duplicateAclRule(
-  sourceRule: unstable_AclRule
-): unstable_AclRule {
+  sourceRule: AclRule
+): AclRule {
   let targetRule = createThing();
   targetRule = setIri(targetRule, rdf.type, acl.Authorization);
 

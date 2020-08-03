@@ -32,15 +32,15 @@ jest.mock("../fetcher", () => ({
 }));
 
 import {
-  unstable_fetchFile,
-  unstable_deleteFile,
-  unstable_saveFileInContainer,
-  unstable_overwriteFile,
-  unstable_fetchFileWithAcl,
+  fetchFile,
+  deleteFile,
+  saveFileInContainer,
+  overwriteFile,
+  fetchFileWithAcl,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
-describe("unstable_fetchFile", () => {
+describe("fetchFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
@@ -55,7 +55,7 @@ describe("unstable_fetchFile", () => {
       )
     );
 
-    await unstable_fetchFile("https://some.url");
+    await fetchFile("https://some.url");
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
   });
 
@@ -68,7 +68,7 @@ describe("unstable_fetchFile", () => {
         )
       );
 
-    await unstable_fetchFile("https://some.url", {
+    await fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -86,7 +86,7 @@ describe("unstable_fetchFile", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
-    const file = await unstable_fetchFile("https://some.url", {
+    const file = await fetchFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -107,7 +107,7 @@ describe("unstable_fetchFile", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
+    const response = await fetchFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -133,7 +133,7 @@ describe("unstable_fetchFile", () => {
         )
       );
 
-    const response = unstable_fetchFile("https://some.url", {
+    const response = fetchFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
@@ -142,7 +142,7 @@ describe("unstable_fetchFile", () => {
   });
 });
 
-describe("unstable_fetchFileWithAcl", () => {
+describe("fetchFileWithAcl", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
@@ -157,7 +157,7 @@ describe("unstable_fetchFileWithAcl", () => {
       )
     );
 
-    await unstable_fetchFileWithAcl("https://some.url");
+    await fetchFileWithAcl("https://some.url");
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
   });
 
@@ -170,7 +170,7 @@ describe("unstable_fetchFileWithAcl", () => {
         )
       );
 
-    const response = await unstable_fetchFileWithAcl("https://some.url", {
+    const response = await fetchFileWithAcl("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -188,7 +188,7 @@ describe("unstable_fetchFileWithAcl", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
-    const file = await unstable_fetchFileWithAcl("https://some.url", {
+    const file = await fetchFileWithAcl("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -215,7 +215,7 @@ describe("unstable_fetchFileWithAcl", () => {
       return Promise.resolve(new Response(undefined, init));
     });
 
-    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+    const fetchedLitDataset = await fetchFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -250,7 +250,7 @@ describe("unstable_fetchFileWithAcl", () => {
       Promise.resolve(new Response(undefined, init))
     );
 
-    const fetchedLitDataset = await unstable_fetchFileWithAcl(
+    const fetchedLitDataset = await fetchFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -267,12 +267,9 @@ describe("unstable_fetchFileWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = unstable_fetchFileWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = fetchFileWithAcl("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the File failed: 403 Forbidden.")
@@ -286,12 +283,9 @@ describe("unstable_fetchFileWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = unstable_fetchFileWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = fetchFileWithAcl("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Fetching the File failed: 404 Not Found.")
@@ -307,7 +301,7 @@ describe("unstable_fetchFileWithAcl", () => {
         )
       );
 
-    const response = await unstable_fetchFile("https://some.url", {
+    const response = await fetchFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -333,7 +327,7 @@ describe("unstable_fetchFileWithAcl", () => {
         )
       );
 
-    const response = unstable_fetchFile("https://some.url", {
+    const response = fetchFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
@@ -357,7 +351,7 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const response = await unstable_deleteFile("https://some.url");
+    const response = await deleteFile("https://some.url");
 
     expect(fetcher.fetch.mock.calls).toEqual([
       [
@@ -379,7 +373,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    const response = await unstable_deleteFile("https://some.url", {
+    const response = await deleteFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -403,7 +397,7 @@ describe("Non-RDF data deletion", () => {
         )
       );
 
-    await unstable_deleteFile("https://some.url", {
+    await deleteFile("https://some.url", {
       fetch: mockFetch,
       init: {
         mode: "same-origin",
@@ -430,7 +424,7 @@ describe("Non-RDF data deletion", () => {
       )
     );
 
-    const deletionPromise = unstable_deleteFile("https://some.url", {
+    const deletionPromise = deleteFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -463,10 +457,7 @@ describe("Write non-RDF data into a folder", () => {
       )
     );
 
-    const response = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob
-    );
+    const response = await saveFileInContainer("https://some.url", mockBlob);
 
     expect(fetcher.fetch).toHaveBeenCalled();
   });
@@ -489,10 +480,7 @@ describe("Write non-RDF data into a folder", () => {
       )
     );
 
-    const savedFile = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob
-    );
+    const savedFile = await saveFileInContainer("https://some.url", mockBlob);
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -521,11 +509,9 @@ describe("Write non-RDF data into a folder", () => {
       )
     );
 
-    const response = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob,
-      { fetch: mockFetch }
-    );
+    const response = await saveFileInContainer("https://some.url", mockBlob, {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch).toHaveBeenCalled();
   });
@@ -541,11 +527,9 @@ describe("Write non-RDF data into a folder", () => {
       )
     );
 
-    const response = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob,
-      { fetch: mockFetch }
-    );
+    const response = await saveFileInContainer("https://some.url", mockBlob, {
+      fetch: mockFetch,
+    });
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -566,14 +550,10 @@ describe("Write non-RDF data into a folder", () => {
       )
     );
 
-    const savedFile = await unstable_saveFileInContainer(
-      "https://some.url",
-      mockBlob,
-      {
-        fetch: mockFetch,
-        slug: "someFileName",
-      }
-    );
+    const savedFile = await saveFileInContainer("https://some.url", mockBlob, {
+      fetch: mockFetch,
+      slug: "someFileName",
+    });
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -596,7 +576,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     await expect(
-      unstable_saveFileInContainer("https://some.url", mockBlob, {
+      saveFileInContainer("https://some.url", mockBlob, {
         fetch: mockFetch,
         init: {
           headers: {
@@ -617,7 +597,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     await expect(
-      unstable_saveFileInContainer("https://some.url", mockBlob, {
+      saveFileInContainer("https://some.url", mockBlob, {
         fetch: mockFetch,
       })
     ).rejects.toThrow("Saving the file failed: 403 Forbidden.");
@@ -633,7 +613,7 @@ describe("Write non-RDF data into a folder", () => {
       );
 
     await expect(
-      unstable_saveFileInContainer("https://some.url", mockBlob, {
+      saveFileInContainer("https://some.url", mockBlob, {
         fetch: mockFetch,
       })
     ).rejects.toThrow(
@@ -661,7 +641,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    await unstable_overwriteFile("https://some.url", mockBlob);
+    await overwriteFile("https://some.url", mockBlob);
 
     expect(fetcher.fetch).toHaveBeenCalled();
   });
@@ -680,10 +660,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       )
     );
 
-    const savedFile = await unstable_overwriteFile(
-      "https://some.url",
-      mockBlob
-    );
+    const savedFile = await overwriteFile("https://some.url", mockBlob);
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -711,11 +688,9 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         )
       );
 
-    const response = await unstable_overwriteFile(
-      "https://some.url",
-      mockBlob,
-      { fetch: mockFetch }
-    );
+    const response = await overwriteFile("https://some.url", mockBlob, {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch).toHaveBeenCalled();
   });
@@ -729,11 +704,9 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         )
       );
 
-    const savedFile = await unstable_overwriteFile(
-      "https://some.url",
-      mockBlob,
-      { fetch: mockFetch }
-    );
+    const savedFile = await overwriteFile("https://some.url", mockBlob, {
+      fetch: mockFetch,
+    });
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
@@ -760,7 +733,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       );
 
     await expect(
-      unstable_overwriteFile("https://some.url", mockBlob, {
+      overwriteFile("https://some.url", mockBlob, {
         fetch: mockFetch,
       })
     ).rejects.toThrow("Saving the file failed: 403 Forbidden.");
