@@ -368,13 +368,12 @@ function removeUndueAccess(
   resourceIri: IriString,
   targetRuleType: "default" | "resource"
 ): unstable_AclRule {
-  const agentOriginallyHasAccess =
-    getIriAll(originalRule, acl.agent).filter(
-      (originalAgent) => originalAgent === agent
-    ).length > 0;
+  const agentOriginallyHasAccess = getIriAll(originalRule, acl.agent).includes(
+    agent
+  );
   if (!agentOriginallyHasAccess) {
-    // If the original rule if both a resource and a default rule, and did **not**
-    // give access to the agent whose access are being set, only the target
+    // If the original rule is both a resource and a default rule, and did **not**
+    // give access to the agent whose access is being set, only the target
     // access type should be duplicated (i.e. not give default access for a target
     // resource rule)
     return removeIri(
