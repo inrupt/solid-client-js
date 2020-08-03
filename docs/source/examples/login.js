@@ -19,24 +19,30 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// BEGIN-EXAMPLE-READ-ACL-AGENT-ACCESS-ALL
+// BEGIN-EXAMPLE-LOGIN
 
 import {
-  unstable_fetchSolidDatasetWithAcl,
-  unstable_getAgentAccessAll,
-} from "@inrupt/solid-client";
+  Session,
+  getClientAuthnWithDependencies
+} from '@inrupt/solid-client-authn-browser'
 
-const myDatasetWithAcl = await unstable_fetchSolidDatasetWithAcl(
-  "https://example.com"
+// Build a session
+const session = new solidClientAuthn.Session({
+    clientAuthn: solidClientAuthn.getClientAuthnWithDependencies({})},
+    "mySession"
 );
-const accessByAgent = unstable_getAgentAccessAll(myDatasetWithAcl);
 
-// => an object like
-//    {
-//      "https://example.com/profile#webid":
-//        { read: true, append: false, write: false, control: true },
-//      "https://example.com/other-profile#webid":
-//        { read: true, append: false, write: false, control: false },
-//    }
+// Redirect the user to their identity provider...
+await session.login({
+    // The URL of the user's OIDC issuer
+    oidcIssuer: 'https://identityProvider.com', 
+    // The url the system should redirect to after login
+    redirectUrl: 'https://mysite.com/redirect',
+});
 
-// END-EXAMPLE-READ-ACL-AGENT-ACCESS-ALL
+onLogin((sessionInfo) => {
+   // Do stuff
+
+});
+
+// END-EXAMPLE-LOGIN

@@ -21,9 +21,9 @@
 
 // BEGIN-EXAMPLE-WRITE-DATA-SAVE-DATASET
 
-import { saveLitDatasetAt } from "@inrupt/solid-client";
+import { saveSolidDatasetAt } from "@inrupt/solid-client";
 
-const savedLitDataset = await saveLitDatasetAt(
+const savedSolidDataset = await saveSolidDatasetAt(
   "https://example.com/some/interesting/resource",
   updatedDataset
 

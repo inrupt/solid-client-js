@@ -22,17 +22,17 @@
 // BEGIN-EXAMPLE-READ-DATA
 
 import {
-  fetchLitDataset,
+  fetchSolidDataset,
   getThingOne,
   getStringNoLocaleOne,
 } from "@inrupt/solid-client";
-import { foaf } from "rdf-namespaces";
+import { FOAF } from "@inrupt/vocab-common-rdf";
 
 /* 
    1. Fetch the Dataset located at the specified URL. 
 */
 
-const profileResource = await fetchLitDataset(
+const profileResource = await fetchSolidDataset(
   "https://docs-example.inrupt.net/profile/card"
 );
 
@@ -47,6 +47,6 @@ const profile = getThingOne(
 
 // 3. Retrieve the specific data item (e.g., name) from the entity.
 
-const name = getStringNoLocaleOne(profileResource, foaf.name);
+const name = getStringNoLocaleOne(profileResource, FOAF.name);
 
 // END-EXAMPLE-READ-DATA

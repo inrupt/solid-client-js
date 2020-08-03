@@ -22,15 +22,15 @@
 // BEGIN-EXAMPLE-READ-ACL-AGENT-ACCESS-ONE
 
 import {
-  unstable_fetchLitDatasetWithAcl,
+  unstable_fetchSolidDatasetWithAcl,
   unstable_getAgentAccessOne,
 } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+const myDatasetWithAcl = await unstable_fetchSolidDatasetWithAcl(
   "https://example.com"
 );
-const agentAccess = unstable_getAgentAccessOne(litDatasetWithAcl, webId);
+const agentAccess = unstable_getAgentAccessOne(myDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }

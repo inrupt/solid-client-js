@@ -20,12 +20,12 @@
  */
 
 import {
-  fetchLitDataset,
+  fetchSolidDataset,
   getThingOne,
   getStringNoLocaleOne,
 } from "@inrupt/solid-client";
 
-const profileResource = await fetchLitDataset(
+const profileResource = await fetchSolidDataset(
   "https://vincentt.inrupt.net/profile/card"
 );
 
@@ -40,9 +40,9 @@ const profile = getThingOne(
 import {
   setStringUnlocalised,
   setThing,
-  saveLitDatasetAt,
+  saveSolidDatasetAt,
 } from "@inrupt/solid-client";
-import { foaf } from "rdf-namespaces";
+import { FOAF } from "@inrupt/vocab-common-rdf";
 
 /*
    Start with a previously fetched Thing (i.e. profile).
@@ -53,7 +53,7 @@ import { foaf } from "rdf-namespaces";
    The passed-in Thing (i.e. profile) is unmodified.
 */
 
-const updatedProfile = setStringUnlocalised(profile, foaf.name, "Vincent");
+const updatedProfile = setStringUnlocalised(profile, FOAF.name, "Vincent");
 
 /*
    Create a new dataset (i.e., updatedProfileResource) from 
@@ -67,7 +67,7 @@ const updatedProfile = setStringUnlocalised(profile, foaf.name, "Vincent");
 const updatedProfileResource = setThing(profileResource, updatedProfile);
 
 // Save the new dataset.
-await saveLitDatasetAt(
+await saveSolidDatasetAt(
   "https://vincentt.inrupt.net/profile/card",
   updatedProfileResource
 );

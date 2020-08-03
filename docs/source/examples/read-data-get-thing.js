@@ -27,7 +27,7 @@ import { getThingOne } from "@inrupt/solid-client";
 //  From a fetched dataset, retrieve the Thing at the specified URL.
 
 const thing = getThingOne(
-  litDataset,
+  myDataset,
   "https://example.com/some/interesting/resource#thing"
 );
 // END-EXAMPLE-GET-THING

@@ -22,11 +22,11 @@
 // BEGIN-EXAMPLE-FETCH-DATASET
 
 
-import { fetchLitDataset } from "@inrupt/solid-client";
+import { fetchSolidDataset } from "@inrupt/solid-client";
 
 // Fetch the Dataset located at the specified URL.
 
-const litDataset = await fetchLitDataset(
+const myDataset = await fetchSolidDataset(
   "https://example.com/some/interesting/resource"
 );
 

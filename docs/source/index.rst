@@ -13,9 +13,10 @@ Framework (RDF) <https://www.w3.org/TR/rdf11-concepts/>`_ principles
 and is compatible with the `RDF/JS specification
 <https://rdf.js.org/>`_.
 
-You can use |product| in Node.js using CommonJS modules and in the
-browser with a bundler like `Webpack <https://webpack.js.org>`_,
-`Rollup <https://rollupjs.org>`_, or `Parcel <https://parceljs.org>`_.
+You can use |product| in `Node.js <https://nodejs.org>`_ using
+`CommonJS <http://www.commonjs.org>`_ modules and in the browser with a
+bundler like `Webpack <https://webpack.js.org>`_, `Rollup
+<https://rollupjs.org>`_, or `Parcel <https://parceljs.org>`_.
 
 
 Getting Started
@@ -27,7 +28,7 @@ To get started, see the following pages in the documentation:
 
    * - :doc:`/installation`
 
-     - Install |product| using ``npm``.
+     - Install |product|, and associated libraries, using ``npm``.
 
    * - :doc:`/tutorial/read-write-data`
 

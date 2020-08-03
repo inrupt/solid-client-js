@@ -22,7 +22,7 @@
 // BEGIN-EXAMPLE-WRITE-ACL-RESOURCE
 
 import {
-  unstable_fetchLitDatasetWithAcl,
+  unstable_fetchSolidDatasetWithAcl,
   unstable_hasResourceAcl,
   unstable_hasFallbackAcl,
   unstable_hasAccessibleAcl,
@@ -33,32 +33,32 @@ import {
   unstable_saveAclFor,
 } from "@inrupt/solid-client";
 
-// Fetch the LitDataset and its associated ACLs, if available:
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+// Fetch the SolidDataset and its associated ACLs, if available:
+const myDatasetWithAcl = await unstable_fetchSolidDatasetWithAcl(
   "https://example.com"
 );
 
-// Obtain the LitDataset's own ACL, if available,
+// Obtain the SolidDataset's own ACL, if available,
 // or initialise a new one, if possible:
 let resourceAcl;
-if (!unstable_hasResourceAcl(litDatasetWithAcl)) {
-  if (!unstable_hasAccessibleAcl(litDatasetWithAcl)) {
+if (!unstable_hasResourceAcl(myDatasetWithAcl)) {
+  if (!unstable_hasAccessibleAcl(myDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to change access rights to this Resource."
     );
   }
-  if (!unstable_hasFallbackAcl(litDatasetWithAcl)) {
+  if (!unstable_hasFallbackAcl(myDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to see who currently has access to this Resource."
     );
     // Alternatively, initialise a new empty ACL as follows,
     // but be aware that if you do not give someone Control access,
     // **nobody will ever be able to change Access permissions in the future**:
-    // resourceAcl = unstable_createAcl(litDatasetWithAcl);
+    // resourceAcl = unstable_createAcl(myDatasetWithAcl);
   }
-  resourceAcl = unstable_createAclFromFallbackAcl(litDatasetWithAcl);
+  resourceAcl = unstable_createAclFromFallbackAcl(myDatasetWithAcl);
 } else {
-  resourceAcl = unstable_getResourceAcl(litDatasetWithAcl);
+  resourceAcl = unstable_getResourceAcl(myDatasetWithAcl);
 }
 
 // Give someone Control access to the given Resource:
@@ -69,6 +69,6 @@ const updatedAcl = unstable_setAgentResourceAccess(
 );
 
 // Now save the ACL:
-await unstable_saveAclFor(litDatasetWithAcl, updatedAcl);
+await unstable_saveAclFor(myDatasetWithAcl, updatedAcl);
 
 // END-EXAMPLE-WRITE-ACL-RESOURCE

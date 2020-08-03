@@ -1,13 +1,13 @@
 import {
-  unstable_fetchLitDatasetWithAcl,
+  unstable_fetchSolidDatasetWithAcl,
   unstable_getPublicAccess,
 } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await unstable_fetchLitDatasetWithAcl(
+const myDatasetWithAcl = await unstable_fetchSolidDatasetWithAcl(
   "https://example.com"
 );
-const publicAccess = unstable_getPublicAccess(litDatasetWithAcl);
+const publicAccess = unstable_getPublicAccess(myDatasetWithAcl);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }

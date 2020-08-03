@@ -23,7 +23,7 @@
 
 import {
   unstable_fetchFile,
-  isLitDataset,
+  isSolidDataset,
   getContentType,
   getFetchedFrom,
 } from "lit-solid";
@@ -35,6 +35,6 @@ const file = await unstable_fetchFile(
 console.log(
   `Fetched a ${getContentType(file)} file from ${getFetchedFrom(file)}.`
 );
-console.log(`The file is ${isLitDataset(file) ? "" : "not "}a dataset.`);
+console.log(`The file is ${isSolidDataset(file) ? "" : "not "}a dataset.`);
 
 // END-EXAMPLE-READ-FILE

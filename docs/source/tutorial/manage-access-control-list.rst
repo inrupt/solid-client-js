@@ -48,21 +48,21 @@ Read Access Information for a Resource
 ======================================
 
 To retrieve the ACL for a resource in addition to the Resource itself,
-use the :apimodule:`unstable_fetchLitDatasetWithAcl
-<_resource_litdataset_#unstable_fetchlitdatasetwithacl>` function.
+use the :apimodule:`unstable_fetchSolidDatasetWithAcl
+<_resource_soliddataset_#unstable_fetchsoliddatasetwithacl>` function.
 The returned value includes the Resource data, the ``ResourceInfo``
 (i.e., metadata), and the ACL.
 
 .. note::
 
-   The :apimodule:`unstable_fetchLitDatasetWithAcl
-   <_resource_litdataset_.md#unstable_fetchlitdatasetwithacl>` function
+   The :apimodule:`unstable_fetchSolidDatasetWithAcl
+   <_resource_soliddataset_.md#unstable_fetchsoliddatasetwithacl>` function
    may result in extra HTTP requests being sent.
 
 Read Public Access
 ------------------
 
-From a :term:`LitDataset` that has an ACL attached, you can use
+From a :term:`SolidDataset` that has an ACL attached, you can use
 :apimodule:`unstable_getPublicAccess
 <_acl_class_#unstable_getpublicaccess>` to retrieve the access granted
 to the public in general, regardless of whether they are authenticated
@@ -74,7 +74,7 @@ or not.
 Reading Agent Access
 --------------------
 
-From a :term:`LitDataset` that has an ACL attached, you can use:
+From a :term:`SolidDataset` that has an ACL attached, you can use:
 
 - :apimodule:`unstable_getAgentAccessOne
   <_acl_agent_#unstable_getagentaccessone>` to retrieve the access
@@ -113,8 +113,8 @@ overriding the fallback ACL.
 
 To modify access to a Resource:
 
-#. Use :apimodule:`unstable_fetchLitDatasetWithAcl
-   <_resource_litdataset_#unstable_fetchlitdatasetwithacl>` to retrieve
+#. Use :apimodule:`unstable_fetchSolidDatasetWithAcl
+   <_resource_soliddataset_#unstable_fetchsoliddatasetwithacl>` to retrieve
    the Resource and its ACL.
 
 #. From the retrieved Resource, call :apimodule:`unstable_getResourceACL

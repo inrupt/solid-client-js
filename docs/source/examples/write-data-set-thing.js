@@ -23,6 +23,6 @@
 
 import { setThing } from "@inrupt/solid-client";
 
-const updatedDataset = setThing(litDataset, updatedThing);
+const updatedDataset = setThing(myDataset, updatedThing);
 
 // END-EXAMPLE-WRITE-DATA-SET-THING

@@ -9,7 +9,8 @@ refer to `<https://solidproject.org/faqs>`_.
 
 
    ACL
-      An **Access Control List**.
+      An **Access Control List**. ACL entry specifies the access
+      granted to an agent to a resource.  See also :term:`Access Modes`.
 
    Agent
       A user. :term:`Agent` typically refers to a person but could also
@@ -40,9 +41,9 @@ refer to `<https://solidproject.org/faqs>`_.
       ``https://cleopatra.solid.community/profile/`` and
       ``https://cleopatra.solid.community/`` are Containers.
 
-   LitDataset
-      All the :term:`Things <Thing>` that are (to be) stored in a
-      specific :term:`Resource`.
+   Pod
+      Storage location for your data. You manage the
+      access to data stored in your Pod.
 
    Resource
       The thing sent to you when you type a URL into a web browser.
@@ -51,18 +52,21 @@ refer to `<https://solidproject.org/faqs>`_.
       When an :term:`ACL` grants Read access, the grantee is allowed to
       view the contents of the applicable :term:`Resource`.
 
+   SolidDataset
+      Set of :term:`Things <Thing>` that are stored in a
+      specific :term:`Resource`.
+
    Thing
-      A set of data about a single entity. For example, a :term:`Thing`
-      about a person could include data about the person's name.
+      A data entity, e.g., a person. A ``Thing`` is associated with a a
+      set of data or properties about the Thing, e.g., ``name``.
 
    WebID
       A URL that identifies a user or other :term:`Agent`. The
-      :term:`Resource` found at this URL can provide more information
-      about this Agent, such as the location of their data.
+      :term:`Resource` found at the :term:`WebID` can provide more
+      information about this Agent, such as the location of their data.
 
    Write Access
       When an :term:`ACL` grants Write access, the grantee is allowed
       to change the contents of the applicable :term:`Resource`.
       Granting Write access automatically also grants :term:`Append
       Access` access.
-
