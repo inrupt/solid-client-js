@@ -67,10 +67,11 @@ describe("fetchAcl", () => {
 
     await internal_fetchAcl(mockResourceInfo);
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      ["https://some.pod/resource.acl"],
-      ["https://some.pod/", { method: "HEAD" }],
-    ]);
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+    expect(mockedFetcher.fetch.mock.calls[1][0]).toEqual("https://some.pod/");
+    expect(mockedFetcher.fetch.mock.calls[1][1]?.method).toEqual("HEAD");
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
