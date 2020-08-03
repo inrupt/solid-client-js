@@ -24,28 +24,28 @@ import {
   LitDataset,
   WithResourceInfo,
   IriString,
-  unstable_Access,
-  unstable_AclDataset,
-  unstable_WithAcl,
+  Access,
+  AclDataset,
+  WithAcl,
   WebId,
 } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 import {
-  unstable_getGroupDefaultAccessOne,
-  unstable_getGroupResourceAccessOne,
-  unstable_getGroupResourceAccessAll,
-  unstable_getGroupDefaultAccessAll,
-  unstable_getGroupAccessOne,
-  unstable_getGroupAccessAll,
+  getGroupDefaultAccessOne,
+  getGroupResourceAccessOne,
+  getGroupResourceAccessAll,
+  getGroupDefaultAccessAll,
+  getGroupAccessOne,
+  getGroupAccessAll,
 } from "./group";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   group: IriString,
   resource: IriString,
-  access: unstable_Access,
+  access: Access,
   type: "resource" | "default"
-): unstable_AclDataset {
+): AclDataset {
   const subjectIri = resource + "#" + encodeURIComponent(group) + Math.random();
   aclDataset.add(
     DataFactory.quad(
@@ -114,16 +114,16 @@ function addAclRuleQuads(
 
 function addAclDatasetToLitDataset(
   litDataset: LitDataset & WithResourceInfo,
-  aclDataset: unstable_AclDataset,
+  aclDataset: AclDataset,
   type: "resource" | "fallback"
-): LitDataset & WithResourceInfo & unstable_WithAcl {
-  const acl: unstable_WithAcl["internal_acl"] = {
+): LitDataset & WithResourceInfo & WithAcl {
+  const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as unstable_WithAcl).internal_acl ?? {}),
+    ...(((litDataset as any) as WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.internal_resourceInfo.unstable_aclUrl =
+    litDataset.internal_resourceInfo.aclUrl =
       aclDataset.internal_resourceInfo.fetchedFrom;
     aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
@@ -158,7 +158,7 @@ describe("getGroupAccessOne", () => {
       "resource"
     );
 
-    const access = unstable_getGroupAccessOne(
+    const access = getGroupAccessOne(
       litDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -186,7 +186,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessOne(
+    const access = getGroupAccessOne(
       litDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -201,7 +201,7 @@ describe("getGroupAccessOne", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_WithAcl = {
+    const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -210,7 +210,7 @@ describe("getGroupAccessOne", () => {
     );
 
     expect(
-      unstable_getGroupAccessOne(
+      getGroupAccessOne(
         litDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
@@ -244,7 +244,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessOne(
+    const access = getGroupAccessOne(
       litDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -279,7 +279,7 @@ describe("getGroupAccessOne", () => {
       "resource"
     );
 
-    const access = unstable_getGroupAccessOne(
+    const access = getGroupAccessOne(
       litDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -314,7 +314,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessOne(
+    const access = getGroupAccessOne(
       litDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -344,7 +344,7 @@ describe("getGroupAccessAll", () => {
       "resource"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -371,7 +371,7 @@ describe("getGroupAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -385,7 +385,7 @@ describe("getGroupAccessAll", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_WithAcl = {
+    const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -393,9 +393,7 @@ describe("getGroupAccessAll", () => {
       inaccessibleAcl
     );
 
-    expect(
-      unstable_getGroupAccessAll(litDatasetWithInaccessibleAcl)
-    ).toBeNull();
+    expect(getGroupAccessAll(litDatasetWithInaccessibleAcl)).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
@@ -425,7 +423,7 @@ describe("getGroupAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -464,7 +462,7 @@ describe("getGroupAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     // It only includes rules for agent "https://some.pod/group#id",
     // not for "https://some-other.pod/profileDoc#webId"
@@ -500,7 +498,7 @@ describe("getGroupAccessAll", () => {
       "resource"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -534,7 +532,7 @@ describe("getGroupAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -557,7 +555,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccessOne(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -586,7 +584,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccessOne(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -608,7 +606,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccessOne(
       resourceAcl,
       "https://some-other.pod/group#id"
     );
@@ -637,7 +635,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccessOne(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -666,7 +664,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccessOne(
       resourceAcl,
       "https://arbitrary.pod/group#id"
     );
@@ -697,7 +695,7 @@ describe("getGroupResourceAccessAll", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
+    const groupAccess = getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -731,7 +729,7 @@ describe("getGroupResourceAccessAll", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
+    const groupAccess = getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -760,7 +758,7 @@ describe("getGroupResourceAccessAll", () => {
       )
     );
 
-    const agentAccess = unstable_getGroupResourceAccessAll(resourceAcl);
+    const agentAccess = getGroupResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/group#id": {
@@ -811,7 +809,7 @@ describe("getGroupResourceAccessAll", () => {
       )
     );
 
-    const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
+    const groupAccess = getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -839,7 +837,7 @@ describe("getGroupResourceAccessAll", () => {
       "resource"
     );
 
-    const groupAccess = unstable_getGroupResourceAccessAll(resourceAcl);
+    const groupAccess = getGroupResourceAccessAll(resourceAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -862,7 +860,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccessOne(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -891,7 +889,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccessOne(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -913,7 +911,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccessOne(
       containerAcl,
       "https://some-other.pod/group#id"
     );
@@ -942,7 +940,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccessOne(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -971,7 +969,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccessOne(
       containerAcl,
       "https://arbitrary.pod/group#id"
     );
@@ -1002,7 +1000,7 @@ describe("getGroupDefaultAccessAll", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
+    const groupAccess = getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -1036,7 +1034,7 @@ describe("getGroupDefaultAccessAll", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
+    const groupAccess = getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -1065,7 +1063,7 @@ describe("getGroupDefaultAccessAll", () => {
       )
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
+    const groupAccess = getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -1116,7 +1114,7 @@ describe("getGroupDefaultAccessAll", () => {
       )
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
+    const groupAccess = getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {
@@ -1144,7 +1142,7 @@ describe("getGroupDefaultAccessAll", () => {
       "default"
     );
 
-    const groupAccess = unstable_getGroupDefaultAccessAll(containerAcl);
+    const groupAccess = getGroupDefaultAccessAll(containerAcl);
 
     expect(groupAccess).toEqual({
       "https://some.pod/group#id": {

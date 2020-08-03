@@ -20,21 +20,21 @@
  */
 
 import {
-  unstable_fetchFile,
-  unstable_deleteFile,
-  unstable_saveFileInContainer,
-  unstable_overwriteFile,
+  fetchFile,
+  deleteFile,
+  saveFileInContainer,
+  overwriteFile,
   createLitDataset,
   fetchLitDataset,
-  unstable_fetchResourceInfoWithAcl,
+  fetchResourceInfoWithAcl,
   isContainer,
   isLitDataset,
   getContentType,
   getFetchedFrom,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
-  unstable_saveAclFor,
-  unstable_deleteAclFor,
+  saveAclFor,
+  deleteAclFor,
   getThingOne,
   getThingAll,
   setThing,
@@ -93,6 +93,51 @@ import {
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
+  fetchLitDatasetWithAcl,
+  hasFallbackAcl,
+  getFallbackAcl,
+  hasResourceAcl,
+  getResourceAcl,
+  createAcl,
+  createAclFromFallbackAcl,
+  getAgentAccessOne,
+  getAgentAccessAll,
+  getAgentResourceAccessOne,
+  getAgentResourceAccessAll,
+  setAgentResourceAccess,
+  getAgentDefaultAccessOne,
+  getAgentDefaultAccessAll,
+  setAgentDefaultAccess,
+  getPublicAccess,
+  getPublicResourceAccess,
+  getPublicDefaultAccess,
+  setPublicResourceAccess,
+  setPublicDefaultAccess,
+  hasAccessibleAcl,
+  getGroupAccessOne,
+  getGroupAccessAll,
+  getGroupResourceAccessOne,
+  getGroupResourceAccessAll,
+  getGroupDefaultAccessOne,
+  getGroupDefaultAccessAll,
+  // Deprecated functions still exported for backwards compatibility:
+  getStringUnlocalizedOne,
+  getStringUnlocalizedAll,
+  addStringUnlocalized,
+  setStringUnlocalized,
+  removeStringUnlocalized,
+  getStringInLocaleOne,
+  getStringInLocaleAll,
+  addStringInLocale,
+  setStringInLocale,
+  removeStringInLocale,
+  unstable_fetchFile,
+  unstable_deleteFile,
+  unstable_saveFileInContainer,
+  unstable_overwriteFile,
+  unstable_fetchResourceInfoWithAcl,
+  unstable_saveAclFor,
+  unstable_deleteAclFor,
   unstable_fetchLitDatasetWithAcl,
   unstable_hasFallbackAcl,
   unstable_getFallbackAcl,
@@ -120,37 +165,26 @@ import {
   unstable_getGroupResourceAccessAll,
   unstable_getGroupDefaultAccessOne,
   unstable_getGroupDefaultAccessAll,
-  // Deprecated functions still exported for backwards compatibility:
-  getStringUnlocalizedOne,
-  getStringUnlocalizedAll,
-  addStringUnlocalized,
-  setStringUnlocalized,
-  removeStringUnlocalized,
-  getStringInLocaleOne,
-  getStringInLocaleAll,
-  addStringInLocale,
-  setStringInLocale,
-  removeStringInLocale,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
-  expect(unstable_fetchFile).toBeDefined();
-  expect(unstable_deleteFile).toBeDefined();
-  expect(unstable_saveFileInContainer).toBeDefined();
-  expect(unstable_overwriteFile).toBeDefined();
+  expect(fetchFile).toBeDefined();
+  expect(deleteFile).toBeDefined();
+  expect(saveFileInContainer).toBeDefined();
+  expect(overwriteFile).toBeDefined();
   expect(createLitDataset).toBeDefined();
   expect(fetchLitDataset).toBeDefined();
-  expect(unstable_fetchResourceInfoWithAcl).toBeDefined();
+  expect(fetchResourceInfoWithAcl).toBeDefined();
   expect(isContainer).toBeDefined();
   expect(isLitDataset).toBeDefined();
   expect(getContentType).toBeDefined();
   expect(getFetchedFrom).toBeDefined();
   expect(saveLitDatasetAt).toBeDefined();
   expect(saveLitDatasetInContainer).toBeDefined();
-  expect(unstable_saveAclFor).toBeDefined();
-  expect(unstable_deleteAclFor).toBeDefined();
+  expect(saveAclFor).toBeDefined();
+  expect(deleteAclFor).toBeDefined();
   expect(getThingOne).toBeDefined();
   expect(getThingAll).toBeDefined();
   expect(setThing).toBeDefined();
@@ -209,6 +243,54 @@ it("exports the public API from the entry file", () => {
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
+  expect(fetchLitDatasetWithAcl).toBeDefined();
+  expect(hasFallbackAcl).toBeDefined();
+  expect(getFallbackAcl).toBeDefined();
+  expect(hasResourceAcl).toBeDefined();
+  expect(getResourceAcl).toBeDefined();
+  expect(createAcl).toBeDefined();
+  expect(createAclFromFallbackAcl).toBeDefined();
+  expect(getAgentAccessOne).toBeDefined();
+  expect(getAgentAccessAll).toBeDefined();
+  expect(getAgentResourceAccessOne).toBeDefined();
+  expect(getAgentResourceAccessAll).toBeDefined();
+  expect(setAgentResourceAccess).toBeDefined();
+  expect(getAgentDefaultAccessOne).toBeDefined();
+  expect(getAgentDefaultAccessAll).toBeDefined();
+  expect(setAgentDefaultAccess).toBeDefined();
+  expect(getPublicAccess).toBeDefined();
+  expect(getPublicResourceAccess).toBeDefined();
+  expect(getPublicDefaultAccess).toBeDefined();
+  expect(setPublicResourceAccess).toBeDefined();
+  expect(setPublicDefaultAccess).toBeDefined();
+  expect(getPublicDefaultAccess).toBeDefined();
+  expect(hasAccessibleAcl).toBeDefined();
+  expect(getGroupAccessOne).toBeDefined();
+  expect(getGroupAccessAll).toBeDefined();
+  expect(getGroupResourceAccessOne).toBeDefined();
+  expect(getGroupResourceAccessAll).toBeDefined();
+  expect(getGroupDefaultAccessOne).toBeDefined();
+  expect(getGroupDefaultAccessAll).toBeDefined();
+});
+
+it("still exports deprecated methods", () => {
+  expect(getStringInLocaleOne).toBeDefined();
+  expect(getStringUnlocalizedOne).toBeDefined();
+  expect(getStringInLocaleAll).toBeDefined();
+  expect(getStringUnlocalizedAll).toBeDefined();
+  expect(addStringInLocale).toBeDefined();
+  expect(addStringUnlocalized).toBeDefined();
+  expect(setStringInLocale).toBeDefined();
+  expect(setStringUnlocalized).toBeDefined();
+  expect(removeStringInLocale).toBeDefined();
+  expect(removeStringUnlocalized).toBeDefined();
+  expect(unstable_fetchFile).toBeDefined();
+  expect(unstable_deleteFile).toBeDefined();
+  expect(unstable_saveFileInContainer).toBeDefined();
+  expect(unstable_overwriteFile).toBeDefined();
+  expect(unstable_fetchResourceInfoWithAcl).toBeDefined();
+  expect(unstable_saveAclFor).toBeDefined();
+  expect(unstable_deleteAclFor).toBeDefined();
   expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
   expect(unstable_hasFallbackAcl).toBeDefined();
   expect(unstable_getFallbackAcl).toBeDefined();
@@ -236,17 +318,4 @@ it("exports the public API from the entry file", () => {
   expect(unstable_getGroupResourceAccessAll).toBeDefined();
   expect(unstable_getGroupDefaultAccessOne).toBeDefined();
   expect(unstable_getGroupDefaultAccessAll).toBeDefined();
-});
-
-it("still exports deprecated methods", () => {
-  expect(getStringInLocaleOne).toBeDefined();
-  expect(getStringUnlocalizedOne).toBeDefined();
-  expect(getStringInLocaleAll).toBeDefined();
-  expect(getStringUnlocalizedAll).toBeDefined();
-  expect(addStringInLocale).toBeDefined();
-  expect(addStringUnlocalized).toBeDefined();
-  expect(setStringInLocale).toBeDefined();
-  expect(setStringUnlocalized).toBeDefined();
-  expect(removeStringInLocale).toBeDefined();
-  expect(removeStringUnlocalized).toBeDefined();
 });

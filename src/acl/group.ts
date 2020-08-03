@@ -20,10 +20,10 @@
  */
 
 import {
-  unstable_AclDataset,
-  unstable_Access,
-  unstable_AclRule,
-  unstable_WithAcl,
+  AclDataset,
+  Access,
+  AclRule,
+  WithAcl,
   WithResourceInfo,
   IriString,
   UrlString,
@@ -34,10 +34,10 @@ import {
   internal_getAccess,
   internal_combineAccessModes,
   internal_getResourceAclRulesForResource,
-  unstable_hasResourceAcl,
-  unstable_hasFallbackAcl,
-  unstable_getResourceAcl,
-  unstable_getFallbackAcl,
+  hasResourceAcl,
+  hasFallbackAcl,
+  getResourceAcl,
+  getFallbackAcl,
   internal_getAclRulesForIri,
   internal_getAccessByIri,
 } from "./acl";
@@ -55,18 +55,18 @@ import { acl } from "../constants";
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Group specifically for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getGroupAccessOne(
-  resourceInfo: unstable_WithAcl & WithResourceInfo,
+export function getGroupAccessOne(
+  resourceInfo: WithAcl & WithResourceInfo,
   group: UrlString
-): unstable_Access | null {
-  if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getGroupResourceAccessOne(
+): Access | null {
+  if (hasResourceAcl(resourceInfo)) {
+    return getGroupResourceAccessOne(
       resourceInfo.internal_acl.resourceAcl,
       group
     );
   }
-  if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getGroupDefaultAccessOne(
+  if (hasFallbackAcl(resourceInfo)) {
+    return getGroupDefaultAccessOne(
       resourceInfo.internal_acl.fallbackAcl,
       group
     );
@@ -84,16 +84,16 @@ export function unstable_getGroupAccessOne(
  * @param resourceInfo Information about the Resource to which the given Group may have been granted access.
  * @returns Which Access Modes have been granted to which Groups specifically for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getGroupAccessAll(
-  resourceInfo: unstable_WithAcl & WithResourceInfo
-): Record<IriString, unstable_Access> | null {
-  if (unstable_hasResourceAcl(resourceInfo)) {
-    const resourceAcl = unstable_getResourceAcl(resourceInfo);
-    return unstable_getGroupResourceAccessAll(resourceAcl);
+export function getGroupAccessAll(
+  resourceInfo: WithAcl & WithResourceInfo
+): Record<IriString, Access> | null {
+  if (hasResourceAcl(resourceInfo)) {
+    const resourceAcl = getResourceAcl(resourceInfo);
+    return getGroupResourceAccessAll(resourceAcl);
   }
-  if (unstable_hasFallbackAcl(resourceInfo)) {
-    const fallbackAcl = unstable_getFallbackAcl(resourceInfo);
-    return unstable_getGroupDefaultAccessAll(fallbackAcl);
+  if (hasFallbackAcl(resourceInfo)) {
+    const fallbackAcl = getFallbackAcl(resourceInfo);
+    return getGroupDefaultAccessAll(fallbackAcl);
   }
   return null;
 }
@@ -103,7 +103,7 @@ export function unstable_getGroupAccessAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[unstable_getGroupDefaultAccessModesOne]] for that).
+ * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[getGroupDefaultAccessModesOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -111,10 +111,10 @@ export function unstable_getGroupAccessAll(
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Group specifically for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getGroupResourceAccessOne(
-  aclDataset: unstable_AclDataset,
+export function getGroupResourceAccessOne(
+  aclDataset: AclDataset,
   group: UrlString
-): unstable_Access {
+): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
@@ -137,9 +137,9 @@ export function unstable_getGroupResourceAccessOne(
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @returns Which Access Modes have been granted to which Groups specifically for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getGroupResourceAccessAll(
-  aclDataset: unstable_AclDataset
-): Record<UrlString, unstable_Access> {
+export function getGroupResourceAccessAll(
+  aclDataset: AclDataset
+): Record<UrlString, Access> {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
@@ -153,7 +153,7 @@ export function unstable_getGroupResourceAccessAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to the Container Resource itself (see [[unstable_getGroupResourceAccessOne]] for that).
+ * - what access members of the given Group have to the Container Resource itself (see [[getGroupResourceAccessOne]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -161,10 +161,10 @@ export function unstable_getGroupResourceAccessAll(
  * @param group URL of the Group for which to retrieve what access it has to the child Resources of the given Container.
  * @returns Which Access Modes have been granted to the Group specifically for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getGroupDefaultAccessOne(
-  aclDataset: unstable_AclDataset,
+export function getGroupDefaultAccessOne(
+  aclDataset: AclDataset,
   group: UrlString
-): unstable_Access {
+): Access {
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
@@ -180,16 +180,16 @@ export function unstable_getGroupDefaultAccessOne(
  *
  * Keep in mind that this function will not tell you:
  * - what access arbitrary members of these Groups have through other ACL rules, e.g. public permissions.
- * - what access arbitrary members of these Groups have to the Container Resource itself (see [[unstable_getGroupResourceAccessAll]] for that).
+ * - what access arbitrary members of these Groups have to the Container Resource itself (see [[getGroupResourceAccessAll]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules for a certain Container.
  * @returns Which Access Modes have been granted to which Groups specifically for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getGroupDefaultAccessAll(
-  aclDataset: unstable_AclDataset
-): Record<UrlString, unstable_Access> {
+export function getGroupDefaultAccessAll(
+  aclDataset: AclDataset
+): Record<UrlString, Access> {
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
@@ -199,14 +199,12 @@ export function unstable_getGroupDefaultAccessAll(
 }
 
 function getGroupAclRuleForGroup(
-  rules: unstable_AclRule[],
+  rules: AclRule[],
   group: UrlString
-): unstable_AclRule[] {
+): AclRule[] {
   return internal_getAclRulesForIri(rules, group, acl.agentGroup);
 }
 
-function getAccessByGroup(
-  aclRules: unstable_AclRule[]
-): Record<IriString, unstable_Access> {
+function getAccessByGroup(aclRules: AclRule[]): Record<IriString, Access> {
   return internal_getAccessByIri(aclRules, acl.agentGroup);
 }

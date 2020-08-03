@@ -41,9 +41,9 @@ import {
   WithResourceInfo,
   hasChangelog,
   hasResourceInfo,
-  unstable_hasAcl,
-  unstable_WithAcl,
-  unstable_AclDataset,
+  hasAcl,
+  WithAcl,
+  AclDataset,
 } from "../interfaces";
 import { internal_isAclDataset } from "../acl/acl";
 import { getFetchedFrom } from "../resource/resource";
@@ -225,13 +225,13 @@ function cloneLitStructs<Dataset extends LitDataset>(
       ...litDataset.internal_resourceInfo,
     };
   }
-  if (unstable_hasAcl(litDataset)) {
-    (freshDataset as LitDataset & unstable_WithAcl).internal_acl = {
+  if (hasAcl(litDataset)) {
+    (freshDataset as LitDataset & WithAcl).internal_acl = {
       ...litDataset.internal_acl,
     };
   }
   if (internal_isAclDataset(litDataset)) {
-    (freshDataset as unstable_AclDataset).internal_accessTo =
+    (freshDataset as AclDataset).internal_accessTo =
       litDataset.internal_accessTo;
   }
 

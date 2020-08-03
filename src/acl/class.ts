@@ -22,10 +22,10 @@
 import {
   IriString,
   WithResourceInfo,
-  unstable_WithAcl,
-  unstable_Access,
-  unstable_AclDataset,
-  unstable_AclRule,
+  WithAcl,
+  Access,
+  AclDataset,
+  AclRule,
   WithChangeLog,
 } from "../interfaces";
 import { acl, foaf } from "../constants";
@@ -36,8 +36,8 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_getAccess,
   internal_combineAccessModes,
-  unstable_hasResourceAcl,
-  unstable_hasFallbackAcl,
+  hasResourceAcl,
+  hasFallbackAcl,
   internal_removeEmptyAclRules,
   initialiseAclRule,
   duplicateAclRule,
@@ -56,18 +56,14 @@ import { setIri } from "../thing/set";
  * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
  * @returns Which Access Modes have been granted to everyone for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function unstable_getPublicAccess(
-  resourceInfo: unstable_WithAcl & WithResourceInfo
-): unstable_Access | null {
-  if (unstable_hasResourceAcl(resourceInfo)) {
-    return unstable_getPublicResourceAccess(
-      resourceInfo.internal_acl.resourceAcl
-    );
+export function getPublicAccess(
+  resourceInfo: WithAcl & WithResourceInfo
+): Access | null {
+  if (hasResourceAcl(resourceInfo)) {
+    return getPublicResourceAccess(resourceInfo.internal_acl.resourceAcl);
   }
-  if (unstable_hasFallbackAcl(resourceInfo)) {
-    return unstable_getPublicDefaultAccess(
-      resourceInfo.internal_acl.fallbackAcl
-    );
+  if (hasFallbackAcl(resourceInfo)) {
+    return getPublicDefaultAccess(resourceInfo.internal_acl.fallbackAcl);
   }
   return null;
 }
@@ -77,16 +73,14 @@ export function unstable_getPublicAccess(
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[unstable_getDefaultResourceAccess]] for that).
+ * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[getDefaultResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @returns Which Access Modes have been granted to everyone for the Resource the given ACL LitDataset is associated with.
  */
-export function unstable_getPublicResourceAccess(
-  aclDataset: unstable_AclDataset
-): unstable_Access {
+export function getPublicResourceAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
@@ -105,16 +99,14 @@ export function unstable_getPublicResourceAccess(
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to the Container Resource itself (see [[unstable_getPublicResourceAccess]] for that).
+ * - what access anyone has to the Container Resource itself (see [[getPublicResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param aclDataset The LitDataset that contains Access-Control List rules for a certain Container.
  * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL LitDataset.
  */
-export function unstable_getPublicDefaultAccess(
-  aclDataset: unstable_AclDataset
-): unstable_Access {
+export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
@@ -143,10 +135,10 @@ export function unstable_getPublicDefaultAccess(
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @param access The Access Modes to grant to the public.
  */
-export function unstable_setPublicResourceAccess(
-  aclDataset: unstable_AclDataset,
-  access: unstable_Access
-): unstable_AclDataset & WithChangeLog {
+export function setPublicResourceAccess(
+  aclDataset: AclDataset,
+  access: Access
+): AclDataset & WithChangeLog {
   // First make sure that none of the pre-existing rules in the given ACL LitDataset
   // give the public access to the Resource:
   let filteredAcl = aclDataset;
@@ -190,10 +182,10 @@ export function unstable_setPublicResourceAccess(
  * @param aclDataset The LitDataset that contains Access-Control List rules.
  * @param access The Access Modes to grant to the public.
  */
-export function unstable_setPublicDefaultAccess(
-  aclDataset: unstable_AclDataset,
-  access: unstable_Access
-): unstable_AclDataset & WithChangeLog {
+export function setPublicDefaultAccess(
+  aclDataset: AclDataset,
+  access: Access
+): AclDataset & WithChangeLog {
   // First make sure that none of the pre-existing rules in the given ACL LitDataset
   // give the public default access to the Resource:
   let filteredAcl = aclDataset;
@@ -233,10 +225,10 @@ export function unstable_setPublicDefaultAccess(
  * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
  */
 function removePublicFromRule(
-  rule: unstable_AclRule,
+  rule: AclRule,
   resourceIri: IriString,
   ruleType: "resource" | "default"
-): [unstable_AclRule, unstable_AclRule] {
+): [AclRule, AclRule] {
   // If the existing Rule does not apply to the given Agent, we don't need to split up.
   // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
   // that would give it access it does not currently have:
@@ -267,15 +259,12 @@ function removePublicFromRule(
 }
 
 function getClassAclRulesForClass(
-  aclRules: unstable_AclRule[],
+  aclRules: AclRule[],
   agentClass: IriString
-): unstable_AclRule[] {
+): AclRule[] {
   return aclRules.filter((rule) => appliesToClass(rule, agentClass));
 }
 
-function appliesToClass(
-  aclRule: unstable_AclRule,
-  agentClass: IriString
-): boolean {
+function appliesToClass(aclRule: AclRule, agentClass: IriString): boolean {
   return getIriAll(aclRule, acl.agentClass).includes(agentClass);
 }

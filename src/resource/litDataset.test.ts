@@ -37,7 +37,7 @@ import {
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
-  unstable_fetchLitDatasetWithAcl,
+  fetchLitDatasetWithAcl,
   createLitDataset,
 } from "./litDataset";
 import {
@@ -150,7 +150,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.unstable_aclUrl).toBe(
+    expect(litDataset.internal_resourceInfo.aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -171,7 +171,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.unstable_aclUrl).toBeUndefined();
+    expect(litDataset.internal_resourceInfo.aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -190,7 +190,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.unstable_permissions).toEqual({
+    expect(litDataset.internal_resourceInfo.permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -223,7 +223,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.unstable_permissions).toEqual({
+    expect(litDataset.internal_resourceInfo.permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -253,9 +253,7 @@ describe("fetchLitDataset", () => {
       { fetch: mockFetch }
     );
 
-    expect(
-      litDataset.internal_resourceInfo.unstable_permissions
-    ).toBeUndefined();
+    expect(litDataset.internal_resourceInfo.permissions).toBeUndefined();
   });
 
   it("returns a LitDataset representing the fetched Turtle", async () => {
@@ -337,7 +335,7 @@ describe("fetchLitDatasetWithAcl", () => {
       );
     });
 
-    const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
+    const fetchedLitDataset = await fetchLitDatasetWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -368,7 +366,7 @@ describe("fetchLitDatasetWithAcl", () => {
       >;
     };
 
-    await unstable_fetchLitDatasetWithAcl("https://some.pod/resource");
+    await fetchLitDatasetWithAcl("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -389,7 +387,7 @@ describe("fetchLitDatasetWithAcl", () => {
       )
     );
 
-    const fetchedLitDataset = await unstable_fetchLitDatasetWithAcl(
+    const fetchedLitDataset = await fetchLitDatasetWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -406,7 +404,7 @@ describe("fetchLitDatasetWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = unstable_fetchLitDatasetWithAcl(
+    const fetchPromise = fetchLitDatasetWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -425,7 +423,7 @@ describe("fetchLitDatasetWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = unstable_fetchLitDatasetWithAcl(
+    const fetchPromise = fetchLitDatasetWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,

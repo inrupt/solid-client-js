@@ -41,8 +41,8 @@ import {
   WithResourceInfo,
   WithChangeLog,
   LocalNode,
-  unstable_WithAcl,
-  unstable_AclDataset,
+  WithAcl,
+  AclDataset,
 } from "../interfaces";
 
 function getMockQuad(
@@ -878,7 +878,7 @@ describe("removeThing", () => {
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
     });
-    const datasetWithFetchedAcls: LitDataset & unstable_WithAcl = Object.assign(
+    const datasetWithFetchedAcls: LitDataset & WithAcl = Object.assign(
       dataset(),
       {
         internal_acl: {
@@ -907,7 +907,7 @@ describe("removeThing", () => {
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
     });
-    const aclDataset: unstable_AclDataset = Object.assign(dataset(), {
+    const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",

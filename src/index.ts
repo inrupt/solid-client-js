@@ -20,24 +20,39 @@
  */
 
 export {
-  unstable_fetchResourceInfoWithAcl,
   isContainer,
   isLitDataset,
   getFetchedFrom,
   getContentType,
+  fetchResourceInfoWithAcl,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[fetchResourceInfoWithAcl]] */
+  fetchResourceInfoWithAcl as unstable_fetchResourceInfoWithAcl,
 } from "./resource/resource";
 export {
-  unstable_fetchFile,
-  unstable_deleteFile,
-  unstable_saveFileInContainer,
-  unstable_overwriteFile,
+  fetchFile,
+  deleteFile,
+  saveFileInContainer,
+  overwriteFile,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[fetchFile]] */
+  fetchFile as unstable_fetchFile,
+  /** @deprecated See [[deleteFile]] */
+  deleteFile as unstable_deleteFile,
+  /** @deprecated See [[saveFileContainer]] */
+  saveFileInContainer as unstable_saveFileInContainer,
+  /** @deprecated See [[overwriteFile]] */
+  overwriteFile as unstable_overwriteFile,
 } from "./resource/nonRdfData";
 export {
   createLitDataset,
   fetchLitDataset,
   saveLitDatasetAt,
   saveLitDatasetInContainer,
-  unstable_fetchLitDatasetWithAcl,
+  fetchLitDatasetWithAcl,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[fetchLitDatasetWithAcl]] */
+  fetchLitDatasetWithAcl as unstable_fetchLitDatasetWithAcl,
 } from "./resource/litDataset";
 export {
   getThingOne,
@@ -132,40 +147,100 @@ export {
   removeStringWithLocale as removeStringInLocale,
 } from "./thing/remove";
 export {
-  unstable_hasFallbackAcl,
-  unstable_getFallbackAcl,
-  unstable_hasResourceAcl,
-  unstable_getResourceAcl,
-  unstable_createAcl,
-  unstable_createAclFromFallbackAcl,
-  unstable_saveAclFor,
-  unstable_deleteAclFor,
+  hasFallbackAcl,
+  getFallbackAcl,
+  hasResourceAcl,
+  getResourceAcl,
+  createAcl,
+  createAclFromFallbackAcl,
+  saveAclFor,
+  deleteAclFor,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[hasFallbackAcl]] */
+  hasFallbackAcl as unstable_hasFallbackAcl,
+  /** @deprecated See [[getFallbackAcl]] */
+  getFallbackAcl as unstable_getFallbackAcl,
+  /** @deprecated See [[hasResourceAcl]] */
+  hasResourceAcl as unstable_hasResourceAcl,
+  /** @deprecated See [[getResourceAcl]] */
+  getResourceAcl as unstable_getResourceAcl,
+  /** @deprecated See [[createAcl]] */
+  createAcl as unstable_createAcl,
+  /** @deprecated See [[createAclFromFallbackAcl]] */
+  createAclFromFallbackAcl as unstable_createAclFromFallbackAcl,
+  /** @deprecated See [[saveAclFor]] */
+  saveAclFor as unstable_saveAclFor,
+  /** @deprecated See [[deleteAclFor]] */
+  deleteAclFor as unstable_deleteAclFor,
 } from "./acl/acl";
 export {
-  unstable_AgentAccess,
-  unstable_getAgentAccessOne,
-  unstable_getAgentAccessAll,
-  unstable_getAgentResourceAccessOne,
-  unstable_getAgentResourceAccessAll,
-  unstable_setAgentResourceAccess,
-  unstable_getAgentDefaultAccessOne,
-  unstable_getAgentDefaultAccessAll,
-  unstable_setAgentDefaultAccess,
+  AgentAccess,
+  getAgentAccessOne,
+  getAgentAccessAll,
+  getAgentResourceAccessOne,
+  getAgentResourceAccessAll,
+  setAgentResourceAccess,
+  getAgentDefaultAccessOne,
+  getAgentDefaultAccessAll,
+  setAgentDefaultAccess,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[AgentAccess]] */
+  AgentAccess as unstable_AgentAccess,
+  /** @deprecated See [[getAgentAccessOne]] */
+  getAgentAccessOne as unstable_getAgentAccessOne,
+  /** @deprecated See [[getAgentAccessAll]] */
+  getAgentAccessAll as unstable_getAgentAccessAll,
+  /** @deprecated See [[getAgentResourceAccessOne]] */
+  getAgentResourceAccessOne as unstable_getAgentResourceAccessOne,
+  /** @deprecated See [[getAgentResourceAccessAll]] */
+  getAgentResourceAccessAll as unstable_getAgentResourceAccessAll,
+  /** @deprecated See [[setAgentResourceAccess]] */
+  setAgentResourceAccess as unstable_setAgentResourceAccess,
+  /** @deprecated See [[getAgentDefaultAccessOne]] */
+  getAgentDefaultAccessOne as unstable_getAgentDefaultAccessOne,
+  /** @deprecated See [[getAgentDefaultAccessAll]] */
+  getAgentDefaultAccessAll as unstable_getAgentDefaultAccessAll,
+  /** @deprecated See [[setAgentResourceAccess]] */
+  setAgentDefaultAccess as unstable_setAgentDefaultAccess,
 } from "./acl/agent";
 export {
-  unstable_getGroupAccessOne,
-  unstable_getGroupAccessAll,
-  unstable_getGroupResourceAccessOne,
-  unstable_getGroupResourceAccessAll,
-  unstable_getGroupDefaultAccessOne,
-  unstable_getGroupDefaultAccessAll,
+  getGroupAccessOne,
+  getGroupAccessAll,
+  getGroupResourceAccessOne,
+  getGroupResourceAccessAll,
+  getGroupDefaultAccessOne,
+  getGroupDefaultAccessAll,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[getGroupAccessOne]] */
+  getGroupAccessOne as unstable_getGroupAccessOne,
+  /** @deprecated See [[getGroupAccessAll]] */
+  getGroupAccessAll as unstable_getGroupAccessAll,
+  /** @deprecated See [[getGroupResourceAccessOne]] */
+  getGroupResourceAccessOne as unstable_getGroupResourceAccessOne,
+  /** @deprecated See [[getGroupResourceAccessAll]] */
+  getGroupResourceAccessAll as unstable_getGroupResourceAccessAll,
+  /** @deprecated See [[getGroupDefaultAccessOne]] */
+  getGroupDefaultAccessOne as unstable_getGroupDefaultAccessOne,
+  /** @deprecated See [[getGroupDefaultAccessAll]] */
+  getGroupDefaultAccessAll as unstable_getGroupDefaultAccessAll,
 } from "./acl/group";
 export {
-  unstable_getPublicAccess,
-  unstable_getPublicResourceAccess,
-  unstable_getPublicDefaultAccess,
-  unstable_setPublicResourceAccess,
-  unstable_setPublicDefaultAccess,
+  getPublicAccess,
+  getPublicResourceAccess,
+  getPublicDefaultAccess,
+  setPublicResourceAccess,
+  setPublicDefaultAccess,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[getPublicAccess]] */
+  getPublicAccess as unstable_getPublicAccess,
+  /** @deprecated See [[getPublicResourceAccess]] */
+  getPublicResourceAccess as unstable_getPublicResourceAccess,
+  /** @deprecated See [[getPublicDefaultAccess] */
+  getPublicDefaultAccess as unstable_getPublicDefaultAccess,
+  /** @deprecated See [[setPublicResourceAccess] */
+  setPublicResourceAccess as unstable_setPublicResourceAccess,
+  /** @deprecated See [[setPublicDefaultAccess] */
+  setPublicDefaultAccess as unstable_setPublicDefaultAccess,
 } from "./acl/class";
 export {
   Url,
@@ -180,13 +255,32 @@ export {
   LocalNode,
   WithResourceInfo,
   WithChangeLog,
-  unstable_hasAccessibleAcl,
-  unstable_WithAccessibleAcl,
-  unstable_WithAcl,
-  unstable_WithFallbackAcl,
-  unstable_WithResourceAcl,
-  unstable_AclDataset,
-  unstable_AclRule,
-  unstable_Access,
-  unstable_UploadRequestInit,
+  hasAccessibleAcl,
+  WithAccessibleAcl,
+  WithAcl,
+  WithFallbackAcl,
+  WithResourceAcl,
+  AclDataset,
+  AclRule as internal_AclRule,
+  Access,
+  UploadRequestInit,
+  // Aliases for deprecated exports to preserve backwards compatibility:
+  /** @deprecated See [[hasAccessibleAcl]] */
+  hasAccessibleAcl as unstable_hasAccessibleAcl,
+  /** @deprecated See [[WithAccessibleAcl]] */
+  WithAccessibleAcl as unstable_WithAccessibleAcl,
+  /** @deprecated See [[WithAcl]] */
+  WithAcl as unstable_WithAcl,
+  /** @deprecated See [[WithFallbackAcl]] */
+  WithFallbackAcl as unstable_WithFallbackAcl,
+  /** @deprecated See [[WithResourceAcl]] */
+  WithResourceAcl as unstable_WithResourceAcl,
+  /** @deprecated See [[AclDataset]] */
+  AclDataset as unstable_AclDataset,
+  /** @deprecated See [[_AclRule]] */
+  AclRule as unstable_AclRule,
+  /** @deprecated See [[Access]] */
+  Access as unstable_Access,
+  /** @deprecated See [[UploadRequestInit]] */
+  UploadRequestInit as unstable_UploadRequestInit,
 } from "./interfaces";

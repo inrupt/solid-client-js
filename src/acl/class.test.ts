@@ -23,30 +23,29 @@ import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
 import {
-  unstable_getPublicResourceAccess,
-  unstable_getPublicDefaultAccess,
-  unstable_getPublicAccess,
-  unstable_setPublicDefaultAccess,
-  unstable_setPublicResourceAccess,
+  getPublicResourceAccess,
+  getPublicDefaultAccess,
+  getPublicAccess,
+  setPublicDefaultAccess,
+  setPublicResourceAccess,
 } from "./class";
 import {
   LitDataset,
   WithResourceInfo,
   IriString,
-  unstable_Access,
-  unstable_AclDataset,
-  unstable_WithAcl,
+  Access,
+  AclDataset,
+  WithAcl,
 } from "../interfaces";
 import { Quad } from "rdf-js";
 import { foaf } from "../constants";
 import { getThingAll } from "../thing/thing";
 import { getIriAll } from "../thing/get";
-import { triplesToTurtle } from "../formats/turtle";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   resource: IriString,
-  access: unstable_Access,
+  access: Access,
   type: "resource" | "default",
   agentClass:
     | "http://xmlns.com/foaf/0.1/Agent"
@@ -57,7 +56,7 @@ function addAclRuleQuads(
     | "http://www.w3.org/ns/auth/acl#agentClass"
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup" = "http://www.w3.org/ns/auth/acl#agentClass"
-): unstable_AclDataset {
+): AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agentClass) + Math.random();
   aclDataset.add(
@@ -127,16 +126,16 @@ function addAclRuleQuads(
 
 function addAclDatasetToLitDataset(
   litDataset: LitDataset & WithResourceInfo,
-  aclDataset: unstable_AclDataset,
+  aclDataset: AclDataset,
   type: "resource" | "fallback"
-): LitDataset & WithResourceInfo & unstable_WithAcl {
-  const acl: unstable_WithAcl["internal_acl"] = {
+): LitDataset & WithResourceInfo & WithAcl {
+  const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as unstable_WithAcl).internal_acl ?? {}),
+    ...(((litDataset as any) as WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.internal_resourceInfo.unstable_aclUrl =
+    litDataset.internal_resourceInfo.aclUrl =
       aclDataset.internal_resourceInfo.fetchedFrom;
     aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
@@ -171,7 +170,7 @@ describe("getPublicAccess", () => {
       "resource"
     );
 
-    const access = unstable_getPublicAccess(litDatasetWithAcl);
+    const access = getPublicAccess(litDatasetWithAcl);
 
     expect(access).toEqual({
       read: false,
@@ -196,7 +195,7 @@ describe("getPublicAccess", () => {
       "fallback"
     );
 
-    const access = unstable_getPublicAccess(litDatasetWithAcl);
+    const access = getPublicAccess(litDatasetWithAcl);
 
     expect(access).toEqual({
       read: false,
@@ -208,7 +207,7 @@ describe("getPublicAccess", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_WithAcl = {
+    const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -216,7 +215,7 @@ describe("getPublicAccess", () => {
       inaccessibleAcl
     );
 
-    expect(unstable_getPublicAccess(litDatasetWithInaccessibleAcl)).toBeNull();
+    expect(getPublicAccess(litDatasetWithInaccessibleAcl)).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
@@ -246,7 +245,7 @@ describe("getPublicAccess", () => {
       "fallback"
     );
 
-    const access = unstable_getPublicAccess(litDatasetWithAcl);
+    const access = getPublicAccess(litDatasetWithAcl);
 
     expect(access).toEqual({
       read: true,
@@ -278,7 +277,7 @@ describe("getPublicAccess", () => {
       "resource"
     );
 
-    const access = unstable_getPublicAccess(litDatasetWithAcl);
+    const access = getPublicAccess(litDatasetWithAcl);
 
     expect(access).toEqual({
       read: true,
@@ -310,7 +309,7 @@ describe("getPublicAccess", () => {
       "fallback"
     );
 
-    const access = unstable_getPublicAccess(litDatasetWithAcl);
+    const access = getPublicAccess(litDatasetWithAcl);
 
     expect(access).toEqual({
       read: false,
@@ -331,7 +330,7 @@ describe("getPublicResourceAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const publicAccess = unstable_getPublicResourceAccess(resourceAcl);
+    const publicAccess = getPublicResourceAccess(resourceAcl);
 
     expect(publicAccess).toEqual({
       read: true,
@@ -357,7 +356,7 @@ describe("getPublicResourceAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
+    const agentAccess = getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -376,7 +375,7 @@ describe("getPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
+    const agentAccess = getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -402,7 +401,7 @@ describe("getPublicResourceAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
+    const agentAccess = getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -428,7 +427,7 @@ describe("getPublicResourceAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicResourceAccess(resourceAcl);
+    const agentAccess = getPublicResourceAccess(resourceAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -449,7 +448,7 @@ describe("getPublicDefaultAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
+    const agentAccess = getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -475,7 +474,7 @@ describe("getPublicDefaultAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
+    const agentAccess = getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: true,
@@ -494,7 +493,7 @@ describe("getPublicDefaultAccess", () => {
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
+    const agentAccess = getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -520,7 +519,7 @@ describe("getPublicDefaultAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
+    const agentAccess = getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -546,7 +545,7 @@ describe("getPublicDefaultAccess", () => {
       "http://xmlns.com/foaf/0.1/Agent"
     );
 
-    const agentAccess = unstable_getPublicDefaultAccess(containerAcl);
+    const agentAccess = getPublicDefaultAccess(containerAcl);
 
     expect(agentAccess).toEqual({
       read: false,
@@ -564,7 +563,7 @@ describe("setPublicResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: true,
       write: true,
@@ -638,7 +637,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: true,
       write: false,
@@ -674,7 +673,7 @@ describe("setPublicResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    unstable_setPublicResourceAccess(sourceDataset, {
+    setPublicResourceAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -690,7 +689,7 @@ describe("setPublicResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -732,7 +731,7 @@ describe("setPublicResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: false,
       append: true,
       write: false,
@@ -772,7 +771,7 @@ describe("setPublicResourceAccess", () => {
       foaf.Agent
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -812,7 +811,7 @@ describe("setPublicResourceAccess", () => {
       foaf.Agent
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: false,
       append: false,
       write: false,
@@ -841,7 +840,7 @@ describe("setPublicResourceAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#loggedIn"
     );
 
-    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+    const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: true,
       write: false,
@@ -880,7 +879,7 @@ describe("setPublicDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: true,
       append: true,
       write: true,
@@ -956,7 +955,7 @@ describe("setPublicDefaultAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: true,
       append: true,
       write: false,
@@ -992,7 +991,7 @@ describe("setPublicDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    unstable_setPublicDefaultAccess(sourceDataset, {
+    setPublicDefaultAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -1008,7 +1007,7 @@ describe("setPublicDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -1050,7 +1049,7 @@ describe("setPublicDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: false,
       append: true,
       write: false,
@@ -1092,7 +1091,7 @@ describe("setPublicDefaultAccess", () => {
       foaf.Agent
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: true,
       append: false,
       write: false,
@@ -1134,7 +1133,7 @@ describe("setPublicDefaultAccess", () => {
       foaf.Agent
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: false,
       append: false,
       write: false,
@@ -1162,7 +1161,7 @@ describe("setPublicDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: false,
       append: false,
       write: false,
@@ -1212,7 +1211,7 @@ describe("setPublicDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
       read: false,
       append: false,
       write: false,

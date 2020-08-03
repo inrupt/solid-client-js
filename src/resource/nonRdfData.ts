@@ -22,9 +22,9 @@
 import { fetch } from "../fetcher";
 import { Headers } from "cross-fetch";
 import {
-  unstable_UploadRequestInit,
+  UploadRequestInit,
   WithResourceInfo,
-  unstable_WithAcl,
+  WithAcl,
   Url,
   UrlString,
   internal_toIriString,
@@ -33,7 +33,7 @@ import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
 
 type FetchFileOptions = {
   fetch: typeof window.fetch;
-  init: unstable_UploadRequestInit;
+  init: UploadRequestInit;
 };
 
 const defaultFetchFileOptions = {
@@ -57,7 +57,7 @@ function containsReserved(header: Headers): boolean {
  * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  */
-export async function unstable_fetchFile(
+export async function fetchFile(
   input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<Blob & WithResourceInfo> {
@@ -88,7 +88,7 @@ export async function unstable_fetchFile(
  * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
  * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
  * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[unstable_fetchFile]] instead.
+ * experimental, prefer [[fetchFile]] instead.
  *
  * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
  * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
@@ -100,11 +100,11 @@ export async function unstable_fetchFile(
  * @param options Fetching options: a custom fetcher and/or headers.
  * @returns A file and the ACLs that apply to it, if available to the authenticated user.
  */
-export async function unstable_fetchFileWithAcl(
+export async function fetchFileWithAcl(
   input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
-): Promise<Blob & WithResourceInfo & unstable_WithAcl> {
-  const file = await unstable_fetchFile(input, options);
+): Promise<Blob & WithResourceInfo & WithAcl> {
+  const file = await fetchFile(input, options);
   const acl = await internal_fetchAcl(file, options);
   return Object.assign(file, { internal_acl: acl });
 }
@@ -120,7 +120,7 @@ const defaultSaveOptions = {
  *
  * @param input The URL of the file to delete
  */
-export async function unstable_deleteFile(
+export async function deleteFile(
   input: Url | UrlString,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions
 ): Promise<void> {
@@ -152,11 +152,13 @@ type SaveFileOptions = FetchFileOptions & {
  *
  * If something went wrong saving the file, the returned Promise will be rejected with an Error.
  *
+ * Please note that this function is still experimental: its API can change in non-major releases.
+ *
  * @param folderUrl The URL of the folder where the new file is saved
  * @param file The file to be written
  * @param options Additional parameters for file creation (e.g. a slug)
  */
-export async function unstable_saveFileInContainer(
+export async function saveFileInContainer(
   folderUrl: Url | UrlString,
   file: Blob,
   options: Partial<SaveFileOptions> = defaultFetchFileOptions
@@ -194,11 +196,13 @@ export async function unstable_saveFileInContainer(
  *
  * If something went wrong saving the file, the returned Promise will be rejected with an Error.
  *
+ * Please note that this function is still experimental: its API can change in non-major releases.
+ *
  * @param fileUrl The URL where the file is saved
  * @param file The file to be written
  * @param options Additional parameters for file creation (e.g. a slug)
  */
-export async function unstable_overwriteFile(
+export async function overwriteFile(
   fileUrl: Url | UrlString,
   file: Blob,
   options: Partial<FetchFileOptions> = defaultFetchFileOptions

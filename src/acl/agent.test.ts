@@ -24,40 +24,38 @@ import { Quad } from "rdf-js";
 import { dataset, namedNode, literal } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
-  unstable_getAgentResourceAccessOne,
-  unstable_getAgentResourceAccessAll,
-  unstable_getAgentDefaultAccessOne,
-  unstable_getAgentDefaultAccessAll,
-  unstable_setAgentResourceAccess,
-  unstable_getAgentAccessOne,
-  unstable_getAgentAccessAll,
-  unstable_setAgentDefaultAccess,
+  getAgentResourceAccessOne,
+  getAgentResourceAccessAll,
+  getAgentDefaultAccessOne,
+  getAgentDefaultAccessAll,
+  setAgentResourceAccess,
+  getAgentAccessOne,
+  getAgentAccessAll,
+  setAgentDefaultAccess,
 } from "./agent";
 import {
   LitDataset,
-  unstable_Access,
-  unstable_WithAcl,
+  Access,
+  WithAcl,
   WithResourceInfo,
   IriString,
-  unstable_AclDataset,
+  AclDataset,
 } from "../interfaces";
 import { getThingAll } from "../thing/thing";
 import { getIriAll } from "../thing/get";
-import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
-import { foaf } from "../constants";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
   agent: IriString,
   resource: IriString,
-  access: unstable_Access,
+  access: Access,
   type: "resource" | "default",
   ruleIri?: IriString,
   targetType:
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup"
     | "http://www.w3.org/ns/auth/acl#agentClass" = "http://www.w3.org/ns/auth/acl#agent"
-): unstable_AclDataset {
+): AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
   aclDataset.add(
@@ -127,16 +125,16 @@ function addAclRuleQuads(
 
 function addAclDatasetToLitDataset(
   litDataset: LitDataset & WithResourceInfo,
-  aclDataset: unstable_AclDataset,
+  aclDataset: AclDataset,
   type: "resource" | "fallback"
-): LitDataset & WithResourceInfo & unstable_WithAcl {
-  const acl: unstable_WithAcl["internal_acl"] = {
+): LitDataset & WithResourceInfo & WithAcl {
+  const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as unstable_WithAcl).internal_acl ?? {}),
+    ...(((litDataset as any) as WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.internal_resourceInfo.unstable_aclUrl =
+    litDataset.internal_resourceInfo.aclUrl =
       aclDataset.internal_resourceInfo.fetchedFrom;
     aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
@@ -171,7 +169,7 @@ describe("getAgentAccessOne", () => {
       "resource"
     );
 
-    const access = unstable_getAgentAccessOne(
+    const access = getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -199,7 +197,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessOne(
+    const access = getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -214,7 +212,7 @@ describe("getAgentAccessOne", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_WithAcl = {
+    const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -223,7 +221,7 @@ describe("getAgentAccessOne", () => {
     );
 
     expect(
-      unstable_getAgentAccessOne(
+      getAgentAccessOne(
         litDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
@@ -257,7 +255,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessOne(
+    const access = getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -292,7 +290,7 @@ describe("getAgentAccessOne", () => {
       "resource"
     );
 
-    const access = unstable_getAgentAccessOne(
+    const access = getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -327,7 +325,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessOne(
+    const access = getAgentAccessOne(
       litDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -357,7 +355,7 @@ describe("getAgentAccessAll", () => {
       "resource"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -384,7 +382,7 @@ describe("getAgentAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -398,7 +396,7 @@ describe("getAgentAccessAll", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const litDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: unstable_WithAcl = {
+    const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
     const litDatasetWithInaccessibleAcl = Object.assign(
@@ -406,9 +404,7 @@ describe("getAgentAccessAll", () => {
       inaccessibleAcl
     );
 
-    expect(
-      unstable_getAgentAccessAll(litDatasetWithInaccessibleAcl)
-    ).toBeNull();
+    expect(getAgentAccessAll(litDatasetWithInaccessibleAcl)).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
@@ -438,7 +434,7 @@ describe("getAgentAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -477,7 +473,7 @@ describe("getAgentAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     // It only includes rules for agent "https://some.pod/profileDoc#webId",
     // not for "https://some-other.pod/profileDoc#webId"
@@ -513,7 +509,7 @@ describe("getAgentAccessAll", () => {
       "resource"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -547,7 +543,7 @@ describe("getAgentAccessAll", () => {
       "fallback"
     );
 
-    const access = unstable_getAgentAccessAll(litDatasetWithAcl);
+    const access = getAgentAccessAll(litDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -570,7 +566,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -599,7 +595,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -621,7 +617,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccessOne(
       resourceAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -650,7 +646,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccessOne(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -679,7 +675,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccessOne(
       resourceAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
@@ -710,7 +706,7 @@ describe("getAgentResourceAccessAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
+    const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -744,7 +740,7 @@ describe("getAgentResourceAccessAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
+    const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -773,7 +769,7 @@ describe("getAgentResourceAccessAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
+    const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -824,7 +820,7 @@ describe("getAgentResourceAccessAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
+    const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -852,7 +848,7 @@ describe("getAgentResourceAccessAll", () => {
       "resource"
     );
 
-    const agentAccess = unstable_getAgentResourceAccessAll(resourceAcl);
+    const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -872,7 +868,7 @@ describe("setAgentResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -939,7 +935,7 @@ describe("setAgentResourceAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1003,7 +999,7 @@ describe("setAgentResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       {
@@ -1045,16 +1041,12 @@ describe("setAgentResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    unstable_setAgentResourceAccess(
-      sourceDataset,
-      "https://some.pod/profileDoc#webId",
-      {
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      }
-    );
+    setAgentResourceAccess(sourceDataset, "https://some.pod/profileDoc#webId", {
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
 
     expect(Array.from(sourceDataset)).toEqual([]);
   });
@@ -1065,7 +1057,7 @@ describe("setAgentResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1113,7 +1105,7 @@ describe("setAgentResourceAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/resource" }
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1159,7 +1151,7 @@ describe("setAgentResourceAccess", () => {
       "resource"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1205,7 +1197,7 @@ describe("setAgentResourceAccess", () => {
       "resource"
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1237,7 +1229,7 @@ describe("setAgentResourceAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1293,7 +1285,7 @@ describe("setAgentResourceAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1349,7 +1341,7 @@ describe("setAgentResourceAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1403,7 +1395,7 @@ describe("setAgentResourceAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1457,7 +1449,7 @@ describe("setAgentResourceAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentResourceAccess(
+    const updatedDataset = setAgentResourceAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1529,7 +1521,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1558,7 +1550,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1580,7 +1572,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccessOne(
       containerAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -1609,7 +1601,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccessOne(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1638,7 +1630,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccessOne(
       containerAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
@@ -1669,7 +1661,7 @@ describe("getAgentDefaultAccessAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
+    const agentAccess = getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1703,7 +1695,7 @@ describe("getAgentDefaultAccessAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
+    const agentAccess = getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1732,7 +1724,7 @@ describe("getAgentDefaultAccessAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
+    const agentAccess = getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1783,7 +1775,7 @@ describe("getAgentDefaultAccessAll", () => {
       )
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
+    const agentAccess = getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1811,7 +1803,7 @@ describe("getAgentDefaultAccessAll", () => {
       "default"
     );
 
-    const agentAccess = unstable_getAgentDefaultAccessAll(containerAcl);
+    const agentAccess = getAgentDefaultAccessAll(containerAcl);
 
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
@@ -1831,7 +1823,7 @@ describe("setAgentDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1900,7 +1892,7 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -1964,7 +1956,7 @@ describe("setAgentDefaultAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       {
@@ -2006,16 +1998,12 @@ describe("setAgentDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    unstable_setAgentDefaultAccess(
-      sourceDataset,
-      "https://some.pod/profileDoc#webId",
-      {
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      }
-    );
+    setAgentDefaultAccess(sourceDataset, "https://some.pod/profileDoc#webId", {
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
 
     expect(Array.from(sourceDataset)).toEqual([]);
   });
@@ -2026,7 +2014,7 @@ describe("setAgentDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2074,7 +2062,7 @@ describe("setAgentDefaultAccess", () => {
       { internal_accessTo: "https://arbitrary.pod/container/" }
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2122,7 +2110,7 @@ describe("setAgentDefaultAccess", () => {
       "default"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2170,7 +2158,7 @@ describe("setAgentDefaultAccess", () => {
       "default"
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2202,7 +2190,7 @@ describe("setAgentDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2258,7 +2246,7 @@ describe("setAgentDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2314,7 +2302,7 @@ describe("setAgentDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2370,7 +2358,7 @@ describe("setAgentDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
@@ -2426,7 +2414,7 @@ describe("setAgentDefaultAccess", () => {
       )
     );
 
-    const updatedDataset = unstable_setAgentDefaultAccess(
+    const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       {
