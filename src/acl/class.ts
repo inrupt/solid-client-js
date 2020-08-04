@@ -39,8 +39,8 @@ import {
   hasResourceAcl,
   hasFallbackAcl,
   internal_removeEmptyAclRules,
-  initialiseAclRule,
-  duplicateAclRule,
+  internal_initialiseAclRule,
+  internal_duplicateAclRule,
 } from "./acl";
 import { removeIri, removeAll } from "../thing/remove";
 import { getThingAll, setThing } from "../thing/thing";
@@ -158,7 +158,7 @@ export function setPublicResourceAccess(
   });
 
   // Create a new Rule that only grants the public the given Access Modes:
-  let newRule = initialiseAclRule(access);
+  let newRule = internal_initialiseAclRule(access);
   newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agentClass, foaf.Agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -205,7 +205,7 @@ export function setPublicDefaultAccess(
   });
 
   // Create a new Rule that only grants the public the given default Access Modes:
-  let newRule = initialiseAclRule(access);
+  let newRule = internal_initialiseAclRule(access);
   newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agentClass, foaf.Agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -233,7 +233,7 @@ function removePublicFromRule(
   // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
   // that would give it access it does not currently have:
   if (!getIriAll(rule, acl.agentClass).includes(foaf.Agent)) {
-    const emptyRule = initialiseAclRule({
+    const emptyRule = internal_initialiseAclRule({
       read: false,
       append: false,
       write: false,
@@ -244,7 +244,7 @@ function removePublicFromRule(
   // The existing rule will keep applying to the public:
   const ruleWithoutPublic = removeIri(rule, acl.agentClass, foaf.Agent);
   // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
+  let ruleForOtherTargets = internal_duplicateAclRule(rule);
   // ...*only* apply to the public (because the existing Rule covers the others)...
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);

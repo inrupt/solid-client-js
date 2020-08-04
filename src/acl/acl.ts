@@ -611,7 +611,13 @@ export async function deleteAclFor<
   return storedResource;
 }
 
-export function initialiseAclRule(access: Access): AclRule {
+/**
+ * Initialise a new ACL Rule that grants some access - but does not yet specify to whom.
+ *
+ * @hidden This is an internal utility function that should not be used directly by downstreams.
+ * @param access Access mode that this Rule will grant
+ */
+export function internal_initialiseAclRule(access: Access): AclRule {
   let newRule = createThing();
   newRule = setIri(newRule, rdf.type, acl.Authorization);
   if (access.read) {
@@ -634,11 +640,10 @@ export function initialiseAclRule(access: Access): AclRule {
  *
  * Note that non-ACL values will not be copied over.
  *
+ * @hidden This is an internal utility function that should not be used directly by downstreams.
  * @param sourceRule ACL rule to duplicate.
  */
-export function duplicateAclRule(
-  sourceRule: AclRule
-): AclRule {
+export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
   let targetRule = createThing();
   targetRule = setIri(targetRule, rdf.type, acl.Authorization);
 
