@@ -24,12 +24,12 @@ import { Quad } from "rdf-js";
 import { dataset, namedNode, literal } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
-  getAgentResourceAccessOne,
+  getAgentResourceAccess,
   getAgentResourceAccessAll,
-  getAgentDefaultAccessOne,
+  getAgentDefaultAccess,
   getAgentDefaultAccessAll,
   setAgentResourceAccess,
-  getAgentAccessOne,
+  getAgentAccess,
   getAgentAccessAll,
   setAgentDefaultAccess,
 } from "./agent";
@@ -156,7 +156,7 @@ function getMockDataset(
   });
 }
 
-describe("getAgentAccessOne", () => {
+describe("getGroupAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
@@ -172,7 +172,7 @@ describe("getAgentAccessOne", () => {
       "resource"
     );
 
-    const access = getAgentAccessOne(
+    const access = getAgentAccess(
       solidDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -200,7 +200,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = getAgentAccessOne(
+    const access = getAgentAccess(
       solidDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -224,7 +224,7 @@ describe("getAgentAccessOne", () => {
     );
 
     expect(
-      getAgentAccessOne(
+      getAgentAccess(
         solidDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
@@ -258,7 +258,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = getAgentAccessOne(
+    const access = getAgentAccess(
       solidDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -293,7 +293,7 @@ describe("getAgentAccessOne", () => {
       "resource"
     );
 
-    const access = getAgentAccessOne(
+    const access = getAgentAccess(
       solidDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -328,7 +328,7 @@ describe("getAgentAccessOne", () => {
       "fallback"
     );
 
-    const access = getAgentAccessOne(
+    const access = getAgentAccess(
       solidDatasetWithAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -559,7 +559,7 @@ describe("getAgentAccessAll", () => {
   });
 });
 
-describe("getAgentResourceAccessOne", () => {
+describe("getAgentResourceAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -569,7 +569,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccess(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -598,7 +598,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccess(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -620,7 +620,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccess(
       resourceAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -649,7 +649,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccess(
       resourceAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -678,7 +678,7 @@ describe("getAgentResourceAccessOne", () => {
       "resource"
     );
 
-    const agentAccess = getAgentResourceAccessOne(
+    const agentAccess = getAgentResourceAccess(
       resourceAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
@@ -1514,7 +1514,7 @@ describe("setAgentResourceAccess", () => {
   });
 });
 
-describe("getAgentDefaultAccessOne", () => {
+describe("getAgentDefaultAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
@@ -1524,7 +1524,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1553,7 +1553,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1575,7 +1575,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some-other.pod/profileDoc#webId"
     );
@@ -1604,7 +1604,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
@@ -1633,7 +1633,7 @@ describe("getAgentDefaultAccessOne", () => {
       "default"
     );
 
-    const agentAccess = getAgentDefaultAccessOne(
+    const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );

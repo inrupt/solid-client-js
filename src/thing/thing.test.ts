@@ -24,7 +24,7 @@ import { dataset } from "@rdfjs/dataset";
 import { NamedNode } from "rdf-js";
 import { DataFactory } from "n3";
 import {
-  getThingOne,
+  getThing,
   getThingAll,
   setThing,
   removeThing,
@@ -110,7 +110,7 @@ describe("getThingOne", () => {
       getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
     );
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithMultipleThings,
       "https://some.vocab/subject"
     );
@@ -123,7 +123,7 @@ describe("getThingOne", () => {
     const datasetWithAThing = dataset();
     datasetWithAThing.add(relevantQuad);
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithAThing,
       DataFactory.namedNode("https://some.vocab/subject")
     );
@@ -141,7 +141,7 @@ describe("getThingOne", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
 
-    const thing = getThingOne(datasetWithThingLocal, localSubject);
+    const thing = getThing(datasetWithThingLocal, localSubject);
 
     expect(Array.from(thing)).toEqual([quadWithLocalSubject]);
   });
@@ -158,7 +158,7 @@ describe("getThingOne", () => {
     datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
     datasetWithMultipleNamedGraphs.add(quadInArbitraryGraph);
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject"
     );
@@ -182,7 +182,7 @@ describe("getThingOne", () => {
       })
     );
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
@@ -205,7 +205,7 @@ describe("getThingOne", () => {
       })
     );
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
@@ -228,7 +228,7 @@ describe("getThingOne", () => {
       })
     );
 
-    const thing = getThingOne(
+    const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
