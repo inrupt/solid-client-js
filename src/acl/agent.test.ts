@@ -51,10 +51,10 @@ function addAclRuleQuads(
   resource: IriString,
   access: unstable_Access,
   type: "resource" | "default",
-  rule?: IriString
+  ruleIri?: IriString
 ): unstable_AclDataset {
   const subjectIri =
-    rule ?? resource + "#" + encodeURIComponent(agent) + Math.random();
+    ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
@@ -916,7 +916,7 @@ describe("setAgentResourceAccess", () => {
     );
   });
 
-  it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
+  it("does not copy over access for an unrelated Agent", async () => {
     let sourceDataset = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#webId",

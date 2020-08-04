@@ -344,9 +344,9 @@ function removeAgentFromRule(
   resourceIri: IriString,
   ruleType: "resource" | "default"
 ): [unstable_AclRule, unstable_AclRule] {
-  // The existing rule will keep applying to Agents other than the given one:
-  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  let ruleForOtherTargets: unstable_AclRule;
+  // If the existing Rule does not apply to the given Agent, we don't need to split up.
+  // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
+  // that would give it access it does not currently have:
   if (!getIriAll(rule, acl.agent).includes(agent)) {
     const emptyRule = initialiseAclRule({
       read: false,
@@ -354,10 +354,12 @@ function removeAgentFromRule(
       write: false,
       control: false,
     });
-    return [ruleWithoutAgent, emptyRule];
+    return [rule, emptyRule];
   }
+  // The existing rule will keep applying to Agents other than the given one:
+  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
   // The agent already had some access in the rule, so duplicate it...
-  ruleForOtherTargets = duplicateAclRule(rule);
+  let ruleForOtherTargets = duplicateAclRule(rule);
   // ...but remove access to the original Resource:
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
