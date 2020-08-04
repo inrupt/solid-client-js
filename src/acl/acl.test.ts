@@ -113,9 +113,9 @@ describe("fetchResourceAcl", () => {
 
     await internal_fetchResourceAcl(sourceDataset);
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      ["https://some.pod/resource.acl"],
-    ]);
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
   });
 
   it("returns null if the source LitDataset has no known ACL IRI", async () => {

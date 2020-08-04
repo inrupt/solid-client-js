@@ -74,9 +74,9 @@ describe("fetchLitDataset", () => {
 
     await fetchLitDataset("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      ["https://some.pod/resource"],
-    ]);
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource"
+    );
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -86,7 +86,21 @@ describe("fetchLitDataset", () => {
 
     await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.pod/resource"]]);
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+  });
+
+  it("adds an Accept header accepting turtle by default", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][1]).toEqual({
+      headers: {
+        Accept: "text/turtle",
+      },
+    });
   });
 
   it("can be called with NamedNodes", async () => {
@@ -98,7 +112,7 @@ describe("fetchLitDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.pod/resource"]]);
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
   it("keeps track of where the LitDataset was fetched from", async () => {
@@ -356,9 +370,9 @@ describe("fetchLitDatasetWithAcl", () => {
 
     await unstable_fetchLitDatasetWithAcl("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      ["https://some.pod/resource"],
-    ]);
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource"
+    );
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {

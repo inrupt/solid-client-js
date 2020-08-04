@@ -70,7 +70,11 @@ export async function fetchLitDataset(
     ...options,
   };
 
-  const response = await config.fetch(url);
+  const response = await config.fetch(url, {
+    headers: {
+      Accept: "text/turtle",
+    },
+  });
   if (!response.ok) {
     throw new Error(
       `Fetching the Resource failed: ${response.status} ${response.statusText}.`
