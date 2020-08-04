@@ -86,7 +86,7 @@ html_theme_options = {
     'project_title': 'Inrupt {0} Documentation'.format(name),
     'banner': True,
     'banner_msg': 'This is a Beta (i.e. in progress) version of the manual. Content and features are subject to change.',
-    'robots_index': False,
+    'robots_index': True,
     'github_editable': True,
     'github_org': 'inrupt',
     'github_repo': repo_name,
