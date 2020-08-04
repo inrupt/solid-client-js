@@ -39,6 +39,8 @@ import {
 } from "../interfaces";
 import { Quad } from "rdf-js";
 import { foaf } from "../constants";
+import { getThingAll } from "../thing/thing";
+import { getIriAll } from "../thing/get";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
@@ -47,10 +49,11 @@ function addAclRuleQuads(
   type: "resource" | "default",
   agentClass:
     | "http://xmlns.com/foaf/0.1/Agent"
-    | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+    | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
+  ruleIri?: IriString
 ): unstable_AclDataset {
   const subjectIri =
-    resource + "#" + encodeURIComponent(agentClass) + Math.random();
+    ruleIri ?? resource + "#" + encodeURIComponent(agentClass) + Math.random();
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
@@ -751,6 +754,55 @@ describe("setPublicResourceAccess", () => {
 
     const updatedQuads: Quad[] = Array.from(updatedDataset);
     expect(updatedQuads).toEqual([]);
+  });
+
+  it("does not copy over access for an unrelated Agent Class", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "resource",
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
+      "https://arbitrary.pod/resource/?ext=acl#loggedIn"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
+      "https://arbitrary.pod/resource/?ext=acl#loggedIn"
+    );
+
+    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+      read: true,
+      append: true,
+      write: false,
+      control: false,
+    });
+
+    // Explicitly check that the agent class given Resource access doesn't get additional privileges
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
+          "http://xmlns.com/foaf/0.1/Agent"
+        )
+      ) {
+        // The agent class given Resource Access should not have Default Access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+      } else {
+        // The pre-existing Agent Class should still have Default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(1);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(13);
   });
 });
 

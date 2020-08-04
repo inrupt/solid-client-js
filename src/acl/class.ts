@@ -154,9 +154,10 @@ export function unstable_setPublicResourceAccess(
     // that do not pertain to the given Public-Resource combination.
     // Note that usually, the latter will no longer include any meaningful statements;
     // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removePublicFromResourceRule(
+    const [filteredRule, remainingRule] = removePublicFromRule(
       aclRule,
-      aclDataset.internal_accessTo
+      aclDataset.internal_accessTo,
+      "resource"
     );
     filteredAcl = setThing(filteredAcl, filteredRule);
     filteredAcl = setThing(filteredAcl, remainingRule);
@@ -200,9 +201,10 @@ export function unstable_setPublicDefaultAccess(
     // that do not pertain to the given Public-Resource default combination.
     // Note that usually, the latter will no longer include any meaningful statements;
     // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removePublicFromDefaultRule(
+    const [filteredRule, remainingRule] = removePublicFromRule(
       aclRule,
-      aclDataset.internal_accessTo
+      aclDataset.internal_accessTo,
+      "default"
     );
     filteredAcl = setThing(filteredAcl, filteredRule);
     filteredAcl = setThing(filteredAcl, remainingRule);
@@ -228,10 +230,23 @@ export function unstable_setPublicDefaultAccess(
  * @param resourceIri The Resource to which the Rule should no longer apply for the public.
  * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
  */
-function removePublicFromResourceRule(
+function removePublicFromRule(
   rule: unstable_AclRule,
-  resourceIri: IriString
+  resourceIri: IriString,
+  ruleType: "resource" | "default"
 ): [unstable_AclRule, unstable_AclRule] {
+  // If the existing Rule does not apply to the given Agent, we don't need to split up.
+  // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
+  // that would give it access it does not currently have:
+  if (!getIriAll(rule, acl.agentClass).includes(foaf.Agent)) {
+    const emptyRule = initialiseAclRule({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+    return [rule, emptyRule];
+  }
   // The existing rule will keep applying to the public:
   const ruleWithoutPublic = removeIri(rule, acl.agentClass, foaf.Agent);
   // The new rule will...
@@ -241,37 +256,10 @@ function removePublicFromResourceRule(
   // ...but not to the given Resource:
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
-    acl.accessTo,
+    ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
   return [ruleWithoutPublic, ruleForOtherTargets];
-}
-
-/**
- * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
- * except for giving the public default access to the given Container.
- *
- * @param rule The ACL Rule that should no longer apply for the public as default for a given Container.
- * @param containerIri The Container to which the Rule should no longer apply as default for the public.
- * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
- */
-function removePublicFromDefaultRule(
-  rule: unstable_AclRule,
-  containerIri: IriString
-): [unstable_AclRule, unstable_AclRule] {
-  // The existing rule will keep applying to the public:
-  const ruleWithoutAgent = removeIri(rule, acl.agentClass, foaf.Agent);
-  // The new rule will...
-  let ruleForOtherTargets = duplicateAclRule(rule);
-  // ...*only* apply to the public (because the existing Rule covers the others)...
-  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
-  // ...but not as a default for the given Container:
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    acl.default,
-    containerIri
-  );
-  return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
 function getClassAclRulesForClass(
