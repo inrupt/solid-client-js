@@ -48,7 +48,7 @@ import {
   unstable_hasResourceAcl,
 } from "./acl";
 import { getThingAll, setThing } from "../thing/thing";
-import { removeIri } from "../thing/remove";
+import { removeIri, removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 
 export type unstable_AgentAccess = Record<WebId, unstable_Access>;
@@ -368,6 +368,8 @@ function removeAgentFromRule(
   );
   // Only apply the new Rule to the given Agent (because the existing Rule covers the others)
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentClass);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
 
   return [ruleWithoutAgent, ruleForOtherTargets];
 }

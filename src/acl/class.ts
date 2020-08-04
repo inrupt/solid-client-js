@@ -42,7 +42,9 @@ import {
   initialiseAclRule,
   duplicateAclRule,
 } from "./acl";
-import { getThingAll, removeIri, setIri, setThing } from "..";
+import { removeIri, removeAll } from "../thing/remove";
+import { getThingAll, setThing } from "../thing/thing";
+import { setIri } from "../thing/set";
 
 /**
  * Find out what Access Modes have been granted to everyone for a given Resource.
@@ -253,6 +255,8 @@ function removePublicFromRule(
   let ruleForOtherTargets = duplicateAclRule(rule);
   // ...*only* apply to the public (because the existing Rule covers the others)...
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
   // ...but not to the given Resource:
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,

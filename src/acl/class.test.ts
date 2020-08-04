@@ -41,6 +41,7 @@ import { Quad } from "rdf-js";
 import { foaf } from "../constants";
 import { getThingAll } from "../thing/thing";
 import { getIriAll } from "../thing/get";
+import { triplesToTurtle } from "../formats/turtle";
 
 function addAclRuleQuads(
   aclDataset: LitDataset & WithResourceInfo,
@@ -49,8 +50,13 @@ function addAclRuleQuads(
   type: "resource" | "default",
   agentClass:
     | "http://xmlns.com/foaf/0.1/Agent"
-    | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
-  ruleIri?: IriString
+    | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+    | string,
+  ruleIri?: IriString,
+  targetType:
+    | "http://www.w3.org/ns/auth/acl#agentClass"
+    | "http://www.w3.org/ns/auth/acl#agent"
+    | "http://www.w3.org/ns/auth/acl#agentGroup" = "http://www.w3.org/ns/auth/acl#agentClass"
 ): unstable_AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agentClass) + Math.random();
@@ -75,7 +81,7 @@ function addAclRuleQuads(
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
+      DataFactory.namedNode(targetType),
       DataFactory.namedNode(agentClass)
     )
   );
@@ -601,6 +607,67 @@ describe("setPublicResourceAccess", () => {
     expect(updatedQuads[5].object.value).toBe(foaf.Agent);
   });
 
+  it("does not copy over access for an unrelated Group or Agent Class", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agentClass"
+    );
+
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "https://arbitrary.pod/profileDoc#someGroup",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agentGroup"
+    );
+
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agent"
+    );
+
+    const updatedDataset = unstable_setPublicResourceAccess(sourceDataset, {
+      read: true,
+      append: true,
+      write: false,
+      control: false,
+    });
+
+    // Explicitly check that the group ACL is separate from the modified agent ACL
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").length > 0
+      ) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(0);
+      }
+      if (getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").length > 0) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(14);
+  });
+
   it("does not alter the input LitDataset", () => {
     const sourceDataset = Object.assign(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -856,6 +923,67 @@ describe("setPublicDefaultAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
     expect(updatedQuads[5].object.value).toBe(foaf.Agent);
+  });
+
+  it("does not copy over access for an unrelated Group or Agent Class", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agentClass"
+    );
+
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "https://arbitrary.pod/profileDoc#someGroup",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agentGroup"
+    );
+
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#agent"
+    );
+
+    const updatedDataset = unstable_setPublicDefaultAccess(sourceDataset, {
+      read: true,
+      append: true,
+      write: false,
+      control: false,
+    });
+
+    // Explicitly check that the group ACL is separate from the modified agent ACL
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").length > 0
+      ) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+      }
+      if (getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").length > 0) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(14);
   });
 
   it("does not alter the input LitDataset", () => {
