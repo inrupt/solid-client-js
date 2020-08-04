@@ -4,24 +4,24 @@ title: Working with Data
 sidebar_label: Working with Data
 ---
 
-The two most important data structures when working with data in solid-client are the `Thing` and the `LitDataset`:
+The two most important data structures when working with data in solid-client are the `Thing` and the `SolidDataset`:
 
 - A [**`Thing`**](../api/modules/_interfaces_.md#thing) is the most basic store of data about a particular subject.
   Each Thing has its own URL to identify it. For example, the URL of the Thing about yours truly is:
 
   `https://vincentt.inrupt.net/profile/card#me`.
 
-- A [**`LitDataset`**](../api/modules/_interfaces_.md#litdataset) is a set of Things.
+- A [**`SolidDataset`**](../api/modules/_interfaces_.md#soliddataset) is a set of Things.
   It is primarily useful to be able to store multiple Things at the same location.
 
-Typically, all the Things in a LitDataset will have URLs relative to the location of that LitDataset.
+Typically, all the Things in a SolidDataset will have URLs relative to the location of that SolidDataset.
 For example, I could store Things for notes I've taken at `https://vincent-test.inrupt.net/notes`, using URLs like:
 
 - `https://vincent-test.inrupt.net/notes#note1`
 - `https://vincent-test.inrupt.net/notes#note2`
 - `https://vincent-test.inrupt.net/notes#note3`
 
-I could even add a Thing with the URL of the LitDataset itself, e.g. to keep a list of the notes at that location.
+I could even add a Thing with the URL of the SolidDataset itself, e.g. to keep a list of the notes at that location.
 
 :::note A note about interoperability
 
@@ -39,39 +39,39 @@ representing that contact allows you to re-use the name defined in that Thing.
 
 Reading data in Solid therefore usually consists of the following steps:
 
-1. Fetch the LitDataset that contains the Thing(s) you are interested in.
-2. Obtain the Thing from the resulting LitDataset.
+1. Fetch the SolidDataset that contains the Thing(s) you are interested in.
+2. Obtain the Thing from the resulting SolidDataset.
 3. Read the applicable data from that Thing.
 
 Let's go over those steps one by one.
 
-### 1. Fetch a LitDataset
+### 1. Fetch a SolidDataset
 
-To fetch a LitDataset, pass its URL to
-[`fetchLitDataset`](../api/modules/_resource_litdataset_.md#fetchlitdataset). Usually, the first LitDataset to
+To fetch a SolidDataset, pass its URL to
+[`getSolidDataset`](../api/modules/_resource_soliddataset_.md#getsoliddataset). Usually, the first SolidDataset to
 fetch will be the one at the authenticated user's [WebID](../glossary.mdx#webid), which will contain
-links to other potentially relevant LitDatasets.
+links to other potentially relevant SolidDatasets.
 
 ```typescript
-import { fetchLitDataset } from "@inrupt/solid-client";
+import { getSolidDataset } from "@inrupt/solid-client";
 
-const litDataset = await fetchLitDataset(
+const solidDataset = await getSolidDataset(
   "https://example.com/some/interesting/resource"
 );
 ```
 
 ### 2. Obtain a Thing
 
-Given a LitDataset, you can either extract a single Thing for which you know its URL (e.g. because
+Given a SolidDataset, you can either extract a single Thing for which you know its URL (e.g. because
 you found that URL on another Thing) using
 [`getThingOne`](../api/modules/_thing_thing_.md#getthingone), or simply take all the
-Things inside the LitDataset using [`getThingAll`](../api/modules/_thing_thing_.md#getthingall)
+Things inside the SolidDataset using [`getThingAll`](../api/modules/_thing_thing_.md#getthingall)
 
 ```typescript
 import { getThingOne } from "@inrupt/solid-client";
 
 const thing = getThingOne(
-  litDataset,
+  solidDataset,
   "https://example.com/some/interesting/resource#thing"
 );
 ```
@@ -147,12 +147,12 @@ Putting it all together, here's an example of fetching the nickname of someone w
 
 ```typescript
 import {
-  fetchLitDataset,
+  getSolidDataset,
   getThingOne,
   getStringNoLocaleOne,
 } from "@inrupt/solid-client";
 
-const profileResource = await fetchLitDataset(
+const profileResource = await getSolidDataset(
   "https://vincentt.inrupt.net/profile/card"
 );
 
@@ -173,8 +173,8 @@ The process of writing data is roughly the inverse of the process of [reading da
 That is to say:
 
 1. Create a Thing with the data you want to write.
-2. Insert the Thing into a LitDataset.
-3. Send the LitDataset to a Pod.
+2. Insert the Thing into a SolidDataset.
+3. Send the SolidDataset to a Pod.
 
 Again, let's cover them one by one.
 
@@ -227,28 +227,28 @@ but it _is_ something to keep in mind.
 
 :::
 
-### 2. Insert the Thing into a LitDataset
+### 2. Insert the Thing into a SolidDataset
 
-After creating a Thing with updated data, we can update a LitDataset with the new Thing.
-If the updated Thing was based on an existing Thing obtained from that LitDataset,
+After creating a Thing with updated data, we can update a SolidDataset with the new Thing.
+If the updated Thing was based on an existing Thing obtained from that SolidDataset,
 the updated Thing will replace the previous one.
 
 ```typescript
 import { setThing } from "@inrupt/solid-client";
 
-const updatedDataset = setThing(litDataset, updatedThing);
+const updatedDataset = setThing(solidDataset, updatedThing);
 ```
 
-### 3. Send the LitDataset to a Pod
+### 3. Send the SolidDataset to a Pod
 
-To save the updated LitDataset to a Pod, use
-[`saveLitDatasetAt`](../api/modules/_resource_litdataset_.md#savelitdatasetat).
-If the given location already contains data, that will be updated to match the given LitDataset.
+To save the updated SolidDataset to a Pod, use
+[`saveSolidDatasetAt`](../api/modules/_resource_soliddataset_.md#savesoliddatasetat).
+If the given location already contains data, that will be updated to match the given SolidDataset.
 
 ```typescript
-import { saveLitDatasetAt } from "@inrupt/solid-client";
+import { saveSolidDatasetAt } from "@inrupt/solid-client";
 
-const savedLitDataset = await saveLitDatasetAt(
+const savedSolidDataset = await saveSolidDatasetAt(
   "https://example.com/some/interesting/resource",
   updatedDataset
 );
@@ -261,14 +261,14 @@ and saving it back:
 
 ```typescript
 import {
-  fetchLitDataset,
+  getSolidDataset,
   getThingOne,
   setStringNoLocaleOne,
   setThing,
-  saveLitDatasetAt,
+  saveSolidDatasetAt,
 } from "@inrupt/solid-client";
 
-const profileResource = await fetchLitDataset(
+const profileResource = await getSolidDataset(
   "https://vincentt.inrupt.net/profile/card"
 );
 
@@ -285,7 +285,7 @@ const updatedProfile = setStringNoLocaleOne(
 
 const updatedProfileResource = setThing(profileResource, updatedProfile);
 
-const updatedProfileResource = await saveLitDatasetAt(
+const updatedProfileResource = await saveSolidDatasetAt(
   "https://vincentt.inrupt.net/profile/card",
   updatedProfileResource
 );

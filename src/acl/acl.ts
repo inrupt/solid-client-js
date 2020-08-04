@@ -21,7 +21,7 @@
 
 import { Quad } from "rdf-js";
 import { acl, rdf } from "../constants";
-import { fetchLitDataset, saveLitDatasetAt } from "../resource/litDataset";
+import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   WithResourceInfo,
   AclDataset,
@@ -30,7 +30,7 @@ import {
   Access,
   Thing,
   IriString,
-  LitDataset,
+  SolidDataset,
   WithAcl,
   WithAccessibleAcl,
   WithResourceAcl,
@@ -65,11 +65,11 @@ export async function internal_fetchResourceAcl(
   }
 
   try {
-    const aclLitDataset = await fetchLitDataset(
+    const aclSolidDataset = await getSolidDataset(
       dataset.internal_resourceInfo.aclUrl,
       options
     );
-    return Object.assign(aclLitDataset, {
+    return Object.assign(aclSolidDataset, {
       internal_accessTo: getFetchedFrom(dataset),
     });
   } catch (e) {
@@ -139,7 +139,7 @@ function getContainerPath(resourcePath: string): string {
 /**
  * Verify whether an ACL was found for the given Resource.
  *
- * A Resource fetched with its ACL (e.g. using [[fetchLitDatasetWithAcl]]) _might_ have a resource ACL attached, but
+ * A Resource fetched with its ACL (e.g. using [[getSolidDatasetWithAcl]]) _might_ have a resource ACL attached, but
  * we cannot be sure: it might be that none exists for this specific Resource (in which case the
  * fallback ACL applies), or the currently authenticated user (if any) might not have Control access
  * to the fetched Resource.
@@ -194,7 +194,7 @@ export function getResourceAcl(
 /**
  * Verify whether a fallback ACL was found for the given Resource.
  *
- * A Resource fetched with its ACL (e.g. using [[fetchLitDatasetWithAcl]]) _might_ have a fallback ACL
+ * A Resource fetched with its ACL (e.g. using [[getSolidDatasetWithAcl]]) _might_ have a fallback ACL
  * attached, but we cannot be sure: the currently authenticated user (if any) might not have Control
  * access to one of the fetched Resource's Containers.
  *
@@ -203,7 +203,7 @@ export function getResourceAcl(
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  *
- * @param resource A [[LitDataset]] that might have a fallback ACL attached.
+ * @param resource A [[SolidDataset]] that might have a fallback ACL attached.
  * @returns Whether `dataset` has a fallback ACL attached.
  */
 export function hasFallbackAcl<Resource extends WithAcl>(
@@ -249,7 +249,7 @@ export function createAcl(
     internal_accessTo: getFetchedFrom(targetResource),
     internal_resourceInfo: {
       fetchedFrom: targetResource.internal_resourceInfo.aclUrl,
-      isLitDataset: true,
+      isSolidDataset: true,
     },
   });
 
@@ -294,7 +294,7 @@ export function createAclFromFallbackAcl(
 
 /** @internal */
 export function internal_isAclDataset(
-  dataset: LitDataset
+  dataset: SolidDataset
 ): dataset is AclDataset {
   return typeof (dataset as AclDataset).internal_accessTo === "string";
 }
@@ -555,7 +555,7 @@ export async function saveAclFor(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset & WithResourceInfo> {
-  const savedDataset = await saveLitDatasetAt(
+  const savedDataset = await saveSolidDatasetAt(
     resource.internal_resourceInfo.aclUrl,
     resourceAcl,
     options

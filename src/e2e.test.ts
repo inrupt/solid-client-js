@@ -21,17 +21,17 @@
 
 import { foaf, schema } from "rdf-namespaces";
 import {
-  fetchLitDataset,
+  getSolidDataset,
   setThing,
   getThingOne,
   getStringNoLocaleOne,
   setDatetime,
   setStringNoLocale,
-  saveLitDatasetAt,
-  isLitDataset,
+  saveSolidDatasetAt,
+  isSolidDataset,
   getContentType,
   fetchResourceInfoWithAcl,
-  fetchLitDatasetWithAcl,
+  getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
   getAgentAccessOne,
@@ -52,7 +52,7 @@ describe("End-to-end tests", () => {
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
-    const dataset = await fetchLitDataset(
+    const dataset = await getSolidDataset(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"
     );
     const existingThing = getThingOne(
@@ -72,7 +72,7 @@ describe("End-to-end tests", () => {
     updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
 
     const updatedDataset = setThing(dataset, updatedThing);
-    const savedDataset = await saveLitDatasetAt(
+    const savedDataset = await saveSolidDatasetAt(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl",
       updatedDataset
     );
@@ -94,8 +94,8 @@ describe("End-to-end tests", () => {
     const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
     );
-    expect(isLitDataset(rdfResourceInfo)).toBe(true);
-    expect(isLitDataset(nonRdfResourceInfo)).toBe(false);
+    expect(isSolidDataset(rdfResourceInfo)).toBe(true);
+    expect(isSolidDataset(nonRdfResourceInfo)).toBe(false);
   });
 
   it("should be able to read and update ACLs", async () => {
@@ -104,10 +104,10 @@ describe("End-to-end tests", () => {
       Date.now().toString() +
       Math.random().toString();
 
-    const datasetWithAcl = await fetchLitDatasetWithAcl(
+    const datasetWithAcl = await getSolidDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
     );
-    const datasetWithoutAcl = await fetchLitDatasetWithAcl(
+    const datasetWithoutAcl = await getSolidDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
     );
 
@@ -175,7 +175,7 @@ describe("End-to-end tests", () => {
   });
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
-    const dataset = await fetchLitDatasetWithAcl(
+    const dataset = await getSolidDatasetWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
     );
     if (

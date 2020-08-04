@@ -92,7 +92,7 @@ describe("fetchFile", () => {
 
     expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
-    expect(file.internal_resourceInfo.isLitDataset).toEqual(false);
+    expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -194,7 +194,7 @@ describe("fetchFileWithAcl", () => {
 
     expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
-    expect(file.internal_resourceInfo.isLitDataset).toEqual(false);
+    expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -215,20 +215,20 @@ describe("fetchFileWithAcl", () => {
       return Promise.resolve(new Response(undefined, init));
     });
 
-    const fetchedLitDataset = await fetchFileWithAcl(
+    const fetchedSolidDataset = await fetchFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
     expect(
-      fetchedLitDataset.internal_acl?.resourceAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/resource.acl");
     expect(
-      fetchedLitDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
@@ -250,14 +250,14 @@ describe("fetchFileWithAcl", () => {
       Promise.resolve(new Response(undefined, init))
     );
 
-    const fetchedLitDataset = await fetchFileWithAcl(
+    const fetchedSolidDataset = await fetchFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.internal_acl.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.internal_acl.fallbackAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.resourceAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.fallbackAcl).toBeNull();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -494,7 +494,7 @@ describe("Write non-RDF data into a folder", () => {
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       fetchedFrom: "https://some.url/someFileName",
-      isLitDataset: false,
+      isSolidDataset: false,
     });
   });
 
@@ -675,7 +675,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       fetchedFrom: "https://some.url",
-      isLitDataset: false,
+      isSolidDataset: false,
     });
   });
 
@@ -719,7 +719,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       fetchedFrom: "https://some.url",
-      isLitDataset: false,
+      isSolidDataset: false,
     });
   });
 

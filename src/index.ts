@@ -21,13 +21,15 @@
 
 export {
   isContainer,
-  isLitDataset,
+  isSolidDataset,
   getFetchedFrom,
   getContentType,
   fetchResourceInfoWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchResourceInfoWithAcl]] */
   fetchResourceInfoWithAcl as unstable_fetchResourceInfoWithAcl,
+  /** @deprecated See [[isSolidDataset]] */
+  isSolidDataset as isLitDataset,
 } from "./resource/resource";
 export {
   fetchFile,
@@ -45,15 +47,25 @@ export {
   overwriteFile as unstable_overwriteFile,
 } from "./resource/nonRdfData";
 export {
-  createLitDataset,
-  fetchLitDataset,
-  saveLitDatasetAt,
-  saveLitDatasetInContainer,
-  fetchLitDatasetWithAcl,
+  createSolidDataset,
+  getSolidDataset,
+  saveSolidDatasetAt,
+  saveSolidDatasetInContainer,
+  getSolidDatasetWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchLitDatasetWithAcl]] */
-  fetchLitDatasetWithAcl as unstable_fetchLitDatasetWithAcl,
-} from "./resource/litDataset";
+  getSolidDatasetWithAcl as unstable_fetchLitDatasetWithAcl,
+  /** @deprecated See [[createSolidDataset]] */
+  createSolidDataset as createLitDataset,
+  /** @deprecated See [[getSolidDataset]] */
+  getSolidDataset as fetchLitDataset,
+  /** @deprecated See [[saveSolidDataset]] */
+  saveSolidDatasetAt as saveLitDatasetAt,
+  /** @deprecated See [[saveSolidDatasetInContainer]] */
+  saveSolidDatasetInContainer as saveLitDatasetInContainer,
+  /** @deprecated See [[getSolidDatasetWithAcl]] */
+  getSolidDatasetWithAcl as fetchLitDatasetWithAcl,
+} from "./resource/solidDataset";
 export {
   getThingOne,
   getThingAll,
@@ -248,7 +260,7 @@ export {
   UrlString,
   IriString,
   WebId,
-  LitDataset,
+  SolidDataset,
   Thing,
   ThingPersisted,
   ThingLocal,
@@ -283,4 +295,6 @@ export {
   Access as unstable_Access,
   /** @deprecated See [[UploadRequestInit]] */
   UploadRequestInit as unstable_UploadRequestInit,
+  /** @deprecated See [[SolidDataset]] */
+  SolidDataset as LitDataset,
 } from "./interfaces";

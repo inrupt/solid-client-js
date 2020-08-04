@@ -34,17 +34,17 @@ import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
 import {
-  fetchLitDataset,
-  saveLitDatasetAt,
-  saveLitDatasetInContainer,
-  fetchLitDatasetWithAcl,
-  createLitDataset,
-} from "./litDataset";
+  getSolidDataset,
+  saveSolidDatasetAt,
+  saveSolidDatasetInContainer,
+  getSolidDatasetWithAcl,
+  createSolidDataset,
+} from "./solidDataset";
 import {
   WithChangeLog,
   WithResourceInfo,
   IriString,
-  LitDataset,
+  SolidDataset,
   LocalNode,
 } from "../interfaces";
 
@@ -55,15 +55,15 @@ function mockResponse(
   return new Response(body, init);
 }
 
-describe("createLitDataset", () => {
-  it("should initialise a new empty LitDataset", () => {
-    const litDataset = createLitDataset();
+describe("createSolidDataset", () => {
+  it("should initialise a new empty SolidDataset", () => {
+    const solidDataset = createSolidDataset();
 
-    expect(Array.from(litDataset)).toEqual([]);
+    expect(Array.from(solidDataset)).toEqual([]);
   });
 });
 
-describe("fetchLitDataset", () => {
+describe("getSolidDataset", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -72,7 +72,7 @@ describe("fetchLitDataset", () => {
       >;
     };
 
-    await fetchLitDataset("https://some.pod/resource");
+    await getSolidDataset("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -84,7 +84,7 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
+    await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
 
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
@@ -94,7 +94,7 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchLitDataset("https://some.pod/resource", { fetch: mockFetch });
+    await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
 
     expect(mockFetch.mock.calls[0][1]).toEqual({
       headers: {
@@ -108,14 +108,14 @@ describe("fetchLitDataset", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await fetchLitDataset(DataFactory.namedNode("https://some.pod/resource"), {
+    await getSolidDataset(DataFactory.namedNode("https://some.pod/resource"), {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
-  it("keeps track of where the LitDataset was fetched from", async () => {
+  it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -124,11 +124,11 @@ describe("fetchLitDataset", () => {
         )
       );
 
-    const litDataset = await fetchLitDataset("https://some.pod/resource", {
+    const solidDataset = await getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
-    expect(litDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(solidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
   });
@@ -145,12 +145,12 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
+    const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.aclUrl).toBe(
+    expect(solidDataset.internal_resourceInfo.aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -166,12 +166,12 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
+    const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.aclUrl).toBeUndefined();
+    expect(solidDataset.internal_resourceInfo.aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -185,12 +185,12 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
+    const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.permissions).toEqual({
+    expect(solidDataset.internal_resourceInfo.permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -218,12 +218,12 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
+    const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.permissions).toEqual({
+    expect(solidDataset.internal_resourceInfo.permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -248,15 +248,15 @@ describe("fetchLitDataset", () => {
       )
     );
 
-    const litDataset = await fetchLitDataset(
+    const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDataset.internal_resourceInfo.permissions).toBeUndefined();
+    expect(solidDataset.internal_resourceInfo.permissions).toBeUndefined();
   });
 
-  it("returns a LitDataset representing the fetched Turtle", async () => {
+  it("returns a SolidDataset representing the fetched Turtle", async () => {
     const turtle = `
       @prefix : <#>.
       @prefix profile: <./>.
@@ -277,12 +277,15 @@ describe("fetchLitDataset", () => {
         )
       );
 
-    const litDataset = await fetchLitDataset("https://arbitrary.pod/resource", {
-      fetch: mockFetch,
-    });
+    const solidDataset = await getSolidDataset(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
 
-    expect(litDataset.size).toBe(5);
-    expect(litDataset).toMatchSnapshot();
+    expect(solidDataset.size).toBe(5);
+    expect(solidDataset).toMatchSnapshot();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -292,7 +295,7 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchLitDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -308,7 +311,7 @@ describe("fetchLitDataset", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchLitDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -318,7 +321,7 @@ describe("fetchLitDataset", () => {
   });
 });
 
-describe("fetchLitDatasetWithAcl", () => {
+describe("getSolidDatasetWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
@@ -335,20 +338,20 @@ describe("fetchLitDatasetWithAcl", () => {
       );
     });
 
-    const fetchedLitDataset = await fetchLitDatasetWithAcl(
+    const fetchedSolidDataset = await getSolidDatasetWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
     expect(
-      fetchedLitDataset.internal_acl?.resourceAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/resource.acl");
     expect(
-      fetchedLitDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
@@ -366,7 +369,7 @@ describe("fetchLitDatasetWithAcl", () => {
       >;
     };
 
-    await fetchLitDatasetWithAcl("https://some.pod/resource");
+    await getSolidDatasetWithAcl("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -387,14 +390,14 @@ describe("fetchLitDatasetWithAcl", () => {
       )
     );
 
-    const fetchedLitDataset = await fetchLitDatasetWithAcl(
+    const fetchedSolidDataset = await getSolidDatasetWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.internal_acl.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.internal_acl.fallbackAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.resourceAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.fallbackAcl).toBeNull();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -404,7 +407,7 @@ describe("fetchLitDatasetWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchLitDatasetWithAcl(
+    const fetchPromise = getSolidDatasetWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -423,7 +426,7 @@ describe("fetchLitDatasetWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchLitDatasetWithAcl(
+    const fetchPromise = getSolidDatasetWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -436,7 +439,7 @@ describe("fetchLitDatasetWithAcl", () => {
   });
 });
 
-describe("saveLitDatasetAt", () => {
+describe("saveSolidDatasetAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -445,7 +448,7 @@ describe("saveLitDatasetAt", () => {
       >;
     };
 
-    await saveLitDatasetAt("https://some.pod/resource", dataset());
+    await saveSolidDatasetAt("https://some.pod/resource", dataset());
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
@@ -455,7 +458,7 @@ describe("saveLitDatasetAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await saveLitDatasetAt("https://some.pod/resource", dataset(), {
+    await saveSolidDatasetAt("https://some.pod/resource", dataset(), {
       fetch: mockFetch,
     });
 
@@ -469,7 +472,7 @@ describe("saveLitDatasetAt", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = saveLitDatasetAt(
+    const fetchPromise = saveSolidDatasetAt(
       "https://arbitrary.pod/resource",
       dataset(),
       {
@@ -489,7 +492,7 @@ describe("saveLitDatasetAt", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = saveLitDatasetAt(
+    const fetchPromise = saveSolidDatasetAt(
       "https://arbitrary.pod/resource",
       dataset(),
       {
@@ -503,7 +506,7 @@ describe("saveLitDatasetAt", () => {
   });
 
   describe("when saving a new resource", () => {
-    it("sends the given LitDataset to the Pod", async () => {
+    it("sends the given SolidDataset to the Pod", async () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
@@ -517,7 +520,7 @@ describe("saveLitDatasetAt", () => {
         )
       );
 
-      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -557,7 +560,7 @@ describe("saveLitDatasetAt", () => {
         )
       );
 
-      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -566,7 +569,7 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1]?.body).toMatch("#some-object-name");
     });
 
-    it("resolves relative IRIs in the returned LitDataset", async () => {
+    it("resolves relative IRIs in the returned SolidDataset", async () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
@@ -586,7 +589,7 @@ describe("saveLitDatasetAt", () => {
         )
       );
 
-      const storedLitDataset = await saveLitDatasetAt(
+      const storedSolidDataset = await saveSolidDatasetAt(
         "https://some.pod/resource",
         mockDataset,
         {
@@ -594,23 +597,23 @@ describe("saveLitDatasetAt", () => {
         }
       );
 
-      expect(Array.from(storedLitDataset)[0].subject.value).toBe(
+      expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
         "https://some.pod/resource#some-subject-name"
       );
-      expect(Array.from(storedLitDataset)[0].object.value).toBe(
+      expect(Array.from(storedSolidDataset)[0].object.value).toBe(
         "https://some.pod/resource#some-object-name"
       );
     });
 
-    it("makes sure the returned LitDataset has an empty change log", async () => {
+    it("makes sure the returned SolidDataset has an empty change log", async () => {
       const mockDataset = dataset();
 
-      const storedLitDataset = await saveLitDatasetAt(
+      const storedSolidDataset = await saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
         mockDataset
       );
 
-      expect(storedLitDataset.internal_changeLog).toEqual({
+      expect(storedSolidDataset.internal_changeLog).toEqual({
         additions: [],
         deletions: [],
       });
@@ -621,7 +624,7 @@ describe("saveLitDatasetAt", () => {
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
-      await saveLitDatasetAt("https://arbitrary.pod/resource", dataset(), {
+      await saveSolidDatasetAt("https://arbitrary.pod/resource", dataset(), {
         fetch: mockFetch,
       });
 
@@ -635,7 +638,7 @@ describe("saveLitDatasetAt", () => {
     function getMockUpdatedDataset(
       changeLog: WithChangeLog["internal_changeLog"],
       fromUrl: IriString
-    ): LitDataset & WithChangeLog & WithResourceInfo {
+    ): SolidDataset & WithChangeLog & WithResourceInfo {
       const mockDataset = dataset();
       mockDataset.add(
         DataFactory.quad(
@@ -652,7 +655,7 @@ describe("saveLitDatasetAt", () => {
 
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
         fetchedFrom: fromUrl,
-        isLitDataset: true,
+        isSolidDataset: true,
       };
 
       return Object.assign(mockDataset, {
@@ -688,7 +691,7 @@ describe("saveLitDatasetAt", () => {
         "https://some.pod/resource"
       );
 
-      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -739,7 +742,7 @@ describe("saveLitDatasetAt", () => {
         "https://some.pod/resource"
       );
 
-      await saveLitDatasetAt("https://some.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -751,7 +754,7 @@ describe("saveLitDatasetAt", () => {
       expect(insertStatement).toMatch("#some-object-name");
     });
 
-    it("resolves relative IRIs in the returned LitDataset", async () => {
+    it("resolves relative IRIs in the returned SolidDataset", async () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
@@ -777,7 +780,7 @@ describe("saveLitDatasetAt", () => {
         "https://some.pod/resource"
       );
 
-      const storedLitDataset = await saveLitDatasetAt(
+      const storedSolidDataset = await saveSolidDatasetAt(
         "https://some.pod/resource",
         mockDataset,
         {
@@ -785,7 +788,7 @@ describe("saveLitDatasetAt", () => {
         }
       );
 
-      const storedQuads = Array.from(storedLitDataset);
+      const storedQuads = Array.from(storedSolidDataset);
       expect(storedQuads[storedQuads.length - 1].subject.value).toBe(
         "https://some.pod/resource#some-subject-name"
       );
@@ -794,7 +797,7 @@ describe("saveLitDatasetAt", () => {
       );
     });
 
-    it("sends the full LitDataset if it is saved to a different IRI", async () => {
+    it("sends the full SolidDataset if it is saved to a different IRI", async () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
@@ -804,7 +807,7 @@ describe("saveLitDatasetAt", () => {
         "https://some.pod/resource"
       );
 
-      await saveLitDatasetAt("https://some-other.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://some-other.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -840,7 +843,7 @@ describe("saveLitDatasetAt", () => {
         "https://arbitrary.pod/resource"
       );
 
-      await saveLitDatasetAt("https://arbitrary.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -868,7 +871,7 @@ describe("saveLitDatasetAt", () => {
         "https://arbitrary.pod/resource"
       );
 
-      await saveLitDatasetAt("https://arbitrary.pod/resource", mockDataset, {
+      await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
         fetch: mockFetch,
       });
 
@@ -876,7 +879,7 @@ describe("saveLitDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1]?.body as string).not.toMatch("INSERT");
     });
 
-    it("makes sure the returned LitDataset has an empty change log", async () => {
+    it("makes sure the returned SolidDataset has an empty change log", async () => {
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
@@ -899,12 +902,12 @@ describe("saveLitDatasetAt", () => {
         "https://arbitrary.pod/resource"
       );
 
-      const storedLitDataset = await saveLitDatasetAt(
+      const storedSolidDataset = await saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
         mockDataset
       );
 
-      expect(storedLitDataset.internal_changeLog).toEqual({
+      expect(storedSolidDataset.internal_changeLog).toEqual({
         additions: [],
         deletions: [],
       });
@@ -912,7 +915,7 @@ describe("saveLitDatasetAt", () => {
   });
 });
 
-describe("saveLitDatasetInContainer", () => {
+describe("saveSolidDatasetInContainer", () => {
   const mockResponse = new Response("Arbitrary response", {
     headers: { Location: "https://arbitrary.pod/container/resource" },
   });
@@ -925,7 +928,7 @@ describe("saveLitDatasetInContainer", () => {
       >;
     };
 
-    await saveLitDatasetInContainer("https://some.pod/container/", dataset());
+    await saveSolidDatasetInContainer("https://some.pod/container/", dataset());
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
@@ -935,9 +938,13 @@ describe("saveLitDatasetInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await saveLitDatasetInContainer("https://some.pod/container/", dataset(), {
-      fetch: mockFetch,
-    });
+    await saveSolidDatasetInContainer(
+      "https://some.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
@@ -949,7 +956,7 @@ describe("saveLitDatasetInContainer", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = saveLitDatasetInContainer(
+    const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       dataset(),
       {
@@ -969,7 +976,7 @@ describe("saveLitDatasetInContainer", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = saveLitDatasetInContainer(
+    const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       dataset(),
       {
@@ -987,7 +994,7 @@ describe("saveLitDatasetInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const fetchPromise = saveLitDatasetInContainer(
+    const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       dataset(),
       {
@@ -997,12 +1004,12 @@ describe("saveLitDatasetInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location for the newly saved LitDataset."
+        "Could not determine the location for the newly saved SolidDataset."
       )
     );
   });
 
-  it("sends the given LitDataset to the Pod", async () => {
+  it("sends the given SolidDataset to the Pod", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
@@ -1016,7 +1023,7 @@ describe("saveLitDatasetInContainer", () => {
       )
     );
 
-    await saveLitDatasetInContainer(
+    await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       mockDataset,
       {
@@ -1060,7 +1067,7 @@ describe("saveLitDatasetInContainer", () => {
       )
     );
 
-    await saveLitDatasetInContainer(
+    await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       mockDataset,
       {
@@ -1079,7 +1086,7 @@ describe("saveLitDatasetInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await saveLitDatasetInContainer(
+    await saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       dataset(),
       {
@@ -1098,7 +1105,7 @@ describe("saveLitDatasetInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await saveLitDatasetInContainer(
+    await saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       dataset(),
       {
@@ -1120,7 +1127,7 @@ describe("saveLitDatasetInContainer", () => {
       )
     );
 
-    const savedLitDataset = await saveLitDatasetInContainer(
+    const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       dataset(),
       {
@@ -1128,12 +1135,12 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(savedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });
 
-  it("resolves relative IRIs in the returned LitDataset", async () => {
+  it("resolves relative IRIs in the returned SolidDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response("Arbitrary response", {
@@ -1158,7 +1165,7 @@ describe("saveLitDatasetInContainer", () => {
       )
     );
 
-    const storedLitDataset = await saveLitDatasetInContainer(
+    const storedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       mockDataset,
       {
@@ -1166,10 +1173,10 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(Array.from(storedLitDataset)[0].subject.value).toBe(
+    expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
       "https://some.pod/container/resource#some-subject-name"
     );
-    expect(Array.from(storedLitDataset)[0].object.value).toBe(
+    expect(Array.from(storedSolidDataset)[0].object.value).toBe(
       "https://some.pod/container/resource#some-object-name"
     );
   });
@@ -1183,7 +1190,7 @@ describe("saveLitDatasetInContainer", () => {
       )
     );
 
-    const savedLitDataset = await saveLitDatasetInContainer(
+    const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       dataset(),
       {
@@ -1191,7 +1198,7 @@ describe("saveLitDatasetInContainer", () => {
       }
     );
 
-    expect(savedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(savedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/container/resource"
     );
   });

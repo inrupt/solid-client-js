@@ -21,7 +21,7 @@
 
 import { dataset } from "@rdfjs/dataset";
 import {
-  LitDataset,
+  SolidDataset,
   WithResourceInfo,
   IriString,
   Access,
@@ -40,7 +40,7 @@ import {
 } from "./group";
 
 function addAclRuleQuads(
-  aclDataset: LitDataset & WithResourceInfo,
+  aclDataset: SolidDataset & WithResourceInfo,
   group: IriString,
   resource: IriString,
   access: Access,
@@ -112,39 +112,42 @@ function addAclRuleQuads(
   return Object.assign(aclDataset, { internal_accessTo: resource });
 }
 
-function addAclDatasetToLitDataset(
-  litDataset: LitDataset & WithResourceInfo,
+function addAclDatasetToSolidDataset(
+  solidDataset: SolidDataset & WithResourceInfo,
   aclDataset: AclDataset,
   type: "resource" | "fallback"
-): LitDataset & WithResourceInfo & WithAcl {
+): SolidDataset & WithResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((litDataset as any) as WithAcl).internal_acl ?? {}),
+    ...(((solidDataset as any) as WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
-    litDataset.internal_resourceInfo.aclUrl =
+    solidDataset.internal_resourceInfo.aclUrl =
       aclDataset.internal_resourceInfo.fetchedFrom;
-    aclDataset.internal_accessTo = litDataset.internal_resourceInfo.fetchedFrom;
+    aclDataset.internal_accessTo =
+      solidDataset.internal_resourceInfo.fetchedFrom;
     acl.resourceAcl = aclDataset;
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
   }
-  return Object.assign(litDataset, { internal_acl: acl });
+  return Object.assign(solidDataset, { internal_acl: acl });
 }
 
-function getMockDataset(fetchedFrom: IriString): LitDataset & WithResourceInfo {
+function getMockDataset(
+  fetchedFrom: IriString
+): SolidDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     internal_resourceInfo: {
       fetchedFrom: fetchedFrom,
-      isLitDataset: true,
+      isSolidDataset: true,
     },
   });
 }
 
 describe("getGroupAccessOne", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
@@ -152,14 +155,14 @@ describe("getGroupAccessOne", () => {
       { read: false, append: false, write: false, control: true },
       "resource"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAcl,
       "resource"
     );
 
     const access = getGroupAccessOne(
-      litDatasetWithAcl,
+      solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
 
@@ -171,8 +174,8 @@ describe("getGroupAccessOne", () => {
     });
   });
 
-  it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -180,14 +183,14 @@ describe("getGroupAccessOne", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       fallbackAcl,
       "fallback"
     );
 
     const access = getGroupAccessOne(
-      litDatasetWithAcl,
+      solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
 
@@ -200,25 +203,25 @@ describe("getGroupAccessOne", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
-    const litDatasetWithInaccessibleAcl = Object.assign(
-      litDataset,
+    const solidDatasetWithInaccessibleAcl = Object.assign(
+      solidDataset,
       inaccessibleAcl
     );
 
     expect(
       getGroupAccessOne(
-        litDatasetWithInaccessibleAcl,
+        solidDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
     ).toBeNull();
   });
 
-  it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
@@ -233,19 +236,19 @@ describe("getGroupAccessOne", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithJustResourceAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAcl,
       "resource"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDatasetWithJustResourceAcl,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDatasetWithJustResourceAcl,
       fallbackAcl,
       "fallback"
     );
 
     const access = getGroupAccessOne(
-      litDatasetWithAcl,
+      solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
 
@@ -257,8 +260,8 @@ describe("getGroupAccessOne", () => {
     });
   });
 
-  it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/");
+  it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -273,14 +276,14 @@ describe("getGroupAccessOne", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAclWithDefaultRules,
       "resource"
     );
 
     const access = getGroupAccessOne(
-      litDatasetWithAcl,
+      solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
 
@@ -292,8 +295,8 @@ describe("getGroupAccessOne", () => {
     });
   });
 
-  it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -308,14 +311,14 @@ describe("getGroupAccessOne", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       fallbackAclWithDefaultRules,
       "fallback"
     );
 
     const access = getGroupAccessOne(
-      litDatasetWithAcl,
+      solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
 
@@ -330,7 +333,7 @@ describe("getGroupAccessOne", () => {
 
 describe("getGroupAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Group URL", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
@@ -338,13 +341,13 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "resource"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAcl,
       "resource"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -356,8 +359,8 @@ describe("getGroupAccessAll", () => {
     });
   });
 
-  it("returns the fallback ACL rules if no Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -365,13 +368,13 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       fallbackAcl,
       "fallback"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -384,20 +387,20 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const inaccessibleAcl: WithAcl = {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     };
-    const litDatasetWithInaccessibleAcl = Object.assign(
-      litDataset,
+    const solidDatasetWithInaccessibleAcl = Object.assign(
+      solidDataset,
       inaccessibleAcl
     );
 
-    expect(getGroupAccessAll(litDatasetWithInaccessibleAcl)).toBeNull();
+    expect(getGroupAccessAll(solidDatasetWithInaccessibleAcl)).toBeNull();
   });
 
-  it("ignores the fallback ACL rules if a Resource ACL LitDataset is available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
@@ -412,18 +415,18 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithJustResourceAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAcl,
       "resource"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDatasetWithJustResourceAcl,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDatasetWithJustResourceAcl,
       fallbackAcl,
       "fallback"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -436,7 +439,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
@@ -451,18 +454,18 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithJustResourceAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAcl,
       "resource"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDatasetWithJustResourceAcl,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDatasetWithJustResourceAcl,
       fallbackAcl,
       "fallback"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     // It only includes rules for agent "https://some.pod/group#id",
     // not for "https://some-other.pod/profileDoc#webId"
@@ -476,8 +479,8 @@ describe("getGroupAccessAll", () => {
     });
   });
 
-  it("ignores default ACL rules from the Resource's own ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/");
+  it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/");
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -492,13 +495,13 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       resourceAclWithDefaultRules,
       "resource"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {
@@ -510,8 +513,8 @@ describe("getGroupAccessAll", () => {
     });
   });
 
-  it("ignores Resource ACL rules from the fallback ACL LitDataset", () => {
-    const litDataset = getMockDataset("https://some.pod/container/resource");
+  it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
+    const solidDataset = getMockDataset("https://some.pod/container/resource");
     const fallbackAcl = addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
@@ -526,13 +529,13 @@ describe("getGroupAccessAll", () => {
       { read: false, append: false, write: false, control: true },
       "default"
     );
-    const litDatasetWithAcl = addAclDatasetToLitDataset(
-      litDataset,
+    const solidDatasetWithAcl = addAclDatasetToSolidDataset(
+      solidDataset,
       fallbackAclWithDefaultRules,
       "fallback"
     );
 
-    const access = getGroupAccessAll(litDatasetWithAcl);
+    const access = getGroupAccessAll(solidDatasetWithAcl);
 
     expect(access).toEqual({
       "https://some.pod/group#id": {

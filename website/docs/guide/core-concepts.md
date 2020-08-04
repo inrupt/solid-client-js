@@ -6,7 +6,7 @@ sidebar_label: Core Concepts
 
 ## Fetching data
 
-In general, working with data using solid-client involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`LitDataset`](../glossary.mdx#litdataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.mdx#thing)).
+In general, working with data using solid-client involves two steps: making a request to some web address (URL) to fetch an object containing all data at that address (a [`SolidDataset`](../glossary.mdx#soliddataset)), and then passing that object to functions to extract and manipulate sets of data from it that are relevant to you (which we call [`Thing`s](../glossary.mdx#thing)).
 
 <!--
 
@@ -16,7 +16,7 @@ this section should be updated to clarify that; the slicing-and-dicing idea migh
 
 -->
 
-For example, to read my name, you would first fetch a LitDataset from `https://vincentt.inrupt.net/profile/card`, the URL at which my personal information is stored. Then, from that LitDataset, you could extract the Thing that represents my profile. From that, you can then read my name.
+For example, to read my name, you would first fetch a SolidDataset from `https://vincentt.inrupt.net/profile/card`, the URL at which my personal information is stored. Then, from that SolidDataset, you could extract the Thing that represents my profile. From that, you can then read my name.
 
 For a more extensive overview of fetching and manipulating data, see the tutorial [Working with Data](../tutorials/working-with-data.md).
 
