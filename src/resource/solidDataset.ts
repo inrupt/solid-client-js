@@ -25,7 +25,7 @@ import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
 import { isLocalNode, resolveIriForLocalNodes } from "../datatypes";
 import {
   UrlString,
-  LitDataset,
+  SolidDataset,
   WithChangeLog,
   hasChangelog,
   WithResourceInfo,
@@ -43,27 +43,27 @@ import {
 } from "./resource";
 
 /**
- * Initialise a new [[LitDataset]] in memory.
+ * Initialise a new [[SolidDataset]] in memory.
  *
- * @returns An empty [[LitDataset]].
+ * @returns An empty [[SolidDataset]].
  */
-export function createLitDataset(): LitDataset {
+export function createSolidDataset(): SolidDataset {
   return dataset();
 }
 
 /**
- * Fetch a LitDataset from the given URL. Currently requires the LitDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
+ * Fetch a SolidDataset from the given URL. Currently requires the SolidDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
  *
- * @param url URL to fetch a [[LitDataset]] from.
+ * @param url URL to fetch a [[SolidDataset]] from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns Promise resolving to a [[LitDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
+ * @returns Promise resolving to a [[SolidDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
  */
-export async function fetchLitDataset(
+export async function getSolidDataset(
   url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo> {
+): Promise<SolidDataset & WithResourceInfo> {
   url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
@@ -87,24 +87,22 @@ export async function fetchLitDataset(
 
   const resourceInfo = internal_parseResourceInfo(response);
 
-  const resourceWithResourceInfo: LitDataset & WithResourceInfo = Object.assign(
-    resource,
-    {
-      internal_resourceInfo: resourceInfo,
-    }
-  );
+  const resourceWithResourceInfo: SolidDataset &
+    WithResourceInfo = Object.assign(resource, {
+    internal_resourceInfo: resourceInfo,
+  });
 
   return resourceWithResourceInfo;
 }
 
 /**
- * Experimental: fetch a LitDataset and its associated Access Control List.
+ * Experimental: fetch a SolidDataset and its associated Access Control List.
  *
  * This is an experimental function that fetches both a Resource, the linked ACL Resource (if
  * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
  * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
  * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[fetchLitDataset]] instead.
+ * experimental, prefer [[getSolidDataset]] instead.
  *
  * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
  * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
@@ -112,36 +110,36 @@ export async function fetchLitDataset(
  * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
  * authenticated user.
  *
- * @param url URL of the LitDataset to fetch.
+ * @param url URL of the SolidDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A LitDataset and the ACLs that apply to it, if available to the authenticated user.
+ * @returns A SolidDataset and the ACLs that apply to it, if available to the authenticated user.
  */
-export async function fetchLitDatasetWithAcl(
+export async function getSolidDatasetWithAcl(
   url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo & WithAcl> {
-  const litDataset = await fetchLitDataset(url, options);
-  const acl = await internal_fetchAcl(litDataset, options);
-  return Object.assign(litDataset, { internal_acl: acl });
+): Promise<SolidDataset & WithResourceInfo & WithAcl> {
+  const solidDataset = await getSolidDataset(url, options);
+  const acl = await internal_fetchAcl(solidDataset, options);
+  return Object.assign(solidDataset, { internal_acl: acl });
 }
 
 /**
- * Given a LitDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
+ * Given a SolidDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
  *
- * @param url URL to save `litDataset` to.
- * @param litDataset The [[LitDataset]] to save.
+ * @param url URL to save `solidDataset` to.
+ * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A Promise resolving to a [[LitDataset]] containing the stored data, or rejecting if saving it failed.
+ * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or rejecting if saving it failed.
  */
-export async function saveLitDatasetAt(
+export async function saveSolidDatasetAt(
   url: UrlString | Url,
-  litDataset: LitDataset,
+  solidDataset: SolidDataset,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo & WithChangeLog> {
+): Promise<SolidDataset & WithResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
@@ -150,22 +148,22 @@ export async function saveLitDatasetAt(
 
   let requestInit: RequestInit;
 
-  if (isUpdate(litDataset, url)) {
+  if (isUpdate(solidDataset, url)) {
     const deleteStatement =
-      litDataset.internal_changeLog.deletions.length > 0
+      solidDataset.internal_changeLog.deletions.length > 0
         ? `DELETE DATA {${(
             await triplesToTurtle(
-              litDataset.internal_changeLog.deletions.map(
+              solidDataset.internal_changeLog.deletions.map(
                 getNamedNodesForLocalNodes
               )
             )
           ).trim()}};`
         : "";
     const insertStatement =
-      litDataset.internal_changeLog.additions.length > 0
+      solidDataset.internal_changeLog.additions.length > 0
         ? `INSERT DATA {${(
             await triplesToTurtle(
-              litDataset.internal_changeLog.additions.map(
+              solidDataset.internal_changeLog.additions.map(
                 getNamedNodesForLocalNodes
               )
             )
@@ -183,7 +181,7 @@ export async function saveLitDatasetAt(
     requestInit = {
       method: "PUT",
       body: await triplesToTurtle(
-        Array.from(litDataset).map(getNamedNodesForLocalNodes)
+        Array.from(solidDataset).map(getNamedNodesForLocalNodes)
       ),
       headers: {
         "Content-Type": "text/turtle",
@@ -202,18 +200,18 @@ export async function saveLitDatasetAt(
   }
 
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = hasResourceInfo(
-    litDataset
+    solidDataset
   )
-    ? { ...litDataset.internal_resourceInfo, fetchedFrom: url }
-    : { fetchedFrom: url, isLitDataset: true };
-  const storedDataset: LitDataset &
+    ? { ...solidDataset.internal_resourceInfo, fetchedFrom: url }
+    : { fetchedFrom: url, isSolidDataset: true };
+  const storedDataset: SolidDataset &
     WithChangeLog &
-    WithResourceInfo = Object.assign(litDataset, {
+    WithResourceInfo = Object.assign(solidDataset, {
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
 
-  const storedDatasetWithResolvedIris = resolveLocalIrisInLitDataset(
+  const storedDatasetWithResolvedIris = resolveLocalIrisInSolidDataset(
     storedDataset
   );
 
@@ -221,16 +219,16 @@ export async function saveLitDatasetAt(
 }
 
 function isUpdate(
-  litDataset: LitDataset,
+  solidDataset: SolidDataset,
   url: UrlString
-): litDataset is LitDataset &
+): solidDataset is SolidDataset &
   WithChangeLog &
   WithResourceInfo & { resourceInfo: { fetchedFrom: string } } {
   return (
-    hasChangelog(litDataset) &&
-    hasResourceInfo(litDataset) &&
-    typeof litDataset.internal_resourceInfo.fetchedFrom === "string" &&
-    litDataset.internal_resourceInfo.fetchedFrom === url
+    hasChangelog(solidDataset) &&
+    hasResourceInfo(solidDataset) &&
+    typeof solidDataset.internal_resourceInfo.fetchedFrom === "string" &&
+    solidDataset.internal_resourceInfo.fetchedFrom === url
   );
 }
 
@@ -240,18 +238,18 @@ type SaveInContainerOptions = Partial<
   }
 >;
 /**
- * Given a LitDataset, store it in a Solid Pod in a new Resource inside a Container.
+ * Given a SolidDataset, store it in a Solid Pod in a new Resource inside a Container.
  *
  * @param containerUrl URL of the Container in which to create a new Resource.
- * @param litDataset The [[LitDataset]] to save to a new Resource in the given Container.
+ * @param solidDataset The [[SolidDataset]] to save to a new Resource in the given Container.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A Promise resolving to a [[LitDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
+ * @returns A Promise resolving to a [[SolidDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
  */
-export async function saveLitDatasetInContainer(
+export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
-  litDataset: LitDataset,
+  solidDataset: SolidDataset,
   options: SaveInContainerOptions = internal_defaultFetchOptions
-): Promise<LitDataset & WithResourceInfo> {
+): Promise<SolidDataset & WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -259,7 +257,7 @@ export async function saveLitDatasetInContainer(
   containerUrl = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
-    Array.from(litDataset).map(getNamedNodesForLocalNodes)
+    Array.from(solidDataset).map(getNamedNodesForLocalNodes)
   );
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
@@ -283,7 +281,7 @@ export async function saveLitDatasetInContainer(
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location for the newly saved LitDataset."
+      "Could not determine the location for the newly saved SolidDataset."
     );
   }
 
@@ -291,16 +289,14 @@ export async function saveLitDatasetInContainer(
     .href;
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
     fetchedFrom: resourceIri,
-    isLitDataset: true,
+    isSolidDataset: true,
   };
-  const resourceWithResourceInfo: LitDataset & WithResourceInfo = Object.assign(
-    litDataset,
-    {
-      internal_resourceInfo: resourceInfo,
-    }
-  );
+  const resourceWithResourceInfo: SolidDataset &
+    WithResourceInfo = Object.assign(solidDataset, {
+    internal_resourceInfo: resourceInfo,
+  });
 
-  const resourceWithResolvedIris = resolveLocalIrisInLitDataset(
+  const resourceWithResolvedIris = resolveLocalIrisInSolidDataset(
     resourceWithResourceInfo
   );
 
@@ -326,17 +322,17 @@ export function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
   return DataFactory.namedNode("#" + localNode.internal_name);
 }
 
-function resolveLocalIrisInLitDataset<
-  Dataset extends LitDataset & WithResourceInfo
->(litDataset: Dataset): Dataset {
-  const resourceIri = getFetchedFrom(litDataset);
-  const unresolvedQuads = Array.from(litDataset);
+function resolveLocalIrisInSolidDataset<
+  Dataset extends SolidDataset & WithResourceInfo
+>(solidDataset: Dataset): Dataset {
+  const resourceIri = getFetchedFrom(solidDataset);
+  const unresolvedQuads = Array.from(solidDataset);
 
   unresolvedQuads.forEach((unresolvedQuad) => {
     const resolvedQuad = resolveIriForLocalNodes(unresolvedQuad, resourceIri);
-    litDataset.delete(unresolvedQuad);
-    litDataset.add(resolvedQuad);
+    solidDataset.delete(unresolvedQuad);
+    solidDataset.add(resolvedQuad);
   });
 
-  return litDataset;
+  return solidDataset;
 }

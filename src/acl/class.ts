@@ -54,7 +54,7 @@ import { setIri } from "../thing/set";
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
- * @returns Which Access Modes have been granted to everyone for the given LitDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Which Access Modes have been granted to everyone for the given SolidDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getPublicAccess(
   resourceInfo: WithAcl & WithResourceInfo
@@ -69,7 +69,7 @@ export function getPublicAccess(
 }
 
 /**
- * Given an ACL LitDataset, find out which access modes it provides to everyone for its associated Resource.
+ * Given an ACL SolidDataset, find out which access modes it provides to everyone for its associated Resource.
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
@@ -77,8 +77,8 @@ export function getPublicAccess(
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param aclDataset The LitDataset that contains Access-Control List rules.
- * @returns Which Access Modes have been granted to everyone for the Resource the given ACL LitDataset is associated with.
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @returns Which Access Modes have been granted to everyone for the Resource the given ACL SolidDataset is associated with.
  */
 export function getPublicResourceAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
@@ -95,7 +95,7 @@ export function getPublicResourceAccess(aclDataset: AclDataset): Access {
 }
 
 /**
- * Given an ACL LitDataset, find out which access modes it provides to everyone for the associated Container Resource's child Resources.
+ * Given an ACL SolidDataset, find out which access modes it provides to everyone for the associated Container Resource's child Resources.
  *
  * Keep in mind that this function will not tell you:
  * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
@@ -103,8 +103,8 @@ export function getPublicResourceAccess(aclDataset: AclDataset): Access {
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param aclDataset The LitDataset that contains Access-Control List rules for a certain Container.
- * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL LitDataset.
+ * @param aclDataset The SolidDataset that contains Access-Control List rules for a certain Container.
+ * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL SolidDataset.
  */
 export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
@@ -121,9 +121,9 @@ export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
 }
 
 /**
- * Given an ACL LitDataset, modify the ACL Rules to set specific Access Modes for the public.
+ * Given an ACL SolidDataset, modify the ACL Rules to set specific Access Modes for the public.
  *
- * If the given ACL LitDataset already includes ACL Rules that grant a certain set of Access Modes
+ * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of Access Modes
  * to the public, those will be overridden by the given Access Modes.
  *
  * Keep in mind that this function will not modify:
@@ -132,14 +132,14 @@ export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param access The Access Modes to grant to the public.
  */
 export function setPublicResourceAccess(
   aclDataset: AclDataset,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
   // give the public access to the Resource:
   let filteredAcl = aclDataset;
   getThingAll(aclDataset).forEach((aclRule) => {
@@ -168,9 +168,9 @@ export function setPublicResourceAccess(
 }
 
 /**
- * Given an ACL LitDataset, modify the ACL Rules to set specific default Access Modes for the public.
+ * Given an ACL SolidDataset, modify the ACL Rules to set specific default Access Modes for the public.
  *
- * If the given ACL LitDataset already includes ACL Rules that grant a certain set of default Access Modes
+ * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of default Access Modes
  * to the public, those will be overridden by the given Access Modes.
  *
  * Keep in mind that this function will not modify:
@@ -179,14 +179,14 @@ export function setPublicResourceAccess(
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
- * @param aclDataset The LitDataset that contains Access-Control List rules.
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param access The Access Modes to grant to the public.
  */
 export function setPublicDefaultAccess(
   aclDataset: AclDataset,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL LitDataset
+  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
   // give the public default access to the Resource:
   let filteredAcl = aclDataset;
   getThingAll(aclDataset).forEach((aclRule) => {

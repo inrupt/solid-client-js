@@ -30,7 +30,7 @@ import {
   resolveLocalIri,
 } from "../datatypes";
 import {
-  LitDataset,
+  SolidDataset,
   UrlString,
   Thing,
   Url,
@@ -56,19 +56,19 @@ export interface GetThingOptions {
    * Which Named Graph to extract the Thing from.
    *
    * If not specified, the Thing will include Quads from all Named Graphs in the given
-   * [[LitDataset]].
+   * [[SolidDataset]].
    **/
   scope?: Url | UrlString;
 }
 /**
- * Extract Quads with a given Subject from a [[LitDataset]] into a [[Thing]].
+ * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
  *
- * @param litDataset The [[LitDataset]] to extract the [[Thing]] from.
+ * @param solidDataset The [[SolidDataset]] to extract the [[Thing]] from.
  * @param thingUrl The URL of the desired [[Thing]].
  * @param options Not yet implemented.
  */
 export function getThingOne(
-  litDataset: LitDataset,
+  solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
 ): Thing {
@@ -77,7 +77,7 @@ export function getThingOne(
     ? asNamedNode(options.scope)
     : null;
 
-  const thingDataset = litDataset.match(subject, null, null, scope);
+  const thingDataset = solidDataset.match(subject, null, null, scope);
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
@@ -95,17 +95,17 @@ export function getThingOne(
 }
 
 /**
- * Get all [[Thing]]s about which a [[LitDataset]] contains Quads.
+ * Get all [[Thing]]s about which a [[SolidDataset]] contains Quads.
  *
- * @param litDataset The [[LitDataset]] to extract the [[Thing]]s from.
+ * @param solidDataset The [[SolidDataset]] to extract the [[Thing]]s from.
  * @param options Not yet implemented.
  */
 export function getThingAll(
-  litDataset: LitDataset,
+  solidDataset: SolidDataset,
   options: GetThingOptions = {}
 ): Thing[] {
   const subjectNodes = new Array<Url | LocalNode>();
-  for (const quad of litDataset) {
+  for (const quad of solidDataset) {
     // Because NamedNode objects with the same IRI are actually different
     // object instances, we have to manually check whether `subjectNodes` does
     // not yet include `quadSubject` before adding it.
@@ -125,24 +125,24 @@ export function getThingAll(
   }
 
   const things: Thing[] = subjectNodes.map((subjectNode) =>
-    getThingOne(litDataset, subjectNode, options)
+    getThingOne(solidDataset, subjectNode, options)
   );
 
   return things;
 }
 
 /**
- * Insert a [[Thing]] into a [[LitDataset]], replacing previous instances of that Thing.
+ * Insert a [[Thing]] into a [[SolidDataset]], replacing previous instances of that Thing.
  *
- * @param litDataset The LitDataset to insert a Thing into.
- * @param thing The Thing to insert into the given LitDataset.
- * @returns A new LitDataset equal to the given LitDataset, but with the given Thing.
+ * @param solidDataset The SolidDataset to insert a Thing into.
+ * @param thing The Thing to insert into the given SolidDataset.
+ * @returns A new SolidDataset equal to the given SolidDataset, but with the given Thing.
  */
-export function setThing<Dataset extends LitDataset>(
-  litDataset: Dataset,
+export function setThing<Dataset extends SolidDataset>(
+  solidDataset: Dataset,
   thing: Thing
 ): Dataset & WithChangeLog {
-  const newDataset = removeThing(litDataset, thing);
+  const newDataset = removeThing(solidDataset, thing);
 
   for (const quad of thing) {
     newDataset.add(quad);
@@ -159,80 +159,80 @@ export function setThing<Dataset extends LitDataset>(
 }
 
 /**
- * Remove a Thing from a LitDataset.
+ * Remove a Thing from a SolidDataset.
  *
- * @param litDataset The LitDataset to remove a Thing from.
- * @param thing The Thing to remove from `litDataset`.
- * @returns A new [[LitDataset]] equal to the input LitDataset, excluding the given Thing.
+ * @param solidDataset The SolidDataset to remove a Thing from.
+ * @param thing The Thing to remove from `solidDataset`.
+ * @returns A new [[SolidDataset]] equal to the input SolidDataset, excluding the given Thing.
  */
-export function removeThing<Dataset extends LitDataset>(
-  litDataset: Dataset,
+export function removeThing<Dataset extends SolidDataset>(
+  solidDataset: Dataset,
   thing: UrlString | Url | LocalNode | Thing
 ): Dataset & WithChangeLog {
-  const newLitDataset = withChangeLog(cloneLitStructs(litDataset));
-  const resourceIri: UrlString | undefined = hasResourceInfo(newLitDataset)
-    ? getFetchedFrom(newLitDataset)
+  const newSolidDataset = withChangeLog(cloneLitStructs(solidDataset));
+  const resourceIri: UrlString | undefined = hasResourceInfo(newSolidDataset)
+    ? getFetchedFrom(newSolidDataset)
     : undefined;
 
   const thingSubject = toNode(thing);
   // Copy every Quad from the input dataset into what is to be the output dataset,
   // unless its Subject is the same as that of the Thing that is to be removed:
-  for (const quad of litDataset) {
+  for (const quad of solidDataset) {
     if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
       // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
-      newLitDataset.add(quad);
+      newSolidDataset.add(quad);
     } else if (
       !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
     ) {
-      newLitDataset.add(quad);
-    } else if (newLitDataset.internal_changeLog.additions.includes(quad)) {
-      // If this Quad was added to the LitDataset since it was fetched from the Pod,
+      newSolidDataset.add(quad);
+    } else if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
+      // If this Quad was added to the SolidDataset since it was fetched from the Pod,
       // remove it from the additions rather than adding it to the deletions,
       // to avoid asking the Pod to remove a Quad that does not exist there:
-      newLitDataset.internal_changeLog.additions = newLitDataset.internal_changeLog.additions.filter(
+      newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
         (addition) => addition != quad
       );
     } else {
-      newLitDataset.internal_changeLog.deletions.push(quad);
+      newSolidDataset.internal_changeLog.deletions.push(quad);
     }
   }
-  return newLitDataset;
+  return newSolidDataset;
 }
 
-function withChangeLog<Dataset extends LitDataset>(
-  litDataset: Dataset
+function withChangeLog<Dataset extends SolidDataset>(
+  solidDataset: Dataset
 ): Dataset & WithChangeLog {
-  const newLitDataset: Dataset & WithChangeLog = hasChangelog(litDataset)
-    ? litDataset
-    : Object.assign(litDataset, {
+  const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
+    ? solidDataset
+    : Object.assign(solidDataset, {
         internal_changeLog: { additions: [], deletions: [] },
       });
-  return newLitDataset;
+  return newSolidDataset;
 }
 
-function cloneLitStructs<Dataset extends LitDataset>(
-  litDataset: Dataset
+function cloneLitStructs<Dataset extends SolidDataset>(
+  solidDataset: Dataset
 ): Dataset {
   const freshDataset = dataset();
-  if (hasChangelog(litDataset)) {
-    (freshDataset as LitDataset & WithChangeLog).internal_changeLog = {
-      additions: [...litDataset.internal_changeLog.additions],
-      deletions: [...litDataset.internal_changeLog.deletions],
+  if (hasChangelog(solidDataset)) {
+    (freshDataset as SolidDataset & WithChangeLog).internal_changeLog = {
+      additions: [...solidDataset.internal_changeLog.additions],
+      deletions: [...solidDataset.internal_changeLog.deletions],
     };
   }
-  if (hasResourceInfo(litDataset)) {
-    (freshDataset as LitDataset & WithResourceInfo).internal_resourceInfo = {
-      ...litDataset.internal_resourceInfo,
+  if (hasResourceInfo(solidDataset)) {
+    (freshDataset as SolidDataset & WithResourceInfo).internal_resourceInfo = {
+      ...solidDataset.internal_resourceInfo,
     };
   }
-  if (hasAcl(litDataset)) {
-    (freshDataset as LitDataset & WithAcl).internal_acl = {
-      ...litDataset.internal_acl,
+  if (hasAcl(solidDataset)) {
+    (freshDataset as SolidDataset & WithAcl).internal_acl = {
+      ...solidDataset.internal_acl,
     };
   }
-  if (internal_isAclDataset(litDataset)) {
+  if (internal_isAclDataset(solidDataset)) {
     (freshDataset as AclDataset).internal_accessTo =
-      litDataset.internal_accessTo;
+      solidDataset.internal_accessTo;
   }
 
   return freshDataset as Dataset;

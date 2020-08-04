@@ -24,15 +24,15 @@ import {
   deleteFile,
   saveFileInContainer,
   overwriteFile,
-  createLitDataset,
-  fetchLitDataset,
+  createSolidDataset,
+  getSolidDataset,
   fetchResourceInfoWithAcl,
   isContainer,
-  isLitDataset,
+  isSolidDataset,
   getContentType,
   getFetchedFrom,
-  saveLitDatasetAt,
-  saveLitDatasetInContainer,
+  saveSolidDatasetAt,
+  saveSolidDatasetInContainer,
   saveAclFor,
   deleteAclFor,
   getThingOne,
@@ -93,7 +93,7 @@ import {
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
-  fetchLitDatasetWithAcl,
+  getSolidDatasetWithAcl,
   hasFallbackAcl,
   getFallbackAcl,
   hasResourceAcl,
@@ -165,6 +165,12 @@ import {
   unstable_getGroupResourceAccessAll,
   unstable_getGroupDefaultAccessOne,
   unstable_getGroupDefaultAccessAll,
+  createLitDataset,
+  fetchLitDataset,
+  fetchLitDatasetWithAcl,
+  isLitDataset,
+  saveLitDatasetAt,
+  saveLitDatasetInContainer,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -174,15 +180,15 @@ it("exports the public API from the entry file", () => {
   expect(deleteFile).toBeDefined();
   expect(saveFileInContainer).toBeDefined();
   expect(overwriteFile).toBeDefined();
-  expect(createLitDataset).toBeDefined();
-  expect(fetchLitDataset).toBeDefined();
+  expect(createSolidDataset).toBeDefined();
+  expect(getSolidDataset).toBeDefined();
   expect(fetchResourceInfoWithAcl).toBeDefined();
   expect(isContainer).toBeDefined();
-  expect(isLitDataset).toBeDefined();
+  expect(isSolidDataset).toBeDefined();
   expect(getContentType).toBeDefined();
   expect(getFetchedFrom).toBeDefined();
-  expect(saveLitDatasetAt).toBeDefined();
-  expect(saveLitDatasetInContainer).toBeDefined();
+  expect(saveSolidDatasetAt).toBeDefined();
+  expect(saveSolidDatasetInContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThingOne).toBeDefined();
@@ -243,7 +249,7 @@ it("exports the public API from the entry file", () => {
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
-  expect(fetchLitDatasetWithAcl).toBeDefined();
+  expect(getSolidDatasetWithAcl).toBeDefined();
   expect(hasFallbackAcl).toBeDefined();
   expect(getFallbackAcl).toBeDefined();
   expect(hasResourceAcl).toBeDefined();
@@ -318,4 +324,10 @@ it("still exports deprecated methods", () => {
   expect(unstable_getGroupResourceAccessAll).toBeDefined();
   expect(unstable_getGroupDefaultAccessOne).toBeDefined();
   expect(unstable_getGroupDefaultAccessAll).toBeDefined();
+  expect(createLitDataset).toBeDefined();
+  expect(fetchLitDataset).toBeDefined();
+  expect(isLitDataset).toBeDefined();
+  expect(saveLitDatasetAt).toBeDefined();
+  expect(saveLitDatasetInContainer).toBeDefined();
+  expect(fetchLitDatasetWithAcl).toBeDefined();
 });

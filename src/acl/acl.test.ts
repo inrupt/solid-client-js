@@ -68,11 +68,11 @@ function mockResponse(
 }
 
 describe("fetchResourceAcl", () => {
-  it("returns the fetched ACL LitDataset", async () => {
+  it("returns the fetched ACL SolidDataset", async () => {
     const sourceDataset: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -100,7 +100,7 @@ describe("fetchResourceAcl", () => {
     const sourceDataset: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -118,11 +118,11 @@ describe("fetchResourceAcl", () => {
     );
   });
 
-  it("returns null if the source LitDataset has no known ACL IRI", async () => {
+  it("returns null if the source SolidDataset has no known ACL IRI", async () => {
     const sourceDataset: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 
@@ -135,7 +135,7 @@ describe("fetchResourceAcl", () => {
     const sourceDataset: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -159,14 +159,14 @@ describe("fetchResourceAcl", () => {
 });
 
 describe("fetchFallbackAcl", () => {
-  it("returns the parent Container's ACL LitDataset, if present", async () => {
+  it("returns the parent Container's ACL SolidDataset, if present", async () => {
     const sourceDataset = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
-        // Hence, the function requires the given LitDataset to have one known:
+        // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
@@ -201,7 +201,7 @@ describe("fetchFallbackAcl", () => {
     const sourceDataset = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -222,10 +222,10 @@ describe("fetchFallbackAcl", () => {
     const sourceDataset = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/with-acl/without-acl/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
-        // Hence, the function requires the given LitDataset to have one known:
+        // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/with-acl/without-acl/resource.acl",
       },
     };
@@ -289,10 +289,10 @@ describe("fetchFallbackAcl", () => {
       internal_resourceInfo: {
         fetchedFrom:
           "https://some.pod/arbitrary-parent/no-control-access/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
-        // Hence, the function requires the given LitDataset to have one known:
+        // Hence, the function requires the given SolidDataset to have one known:
         aclUrl:
           "https://arbitrary.pod/arbitrary-parent/no-control-access/resource.acl",
       },
@@ -320,10 +320,10 @@ describe("fetchFallbackAcl", () => {
     const sourceDataset = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         // If no ACL IRI is given, the user does not have Control Access,
         // in which case we wouldn't be able to reliably determine the effective ACL.
-        // Hence, the function requires the given LitDataset to have one known:
+        // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
@@ -364,18 +364,18 @@ describe("getResourceAcl", () => {
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     });
-    expect(getResourceAcl(litDataset)).toEqual(aclDataset);
+    expect(getResourceAcl(solidDataset)).toEqual(aclDataset);
   });
 
   it("returns null if the given Resource does not consider the attached ACL to pertain to it", () => {
@@ -383,18 +383,18 @@ describe("getResourceAcl", () => {
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         unsafe_aclUrl: "https://arbitrary.pod/other-resource.acl",
       },
     });
-    expect(getResourceAcl(litDataset)).toBeNull();
+    expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
   it("returns null if the attached ACL does not pertain to the given Resource", () => {
@@ -402,29 +402,29 @@ describe("getResourceAcl", () => {
       internal_accessTo: "https://arbitrary.pod/other-resource",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         unsafe_aclUrl: "https://arbitrary.pod/resource.acl",
       },
     });
-    expect(getResourceAcl(litDataset)).toBeNull();
+    expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
-  it("returns null if the given LitDataset does not have a Resource ACL attached", () => {
-    const litDataset = Object.assign(dataset(), {
+  it("returns null if the given SolidDataset does not have a Resource ACL attached", () => {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
-    expect(getResourceAcl(litDataset)).toBeNull();
+    expect(getResourceAcl(solidDataset)).toBeNull();
   });
 });
 
@@ -434,35 +434,35 @@ describe("getFallbackAcl", () => {
       internal_accessTo: "https://arbitrary.pod/",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
-    expect(getFallbackAcl(litDataset)).toEqual(aclDataset);
+    expect(getFallbackAcl(solidDataset)).toEqual(aclDataset);
   });
 
-  it("returns null if the given LitDataset does not have a Fallback ACL attached", () => {
-    const litDataset = Object.assign(dataset(), {
+  it("returns null if the given SolidDataset does not have a Fallback ACL attached", () => {
+    const solidDataset = Object.assign(dataset(), {
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     });
-    expect(getFallbackAcl(litDataset)).toBeNull();
+    expect(getFallbackAcl(solidDataset)).toBeNull();
   });
 });
 
 describe("createAcl", () => {
   it("creates a new empty ACL", () => {
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/container/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/container/resource.acl",
       },
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     });
 
-    const resourceAcl = createAcl(litDataset);
+    const resourceAcl = createAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
     expect(resourceAclQuads).toHaveLength(0);
@@ -481,7 +481,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -515,16 +515,16 @@ describe("createAclFromFallbackAcl", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
       )
     );
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
 
-    const resourceAcl = createAclFromFallbackAcl(litDataset);
+    const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
     expect(resourceAclQuads).toHaveLength(4);
@@ -547,7 +547,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -581,16 +581,16 @@ describe("createAclFromFallbackAcl", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
       )
     );
-    const litDataset = Object.assign(dataset(), {
+    const solidDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
 
-    const resourceAcl = createAclFromFallbackAcl(litDataset);
+    const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
     expect(resourceAclQuads).toHaveLength(0);
@@ -602,7 +602,7 @@ describe("getAclRules", () => {
     const aclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -693,7 +693,7 @@ describe("getAclRules", () => {
     const aclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1105,7 +1105,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1139,11 +1139,11 @@ describe("removeEmptyAclRules", () => {
     expect(Array.from(updatedDataset)).toEqual([]);
   });
 
-  it("does not modify the input LitDataset", () => {
+  it("does not modify the input SolidDataset", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1182,7 +1182,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1220,7 +1220,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1258,7 +1258,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1303,7 +1303,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1357,7 +1357,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1409,7 +1409,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/container/",
     });
@@ -1454,7 +1454,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1499,7 +1499,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1544,7 +1544,7 @@ describe("removeEmptyAclRules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1597,14 +1597,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1621,14 +1621,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1649,14 +1649,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1677,14 +1677,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://some-other.pod/resource",
     });
@@ -1703,14 +1703,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1733,14 +1733,14 @@ describe("saveAclFor", () => {
     const withResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://arbitrary.pod/resource.acl",
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary-other.pod/resource.acl",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1768,7 +1768,7 @@ describe("deleteAclFor", () => {
     const mockResource: WithResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: false,
+        isSolidDataset: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -1793,7 +1793,7 @@ describe("deleteAclFor", () => {
     const mockResource: WithResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: false,
+        isSolidDataset: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -1818,7 +1818,7 @@ describe("deleteAclFor", () => {
     const mockResource: WithResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: false,
+        isSolidDataset: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -1840,7 +1840,7 @@ describe("deleteAclFor", () => {
     const mockResource: WithResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: false,
+        isSolidDataset: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -1864,7 +1864,7 @@ describe("deleteAclFor", () => {
     const mockResource: WithResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: false,
+        isSolidDataset: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };

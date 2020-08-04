@@ -39,9 +39,9 @@ export type IriString = UrlString;
 export type WebId = UrlString;
 
 /**
- * A LitDataset represents all Quads from a single Resource.
+ * A SolidDataset represents all Quads from a single Resource.
  */
-export type LitDataset = DatasetCore;
+export type SolidDataset = DatasetCore;
 /**
  * A Thing represents all Quads with a given Subject URL and a given Named
  * Graph, from a single Resource.
@@ -67,12 +67,12 @@ export type ThingLocal = Thing & { internal_localSubject: LocalNode };
 export type LocalNode = BlankNode & { internal_name: string };
 
 /**
- * A [[LitDataset]] containing Access Control rules for another LitDataset.
+ * A [[SolidDataset]] containing Access Control rules for another SolidDataset.
  *
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type AclDataset = LitDataset &
+export type AclDataset = SolidDataset &
   WithResourceInfo & { internal_accessTo: UrlString };
 
 /**
@@ -101,12 +101,12 @@ type internal_WacAllow = {
 };
 
 /**
- * [[LitDataset]]s fetched by solid-client include this metadata describing its relation to a Pod Resource.
+ * [[SolidDataset]]s fetched by solid-client include this metadata describing its relation to a Pod Resource.
  */
 export type WithResourceInfo = {
   internal_resourceInfo: {
     fetchedFrom: UrlString;
-    isLitDataset: boolean;
+    isSolidDataset: boolean;
     contentType?: string;
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might
@@ -181,12 +181,12 @@ export function internal_toIriString(iri: Iri | IriString): IriString {
 }
 
 /**
- * Verify whether a given LitDataset includes metadata about where it was retrieved from.
+ * Verify whether a given SolidDataset includes metadata about where it was retrieved from.
  *
- * @param dataset A [[LitDataset]] that may have metadata attached about the Resource it was retrieved from.
+ * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
  * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
  */
-export function hasResourceInfo<T extends LitDataset>(
+export function hasResourceInfo<T extends SolidDataset>(
   dataset: T
 ): dataset is T & WithResourceInfo {
   const potentialResourceInfo = dataset as T & WithResourceInfo;
@@ -194,7 +194,7 @@ export function hasResourceInfo<T extends LitDataset>(
 }
 
 /** @internal */
-export function hasChangelog<T extends LitDataset>(
+export function hasChangelog<T extends SolidDataset>(
   dataset: T
 ): dataset is T & WithChangeLog {
   const potentialChangeLog = dataset as T & WithChangeLog;
@@ -206,12 +206,12 @@ export function hasChangelog<T extends LitDataset>(
 }
 
 /**
- * Verify whether a given LitDataset was fetched together with its Access Control List.
+ * Verify whether a given SolidDataset was fetched together with its Access Control List.
  *
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  *
- * @param dataset A [[LitDataset]] that may have its ACLs attached.
+ * @param dataset A [[SolidDataset]] that may have its ACLs attached.
  * @returns True if `dataset` was fetched together with its ACLs.
  */
 export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
@@ -237,15 +237,15 @@ export type WithAccessibleAcl<
 };
 
 /**
- * Given a [[LitDataset]], verify whether its Access Control List is accessible to the current user.
+ * Given a [[SolidDataset]], verify whether its Access Control List is accessible to the current user.
  *
- * This should generally only be true for LitDatasets fetched by
- * [[fetchLitDatasetWithAcl]].
+ * This should generally only be true for SolidDatasets fetched by
+ * [[getSolidDatasetWithAcl]].
  *
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  *
- * @param dataset A [[LitDataset]].
+ * @param dataset A [[SolidDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
  */
 export function hasAccessibleAcl<Resource extends WithResourceInfo>(

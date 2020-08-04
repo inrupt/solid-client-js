@@ -19,7 +19,7 @@ In Solid, who has what access to a [Resource](../glossary.mdx#resource) is defin
 List ([ACL](../glossary.mdx#acl)). These may be defined in separate Resources, so if you want to be able
 to access the ACLs for a Resource in addition to the Resource itself, you'll have to explicitly
 fetch them using
-[`fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#fetchlitdatasetwithacl) —
+[`getSolidDatasetWithAcl`](../api/modules/_resource_soliddataset_.md#getsoliddatasetwithacl) —
 but be aware that this may result in several extra HTTP requests being sent.
 
 The possible [Access Modes](../glossary.mdx#access-modes) that can be granted are
@@ -46,21 +46,21 @@ We currently only support reading what access has been granted to individual age
 ### Fetching access information
 
 Getting access information when fetching a resource may result in an additional request to the server. To avoid
-unecessary requests, the API makes it explicit when you get access information along your resource: `fetchLitDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
+unecessary requests, the API makes it explicit when you get access information along your resource: `getSolidDatasetWithAcl`. The returned value includes both the Resource data (e.g. your profile or friend list), the `ResourceInfo`,
 and the ACL containing the associated access information.
 
 ### Reading public access
 
-Given a [LitDataset](../glossary.mdx#litdataset) that has an ACL attached, you can check what access
+Given a [SolidDataset](../glossary.mdx#soliddataset) that has an ACL attached, you can check what access
 everyone has, regardless of whether they are authenticated or not. You can do so using
 [`getPublicAccess`](../api/modules/_acl_class_.md#getpublicaccess):
 
 ```typescript
-import { fetchLitDatasetWithAcl, getPublicAccess } from "@inrupt/solid-client";
+import { getSolidDatasetWithAcl, getPublicAccess } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
-const publicAccess = getPublicAccess(litDatasetWithAcl);
+const solidDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
+const publicAccess = getPublicAccess(solidDatasetWithAcl);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -69,7 +69,7 @@ const publicAccess = getPublicAccess(litDatasetWithAcl);
 
 ### Reading agent access
 
-Given a [LitDataset](../glossary.mdx#litdataset) that has an ACL attached, you can check what access a
+Given a [SolidDataset](../glossary.mdx#soliddataset) that has an ACL attached, you can check what access a
 specific agent has been granted, or get all agents for which access has been explicitly granted.
 
 To do the former, use
@@ -77,13 +77,13 @@ To do the former, use
 
 ```typescript
 import {
-  fetchLitDatasetWithAcl,
+  getSolidDatasetWithAcl,
   getAgentAccessOne,
 } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
-const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
-const agentAccess = getAgentAccessOne(litDatasetWithAcl, webId);
+const solidDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
+const agentAccess = getAgentAccessOne(solidDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
@@ -95,12 +95,12 @@ To get all agents to whom access was granted, use
 
 ```typescript
 import {
-  fetchLitDatasetWithAcl,
+  getSolidDatasetWithAcl,
   getAgentAccessAll,
 } from "@inrupt/solid-client";
 
-const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
-const accessByAgent = getAgentAccessAll(litDatasetWithAcl);
+const solidDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
+const accessByAgent = getAgentAccessAll(solidDatasetWithAcl);
 
 // => an object like
 //    {
@@ -132,7 +132,7 @@ its children.
 
 To modify access to a Resource, you will need to obtain its ACL. Assuming you have fetched the
 Resource using
-[`fetchLitDatasetWithAcl`](../api/modules/_resource_litdataset_.md#fetchlitdatasetwithacl),
+[`getSolidDatasetWithAcl`](../api/modules/_resource_soliddataset_.md#getsoliddatasetwithacl),
 you can call
 [`getResourceACL`](../api/modules/_acl_acl_.md#getresourceacl) to obtain its ACL — or
 `null` if it does not exist.
@@ -158,7 +158,7 @@ The general process of changing access to a Resource is as follows:
 
 ```typescript
 import {
-  fetchLitDatasetWithAcl,
+  getSolidDatasetWithAcl,
   hasResourceAcl,
   hasFallbackAcl,
   hasAccessibleAcl,
@@ -169,30 +169,30 @@ import {
   saveAclFor,
 } from "@inrupt/solid-client";
 
-// Fetch the LitDataset and its associated ACLs, if available:
-const litDatasetWithAcl = await fetchLitDatasetWithAcl("https://example.com");
+// Fetch the SolidDataset and its associated ACLs, if available:
+const solidDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
 
-// Obtain the LitDataset's own ACL, if available,
+// Obtain the SolidDataset's own ACL, if available,
 // or initialise a new one, if possible:
 let resourceAcl;
-if (!hasResourceAcl(litDatasetWithAcl)) {
-  if (!hasAccessibleAcl(litDatasetWithAcl)) {
+if (!hasResourceAcl(solidDatasetWithAcl)) {
+  if (!hasAccessibleAcl(solidDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to change access rights to this Resource."
     );
   }
-  if (!hasFallbackAcl(litDatasetWithAcl)) {
+  if (!hasFallbackAcl(solidDatasetWithAcl)) {
     throw new Error(
       "The current user does not have permission to see who currently has access to this Resource."
     );
     // Alternatively, initialise a new empty ACL as follows,
     // but be aware that if you do not give someone Control access,
     // **nobody will ever be able to change Access permissions in the future**:
-    // resourceAcl = createAcl(litDatasetWithAcl);
+    // resourceAcl = createAcl(solidDatasetWithAcl);
   }
-  resourceAcl = createAclFromFallbackAcl(litDatasetWithAcl);
+  resourceAcl = createAclFromFallbackAcl(solidDatasetWithAcl);
 } else {
-  resourceAcl = getResourceAcl(litDatasetWithAcl);
+  resourceAcl = getResourceAcl(solidDatasetWithAcl);
 }
 
 // Give someone Control access to the given Resource:
@@ -203,7 +203,7 @@ const updatedAcl = setAgentResourceAccess(
 );
 
 // Now save the ACL:
-await saveAclFor(litDatasetWithAcl, updatedAcl);
+await saveAclFor(solidDatasetWithAcl, updatedAcl);
 ```
 
 ### Setting public access

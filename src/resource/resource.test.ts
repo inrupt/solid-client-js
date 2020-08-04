@@ -35,7 +35,7 @@ import { internal_fetchAcl, internal_fetchResourceInfo } from "./resource";
 
 import {
   isContainer,
-  isLitDataset,
+  isSolidDataset,
   getContentType,
   fetchResourceInfoWithAcl,
 } from "./resource";
@@ -60,7 +60,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -80,7 +80,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 
@@ -112,7 +112,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -156,7 +156,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://some.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -189,20 +189,20 @@ describe("fetchResourceInfoWithAcl", () => {
       );
     });
 
-    const fetchedLitDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
-    expect(fetchedLitDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
       "https://some.pod/resource"
     );
     expect(
-      fetchedLitDataset.internal_acl?.resourceAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/resource.acl");
     expect(
-      fetchedLitDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
+      fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .fetchedFrom
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
@@ -246,14 +246,14 @@ describe("fetchResourceInfoWithAcl", () => {
       )
     );
 
-    const fetchedLitDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(fetchedLitDataset.internal_acl.resourceAcl).toBeNull();
-    expect(fetchedLitDataset.internal_acl.fallbackAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.resourceAcl).toBeNull();
+    expect(fetchedSolidDataset.internal_acl.fallbackAcl).toBeNull();
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -343,7 +343,7 @@ describe("fetchResourceInfo", () => {
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
-  it("keeps track of where the LitDataset was fetched from", async () => {
+  it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -352,17 +352,17 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
+    expect(solidDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
   });
 
-  it("knows when the Resource contains a LitDataset", async () => {
+  it("knows when the Resource contains a SolidDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
@@ -372,17 +372,17 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(true);
+    expect(solidDatasetInfo.isSolidDataset).toBe(true);
   });
 
-  it("knows when the Resource does not contain a LitDataset", async () => {
+  it("knows when the Resource does not contain a SolidDataset", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
@@ -392,17 +392,17 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(false);
+    expect(solidDatasetInfo.isSolidDataset).toBe(false);
   });
 
-  it("marks a Resource as not a LitDataset when its Content Type is unknown", async () => {
+  it("marks a Resource as not a SolidDataset when its Content Type is unknown", async () => {
     const mockFetch = jest
       .fn(window.fetch)
       .mockReturnValue(
@@ -411,14 +411,14 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.isLitDataset).toBe(false);
+    expect(solidDatasetInfo.isSolidDataset).toBe(false);
   });
 
   it("exposes the Content Type when known", async () => {
@@ -431,14 +431,14 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.contentType).toBe("text/turtle; charset=UTF-8");
+    expect(solidDatasetInfo.contentType).toBe("text/turtle; charset=UTF-8");
   });
 
   it("does not expose a Content-Type when none is known", async () => {
@@ -446,14 +446,14 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse()));
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(litDatasetInfo.contentType).toBeUndefined();
+    expect(solidDatasetInfo.contentType).toBeUndefined();
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
@@ -468,12 +468,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.aclUrl).toBe(
+    expect(solidDatasetInfo.aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
@@ -489,12 +489,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.aclUrl).toBeUndefined();
+    expect(solidDatasetInfo.aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -508,12 +508,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.permissions).toEqual({
+    expect(solidDatasetInfo.permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -541,12 +541,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.permissions).toEqual({
+    expect(solidDatasetInfo.permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -571,12 +571,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const litDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await internal_fetchResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(litDatasetInfo.permissions).toBeUndefined();
+    expect(solidDatasetInfo.permissions).toBeUndefined();
   });
 
   it("does not request the actual data from the server", async () => {
@@ -641,7 +641,7 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 
@@ -652,7 +652,7 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/not-a-container",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 
@@ -660,27 +660,27 @@ describe("isContainer", () => {
   });
 });
 
-describe("isLitDataset", () => {
-  it("should recognise a LitDataset", () => {
+describe("isSolidDataset", () => {
+  it("should recognise a SolidDataset", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/container/",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 
-    expect(isLitDataset(resourceInfo)).toBe(true);
+    expect(isSolidDataset(resourceInfo)).toBe(true);
   });
 
   it("should recognise non-RDF Resources", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/not-a-litdataset.png",
-        isLitDataset: false,
+        fetchedFrom: "https://arbitrary.pod/container/not-a-soliddataset.png",
+        isSolidDataset: false,
       },
     };
 
-    expect(isLitDataset(resourceInfo)).toBe(false);
+    expect(isSolidDataset(resourceInfo)).toBe(false);
   });
 });
 
@@ -689,7 +689,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
         contentType: "multipart/form-data; boundary=something",
       },
     };
@@ -703,7 +703,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         fetchedFrom: "https://arbitrary.pod/resource",
-        isLitDataset: true,
+        isSolidDataset: true,
       },
     };
 

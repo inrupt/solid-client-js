@@ -113,7 +113,7 @@ export async function internal_fetchAcl(
  * applicable Container's ACL is not accessible to the authenticated user, `acl.fallbackAcl` will be
  * `null`.
  *
- * @param url URL of the LitDataset to fetch.
+ * @param url URL of the SolidDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
  */
@@ -142,13 +142,13 @@ export function internal_parseResourceInfo(
 ): WithResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
-  const isLitDataset =
+  const isSolidDataset =
     contentTypeParts.length > 0 &&
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
     fetchedFrom: response.url,
-    isLitDataset: isLitDataset,
+    isSolidDataset: isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
 
@@ -182,11 +182,11 @@ export function isContainer(resource: WithResourceInfo): boolean {
 }
 
 /**
- * @param resource Resource for which to check whether it contains a LitDataset.
- * @return Whether `resource` contains a LitDataset.
+ * @param resource Resource for which to check whether it contains a SolidDataset.
+ * @return Whether `resource` contains a SolidDataset.
  */
-export function isLitDataset(resource: WithResourceInfo): boolean {
-  return resource.internal_resourceInfo.isLitDataset;
+export function isSolidDataset(resource: WithResourceInfo): boolean {
+  return resource.internal_resourceInfo.isSolidDataset;
 }
 
 /**
