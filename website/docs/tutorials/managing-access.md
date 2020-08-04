@@ -73,17 +73,14 @@ Given a [SolidDataset](../glossary.mdx#soliddataset) that has an ACL attached, y
 specific agent has been granted, or get all agents for which access has been explicitly granted.
 
 To do the former, use
-[`getAgentAccessOne`](../api/modules/_acl_agent_.md#getagentaccessone):
+[`getAgentAccess`](../api/modules/_acl_agent_.md#getagentaccess):
 
 ```typescript
-import {
-  getSolidDatasetWithAcl,
-  getAgentAccessOne,
-} from "@inrupt/solid-client";
+import { getSolidDatasetWithAcl, getAgentAccess } from "@inrupt/solid-client";
 
 const webId = "https://example.com/profile#webid";
 const solidDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
-const agentAccess = getAgentAccessOne(solidDatasetWithAcl, webId);
+const agentAccess = getAgentAccess(solidDatasetWithAcl, webId);
 
 // => an object like
 //    { read: true, append: false, write: false, control: true }
