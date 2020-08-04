@@ -53,15 +53,13 @@ function addAclRuleQuads(
   access: unstable_Access,
   type: "resource" | "default",
   ruleIri?: IriString,
-  targetType?:
+  targetType:
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup"
-    | "http://www.w3.org/ns/auth/acl#agentClass"
+    | "http://www.w3.org/ns/auth/acl#agentClass" = "http://www.w3.org/ns/auth/acl#agent"
 ): unstable_AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
-  const targetTypePredicate =
-    targetType ?? "http://www.w3.org/ns/auth/acl#agent";
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
@@ -83,7 +81,7 @@ function addAclRuleQuads(
   aclDataset.add(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(targetTypePredicate),
+      DataFactory.namedNode(targetType),
       DataFactory.namedNode(agent)
     )
   );
