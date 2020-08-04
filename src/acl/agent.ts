@@ -32,8 +32,8 @@ import {
 import { getIriOne, getIriAll } from "../thing/get";
 import { acl } from "../constants";
 import {
-  duplicateAclRule,
-  initialiseAclRule,
+  internal_duplicateAclRule,
+  internal_initialiseAclRule,
   internal_combineAccessModes,
   internal_getAccess,
   internal_getAccessByIri,
@@ -201,7 +201,7 @@ export function setAgentResourceAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given Access Modes:
-  let newRule = initialiseAclRule(access);
+  let newRule = internal_initialiseAclRule(access);
   newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -303,7 +303,7 @@ export function setAgentDefaultAccess(
   });
 
   // Create a new Rule that only grants the given Agent the given default Access Modes:
-  let newRule = initialiseAclRule(access);
+  let newRule = internal_initialiseAclRule(access);
   newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
   newRule = setIri(newRule, acl.agent, agent);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -348,7 +348,7 @@ function removeAgentFromRule(
   // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
   // that would give it access it does not currently have:
   if (!getIriAll(rule, acl.agent).includes(agent)) {
-    const emptyRule = initialiseAclRule({
+    const emptyRule = internal_initialiseAclRule({
       read: false,
       append: false,
       write: false,
@@ -359,7 +359,7 @@ function removeAgentFromRule(
   // The existing rule will keep applying to Agents other than the given one:
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
   // The agent already had some access in the rule, so duplicate it...
-  let ruleForOtherTargets = duplicateAclRule(rule);
+  let ruleForOtherTargets = internal_duplicateAclRule(rule);
   // ...but remove access to the original Resource:
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
