@@ -28,7 +28,7 @@ import {
   setDatetime,
   setStringNoLocale,
   saveSolidDatasetAt,
-  isSolidDataset,
+  isRawData,
   getContentType,
   fetchResourceInfoWithAcl,
   getSolidDatasetWithAcl,
@@ -94,8 +94,8 @@ describe("End-to-end tests", () => {
     const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
     );
-    expect(isSolidDataset(rdfResourceInfo)).toBe(true);
-    expect(isSolidDataset(nonRdfResourceInfo)).toBe(false);
+    expect(isRawData(rdfResourceInfo)).toBe(false);
+    expect(isRawData(nonRdfResourceInfo)).toBe(true);
   });
 
   it("should be able to read and update ACLs", async () => {

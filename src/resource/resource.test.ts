@@ -35,7 +35,7 @@ import { internal_fetchAcl, internal_fetchResourceInfo } from "./resource";
 
 import {
   isContainer,
-  isSolidDataset,
+  isRawData,
   getContentType,
   fetchResourceInfoWithAcl,
 } from "./resource";
@@ -660,7 +660,7 @@ describe("isContainer", () => {
   });
 });
 
-describe("isSolidDataset", () => {
+describe("isRawData", () => {
   it("should recognise a SolidDataset", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
@@ -669,7 +669,7 @@ describe("isSolidDataset", () => {
       },
     };
 
-    expect(isSolidDataset(resourceInfo)).toBe(true);
+    expect(isRawData(resourceInfo)).toBe(false);
   });
 
   it("should recognise non-RDF Resources", () => {
@@ -680,7 +680,7 @@ describe("isSolidDataset", () => {
       },
     };
 
-    expect(isSolidDataset(resourceInfo)).toBe(false);
+    expect(isRawData(resourceInfo)).toBe(true);
   });
 });
 

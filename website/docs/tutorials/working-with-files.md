@@ -27,7 +27,7 @@ the fetched file as a blob. It is then up to you to decode it appropriately.
 ```typescript
 import {
   fetchFile,
-  isSolidDataset,
+  isRawData,
   getContentType,
   getSourceUrl,
 } from "@inrupt/solid-client";
@@ -37,7 +37,7 @@ const file = await fetchFile("https://example.com/some/interesting/file");
 console.log(
   `Fetched a ${getContentType(file)} file from ${getSourceUrl(file)}.`
 );
-console.log(`The file is ${isSolidDataset(file) ? "" : "not "}a dataset.`);
+console.log(`The file is ${isRawData(file) ? "not " : ""}a dataset.`);
 ```
 
 ## Deleting a file
