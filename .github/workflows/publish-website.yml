@@ -9,7 +9,7 @@ env:
   CI: true
 jobs:
   publish-website:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Prepare for publication to GitHub Packages
@@ -17,25 +17,35 @@ jobs:
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
-    - name: Build API docs and website
+    - name: Build API docs
       run: |
         npm ci
-        npx typedoc
-        cd website
-        npm ci
-        npm run build
-        touch build/.nojekyll
+        npm run build-api-docs
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install Python dependencies
+      run: |
+        cd docs/
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build website
+      run: |
+        cd docs/
+        make html
+        touch build/${GITHUB_REF#refs/heads/}/html/.nojekyll
     - name: Deploy to GitHub Pages
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email $GITHUB_ACTOR@users.noreply.github.com
         git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/inrupt/solid-client-js.git
         git fetch --no-recurse-submodules
-        cd website
+        cd docs
         git worktree add ./gh-pages gh-pages
         cd gh-pages
         git rm -r .
-        cp -r ../build/. .
+        cp -r ../build/${GITHUB_REF#refs/heads/}/html/. .
         git add .
         git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
         git push gh-pages-remote gh-pages:gh-pages
