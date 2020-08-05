@@ -46,7 +46,7 @@ import {
   AclDataset,
 } from "../interfaces";
 import { internal_isAclDataset } from "../acl/acl";
-import { getFetchedFrom } from "../resource/resource";
+import { getSourceUrl } from "../resource/resource";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -171,7 +171,7 @@ export function removeThing<Dataset extends SolidDataset>(
 ): Dataset & WithChangeLog {
   const newSolidDataset = withChangeLog(cloneLitStructs(solidDataset));
   const resourceIri: UrlString | undefined = hasResourceInfo(newSolidDataset)
-    ? getFetchedFrom(newSolidDataset)
+    ? getSourceUrl(newSolidDataset)
     : undefined;
 
   const thingSubject = toNode(thing);

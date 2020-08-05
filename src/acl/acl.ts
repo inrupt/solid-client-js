@@ -47,7 +47,7 @@ import { DataFactory, dataset } from "../rdfjs";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 import {
-  getFetchedFrom,
+  getSourceUrl,
   internal_defaultFetchOptions,
   internal_fetchResourceInfo,
 } from "../resource/resource";
@@ -70,7 +70,7 @@ export async function internal_fetchResourceAcl(
       options
     );
     return Object.assign(aclSolidDataset, {
-      internal_accessTo: getFetchedFrom(dataset),
+      internal_accessTo: getSourceUrl(dataset),
     });
   } catch (e) {
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
@@ -87,7 +87,7 @@ export async function internal_fetchFallbackAcl(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset | null> {
-  const resourceUrl = new URL(getFetchedFrom(resource));
+  const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;
   // Note: we're currently assuming that the Origin is the root of the Pod. However, it is not yet
   //       set in stone that that will always be the case. We might need to check the Container's
@@ -157,10 +157,10 @@ export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
 ): resource is Resource & WithResourceAcl & WithAccessibleAcl {
   return (
     resource.internal_acl.resourceAcl !== null &&
-    getFetchedFrom(resource) ===
+    getSourceUrl(resource) ===
       resource.internal_acl.resourceAcl.internal_accessTo &&
     resource.internal_resourceInfo.aclUrl ===
-      getFetchedFrom(resource.internal_acl.resourceAcl)
+      getSourceUrl(resource.internal_acl.resourceAcl)
   );
 }
 
@@ -246,9 +246,9 @@ export function createAcl(
   targetResource: WithResourceInfo & WithAccessibleAcl
 ): AclDataset {
   const emptyResourceAcl: AclDataset = Object.assign(dataset(), {
-    internal_accessTo: getFetchedFrom(targetResource),
+    internal_accessTo: getSourceUrl(targetResource),
     internal_resourceInfo: {
-      fetchedFrom: targetResource.internal_resourceInfo.aclUrl,
+      sourceIri: targetResource.internal_resourceInfo.aclUrl,
       isSolidDataset: true,
     },
   });
@@ -279,7 +279,7 @@ export function createAclFromFallbackAcl(
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
-    rule = setIri(rule, acl.accessTo, getFetchedFrom(resource));
+    rule = setIri(rule, acl.accessTo, getSourceUrl(resource));
     return rule;
   });
 
@@ -563,7 +563,7 @@ export async function saveAclFor(
   const savedAclDataset: AclDataset & typeof savedDataset = Object.assign(
     savedDataset,
     {
-      internal_accessTo: getFetchedFrom(resource),
+      internal_accessTo: getSourceUrl(resource),
     }
   );
 

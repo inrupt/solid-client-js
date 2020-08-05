@@ -29,13 +29,13 @@ import {
   fetchFile,
   isSolidDataset,
   getContentType,
-  getFetchedFrom,
+  getSourceUrl,
 } from "@inrupt/solid-client";
 
 const file = await fetchFile("https://example.com/some/interesting/file");
 // file is a Blob (see https://developer.mozilla.org/en-US/docs/Web/API/Blob)
 console.log(
-  `Fetched a ${getContentType(file)} file from ${getFetchedFrom(file)}.`
+  `Fetched a ${getContentType(file)} file from ${getSourceUrl(file)}.`
 );
 console.log(`The file is ${isSolidDataset(file) ? "" : "not "}a dataset.`);
 ```

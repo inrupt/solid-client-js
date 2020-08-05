@@ -59,7 +59,7 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
@@ -79,7 +79,7 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isSolidDataset: true,
       },
     };
@@ -111,7 +111,7 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
@@ -123,7 +123,7 @@ describe("fetchAcl", () => {
 
     expect(fetchedAcl).not.toBeNull();
     expect(fetchedAcl.fallbackAcl).toBeNull();
-    expect(fetchedAcl.resourceAcl?.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.resourceAcl?.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -155,7 +155,7 @@ describe("fetchAcl", () => {
 
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isSolidDataset: true,
         aclUrl: "https://some.pod/resource.acl",
       },
@@ -166,7 +166,7 @@ describe("fetchAcl", () => {
     });
 
     expect(fetchedAcl.resourceAcl).toBeNull();
-    expect(fetchedAcl.fallbackAcl?.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedAcl.fallbackAcl?.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/.acl"
     );
   });
@@ -194,16 +194,16 @@ describe("fetchResourceInfoWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/resource"
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/resource.acl");
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -359,7 +359,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(solidDatasetInfo.fetchedFrom).toBe("https://some.pod/resource");
+    expect(solidDatasetInfo.sourceIri).toBe("https://some.pod/resource");
   });
 
   it("knows when the Resource contains a SolidDataset", async () => {
@@ -640,7 +640,7 @@ describe("isContainer", () => {
   it("should recognise a Container", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/",
+        sourceIri: "https://arbitrary.pod/container/",
         isSolidDataset: true,
       },
     };
@@ -651,7 +651,7 @@ describe("isContainer", () => {
   it("should recognise non-Containers", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/not-a-container",
+        sourceIri: "https://arbitrary.pod/container/not-a-container",
         isSolidDataset: true,
       },
     };
@@ -664,7 +664,7 @@ describe("isSolidDataset", () => {
   it("should recognise a SolidDataset", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/",
+        sourceIri: "https://arbitrary.pod/container/",
         isSolidDataset: true,
       },
     };
@@ -675,7 +675,7 @@ describe("isSolidDataset", () => {
   it("should recognise non-RDF Resources", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/container/not-a-soliddataset.png",
+        sourceIri: "https://arbitrary.pod/container/not-a-soliddataset.png",
         isSolidDataset: false,
       },
     };
@@ -688,7 +688,7 @@ describe("getContentType", () => {
   it("should return the Content Type if known", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/resource",
+        sourceIri: "https://arbitrary.pod/resource",
         isSolidDataset: true,
         contentType: "multipart/form-data; boundary=something",
       },
@@ -702,7 +702,7 @@ describe("getContentType", () => {
   it("should return null if no Content Type is known", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/resource",
+        sourceIri: "https://arbitrary.pod/resource",
         isSolidDataset: true,
       },
     };

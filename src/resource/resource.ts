@@ -147,7 +147,7 @@ export function internal_parseResourceInfo(
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-    fetchedFrom: response.url,
+    sourceIri: response.url,
     isSolidDataset: isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
@@ -160,7 +160,7 @@ export function internal_parseResourceInfo(
     if (aclLinks.length === 1) {
       resourceInfo.aclUrl = new URL(
         aclLinks[0].uri,
-        resourceInfo.fetchedFrom
+        resourceInfo.sourceIri
       ).href;
     }
   }
@@ -178,7 +178,7 @@ export function internal_parseResourceInfo(
  * @returns Whether `resource` is a Container.
  */
 export function isContainer(resource: WithResourceInfo): boolean {
-  return getFetchedFrom(resource).endsWith("/");
+  return getSourceUrl(resource).endsWith("/");
 }
 
 /**
@@ -201,9 +201,11 @@ export function getContentType(resource: WithResourceInfo): string | null {
  * @param resource
  * @returns The URL from which the resource has been fetched
  */
-export function getFetchedFrom(resource: WithResourceInfo): string {
-  return resource.internal_resourceInfo.fetchedFrom;
+export function getSourceUrl(resource: WithResourceInfo): string {
+  return resource.internal_resourceInfo.sourceIri;
 }
+/** @hidden Alias of getSourceUrl for those who prefer to use IRI terminology. */
+export const getSourceIri = getSourceUrl;
 
 /**
  * Parse a WAC-Allow header into user and public access booleans.

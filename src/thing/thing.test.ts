@@ -636,7 +636,7 @@ describe("setThing", () => {
       dataset(),
       {
         internal_resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          sourceIri: "https://some.pod/resource",
           isSolidDataset: true,
         },
       }
@@ -681,7 +681,7 @@ describe("setThing", () => {
     const datasetWithLocalSubject: SolidDataset &
       WithResourceInfo = Object.assign(dataset(), {
       internal_resourceInfo: {
-        fetchedFrom: "https://some.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isSolidDataset: true,
       },
     });
@@ -910,7 +910,7 @@ describe("removeThing", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
-        fetchedFrom: "https://arbitrary.pod/resource.acl",
+        sourceIri: "https://arbitrary.pod/resource.acl",
         isSolidDataset: true,
       },
     });
@@ -927,7 +927,7 @@ describe("removeThing", () => {
       "https://arbitrary.pod/resource"
     );
     expect(updatedDataset.internal_resourceInfo).toEqual({
-      fetchedFrom: "https://arbitrary.pod/resource.acl",
+      sourceIri: "https://arbitrary.pod/resource.acl",
       isSolidDataset: true,
     });
   });
@@ -1047,7 +1047,7 @@ describe("removeThing", () => {
       dataset(),
       {
         internal_resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          sourceIri: "https://some.pod/resource",
           isSolidDataset: true,
         },
       }
@@ -1081,7 +1081,7 @@ describe("removeThing", () => {
       dataset(),
       {
         internal_resourceInfo: {
-          fetchedFrom: "https://some.pod/resource",
+          sourceIri: "https://some.pod/resource",
           isSolidDataset: true,
         },
       }

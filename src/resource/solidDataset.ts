@@ -34,12 +34,13 @@ import {
   WithAcl,
   Url,
   internal_toIriString,
+  IriString,
 } from "../interfaces";
 import {
   internal_parseResourceInfo,
   internal_defaultFetchOptions,
   internal_fetchAcl,
-  getFetchedFrom,
+  getSourceUrl,
 } from "./resource";
 
 /**
@@ -202,8 +203,8 @@ export async function saveSolidDatasetAt(
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = hasResourceInfo(
     solidDataset
   )
-    ? { ...solidDataset.internal_resourceInfo, fetchedFrom: url }
-    : { fetchedFrom: url, isSolidDataset: true };
+    ? { ...solidDataset.internal_resourceInfo, sourceIri: url }
+    : { sourceIri: url, isSolidDataset: true };
   const storedDataset: SolidDataset &
     WithChangeLog &
     WithResourceInfo = Object.assign(solidDataset, {
@@ -223,12 +224,12 @@ function isUpdate(
   url: UrlString
 ): solidDataset is SolidDataset &
   WithChangeLog &
-  WithResourceInfo & { resourceInfo: { fetchedFrom: string } } {
+  WithResourceInfo & { resourceInfo: { sourceIri: IriString } } {
   return (
     hasChangelog(solidDataset) &&
     hasResourceInfo(solidDataset) &&
-    typeof solidDataset.internal_resourceInfo.fetchedFrom === "string" &&
-    solidDataset.internal_resourceInfo.fetchedFrom === url
+    typeof solidDataset.internal_resourceInfo.sourceIri === "string" &&
+    solidDataset.internal_resourceInfo.sourceIri === url
   );
 }
 
@@ -288,7 +289,7 @@ export async function saveSolidDatasetInContainer(
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-    fetchedFrom: resourceIri,
+    sourceIri: resourceIri,
     isSolidDataset: true,
   };
   const resourceWithResourceInfo: SolidDataset &
@@ -325,7 +326,7 @@ export function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
 function resolveLocalIrisInSolidDataset<
   Dataset extends SolidDataset & WithResourceInfo
 >(solidDataset: Dataset): Dataset {
-  const resourceIri = getFetchedFrom(solidDataset);
+  const resourceIri = getSourceUrl(solidDataset);
   const unresolvedQuads = Array.from(solidDataset);
 
   unresolvedQuads.forEach((unresolvedQuad) => {
