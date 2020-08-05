@@ -33,6 +33,7 @@ import {
   XmlSchemaTypeIri,
   isTerm,
 } from "../datatypes";
+import any = jasmine.any;
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
@@ -280,6 +281,42 @@ export function getStringWithLocaleAll(
   const matchingQuads = findAll(thing, localeStringMatcher);
 
   return matchingQuads.map((quad) => quad.object.value);
+}
+
+/**
+ * Retrieves all string literals for the specified property from the specified
+ * Thing.
+ *
+ * NOTE: Assumes you also want non-locale string literals too (i.e. literals
+ * with the xsd:string datatype). These values will be returned in a map entry
+ * with a key of the empty string.
+ *
+ * @param thing The [[Thing]] to read the localised string values from.
+ * @param property The given Property for which you want the localised string values.
+ * @returns A Map of objects, keyed on locale with the value an array of string values (for that locale).
+ */
+export function getStringByLocaleAll(
+  thing: Thing,
+  property: Url | UrlString
+): Map<string, string[]> {
+  const literalMatcher = getLiteralMatcher(property);
+
+  const matchingQuads = findAll(thing, literalMatcher);
+
+  const byLocale = new Map<string, string[]>();
+  matchingQuads.map((quad) => {
+    if (
+      quad.object.datatype.value === xmlSchemaTypes.langString ||
+      quad.object.datatype.value === xmlSchemaTypes.string
+    ) {
+      const current: string[] | undefined = byLocale.get(quad.object.language);
+      current
+        ? byLocale.set(quad.object.language, [...current, quad.object.value])
+        : byLocale.set(quad.object.language, [quad.object.value]);
+    }
+  });
+
+  return byLocale;
 }
 
 /**
