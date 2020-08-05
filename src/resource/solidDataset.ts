@@ -204,7 +204,7 @@ export async function saveSolidDatasetAt(
     solidDataset
   )
     ? { ...solidDataset.internal_resourceInfo, sourceIri: url }
-    : { sourceIri: url, isSolidDataset: true };
+    : { sourceIri: url, isRawData: false };
   const storedDataset: SolidDataset &
     WithChangeLog &
     WithResourceInfo = Object.assign(solidDataset, {
@@ -290,7 +290,7 @@ export async function saveSolidDatasetInContainer(
     .href;
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
     sourceIri: resourceIri,
-    isSolidDataset: true,
+    isRawData: false,
   };
   const resourceWithResourceInfo: SolidDataset &
     WithResourceInfo = Object.assign(solidDataset, {

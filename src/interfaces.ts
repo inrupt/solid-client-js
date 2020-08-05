@@ -106,7 +106,7 @@ type internal_WacAllow = {
 export type WithResourceInfo = {
   internal_resourceInfo: {
     sourceIri: UrlString;
-    isSolidDataset: boolean;
+    isRawData: boolean;
     contentType?: string;
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might

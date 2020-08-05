@@ -142,13 +142,18 @@ export function internal_parseResourceInfo(
 ): WithResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
+  // If the server offers a Turtle or JSON-LD serialisation on its own accord,
+  // that tells us whether it is RDF data that the server can understand
+  // (and hence can be updated with a PATCH request with SPARQL INSERT and DELETE statements),
+  // in which case our SolidDataset-related functions should handle it.
+  // For more context, see https://github.com/inrupt/solid-client-js/pull/214.
   const isSolidDataset =
     contentTypeParts.length > 0 &&
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
   const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
     sourceIri: response.url,
-    isSolidDataset: isSolidDataset,
+    isRawData: !isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
   };
 
@@ -188,7 +193,7 @@ export function isContainer(resource: WithResourceInfo): boolean {
  * @return Whether `resource` contains raw data.
  */
 export function isRawData(resource: WithResourceInfo): boolean {
-  return !resource.internal_resourceInfo.isSolidDataset;
+  return resource.internal_resourceInfo.isRawData;
 }
 
 /**

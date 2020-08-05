@@ -655,7 +655,7 @@ describe("saveSolidDatasetAt", () => {
 
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
         sourceIri: fromUrl,
-        isSolidDataset: true,
+        isRawData: false,
       };
 
       return Object.assign(mockDataset, {
