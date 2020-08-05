@@ -18,7 +18,7 @@ solid-client is available as a package on npm, and can be used in the browser wi
 npm install @inrupt/solid-client
 ```
 
-You can use [solid-client-authn-browser](https://www.npmjs.com/package/solid-client-authn-browser) to issue authenticated
+You can use [solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser) to issue authenticated
 requests by passing your session's fetch as an optional parameter to functions reading/writing to your Pod.
 If [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
 solid-client will automatically use it to make authenticated requests.
