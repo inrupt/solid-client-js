@@ -36,6 +36,7 @@ export {
 } from "./resource/resource";
 export {
   getFile,
+  getFileWithAcl,
   deleteFile,
   saveFileInContainer,
   overwriteFile,
