@@ -8,7 +8,7 @@ Inrupt Solid JavaScript Client Libraries are a group of libraries designed to su
 [@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn) allows developers to authenticate against a Solid server. This is necessary when the resources on your Pod are not public.
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
-[@inrupt/solid-common-vocab-rdf](https://www.npmjs.com/package/@inrupt/solid-common-vocab). allows developers to build interoperable apps by reusing well-known vocabularies. This library provides vocabularies available as constants that you just have to import.
+[@inrupt/solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf) allows developers to build interoperable apps by reusing well-known vocabularies. These libraries provide vocabularies available as constants that you just have to import.
 
 # Browser support
 Our JavaScript Client Libraries use relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers`, `Array.prototype.includes` and `String.prototype.endsWith`.
