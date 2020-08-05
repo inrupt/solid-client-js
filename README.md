@@ -31,7 +31,7 @@ npm install @inrupt/solid-client @inrupt/solid-client-authn @inrupt/solid-common
 If you have questions about working with Solid or just want to share what you’re working on, visit the [Solid forum](https://forum.solidproject.org/). The Solid forum is a good place to meet the rest of the community.
 
 ## Bugs and Feature Requests
-* For public feedback, bug reports, and feature requests please file an issue via [Github](https://github.com/microsoft/TypeScript/issues).
+* For public feedback, bug reports, and feature requests please file an issue via [Github](https://github.com/inrupt/solid-client-js/issues/).
 * For non-public feedback or support inquiries please use [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
 
 ## Documentation
