@@ -11,7 +11,6 @@ jobs:
   prepare-deployment:
     runs-on: ubuntu-20.04
     outputs:
-      tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
     steps:
     - name: Create GitHub Deployment
@@ -29,13 +28,6 @@ jobs:
         required_contexts: '[]'
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Determine npm tag
-      id: determine-npm-tag
-      run: |
-        # Remove non-alphanumeric characters
-        # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-        # Note that ${GITHUB_REF} will always be a tag in the form vX.X.X
-        echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/tags/v}"
 
   publish-npm:
     runs-on: ubuntu-20.04
@@ -50,7 +42,7 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        description: "Publishing to npm tag `${{ needs.prepare-deployment.outputs.tag-slug }}`…"
+        description: "Publishing to npm tag `${GITHUB_REF#refs/tags/v}`…"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         state: in_progress
         mediaType: '{"previews": ["flash", "ant-man"]}'
@@ -64,14 +56,13 @@ jobs:
     - run: npm ci
     - name: Publish an npm tag for this branch
       run: |
-        # npm publish --access public --tag "$TAG_SLUG"
-        echo "Mocking publication: npm publish --access public --tag $TAG_SLUG"
+        # npm publish --access public --tag "${GITHUB_REF#refs/tags/v}"
+        echo "Mocking publication: npm publish --access public --tag ${GITHUB_REF#refs/tags/v}"
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm install @inrupt/solid-client@$TAG_SLUG"
+        echo "    npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
     - name: Mark GitHub Deployment as successful
       uses: octokit/request-action@v2.x
       with:
@@ -79,8 +70,8 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
-        description: "Published to npm. To install, run: npm install @inrupt/solid-client@${{ needs.prepare-deployment.outputs.tag-slug }}"
+        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client/v/${GITHUB_REF#refs/tags/v}'
+        description: "Published to npm. To install, run: npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         mediaType: '{"previews": ["flash", "ant-man"]}'
         state: success
