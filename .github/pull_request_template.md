@@ -24,10 +24,10 @@ This PR bumps the version to <version number>.
 
 # Checklist
 
-- [ ] I used `npm version <major|minor|patch>` to update `package.json`
+- [ ] I used `npm version <major|minor|patch>` to update `package.json`, inspecting the changelog to determine if the release was major, minor or patch.
 - [ ] The CHANGELOG has been updated to show version and release date - https://keepachangelog.com/en/1.0.0/.
 - [ ] The **only** commits in this PR are:
-  - the CHANGELOG update
-  - the version update
-- [ ] I will make sure **not** to squash these commits, but **rebase** instead
-- [ ] Once this PR is merged, I will push the tag created by `npm version ...` (e.g. `git push origin vX.X.X`)
+  - the CHANGELOG update.
+  - the version update.
+- [ ] I will make sure **not** to squash these commits, but **rebase** instead.
+- [ ] Once this PR is merged, I will push the tag created by `npm version ...` (e.g. `git push origin vX.X.X`).
