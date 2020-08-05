@@ -3,7 +3,7 @@ name: Release
 on: 
     push:
         tags: 
-            - v[0-9]+.[0-9]+.[0-9]+-test-[0-9]+
+            - v[0-9]+.[0-9]+.[0-9]+
 
 env:
   CI: true
@@ -56,8 +56,7 @@ jobs:
     - run: npm ci
     - name: Publish an npm tag for this branch
       run: |
-        # npm publish --access public --tag "${GITHUB_REF#refs/tags/v}"
-        echo "Mocking publication: npm publish --access public --tag ${GITHUB_REF#refs/tags/v}"
+        npm publish --access public --tag "${GITHUB_REF#refs/tags/v}"
         echo "Package published. To install, run:"
         echo ""
         echo "    npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
