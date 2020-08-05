@@ -20,7 +20,7 @@
  */
 
 import {
-  fetchFile,
+  getFile,
   deleteFile,
   saveFileInContainer,
   overwriteFile,
@@ -178,7 +178,7 @@ import {
 // These tests aren't too useful in preventing bugs, but they work around this issue:
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
-  expect(fetchFile).toBeDefined();
+  expect(getFile).toBeDefined();
   expect(deleteFile).toBeDefined();
   expect(saveFileInContainer).toBeDefined();
   expect(overwriteFile).toBeDefined();

@@ -31,12 +31,12 @@ import {
 } from "../interfaces";
 import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
 
-type FetchFileOptions = {
+type GetFileOptions = {
   fetch: typeof window.fetch;
   init: UploadRequestInit;
 };
 
-const defaultFetchFileOptions = {
+const defaultGetFileOptions = {
   fetch: fetch,
 };
 
@@ -50,19 +50,19 @@ function containsReserved(header: Headers): boolean {
 }
 
 /**
- * Fetches a file at a given URL, and returns it as a blob of data.
+ * Gets a file at a given URL, and returns it as a blob of data.
  *
  * Please note that this function is still experimental: its API can change in non-major releases.
  *
  * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  */
-export async function fetchFile(
+export async function getFile(
   input: Url | UrlString,
-  options: Partial<FetchFileOptions> = defaultFetchFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Blob & WithResourceInfo> {
   const config = {
-    ...defaultFetchFileOptions,
+    ...defaultGetFileOptions,
     ...options,
   };
   const url = internal_toIriString(input);
@@ -82,13 +82,13 @@ export async function fetchFile(
 }
 
 /**
- * Experimental: fetch a file and its associated Access Control List.
+ * Experimental: get a file and it's associated Access Control List.
  *
- * This is an experimental function that fetches both a file, the linked ACL Resource (if
+ * This is an experimental function that gets both a file, the linked ACL Resource (if
  * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
  * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
  * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[fetchFile]] instead.
+ * experimental, prefer [[getFile]] instead.
  *
  * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
  * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
@@ -100,11 +100,11 @@ export async function fetchFile(
  * @param options Fetching options: a custom fetcher and/or headers.
  * @returns A file and the ACLs that apply to it, if available to the authenticated user.
  */
-export async function fetchFileWithAcl(
+export async function getFileWithAcl(
   input: Url | UrlString,
-  options: Partial<FetchFileOptions> = defaultFetchFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Blob & WithResourceInfo & WithAcl> {
-  const file = await fetchFile(input, options);
+  const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
   return Object.assign(file, { internal_acl: acl });
 }
@@ -122,10 +122,10 @@ const defaultSaveOptions = {
  */
 export async function deleteFile(
   input: Url | UrlString,
-  options: Partial<FetchFileOptions> = defaultFetchFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<void> {
   const config = {
-    ...defaultFetchFileOptions,
+    ...defaultGetFileOptions,
     ...options,
   };
   const url = internal_toIriString(input);
@@ -141,7 +141,7 @@ export async function deleteFile(
   }
 }
 
-type SaveFileOptions = FetchFileOptions & {
+type SaveFileOptions = GetFileOptions & {
   slug?: string;
 };
 
@@ -161,7 +161,7 @@ type SaveFileOptions = FetchFileOptions & {
 export async function saveFileInContainer(
   folderUrl: Url | UrlString,
   file: Blob,
-  options: Partial<SaveFileOptions> = defaultFetchFileOptions
+  options: Partial<SaveFileOptions> = defaultGetFileOptions
 ): Promise<Blob & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
@@ -205,7 +205,7 @@ export async function saveFileInContainer(
 export async function overwriteFile(
   fileUrl: Url | UrlString,
   file: Blob,
-  options: Partial<FetchFileOptions> = defaultFetchFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<Blob & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
@@ -242,7 +242,7 @@ async function writeFile(
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
   const config = {
-    ...defaultFetchFileOptions,
+    ...defaultGetFileOptions,
     ...options,
   };
   const headers = new Headers(config.init?.headers ?? {});

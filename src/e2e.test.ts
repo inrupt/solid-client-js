@@ -45,7 +45,7 @@ import {
   createAclFromFallbackAcl,
   getPublicDefaultAccess,
   getPublicResourceAccess,
-  fetchFile,
+  getFile,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -192,7 +192,7 @@ describe("End-to-end tests", () => {
   });
 
   it("can fetch a non-RDF file and its metadata", async () => {
-    const jsonFile = await fetchFile(
+    const jsonFile = await getFile(
       "https://lit-e2e-test.inrupt.net/public/arbitrary.json"
     );
 

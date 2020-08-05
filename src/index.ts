@@ -35,13 +35,13 @@ export {
   getSourceUrl as getFetchedFrom,
 } from "./resource/resource";
 export {
-  fetchFile,
+  getFile,
   deleteFile,
   saveFileInContainer,
   overwriteFile,
   // Aliases for deprecated exports to preserve backwards compatibility:
-  /** @deprecated See [[fetchFile]] */
-  fetchFile as unstable_fetchFile,
+  /** @deprecated See [[getFile]] */
+  getFile as unstable_fetchFile,
   /** @deprecated See [[deleteFile]] */
   deleteFile as unstable_deleteFile,
   /** @deprecated See [[saveFileContainer]] */
