@@ -33,7 +33,6 @@ import {
   XmlSchemaTypeIri,
   isTerm,
 } from "../datatypes";
-import any = jasmine.any;
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
