@@ -17,3 +17,17 @@ This PR fixes #<issue ID>.
 - [ ] The changelog has been updated, if applicable.
 - [ ] New functions/types have been exported in `index.ts`, if applicable.
 - [ ] Commits in this PR are minimal and [have descriptive commit messages](https://chris.beams.io/posts/git-commit/).
+
+<!-- When cutting a release: -->
+
+This PR bumps the version to <version number>.
+
+# Checklist
+
+- [ ] I used `npm version` tu update `package.json`
+- [ ] The CHANGELOG has been updated to show version and release date
+- [ ] The **only** commits in this PR are
+  - the CHANGELOG update
+  - the version update
+- [ ] I make sure **not** to squash these commits
+- [ ] Once this PR is merged, I will push the tag created by `npm version` (e.g.)
