@@ -25,7 +25,7 @@ This PR bumps the version to <version number>.
 # Checklist
 
 - [ ] I used `npm version <major|minor|patch>` to update `package.json`
-- [ ] The CHANGELOG has been updated to show version and release date
+- [ ] The CHANGELOG has been updated to show version and release date - https://keepachangelog.com/en/1.0.0/.
 - [ ] The **only** commits in this PR are:
   - the CHANGELOG update
   - the version update
