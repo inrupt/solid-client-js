@@ -54,12 +54,12 @@ jobs:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
     - run: npm ci
-    - name: Publish an npm tag for this branch
+    - name: Publish to npm
       run: |
-        npm publish --access public --tag "${GITHUB_REF#refs/tags/v}"
+        npm publish --access public
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
+        echo "    npm install @inrupt/solid-client"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Mark GitHub Deployment as successful
