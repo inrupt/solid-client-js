@@ -1,4 +1,4 @@
-# Solid JavaScript Client - solid-client-js
+# Solid JavaScript Client - solid-client
 @inrupt/solid-client is a JavaScript library for accessing data and managing permissions on data stored in Solid Pods. It provides an abstraction layer on top of both Solid and Resource Description Framework (RDF) principles and is compatible with the RDF/JS specification. You can use solid-client in Node.js using CommonJS modules and in the browser with a bundler like Webpack, Rollup, or Parcel.
 
 # Inrupt Solid JavaScript Client Libraries
