@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.0.2] - 2020-08-05
+
 ### New features
 
 First release! What's possible with this first release:
