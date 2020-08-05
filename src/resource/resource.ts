@@ -182,11 +182,13 @@ export function isContainer(resource: WithResourceInfo): boolean {
 }
 
 /**
- * @param resource Resource for which to check whether it contains a SolidDataset.
- * @return Whether `resource` contains a SolidDataset.
+ * This function will tell you whether a given Resource contains raw data, or a SolidDataset.
+ *
+ * @param resource Resource for which to check whether it contains raw data.
+ * @return Whether `resource` contains raw data.
  */
-export function isSolidDataset(resource: WithResourceInfo): boolean {
-  return resource.internal_resourceInfo.isSolidDataset;
+export function isRawData(resource: WithResourceInfo): boolean {
+  return !resource.internal_resourceInfo.isSolidDataset;
 }
 
 /**

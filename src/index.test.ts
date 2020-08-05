@@ -28,7 +28,7 @@ import {
   getSolidDataset,
   fetchResourceInfoWithAcl,
   isContainer,
-  isSolidDataset,
+  isRawData,
   getContentType,
   getSourceUrl,
   getSourceIri,
@@ -186,7 +186,7 @@ it("exports the public API from the entry file", () => {
   expect(getSolidDataset).toBeDefined();
   expect(fetchResourceInfoWithAcl).toBeDefined();
   expect(isContainer).toBeDefined();
-  expect(isSolidDataset).toBeDefined();
+  expect(isRawData).toBeDefined();
   expect(getContentType).toBeDefined();
   expect(getSourceUrl).toBeDefined();
   expect(getSourceIri).toBeDefined();

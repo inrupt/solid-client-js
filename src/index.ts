@@ -21,7 +21,7 @@
 
 export {
   isContainer,
-  isSolidDataset,
+  isRawData,
   getSourceUrl,
   getSourceIri,
   getContentType,
@@ -29,8 +29,8 @@ export {
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchResourceInfoWithAcl]] */
   fetchResourceInfoWithAcl as unstable_fetchResourceInfoWithAcl,
-  /** @deprecated See [[isSolidDataset]] */
-  isSolidDataset as isLitDataset,
+  /** @deprecated See [[isRawData]] */
+  isRawData as isLitDataset,
   /** @deprecated See [[getSourceUrl]] */
   getSourceUrl as getFetchedFrom,
 } from "./resource/resource";
