@@ -67,7 +67,7 @@ export interface GetThingOptions {
  * @param thingUrl The URL of the desired [[Thing]].
  * @param options Not yet implemented.
  */
-export function getThingOne(
+export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
@@ -125,7 +125,7 @@ export function getThingAll(
   }
 
   const things: Thing[] = subjectNodes.map((subjectNode) =>
-    getThingOne(solidDataset, subjectNode, options)
+    getThing(solidDataset, subjectNode, options)
   );
 
   return things;

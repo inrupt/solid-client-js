@@ -55,21 +55,15 @@ import { acl } from "../constants";
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Group specifically for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function getGroupAccessOne(
+export function getGroupAccess(
   resourceInfo: WithAcl & WithResourceInfo,
   group: UrlString
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
-    return getGroupResourceAccessOne(
-      resourceInfo.internal_acl.resourceAcl,
-      group
-    );
+    return getGroupResourceAccess(resourceInfo.internal_acl.resourceAcl, group);
   }
   if (hasFallbackAcl(resourceInfo)) {
-    return getGroupDefaultAccessOne(
-      resourceInfo.internal_acl.fallbackAcl,
-      group
-    );
+    return getGroupDefaultAccess(resourceInfo.internal_acl.fallbackAcl, group);
   }
   return null;
 }
@@ -103,7 +97,7 @@ export function getGroupAccessAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[getGroupDefaultAccessModesOne]] for that).
+ * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[getGroupDefaultAccessModes]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -111,7 +105,7 @@ export function getGroupAccessAll(
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Group specifically for the Resource the given ACL SolidDataset is associated with.
  */
-export function getGroupResourceAccessOne(
+export function getGroupResourceAccess(
   aclDataset: AclDataset,
   group: UrlString
 ): Access {
@@ -153,7 +147,7 @@ export function getGroupResourceAccessAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to the Container Resource itself (see [[getGroupResourceAccessOne]] for that).
+ * - what access members of the given Group have to the Container Resource itself (see [[getGroupResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -161,7 +155,7 @@ export function getGroupResourceAccessAll(
  * @param group URL of the Group for which to retrieve what access it has to the child Resources of the given Container.
  * @returns Which Access Modes have been granted to the Group specifically for the children of the Container associated with the given ACL SolidDataset.
  */
-export function getGroupDefaultAccessOne(
+export function getGroupDefaultAccess(
   aclDataset: AclDataset,
   group: UrlString
 ): Access {

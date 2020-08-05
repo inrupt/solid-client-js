@@ -38,7 +38,7 @@ import {
  * @param property The given Property for which you want the URL value.
  * @returns A URL value for the given Property, if present, or null otherwise.
  */
-export function getUrlOne(
+export function getUrl(
   thing: Thing,
   property: Url | UrlString
 ): UrlString | null {
@@ -52,8 +52,8 @@ export function getUrlOne(
 
   return matchingQuad.object.value;
 }
-/** @hidden Alias of [[getUrlOne]] for those who prefer IRI terminology. */
-export const getIriOne = getUrlOne;
+/** @hidden Alias of [[getUrl]] for those who prefer IRI terminology. */
+export const getIri = getUrl;
 
 /**
  * @param thing The [[Thing]] to read the URL values from.
@@ -78,11 +78,11 @@ export const getIriAll = getUrlAll;
  * @param property The given Property for which you want the boolean value.
  * @returns A boolean value for the given Property, if present, or null otherwise.
  */
-export function getBooleanOne(
+export function getBoolean(
   thing: Thing,
   property: Url | UrlString
 ): boolean | null {
-  const literalString = getLiteralOneOfType(
+  const literalString = getLiteralOfType(
     thing,
     property,
     xmlSchemaTypes.boolean
@@ -120,11 +120,11 @@ export function getBooleanAll(
  * @param property The given Property for which you want the datetime value.
  * @returns A datetime value for the given Property, if present, or null otherwise.
  */
-export function getDatetimeOne(
+export function getDatetime(
   thing: Thing,
   property: Url | UrlString
 ): Date | null {
-  const literalString = getLiteralOneOfType(
+  const literalString = getLiteralOfType(
     thing,
     property,
     xmlSchemaTypes.dateTime
@@ -162,11 +162,11 @@ export function getDatetimeAll(
  * @param property The given Property for which you want the decimal value.
  * @returns A decimal value for the given Property, if present, or null otherwise.
  */
-export function getDecimalOne(
+export function getDecimal(
   thing: Thing,
   property: Url | UrlString
 ): number | null {
-  const literalString = getLiteralOneOfType(
+  const literalString = getLiteralOfType(
     thing,
     property,
     xmlSchemaTypes.decimal
@@ -204,11 +204,11 @@ export function getDecimalAll(
  * @param property The given Property for which you want the integer value.
  * @returns An integer value for the given Property, if present, or null otherwise.
  */
-export function getIntegerOne(
+export function getInteger(
   thing: Thing,
   property: Url | UrlString
 ): number | null {
-  const literalString = getLiteralOneOfType(
+  const literalString = getLiteralOfType(
     thing,
     property,
     xmlSchemaTypes.integer
@@ -247,7 +247,7 @@ export function getIntegerAll(
  * @param locale The desired locale for the string value.
  * @returns A localised string value for the given Property, if present in `locale`, or null otherwise.
  */
-export function getStringWithLocaleOne(
+export function getStringWithLocale(
   thing: Thing,
   property: Url | UrlString,
   locale: string
@@ -286,11 +286,11 @@ export function getStringWithLocaleAll(
  * @param property The given Property for which you want the string value.
  * @returns A string value for the given Property, if present, or null otherwise.
  */
-export function getStringNoLocaleOne(
+export function getStringNoLocale(
   thing: Thing,
   property: Url | UrlString
 ): string | null {
-  const literalString = getLiteralOneOfType(
+  const literalString = getLiteralOfType(
     thing,
     property,
     xmlSchemaTypes.string
@@ -321,9 +321,9 @@ export function getStringNoLocaleAll(
  * @param thing The [[Thing]] to read a NamedNode value from.
  * @param property The given Property for which you want the NamedNode value.
  * @returns A NamedNode value for the given Property, if present, or null otherwise.
- * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getNamedNodeOne(
+export function getNamedNode(
   thing: Thing,
   property: Url | UrlString
 ): NamedNode | null {
@@ -342,7 +342,7 @@ export function getNamedNodeOne(
  * @param thing The [[Thing]] to read the NamedNode values from.
  * @param property The given Property for which you want the NamedNode values.
  * @returns The NamedNode values for the given Property.
- * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
 export function getNamedNodeAll(
   thing: Thing,
@@ -359,9 +359,9 @@ export function getNamedNodeAll(
  * @param thing The [[Thing]] to read a Literal value from.
  * @param property The given Property for which you want the Literal value.
  * @returns A Literal value for the given Property, if present, or null otherwise.
- * @ignore This should not be needed due to the other get*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
  */
-export function getLiteralOne(
+export function getLiteral(
   thing: Thing,
   property: Url | UrlString
 ): Literal | null {
@@ -505,7 +505,7 @@ function getLocaleStringMatcher(
  * @param literalType Set type of the Literal data.
  * @returns The stringified value for the given Property and type, if present, or null otherwise.
  */
-function getLiteralOneOfType<Datatype extends XmlSchemaTypeIri>(
+function getLiteralOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
   property: Url | UrlString,
   literalType: Datatype

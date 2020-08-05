@@ -36,21 +36,21 @@ import {
   saveSolidDatasetInContainer,
   saveAclFor,
   deleteAclFor,
-  getThingOne,
+  getThing,
   getThingAll,
   setThing,
   removeThing,
   createThing,
   asUrl,
   asIri,
-  getUrlOne,
-  getIriOne,
-  getBooleanOne,
-  getDatetimeOne,
-  getDecimalOne,
-  getIntegerOne,
-  getStringWithLocaleOne,
-  getStringNoLocaleOne,
+  getUrl,
+  getIri,
+  getBoolean,
+  getDatetime,
+  getDecimal,
+  getInteger,
+  getStringWithLocale,
+  getStringNoLocale,
   getUrlAll,
   getIriAll,
   getBooleanAll,
@@ -59,8 +59,8 @@ import {
   getIntegerAll,
   getStringWithLocaleAll,
   getStringNoLocaleAll,
-  getLiteralOne,
-  getNamedNodeOne,
+  getLiteral,
+  getNamedNode,
   getLiteralAll,
   getNamedNodeAll,
   addUrl,
@@ -101,12 +101,12 @@ import {
   getResourceAcl,
   createAcl,
   createAclFromFallbackAcl,
-  getAgentAccessOne,
+  getAgentAccess,
   getAgentAccessAll,
-  getAgentResourceAccessOne,
+  getAgentResourceAccess,
   getAgentResourceAccessAll,
   setAgentResourceAccess,
-  getAgentDefaultAccessOne,
+  getAgentDefaultAccess,
   getAgentDefaultAccessAll,
   setAgentDefaultAccess,
   getPublicAccess,
@@ -115,11 +115,11 @@ import {
   setPublicResourceAccess,
   setPublicDefaultAccess,
   hasAccessibleAcl,
-  getGroupAccessOne,
+  getGroupAccess,
   getGroupAccessAll,
-  getGroupResourceAccessOne,
+  getGroupResourceAccess,
   getGroupResourceAccessAll,
-  getGroupDefaultAccessOne,
+  getGroupDefaultAccess,
   getGroupDefaultAccessAll,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
@@ -194,21 +194,21 @@ it("exports the public API from the entry file", () => {
   expect(saveSolidDatasetInContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
-  expect(getThingOne).toBeDefined();
+  expect(getThing).toBeDefined();
   expect(getThingAll).toBeDefined();
   expect(setThing).toBeDefined();
   expect(removeThing).toBeDefined();
   expect(createThing).toBeDefined();
   expect(asUrl).toBeDefined();
   expect(asIri).toBeDefined();
-  expect(getUrlOne).toBeDefined();
-  expect(getIriOne).toBeDefined();
-  expect(getBooleanOne).toBeDefined();
-  expect(getDatetimeOne).toBeDefined();
-  expect(getDecimalOne).toBeDefined();
-  expect(getIntegerOne).toBeDefined();
-  expect(getStringWithLocaleOne).toBeDefined();
-  expect(getStringNoLocaleOne).toBeDefined();
+  expect(getUrl).toBeDefined();
+  expect(getIri).toBeDefined();
+  expect(getBoolean).toBeDefined();
+  expect(getDatetime).toBeDefined();
+  expect(getDecimal).toBeDefined();
+  expect(getInteger).toBeDefined();
+  expect(getStringWithLocale).toBeDefined();
+  expect(getStringNoLocale).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
   expect(getBooleanAll).toBeDefined();
@@ -217,8 +217,8 @@ it("exports the public API from the entry file", () => {
   expect(getIntegerAll).toBeDefined();
   expect(getStringWithLocaleAll).toBeDefined();
   expect(getStringNoLocaleAll).toBeDefined();
-  expect(getLiteralOne).toBeDefined();
-  expect(getNamedNodeOne).toBeDefined();
+  expect(getLiteral).toBeDefined();
+  expect(getNamedNode).toBeDefined();
   expect(getLiteralAll).toBeDefined();
   expect(getNamedNodeAll).toBeDefined();
   expect(addUrl).toBeDefined();
@@ -259,12 +259,12 @@ it("exports the public API from the entry file", () => {
   expect(getResourceAcl).toBeDefined();
   expect(createAcl).toBeDefined();
   expect(createAclFromFallbackAcl).toBeDefined();
-  expect(getAgentAccessOne).toBeDefined();
+  expect(getAgentAccess).toBeDefined();
   expect(getAgentAccessAll).toBeDefined();
-  expect(getAgentResourceAccessOne).toBeDefined();
+  expect(getAgentResourceAccess).toBeDefined();
   expect(getAgentResourceAccessAll).toBeDefined();
   expect(setAgentResourceAccess).toBeDefined();
-  expect(getAgentDefaultAccessOne).toBeDefined();
+  expect(getAgentDefaultAccess).toBeDefined();
   expect(getAgentDefaultAccessAll).toBeDefined();
   expect(setAgentDefaultAccess).toBeDefined();
   expect(getPublicAccess).toBeDefined();
@@ -274,11 +274,11 @@ it("exports the public API from the entry file", () => {
   expect(setPublicDefaultAccess).toBeDefined();
   expect(getPublicDefaultAccess).toBeDefined();
   expect(hasAccessibleAcl).toBeDefined();
-  expect(getGroupAccessOne).toBeDefined();
+  expect(getGroupAccess).toBeDefined();
   expect(getGroupAccessAll).toBeDefined();
-  expect(getGroupResourceAccessOne).toBeDefined();
+  expect(getGroupResourceAccess).toBeDefined();
   expect(getGroupResourceAccessAll).toBeDefined();
-  expect(getGroupDefaultAccessOne).toBeDefined();
+  expect(getGroupDefaultAccess).toBeDefined();
   expect(getGroupDefaultAccessAll).toBeDefined();
 });
 

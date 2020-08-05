@@ -29,7 +29,7 @@ import {
   IriString,
   WebId,
 } from "../interfaces";
-import { getIriOne, getIriAll } from "../thing/get";
+import { getIri, getIriAll } from "../thing/get";
 import { acl } from "../constants";
 import {
   internal_duplicateAclRule,
@@ -68,21 +68,15 @@ export type AgentAccess = Record<WebId, Access>;
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the given SolidDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
-export function getAgentAccessOne(
+export function getAgentAccess(
   resourceInfo: WithAcl & WithResourceInfo,
   agent: WebId
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
-    return getAgentResourceAccessOne(
-      resourceInfo.internal_acl.resourceAcl,
-      agent
-    );
+    return getAgentResourceAccess(resourceInfo.internal_acl.resourceAcl, agent);
   }
   if (hasFallbackAcl(resourceInfo)) {
-    return getAgentDefaultAccessOne(
-      resourceInfo.internal_acl.fallbackAcl,
-      agent
-    );
+    return getAgentDefaultAccess(resourceInfo.internal_acl.fallbackAcl, agent);
   }
   return null;
 }
@@ -116,7 +110,7 @@ export function getAgentAccessAll(
  *
  * Keep in mind that this function will not tell you:
  * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to child Resources, in case the associated Resource is a Container (see [[getAgentDefaultAccessModesOne]] for that).
+ * - what access the given Agent has to child Resources, in case the associated Resource is a Container (see [[getAgentDefaultAccessModes]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -124,7 +118,7 @@ export function getAgentAccessAll(
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
  * @returns Which Access Modes have been granted to the Agent specifically for the Resource the given ACL SolidDataset is associated with.
  */
-export function getAgentResourceAccessOne(
+export function getAgentResourceAccess(
   aclDataset: AclDataset,
   agent: WebId
 ): Access {
@@ -217,7 +211,7 @@ export function setAgentResourceAccess(
  *
  * Keep in mind that this function will not tell you:
  * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to the Container Resource itself (see [[getAgentResourceAccessOne]] for that).
+ * - what access the given Agent has to the Container Resource itself (see [[getAgentResourceAccess]] for that).
  *
  * Also, please note that this function is still experimental: its API can change in non-major releases.
  *
@@ -225,7 +219,7 @@ export function setAgentResourceAccess(
  * @param agent WebID of the Agent for which to retrieve what access it has to the Container's children.
  * @returns Which Access Modes have been granted to the Agent specifically for the children of the Container associated with the given ACL SolidDataset.
  */
-export function getAgentDefaultAccessOne(
+export function getAgentDefaultAccess(
   aclDataset: AclDataset,
   agent: WebId
 ): Access {
@@ -326,7 +320,7 @@ function getAgentAclRules(aclRules: AclRule[]): AclRule[] {
 }
 
 function isAgentAclRule(aclRule: AclRule): boolean {
-  return getIriOne(aclRule, acl.agent) !== null;
+  return getIri(aclRule, acl.agent) !== null;
 }
 
 /**

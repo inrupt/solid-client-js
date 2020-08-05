@@ -70,7 +70,7 @@ export {
   getSolidDatasetWithAcl as fetchLitDatasetWithAcl,
 } from "./resource/solidDataset";
 export {
-  getThingOne,
+  getThing,
   getThingAll,
   setThing,
   removeThing,
@@ -79,14 +79,14 @@ export {
   asIri,
 } from "./thing/thing";
 export {
-  getUrlOne,
-  getIriOne,
-  getBooleanOne,
-  getDatetimeOne,
-  getDecimalOne,
-  getIntegerOne,
-  getStringWithLocaleOne,
-  getStringNoLocaleOne,
+  getUrl,
+  getIri,
+  getBoolean,
+  getDatetime,
+  getDecimal,
+  getInteger,
+  getStringWithLocale,
+  getStringNoLocale,
   getUrlAll,
   getIriAll,
   getBooleanAll,
@@ -95,17 +95,17 @@ export {
   getIntegerAll,
   getStringWithLocaleAll,
   getStringNoLocaleAll,
-  getLiteralOne,
-  getNamedNodeOne,
+  getLiteral,
+  getNamedNode,
   getLiteralAll,
   getNamedNodeAll,
   // Aliases for deprecated exports to preserve backwards compatibility:
-  /** @deprecated See [[getStringNoLocaleOne]] */
-  getStringNoLocaleOne as getStringUnlocalizedOne,
+  /** @deprecated See [[getStringNoLocale]] */
+  getStringNoLocale as getStringUnlocalizedOne,
   /** @deprecated See [[getStringNoLocaleAll]] */
   getStringNoLocaleAll as getStringUnlocalizedAll,
-  /** @deprecated See [[getStringWithLocaleOne]] */
-  getStringWithLocaleOne as getStringInLocaleOne,
+  /** @deprecated See [[getStringWithLocale]] */
+  getStringWithLocale as getStringInLocaleOne,
   /** @deprecated See [[getStringWithLocaleAll]] */
   getStringWithLocaleAll as getStringInLocaleAll,
 } from "./thing/get";
@@ -190,52 +190,52 @@ export {
 } from "./acl/acl";
 export {
   AgentAccess,
-  getAgentAccessOne,
+  getAgentAccess,
   getAgentAccessAll,
-  getAgentResourceAccessOne,
+  getAgentResourceAccess,
   getAgentResourceAccessAll,
   setAgentResourceAccess,
-  getAgentDefaultAccessOne,
+  getAgentDefaultAccess,
   getAgentDefaultAccessAll,
   setAgentDefaultAccess,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[AgentAccess]] */
   AgentAccess as unstable_AgentAccess,
-  /** @deprecated See [[getAgentAccessOne]] */
-  getAgentAccessOne as unstable_getAgentAccessOne,
+  /** @deprecated See [[getAgentAccess]] */
+  getAgentAccess as unstable_getAgentAccessOne,
   /** @deprecated See [[getAgentAccessAll]] */
   getAgentAccessAll as unstable_getAgentAccessAll,
-  /** @deprecated See [[getAgentResourceAccessOne]] */
-  getAgentResourceAccessOne as unstable_getAgentResourceAccessOne,
+  /** @deprecated See [[getAgentResourceAccess]] */
+  getAgentResourceAccess as unstable_getAgentResourceAccessOne,
   /** @deprecated See [[getAgentResourceAccessAll]] */
   getAgentResourceAccessAll as unstable_getAgentResourceAccessAll,
   /** @deprecated See [[setAgentResourceAccess]] */
   setAgentResourceAccess as unstable_setAgentResourceAccess,
-  /** @deprecated See [[getAgentDefaultAccessOne]] */
-  getAgentDefaultAccessOne as unstable_getAgentDefaultAccessOne,
+  /** @deprecated See [[getAgentDefaultAccess]] */
+  getAgentDefaultAccess as unstable_getAgentDefaultAccessOne,
   /** @deprecated See [[getAgentDefaultAccessAll]] */
   getAgentDefaultAccessAll as unstable_getAgentDefaultAccessAll,
   /** @deprecated See [[setAgentResourceAccess]] */
   setAgentDefaultAccess as unstable_setAgentDefaultAccess,
 } from "./acl/agent";
 export {
-  getGroupAccessOne,
+  getGroupAccess,
   getGroupAccessAll,
-  getGroupResourceAccessOne,
+  getGroupResourceAccess,
   getGroupResourceAccessAll,
-  getGroupDefaultAccessOne,
+  getGroupDefaultAccess,
   getGroupDefaultAccessAll,
   // Aliases for deprecated exports to preserve backwards compatibility:
-  /** @deprecated See [[getGroupAccessOne]] */
-  getGroupAccessOne as unstable_getGroupAccessOne,
+  /** @deprecated See [[getGroupAccess]] */
+  getGroupAccess as unstable_getGroupAccessOne,
   /** @deprecated See [[getGroupAccessAll]] */
   getGroupAccessAll as unstable_getGroupAccessAll,
-  /** @deprecated See [[getGroupResourceAccessOne]] */
-  getGroupResourceAccessOne as unstable_getGroupResourceAccessOne,
+  /** @deprecated See [[getGroupResourceAccess]] */
+  getGroupResourceAccess as unstable_getGroupResourceAccessOne,
   /** @deprecated See [[getGroupResourceAccessAll]] */
   getGroupResourceAccessAll as unstable_getGroupResourceAccessAll,
-  /** @deprecated See [[getGroupDefaultAccessOne]] */
-  getGroupDefaultAccessOne as unstable_getGroupDefaultAccessOne,
+  /** @deprecated See [[getGroupDefaultAccess]] */
+  getGroupDefaultAccess as unstable_getGroupDefaultAccessOne,
   /** @deprecated See [[getGroupDefaultAccessAll]] */
   getGroupDefaultAccessAll as unstable_getGroupDefaultAccessAll,
 } from "./acl/group";

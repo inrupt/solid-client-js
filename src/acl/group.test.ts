@@ -31,11 +31,11 @@ import {
 } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 import {
-  getGroupDefaultAccessOne,
-  getGroupResourceAccessOne,
+  getGroupDefaultAccess,
+  getGroupResourceAccess,
   getGroupResourceAccessAll,
   getGroupDefaultAccessAll,
-  getGroupAccessOne,
+  getGroupAccess,
   getGroupAccessAll,
 } from "./group";
 
@@ -142,7 +142,7 @@ function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
   });
 }
 
-describe("getGroupAccessOne", () => {
+describe("getGroupAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
     const resourceAcl = addAclRuleQuads(
@@ -158,7 +158,7 @@ describe("getGroupAccessOne", () => {
       "resource"
     );
 
-    const access = getGroupAccessOne(
+    const access = getGroupAccess(
       solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -186,7 +186,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = getGroupAccessOne(
+    const access = getGroupAccess(
       solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -210,7 +210,7 @@ describe("getGroupAccessOne", () => {
     );
 
     expect(
-      getGroupAccessOne(
+      getGroupAccess(
         solidDatasetWithInaccessibleAcl,
         "https://arbitrary.pod/profileDoc#webId"
       )
@@ -244,7 +244,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = getGroupAccessOne(
+    const access = getGroupAccess(
       solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -279,7 +279,7 @@ describe("getGroupAccessOne", () => {
       "resource"
     );
 
-    const access = getGroupAccessOne(
+    const access = getGroupAccess(
       solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -314,7 +314,7 @@ describe("getGroupAccessOne", () => {
       "fallback"
     );
 
-    const access = getGroupAccessOne(
+    const access = getGroupAccess(
       solidDatasetWithAcl,
       "https://some.pod/group#id"
     );
@@ -545,7 +545,7 @@ describe("getGroupAccessAll", () => {
   });
 });
 
-describe("getGroupResourceAccessOne", () => {
+describe("getGroupResourceAccess", () => {
   it("returns the applicable Access Modes for a single Group", () => {
     const resourceAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
@@ -555,7 +555,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccess(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -584,7 +584,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccess(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -606,7 +606,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccess(
       resourceAcl,
       "https://some-other.pod/group#id"
     );
@@ -635,7 +635,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccess(
       resourceAcl,
       "https://some.pod/group#id"
     );
@@ -664,7 +664,7 @@ describe("getGroupResourceAccessOne", () => {
       "resource"
     );
 
-    const groupAccess = getGroupResourceAccessOne(
+    const groupAccess = getGroupResourceAccess(
       resourceAcl,
       "https://arbitrary.pod/group#id"
     );
@@ -850,7 +850,7 @@ describe("getGroupResourceAccessAll", () => {
   });
 });
 
-describe("getGroupDefaultAccessOne", () => {
+describe("getGroupDefaultAccess", () => {
   it("returns the applicable Access Modes for a single Group", () => {
     const containerAcl = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
@@ -860,7 +860,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccess(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -889,7 +889,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccess(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -911,7 +911,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccess(
       containerAcl,
       "https://some-other.pod/group#id"
     );
@@ -940,7 +940,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccess(
       containerAcl,
       "https://some.pod/group#id"
     );
@@ -969,7 +969,7 @@ describe("getGroupDefaultAccessOne", () => {
       "default"
     );
 
-    const groupAccess = getGroupDefaultAccessOne(
+    const groupAccess = getGroupDefaultAccess(
       containerAcl,
       "https://arbitrary.pod/group#id"
     );

@@ -64,13 +64,13 @@ const solidDataset = await getSolidDataset(
 
 Given a SolidDataset, you can either extract a single Thing for which you know its URL (e.g. because
 you found that URL on another Thing) using
-[`getThingOne`](../api/modules/_thing_thing_.md#getthingone), or simply take all the
+[`getThing`](../api/modules/_thing_thing_.md#getthing), or simply take all the
 Things inside the SolidDataset using [`getThingAll`](../api/modules/_thing_thing_.md#getthingall)
 
 ```typescript
-import { getThingOne } from "@inrupt/solid-client";
+import { getThing } from "@inrupt/solid-client";
 
-const thing = getThingOne(
+const thing = getThing(
   solidDataset,
   "https://example.com/some/interesting/resource#thing"
 );
@@ -108,7 +108,7 @@ For example:
 ```typescript
 import {
   getStringNoLocaleAll,
-  getStringNoLocaleOne,
+  getStringNoLocale,
   getUrlAll,
 } from "@inrupt/solid-client";
 
@@ -123,10 +123,7 @@ const names = getStringNoLocaleAll(thing, "http://xmlns.com/foaf/0.1/name");
 // …stating the Thing's Skype ID (`http://xmlns.com/foaf/0.1/skypeId`)
 // …of type string
 // …and we want just one value, assuming it to be the only one:
-const skypeId = getStringNoLocaleOne(
-  thing,
-  "http://xmlns.com/foaf/0.1/skypeId"
-);
+const skypeId = getStringNoLocale(thing, "http://xmlns.com/foaf/0.1/skypeId");
 // => one of the strings representing the `http://xmlns.com/foaf/0.1/skypeId`,
 //    or null if there were none.
 
@@ -148,23 +145,20 @@ Putting it all together, here's an example of fetching the nickname of someone w
 ```typescript
 import {
   getSolidDataset,
-  getThingOne,
-  getStringNoLocaleOne,
+  getThing,
+  getStringNoLocale,
 } from "@inrupt/solid-client";
 
 const profileResource = await getSolidDataset(
   "https://vincentt.inrupt.net/profile/card"
 );
 
-const profile = getThingOne(
+const profile = getThing(
   profileResource,
   "https://vincentt.inrupt.net/profile/card#me"
 );
 
-const nickName = getStringNoLocaleOne(
-  profile,
-  "http://xmlns.com/foaf/0.1/nick"
-);
+const nickName = getStringNoLocale(profile, "http://xmlns.com/foaf/0.1/nick");
 ```
 
 ## Writing data
@@ -262,8 +256,8 @@ and saving it back:
 ```typescript
 import {
   getSolidDataset,
-  getThingOne,
-  setStringNoLocaleOne,
+  getThing,
+  setStringNoLocale,
   setThing,
   saveSolidDatasetAt,
 } from "@inrupt/solid-client";
@@ -272,12 +266,12 @@ const profileResource = await getSolidDataset(
   "https://vincentt.inrupt.net/profile/card"
 );
 
-const profile = getThingOne(
+const profile = getThing(
   profileResource,
   "https://vincentt.inrupt.net/profile/card#me"
 );
 
-const updatedProfile = setStringNoLocaleOne(
+const updatedProfile = setStringNoLocale(
   profile,
   "http://xmlns.com/foaf/0.1/nick",
   "Your humble tutorial writer"

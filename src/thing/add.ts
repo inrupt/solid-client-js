@@ -206,7 +206,7 @@ export const addStringNoLocale: AddOfType<string> = (
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
- * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other add*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Named Node to.
  * @param property Property for which to add a value.
  * @param value The Named Node to add.
@@ -236,7 +236,7 @@ export function addNamedNode(
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
- * @ignore This should not be needed due to the other add*One() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @ignore This should not be needed due to the other add*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to add a Literal to.
  * @param property Property for which to add a value.
  * @param value The Literal to add.
