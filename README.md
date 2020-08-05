@@ -1,32 +1,43 @@
-# @inrupt/solid-client
+# Solid JavaScript Client - solid-client-js
+@inrupt/solid-client is a JavaScript library for accessing data and managing permissions on data stored in Solid Pods. It provides an abstraction layer on top of both Solid and Resource Description Framework (RDF) principles and is compatible with the RDF/JS specification. You can use solid-client in Node.js using CommonJS modules and in the browser with a bundler like Webpack, Rollup, or Parcel.
+
+# Inrupt Solid JavaScript Client Libraries
+Inrupt Solid JavaScript Client Libraries are a group of libraries designed to support developers building Solid applications. solid-client provides an abstraction layer on top of both Solid and Resource Description Framework (RDF) principles and is compatible with the RDF/JS specification.
+
+## Authentication - solid-client-authn
+[@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn) allows developers to authenticate against a Solid server. This is necessary when the resources on your Pod are not public..
+
+## Vocabularies and interoperability - solid-common-vocab-rdf
+[@inrupt/solid-common-vocab-rdf](https://www.npmjs.com/package/@inrupt/solid-common-vocab). allows developers to build interoperable apps by reusing well-known vocabularies. This library provides vocabularies available as constants that you just have to import.
+
+# Browser support
+Our JavaScript Client Libraries use relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers`, `Array.prototype.includes` and `String.prototype.endsWith`.
 
 # Installation
 
+For the latest stable version of solid-client:
 ```bash
-npm install @inrupt/solid-client solid-auth-client
+npm install @inrupt/solid-client
 ```
 
-# Usage
+For the latest stable version of all Inrupt Solid JS libraries:
+```bash
+npm install @inrupt/solid-client @inrupt/solid-client-authn @inrupt/solid-common-vocab
+```
 
-See https://inrupt.github.io/solid-client-js/docs/
+# Issues & Help
 
-# Related libraries
+## Solid Community Forum
+If you have questions about working with Solid or just want to share what you’re working on, visit the [Solid forum](https://forum.solidproject.org/). The [Solid forum](https://forum.solidproject.org/) is a good place to meet the rest of the community.
 
-## Authentication
+## Bugs and Feature Requests
+* For public feedback, bug reports, and feature requests please file an issue via [Github](https://github.com/microsoft/TypeScript/issues).
+* For non-public feedback or support inquiries please use [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
 
-To send authenticated requests to your Pod and retrieve private data, you can use [solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser).
+## Documentation
+*  [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/client-libraries/solid-client-js)
+*  [Homepage](https://docs.inrupt.com/)
 
-## Vocabularies and interoperability
-
-To reuse well-known vocabularies, and make your app produce/consume data in a more [interoperable](https://inrupt.github.io/solid-client-js/docs/faq/#how-can--my-app-work-with-data-from-other-apps) way, we provide vocabularies available as constants that you just have to import: [solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf).
-
-# Browser support
-
-solid-client uses relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass it through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers`, `Array.prototype.includes` and `String.prototype.endsWith`.
-
-# Changelog
-
-See the [release notes](./CHANGELOG.md).
 
 # License
 
