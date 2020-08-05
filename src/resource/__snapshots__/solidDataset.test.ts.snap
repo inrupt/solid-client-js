@@ -4,7 +4,7 @@ exports[`getSolidDataset returns a SolidDataset representing the fetched Turtle 
 DatasetCore {
   "internal_resourceInfo": Object {
     "contentType": "text/plain;charset=UTF-8",
-    "isSolidDataset": false,
+    "isRawData": true,
     "sourceIri": "https://arbitrary.pod/resource",
   },
   "quads": Set {

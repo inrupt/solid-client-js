@@ -92,7 +92,7 @@ describe("fetchFile", () => {
 
     expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
-    expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
+    expect(file.internal_resourceInfo.isRawData).toBe(true);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -194,7 +194,7 @@ describe("fetchFileWithAcl", () => {
 
     expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
-    expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
+    expect(file.internal_resourceInfo.isRawData).toBe(true);
 
     const fileData = await file.text();
     expect(fileData).toEqual("Some data");
@@ -494,7 +494,7 @@ describe("Write non-RDF data into a folder", () => {
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       sourceIri: "https://some.url/someFileName",
-      isSolidDataset: false,
+      isRawData: true,
     });
   });
 
@@ -675,7 +675,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       sourceIri: "https://some.url",
-      isSolidDataset: false,
+      isRawData: true,
     });
   });
 
@@ -719,7 +719,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
       sourceIri: "https://some.url",
-      isSolidDataset: false,
+      isRawData: true,
     });
   });
 

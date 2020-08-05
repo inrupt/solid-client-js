@@ -186,7 +186,7 @@ export async function saveFileInContainer(
   return Object.assign(blobClone, {
     internal_resourceInfo: {
       sourceIri: fileIri,
-      isSolidDataset: false,
+      isRawData: true,
     },
   });
 }
@@ -221,7 +221,7 @@ export async function overwriteFile(
   return Object.assign(blobClone, {
     internal_resourceInfo: {
       sourceIri: fileUrlString,
-      isSolidDataset: false,
+      isRawData: true,
     },
   });
 }

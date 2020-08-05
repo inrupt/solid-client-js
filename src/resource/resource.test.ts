@@ -60,7 +60,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -80,7 +80,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
       },
     };
 
@@ -112,7 +112,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -156,7 +156,7 @@ describe("fetchAcl", () => {
     const mockResourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
       },
     };
@@ -379,7 +379,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(solidDatasetInfo.isSolidDataset).toBe(true);
+    expect(solidDatasetInfo.isRawData).toBe(false);
   });
 
   it("knows when the Resource does not contain a SolidDataset", async () => {
@@ -399,7 +399,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(solidDatasetInfo.isSolidDataset).toBe(false);
+    expect(solidDatasetInfo.isRawData).toBe(true);
   });
 
   it("marks a Resource as not a SolidDataset when its Content Type is unknown", async () => {
@@ -418,7 +418,7 @@ describe("fetchResourceInfo", () => {
       }
     );
 
-    expect(solidDatasetInfo.isSolidDataset).toBe(false);
+    expect(solidDatasetInfo.isRawData).toBe(true);
   });
 
   it("exposes the Content Type when known", async () => {
@@ -641,7 +641,7 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
-        isSolidDataset: true,
+        isRawData: false,
       },
     };
 
@@ -652,7 +652,7 @@ describe("isContainer", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-container",
-        isSolidDataset: true,
+        isRawData: false,
       },
     };
 
@@ -665,7 +665,7 @@ describe("isRawData", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
-        isSolidDataset: true,
+        isRawData: false,
       },
     };
 
@@ -676,7 +676,7 @@ describe("isRawData", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-soliddataset.png",
-        isSolidDataset: false,
+        isRawData: true,
       },
     };
 
@@ -689,7 +689,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
         contentType: "multipart/form-data; boundary=something",
       },
     };
@@ -703,7 +703,7 @@ describe("getContentType", () => {
     const resourceInfo: WithResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
       },
     };
 

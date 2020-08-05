@@ -637,7 +637,7 @@ describe("setThing", () => {
       {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
-          isSolidDataset: true,
+          isRawData: false,
         },
       }
     );
@@ -682,7 +682,7 @@ describe("setThing", () => {
       WithResourceInfo = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
-        isSolidDataset: true,
+        isRawData: false,
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -911,7 +911,7 @@ describe("removeThing", () => {
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
-        isSolidDataset: true,
+        isRawData: false,
       },
     });
     aclDataset.add(thingQuad);
@@ -928,7 +928,7 @@ describe("removeThing", () => {
     );
     expect(updatedDataset.internal_resourceInfo).toEqual({
       sourceIri: "https://arbitrary.pod/resource.acl",
-      isSolidDataset: true,
+      isRawData: false,
     });
   });
 
@@ -1048,7 +1048,7 @@ describe("removeThing", () => {
       {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
-          isSolidDataset: true,
+          isRawData: false,
         },
       }
     );
@@ -1082,7 +1082,7 @@ describe("removeThing", () => {
       {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
-          isSolidDataset: true,
+          isRawData: false,
         },
       }
     );

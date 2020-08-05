@@ -137,7 +137,7 @@ function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     internal_resourceInfo: {
       sourceIri: sourceIri,
-      isSolidDataset: true,
+      isRawData: false,
     },
   });
 }

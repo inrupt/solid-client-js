@@ -249,7 +249,7 @@ export function createAcl(
     internal_accessTo: getSourceUrl(targetResource),
     internal_resourceInfo: {
       sourceIri: targetResource.internal_resourceInfo.aclUrl,
-      isSolidDataset: true,
+      isRawData: false,
     },
   });
 
