@@ -20,7 +20,7 @@ npm install @inrupt/solid-client
 
 You can use [solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser) to issue authenticated
 requests by passing your session's fetch as an optional parameter to functions reading/writing to your Pod.
-If [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
+Alternatively, if [solid-auth-client](https://www.npmjs.com/package/solid-auth-client) is installed,
 solid-client will automatically use it to make authenticated requests.
 If no such authenticated fetcher is provided, only public [Resources](./glossary.mdx#resource) can be accessed.
 
