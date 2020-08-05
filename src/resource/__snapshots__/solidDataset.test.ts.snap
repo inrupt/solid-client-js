@@ -26,6 +26,7 @@ DatasetCore {
         "termType": "NamedNode",
         "value": "https://arbitrary.pod/resource",
       },
+      "termType": "Quad",
     },
     Object {
       "graph": Object {
@@ -44,6 +45,7 @@ DatasetCore {
         "termType": "NamedNode",
         "value": "https://arbitrary.pod/resource",
       },
+      "termType": "Quad",
     },
     Object {
       "graph": Object {
@@ -62,6 +64,7 @@ DatasetCore {
         "termType": "NamedNode",
         "value": "https://arbitrary.pod/resource",
       },
+      "termType": "Quad",
     },
     Object {
       "graph": Object {
@@ -80,6 +83,7 @@ DatasetCore {
         "termType": "NamedNode",
         "value": "https://arbitrary.pod/resource#me",
       },
+      "termType": "Quad",
     },
     Object {
       "graph": Object {
@@ -103,6 +107,7 @@ DatasetCore {
         "termType": "NamedNode",
         "value": "https://arbitrary.pod/resource#me",
       },
+      "termType": "Quad",
     },
   },
 }
