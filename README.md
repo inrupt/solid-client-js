@@ -14,7 +14,7 @@ See https://inrupt.github.io/solid-client-js/docs/
 
 ## Authentication
 
-To send authenticated requests to your Pod and retrieve private data, you can use [solid-client-authn-browser](https://github.com/inrupt/solid-client-authn).
+To send authenticated requests to your Pod and retrieve private data, you can use [solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn).
 
 ## Vocabularies and interoperability
 
