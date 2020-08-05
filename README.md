@@ -5,7 +5,7 @@
 Inrupt Solid JavaScript Client Libraries are a group of libraries designed to support developers building Solid applications.
 
 ## Authentication - solid-client-authn
-[@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn) allows developers to authenticate against a Solid server. This is necessary when the resources on your Pod are not public..
+[@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn) allows developers to authenticate against a Solid server. This is necessary when the resources on your Pod are not public.
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
 [@inrupt/solid-common-vocab-rdf](https://www.npmjs.com/package/@inrupt/solid-common-vocab). allows developers to build interoperable apps by reusing well-known vocabularies. This library provides vocabularies available as constants that you just have to import.
