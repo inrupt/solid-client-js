@@ -32,15 +32,15 @@ jest.mock("../fetcher", () => ({
 }));
 
 import {
-  fetchFile,
+  getFile,
   deleteFile,
   saveFileInContainer,
   overwriteFile,
-  fetchFileWithAcl,
+  getFileWithAcl,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 
-describe("fetchFile", () => {
+describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
@@ -55,7 +55,7 @@ describe("fetchFile", () => {
       )
     );
 
-    await fetchFile("https://some.url");
+    await getFile("https://some.url");
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
   });
 
@@ -68,7 +68,7 @@ describe("fetchFile", () => {
         )
       );
 
-    await fetchFile("https://some.url", {
+    await getFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -86,7 +86,7 @@ describe("fetchFile", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
-    const file = await fetchFile("https://some.url", {
+    const file = await getFile("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -107,7 +107,7 @@ describe("fetchFile", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await getFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -133,7 +133,7 @@ describe("fetchFile", () => {
         )
       );
 
-    const response = fetchFile("https://some.url", {
+    const response = getFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
@@ -142,7 +142,7 @@ describe("fetchFile", () => {
   });
 });
 
-describe("fetchFileWithAcl", () => {
+describe("getFileWithAcl", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
@@ -157,7 +157,7 @@ describe("fetchFileWithAcl", () => {
       )
     );
 
-    await fetchFileWithAcl("https://some.url");
+    await getFileWithAcl("https://some.url");
     expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
   });
 
@@ -170,7 +170,7 @@ describe("fetchFileWithAcl", () => {
         )
       );
 
-    const response = await fetchFileWithAcl("https://some.url", {
+    const response = await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -188,7 +188,7 @@ describe("fetchFileWithAcl", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
-    const file = await fetchFileWithAcl("https://some.url", {
+    const file = await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -215,7 +215,7 @@ describe("fetchFileWithAcl", () => {
       return Promise.resolve(new Response(undefined, init));
     });
 
-    const fetchedSolidDataset = await fetchFileWithAcl(
+    const fetchedSolidDataset = await getFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -250,7 +250,7 @@ describe("fetchFileWithAcl", () => {
       Promise.resolve(new Response(undefined, init))
     );
 
-    const fetchedSolidDataset = await fetchFileWithAcl(
+    const fetchedSolidDataset = await getFileWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -267,7 +267,7 @@ describe("fetchFileWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchFileWithAcl("https://arbitrary.pod/resource", {
+    const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -283,7 +283,7 @@ describe("fetchFileWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchFileWithAcl("https://arbitrary.pod/resource", {
+    const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -301,7 +301,7 @@ describe("fetchFileWithAcl", () => {
         )
       );
 
-    const response = await fetchFile("https://some.url", {
+    const response = await getFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -327,7 +327,7 @@ describe("fetchFileWithAcl", () => {
         )
       );
 
-    const response = fetchFile("https://some.url", {
+    const response = getFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
