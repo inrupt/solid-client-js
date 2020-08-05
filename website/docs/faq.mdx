@@ -15,3 +15,14 @@ For each of these pieces of data, solid-client exposes non-internal functions su
 [`getContentType`](./api/modules/_resource_resource_.md#getcontenttype) to access them and that
 _are_ part of the officially supported API, and hence can be relied upon not to break without
 warning.
+
+### How can my app work with data from other apps?
+
+Having multiple apps working with the same data is called interoperability, a concept at the core of the Solid philosophy.
+One step in this direction is to use well-known, shared vocabularies to describe data. Simply put, if all the apps
+refer to a person as a [foaf:Person](http://xmlns.com/foaf/0.1/Person), then they can all work using the same profile
+documents.
+
+Many vocabularies exist today, to describe many aspects of data. To help you use common, well-known vocabularies, you
+can have a look at [our vocabulary artifacts](https://github.com/inrupt/solid-common-vocab-rdf), which are constants
+you can import so that you don't have to manually type look up and type in the correct IRI for common terms.

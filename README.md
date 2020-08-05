@@ -18,7 +18,7 @@ To send authenticated requests to your Pod and retrieve private data, you can us
 
 ## Vocabularies and interoperability
 
-To reuse well-known vocabularies, and make your app produce/consume data in a more interoperable way, we provide vocabularies available as constants that you just have to import: [solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf).
+To reuse well-known vocabularies, and make your app produce/consume data in a more [interoperable](https://inrupt.github.io/solid-client-js/docs/faq/#how-can--my-app-work-with-data-from-other-apps) way, we provide vocabularies available as constants that you just have to import: [solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf).
 
 # Browser support
 
