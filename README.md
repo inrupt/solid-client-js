@@ -32,7 +32,7 @@ If you have questions about working with Solid or just want to share what you’
 
 ## Bugs and Feature Requests
 * For public feedback, bug reports, and feature requests please file an issue via [Github](https://github.com/inrupt/solid-client-js/issues/).
-* For non-public feedback or support inquiries please use [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
+* For non-public feedback or support inquiries please use the [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
 
 ## Documentation
 *  [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/client-libraries/solid-client-js)
