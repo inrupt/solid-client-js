@@ -101,7 +101,7 @@ describe("createThing", () => {
   });
 });
 
-describe("getThingOne", () => {
+describe("getThing", () => {
   it("returns a Dataset with just Quads in there with the given Subject", () => {
     const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
     const datasetWithMultipleThings = dataset();
