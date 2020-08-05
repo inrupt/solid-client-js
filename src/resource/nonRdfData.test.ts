@@ -90,7 +90,7 @@ describe("fetchFile", () => {
       fetch: mockFetch,
     });
 
-    expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
 
@@ -192,7 +192,7 @@ describe("fetchFileWithAcl", () => {
       fetch: mockFetch,
     });
 
-    expect(file.internal_resourceInfo.fetchedFrom).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isSolidDataset).toEqual(false);
 
@@ -220,16 +220,16 @@ describe("fetchFileWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/resource"
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/resource.acl");
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -493,7 +493,7 @@ describe("Write non-RDF data into a folder", () => {
     expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
-      fetchedFrom: "https://some.url/someFileName",
+      sourceIri: "https://some.url/someFileName",
       isSolidDataset: false,
     });
   });
@@ -674,7 +674,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
-      fetchedFrom: "https://some.url",
+      sourceIri: "https://some.url",
       isSolidDataset: false,
     });
   });
@@ -718,7 +718,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
-      fetchedFrom: "https://some.url",
+      sourceIri: "https://some.url",
       isSolidDataset: false,
     });
   });

@@ -124,9 +124,8 @@ function addAclDatasetToSolidDataset(
   };
   if (type === "resource") {
     solidDataset.internal_resourceInfo.aclUrl =
-      aclDataset.internal_resourceInfo.fetchedFrom;
-    aclDataset.internal_accessTo =
-      solidDataset.internal_resourceInfo.fetchedFrom;
+      aclDataset.internal_resourceInfo.sourceIri;
+    aclDataset.internal_accessTo = solidDataset.internal_resourceInfo.sourceIri;
     acl.resourceAcl = aclDataset;
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
@@ -134,12 +133,10 @@ function addAclDatasetToSolidDataset(
   return Object.assign(solidDataset, { internal_acl: acl });
 }
 
-function getMockDataset(
-  fetchedFrom: IriString
-): SolidDataset & WithResourceInfo {
+function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
   return Object.assign(dataset(), {
     internal_resourceInfo: {
-      fetchedFrom: fetchedFrom,
+      sourceIri: sourceIri,
       isSolidDataset: true,
     },
   });

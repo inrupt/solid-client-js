@@ -105,7 +105,7 @@ type internal_WacAllow = {
  */
 export type WithResourceInfo = {
   internal_resourceInfo: {
-    fetchedFrom: UrlString;
+    sourceIri: UrlString;
     isSolidDataset: boolean;
     contentType?: string;
     /**

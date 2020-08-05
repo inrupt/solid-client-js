@@ -128,7 +128,7 @@ describe("getSolidDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(solidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(solidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/resource"
     );
   });
@@ -343,16 +343,16 @@ describe("getSolidDatasetWithAcl", () => {
       { fetch: mockFetch }
     );
 
-    expect(fetchedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/resource"
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/resource.acl");
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .fetchedFrom
+        .sourceIri
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -654,7 +654,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-        fetchedFrom: fromUrl,
+        sourceIri: fromUrl,
         isSolidDataset: true,
       };
 
@@ -1135,7 +1135,7 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
@@ -1198,7 +1198,7 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.fetchedFrom).toBe(
+    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
