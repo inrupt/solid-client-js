@@ -68,6 +68,7 @@ import {
   getDecimalAll,
   getIntegerAll,
   getStringWithLocaleAll,
+  getStringByLocaleAll,
   getStringNoLocaleAll,
   getLiteral,
   getNamedNode,
@@ -195,6 +196,7 @@ it("exports the public API from the entry file", () => {
   expect(getInteger).toBeDefined();
   expect(getStringWithLocale).toBeDefined();
   expect(getStringNoLocale).toBeDefined();
+  expect(getStringByLocaleAll).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
   expect(getBooleanAll).toBeDefined();
