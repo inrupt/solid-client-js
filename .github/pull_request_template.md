@@ -24,10 +24,10 @@ This PR bumps the version to <version number>.
 
 # Checklist
 
-- [ ] I used `npm version` tu update `package.json`
+- [ ] I used `npm version <major|minor|patch>` to update `package.json`
 - [ ] The CHANGELOG has been updated to show version and release date
-- [ ] The **only** commits in this PR are
+- [ ] The **only** commits in this PR are:
   - the CHANGELOG update
   - the version update
-- [ ] I make sure **not** to squash these commits
-- [ ] Once this PR is merged, I will push the tag created by `npm version` (e.g.)
+- [ ] I will make sure **not** to squash these commits, but **rebase** instead
+- [ ] Once this PR is merged, I will push the tag created by `npm version ...` (e.g. `git push origin vX.X.X`)
