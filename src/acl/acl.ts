@@ -42,7 +42,7 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
-import { getIriAll, getIriOne } from "../thing/get";
+import { getIriAll, getIri } from "../thing/get";
 import { DataFactory, dataset } from "../rdfjs";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
@@ -315,7 +315,7 @@ export function internal_getResourceAclRules(aclRules: AclRule[]): AclRule[] {
 }
 
 function isResourceAclRule(aclRule: AclRule): boolean {
-  return getIriOne(aclRule, acl.accessTo) !== null;
+  return getIri(aclRule, acl.accessTo) !== null;
 }
 
 /** @internal */
@@ -336,7 +336,7 @@ export function internal_getDefaultAclRules(aclRules: AclRule[]): AclRule[] {
 }
 
 function isDefaultAclRule(aclRule: AclRule): boolean {
-  return getIriOne(aclRule, acl.default) !== null;
+  return getIri(aclRule, acl.default) !== null;
 }
 
 /** @internal */
@@ -421,22 +421,22 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
 
   // If the rule does not apply to any Resource, it is no longer working:
   if (
-    getIriOne(aclRule, acl.accessTo) === null &&
-    getIriOne(aclRule, acl.default) === null
+    getIri(aclRule, acl.accessTo) === null &&
+    getIri(aclRule, acl.default) === null
   ) {
     return true;
   }
 
   // If the rule does not specify Access Modes, it is no longer working:
-  if (getIriOne(aclRule, acl.mode) === null) {
+  if (getIri(aclRule, acl.mode) === null) {
     return true;
   }
 
   // If the rule does not specify whom it applies to, it is no longer working:
   if (
-    getIriOne(aclRule, acl.agent) === null &&
-    getIriOne(aclRule, acl.agentGroup) === null &&
-    getIriOne(aclRule, acl.agentClass) === null
+    getIri(aclRule, acl.agent) === null &&
+    getIri(aclRule, acl.agentGroup) === null &&
+    getIri(aclRule, acl.agentClass) === null
   ) {
     return true;
   }

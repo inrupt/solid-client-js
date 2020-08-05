@@ -23,8 +23,8 @@ import { foaf, schema } from "rdf-namespaces";
 import {
   getSolidDataset,
   setThing,
-  getThingOne,
-  getStringNoLocaleOne,
+  getThing,
+  getStringNoLocale,
   setDatetime,
   setStringNoLocale,
   saveSolidDatasetAt,
@@ -34,10 +34,10 @@ import {
   getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
-  getAgentAccessOne,
+  getAgentAccess,
   getFallbackAcl,
   getResourceAcl,
-  getAgentResourceAccessOne,
+  getAgentResourceAccess,
   setAgentResourceAccess,
   saveAclFor,
   hasFallbackAcl,
@@ -55,12 +55,12 @@ describe("End-to-end tests", () => {
     const dataset = await getSolidDataset(
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"
     );
-    const existingThing = getThingOne(
+    const existingThing = getThing(
       dataset,
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
 
-    expect(getStringNoLocaleOne(existingThing, foaf.name)).toBe(
+    expect(getStringNoLocale(existingThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
 
@@ -77,14 +77,14 @@ describe("End-to-end tests", () => {
       updatedDataset
     );
 
-    const savedThing = getThingOne(
+    const savedThing = getThing(
       savedDataset,
       "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
     );
-    expect(getStringNoLocaleOne(savedThing, foaf.name)).toBe(
+    expect(getStringNoLocale(savedThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
-    expect(getStringNoLocaleOne(savedThing, foaf.nick)).toBe(randomNick);
+    expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
@@ -120,7 +120,7 @@ describe("End-to-end tests", () => {
       control: true,
     });
     expect(
-      getAgentAccessOne(
+      getAgentAccess(
         datasetWithAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -131,7 +131,7 @@ describe("End-to-end tests", () => {
       control: false,
     });
     expect(
-      getAgentAccessOne(
+      getAgentAccess(
         datasetWithoutAcl,
         "https://vincentt.inrupt.net/profile/card#me"
       )
@@ -155,7 +155,7 @@ describe("End-to-end tests", () => {
         control: false,
       });
       const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = getAgentResourceAccessOne(savedAcl, fakeWebId);
+      const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
       expect(fakeWebIdAccess).toEqual({
         read: true,
         append: false,

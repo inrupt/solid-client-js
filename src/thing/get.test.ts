@@ -25,15 +25,15 @@ import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, Thing } from "../interfaces";
 import {
-  getUrlOne,
-  getBooleanOne,
-  getDatetimeOne,
-  getDecimalOne,
-  getIntegerOne,
-  getStringWithLocaleOne,
-  getStringNoLocaleOne,
-  getLiteralOne,
-  getNamedNodeOne,
+  getUrl,
+  getBoolean,
+  getDatetime,
+  getDecimal,
+  getInteger,
+  getStringWithLocale,
+  getStringNoLocale,
+  getLiteral,
+  getNamedNode,
   getUrlAll,
   getBooleanAll,
   getDatetimeAll,
@@ -98,7 +98,7 @@ function getMockThingWithLiteralsFor(
   });
 }
 
-describe("getIriOne", () => {
+describe("getIri", () => {
   function getMockQuadWithIri(
     predicate: IriString,
     iri: IriString = "https://arbitrary.vocab/object"
@@ -129,7 +129,7 @@ describe("getIriOne", () => {
       "https://some.vocab/object"
     );
 
-    expect(getUrlOne(thingWithIri, "https://some.vocab/predicate")).toBe(
+    expect(getUrl(thingWithIri, "https://some.vocab/predicate")).toBe(
       "https://some.vocab/object"
     );
   });
@@ -141,7 +141,7 @@ describe("getIriOne", () => {
     );
 
     expect(
-      getUrlOne(
+      getUrl(
         thingWithIri,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -155,9 +155,7 @@ describe("getIriOne", () => {
       "integer"
     );
 
-    expect(
-      getUrlOne(thingWithoutIri, "https://some.vocab/predicate")
-    ).toBeNull();
+    expect(getUrl(thingWithoutIri, "https://some.vocab/predicate")).toBeNull();
   });
 
   it("does not return non-IRI values", () => {
@@ -181,7 +179,7 @@ describe("getIriOne", () => {
     );
 
     expect(
-      getUrlOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getUrl(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toBe("https://some.vocab/object");
   });
 
@@ -189,7 +187,7 @@ describe("getIriOne", () => {
     const thingWithIri = getMockThingWithIri("https://some.vocab/predicate");
 
     expect(
-      getUrlOne(thingWithIri, "https://some-other.vocab/predicate")
+      getUrl(thingWithIri, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -289,7 +287,7 @@ describe("getIriAll", () => {
   });
 });
 
-describe("getBooleanOne", () => {
+describe("getBoolean", () => {
   it("returns the boolean value for the given Predicate", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -297,9 +295,9 @@ describe("getBooleanOne", () => {
       "boolean"
     );
 
-    expect(
-      getBooleanOne(thingWithBoolean, "https://some.vocab/predicate")
-    ).toBe(true);
+    expect(getBoolean(thingWithBoolean, "https://some.vocab/predicate")).toBe(
+      true
+    );
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -310,7 +308,7 @@ describe("getBooleanOne", () => {
     );
 
     expect(
-      getBooleanOne(
+      getBoolean(
         thingWithBoolean,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -325,7 +323,7 @@ describe("getBooleanOne", () => {
     );
 
     expect(
-      getBooleanOne(thingWithoutBoolean, "https://some.vocab/predicate")
+      getBoolean(thingWithoutBoolean, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -347,7 +345,7 @@ describe("getBooleanOne", () => {
     );
 
     expect(
-      getBooleanOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getBoolean(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toBe(true);
   });
 
@@ -359,7 +357,7 @@ describe("getBooleanOne", () => {
     );
 
     expect(
-      getBooleanOne(thingWithBoolean, "https://some-other.vocab/predicate")
+      getBoolean(thingWithBoolean, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 
@@ -371,7 +369,7 @@ describe("getBooleanOne", () => {
     );
 
     expect(
-      getBooleanOne(thingWithNonBoolean, "https://some.vocab/predicate")
+      getBoolean(thingWithNonBoolean, "https://some.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -466,7 +464,7 @@ describe("getBooleanAll", () => {
   });
 });
 
-describe("getDatetimeOne", () => {
+describe("getDatetime", () => {
   it("returns the datetime value for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -476,7 +474,7 @@ describe("getDatetimeOne", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeOne(thingWithDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithDatetime, "https://some.vocab/predicate")
     ).toEqual(expectedDate);
   });
 
@@ -489,7 +487,7 @@ describe("getDatetimeOne", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeOne(
+      getDatetime(
         thingWithDatetime,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -504,7 +502,7 @@ describe("getDatetimeOne", () => {
     );
 
     expect(
-      getDatetimeOne(thingWithoutDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithoutDatetime, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -531,10 +529,7 @@ describe("getDatetimeOne", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeOne(
-        thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
+      getDatetime(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toEqual(expectedDate);
   });
 
@@ -546,7 +541,7 @@ describe("getDatetimeOne", () => {
     );
 
     expect(
-      getDatetimeOne(thingWithDatetime, "https://some-other.vocab/predicate")
+      getDatetime(thingWithDatetime, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 
@@ -558,7 +553,7 @@ describe("getDatetimeOne", () => {
     );
 
     expect(
-      getDatetimeOne(thingWithNonDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithNonDatetime, "https://some.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -667,7 +662,7 @@ describe("getDatetimeAll", () => {
   });
 });
 
-describe("getDecimalOne", () => {
+describe("getDecimal", () => {
   it("returns the decimal value for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -675,9 +670,9 @@ describe("getDecimalOne", () => {
       "decimal"
     );
 
-    expect(
-      getDecimalOne(thingWithDecimal, "https://some.vocab/predicate")
-    ).toBe(13.37);
+    expect(getDecimal(thingWithDecimal, "https://some.vocab/predicate")).toBe(
+      13.37
+    );
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -688,7 +683,7 @@ describe("getDecimalOne", () => {
     );
 
     expect(
-      getDecimalOne(
+      getDecimal(
         thingWithDecimal,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -703,7 +698,7 @@ describe("getDecimalOne", () => {
     );
 
     expect(
-      getDecimalOne(thingWithoutDecimal, "https://some.vocab/predicate")
+      getDecimal(thingWithoutDecimal, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -729,7 +724,7 @@ describe("getDecimalOne", () => {
     );
 
     expect(
-      getDecimalOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDecimal(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toBe(13.37);
   });
 
@@ -741,7 +736,7 @@ describe("getDecimalOne", () => {
     );
 
     expect(
-      getDecimalOne(thingWithDecimal, "https://some-other.vocab/predicate")
+      getDecimal(thingWithDecimal, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -827,7 +822,7 @@ describe("getDecimalAll", () => {
   });
 });
 
-describe("getIntegerOne", () => {
+describe("getInteger", () => {
   it("returns the integer value for the given Predicate", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -835,9 +830,9 @@ describe("getIntegerOne", () => {
       "integer"
     );
 
-    expect(
-      getIntegerOne(thingWithInteger, "https://some.vocab/predicate")
-    ).toBe(42);
+    expect(getInteger(thingWithInteger, "https://some.vocab/predicate")).toBe(
+      42
+    );
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -848,7 +843,7 @@ describe("getIntegerOne", () => {
     );
 
     expect(
-      getIntegerOne(
+      getInteger(
         thingWithInteger,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -863,7 +858,7 @@ describe("getIntegerOne", () => {
     );
 
     expect(
-      getIntegerOne(thingWithoutInteger, "https://some.vocab/predicate")
+      getInteger(thingWithoutInteger, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -885,7 +880,7 @@ describe("getIntegerOne", () => {
     );
 
     expect(
-      getIntegerOne(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getInteger(thingWithDifferentDatatypes, "https://some.vocab/predicate")
     ).toBe(42);
   });
 
@@ -897,7 +892,7 @@ describe("getIntegerOne", () => {
     );
 
     expect(
-      getIntegerOne(thingWithInteger, "https://some-other.vocab/predicate")
+      getInteger(thingWithInteger, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
 });
@@ -979,7 +974,7 @@ describe("getIntegerAll", () => {
   });
 });
 
-describe("getStringWithLocaleOne", () => {
+describe("getStringWithLocale", () => {
   it("returns the string value for the given Predicate in the given locale", () => {
     const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
     const quad = DataFactory.quad(
@@ -994,7 +989,7 @@ describe("getStringWithLocaleOne", () => {
     });
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithLocaleString,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1016,7 +1011,7 @@ describe("getStringWithLocaleOne", () => {
     });
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithLocaleString,
         DataFactory.namedNode("https://some.vocab/predicate"),
         "nl-NL"
@@ -1038,7 +1033,7 @@ describe("getStringWithLocaleOne", () => {
     });
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithLocaleString,
         "https://some.vocab/predicate",
         "NL-nL"
@@ -1054,7 +1049,7 @@ describe("getStringWithLocaleOne", () => {
     );
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithoutStringNoLocale,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1076,14 +1071,14 @@ describe("getStringWithLocaleOne", () => {
     });
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
         "en-GB"
       )
     ).toBeNull();
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
         "nl"
@@ -1113,7 +1108,7 @@ describe("getStringWithLocaleOne", () => {
     );
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate",
         "nl-NL"
@@ -1135,7 +1130,7 @@ describe("getStringWithLocaleOne", () => {
     });
 
     expect(
-      getStringWithLocaleOne(
+      getStringWithLocale(
         thingWithLocaleString,
         "https://some-other.vocab/predicate",
         "nl-NL"
@@ -1323,7 +1318,7 @@ describe("getStringsWithLocaleAll", () => {
   });
 });
 
-describe("getStringNoLocaleOne", () => {
+describe("getStringNoLocale", () => {
   it("returns the string value for the given Predicate", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -1332,10 +1327,7 @@ describe("getStringNoLocaleOne", () => {
     );
 
     expect(
-      getStringNoLocaleOne(
-        thingWithStringNoLocale,
-        "https://some.vocab/predicate"
-      )
+      getStringNoLocale(thingWithStringNoLocale, "https://some.vocab/predicate")
     ).toBe("Some value");
   });
 
@@ -1347,7 +1339,7 @@ describe("getStringNoLocaleOne", () => {
     );
 
     expect(
-      getStringNoLocaleOne(
+      getStringNoLocale(
         thingWithStringNoLocale,
         DataFactory.namedNode("https://some.vocab/predicate")
       )
@@ -1362,7 +1354,7 @@ describe("getStringNoLocaleOne", () => {
     );
 
     expect(
-      getStringNoLocaleOne(
+      getStringNoLocale(
         thingWithoutStringNoLocale,
         "https://some.vocab/predicate"
       )
@@ -1391,7 +1383,7 @@ describe("getStringNoLocaleOne", () => {
     );
 
     expect(
-      getStringNoLocaleOne(
+      getStringNoLocale(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate"
       )
@@ -1406,7 +1398,7 @@ describe("getStringNoLocaleOne", () => {
     );
 
     expect(
-      getStringNoLocaleOne(
+      getStringNoLocale(
         thingWithStringNoLocale,
         "https://some-other.vocab/predicate"
       )
@@ -1507,7 +1499,7 @@ describe("getStringNoLocaleAll", () => {
   });
 });
 
-describe("getLiteralOne", () => {
+describe("getLiteral", () => {
   it("returns the Literal for the given Predicate", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -1515,7 +1507,7 @@ describe("getLiteralOne", () => {
       "string"
     );
 
-    const foundLiteral = getLiteralOne(
+    const foundLiteral = getLiteral(
       thingWithLiteral,
       "https://some.vocab/predicate"
     );
@@ -1531,7 +1523,7 @@ describe("getLiteralOne", () => {
       "string"
     );
 
-    const foundLiteral = getLiteralOne(
+    const foundLiteral = getLiteral(
       thingWithLiteral,
       DataFactory.namedNode("https://some.vocab/predicate")
     );
@@ -1548,7 +1540,7 @@ describe("getLiteralOne", () => {
     });
 
     expect(
-      getLiteralOne(thingWithoutLiteral, "https://some.vocab/predicate")
+      getLiteral(thingWithoutLiteral, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -1567,7 +1559,7 @@ describe("getLiteralOne", () => {
     );
 
     expect(
-      (getLiteralOne(
+      (getLiteral(
         thingWithDifferentTermTypes,
         "https://some.vocab/predicate"
       ) as Literal).termType
@@ -1675,14 +1667,14 @@ function getMockThingWithNamedNode(
   return thing;
 }
 
-describe("getNamedNodeOne", () => {
+describe("getNamedNode", () => {
   it("returns the Named Node for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.vocab/object"
     );
 
-    const foundNamedNode = getNamedNodeOne(
+    const foundNamedNode = getNamedNode(
       thingWithNamedNode,
       "https://some.vocab/predicate"
     );
@@ -1699,7 +1691,7 @@ describe("getNamedNodeOne", () => {
       "https://some.vocab/object"
     );
 
-    const foundNamedNode = getNamedNodeOne(
+    const foundNamedNode = getNamedNode(
       thingWithNamedNode,
       DataFactory.namedNode("https://some.vocab/predicate")
     );
@@ -1718,7 +1710,7 @@ describe("getNamedNodeOne", () => {
     });
 
     expect(
-      getNamedNodeOne(thingWithoutNamedNode, "https://some.vocab/predicate")
+      getNamedNode(thingWithoutNamedNode, "https://some.vocab/predicate")
     ).toBeNull();
   });
 
@@ -1737,7 +1729,7 @@ describe("getNamedNodeOne", () => {
     );
 
     expect(
-      (getNamedNodeOne(
+      (getNamedNode(
         thingWithDifferentTermTypes,
         "https://some.vocab/predicate"
       ) as NamedNode).termType

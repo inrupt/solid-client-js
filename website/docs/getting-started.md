@@ -43,14 +43,14 @@ const profileResource = await getSolidDataset(
 ### Reading data
 
 ```typescript
-import { getThingOne, getStringNoLocaleOne } from "@inrupt/solid-client";
+import { getThing, getStringNoLocale } from "@inrupt/solid-client";
 import { foaf } from "rdf-namespaces";
 
-const profile = getThingOne(
+const profile = getThing(
   profileResource,
   "https://vincentt.inrupt.net/profile/card#me"
 );
-const name = getStringNoLocaleOne(profileResource, foaf.name);
+const name = getStringNoLocale(profileResource, foaf.name);
 ```
 
 For more details, see [Working with Data](./tutorials/working-with-data.md#reading-data).
