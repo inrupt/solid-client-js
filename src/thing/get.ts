@@ -302,20 +302,21 @@ export function getStringByLocaleAll(
 
   const matchingQuads = findAll(thing, literalMatcher);
 
-  const byLocale = new Map<string, string[]>();
+  const result = new Map<string, string[]>();
   matchingQuads.map((quad) => {
     if (
       quad.object.datatype.value === xmlSchemaTypes.langString ||
       quad.object.datatype.value === xmlSchemaTypes.string
     ) {
-      const current: string[] | undefined = byLocale.get(quad.object.language);
+      const languageTag = quad.object.language;
+      const current: string[] | undefined = result.get(languageTag);
       current
-        ? byLocale.set(quad.object.language, [...current, quad.object.value])
-        : byLocale.set(quad.object.language, [quad.object.value]);
+        ? result.set(languageTag, [...current, quad.object.value])
+        : result.set(languageTag, [quad.object.value]);
     }
   });
 
-  return byLocale;
+  return result;
 }
 
 /**
