@@ -2,9 +2,13 @@
 
 @inrupt/solid-client is a JavaScript library for accessing data and managing permissions on data stored in Solid Pods. It provides an abstraction layer on top of both Solid and Resource Description Framework (RDF) principles and is compatible with the RDF/JS specification. You can use solid-client in Node.js using CommonJS modules and in the browser with a bundler like Webpack, Rollup, or Parcel.
 
+@inrupt/solid-client is part of a family open source JavaScript libraries designed to support developers building Solid applications.
+
 # Inrupt Solid JavaScript Client Libraries
 
-Inrupt Solid JavaScript Client Libraries are a group of libraries designed to support developers building Solid applications.
+## Data access and permissions management - solid-client
+
+[@inrupt/solid-client](https://docs.inrupt.com/client-libraries/solid-client-js/) allows developers to access data and manage permissions on data stored in Solid Pods.
 
 ## Authentication - solid-client-authn
 
@@ -26,7 +30,7 @@ For the latest stable version of solid-client:
 npm install @inrupt/solid-client
 ```
 
-For the latest stable version of all Inrupt Solid JS libraries:
+For the latest stable version of all Inrupt Solid JavaScript libraries:
 
 ```bash
 npm install @inrupt/solid-client @inrupt/solid-client-authn-browser @inrupt/vocab-common-rdf
@@ -40,7 +44,7 @@ If you have questions about working with Solid or just want to share what you’
 
 ## Bugs and Feature Requests
 
-- For public feedback, bug reports, and feature requests please file an issue via [Github](https://github.com/inrupt/solid-client-js/issues/).
+- For public feedback, bug reports, and feature requests please file an issue via [GitHub](https://github.com/inrupt/solid-client-js/issues/).
 - For non-public feedback or support inquiries please use the [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
 
 ## Documentation
