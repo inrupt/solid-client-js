@@ -38,6 +38,7 @@ jobs:
       # Since a single check is sufficient for code formatting, we skip it there:
       if: runner.os != 'Windows'
     - run: npm run check-licenses
+    - run: npm audit --audit-level=moderate
     - name: Archive code coverage results
       uses: actions/upload-artifact@v1.0.0
       with:
