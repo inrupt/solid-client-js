@@ -476,7 +476,7 @@ describe("createAcl", () => {
 });
 
 describe("createAclFromFallbackAcl", () => {
-  it("creates a new ACL including existing default rules as Resource rules", () => {
+  function expectCreatesNewAclWithDefault(defaultPredicate: string) {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
@@ -497,7 +497,7 @@ describe("createAclFromFallbackAcl", () => {
     aclDataset.add(
       DataFactory.quad(
         DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
+        DataFactory.namedNode(defaultPredicate),
         DataFactory.namedNode("https://arbitrary.pod/container/")
       )
     );
@@ -539,6 +539,13 @@ describe("createAclFromFallbackAcl", () => {
     );
     expect(resourceAcl.internal_resourceInfo.sourceIri).toBe(
       "https://arbitrary.pod/container/resource.acl"
+    );
+  }
+
+  it("creates a new ACL including existing default rules as Resource rules", () => {
+    expectCreatesNewAclWithDefault("http://www.w3.org/ns/auth/acl#default");
+    expectCreatesNewAclWithDefault(
+      "http://www.w3.org/ns/auth/acl#defaultForNew"
     );
   });
 
