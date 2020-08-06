@@ -68,10 +68,14 @@ jobs:
     - run: npm ci
     - name: Publish an npm tag for this branch
       run: |
-        npm publish --access public --tag "$TAG_SLUG"
-        echo "Package published. To install, run:"
-        echo ""
-        echo "    npm install @inrupt/solid-client@$TAG_SLUG"
+        # Unfortunately GitHub Actions does not currently let us do something like
+        #     if: secrets.NPM_TOKEN != ''
+        # so simply skip the command if the env var is not set:
+        if [ -z $NODE_AUTH_TOKEN ]; then echo "No npm token defined; package not published."; fi
+        if [ -n $NODE_AUTH_TOKEN ]; then npm publish --access public --tag "$TAG_SLUG"; fi
+        if [ -n $NODE_AUTH_TOKEN ]; then echo "Package published. To install, run:"; fi
+        if [ -n $NODE_AUTH_TOKEN ]; then echo ""; fi
+        if [ -n $NODE_AUTH_TOKEN ]; then echo "    npm install @inrupt/solid-client@$TAG_SLUG"; fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
