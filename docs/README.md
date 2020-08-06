@@ -134,13 +134,13 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-### recommonmark
+### myst-parser
 
-The documentation uses [recommonmark](https://github.com/readthedocs/recommonmark/), which is under the MIT License:
+The documentation uses [myst-parser](https://github.com/executablebooks/myst-parser), which is under the MIT License:
 
-The MIT License (MIT)
+MIT License
 
-Copyright (c) 2014 Steve Genoud
+Copyright (c) 2020 ExecutableBookProject
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -164,4 +164,16 @@ SOFTWARE.
 
 #####Lato
 
+Copyright (c) 2010-2014, Łukasz Dziedzic (dziedzic@typoland.com),
+with Reserved Font Name Lato.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at: http://scripts.sil.org/OFL
+
 #####Open Sans
+
+These fonts are licensed under the Apache License, Version 2.0.
