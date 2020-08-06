@@ -74,29 +74,3 @@ Deleting a file is also a simple operation: you just erase the content available
    :start-after: BEGIN-EXAMPLE-DELETE-FILE
    :end-before: END-EXAMPLE-DELETE-FILE
 
-
-Customize Requests
-==================
-
-If you need to customize the request eventually sent to the server, you
-can do so by using the optional ``init`` parameter. ``init`` conforms
-to the `init parameter
-<https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters>`_ of the ``fetch`` API.
-
-For instance, the following example sets a custom header:
-
-.. literalinclude:: /examples/custom-write-file.js
-   :language: typescript
-   :start-after: BEGIN-EXAMPLE-CUSTOM-WRITE-FILE
-   :end-before: END-EXAMPLE-CUSTOM-WRITE-FILE
-
-Restrictions
-------------
-
-The following settings are reserved for the |product| library and
-should not be set manually in the ``init``:
-
-- ``method`` request method
-- ``Content-Type`` request header
-- ``Slug`` request header 
-- ``If-None-Match`` request header
