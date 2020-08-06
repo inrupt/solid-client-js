@@ -10,7 +10,8 @@
     "prepublishOnly": "yarn run build",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
-    "lint": "eslint --config .eslintrc.js --fix"
+    "lint": "eslint --config .eslintrc.js --fix",
+    "build-api-docs": "npx typedoc --out docs/source/api"
   },
   "keywords": [
     "rdf",
@@ -18,7 +19,7 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://inrupt.github.io/solid-client-js/",
+  "homepage": "https://docs.inrupt.com/client-libraries/solid-client-js/",
   "bugs": "https://github.com/inrupt/solid-client-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",

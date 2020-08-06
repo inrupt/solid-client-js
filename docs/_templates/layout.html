@@ -1,0 +1,66 @@
+{% extends "pydata_sphinx_theme/layout.html" %}
+
+{% set css_files = css_files + [ "_static/css/inrupt.css" ] %}
+
+{%- block extrahead %}
+  {% if theme_robots_index %}
+    <meta name="robots" content="index" />
+  {% else %}
+    <meta name="robots" content="noindex,nofollow" />
+  {% endif %}
+
+  <link rel="shortcut icon" href="https://docs.inrupt.com/inrupt_stickers_v2-03.png" type="image/png" />
+  <script type="text/javascript" src="https://inrupt.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/-egccmf/b/24/a44af77267a987a660377e5c46e0fb64/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=41592d74"></script>
+
+  <!-- Matomo -->
+  <script type="text/javascript">
+    var _paq = window._paq || [];
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="https://mat.inrupt.com/";
+      _paq.push(['setTrackerUrl', u+'piwik.php']);
+      _paq.push(['setSiteId', '12']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo Code -->
+
+  {{ super() }}
+
+{%- endblock %}
+
+{# 
+   breadcrumb(): equivalent to relbar() in basic without 
+   prev|next|index to the right 
+#}
+
+{%- macro breadcrumb() %}
+  <div class="related">
+    {% if parents %}
+      <ul>
+        {%- for parent in parents %}
+          <li><a href="{{ parent.link|e }}">{{ parent.title }}</a><span class="bcpoint"> {{ reldelim1 }} </span></li>
+            {% if loop.last %}<li>{{title}}</li>{% endif %}
+        {%- endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{# 
+   Overwrite docs_body block to add breadcrumb to the body
+#}
+
+{% block docs_body %}
+  {{ breadcrumb() }}
+  
+  {%- if theme_banner %}
+      <div class="alert alert-info">
+         <span class="alert-message">{{theme_banner_msg}}</span>
+      </div>
+  {%- endif %}
+  {{ super() }}
+{% endblock %}

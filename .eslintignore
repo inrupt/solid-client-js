@@ -1,2 +1,3 @@
 **/*.snap
 resources/*
+docs/source/examples/**

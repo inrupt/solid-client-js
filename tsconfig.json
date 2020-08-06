@@ -83,7 +83,7 @@
     ],
     "excludeNotExported": true,
     "stripInternal": true,
-    "theme": "docusaurus2",
+    "theme": "markdown",
     "readme": "none",
   },
   "include": ["src/**/*.ts", ".eslintrc.js"],
