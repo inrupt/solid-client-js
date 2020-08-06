@@ -186,10 +186,10 @@ export function internal_toIriString(iri: Iri | IriString): IriString {
  * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
  * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
  */
-export function hasResourceInfo<T extends SolidDataset>(
-  dataset: T
-): dataset is T & WithResourceInfo {
-  const potentialResourceInfo = dataset as T & WithResourceInfo;
+export function hasResourceInfo<T>(
+  resource: T
+): resource is T & WithResourceInfo {
+  const potentialResourceInfo = resource as T & WithResourceInfo;
   return typeof potentialResourceInfo.internal_resourceInfo === "object";
 }
 
