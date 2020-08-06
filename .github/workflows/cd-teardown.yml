@@ -19,7 +19,11 @@ jobs:
       # See https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
       run: echo "::set-env name=TAG_SLUG::$(echo "${{ github.event.ref }}" | tr -cd '[:alnum:]-')"
     - name: Remove npm tag for the deleted branch
-      run: npm dist-tag rm @inrupt/solid-client $TAG_SLUG
+      run: |
+        # Unfortunately GitHub Actions does not currently let us do something like
+        #     if: secrets.NPM_TOKEN != ''
+        # so simply skip the command if the env var is not set:
+        if [ -n $NODE_AUTH_TOKEN ]; then npm dist-tag rm @inrupt/solid-client $TAG_SLUG; fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - run: echo "Package tag \`$TAG_SLUG\` unpublished."
