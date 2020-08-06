@@ -6,7 +6,7 @@
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = source
 GIT_BRANCH    :=$(shell git rev-parse --abbrev-ref HEAD)
-BUILDDIR      = build/${GIT_BRANCH}
+BUILDDIR      = build
 SPHINXOPTS    = -d $(BUILDDIR)/doctrees -W 
 SOURCECOPYDIR = $(BUILDDIR)/source/
 
@@ -31,7 +31,7 @@ migrate: clean
 	mkdir -p $(SOURCECOPYDIR)
 
    # Copying to SOURCECOPYDIR instead of copying source dir to BUILDDIR
-   # in case someone forgets to backslash after build/branch/
+   # in case someone forgets to backslash after build/
 
 	cp -R $(SOURCEDIR)/* $(SOURCECOPYDIR)
 
