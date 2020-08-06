@@ -19,7 +19,7 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://inrupt.github.io/solid-client-js/",
+  "homepage": "https://docs.inrupt.com/client-libraries/solid-client-js/",
   "bugs": "https://github.com/inrupt/solid-client-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
