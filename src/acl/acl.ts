@@ -284,6 +284,7 @@ export function createAclFromFallbackAcl(
   );
   const resourceAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
+    rule = removeAll(rule, acl.defaultForNew);
     rule = setIri(rule, acl.accessTo, getSourceUrl(resource));
     return rule;
   });
@@ -341,7 +342,10 @@ export function internal_getDefaultAclRules(aclRules: AclRule[]): AclRule[] {
 }
 
 function isDefaultAclRule(aclRule: AclRule): boolean {
-  return getIri(aclRule, acl.default) !== null;
+  return (
+    getIri(aclRule, acl.default) !== null ||
+    getIri(aclRule, acl.defaultForNew) !== null
+  );
 }
 
 /** @internal */
@@ -353,7 +357,10 @@ export function internal_getDefaultAclRulesForResource(
 }
 
 function isDefaultForResource(aclRule: AclRule, resource: IriString): boolean {
-  return getIriAll(aclRule, acl.default).includes(resource);
+  return (
+    getIriAll(aclRule, acl.default).includes(resource) ||
+    getIriAll(aclRule, acl.defaultForNew).includes(resource)
+  );
 }
 
 /** @internal */
@@ -427,7 +434,8 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
   // If the rule does not apply to any Resource, it is no longer working:
   if (
     getIri(aclRule, acl.accessTo) === null &&
-    getIri(aclRule, acl.default) === null
+    getIri(aclRule, acl.default) === null &&
+    getIri(aclRule, acl.defaultForNew) === null
   ) {
     return true;
   }
@@ -460,7 +468,8 @@ function isAclQuad(quad: Quad): boolean {
   }
   if (
     predicate.equals(DataFactory.namedNode(acl.accessTo)) ||
-    predicate.equals(DataFactory.namedNode(acl.default))
+    predicate.equals(DataFactory.namedNode(acl.default)) ||
+    predicate.equals(DataFactory.namedNode(acl.defaultForNew))
   ) {
     return true;
   }
@@ -665,6 +674,7 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
 
   targetRule = copyIris(sourceRule, targetRule, acl.accessTo);
   targetRule = copyIris(sourceRule, targetRule, acl.default);
+  targetRule = copyIris(sourceRule, targetRule, acl.defaultForNew);
   targetRule = copyIris(sourceRule, targetRule, acl.agent);
   targetRule = copyIris(sourceRule, targetRule, acl.agentGroup);
   targetRule = copyIris(sourceRule, targetRule, acl.agentClass);
