@@ -39,7 +39,7 @@ jobs:
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email $GITHUB_ACTOR@users.noreply.github.com
-        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/inrupt/solid-client-js.git
+        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git
         git fetch --no-recurse-submodules
         cd docs
         git worktree add ./gh-pages gh-pages
@@ -51,3 +51,4 @@ jobs:
         git push gh-pages-remote gh-pages:gh-pages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
