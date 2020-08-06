@@ -57,15 +57,12 @@ you provide matches a file that already exists under the same target resource, t
 file so that no content is overwritten.
 
 This means that you don't control the final name of your file though. To keep track of the name the server gave to your
-file, you'll have to look up the `Location` header in the response, as shown in the code snippet below:
+file, you'll have extract it from the return value, as shown in the code snippet below:
 
 .. literalinclude:: /examples/save-file.js
    :language: typescript
    :start-after: BEGIN-EXAMPLE-SAVE-FILE
    :end-before: END-EXAMPLE-SAVE-FILE
-
-Note that the returned `Location` will be relative to the server's origin, so in the previous example `Location` might
-be `/some/folder/new-file-3869a250`, which means the file is saved at the URL `https://example.com/some/folder/new-file-3869a250`.
 
 Delete a File
 =============

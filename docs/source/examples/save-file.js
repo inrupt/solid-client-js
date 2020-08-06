@@ -22,16 +22,14 @@
 
 // BEGIN-EXAMPLE-SAVE-FILE
 
-import { saveFileInContainer } from "@inrupt/solid-client";
+import { saveFileInContainer, getSourceUrl } from "@inrupt/solid-client";
 
-const response = await saveFileInContainer(
+const savedFile = await saveFileInContainer(
   "https://example.com/some/folder",
   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
   { slug: "new-file" }
 );
-if (response.ok) {
-  const headers = await response.headers;
-  console.log(`File saved at ${headers.get("Location")}`);
-}
+
+console.log(`File saved at ${getSourceUrl(savedFile)}`);
 
 // END-EXAMPLE-SAVE-FILE
