@@ -21,13 +21,11 @@
 
 // BEGIN-EXAMPLE-DELETE-FILE
 
-import { getFile } from "@inrupt/solid-client";
+import { deleteFile } from "@inrupt/solid-client";
 
-const response = await deleteFile(
+await deleteFile(
   "https://example.com/some/boring/file"
 );
-if (response.ok) {
-  console.log("File deleted !");
-}
+console.log("File deleted !");
 
 // END-EXAMPLE-DELETE-FILE
