@@ -31,7 +31,11 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { internal_fetchAcl, internal_fetchResourceInfo } from "./resource";
+import {
+  internal_fetchAcl,
+  internal_fetchResourceInfo,
+  getSourceIri,
+} from "./resource";
 
 import {
   isContainer,
@@ -39,7 +43,7 @@ import {
   getContentType,
   fetchResourceInfoWithAcl,
 } from "./resource";
-import { WithResourceInfo } from "../interfaces";
+import { WithResourceInfo, IriString } from "../interfaces";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -708,5 +712,23 @@ describe("getContentType", () => {
     };
 
     expect(getContentType(resourceInfo)).toBeNull();
+  });
+});
+
+describe("getSourceIri", () => {
+  it("returns the source IRI if known", () => {
+    const withResourceInfo: WithResourceInfo = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+
+    const sourceIri: IriString = getSourceIri(withResourceInfo);
+    expect(sourceIri).toBe("https://arbitrary.pod/resource");
+  });
+
+  it("returns null if no source IRI is known", () => {
+    expect(getSourceIri(new Blob())).toBeNull();
   });
 });

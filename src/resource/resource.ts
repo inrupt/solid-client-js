@@ -26,6 +26,8 @@ import {
   WithAcl,
   hasAccessibleAcl,
   Access,
+  SolidDataset,
+  hasResourceInfo,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -206,10 +208,17 @@ export function getContentType(resource: WithResourceInfo): string | null {
 
 /**
  * @param resource
- * @returns The URL from which the resource has been fetched
+ * @returns The URL from which the Resource has been fetched, or null if it is not known.
  */
-export function getSourceUrl(resource: WithResourceInfo): string {
-  return resource.internal_resourceInfo.sourceIri;
+export function getSourceUrl(resource: WithResourceInfo): string;
+export function getSourceUrl(resource: SolidDataset | Blob): string | null;
+export function getSourceUrl(
+  resource: SolidDataset | Blob | WithResourceInfo
+): string | null {
+  if (hasResourceInfo(resource)) {
+    return resource.internal_resourceInfo.sourceIri;
+  }
+  return null;
 }
 /** @hidden Alias of getSourceUrl for those who prefer to use IRI terminology. */
 export const getSourceIri = getSourceUrl;

@@ -53,7 +53,7 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx_tabs.tabs',
     'sphinx.ext.todo',
-    'recommonmark',
+    'myst_parser',
 ]
 
 extlinks = {
