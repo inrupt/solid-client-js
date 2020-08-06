@@ -34,7 +34,7 @@ jobs:
       run: |
         cd docs/
         make html
-        touch build/${GITHUB_REF#refs/heads/}/html/.nojekyll
+        touch build/html/.nojekyll
     - name: Deploy to GitHub Pages
       run: |
         git config user.name $GITHUB_ACTOR
@@ -45,7 +45,7 @@ jobs:
         git worktree add ./gh-pages gh-pages
         cd gh-pages
         git rm -r .
-        cp -r ../build/${GITHUB_REF#refs/heads/}/html/. .
+        cp -r ../build/html/. .
         git add .
         git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
         git push gh-pages-remote gh-pages:gh-pages
