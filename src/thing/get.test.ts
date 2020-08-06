@@ -1145,10 +1145,10 @@ describe("getStringWithLocale", () => {
 
 describe("getStringByLocale", () => {
   function makeQuad(
-    subject: string,
-    predicate: string,
-    value: string,
-    locale: string | NamedNode | undefined
+    subject: IriString,
+    predicate: IriString,
+    value: IriString,
+    locale?: IriString | Iri
   ): Quad {
     return DataFactory.quad(
       DataFactory.namedNode(subject),
