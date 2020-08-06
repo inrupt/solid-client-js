@@ -1,0 +1,92 @@
+name: Release
+
+on: 
+    push:
+        tags: 
+            - v[0-9]+.[0-9]+.[0-9]+
+
+env:
+  CI: true
+jobs:
+  prepare-deployment:
+    runs-on: ubuntu-20.04
+    outputs:
+      deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
+    steps:
+    - name: Create GitHub Deployment
+      id: create-deployment
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments
+        repository: ${{ github.repository }}
+        ref: ${{ github.sha }}
+        environment: review
+        transient_environment: true
+        auto_merge: false
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        # The deployment runs in parallel with CI, so status checks will never have succeeded yet:
+        required_contexts: '[]'
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  publish-npm:
+    runs-on: ubuntu-20.04
+    needs: [prepare-deployment]
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Mark GitHub Deployment as in progress
+      id: start-deployment
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        description: "Publishing to npm tag `${GITHUB_REF#refs/tags/v}`…"
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        state: in_progress
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    - name: Prepare for publication to npm
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org'
+    - run: npm ci
+    - name: Publish to npm
+      run: |
+        npm publish --access public
+        echo "Package published. To install, run:"
+        echo ""
+        echo "    npm install @inrupt/solid-client"
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Mark GitHub Deployment as successful
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client/v/${GITHUB_REF#refs/tags/v}'
+        description: "Published to npm. To install, run: npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        state: success
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    - name: Mark GitHub Deployment as failed
+      uses: octokit/request-action@v2.x
+      if: failure()
+      with:
+        route: POST /repos/:repository/deployments/:deployment/statuses
+        repository: ${{ github.repository }}
+        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        environment: review
+        description: "Publication to npm failed. Review the GitHub Actions log for more information."
+        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        mediaType: '{"previews": ["flash", "ant-man"]}'
+        state: failure
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
