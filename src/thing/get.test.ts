@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, Thing } from "../interfaces";
+import { IriString, Iri, Thing } from "../interfaces";
 import {
   getUrl,
   getBoolean,
@@ -48,6 +48,22 @@ import {
   getTermAll,
 } from "./get";
 import { xmlSchemaTypes } from "../datatypes";
+
+const SUBJECT = "https://arbitrary.vocab/subject";
+const PREDICATE = "https://some.vocab/predicate";
+
+function makeQuad(
+  subject: IriString,
+  predicate: IriString,
+  value: IriString,
+  locale?: IriString | Iri
+): Quad {
+  return DataFactory.quad(
+    DataFactory.namedNode(subject),
+    DataFactory.namedNode(predicate),
+    DataFactory.literal(value, locale)
+  );
+}
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
@@ -1143,37 +1159,20 @@ describe("getStringWithLocale", () => {
   });
 });
 
-describe("getStringByLocale", () => {
-  function makeQuad(
-    subject: IriString,
-    predicate: IriString,
-    value: IriString,
-    locale?: IriString | Iri
-  ): Quad {
-    return DataFactory.quad(
-      DataFactory.namedNode(subject),
-      DataFactory.namedNode(predicate),
-      DataFactory.literal(value, locale)
-    );
-  }
-
+describe("getStringByLocaleAll", () => {
   it("returns all the string values for the given Predicate keyed by their locale", () => {
-    const subject = "https://arbitrary.vocab/subject";
-    const predicate = "https://some.vocab/predicate";
-    const thing = dataset();
-
-    thing
-      .add(makeQuad(subject, predicate, "value 1", "en"))
-      .add(makeQuad(subject, predicate, "value 2", "en"))
-      .add(makeQuad(subject, predicate, "value 3", "fr"))
-      .add(makeQuad(subject, predicate, "value 4", "es"));
+    const thing = dataset()
+      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "en"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 2", "en"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 3", "fr"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 4", "es"));
 
     const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
+      internal_url: SUBJECT,
     });
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, predicate))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
     ).toEqual([
       ["en", ["value 1", "value 2"]],
       ["fr", ["value 3"]],
@@ -1181,59 +1180,66 @@ describe("getStringByLocale", () => {
     ]);
   });
 
-  it("includes non-language string values keyed with the empty language tag", () => {
-    const subject = "https://arbitrary.vocab/subject";
-    const predicate = "https://some.vocab/predicate";
-    const thing = dataset();
-
-    thing
-      .add(makeQuad(subject, predicate, "value 1", "fr"))
-      .add(makeQuad(subject, predicate, "value 2", undefined))
-      .add(makeQuad(subject, predicate, "value 3", undefined));
+  it("excludes non-language string values", () => {
+    const thing = dataset()
+      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "fr"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 2"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 3", "es"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 4"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 5", "es"));
 
     const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
+      internal_url: SUBJECT,
     });
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, predicate))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
     ).toEqual([
       ["fr", ["value 1"]],
-      ["", ["value 2", "value 3"]],
+      ["es", ["value 3", "value 5"]],
     ]);
   });
 
   it("ignores non-string literals...", () => {
-    const subject = "https://arbitrary.vocab/subject";
-    const predicate = "https://some.vocab/predicate";
-    const thing = dataset();
-
-    thing
-      .add(makeQuad(subject, predicate, "value 1", "fr"))
-      .add(makeQuad(subject, predicate, "value 2", undefined))
+    const thing = dataset()
+      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "fr"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 2"))
       .add(
         makeQuad(
-          subject,
-          predicate,
+          SUBJECT,
+          PREDICATE,
           "99.999",
           DataFactory.namedNode(xmlSchemaTypes.decimal)
         )
       );
 
     const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
+      internal_url: SUBJECT,
     });
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, predicate))
-    ).toEqual([
-      ["fr", ["value 1"]],
-      ["", ["value 2"]],
-    ]);
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+    ).toEqual([["fr", ["value 1"]]]);
   });
 });
 
 describe("getStringWithLocaleAll", () => {
+  it("treats empty-string locale literally - i.e. only returns values added with an empty language tag", () => {
+    const thing = dataset()
+      .add(makeQuad(SUBJECT, PREDICATE, "value 1"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 2", "fr"))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 3", ""))
+      .add(makeQuad(SUBJECT, PREDICATE, "value 4", "es"));
+
+    const thingWithLocaleStrings = Object.assign(thing, {
+      internal_url: SUBJECT,
+    });
+
+    expect(
+      Array.from(getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, ""))
+    ).toEqual(["value 3"]);
+  });
+
   it("returns the string values for the given Predicate in the given locale", () => {
     const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
     const quad1 = DataFactory.quad(

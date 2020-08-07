@@ -284,9 +284,9 @@ export function getStringWithLocaleAll(
 
 /**
  * Retrieves all string literals for the specified property from the specified
- * Thing.
+ * [[Thing]].
  *
- * NOTE: Assumes you also want non-locale string literals too (i.e. literals
+ * Note: Assumes you also want non-locale string literals too (i.e. literals
  * with the xsd:string datatype). These values will be returned in a map entry
  * with a key of the empty string.
  *
@@ -304,10 +304,7 @@ export function getStringByLocaleAll(
 
   const result = new Map<string, string[]>();
   matchingQuads.map((quad) => {
-    if (
-      quad.object.datatype.value === xmlSchemaTypes.langString ||
-      quad.object.datatype.value === xmlSchemaTypes.string
-    ) {
+    if (quad.object.datatype.value === xmlSchemaTypes.langString) {
       const languageTag = quad.object.language;
       const current: string[] | undefined = result.get(languageTag);
       current
