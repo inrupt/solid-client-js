@@ -352,15 +352,15 @@ function removeAgentFromRule(
   }
   // The existing rule will keep applying to Agents other than the given one:
   const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The agent already had some access in the rule, so duplicate it...
+  // The agent might have been given other access in the existing rule, so duplicate it...
   let ruleForOtherTargets = internal_duplicateAclRule(rule);
-  // ...but remove access to the original Resource:
+  // ...but remove access to the original Resource...
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
     ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
-  // Only apply the new Rule to the given Agent (because the existing Rule covers the others)
+  // ...and only apply the new Rule to the given Agent (because the existing Rule covers the others):
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentClass);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);

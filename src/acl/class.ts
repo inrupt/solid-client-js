@@ -241,20 +241,21 @@ function removePublicFromRule(
     });
     return [rule, emptyRule];
   }
-  // The existing rule will keep applying to the public:
+  // The existing rule will keep applying to other Agent Classes:
   const ruleWithoutPublic = removeIri(rule, acl.agentClass, foaf.Agent);
-  // The new rule will...
+  // The public might have been given other access in the existing rule, so duplicate it...
   let ruleForOtherTargets = internal_duplicateAclRule(rule);
-  // ...*only* apply to the public (because the existing Rule covers the others)...
-  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
-  // ...but not to the given Resource:
+  // ...but remove access to the original Resource...
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
     ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
+  // ...and only apply the new Rule to the Public (because the existing Rule covers other Agents):
+  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
+
   return [ruleWithoutPublic, ruleForOtherTargets];
 }
 
