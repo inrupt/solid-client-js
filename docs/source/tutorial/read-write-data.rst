@@ -52,14 +52,17 @@ Resource.
 
 To authenticate, you can use the Inrupt `solid-client-authn
 <https://www.npmjs.com/package/@inrupt/solid-client-authn>`_ library.
-After authenticating with ``solid-client-authn``, |product| picks up
-the authenticated session and includes the user's credentials with each
-request.
+After authentication, the ``Session`` object obtained from
+``solid-client-authn`` provides a `fetch` function. You can pass this function
+as an option to |product| to include the user's credentials with a request.
 
 .. literalinclude:: /examples/login.js
    :language: typescript
    :start-after: BEGIN-EXAMPLE-LOGIN
    :end-before: END-EXAMPLE-LOGIN
+
+For a more advanced example, see `the solid-client-authn repository
+<https://github.com/inrupt/solid-client-authn/tree/master/examples/single/bundle>`.
 
 Read Data
 =========

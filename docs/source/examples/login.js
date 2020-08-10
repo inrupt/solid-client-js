@@ -25,24 +25,31 @@ import {
   Session,
   getClientAuthnWithDependencies
 } from '@inrupt/solid-client-authn-browser'
+import { getSolidDataset } from "@inrupt/solid-client":
 
 // Build a session
-const session = new solidClientAuthn.Session({
-    clientAuthn: solidClientAuthn.getClientAuthnWithDependencies({})},
+const session = new Session({
+    clientAuthn: getClientAuthnWithDependencies({})},
     "mySession"
 );
 
-// Redirect the user to their identity provider...
-await session.login({
-    // The URL of the user's OIDC issuer
-    oidcIssuer: 'https://identityProvider.com', 
-    // The url the system should redirect to after login
-    redirectUrl: 'https://mysite.com/redirect',
-});
+if (!session.sessionInfo.isLoggedIn) {
+  // Redirect the user to their identity provider:
+  // (This moves the user away from the current page.)
+  session.login({
+      // The URL of the user's OIDC issuer
+      oidcIssuer: 'https://inrupt.net',
+      // The url the system should redirect to after login
+      redirectUrl: 'https://mysite.com/redirect',
+  });
+}
 
-onLogin((sessionInfo) => {
-   // Do stuff
+// At https://mysite.com/redirect:
+if (!session.sessionInfo.isLoggedIn) {
+  await session.handleIncomingRedirect(new URL(window.location.href));
+}
 
-});
+// You can now make authenticated requests by passing session.fetch, for example:
+getSolidDataset(session.sessionInfo.webId, { fetch: session.fetch });
 
 // END-EXAMPLE-LOGIN

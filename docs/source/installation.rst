@@ -23,9 +23,7 @@ The instruction on this page installs the following Inrupt libraries:
        <https://www.npmjs.com/package/@inrupt/solid-client-authn>`_
   
      - Inrupt `solid-client-authn`_ is a set of libraries used to
-       authenticate with Solid identity servers. After authenticating
-       with `solid-client-authn`_, |product| picks up the authenticated
-       session and includes the user's credentials with each request.
+       authenticate with Solid identity servers.
 
    * - ``vocab-common-rdf``
    
