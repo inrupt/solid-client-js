@@ -21,6 +21,7 @@
 
 import {
   getFile,
+  getFileWithAcl,
   deleteFile,
   saveFileInContainer,
   overwriteFile,
@@ -179,6 +180,7 @@ import {
 // https://github.com/facebook/jest/issues/10032
 it("exports the public API from the entry file", () => {
   expect(getFile).toBeDefined();
+  expect(getFileWithAcl).toBeDefined();
   expect(deleteFile).toBeDefined();
   expect(saveFileInContainer).toBeDefined();
   expect(overwriteFile).toBeDefined();
