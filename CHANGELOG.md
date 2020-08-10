@@ -4,6 +4,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### New features
+
+- New experimental method `getFileWithAcl` is now exported - like `getSolidDatasetWithAcl`, this function lets you fetch a file along with its ACLs, if available.
+
+### Bugs fixed
+
+- `getSourceUrl` used to throw an error when called on a Resource that was not fetched from somewhere (and hence had no source URL). It now returns `null` in that case.
+
 ## [0.1.0] - 2020-08-06
 
 ### New features
