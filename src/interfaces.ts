@@ -185,6 +185,7 @@ export function internal_toIriString(iri: Iri | IriString): IriString {
  *
  * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
  * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
+ * @since Not released yet.
  */
 export function hasResourceInfo<T>(
   resource: T

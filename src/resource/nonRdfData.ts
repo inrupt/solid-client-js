@@ -99,6 +99,7 @@ export async function getFile(
  * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
  * @returns A file and the ACLs that apply to it, if available to the authenticated user.
+ * @since Not released yet.
  */
 export async function getFileWithAcl(
   input: Url | UrlString,
