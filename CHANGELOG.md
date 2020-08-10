@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ### New features
 
+- A new function `hasResourceInfo` is available. It can verify whether its parameter (e.g. a file or a SolidDataset) was fetched from somewhere, or was initialised in-memory.
 - New experimental method `getFileWithAcl` is now exported - like `getSolidDatasetWithAcl`, this function lets you fetch a file along with its ACLs, if available.
 
 ### Bugs fixed

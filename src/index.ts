@@ -269,6 +269,7 @@ export {
   ThingPersisted,
   ThingLocal,
   LocalNode,
+  hasResourceInfo,
   WithResourceInfo,
   WithChangeLog,
   hasAccessibleAcl,
