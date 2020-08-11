@@ -71,6 +71,11 @@ export {
   getSolidDatasetWithAcl as fetchLitDatasetWithAcl,
 } from "./resource/solidDataset";
 export {
+  mockSolidDatasetFrom,
+  mockContainerFrom,
+  mockFileFrom,
+} from "./resource/mock";
+export {
   getThing,
   getThingAll,
   setThing,
@@ -162,6 +167,7 @@ export {
   /** @deprecated See [[removeStringWithLocale]] */
   removeStringWithLocale as removeStringInLocale,
 } from "./thing/remove";
+export { mockThingFrom } from "./thing/mock";
 export {
   hasFallbackAcl,
   getFallbackAcl,
@@ -258,6 +264,7 @@ export {
   /** @deprecated See [[setPublicDefaultAccess] */
   setPublicDefaultAccess as unstable_setPublicDefaultAccess,
 } from "./acl/class";
+export { addMockResourceAclTo, addMockFallbackAclTo } from "./acl/mock";
 export {
   Url,
   Iri,

@@ -98,7 +98,7 @@ export async function internal_fetchFallbackAcl(
     return null;
   }
 
-  const containerPath = getContainerPath(resourcePath);
+  const containerPath = internal_getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
   const containerInfo = {
     internal_resourceInfo: await internal_fetchResourceInfo(
@@ -121,7 +121,12 @@ export async function internal_fetchFallbackAcl(
   return containerAcl;
 }
 
-function getContainerPath(resourcePath: string): string {
+/**
+ * Given the path to a Resource, get the URL of the Container one level up in the hierarchy.
+ * @param resourcePath The path of the Resource of which we need to determine the Container's path.
+ * @hidden For internal use only.
+ */
+export function internal_getContainerPath(resourcePath: string): string {
   const resourcePathWithoutTrailingSlash =
     resourcePath.substring(resourcePath.length - 1) === "/"
       ? resourcePath.substring(0, resourcePath.length - 1)

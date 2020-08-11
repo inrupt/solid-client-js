@@ -102,8 +102,12 @@ type internal_WacAllow = {
 
 /**
  * [[SolidDataset]]s fetched by solid-client include this metadata describing its relation to a Pod Resource.
+ *
+ * **Do not read these properties directly**; their internal representation may change at any time.
+ * Instead, use functions such as [[getSoruceUrl]], [[isRawData]] and [[getContentType]].
  */
 export type WithResourceInfo = {
+  /** @hidden */
   internal_resourceInfo: {
     sourceIri: UrlString;
     isRawData: boolean;
