@@ -123,6 +123,12 @@ import {
   getGroupResourceAccessAll,
   getGroupDefaultAccess,
   getGroupDefaultAccessAll,
+  mockSolidDatasetFrom,
+  mockContainerFrom,
+  mockFileFrom,
+  mockThingFrom,
+  addMockResourceAclTo,
+  addMockFallbackAclTo,
   // Deprecated functions still exported for backwards compatibility:
   getStringUnlocalizedOne,
   getStringUnlocalizedAll,
@@ -284,6 +290,12 @@ it("exports the public API from the entry file", () => {
   expect(getGroupResourceAccessAll).toBeDefined();
   expect(getGroupDefaultAccess).toBeDefined();
   expect(getGroupDefaultAccessAll).toBeDefined();
+  expect(mockSolidDatasetFrom).toBeDefined();
+  expect(mockContainerFrom).toBeDefined();
+  expect(mockFileFrom).toBeDefined();
+  expect(mockThingFrom).toBeDefined();
+  expect(addMockResourceAclTo).toBeDefined();
+  expect(addMockFallbackAclTo).toBeDefined();
 });
 
 it("still exports deprecated methods", () => {
