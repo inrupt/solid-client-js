@@ -27,32 +27,34 @@ import {
   getUrlAll,
 } from "@inrupt/solid-client";
 
+import { FOAF } from "@inrupt/vocab-common-rdf";
+
 // Get data from a retrieved Thing.
-// - Specifically, get the name (http://xmlns.com/foaf/0.1/name).
+// - Specifically, get the name (FOAF.name).
 // - Name is of type string.
 // - Use getStringNoLocale if expecting a single value.
 // - Use getStringNoLocaleAll if expecting multiple values.
 
-const names = getStringNoLocaleAll(thing, "http://xmlns.com/foaf/0.1/name");
+const names = getStringNoLocaleAll(thing, FOAF.name);
 // => an array of strings representing the `http://xmlns.com/foaf/0.1/name`.
 
 // Get data from a retrieved Thing.
-// - Specifically, get the Skype ID (http://xmlns.com/foaf/0.1/skypeId).
+// - Specifically, get the Skype ID (FOAF.skypeId).
 // - Skype ID is of type string.
 // - Use getStringNoLocale if expecting a single value.
 // - Use getStringNoLocaleAll if expecting multiple values.
 
-const skypeId = getStringNoLocale(thing, "http://xmlns.com/foaf/0.1/skypeId");
+const skypeId = getStringNoLocale(thing, FOAF.skypeId);
 // => one of the strings representing the `http://xmlns.com/foaf/0.1/skypeId`,
 //    or null if there are none.
 
 // Get data from a retrieved Thing.
-// - Specifically, get the acquaintances (http://xmlns.com/foaf/0.1/knows).
+// - Specifically, get the acquaintances (FOAF.knows).
 // - Acquaintances is of type URL.
 // - Use getStringNoLocale expecting a single value.
 // - Use getStringNoLocaleAll if expecting multiple values.
 
-const acquaintances = getUrlAll(thing, "http://xmlns.com/foaf/0.1/knows");
-// => an array of URLs, presumably pointing to the Things describing acquaintances.
+const acquaintances = getUrlAll(thing, FOAF.knows);
+// => an array of URLs, pointing to the Things representing ("http://xmlns.com/foaf/0.1/knows")
 
 // END-EXAMPLE-GET-DATA-FROM-THING

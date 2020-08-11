@@ -62,7 +62,7 @@ as an option to |product| to include the user's credentials with a request.
    :end-before: END-EXAMPLE-LOGIN
 
 For a more advanced example, see `the solid-client-authn repository
-<https://github.com/inrupt/solid-client-authn/tree/master/examples/single/bundle>`.
+<https://github.com/inrupt/solid-client-authn/tree/master/examples/single/bundle>`_.
 
 Read Data
 =========
