@@ -157,9 +157,28 @@ The general process of changing access to a Resource is as follows:
 Set Public Access
 -----------------
 
-.. note::
+Given a Resource's ACL obtained as specified in
+:ref:`manage-acl-change-access-to-resource`, you can:
 
-   |product| currently does not support setting public access.
+- Use :doc:`setPublicResourceAccess
+  </api/modules/_acl_class_>` to grant Access Modes
+  to everybody (whether logged in or not) for the Resource itself:
+
+  .. literalinclude:: /examples/write-acl-resource-public.js
+     :language: typescript
+     :start-after: BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
+     :end-before: END-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
+
+- Use :doc:`setPublicDefaultAccess
+  </api/modules/_acl_agent_>` to grant Access Modes
+  to everybody (whether logged in or not) for the Resource's children if the
+  Resource is a Container:
+
+  .. literalinclude:: /examples/write-acl-default-public.js
+     :language: typescript
+     :start-after: BEGIN-EXAMPLE-WRITE-ACL-DEFAULT-PUBLIC
+     :end-before: END-EXAMPLE-WRITE-ACL-DEFAULT-PUBLIC
+
 
 Set Agent Access
 ----------------

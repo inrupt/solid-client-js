@@ -19,22 +19,20 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
+// BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
 
 import {
-  setAgentResourceAccess,
+  setPublicResourceAccess,
 } from "@inrupt/solid-client";
 
 const resourceAcl = /* Obtained previously in the section "Change Access to a Resource" */;
-const webId = "https://example.com/profile#webid";
 
-const updatedAcl = setAgentResourceAccess(
+const updatedAcl = setPublicResourceAccess(
   resourceAcl,
-  webId,
   { read: true, append: true, write: false, control: false },
 );
 
 // `updatedAcl` can now be saved back to the Pod
 // using `saveAclFor()`.
 
-// END-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
+// END-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
