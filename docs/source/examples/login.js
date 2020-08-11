@@ -37,14 +37,14 @@ if (!session.sessionInfo.isLoggedIn) {
   // Redirect the user to their identity provider:
   // (This moves the user away from the current page.)
   session.login({
-      // The URL of the user's OIDC issuer
+      // The URL of the user's OIDC issuer. Specify your OIDC issuer URL.
       oidcIssuer: 'https://inrupt.net',
-      // The url the system should redirect to after login
-      redirectUrl: 'https://mysite.com/redirect',
+      // The URL the system should redirect to after login. Specify your redirect URL.
+      redirectUrl: 'https://example.com/redirect',
   });
 }
 
-// At https://mysite.com/redirect:
+// At your redirect site (e.g., https://example.com/redirect):
 if (!session.sessionInfo.isLoggedIn) {
   await session.handleIncomingRedirect(new URL(window.location.href));
 }
