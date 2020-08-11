@@ -50,6 +50,7 @@ import {
   saveAclFor,
   deleteAclFor,
   createAcl,
+  internal_getContainerPath,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -355,6 +356,28 @@ describe("fetchFallbackAcl", () => {
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
     expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/.acl");
+  });
+});
+
+describe("getContainerPath", () => {
+  it("returns the parent if the input is a Resource path", () => {
+    expect(internal_getContainerPath("/container/resource")).toBe(
+      "/container/"
+    );
+  });
+
+  it("returns the parent if the input is a Container path", () => {
+    expect(internal_getContainerPath("/container/child-container/")).toBe(
+      "/container/"
+    );
+  });
+
+  it("returns the root if the input is a child of the root", () => {
+    expect(internal_getContainerPath("/resource")).toBe("/");
+  });
+
+  it("does not prefix a slash if the input did not do so either", () => {
+    expect(internal_getContainerPath("container/resource")).toBe("container/");
   });
 });
 
