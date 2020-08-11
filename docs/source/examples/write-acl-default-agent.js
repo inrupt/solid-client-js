@@ -25,7 +25,7 @@ import {
   setAgentDefaultAccess,
 } from "@inrupt/solid-client";
 
-const resourceAcl = /* Obtained previously in Change Access to a Resource section */;
+const resourceAcl = /* Obtained previously in the section "Change Access to a Resource" */;
 const webId = "https://example.com/profile#webid";
 
 const updatedAcl = setAgentDefaultAccess(
