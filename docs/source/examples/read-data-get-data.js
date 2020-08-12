@@ -55,6 +55,6 @@ const skypeId = getStringNoLocale(thing, FOAF.skypeId);
 // - Use getStringNoLocaleAll if expecting multiple values.
 
 const acquaintances = getUrlAll(thing, FOAF.knows);
-// => an array of URLs, pointing to the Things representing ("http://xmlns.com/foaf/0.1/knows")
+// => an array of URLs, pointing to the Things representing FOAF.knows ("http://xmlns.com/foaf/0.1/knows")
 
 // END-EXAMPLE-GET-DATA-FROM-THING
