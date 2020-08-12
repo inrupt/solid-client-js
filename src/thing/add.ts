@@ -27,7 +27,7 @@ import {
   ThingPersisted,
   Url,
 } from "../interfaces";
-import { cloneThing, toNode } from "./thing";
+import { cloneThing, internal_toNode } from "./thing";
 import {
   asNamedNode,
   serializeBoolean,
@@ -60,7 +60,13 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
   const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(url)));
+  newThing.add(
+    DataFactory.quad(
+      internal_toNode(newThing),
+      predicateNode,
+      internal_toNode(url)
+    )
+  );
   return newThing;
 };
 /** @hidden Alias for [[addUrl]] for those who prefer IRI terminology. */
@@ -225,7 +231,9 @@ export function addNamedNode(
   const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
+  newThing.add(
+    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
+  );
   return newThing;
 }
 
@@ -255,7 +263,9 @@ export function addLiteral(
   const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
+  newThing.add(
+    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
+  );
   return newThing;
 }
 

@@ -38,7 +38,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { toNode } from "./thing";
+import { internal_toNode } from "./thing";
 import { removeAll } from "./remove";
 
 /**
@@ -61,7 +61,13 @@ export const setUrl: SetOfType<Url | UrlString | Thing> = (
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, toNode(url)));
+  newThing.add(
+    DataFactory.quad(
+      internal_toNode(newThing),
+      predicateNode,
+      internal_toNode(url)
+    )
+  );
 
   return newThing;
 };
@@ -227,7 +233,9 @@ export function setNamedNode(
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
+  newThing.add(
+    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
+  );
 
   return newThing;
 }
@@ -258,7 +266,9 @@ export function setLiteral(
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
-  newThing.add(DataFactory.quad(toNode(newThing), predicateNode, value));
+  newThing.add(
+    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
+  );
 
   return newThing;
 }

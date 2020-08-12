@@ -174,7 +174,7 @@ export function removeThing<Dataset extends SolidDataset>(
     ? getSourceUrl(newSolidDataset)
     : undefined;
 
-  const thingSubject = toNode(thing);
+  const thingSubject = internal_toNode(thing);
   // Copy every Quad from the input dataset into what is to be the output dataset,
   // unless its Subject is the same as that of the Thing that is to be removed:
   for (const quad of solidDataset) {
@@ -333,16 +333,18 @@ export function isThingLocal(
   );
 }
 /**
- * @internal
+ * @hidden
  * @param thing The Thing whose Subject Node you're interested in.
  * @returns A Node that can be used as the Subject for this Thing's Quads.
  */
-export function toNode(thing: UrlString | Url | ThingPersisted): NamedNode;
-export function toNode(thing: LocalNode | ThingLocal): LocalNode;
-export function toNode(
+export function internal_toNode(
+  thing: UrlString | Url | ThingPersisted
+): NamedNode;
+export function internal_toNode(thing: LocalNode | ThingLocal): LocalNode;
+export function internal_toNode(
   thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode;
-export function toNode(
+export function internal_toNode(
   thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode {
   if (isNamedNode(thing) || isLocalNode(thing)) {
