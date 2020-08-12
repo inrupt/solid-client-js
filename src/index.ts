@@ -81,6 +81,7 @@ export {
   setThing,
   removeThing,
   createThing,
+  isThing,
   asUrl,
   asIri,
 } from "./thing/thing";

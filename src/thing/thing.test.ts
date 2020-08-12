@@ -31,6 +31,7 @@ import {
   createThing,
   asUrl,
   toNode,
+  isThing,
 } from "./thing";
 import {
   IriString,
@@ -44,6 +45,8 @@ import {
   WithAcl,
   AclDataset,
 } from "../interfaces";
+import { createSolidDataset } from "../resource/solidDataset";
+import { mockThingFrom } from "./mock";
 
 function getMockQuad(
   terms: Partial<{
@@ -98,6 +101,34 @@ describe("createThing", () => {
 
   it("throws an error if the given URL is invalid", () => {
     expect(() => createThing({ url: "Invalid IRI" })).toThrow();
+  });
+});
+
+describe("isThing", () => {
+  it("returns true for a ThingLocal", () => {
+    expect(isThing(createThing())).toBe(true);
+  });
+
+  it("returns true for a ThingPersisted", () => {
+    expect(isThing(mockThingFrom("https://arbitrary.pod/resource#thing"))).toBe(
+      true
+    );
+  });
+
+  it("returns false for an atomic data type", () => {
+    expect(isThing("This is not a Thing")).toBe(false);
+  });
+
+  it("returns false for a regular JavaScript object", () => {
+    expect(isThing({ not: "a Thing" })).toBe(false);
+  });
+
+  it("returns false for a plain RDF/JS Dataset", () => {
+    expect(isThing(dataset())).toBe(false);
+  });
+
+  it("returns false for a SolidDataset", () => {
+    expect(isThing(createSolidDataset())).toBe(false);
   });
 });
 

@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `hasResourceInfo`: a function that can verify whether its parameter (e.g. a file or a
   SolidDataset) was fetched from somewhere, or was initialised in-memory.
+- `isThing`: a function that can verify whether its parameter is a Thing.
 - `mockSolidDatasetFrom`, `mockContainerFrom`, `mockFileFrom`, `mockThingFrom`,
   `addMockResourceAclTo` and `addMockFallbackAclTo`: functions that allow you to mock the
   solid-client data structures in your unit tests.
