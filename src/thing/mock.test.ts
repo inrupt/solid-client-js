@@ -22,12 +22,18 @@
 import { describe, it, expect } from "@jest/globals";
 
 import { mockThingFrom } from "./mock";
-import { asIri } from "./thing";
+import { asIri, isThing } from "./thing";
 
 describe("mockThingFrom", () => {
-  it("is is identified by the given IRI", async () => {
+  it("is identified by the given IRI", async () => {
     const mockedThing = mockThingFrom("https://some.pod/resource#thing");
 
     expect(asIri(mockedThing)).toBe("https://some.pod/resource#thing");
+  });
+
+  it("is recognised as a Thing", async () => {
+    const mockedThing = mockThingFrom("https://arbitrary.pod/resource#thing");
+
+    expect(isThing(mockedThing)).toBe(true);
   });
 });

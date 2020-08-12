@@ -69,3 +69,24 @@ export function filter(
 
   return output;
 }
+
+/**
+ * Verify whether a given value has the required DatasetCore properties.
+ *
+ * @param input Value that might or might not be a DatasetCore
+ * @returns Whether `input` provides the properties prescribed by the RDF/JS Dataset spec 1.0.
+ * @hidden This is an internal convenience function.
+ */
+export function internal_isDatasetCore<X>(
+  input: X | DatasetCore
+): input is DatasetCore {
+  return (
+    typeof input === "object" &&
+    typeof (input as DatasetCore).size === "number" &&
+    typeof (input as DatasetCore).add === "function" &&
+    typeof (input as DatasetCore).delete === "function" &&
+    typeof (input as DatasetCore).has === "function" &&
+    typeof (input as DatasetCore).match === "function" &&
+    Array.from(input as DatasetCore).length === (input as DatasetCore).size
+  );
+}

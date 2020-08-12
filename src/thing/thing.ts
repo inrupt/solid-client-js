@@ -19,8 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Quad } from "rdf-js";
-import { dataset, filter, clone } from "../rdfjs";
+import { NamedNode, Quad, DatasetCore } from "rdf-js";
+import { dataset, filter, clone, internal_isDatasetCore } from "../rdfjs";
 import {
   isLocalNode,
   isEqual,
@@ -283,6 +283,18 @@ export function createThing(options: CreateThingOptions = {}): Thing {
     internal_localSubject: localSubject,
   });
   return thing;
+}
+
+/**
+ * @param input An value that might be a [[Thing]].
+ * @returns Whether `input` is a Thing.
+ */
+export function isThing<X>(input: X | Thing): input is Thing {
+  return (
+    internal_isDatasetCore(input) &&
+    (isThingLocal(input as ThingLocal) ||
+      typeof (input as ThingPersisted).internal_url === "string")
+  );
 }
 
 /**
