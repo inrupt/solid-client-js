@@ -30,7 +30,7 @@ import {
   removeThing,
   createThing,
   asUrl,
-  toNode,
+  internal_toNode,
   isThing,
 } from "./thing";
 import {
@@ -1199,8 +1199,8 @@ describe("toNode", () => {
     const thing: ThingLocal = Object.assign(dataset(), {
       internal_localSubject: localSubject,
     });
-    const node1 = toNode(thing);
-    const node2 = toNode(thing);
+    const node1 = internal_toNode(thing);
+    const node2 = internal_toNode(thing);
     expect(node1.equals(node2)).toBe(true);
   });
 });
