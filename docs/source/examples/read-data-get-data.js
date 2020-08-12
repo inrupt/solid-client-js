@@ -36,7 +36,7 @@ import { FOAF } from "@inrupt/vocab-common-rdf";
 // - Use getStringNoLocaleAll if expecting multiple values.
 
 const names = getStringNoLocaleAll(thing, FOAF.name);
-// => an array of strings representing the `http://xmlns.com/foaf/0.1/name`.
+// => an array of strings representing FOAF.name ("http://xmlns.com/foaf/0.1/name").
 
 // Get data from a retrieved Thing.
 // - Specifically, get the Skype ID (FOAF.skypeId).
@@ -45,7 +45,7 @@ const names = getStringNoLocaleAll(thing, FOAF.name);
 // - Use getStringNoLocaleAll if expecting multiple values.
 
 const skypeId = getStringNoLocale(thing, FOAF.skypeId);
-// => one of the strings representing the `http://xmlns.com/foaf/0.1/skypeId`,
+// => one of the strings representing the FOAF.skypeId ("http://xmlns.com/foaf/0.1/skypeId"),
 //    or null if there are none.
 
 // Get data from a retrieved Thing.
