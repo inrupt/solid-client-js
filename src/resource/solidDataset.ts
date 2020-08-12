@@ -319,7 +319,7 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
   };
 }
 
-export function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
+function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
   return DataFactory.namedNode("#" + localNode.internal_name);
 }
 
