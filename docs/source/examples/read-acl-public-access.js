@@ -3,7 +3,6 @@ import {
   getPublicAccess,
 } from "@inrupt/solid-client";
 
-const webId = "https://example.com/profile#webid";
 const myDatasetWithAcl = await getSolidDatasetWithAcl("https://example.com");
 const publicAccess = getPublicAccess(myDatasetWithAcl);
 
