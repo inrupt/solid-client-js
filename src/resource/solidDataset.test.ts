@@ -1178,6 +1178,150 @@ describe("createEmptyContainerAt", () => {
       new Error("Creating the empty Container failed: 403 Forbidden.")
     );
   });
+
+  describe("using the workaround for Node Solid Server", () => {
+    it("creates and deletes a dummy file inside the Container when encountering NSS's exact error message", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Creating a dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Creation successful.", { status: 200 }))
+        )
+        // Deleting that dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Deletion successful", { status: 200 }))
+        )
+        // Getting the Container's metadata:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response(undefined, { status: 200 }))
+        );
+
+      await createEmptyContainerAt("https://arbitrary.pod/container/", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls[1][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[2][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+    });
+
+    it("does not attempt to create a dummy file on a regular 409 error", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(
+            new Response(
+              "This is a perfectly regular 409 error that has nothing to do with our not supporting the spec.",
+              { status: 409 }
+            )
+          )
+        );
+
+      const fetchPromise = createEmptyContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error("Creating the empty Container failed: 409 Conflict.")
+      );
+      expect(mockFetch.mock.calls).toHaveLength(1);
+    });
+
+    it("appends a trailing slash if not provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Creating a dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Creation successful.", { status: 200 }))
+        )
+        // Deleting that dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Deletion successful", { status: 200 }))
+        )
+        // Getting the Container's metadata:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response(undefined, { status: 200 }))
+        );
+
+      await createEmptyContainerAt("https://arbitrary.pod/container", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls[1][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[2][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+    });
+
+    it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Creating a dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Forbidden", { status: 403 }))
+        );
+
+      const fetchPromise = createEmptyContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error("Creating the empty Container failed: 403 Forbidden.")
+      );
+    });
+  });
 });
 
 describe("saveSolidDatasetInContainer", () => {
