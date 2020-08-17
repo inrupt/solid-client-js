@@ -255,6 +255,15 @@ export async function createEmptyContainerAt(
   });
 
   if (!response.ok) {
+    if (
+      response.status === 409 &&
+      response.statusText === "Conflict" &&
+      (await response.text()).trim() ===
+        "Can't write file: PUT not supported on containers, use POST instead"
+    ) {
+      return createEmptyContainerWithNssWorkaroundAt(url, options);
+    }
+
     throw new Error(
       `Creating the empty Container failed: ${response.status} ${response.statusText}.`
     );
@@ -270,6 +279,54 @@ export async function createEmptyContainerAt(
 
   return containerDataset;
 }
+
+/**
+ * Unfortunately Node Solid Server does not confirm to the Solid spec when it comes to Container
+ * creation. As a workaround, we create a dummy file _inside_ the desired Container (which should
+ * create the desired Container on the fly), and then delete it again.
+ *
+ * @see https://github.com/solid/node-solid-server/issues/1465
+ */
+const createEmptyContainerWithNssWorkaroundAt: typeof createEmptyContainerAt = async (
+  url,
+  options
+) => {
+  url = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const dummyUrl = url + ".dummy";
+
+  const createResponse = await config.fetch(dummyUrl, {
+    method: "PUT",
+    headers: {
+      Accept: "text/turtle",
+      "Content-Type": "text/turtle",
+    },
+  });
+
+  if (!createResponse.ok) {
+    throw new Error(
+      `Creating the empty Container failed: ${createResponse.status} ${createResponse.statusText}.`
+    );
+  }
+
+  await config.fetch(dummyUrl, { method: "DELETE" });
+
+  const containerInfoResponse = await config.fetch(url, { method: "HEAD" });
+
+  const resourceInfo = internal_parseResourceInfo(containerInfoResponse);
+  const containerDataset: SolidDataset &
+    WithChangeLog &
+    WithResourceInfo = Object.assign(dataset(), {
+    internal_changeLog: { additions: [], deletions: [] },
+    internal_resourceInfo: resourceInfo,
+  });
+
+  return containerDataset;
+};
 
 function isUpdate(
   solidDataset: SolidDataset,
