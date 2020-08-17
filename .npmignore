@@ -1,8 +1,9 @@
 # We want to ignore compiled Javascript in .gitignore, but not when publishing to npm. Hence this file.
-coverage
 *.test.js
 *.test.ts
-whitesource/
+coverage
+whitesource
+docs
 # Resources should contain files useful at build time only, and should not
 # be required as part of the package (like devDependencies)
-resources/
+resources
