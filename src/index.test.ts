@@ -34,9 +34,9 @@ import {
   getSourceUrl,
   getSourceIri,
   saveSolidDatasetAt,
-  createEmptyContainerAt,
+  createContainerAt,
   saveSolidDatasetInContainer,
-  createEmptyContainerInContainer,
+  createContainerInContainer,
   saveAclFor,
   deleteAclFor,
   getThing,
@@ -203,9 +203,9 @@ it("exports the public API from the entry file", () => {
   expect(getSourceUrl).toBeDefined();
   expect(getSourceIri).toBeDefined();
   expect(saveSolidDatasetAt).toBeDefined();
-  expect(createEmptyContainerAt).toBeDefined();
+  expect(createContainerAt).toBeDefined();
   expect(saveSolidDatasetInContainer).toBeDefined();
-  expect(createEmptyContainerInContainer).toBeDefined();
+  expect(createContainerInContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThing).toBeDefined();

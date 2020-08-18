@@ -229,7 +229,7 @@ export async function saveSolidDatasetAt(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @since Not released yet.
  */
-export async function createEmptyContainerAt(
+export async function createContainerAt(
   url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions
@@ -261,7 +261,7 @@ export async function createEmptyContainerAt(
       (await response.text()).trim() ===
         "Can't write file: PUT not supported on containers, use POST instead"
     ) {
-      return createEmptyContainerWithNssWorkaroundAt(url, options);
+      return createContainerWithNssWorkaroundAt(url, options);
     }
 
     throw new Error(
@@ -287,7 +287,7 @@ export async function createEmptyContainerAt(
  *
  * @see https://github.com/solid/node-solid-server/issues/1465
  */
-const createEmptyContainerWithNssWorkaroundAt: typeof createEmptyContainerAt = async (
+const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   url,
   options
 ) => {
@@ -423,7 +423,7 @@ export async function saveSolidDatasetInContainer(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @since Not released yet.
  */
-export async function createEmptyContainerInContainer(
+export async function createContainerInContainer(
   containerUrl: UrlString | Url,
   options: SaveInContainerOptions = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo> {
