@@ -39,6 +39,7 @@ import {
   saveSolidDatasetInContainer,
   getSolidDatasetWithAcl,
   createSolidDataset,
+  createEmptyContainerAt,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -912,6 +913,269 @@ describe("saveSolidDatasetAt", () => {
         deletions: [],
       });
     });
+  });
+});
+
+describe("createEmptyContainerAt", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    await createEmptyContainerAt("https://some.pod/container/");
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/container/"
+    );
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await createEmptyContainerAt("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+  });
+
+  it("can be called with NamedNodes", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await createEmptyContainerAt(
+      DataFactory.namedNode("https://some.pod/container/"),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+  });
+
+  it("appends a trailing slash if not provided", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await createEmptyContainerAt("https://some.pod/container", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+  });
+
+  it("sets the right headers to create a Container", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    await createEmptyContainerAt("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+    expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
+      "Link",
+      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"'
+    );
+    expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
+      "Content-Type",
+      "text/turtle"
+    );
+    expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
+      "If-None-Match",
+      "*"
+    );
+  });
+
+  it("keeps track of what URL the Container was saved to", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          mockResponse(undefined, { url: "https://some.pod/container/" })
+        )
+      );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://some.pod/container/",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(solidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/container/"
+    );
+  });
+
+  it("provides the IRI of the relevant ACL resource, if provided", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        mockResponse(undefined, {
+          headers: {
+            Link: '<aclresource.acl>; rel="acl"',
+          },
+          url: "https://some.pod/container/",
+        })
+      )
+    );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://some.pod/container/",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDataset.internal_resourceInfo.aclUrl).toBe(
+      "https://some.pod/container/aclresource.acl"
+    );
+  });
+
+  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            Link: '<arbitrary-resource>; rel="not-acl"',
+          },
+        })
+      )
+    );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://some.pod/container/",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDataset.internal_resourceInfo.aclUrl).toBeUndefined();
+  });
+
+  it("provides the relevant access permissions to the Resource, if available", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            "Wac-Allow": 'public="read",user="read write append control"',
+          },
+        })
+      )
+    );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://arbitrary.pod/container/",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDataset.internal_resourceInfo.permissions).toEqual({
+      user: {
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      },
+      public: {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {
+            // Public permissions are missing double quotes, user permissions are absent:
+            "WAC-Allow": "public=read",
+          },
+        })
+      )
+    );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://arbitrary.pod/container/",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDataset.internal_resourceInfo.permissions).toEqual({
+      user: {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      },
+      public: {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      },
+    });
+  });
+
+  it("does not provide the resource's access permissions if not provided by the server", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: {},
+        })
+      )
+    );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://arbitrary.pod/container/",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDataset.internal_resourceInfo.permissions).toBeUndefined();
+  });
+
+  it("returns an empty SolidDataset", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
+        )
+      );
+
+    const solidDataset = await createEmptyContainerAt(
+      "https://arbitrary.pod/container/",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(solidDataset.size).toBe(0);
+  });
+
+  it("returns a meaningful error when the server returns a 403", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(new Response("Not allowed", { status: 403 }))
+      );
+
+    const fetchPromise = createEmptyContainerAt(
+      "https://arbitrary.pod/container/",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error("Creating the empty Container failed: 403 Forbidden.")
+    );
   });
 });
 
