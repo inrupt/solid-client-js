@@ -48,23 +48,23 @@ Read Access Information for a Resource
 ======================================
 
 To retrieve the ACL for a resource in addition to the Resource itself,
-use the :doc:`getSolidDatasetWithAcl
-</api/modules/_resource_soliddataset_>` function.
+use the :apisolidclient:`getSolidDatasetWithAcl
+</modules/_resource_soliddataset_#getSolidDatasetWithAcl>` function.
 The returned value includes the Resource data, the ``ResourceInfo``
 (i.e., metadata), and the ACL.
 
 .. note::
 
-   The :doc:`getSolidDatasetWithAcl
-   </api/modules/_resource_soliddataset_>` function
+   The :apisolidclient:`getSolidDatasetWithAcl
+   </modules/_resource_soliddataset_#getSolidDatasetWithAcl>` function
    may result in many extra HTTP requests being sent.
 
 Read Public Access
 ------------------
 
 From a :term:`SolidDataset` that has an ACL attached, you can use
-:doc:`getPublicAccess
-</api/modules/_acl_class_>` to retrieve the access granted
+:apisolidclient:`getPublicAccess
+</modules/_acl_class_#getPublicAccess>` to retrieve the access granted
 to the public in general, regardless of whether they are authenticated
 or not.
 
@@ -76,8 +76,8 @@ Reading Agent Access
 
 From a :term:`SolidDataset` that has an ACL attached, you can use:
 
-- :doc:`getAgentAccess
-  </api/modules/_acl_agent_>` to retrieve the access
+- :apisolidclient:`getAgentAccess
+  </modules/_acl_agent_#getAgentAccess>` to retrieve the access
   granted to a specific agent:
 
   .. literalinclude:: /examples/read-acl-agent-access.js
@@ -86,8 +86,8 @@ From a :term:`SolidDataset` that has an ACL attached, you can use:
      :end-before: END-EXAMPLE-READ-ACL-AGENT-ACCESS
 
 
-- :doc:`getAgentAccessAll
-  </api/modules/_acl_agent_>` to retrieve access
+- :apisolidclient:`getAgentAccessAll
+  </modules/_acl_agent_#getAgentAccessAll>` to retrieve access
   information for all agents that have access:
 
   .. literalinclude:: /examples/read-acl-agent-access-all.js
@@ -113,12 +113,12 @@ overriding the fallback ACL.
 
 To modify access to a Resource:
 
-#. Use :doc:`getSolidDatasetWithAcl
-   </api/modules/_resource_soliddataset_>` to retrieve
-   the Resource and its ACL.
+#. Use :apisolidclient:`getSolidDatasetWithAcl
+   </modules/_resource_soliddataset_#getSolidDatasetWithAcl>` to
+   retrieve the Resource and its ACL.
 
-#. From the retrieved Resource, call :doc:`getResourceACL
-   </api/modules/_acl_acl_>` to obtain its Resource-specific
+#. From the retrieved Resource, call :apisolidclient:`getResourceACL
+   </modules/_acl_acl_#getResourceACL>` to obtain its Resource-specific
    ACL. The function returns ``null`` if the Resource-specific ACL does
    not exists.
 
@@ -136,8 +136,8 @@ To modify access to a Resource:
    you save the new Resource-specific ACL, this ACL overrides the
    inherited fallback ACL.
 
-   a. To create a new ACL, you can use :doc:`createAcl
-      </api/modules/_acl_acl_>` to create a new empty ACL.
+   a. To create a new ACL, you can use :apisolidclient:`createAcl
+      </modules/_acl_acl_#createAcl>` to create a new empty ACL.
 
    #. If you have access to the Resource's fallback ACL, you can
       copy the currently applicable rules to a newly-initialised ACL.
@@ -160,8 +160,8 @@ Set Public Access
 Given a Resource's ACL obtained as specified in
 :ref:`manage-acl-change-access-to-resource`, you can:
 
-- Use :doc:`setPublicResourceAccess
-  </api/modules/_acl_class_>` to grant Access Modes
+- Use :apisolidclient:`setPublicResourceAccess
+  </modules/_acl_class_#setPublicResourceAccess>` to grant Access Modes
   to everybody (whether logged in or not) for the Resource itself:
 
   .. literalinclude:: /examples/write-acl-resource-public.js
@@ -169,10 +169,10 @@ Given a Resource's ACL obtained as specified in
      :start-after: BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
      :end-before: END-EXAMPLE-WRITE-ACL-RESOURCE-PUBLIC
 
-- Use :doc:`setPublicDefaultAccess
-  </api/modules/_acl_agent_>` to grant Access Modes
-  to everybody (whether logged in or not) for the Resource's children if the
-  Resource is a Container:
+- Use :apisolidclient:`setPublicDefaultAccess
+  </modules/_acl_agent_#setPublicDefaultAccess>` to grant Access Modes
+  to everybody (whether logged in or not) for the Resource's children
+  if the Resource is a Container:
 
   .. literalinclude:: /examples/write-acl-default-public.js
      :language: typescript
@@ -186,8 +186,8 @@ Set Agent Access
 Given a Resource's ACL obtained as specified in
 :ref:`manage-acl-change-access-to-resource`, you can:
 
-- Use :doc:`setAgentResourceAccess
-  </api/modules/_acl_agent_>` to grant Access Modes
+- Use :apisolidclient:`setAgentResourceAccess
+  </modules/_acl_agent_#setAgentResourceAccess>` to grant Access Modes
   to an Agent for the Resource itself:
 
   .. literalinclude:: /examples/write-acl-resource-agent.js
@@ -195,8 +195,8 @@ Given a Resource's ACL obtained as specified in
      :start-after: BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
      :end-before: END-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
 
-- Use :doc:`setAgentDefaultAccess
-  </api/modules/_acl_agent_>` to grant Access Modes
+- Use :apisolidclient:`setAgentDefaultAccess
+  </modules/_acl_agent_#setAgentDefaultAccess>` to grant Access Modes
   to an Agent for the Resource's children if the Resource is a
   Container:
 

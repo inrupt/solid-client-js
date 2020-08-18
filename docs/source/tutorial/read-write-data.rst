@@ -61,7 +61,7 @@ as an option to |product| to include the user's credentials with a request.
    :start-after: BEGIN-EXAMPLE-LOGIN
    :end-before: END-EXAMPLE-LOGIN
 
-For a more advanced example, see `the solid-client-authn repository
+For more examples, see `the solid-client-authn repository
 <https://github.com/inrupt/solid-client-authn/tree/master/examples/single/bundle>`_.
 
 Read Data
@@ -74,29 +74,31 @@ Read Data
 
 To read data with |product|,
 
-#. You first use :doc:`getSolidDataset
-   </api/modules/_resource_soliddataset_>` to fetch the dataset
-   from which you want to read your data.
+#. You first use :apisolidclient:`getSolidDataset
+   </modules/_resource_soliddataset_#getSolidDataset>` to fetch the
+   dataset from which you want to read your data.
 
 #. Then, use either:
 
-   - :doc:`getThing </api/modules/_thing_thing_>` to get a
-     single data entity from the dataset, or
+   - :apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+     get a single data entity from the dataset, or
 
-   - :doc:`getThingAll</api/modules/_thing_thing_>` to get all
-     data entities from the dataset.
+   - :apisolidclient:`getThingAll</modules/_thing_thing_#getThingAll>`
+     to get all data entities from the dataset.
 
-#. Then, from the data entity, you can :doc:`get
-   </api/modules/_thing_get_>` specific data. For a list of the ``get``
-   functions, see :doc:`get </api/modules/_thing_get_>`.
+#. Then, from the data entity, you can :apisolidclient:`get
+   </modules/_thing_get_>` specific data. For a list of the ``get``
+   functions, see :apisolidclient:`apisolidclient
+   </modules/_thing_get_>`.
 
 1. Fetch the Dataset
 --------------------
 
-To access data, first fetch the dataset (``SolidDataset``) that contains
-the data. To fetch a ``SolidDataset``, pass its URL to
-:doc:`getSolidDataset </api/modules/_resource_soliddataset_>` as
-in the following example:
+To access data, first fetch the dataset (``SolidDataset``) that
+contains the data. To fetch a ``SolidDataset``, pass its URL to
+:apisolidclient:`getSolidDataset
+</modules/_resource_soliddataset_#getSolidDataset>` as in the following
+example:
 
 .. literalinclude:: /examples/read-data-get-dataset.js
    :language: typescript
@@ -108,15 +110,15 @@ in the following example:
 
 From the fetched dataset, you can use either:
 
-- :doc:`getThing </api/modules/_thing_thing_>` with the Thing's
-  URL to get a single data entity, or
+- :apisolidclient:`getThing </modules/_thing_thing_#getThing>` with the
+  Thing's URL to get a single data entity, or
 
-- :doc:`getThingAll</api/modules/_thing_thing_>` to get all data
-  entities from the dataset.
+- :apisolidclient:`getThingAll </modules/_thing_thing_#getThingAll>` to
+  get all data entities from the dataset.
 
 The following passes in a example entity's URL to
-:doc:`getThing </api/modules/_thing_thing_>` to retrieve the
-entity from the previously fetched dataset.
+:apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+retrieve the entity from the previously fetched dataset.
 
 .. literalinclude:: /examples/read-data-get-thing.js
    :language: typescript
@@ -148,8 +150,8 @@ of the Thing's property you want.
    :start-after: BEGIN-EXAMPLE-GET-DATA
    :end-before: END-EXAMPLE-GET-DATA
 
-For a list of the ``get`` functions, see :doc:`thing/get
-</api/modules//_thing_get_>`.
+For a list of the ``get`` functions, see :apisolidclient:`thing/get
+</modules/_thing_get_>`.
 
 Write Data
 ==========
@@ -173,28 +175,30 @@ To write data with |product|,
    To start, you need a data entity (a Thing) entity from which to
    create the updated Thing:
 
-   - Use :doc:`getThing </api/modules/_thing_thing_>` to start
-     with an existing data entity, or
+   - Use :apisolidclient:`getThing </modules/_thing_thing_#getThing>`
+     to start with an existing data entity, or
 
-   - Use :doc:`createThing </api/modules/_thing_thing_>` to create
-     a new data entity.
+   - Use :apisolidclient:`createThing
+     </modules/_thing_thing_#createThing>` to create a new data entity.
 
    With this Thing as a starting point, use the following functions to
    create a **new** Thing with the modifications:
 
-   - :doc:`thing/add </api/modules/_thing_add_>` functions to add new data,
+   - :apisolidclient:`thing/add </modules/_thing_add_>` functions to
+     add new data,
 
-   - :doc:`thing/set </api/modules/_thing_set_>` functions to replace existing
-     data, and
+   - :apisolidclient:`thing/set </modules/_thing_set_>` functions to
+     replace existing data, and
 
-   - :doc:`thing/remove </api/modules/_thing_remove_>` functions to remove
-     existing data.
+   - :apisolidclient:`thing/remove </modules/_thing_remove_>` functions
+     to remove existing data.
 
-#. Use :doc:`setThing </api/modules/_thing_thing_>` to return a
-   **new** dataset with the updated Thing.
+#. Use :apisolidclient:`setThing </modules/_thing_thing_#setThing>` to
+   return a **new** dataset with the updated Thing.
 
-#. Use :doc:`saveSolidDataSetAt
-   </api/modules/_resource_soliddataset_>` to save the dataset to the    Pod.
+#. Use :apisolidclient:`saveSolidDataSetAt
+   </modules/_resource_soliddataset_#saveSolidDataSetAt>` to save the
+   dataset to the Pod.
 
 .. topic:: Immutability
 
@@ -212,14 +216,14 @@ To write data with |product|,
 To start, you need a data entity (a Thing) entity from which to create
 the updated Thing:
 
-- Use :doc:`getThing </api/modules/_thing_thing_>` to start
-  with an existing data entity, or
+- Use :apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+  start with an existing data entity, or
 
-- Use :doc:`createThing </api/modules/_thing_thing_>` to create
-  a new data entity.
+- Use :apisolidclient:`createThing </module/_thing_thing_#createThing>`
+  to create a new data entity.
 
-The following example uses :doc:`createThing
-</api/modules/_thing_thing_>`.
+The following example uses :apisolidclient:`createThing
+</modules/_thing_thing_#createThing>`.
 
 .. literalinclude:: /examples/write-data-create-thing.js
    :language: typescript
@@ -229,13 +233,14 @@ The following example uses :doc:`createThing
 With this Thing as a starting point, use the following functions to
 create a **new** Thing with the modifications:
 
-- :doc:`thing/add </api/modules/_thing_add_>` functions to add new data,
+- :apisolidclient:`thing/add </modules/_thing_add_>` functions to
+  add new data,
 
-- :doc:`thing/set </api/modules/_thing_set_>` functions to replace existing
-  data, and
+- :apisolidclient:`thing/set </modules/_thing_set_>` functions to
+  replace existing data, and
 
-- :doc:`thing/remove </api/modules/_thing_remove_>` functions to remove
-  data.
+- :apisolidclient:`thing/remove </modules/_thing_remove_>`
+  functions to remove data.
 
 For example, the following example creates a new Thing ``updatedThing``
 that has an added nickname value of ``"timbl"``. To identify the
@@ -284,8 +289,9 @@ SolidDataset, the updated Thing replaces the existing one.
    :doc:`/tutorial/manage-access-control-list`.
 
 To save the updated dataset to a Pod, use
-:doc:`saveSolidDatasetAt</api/modules/_resource_soliddataset_>`, passing
-in its URL as well as the updated dataset.
+:apisolidclient:`saveSolidDatasetAt
+</modules/_resource_soliddataset_#saveSolidDatasetAt>`, passing in its
+URL as well as the updated dataset.
 
 .. literalinclude:: /examples/write-data-save-dataset.js
    :language: typescript

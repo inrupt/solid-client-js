@@ -1,0 +1,10 @@
+{% if not title.startswith('Module:') %}
+	{% if theme_github_editable %}
+	   <div class="tocsection editthispage">
+	       <i class="fas fa-edit"></i> 
+	       <a class="edit-link" href="https://github.com/{{theme_github_org }}/{{ theme_github_repo }}/blob/{{ theme_github_branch }}/docs/source/{{ pagename }}.rst" target="_blank" title="Edit {{pagename}}.txt on GitHub">
+	           <span>Edit on Github</span>
+	       </a>
+	   </div>
+	{% endif %}
+{% endif %}
