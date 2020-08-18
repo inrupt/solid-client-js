@@ -103,25 +103,26 @@ describe.each([
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
   });
 
-  it("can create and remove empty Containers", async () => {
-    if (!rootContainer.includes("demo-ess")) {
-      // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
-      // Once the bug is fixed, this should be cleaned up.
-      const newContainer1 = await createContainerAt(
-        `${rootContainer}container-test/some-container/`
-      );
-      const newContainer2 = await createContainerInContainer(
-        "https://lit-e2e-test.inrupt.net/public/container-test/",
-        { slugSuggestion: "some-other-container" }
-      );
+  // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
+  // Once the bug is fixed, this should be cleaned up.
+  const nss = rootContainer.includes("demo-ess") ? it.skip : it;
+  nss("can create and remove empty Containers", async () => {
+    const newContainer1 = await createContainerAt(
+      `${rootContainer}container-test/some-container/`
+    );
+    const newContainer2 = await createContainerInContainer(
+      "https://lit-e2e-test.inrupt.net/public/container-test/",
+      { slugSuggestion: "some-other-container" }
+    );
 
-      expect(getSourceUrl(newContainer1)).toBe(
-        `${rootContainer}container-test/some-container/`
-      );
+    // See FIXME above to explain specific setup
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(getSourceUrl(newContainer1)).toBe(
+      `${rootContainer}container-test/some-container/`
+    );
 
-      await deleteFile(`${rootContainer}container-test/some-container/`);
-      await deleteFile(getSourceUrl(newContainer2));
-    }
+    await deleteFile(`${rootContainer}container-test/some-container/`);
+    await deleteFile(getSourceUrl(newContainer2));
   });
 
   it("should be able to read and update ACLs", async () => {
