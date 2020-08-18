@@ -56,6 +56,7 @@ export {
   saveSolidDatasetAt,
   createEmptyContainerAt,
   saveSolidDatasetInContainer,
+  createEmptyContainerInContainer,
   getSolidDatasetWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchLitDatasetWithAcl]] */
