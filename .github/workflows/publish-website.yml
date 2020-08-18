@@ -8,7 +8,7 @@ on:
 env:
   CI: true
 jobs:
-  publish-website:
+  publish-api-website:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2.1.0
@@ -21,6 +21,46 @@ jobs:
       run: |
         npm ci
         npm run build-api-docs
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install Python dependencies
+      run: |
+        cd apidocs/
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build website
+      run: |
+        cd apidocs/
+        make html
+        touch build/html/.nojekyll
+    - name: Deploy to GitHub Pages
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email $GITHUB_ACTOR@users.noreply.github.com
+        git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git
+        git fetch --no-recurse-submodules
+        cd apidocs
+        git worktree add ./gh-pages gh-pages
+        cd gh-pages
+        git rm -r .
+        cp -r ../build/html/. .
+        git add .
+        git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
+        git push gh-pages-remote gh-pages:gh-pages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+  publish-website:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Prepare for publication to GitHub Packages
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org'
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:

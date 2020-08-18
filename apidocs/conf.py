@@ -26,11 +26,6 @@ copyright = '2020-present, Inrupt Inc.'
 
 name = 'solid-client'
 repo_name = '{0}-js'.format(name)
-replacement_string = '.. |product|  replace:: ``{0}``'.format(name)
-
-rst_epilog = '\n'.join([
-    replacement_string,
-])
 
 pygments_style = 'sphinx'
 
@@ -49,16 +44,10 @@ highlight_language = 'javascript'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx_copybutton',
     'sphinx.ext.extlinks',
-    'sphinx_tabs.tabs',
-    'sphinx.ext.todo',
     'myst_parser',
 ]
 
-extlinks = {
-    'apisolidclient': ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s',''),
-}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['./_templates']
@@ -66,7 +55,7 @@ templates_path = ['./_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['./source/reference/api']
+exclude_patterns = [ ]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -85,11 +74,11 @@ html_title = 'Inrupt {0} Documentation'.format(name)
 # These theme options are declared in ./themes/inrupt/theme.conf
 
 html_theme_options = {
-    'project_title': 'Inrupt {0} Documentation'.format(name),
+    'project_title': 'Inrupt {0} API Documentation'.format(name),
     'banner': True,
     'banner_msg': 'This is a Beta (i.e. in progress) version of the manual. Content and features are subject to change.',
     'robots_index': True,
-    'github_editable': True,
+    'github_editable': False,
     'github_org': 'inrupt',
     'github_repo': repo_name,
     'github_branch': 'master',

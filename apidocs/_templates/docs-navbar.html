@@ -1,0 +1,34 @@
+
+<div class="container-xl">
+
+    <a class="navbar-brand" href="https://inrupt.com/">
+      <img src="https://inrupt.com/sites/default/files/inrupt_email%20sign%20logo.jpg" class="logo" alt="logo">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar-menu" class="col-lg-9 collapse navbar-collapse">
+      <ul id="navbar-main-elements" class="navbar-nav mr-auto">
+          <li class="nav-item">
+             <a class="nav-link" href="{{theme_ess_docs}}"> Enterprise Solid Server </a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Client Libraries </a>
+               <ul class="nav-children">
+                     <li class="nav-item nav-childitem">
+                        <a href="{{theme_clientlibjs_docs}}"> JavaScript</a>
+                     </li>
+               </ul>
+          </li>
+          
+      </ul>
+
+
+      {% if theme_search_bar_position == 'navbar' %}
+        {%- include "search-field.html" %}
+      {% endif %}
+
+      
+    </div>
+</div>

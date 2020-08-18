@@ -1,0 +1,201 @@
+.header-style,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lato", Open Sans, sans-serif;
+}
+
+body {
+  font-family: "Lato", Open Sans, sans-serif;
+}
+
+.footer {
+  padding-top: 0;
+}
+
+/* Specify the padding for 3rd level) */
+.bd-sidebar .nav > li > ul > li > a {
+  padding: 0.1rem 1.5rem;
+}
+
+.section_l1 > li {
+  line-height: 24px;
+}
+
+/* inherited css for toc does not cover 3rd level - so genericize */
+
+.bd-sidebar .nav li > a {
+  display: block;
+  font-size: 0.9em;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* inherited css for toc does not cover 3rd child - so genericize */
+
+.bd-sidebar .nav li .active > a {
+  font-weight: 600;
+  color: #130654;
+}
+
+/* inherited css does not cover 3rd child*/
+
+.toctree-l3 {
+  list-style: none;
+}
+
+/* Add border and padding to left hand toc sections */
+.toctree-l1 {
+  border-top: 1px solid #e0e7e8;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Add border and padding to the top item in left hand toc */
+.toctree-top {
+  padding-bottom: 0.5rem;
+}
+
+/* Top Nav Header under Client Libraries dropdown - don't show by default*/
+
+ul.navbar-nav ul.nav-children {
+  display: none;
+  padding-top: 0.2rem;
+  padding-left: 0;
+  position: absolute;
+  list-style: none;
+}
+
+/* Top Nav Header under Client Libraries dropdown - show if hover */
+
+ul.navbar-nav li.nav-item:hover ul.nav-children {
+  display: block;
+  background-color: #fff;
+}
+
+li.nav-childitem {
+  padding-top: 0.2rem;
+}
+
+li.nav-childitem:hover {
+  background-color: #f3f3f3;
+}
+
+li.nav-childitem > a {
+  color: #130654;
+  padding-left: 0.5rem;
+}
+
+/* Need for tables in dirhtml pages */
+table.docutils {
+  margin: 24px 0;
+  font-size: 14px;
+  line-height: 24px;
+  text-align: left;
+}
+
+/* Need for tables in dirhtml pages */
+
+table.docutils > thead th.head {
+  padding: 0 5px 12px;
+}
+
+/* Need for tables in dirhtml pages */
+
+table.docutils td,
+table.docutils th {
+  border-color: #ebebed;
+  padding: 11px 5px 12px;
+}
+
+/* Need to override theme's td white-space nowrap */
+
+td:first-child {
+  white-space: inherit;
+}
+/* For the breadcrumb at top of page*/
+
+div.related ul {
+  padding: 0 0 0 2px;
+}
+
+/* Need for tabs if using with pydata_sphinx_theme */
+
+div.sphinx-tabs > div.menu > a.item {
+  width: auto;
+  margin: 0;
+}
+
+/* Need for inline - otherwise, default is hot pink */
+
+.pre {
+  color: black;
+}
+
+/* Need for inline - to also highlight white spaces */
+
+:not(pre) > * > code,
+:not(pre) > code {
+  background-color: rgba(220, 220, 220, 0.3);
+}
+
+/* Adding background color to code blocks */
+
+.highlight {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Adding a border to shell and javascript code blocks */
+
+.highlight-sh,
+.highlight-javascript {
+  border-left: 5px solid #494747;
+}
+
+/* Hiding copybutton if code-block is none */
+div.highlight-none > div > a.copybtn {
+  display: none;
+}
+
+.ui.tabular.menu .item {
+  padding: 0.5em 1.4em;
+}
+
+/* Need styling for :guilabel: directives */
+
+.guilabel {
+  font-style: normal;
+  font-weight: bold;
+}
+
+/* Allow lists with a, b, ... */
+
+ol ol,
+ul ol {
+  list-style-type: lower-alpha;
+}
+
+/* Override alert padding-bottom */
+
+.alert {
+  padding-bottom: 0.75rem;
+}
+
+/* Not used - since not using captions for figures now */
+p.caption {
+  text-align: left;
+}
+
+/* Override basic.css's 10px margin-top */
+
+p.topic-title {
+  margin-top: 0px;
+}
+
+/* Override background-color to white to lessen prominence*/
+
+.topic {
+  background-color: #fff;
+}
