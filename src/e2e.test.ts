@@ -46,6 +46,10 @@ import {
   getPublicDefaultAccess,
   getPublicResourceAccess,
   getFile,
+  getSourceUrl,
+  deleteFile,
+  createEmptyContainerAt,
+  createEmptyContainerInContainer,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -96,6 +100,25 @@ describe("End-to-end tests", () => {
     );
     expect(isRawData(rdfResourceInfo)).toBe(false);
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
+  });
+
+  it("can create and remove empty Containers", async () => {
+    const newContainer1 = await createEmptyContainerAt(
+      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
+    );
+    const newContainer2 = await createEmptyContainerInContainer(
+      "https://lit-e2e-test.inrupt.net/public/container-test/",
+      { slugSuggestion: "some-other-container" }
+    );
+
+    expect(getSourceUrl(newContainer1)).toBe(
+      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
+    );
+
+    await deleteFile(
+      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
+    );
+    await deleteFile(getSourceUrl(newContainer2));
   });
 
   it("should be able to read and update ACLs", async () => {
