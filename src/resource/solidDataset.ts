@@ -356,6 +356,65 @@ export async function saveSolidDatasetInContainer(
   return resourceWithResolvedIris;
 }
 
+/**
+ * Create an empty Container inside the Container at the given URL.
+ *
+ * Throws an error if creating the Container failed, e.g. because the current user does not have
+ * permissions to.
+ *
+ * @param containerUrl URL of the Container in which the empty Container is to be created.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @since Not released yet.
+ */
+export async function createEmptyContainerInContainer(
+  containerUrl: UrlString | Url,
+  options: SaveInContainerOptions = internal_defaultFetchOptions
+): Promise<SolidDataset & WithResourceInfo> {
+  containerUrl = internal_toIriString(containerUrl);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const headers: RequestInit["headers"] = {
+    "Content-Type": "text/turtle",
+    Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+  };
+  if (options.slugSuggestion) {
+    headers.slug = options.slugSuggestion;
+  }
+  const response = await config.fetch(containerUrl, {
+    method: "POST",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Creating an empty Container in the Container failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const locationHeader = response.headers.get("Location");
+  if (locationHeader === null) {
+    throw new Error(
+      "Could not determine the location for the newly created Container."
+    );
+  }
+
+  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
+    .href;
+  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+    sourceIri: resourceIri,
+    isRawData: false,
+  };
+  const resourceWithResourceInfo: SolidDataset &
+    WithResourceInfo = Object.assign(dataset(), {
+    internal_resourceInfo: resourceInfo,
+  });
+
+  return resourceWithResourceInfo;
+}
+
 function getNamedNodesForLocalNodes(quad: Quad): Quad {
   const subject = isLocalNode(quad.subject)
     ? getNamedNodeFromLocalNode(quad.subject)

@@ -36,6 +36,7 @@ import {
   saveSolidDatasetAt,
   createEmptyContainerAt,
   saveSolidDatasetInContainer,
+  createEmptyContainerInContainer,
   saveAclFor,
   deleteAclFor,
   getThing,
@@ -204,6 +205,7 @@ it("exports the public API from the entry file", () => {
   expect(saveSolidDatasetAt).toBeDefined();
   expect(createEmptyContainerAt).toBeDefined();
   expect(saveSolidDatasetInContainer).toBeDefined();
+  expect(createEmptyContainerInContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThing).toBeDefined();
