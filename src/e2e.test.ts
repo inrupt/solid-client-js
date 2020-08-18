@@ -52,16 +52,17 @@ import {
   createContainerInContainer,
 } from "./index";
 
-describe("End-to-end tests", () => {
+describe.each([
+  ["https://lit-e2e-test.inrupt.net/public/"],
+  ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
+])("End-to-end tests against %s", (rootContainer) => {
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
-    const dataset = await getSolidDataset(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"
-    );
+    const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
+      `${rootContainer}lit-pod-test.ttl#thing1`
     );
 
     expect(getStringNoLocale(existingThing, foaf.name)).toBe(
@@ -77,13 +78,13 @@ describe("End-to-end tests", () => {
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveSolidDatasetAt(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl",
+      `${rootContainer}lit-pod-test.ttl`,
       updatedDataset
     );
 
     const savedThing = getThing(
       savedDataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
+      `${rootContainer}lit-pod-test.ttl#thing1`
     );
     expect(getStringNoLocale(savedThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
@@ -93,31 +94,34 @@ describe("End-to-end tests", () => {
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
     const rdfResourceInfo = await fetchResourceInfoWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
+      `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
     );
     const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
+      `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
     );
     expect(isRawData(rdfResourceInfo)).toBe(false);
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
   });
 
-  it("can create and remove empty Containers", async () => {
+  // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
+  // Once the bug is fixed, this should be cleaned up.
+  const nss = rootContainer.includes("demo-ess") ? it.skip : it;
+  nss("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
+      `${rootContainer}container-test/some-container/`
     );
     const newContainer2 = await createContainerInContainer(
       "https://lit-e2e-test.inrupt.net/public/container-test/",
       { slugSuggestion: "some-other-container" }
     );
 
+    // See FIXME above to explain specific setup
+    // eslint-disable-next-line jest/no-standalone-expect
     expect(getSourceUrl(newContainer1)).toBe(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
+      `${rootContainer}container-test/some-container/`
     );
 
-    await deleteFile(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
-    );
+    await deleteFile(`${rootContainer}container-test/some-container/`);
     await deleteFile(getSourceUrl(newContainer2));
   });
 
@@ -128,10 +132,10 @@ describe("End-to-end tests", () => {
       Math.random().toString();
 
     const datasetWithAcl = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
+      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
     );
     const datasetWithoutAcl = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
+      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`
     );
 
     expect(hasResourceAcl(datasetWithAcl)).toBe(true);
@@ -166,7 +170,7 @@ describe("End-to-end tests", () => {
     });
     const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
     expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
+      `${rootContainer}lit-pod-acl-test/`
     );
 
     if (hasResourceAcl(datasetWithAcl)) {
@@ -199,7 +203,7 @@ describe("End-to-end tests", () => {
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
     const dataset = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
+      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
     );
     if (
       hasFallbackAcl(dataset) &&
@@ -215,9 +219,7 @@ describe("End-to-end tests", () => {
   });
 
   it("can fetch a non-RDF file and its metadata", async () => {
-    const jsonFile = await getFile(
-      "https://lit-e2e-test.inrupt.net/public/arbitrary.json"
-    );
+    const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
 
     expect(getContentType(jsonFile)).toEqual("application/json");
 
