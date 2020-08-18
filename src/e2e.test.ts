@@ -48,8 +48,8 @@ import {
   getFile,
   getSourceUrl,
   deleteFile,
-  createEmptyContainerAt,
-  createEmptyContainerInContainer,
+  createContainerAt,
+  createContainerInContainer,
 } from "./index";
 
 describe("End-to-end tests", () => {
@@ -103,10 +103,10 @@ describe("End-to-end tests", () => {
   });
 
   it("can create and remove empty Containers", async () => {
-    const newContainer1 = await createEmptyContainerAt(
+    const newContainer1 = await createContainerAt(
       "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
     );
-    const newContainer2 = await createEmptyContainerInContainer(
+    const newContainer2 = await createContainerInContainer(
       "https://lit-e2e-test.inrupt.net/public/container-test/",
       { slugSuggestion: "some-other-container" }
     );

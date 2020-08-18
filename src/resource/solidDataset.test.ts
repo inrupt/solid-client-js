@@ -39,8 +39,8 @@ import {
   saveSolidDatasetInContainer,
   getSolidDatasetWithAcl,
   createSolidDataset,
-  createEmptyContainerAt,
-  createEmptyContainerInContainer,
+  createContainerAt,
+  createContainerInContainer,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -917,7 +917,7 @@ describe("saveSolidDatasetAt", () => {
   });
 });
 
-describe("createEmptyContainerAt", () => {
+describe("createContainerAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -926,7 +926,7 @@ describe("createEmptyContainerAt", () => {
       >;
     };
 
-    await createEmptyContainerAt("https://some.pod/container/");
+    await createContainerAt("https://some.pod/container/");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/container/"
@@ -938,7 +938,7 @@ describe("createEmptyContainerAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await createEmptyContainerAt("https://some.pod/container/", {
+    await createContainerAt("https://some.pod/container/", {
       fetch: mockFetch,
     });
 
@@ -950,7 +950,7 @@ describe("createEmptyContainerAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await createEmptyContainerAt(
+    await createContainerAt(
       DataFactory.namedNode("https://some.pod/container/"),
       {
         fetch: mockFetch,
@@ -965,7 +965,7 @@ describe("createEmptyContainerAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await createEmptyContainerAt("https://some.pod/container", {
+    await createContainerAt("https://some.pod/container", {
       fetch: mockFetch,
     });
 
@@ -977,7 +977,7 @@ describe("createEmptyContainerAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await createEmptyContainerAt("https://some.pod/container/", {
+    await createContainerAt("https://some.pod/container/", {
       fetch: mockFetch,
     });
 
@@ -1006,7 +1006,7 @@ describe("createEmptyContainerAt", () => {
         )
       );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://some.pod/container/",
       {
         fetch: mockFetch,
@@ -1030,7 +1030,7 @@ describe("createEmptyContainerAt", () => {
       )
     );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://some.pod/container/",
       { fetch: mockFetch }
     );
@@ -1051,7 +1051,7 @@ describe("createEmptyContainerAt", () => {
       )
     );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://some.pod/container/",
       { fetch: mockFetch }
     );
@@ -1070,7 +1070,7 @@ describe("createEmptyContainerAt", () => {
       )
     );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
       { fetch: mockFetch }
     );
@@ -1103,7 +1103,7 @@ describe("createEmptyContainerAt", () => {
       )
     );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
       { fetch: mockFetch }
     );
@@ -1133,7 +1133,7 @@ describe("createEmptyContainerAt", () => {
       )
     );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
       { fetch: mockFetch }
     );
@@ -1150,7 +1150,7 @@ describe("createEmptyContainerAt", () => {
         )
       );
 
-    const solidDataset = await createEmptyContainerAt(
+    const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
       {
         fetch: mockFetch,
@@ -1167,12 +1167,9 @@ describe("createEmptyContainerAt", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = createEmptyContainerAt(
-      "https://arbitrary.pod/container/",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error("Creating the empty Container failed: 403 Forbidden.")
@@ -1205,7 +1202,7 @@ describe("createEmptyContainerAt", () => {
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
 
-      await createEmptyContainerAt("https://arbitrary.pod/container/", {
+      await createContainerAt("https://arbitrary.pod/container/", {
         fetch: mockFetch,
       });
 
@@ -1236,7 +1233,7 @@ describe("createEmptyContainerAt", () => {
           )
         );
 
-      const fetchPromise = createEmptyContainerAt(
+      const fetchPromise = createContainerAt(
         "https://arbitrary.pod/container/",
         {
           fetch: mockFetch,
@@ -1274,7 +1271,7 @@ describe("createEmptyContainerAt", () => {
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
 
-      await createEmptyContainerAt("https://arbitrary.pod/container", {
+      await createContainerAt("https://arbitrary.pod/container", {
         fetch: mockFetch,
       });
 
@@ -1310,7 +1307,7 @@ describe("createEmptyContainerAt", () => {
           Promise.resolve(new Response("Forbidden", { status: 403 }))
         );
 
-      const fetchPromise = createEmptyContainerAt(
+      const fetchPromise = createContainerAt(
         "https://arbitrary.pod/container/",
         {
           fetch: mockFetch,
@@ -1613,7 +1610,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 });
 
-describe("createEmptyContainerInContainer", () => {
+describe("createContainerInContainer", () => {
   const mockResponse = new Response("Arbitrary response", {
     headers: { Location: "https://arbitrary.pod/container/resource" },
   });
@@ -1626,7 +1623,7 @@ describe("createEmptyContainerInContainer", () => {
       >;
     };
 
-    await createEmptyContainerInContainer("https://some.pod/parent-container/");
+    await createContainerInContainer("https://some.pod/parent-container/");
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
@@ -1636,12 +1633,9 @@ describe("createEmptyContainerInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await createEmptyContainerInContainer(
-      "https://some.pod/parent-container/",
-      {
-        fetch: mockFetch,
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
@@ -1653,7 +1647,7 @@ describe("createEmptyContainerInContainer", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = createEmptyContainerInContainer(
+    const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1674,7 +1668,7 @@ describe("createEmptyContainerInContainer", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = createEmptyContainerInContainer(
+    const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1693,7 +1687,7 @@ describe("createEmptyContainerInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const fetchPromise = createEmptyContainerInContainer(
+    const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1712,12 +1706,9 @@ describe("createEmptyContainerInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await createEmptyContainerInContainer(
-      "https://some.pod/parent-container/",
-      {
-        fetch: mockFetch,
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+    });
 
     expect(mockFetch.mock.calls[0][0]).toEqual(
       "https://some.pod/parent-container/"
@@ -1738,7 +1729,7 @@ describe("createEmptyContainerInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await createEmptyContainerInContainer(
+    await createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1756,7 +1747,7 @@ describe("createEmptyContainerInContainer", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse));
 
-    await createEmptyContainerInContainer(
+    await createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1779,7 +1770,7 @@ describe("createEmptyContainerInContainer", () => {
       )
     );
 
-    const savedSolidDataset = await createEmptyContainerInContainer(
+    const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
@@ -1800,7 +1791,7 @@ describe("createEmptyContainerInContainer", () => {
       )
     );
 
-    const savedSolidDataset = await createEmptyContainerInContainer(
+    const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
