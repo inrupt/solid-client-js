@@ -219,6 +219,58 @@ export async function saveSolidDatasetAt(
   return storedDatasetWithResolvedIris;
 }
 
+/**
+ * Create an empty Container at the given URL.
+ *
+ * Throws an error if creating the Container failed, e.g. because the current user does not have
+ * permissions to, or because the Container already exists.
+ *
+ * @param url URL of the empty Container that is to be created.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @since Not released yet.
+ */
+export async function createEmptyContainerAt(
+  url: UrlString | Url,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset & WithResourceInfo> {
+  url = internal_toIriString(url);
+  url = url.endsWith("/") ? url : url + "/";
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const response = await config.fetch(url, {
+    method: "PUT",
+    headers: {
+      Accept: "text/turtle",
+      "Content-Type": "text/turtle",
+      "If-None-Match": "*",
+      // This header should not be required to create a Container,
+      // but ESS currently expects it:
+      Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Creating the empty Container failed: ${response.status} ${response.statusText}.`
+    );
+  }
+
+  const resourceInfo = internal_parseResourceInfo(response);
+  const containerDataset: SolidDataset &
+    WithChangeLog &
+    WithResourceInfo = Object.assign(dataset(), {
+    internal_changeLog: { additions: [], deletions: [] },
+    internal_resourceInfo: resourceInfo,
+  });
+
+  return containerDataset;
+}
+
 function isUpdate(
   solidDataset: SolidDataset,
   url: UrlString

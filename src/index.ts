@@ -54,6 +54,7 @@ export {
   createSolidDataset,
   getSolidDataset,
   saveSolidDatasetAt,
+  createEmptyContainerAt,
   saveSolidDatasetInContainer,
   getSolidDatasetWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
