@@ -52,176 +52,175 @@ import {
   createContainerInContainer,
 } from "./index";
 
-describe("End-to-end tests", () => {
-  it("should be able to read and update data in a Pod", async () => {
-    const randomNick = "Random nick " + Math.random();
+describe.each([["https://lit-e2e-test.inrupt.net/public/"]])(
+  "End-to-end tests against %s",
+  (rootContainer) => {
+    it("should be able to read and update data in a Pod", async () => {
+      const randomNick = "Random nick " + Math.random();
 
-    const dataset = await getSolidDataset(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl"
-    );
-    const existingThing = getThing(
-      dataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
-    );
-
-    expect(getStringNoLocale(existingThing, foaf.name)).toBe(
-      "Thing for first end-to-end test"
-    );
-
-    let updatedThing = setDatetime(
-      existingThing,
-      schema.dateModified,
-      new Date()
-    );
-    updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
-
-    const updatedDataset = setThing(dataset, updatedThing);
-    const savedDataset = await saveSolidDatasetAt(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl",
-      updatedDataset
-    );
-
-    const savedThing = getThing(
-      savedDataset,
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-test.ttl#thing1"
-    );
-    expect(getStringNoLocale(savedThing, foaf.name)).toBe(
-      "Thing for first end-to-end test"
-    );
-    expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
-  });
-
-  it("can differentiate between RDF and non-RDF Resources", async () => {
-    const rdfResourceInfo = await fetchResourceInfoWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/litdataset.ttl"
-    );
-    const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-resource-info-test/not-a-litdataset.png"
-    );
-    expect(isRawData(rdfResourceInfo)).toBe(false);
-    expect(isRawData(nonRdfResourceInfo)).toBe(true);
-  });
-
-  it("can create and remove empty Containers", async () => {
-    const newContainer1 = await createContainerAt(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
-    );
-    const newContainer2 = await createContainerInContainer(
-      "https://lit-e2e-test.inrupt.net/public/container-test/",
-      { slugSuggestion: "some-other-container" }
-    );
-
-    expect(getSourceUrl(newContainer1)).toBe(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
-    );
-
-    await deleteFile(
-      "https://lit-e2e-test.inrupt.net/public/container-test/some-container/"
-    );
-    await deleteFile(getSourceUrl(newContainer2));
-  });
-
-  it("should be able to read and update ACLs", async () => {
-    const fakeWebId =
-      "https://example.com/fake-webid#" +
-      Date.now().toString() +
-      Math.random().toString();
-
-    const datasetWithAcl = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl"
-    );
-    const datasetWithoutAcl = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/passthrough-container/resource-without-acl.ttl"
-    );
-
-    expect(hasResourceAcl(datasetWithAcl)).toBe(true);
-    expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
-    expect(getPublicAccess(datasetWithAcl)).toEqual({
-      read: true,
-      append: true,
-      write: true,
-      control: true,
-    });
-    expect(
-      getAgentAccess(
-        datasetWithAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
-    ).toEqual({
-      read: false,
-      append: true,
-      write: false,
-      control: false,
-    });
-    expect(
-      getAgentAccess(
-        datasetWithoutAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
-    ).toEqual({
-      read: true,
-      append: false,
-      write: false,
-      control: false,
-    });
-    const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
-    expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-test/"
-    );
-
-    if (hasResourceAcl(datasetWithAcl)) {
-      const acl = getResourceAcl(datasetWithAcl);
-      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-      const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
-      expect(fakeWebIdAccess).toEqual({
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-
-      // Cleanup
-      const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
-        read: false,
-        append: false,
-        write: false,
-        control: false,
-      });
-      await saveAclFor(datasetWithAcl, cleanedAcl);
-    }
-  });
-
-  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
-    const dataset = await getSolidDatasetWithAcl(
-      "https://lit-e2e-test.inrupt.net/public/lit-pod-acl-initialisation-test/resource.ttl"
-    );
-    if (
-      hasFallbackAcl(dataset) &&
-      hasAccessibleAcl(dataset) &&
-      !hasResourceAcl(dataset)
-    ) {
-      const newResourceAcl = createAclFromFallbackAcl(dataset);
-      const existingFallbackAcl = getFallbackAcl(dataset);
-      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-        getPublicResourceAccess(newResourceAcl)
+      const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
+      const existingThing = getThing(
+        dataset,
+        `${rootContainer}lit-pod-test.ttl#thing1`
       );
-    }
-  });
 
-  it("can fetch a non-RDF file and its metadata", async () => {
-    const jsonFile = await getFile(
-      "https://lit-e2e-test.inrupt.net/public/arbitrary.json"
-    );
+      expect(getStringNoLocale(existingThing, foaf.name)).toBe(
+        "Thing for first end-to-end test"
+      );
 
-    expect(getContentType(jsonFile)).toEqual("application/json");
+      let updatedThing = setDatetime(
+        existingThing,
+        schema.dateModified,
+        new Date()
+      );
+      updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
 
-    const data = JSON.parse(await jsonFile.text());
-    expect(data).toEqual({ arbitrary: "json data" });
-  });
-});
+      const updatedDataset = setThing(dataset, updatedThing);
+      const savedDataset = await saveSolidDatasetAt(
+        `${rootContainer}lit-pod-test.ttl`,
+        updatedDataset
+      );
+
+      const savedThing = getThing(
+        savedDataset,
+        `${rootContainer}lit-pod-test.ttl#thing1`
+      );
+      expect(getStringNoLocale(savedThing, foaf.name)).toBe(
+        "Thing for first end-to-end test"
+      );
+      expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
+    });
+
+    it("can differentiate between RDF and non-RDF Resources", async () => {
+      const rdfResourceInfo = await fetchResourceInfoWithAcl(
+        `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
+      );
+      const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
+        `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
+      );
+      expect(isRawData(rdfResourceInfo)).toBe(false);
+      expect(isRawData(nonRdfResourceInfo)).toBe(true);
+    });
+
+    it("can create and remove empty Containers", async () => {
+      const newContainer1 = await createContainerAt(
+        `${rootContainer}container-test/some-container/`
+      );
+      const newContainer2 = await createContainerInContainer(
+        "https://lit-e2e-test.inrupt.net/public/container-test/",
+        { slugSuggestion: "some-other-container" }
+      );
+  
+      expect(getSourceUrl(newContainer1)).toBe(
+        `${rootContainer}container-test/some-container/`
+      );
+  
+      await deleteFile(
+        `${rootContainer}container-test/some-container/`
+      );
+      await deleteFile(getSourceUrl(newContainer2));
+    });
+
+    it("should be able to read and update ACLs", async () => {
+      const fakeWebId =
+        "https://example.com/fake-webid#" +
+        Date.now().toString() +
+        Math.random().toString();
+
+      const datasetWithAcl = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
+      );
+      const datasetWithoutAcl = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`
+      );
+
+      expect(hasResourceAcl(datasetWithAcl)).toBe(true);
+      expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
+      expect(getPublicAccess(datasetWithAcl)).toEqual({
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      });
+      expect(
+        getAgentAccess(
+          datasetWithAcl,
+          "https://vincentt.inrupt.net/profile/card#me"
+        )
+      ).toEqual({
+        read: false,
+        append: true,
+        write: false,
+        control: false,
+      });
+      expect(
+        getAgentAccess(
+          datasetWithoutAcl,
+          "https://vincentt.inrupt.net/profile/card#me"
+        )
+      ).toEqual({
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+      const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
+      expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
+        `${rootContainer}lit-pod-acl-test/`
+      );
+
+      if (hasResourceAcl(datasetWithAcl)) {
+        const acl = getResourceAcl(datasetWithAcl);
+        const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
+          read: true,
+          append: false,
+          write: false,
+          control: false,
+        });
+        const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
+        const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
+        expect(fakeWebIdAccess).toEqual({
+          read: true,
+          append: false,
+          write: false,
+          control: false,
+        });
+
+        // Cleanup
+        const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
+          read: false,
+          append: false,
+          write: false,
+          control: false,
+        });
+        await saveAclFor(datasetWithAcl, cleanedAcl);
+      }
+    });
+
+    it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
+      const dataset = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
+      );
+      if (
+        hasFallbackAcl(dataset) &&
+        hasAccessibleAcl(dataset) &&
+        !hasResourceAcl(dataset)
+      ) {
+        const newResourceAcl = createAclFromFallbackAcl(dataset);
+        const existingFallbackAcl = getFallbackAcl(dataset);
+        expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+          getPublicResourceAccess(newResourceAcl)
+        );
+      }
+    });
+
+    it("can fetch a non-RDF file and its metadata", async () => {
+      const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
+
+      expect(getContentType(jsonFile)).toEqual("application/json");
+
+      const data = JSON.parse(await jsonFile.text());
+      expect(data).toEqual({ arbitrary: "json data" });
+    });
+  }
+);
