@@ -14,6 +14,9 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+# To read environment variables:
+import os
+
 # -- Project information -----------------------------------------------------
 
 copyright = '2020-present, Inrupt Inc.'
@@ -56,8 +59,9 @@ extensions = [
     'myst_parser',
 ]
 
+apidocsbasepath = ('https://' + os.environ.get('VERCEL_URL') + '/api/api%s', '') if 'VERCEL_URL' in os.environ else ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s','')
 extlinks = {
-    'apisolidclient': ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s',''),
+    'apisolidclient': apidocsbasepath,
 }
 
 # Add any paths that contain templates here, relative to this directory.

@@ -113,7 +113,7 @@ table.docutils th {
 /* Need to override theme's td white-space nowrap */
 
 td:first-child {
-   white-space: inherit;
+  white-space: inherit;
 }
 /* For the breadcrumb at top of page*/
 
@@ -131,14 +131,14 @@ div.sphinx-tabs > div.menu > a.item {
 /* Need for inline - otherwise, default is hot pink */
 
 .pre {
-   color: black;
+  color: black;
 }
 
 /* Need for inline - to also highlight white spaces */
 
-:not(pre)>*>code,
-:not(pre)>code {
-    background-color:rgba(220,220,220,.3); 
+:not(pre) > * > code,
+:not(pre) > code {
+  background-color: rgba(220, 220, 220, 0.3);
 }
 
 /* Adding background color to code blocks */
@@ -180,7 +180,7 @@ ul ol {
 /* Override alert padding-bottom */
 
 .alert {
-    padding-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 /* Not used - since not using captions for figures now */
@@ -191,11 +191,11 @@ p.caption {
 /* Override basic.css's 10px margin-top */
 
 p.topic-title {
-   margin-top: 0px;
+  margin-top: 0px;
 }
 
 /* Override background-color to white to lessen prominence*/
 
 .topic {
-   background-color: #fff;
+  background-color: #fff;
 }
