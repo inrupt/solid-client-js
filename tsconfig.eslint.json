@@ -5,6 +5,6 @@
     "./*.js",
     "website/**/*.js",
     "website/**/*.jsx",
-    "docs/source/examples/*.js"
+    "docs/prose/source/examples/*.js"
   ]
 }
