@@ -75,21 +75,21 @@ Read Data
 To read data with |product|,
 
 #. You first use :apisolidclient:`getSolidDataset
-   </modules/_resource_soliddataset_#getSolidDataset>` to fetch the
+   </modules/_resource_soliddataset_.html#getSolidDataset>` to fetch the
    dataset from which you want to read your data.
 
 #. Then, use either:
 
-   - :apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+   - :apisolidclient:`getThing </modules/_thing_thing_.html#getThing>` to
      get a single data entity from the dataset, or
 
-   - :apisolidclient:`getThingAll</modules/_thing_thing_#getThingAll>`
+   - :apisolidclient:`getThingAll</modules/_thing_thing_.html#getThingAll>`
      to get all data entities from the dataset.
 
 #. Then, from the data entity, you can :apisolidclient:`get
-   </modules/_thing_get_>` specific data. For a list of the ``get``
+   </modules/_thing_get_.html>` specific data. For a list of the ``get``
    functions, see :apisolidclient:`apisolidclient
-   </modules/_thing_get_>`.
+   </modules/_thing_get_.html>`.
 
 1. Fetch the Dataset
 --------------------
@@ -97,7 +97,7 @@ To read data with |product|,
 To access data, first fetch the dataset (``SolidDataset``) that
 contains the data. To fetch a ``SolidDataset``, pass its URL to
 :apisolidclient:`getSolidDataset
-</modules/_resource_soliddataset_#getSolidDataset>` as in the following
+</modules/_resource_soliddataset_.html#getSolidDataset>` as in the following
 example:
 
 .. literalinclude:: /examples/read-data-get-dataset.js
@@ -110,14 +110,14 @@ example:
 
 From the fetched dataset, you can use either:
 
-- :apisolidclient:`getThing </modules/_thing_thing_#getThing>` with the
+- :apisolidclient:`getThing </modules/_thing_thing_.html#getThing>` with the
   Thing's URL to get a single data entity, or
 
-- :apisolidclient:`getThingAll </modules/_thing_thing_#getThingAll>` to
+- :apisolidclient:`getThingAll </modules/_thing_thing_.html#getThingAll>` to
   get all data entities from the dataset.
 
 The following passes in a example entity's URL to
-:apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+:apisolidclient:`getThing </modules/_thing_thing_.html#getThing>` to
 retrieve the entity from the previously fetched dataset.
 
 .. literalinclude:: /examples/read-data-get-thing.js
@@ -151,7 +151,7 @@ of the Thing's property you want.
    :end-before: END-EXAMPLE-GET-DATA
 
 For a list of the ``get`` functions, see :apisolidclient:`thing/get
-</modules/_thing_get_>`.
+</modules/_thing_get_.html>`.
 
 Write Data
 ==========
@@ -175,29 +175,29 @@ To write data with |product|,
    To start, you need a data entity (a Thing) entity from which to
    create the updated Thing:
 
-   - Use :apisolidclient:`getThing </modules/_thing_thing_#getThing>`
+   - Use :apisolidclient:`getThing </modules/_thing_thing_.html#getThing>`
      to start with an existing data entity, or
 
    - Use :apisolidclient:`createThing
-     </modules/_thing_thing_#createThing>` to create a new data entity.
+     </modules/_thing_thing_.html#createThing>` to create a new data entity.
 
    With this Thing as a starting point, use the following functions to
    create a **new** Thing with the modifications:
 
-   - :apisolidclient:`thing/add </modules/_thing_add_>` functions to
+   - :apisolidclient:`thing/add </modules/_thing_add_.html>` functions to
      add new data,
 
-   - :apisolidclient:`thing/set </modules/_thing_set_>` functions to
+   - :apisolidclient:`thing/set </modules/_thing_set_.html>` functions to
      replace existing data, and
 
-   - :apisolidclient:`thing/remove </modules/_thing_remove_>` functions
+   - :apisolidclient:`thing/remove </modules/_thing_remove_.html>` functions
      to remove existing data.
 
-#. Use :apisolidclient:`setThing </modules/_thing_thing_#setThing>` to
+#. Use :apisolidclient:`setThing </modules/_thing_thing_.html#setThing>` to
    return a **new** dataset with the updated Thing.
 
 #. Use :apisolidclient:`saveSolidDataSetAt
-   </modules/_resource_soliddataset_#saveSolidDataSetAt>` to save the
+   </modules/_resource_soliddataset_.html#saveSolidDataSetAt>` to save the
    dataset to the Pod.
 
 .. topic:: Immutability
@@ -216,14 +216,14 @@ To write data with |product|,
 To start, you need a data entity (a Thing) entity from which to create
 the updated Thing:
 
-- Use :apisolidclient:`getThing </modules/_thing_thing_#getThing>` to
+- Use :apisolidclient:`getThing </modules/_thing_thing_.html#getThing>` to
   start with an existing data entity, or
 
-- Use :apisolidclient:`createThing </module/_thing_thing_#createThing>`
+- Use :apisolidclient:`createThing </module/_thing_thing_.html#createThing>`
   to create a new data entity.
 
 The following example uses :apisolidclient:`createThing
-</modules/_thing_thing_#createThing>`.
+</modules/_thing_thing_.html#createThing>`.
 
 .. literalinclude:: /examples/write-data-create-thing.js
    :language: typescript
@@ -233,13 +233,13 @@ The following example uses :apisolidclient:`createThing
 With this Thing as a starting point, use the following functions to
 create a **new** Thing with the modifications:
 
-- :apisolidclient:`thing/add </modules/_thing_add_>` functions to
+- :apisolidclient:`thing/add </modules/_thing_add_.html>` functions to
   add new data,
 
-- :apisolidclient:`thing/set </modules/_thing_set_>` functions to
+- :apisolidclient:`thing/set </modules/_thing_set_.html>` functions to
   replace existing data, and
 
-- :apisolidclient:`thing/remove </modules/_thing_remove_>`
+- :apisolidclient:`thing/remove </modules/_thing_remove_.html>`
   functions to remove data.
 
 For example, the following example creates a new Thing ``updatedThing``
@@ -290,7 +290,7 @@ SolidDataset, the updated Thing replaces the existing one.
 
 To save the updated dataset to a Pod, use
 :apisolidclient:`saveSolidDatasetAt
-</modules/_resource_soliddataset_#saveSolidDatasetAt>`, passing in its
+</modules/_resource_soliddataset_.html#saveSolidDatasetAt>`, passing in its
 URL as well as the updated dataset.
 
 .. literalinclude:: /examples/write-data-save-dataset.js
