@@ -315,7 +315,7 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
   });
@@ -335,7 +335,7 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "0"),
+        object: literalOfType("boolean", "false"),
       })
     ).toBe(true);
   });
@@ -374,7 +374,7 @@ describe("addBoolean", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
     expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
@@ -388,7 +388,7 @@ describe("addBoolean", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.pod/resource#subject"),
         DataFactory.namedNode("https://some.vocab/predicate"),
-        literalOfType("boolean", "0")
+        literalOfType("boolean", "false")
       )
     );
 
@@ -404,14 +404,14 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "0"),
+        object: literalOfType("boolean", "false"),
       })
     ).toBe(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
   });
@@ -445,7 +445,7 @@ describe("addBoolean", () => {
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
   });
@@ -467,7 +467,7 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
@@ -487,7 +487,7 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
@@ -526,7 +526,7 @@ describe("addDatetime", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
     expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
@@ -540,7 +540,7 @@ describe("addDatetime", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.pod/resource#subject"),
         DataFactory.namedNode("https://some.vocab/predicate"),
-        literalOfType("dateTime", "1955-06-08T13:37:42Z")
+        literalOfType("dateTime", "1955-06-08T13:37:42.000Z")
       )
     );
 
@@ -556,14 +556,14 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1955-06-08T13:37:42Z"),
+        object: literalOfType("dateTime", "1955-06-08T13:37:42.000Z"),
       })
     ).toBe(true);
     expect(
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
@@ -597,7 +597,7 @@ describe("addDatetime", () => {
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
