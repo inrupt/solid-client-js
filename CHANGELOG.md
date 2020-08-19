@@ -21,6 +21,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `getSourceUrl` used to throw an error when called on a Resource that was not fetched from
   somewhere (and hence had no source URL). It now returns `null` in that case.
+- While we allow reading data of different types, they are stored as plain strings. While multiple
+  serialisations of data are often possible, we only supported one per data type. What this means
+  is that, whereas we would correctly return `true` for a boolean stored as `"1"`, we would not do
+  so for `"true"`, even though both are valid serialisations of the value `true` according to the
+  XML Schema Datatypes specification: https://www.w3.org/TR/xmlschema-2. solid-client now recognises
+  all valid serialisations of all supported data types as defined by that specification.
 
 ## [0.1.0] - 2020-08-06
 

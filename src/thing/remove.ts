@@ -32,13 +32,13 @@ import {
   asNamedNode,
   isNamedNode,
   isLiteral,
-  serializeBoolean,
-  serializeDatetime,
-  serializeDecimal,
-  serializeInteger,
   normalizeLocale,
   XmlSchemaTypeIri,
   xmlSchemaTypes,
+  deserializeBoolean,
+  deserializeDatetime,
+  deserializeDecimal,
+  deserializeInteger,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
 import { filterThing } from "./thing";
@@ -115,11 +115,11 @@ export const removeBoolean: RemoveOfType<boolean> = (
   property,
   value
 ) => {
-  return removeLiteralOfType(
+  return removeLiteralMatching(
     thing,
     property,
-    serializeBoolean(value),
-    xmlSchemaTypes.boolean
+    xmlSchemaTypes.boolean,
+    (foundBoolean) => deserializeBoolean(foundBoolean) === value
   );
 };
 
@@ -134,11 +134,12 @@ export const removeBoolean: RemoveOfType<boolean> = (
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
-  return removeLiteralOfType(
+  return removeLiteralMatching(
     thing,
     property,
-    serializeDatetime(value),
-    xmlSchemaTypes.dateTime
+    xmlSchemaTypes.dateTime,
+    (foundDatetime) =>
+      deserializeDatetime(foundDatetime)?.getTime() === value.getTime()
   );
 };
 
@@ -153,11 +154,11 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
-  return removeLiteralOfType(
+  return removeLiteralMatching(
     thing,
     property,
-    serializeDecimal(value),
-    xmlSchemaTypes.decimal
+    xmlSchemaTypes.decimal,
+    (foundDecimal) => deserializeDecimal(foundDecimal) === value
   );
 };
 
@@ -172,11 +173,11 @@ export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
-  return removeLiteralOfType(
+  return removeLiteralMatching(
     thing,
     property,
-    serializeInteger(value),
-    xmlSchemaTypes.integer
+    xmlSchemaTypes.integer,
+    (foundInteger) => deserializeInteger(foundInteger) === value
   );
 };
 
@@ -228,7 +229,12 @@ export const removeStringNoLocale: RemoveOfType<string> = (
   property,
   value
 ) => {
-  return removeLiteralOfType(thing, property, value, xmlSchemaTypes.string);
+  return removeLiteralMatching(
+    thing,
+    property,
+    xmlSchemaTypes.string,
+    (foundString) => foundString === value
+  );
 };
 
 /**
@@ -287,23 +293,35 @@ export function removeLiteral(
   return updatedThing;
 }
 
-function removeLiteralOfType<T extends Thing>(
+/**
+ * @param thing Thing to remove a Literal value from.
+ * @param property Property for which to remove the given Literal value.
+ * @param type Data type that the Literal should be stored as.
+ * @param matcher Function that returns true if the given value is an equivalent serialisation of the value to remove. For example, when removing a `false` boolean, the matcher should return true for both "0" and "false".
+ */
+function removeLiteralMatching<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: string,
-  type: XmlSchemaTypeIri
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function removeLiteralOfType(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  type: XmlSchemaTypeIri
-): Thing {
-  const updatedThing = removeLiteral(
-    thing,
-    property,
-    DataFactory.literal(value, DataFactory.namedNode(type))
-  );
+  type: XmlSchemaTypeIri,
+  matcher: (serialisedValue: string) => boolean
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
+  const predicateNode = asNamedNode(property);
+  const updatedThing = filterThing(thing, (quad) => {
+    // Copy every value from the old thing into the new thing, unless it:
+    return !(
+      // has the predicate of the value-to-be-removed,
+      (
+        quad.predicate.equals(predicateNode) &&
+        // also is a literal
+        isLiteral(quad.object) &&
+        // of the same type as the value-to-be-removed,
+        quad.object.datatype.equals(DataFactory.namedNode(type)) &&
+        // and has a value determined to be equal to the value-to-be-removed
+        // by the given matcher (i.e. because their serialisations are equal):
+        matcher(quad.object.value)
+      )
+    );
+  });
   return updatedThing;
 }
 

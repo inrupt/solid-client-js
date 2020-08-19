@@ -42,19 +42,21 @@ export type XmlSchemaTypeIri = typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes
  * @internal
  * @param value Value to serialise.
  * @returns String representation of `value`.
+ * @see https://www.w3.org/TR/xmlschema-2/#boolean-lexical-representation
  */
 export function serializeBoolean(value: boolean): string {
-  return value ? "1" : "0";
+  return value ? "true" : "false";
 }
 /**
  * @internal
  * @param value Value to deserialise.
  * @returns Deserialized boolean, or null if the given value is not a valid serialised boolean.
+ * @see https://www.w3.org/TR/xmlschema-2/#boolean-lexical-representation
  */
 export function deserializeBoolean(value: string): boolean | null {
-  if (value === "1") {
+  if (value === "true" || value === "1") {
     return true;
-  } else if (value === "0") {
+  } else if (value === "false" || value === "0") {
     return false;
   } else {
     return null;
@@ -65,49 +67,63 @@ export function deserializeBoolean(value: string): boolean | null {
  * @internal
  * @param value Value to serialise.
  * @returns String representation of `value`.
+ * @see https://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
  */
 export function serializeDatetime(value: Date): string {
-  // To align with rdflib, we ignore miliseconds:
-  // https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L74
-  const roundedDate = new Date(
-    Date.UTC(
-      value.getUTCFullYear(),
-      value.getUTCMonth(),
-      value.getUTCDate(),
-      value.getUTCHours(),
-      value.getUTCMinutes(),
-      value.getUTCSeconds(),
-      0
-    )
-  );
-  // Truncate the `.000Z` at the end (i.e. the miliseconds), to plain `Z`:
-  const rdflibStyleString = roundedDate.toISOString().replace(/\.000Z$/, "Z");
-  return rdflibStyleString;
+  // Although the XML Schema DateTime is not _exactly_ an ISO 8601 string
+  // (see https://www.w3.org/TR/xmlschema-2/#deviantformats),
+  // the deviations only affect the parsing, not the serialisation.
+  // Therefore, we can just use .toISOString():
+  return value.toISOString();
 }
 /**
  * @internal
  * @param value Value to deserialise.
  * @returns Deserialized datetime, or null if the given value is not a valid serialised datetime.
+ * @see https://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
  */
 export function deserializeDatetime(literalString: string): Date | null {
-  if (
-    literalString === null ||
-    literalString.length <= 17 ||
-    literalString.indexOf("Z") === -1
-  ) {
+  // DateTime in the format described at
+  // https://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
+  // (without constraints on the value).
+  // -? - An optional leading `-`.
+  // \d{4,}- - Four or more digits followed by a `-` representing the year. Example: "3000-".
+  // \d\d-\d\d - Two digits representing the month and two representing the day of the month,
+  //             separated by a `-`. Example: "11-03".
+  // T - The letter T, separating the date from the time.
+  // \d\d:\d\d:\d\d - Two digits for the hour, minute and second, respectively, separated by a `:`.
+  //                  Example: "13:37:42".
+  // (\.\d+)? - Optionally a `.` followed by one or more digits representing milliseconds.
+  //            Example: ".1337".
+  // (Z|(\+|-)\d\d:\d\d) - The letter Z indicating UTC, or a `+` or `-` followed by two digits for
+  //                       the hour offset and two for the minute offset, separated by a `:`.
+  //                       Example: "+13:37".
+  const datetimeRegEx = /-?\d{4,}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)/;
+  if (!datetimeRegEx.test(literalString)) {
     return null;
   }
 
-  // See https://github.com/linkeddata/rdflib.js/blob/d84af88f367b8b5f617c753d8241c5a2035458e8/src/literal.js#L87
-  const utcFullYear = parseInt(literalString.substring(0, 4), 10);
-  const utcMonth = parseInt(literalString.substring(5, 7), 10) - 1;
-  const utcDate = parseInt(literalString.substring(8, 10), 10);
-  const utcHours = parseInt(literalString.substring(11, 13), 10);
-  const utcMinutes = parseInt(literalString.substring(14, 16), 10);
-  const utcSeconds = parseInt(
-    literalString.substring(17, literalString.indexOf("Z")),
-    10
-  );
+  const [signedDateString, rest] = literalString.split("T");
+  // The date string can optionally be prefixed with `-`,
+  // in which case the year is negative:
+  const [yearMultiplier, dateString] =
+    signedDateString.charAt(0) === "-"
+      ? [-1, signedDateString.substring(1)]
+      : [1, signedDateString];
+  const [yearString, monthString, dayString] = dateString.split("-");
+  const utcFullYear = Number.parseInt(yearString, 10) * yearMultiplier;
+  const utcMonth = Number.parseInt(monthString, 10) - 1;
+  const utcDate = Number.parseInt(dayString, 10);
+  const [timeString, timezoneString] = splitTimeFromTimezone(rest);
+  const [hourOffset, minuteOffset] = getTimezoneOffsets(timezoneString);
+  const [hourString, minuteString, timeRest] = timeString.split(":");
+  const utcHours = Number.parseInt(hourString, 10) + hourOffset;
+  const utcMinutes = Number.parseInt(minuteString, 10) + minuteOffset;
+  const [secondString, optionalMillisecondString] = timeRest.split(".");
+  const utcSeconds = Number.parseInt(secondString, 10);
+  const utcMilliseconds = optionalMillisecondString
+    ? Number.parseInt(optionalMillisecondString, 10)
+    : 0;
   const date = new Date(0);
   date.setUTCFullYear(utcFullYear);
   date.setUTCMonth(utcMonth);
@@ -115,13 +131,47 @@ export function deserializeDatetime(literalString: string): Date | null {
   date.setUTCHours(utcHours);
   date.setUTCMinutes(utcMinutes);
   date.setUTCSeconds(utcSeconds);
+  date.setUTCMilliseconds(utcMilliseconds);
   return date;
+}
+
+/**
+ * @param timeString An XML Schema time string.
+ * @returns A tuple [timeString, timezoneString].
+ * @see https://www.w3.org/TR/xmlschema-2/#time-lexical-repr
+ */
+function splitTimeFromTimezone(timeString: string): [string, string] {
+  if (timeString.endsWith("Z")) {
+    return [timeString.substring(0, timeString.length - 1), "Z"];
+  }
+  const splitOnPlus = timeString.split("+");
+  const splitOnMinus = timeString.split("-");
+  return splitOnPlus.length > splitOnMinus.length
+    ? [splitOnPlus[0], "+" + splitOnPlus[1]]
+    : [splitOnMinus[0], "-" + splitOnMinus[1]];
+}
+
+/**
+ * @param timezoneString Lexical representation of a time zone in XML Schema.
+ * @returns A tuple of the hour and minute offset of the time zone.
+ * @see https://www.w3.org/TR/xmlschema-2/#dateTime-timezones
+ */
+function getTimezoneOffsets(timezoneString: string): [number, number] {
+  if (timezoneString === "Z") {
+    return [0, 0];
+  }
+  const multiplier = timezoneString.charAt(0) === "+" ? 1 : -1;
+  const [hourString, minuteString] = timezoneString.substring(1).split(":");
+  const hours = Number.parseInt(hourString, 10);
+  const minutes = Number.parseInt(minuteString, 10);
+  return [hours * multiplier, minutes * multiplier];
 }
 
 /**
  * @internal
  * @param value Value to serialise.
  * @returns String representation of `value`.
+ * @see https://www.w3.org/TR/xmlschema-2/#decimal-lexical-representation
  */
 export function serializeDecimal(value: number): string {
   return value.toString();
@@ -130,6 +180,7 @@ export function serializeDecimal(value: number): string {
  * @internal
  * @param value Value to deserialise.
  * @returns Deserialized decimal, or null if the given value is not a valid serialised decimal.
+ * @see https://www.w3.org/TR/xmlschema-2/#decimal-lexical-representation
  */
 export function deserializeDecimal(literalString: string): number | null {
   const deserialized = Number.parseFloat(literalString);

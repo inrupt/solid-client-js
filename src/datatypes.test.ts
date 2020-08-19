@@ -44,12 +44,12 @@ import {
 import { LocalNode } from "./interfaces";
 
 describe("serializeBoolean", () => {
-  it("serializes true as `1`", () => {
-    expect(serializeBoolean(true)).toBe("1");
+  it("serializes true as `'true'`", () => {
+    expect(serializeBoolean(true)).toBe("true");
   });
 
-  it("serializes false as `0`", () => {
-    expect(serializeBoolean(false)).toBe("0");
+  it("serializes false as `'false'`", () => {
+    expect(serializeBoolean(false)).toBe("false");
   });
 });
 describe("deserializeBoolean", () => {
@@ -61,8 +61,16 @@ describe("deserializeBoolean", () => {
     expect(deserializeBoolean("0")).toBe(false);
   });
 
+  it("parses `true` as true", () => {
+    expect(deserializeBoolean("true")).toBe(true);
+  });
+
+  it("parses `false` as false", () => {
+    expect(deserializeBoolean("false")).toBe(false);
+  });
+
   it("returns null if a value is not a serialised boolean", () => {
-    expect(deserializeBoolean("false")).toBeNull();
+    expect(deserializeBoolean("")).toBeNull();
     expect(deserializeBoolean("Not a serialised boolean")).toBeNull();
   });
 });
@@ -71,13 +79,80 @@ describe("serializeDatetime", () => {
   it("properly serialises a given datetime", () => {
     expect(
       serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)))
-    ).toBe("1990-11-12T13:37:42Z");
+    ).toBe("1990-11-12T13:37:42.000Z");
+
+    expect(
+      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 42)))
+    ).toBe("1990-11-12T13:37:42.042Z");
   });
 });
 describe("deserializeDatetime", () => {
   it("properly parses a serialised datetime", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
-    expect(deserializeDatetime("1990-11-12T13:37:42Z")).toEqual(expectedDate);
+    expect(deserializeDatetime("1990-11-12T13:37:42.000Z")).toEqual(
+      expectedDate
+    );
+
+    const expectedDateWithNegativeYear = new Date(
+      Date.UTC(-42, 10, 12, 13, 37, 42, 0)
+    );
+    expect(deserializeDatetime("-0042-11-12T13:37:42.000Z")).toEqual(
+      expectedDateWithNegativeYear
+    );
+
+    const expectedDateWithHour24 = new Date(Date.UTC(1990, 10, 13, 0, 0, 0, 0));
+    expect(deserializeDatetime("1990-11-12T24:00:00Z")).toEqual(
+      expectedDateWithHour24
+    );
+
+    const expectedDateWithFractionalSeconds = new Date(
+      Date.UTC(1990, 10, 12, 13, 37, 42, 42)
+    );
+    expect(deserializeDatetime("1990-11-12T13:37:42.42Z")).toEqual(
+      expectedDateWithFractionalSeconds
+    );
+
+    const expectedDateWithPositive0Timezone = new Date(
+      Date.UTC(1990, 10, 12, 10, 0, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00+00:00")).toEqual(
+      expectedDateWithPositive0Timezone
+    );
+
+    const expectedDateWithNegative0Timezone = new Date(
+      Date.UTC(1990, 10, 12, 10, 0, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00-00:00")).toEqual(
+      expectedDateWithNegative0Timezone
+    );
+
+    const expectedDateWithNegativeTimezone = new Date(
+      Date.UTC(1990, 10, 12, 8, 30, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00-01:30")).toEqual(
+      expectedDateWithNegativeTimezone
+    );
+
+    const expectedDateWithMaxNegativeTimezone = new Date(
+      Date.UTC(1990, 10, 11, 20, 0, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00-14:00")).toEqual(
+      expectedDateWithMaxNegativeTimezone
+    );
+
+    const expectedDateWithPositiveTimezone = new Date(
+      Date.UTC(1990, 10, 12, 11, 30, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00+01:30")).toEqual(
+      expectedDateWithPositiveTimezone
+    );
+
+    const expectedDateWithMaxPositiveTimezone = new Date(
+      Date.UTC(1990, 10, 13, 0, 0, 0, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T10:00:00+14:00")).toEqual(
+      expectedDateWithMaxPositiveTimezone
+    );
   });
 
   it("returns null if a value is not a serialised datetime", () => {
@@ -89,11 +164,20 @@ describe("deserializeDatetime", () => {
 describe("serializeDecimal", () => {
   it("properly serialises a given decimal", () => {
     expect(serializeDecimal(13.37)).toBe("13.37");
+    expect(serializeDecimal(-13.37)).toBe("-13.37");
+    expect(serializeDecimal(0.1337)).toBe("0.1337");
+    // https://www.w3.org/TR/xmlschema-2/#decimal-lexical-representation
+    // > If the fractional part is zero, the period and following zero(es) can be omitted.
+    expect(serializeDecimal(1337.0)).toBe("1337");
   });
 });
 describe("deserializeDecimal", () => {
   it("properly parses a serialised decimal", () => {
     expect(deserializeDecimal("13.37")).toBe(13.37);
+    expect(deserializeDecimal("+13.37")).toBe(13.37);
+    expect(deserializeDecimal("-13.37")).toBe(-13.37);
+    expect(deserializeDecimal("0.1337")).toBe(0.1337);
+    expect(deserializeDecimal("1337")).toBe(1337);
   });
 
   it("return null if a value is not a serialised decimal", () => {
@@ -104,11 +188,16 @@ describe("deserializeDecimal", () => {
 describe("serializeInteger", () => {
   it("properly serialises a given integer", () => {
     expect(serializeInteger(42)).toBe("42");
+    expect(serializeInteger(-42)).toBe("-42");
+    expect(serializeInteger(0)).toBe("0");
   });
 });
 describe("deserializeInteger", () => {
   it("properly parses a serialised integer", () => {
     expect(deserializeInteger("42")).toBe(42);
+    expect(deserializeInteger("-42")).toBe(-42);
+    expect(deserializeInteger("+42")).toBe(42);
+    expect(deserializeInteger("0")).toBe(0);
   });
 
   it("return null if a value is not a serialised integer", () => {
