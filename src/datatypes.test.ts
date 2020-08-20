@@ -20,6 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+import * as fc from "fast-check";
 import { DataFactory } from "n3";
 import {
   isEqual,
@@ -42,6 +43,76 @@ import {
   normalizeLocale,
 } from "./datatypes";
 import { LocalNode } from "./interfaces";
+
+describe("stress-testing serialisations", () => {
+  it("should always return the input value when serialising, then deserialing a boolean", () => {
+    const runs = 100;
+    expect.assertions(runs + 2);
+
+    const fcResult = fc.check(
+      fc.property(fc.boolean(), (inputBoolean) => {
+        expect(deserializeBoolean(serializeBoolean(inputBoolean))).toBe(
+          inputBoolean
+        );
+      }),
+      { numRuns: runs }
+    );
+
+    expect(fcResult.counterexample).toBeNull();
+    expect(fcResult.failed).toBe(false);
+  });
+
+  it("should always return the input value when serialising, then deserialing a datetime", () => {
+    const runs = 100;
+    expect.assertions(runs + 2);
+
+    const fcResult = fc.check(
+      fc.property(fc.date(), (inputDatetime) => {
+        expect(
+          deserializeDatetime(serializeDatetime(inputDatetime))?.getTime()
+        ).toBe(inputDatetime.getTime());
+      }),
+      { numRuns: runs }
+    );
+
+    expect(fcResult.counterexample).toBeNull();
+    expect(fcResult.failed).toBe(false);
+  });
+
+  it("should always return the input value when serialising, then deserialing a decimal", () => {
+    const runs = 100;
+    expect.assertions(runs + 2);
+
+    const fcResult = fc.check(
+      fc.property(fc.float(), (inputDecimal) => {
+        expect(deserializeDecimal(serializeDecimal(inputDecimal))).toBe(
+          inputDecimal
+        );
+      }),
+      { numRuns: runs }
+    );
+
+    expect(fcResult.counterexample).toBeNull();
+    expect(fcResult.failed).toBe(false);
+  });
+
+  it("should always return the input value when serialising, then deserialing a integer", () => {
+    const runs = 100;
+    expect.assertions(runs + 2);
+
+    const fcResult = fc.check(
+      fc.property(fc.integer(), (inputInteger) => {
+        expect(deserializeInteger(serializeInteger(inputInteger))).toBe(
+          inputInteger
+        );
+      }),
+      { numRuns: runs }
+    );
+
+    expect(fcResult.counterexample).toBeNull();
+    expect(fcResult.failed).toBe(false);
+  });
+});
 
 describe("serializeBoolean", () => {
   it("serializes true as `'true'`", () => {

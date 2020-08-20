@@ -38,6 +38,7 @@
     "eslint": "^7.2.0",
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-license-header": "^0.2.0",
+    "fast-check": "^2.2.0",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
     "license-checker": "^25.0.1",
