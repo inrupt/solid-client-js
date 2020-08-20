@@ -54,7 +54,8 @@ function addAclRuleQuads(
   targetType:
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup"
-    | "http://www.w3.org/ns/auth/acl#agentClass" = "http://www.w3.org/ns/auth/acl#agent"
+    | "http://www.w3.org/ns/auth/acl#agentClass"
+    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent"
 ): AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
@@ -970,7 +971,7 @@ describe("setAgentResourceAccess", () => {
     expect(updatedQuads).toHaveLength(13);
   });
 
-  it("does not copy over access for an unrelated Group or Agent Class", async () => {
+  it("does not copy over access for an unrelated Group, Agent Class or Origin", async () => {
     let sourceDataset = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
@@ -997,6 +998,16 @@ describe("setAgentResourceAccess", () => {
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agent"
+    );
+
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.app.origin/",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: false, control: false },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#origin"
     );
 
     const updatedDataset = setAgentResourceAccess(
@@ -1028,11 +1039,17 @@ describe("setAgentResourceAccess", () => {
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
         ).toHaveLength(0);
       }
+      if (getIriAll(thing, "http://www.w3.org/ns/auth/acl#origin").length > 0) {
+        // The origin given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(0);
+      }
     });
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(17);
+    expect(updatedQuads).toHaveLength(18);
   });
 
   it("does not alter the input SolidDataset", () => {

@@ -255,6 +255,7 @@ function removePublicFromRule(
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.origin);
 
   return [ruleWithoutPublic, ruleForOtherTargets];
 }
