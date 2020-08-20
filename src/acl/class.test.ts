@@ -681,7 +681,7 @@ describe("setPublicResourceAccess", () => {
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(14);
+    expect(updatedQuads).toHaveLength(15);
   });
 
   it("does not alter the input SolidDataset", () => {
