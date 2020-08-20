@@ -21,6 +21,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `getSourceUrl` used to throw an error when called on a Resource that was not fetched from
   somewhere (and hence had no source URL). It now returns `null` in that case.
+- Giving more rights to an Agent or Group could lead to privilege escalation for an app identified
+  by an `acl:origin` predicate in the ACL.
 
 ## [0.1.0] - 2020-08-06
 
