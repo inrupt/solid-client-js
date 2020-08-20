@@ -2,6 +2,7 @@
 Inrupt |product| Documentation
 ==============================
 
+.. Start-Intro
 
 Inrupt |product| is a client library for accessing data stored in
 `Solid <https://solidproject.org/>`_ Pods.
@@ -18,6 +19,9 @@ You can use |product| in `Node.js <https://nodejs.org>`_ using
 bundler like `Webpack <https://webpack.js.org>`_, `Rollup
 <https://rollupjs.org>`_, or `Parcel <https://parceljs.org>`_.
 
+.. End-Intro
+
+.. Start-Getting-Started
 
 Getting Started
 ===============
@@ -42,10 +46,16 @@ To get started, see the following pages in the documentation:
 
      - Go to the API documentation.
 
+.. End-Getting-Started
+
+.. Start-Issues-Help
+
 Issues & Help
 =============
 
 .. include:: /includes/table-issues-help.rst
+
+.. End-Issues-Help
 
 .. toctree::
    :titlesonly:
