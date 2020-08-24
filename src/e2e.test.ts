@@ -50,6 +50,8 @@ import {
   deleteFile,
   createContainerAt,
   createContainerInContainer,
+  getBoolean,
+  setBoolean,
 } from "./index";
 
 describe.each([
@@ -90,6 +92,45 @@ describe.each([
       "Thing for first end-to-end test"
     );
     expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
+  });
+
+  // FIXME: An NSS bug prevents it from understand our changing of booleans,
+  // and thus causes this test to fail.
+  // Once the bug is fixed, `ess` should be replaced by a regular `it` again.
+  // See https://github.com/solid/node-solid-server/issues/1468.
+  const ess = rootContainer.includes("demo-ess") ? it : it.skip;
+  ess("can read and write booleans", async () => {
+    const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
+    const existingThing = getThing(
+      dataset,
+      `${rootContainer}lit-pod-test.ttl#thing2`
+    );
+
+    const currentValue = getBoolean(
+      existingThing,
+      "https://example.com/boolean"
+    );
+    const updatedThing = setBoolean(
+      existingThing,
+      "https://example.com/boolean",
+      !currentValue
+    );
+
+    const updatedDataset = setThing(dataset, updatedThing);
+    const savedDataset = await saveSolidDatasetAt(
+      `${rootContainer}lit-pod-test.ttl`,
+      updatedDataset
+    );
+
+    const savedThing = getThing(
+      savedDataset,
+      `${rootContainer}lit-pod-test.ttl#thing2`
+    );
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(getBoolean(savedThing, "https://example.com/boolean")).toBe(
+      !currentValue
+    );
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
