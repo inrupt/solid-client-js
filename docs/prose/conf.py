@@ -59,7 +59,7 @@ extensions = [
     'myst_parser',
 ]
 
-apidocsbasepath = ('https://' + os.environ.get('VERCEL_URL') + '/api%s', '') if 'VERCEL_URL' in os.environ else ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s','')
+apidocsbasepath = ('https://' + os.environ.get('VERCEL_URL') + '/api%s', '') if 'VERCEL_URL' in os.environ else ('https://docs.inrupt.com/client-libraries/api/javascript/solid-client%s','')
 extlinks = {
     'apisolidclient': apidocsbasepath,
 }
