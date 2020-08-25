@@ -1276,18 +1276,18 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    // Explicitly check that the agent given resource access doesn't get additional privilege:
-    // The newly created resource rule does not give any default access.
+    // Explicitly check that the agent class given default access no longer has 'defaultForNew'
+    // access: the legacy predicate is not written back if the access is modified.
     getThingAll(updatedDataset).forEach((thing) => {
       if (
         getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
           "http://xmlns.com/foaf/0.1/Agent"
         )
       ) {
-        // The public should no longer have default access
         expect(
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
         ).toHaveLength(0);
+        // The public should no longer have legacy default access.
         expect(
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
         ).toHaveLength(0);
