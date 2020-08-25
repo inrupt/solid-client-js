@@ -23,6 +23,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `getSourceUrl` used to throw an error when called on a Resource that was not fetched from
   somewhere (and hence had no source URL). It now returns `null` in that case.
+- Giving more rights to an Agent or Group could lead to privilege escalation for an app identified
+  by an `acl:origin` predicate in the ACL.
 - While we allow reading data of different types, they are stored as plain strings. While multiple
   serialisations of data are often possible, we only supported one per data type. What this means
   is that, whereas we would correctly return `true` for a boolean stored as `"1"`, we would not do

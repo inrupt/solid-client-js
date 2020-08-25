@@ -372,6 +372,7 @@ function removeAgentFromRule(
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentClass);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.origin);
 
   return [ruleWithoutAgent, ruleForOtherTargets];
 }
