@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Quad, DatasetCore } from "rdf-js";
+import { NamedNode, Quad, Quad_Object } from "rdf-js";
 import { dataset, filter, clone, internal_isDatasetCore } from "../rdfjs";
 import {
   isLocalNode,
@@ -28,6 +28,12 @@ import {
   getLocalNode,
   asNamedNode,
   resolveLocalIri,
+  isLiteral,
+  xmlSchemaTypes,
+  deserializeBoolean,
+  deserializeDatetime,
+  deserializeDecimal,
+  deserializeInteger,
 } from "../datatypes";
 import {
   SolidDataset,
@@ -47,6 +53,7 @@ import {
 } from "../interfaces";
 import { internal_isAclDataset } from "../acl/acl";
 import { getSourceUrl } from "../resource/resource";
+import { getTermAll } from "./get";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -320,6 +327,96 @@ export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
 }
 /** @hidden Alias of [[asUrl]] for those who prefer IRI terminology. */
 export const asIri = asUrl;
+
+/**
+ * Gets a human-readable representation of the given Thing to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param thing The Thing to get a human-readable representation of.
+ * @since Not released yet.
+ */
+export function thingAsMarkdown(thing: Thing): string {
+  let thingAsMarkdown: string = "";
+
+  if (isThingLocal(thing)) {
+    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${thing.internal_localSubject.internal_name}\`)\n`;
+  } else {
+    thingAsMarkdown += `## Thing: ${thing.internal_url}\n`;
+  }
+
+  const quads = Array.from(thing);
+  if (quads.length === 0) {
+    thingAsMarkdown += "\n<empty>\n";
+  } else {
+    const predicates = new Set(quads.map((quad) => quad.predicate.value));
+    for (const predicate of predicates) {
+      thingAsMarkdown += `\nProperty: ${predicate}\n`;
+      const values = getTermAll(thing, predicate);
+      values.forEach((value) => {
+        thingAsMarkdown += `- ${getReadableValue(value)}\n`;
+      });
+    }
+  }
+
+  return thingAsMarkdown;
+}
+
+function getReadableValue(value: Quad_Object): string {
+  if (isNamedNode(value)) {
+    return `<${value.value}> (URL)`;
+  }
+  if (isLiteral(value)) {
+    if (!isNamedNode(value.datatype)) {
+      return `[${value.value}] (RDF/JS Literal of unknown type)`;
+    }
+    let val;
+    switch (value.datatype.value) {
+      case xmlSchemaTypes.boolean:
+        val =
+          deserializeBoolean(value.value)?.valueOf() ??
+          `Invalid data: \`${value.value}\``;
+        return val + " (boolean)";
+      case xmlSchemaTypes.dateTime:
+        val =
+          deserializeDatetime(value.value)?.toUTCString() ??
+          `Invalid data: \`${value.value}\``;
+        return val + " (datetime)";
+      case xmlSchemaTypes.decimal:
+        val =
+          deserializeDecimal(value.value)?.toString() ??
+          `Invalid data: \`${value.value}\``;
+        return val + " (decimal)";
+      case xmlSchemaTypes.integer:
+        val =
+          deserializeInteger(value.value)?.toString() ??
+          `Invalid data: \`${value.value}\``;
+        return val + " (integer)";
+      case xmlSchemaTypes.langString:
+        return `"${value.value}" (${value.language} string)`;
+      case xmlSchemaTypes.string:
+        return `"${value.value}" (string)`;
+      default:
+        return `[${value.value}] (RDF/JS Literal of type: \`${value.datatype.value}\`)`;
+    }
+  }
+  if (isLocalNode(value)) {
+    return `<#${value.internal_name}> (URL)`;
+  }
+  if (value.termType === "BlankNode") {
+    return `[${value.value}] (RDF/JS BlankNode)`;
+  }
+  if (value.termType === "Quad") {
+    return `??? (nested RDF* Quad)`;
+  }
+  /* istanbul ignore else: The if statements are exhaustive; if not, TypeScript will complain. */
+  if (value.termType === "Variable") {
+    return `?${value.value} (RDF/JS Variable)`;
+  }
+  /* istanbul ignore next: The if statements are exhaustive; if not, TypeScript will complain. */
+  return value;
+}
 
 /**
  * @param thing The [[Thing]] of which a URL might or might not be known.
