@@ -46,7 +46,7 @@ function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
   resource: IriString,
   access: Access,
-  type: "resource" | "default",
+  type: "resource" | "default" | "legacyDefault",
   agentClass:
     | "http://xmlns.com/foaf/0.1/Agent"
     | "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
@@ -55,7 +55,8 @@ function addAclRuleQuads(
   targetType:
     | "http://www.w3.org/ns/auth/acl#agentClass"
     | "http://www.w3.org/ns/auth/acl#agent"
-    | "http://www.w3.org/ns/auth/acl#agentGroup" = "http://www.w3.org/ns/auth/acl#agentClass"
+    | "http://www.w3.org/ns/auth/acl#agentGroup"
+    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agentClass"
 ): AclDataset {
   const subjectIri =
     ruleIri ?? resource + "#" + encodeURIComponent(agentClass) + Math.random();
@@ -70,9 +71,16 @@ function addAclRuleQuads(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
       DataFactory.namedNode(
-        type === "resource"
-          ? "http://www.w3.org/ns/auth/acl#accessTo"
-          : "http://www.w3.org/ns/auth/acl#default"
+        ((_type: typeof type) => {
+          switch (_type) {
+            case "resource":
+              return "http://www.w3.org/ns/auth/acl#accessTo";
+            case "default":
+              return "http://www.w3.org/ns/auth/acl#default";
+            case "legacyDefault":
+              return "http://www.w3.org/ns/auth/acl#defaultForNew";
+          }
+        })(type)
       ),
       DataFactory.namedNode(resource)
     )
@@ -606,7 +614,7 @@ describe("setPublicResourceAccess", () => {
     expect(updatedQuads[5].object.value).toBe(foaf.Agent);
   });
 
-  it("does not copy over access for an unrelated Group or Agent Class", async () => {
+  it("does not copy over access for an unrelated Group, Agent or Origin", async () => {
     let sourceDataset = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/resource",
@@ -637,6 +645,16 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "default",
+      "https://arbitrary.app.origin/",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#origin"
+    );
+
     const updatedDataset = setPublicResourceAccess(sourceDataset, {
       read: true,
       append: true,
@@ -660,11 +678,17 @@ describe("setPublicResourceAccess", () => {
           getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
         ).toHaveLength(0);
       }
+      if (getIriAll(thing, "http://www.w3.org/ns/auth/acl#origin").length > 0) {
+        // The agent given resource access should not have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        ).toHaveLength(0);
+      }
     });
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(14);
+    expect(updatedQuads).toHaveLength(15);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1242,5 +1266,101 @@ describe("setPublicDefaultAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
     expect(updatedQuads[3].object.value).toBe(foaf.Agent);
+  });
+
+  it("does not forget to clean up the legacy defaultForNew predicate when setting default access", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "legacyDefault",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+
+    // Explicitly check that the agent class given default access no longer has 'defaultForNew'
+    // access: the legacy predicate is not written back if the access is modified.
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
+          "http://xmlns.com/foaf/0.1/Agent"
+        )
+      ) {
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+        // The public should no longer have legacy default access.
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(0);
+  });
+
+  it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "legacyDefault",
+      "http://xmlns.com/foaf/0.1/Agent",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = setPublicDefaultAccess(sourceDataset, {
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+
+    // Explicitly check that the agent given resource access doesn't get additional privilege:
+    // The newly created resource rule does not give any default access.
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
+          "http://xmlns.com/foaf/0.1/Agent"
+        )
+      ) {
+        // The public should no longer have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(1);
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(4);
   });
 });

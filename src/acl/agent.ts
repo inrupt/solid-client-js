@@ -360,10 +360,19 @@ function removeAgentFromRule(
     ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
+  // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
+  if (ruleType === "default") {
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.defaultForNew,
+      resourceIri
+    );
+  }
   // ...and only apply the new Rule to the given Agent (because the existing Rule covers the others):
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentClass);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
+  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.origin);
 
   return [ruleWithoutAgent, ruleForOtherTargets];
 }

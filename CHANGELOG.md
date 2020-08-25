@@ -16,11 +16,15 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   solid-client data structures in your unit tests.
 - `getFileWithAcl`: like `getSolidDatasetWithAcl`, this function lets you fetch a file along with
   its ACLs, if available.
+- The legacy predicate `acl:defaultForNew` is now supported by our library. If you interact with a
+  server where it is used to stipulate default access, `@inrupt/solid-client` will behave as expected.
 
 ### Bugs fixed
 
 - `getSourceUrl` used to throw an error when called on a Resource that was not fetched from
   somewhere (and hence had no source URL). It now returns `null` in that case.
+- Giving more rights to an Agent or Group could lead to privilege escalation for an app identified
+  by an `acl:origin` predicate in the ACL.
 - While we allow reading data of different types, they are stored as plain strings. While multiple
   serialisations of data are often possible, we only supported one per data type. What this means
   is that, whereas we would correctly return `true` for a boolean stored as `"1"`, we would not do
