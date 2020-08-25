@@ -30,6 +30,7 @@ export const acl = {
   agentGroup: "http://www.w3.org/ns/auth/acl#agentGroup",
   agentClass: "http://www.w3.org/ns/auth/acl#agentClass",
   default: "http://www.w3.org/ns/auth/acl#default",
+  defaultForNew: "http://www.w3.org/ns/auth/acl#defaultForNew",
   mode: "http://www.w3.org/ns/auth/acl#mode",
   origin: "http://www.w3.org/ns/auth/acl#origin",
 } as const;

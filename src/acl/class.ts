@@ -251,6 +251,14 @@ function removePublicFromRule(
     ruleType === "resource" ? acl.accessTo : acl.default,
     resourceIri
   );
+  // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
+  if (ruleType === "default") {
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.defaultForNew,
+      resourceIri
+    );
+  }
   // ...and only apply the new Rule to the Public (because the existing Rule covers other Agents):
   ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
   ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
