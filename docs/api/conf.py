@@ -83,7 +83,7 @@ html_theme_options = {
     'github_repo': repo_name,
     'github_branch': 'master',
     'ess_docs': 'https://docs.inrupt.com/ess/',
-    'clientlibjs_docs': 'https://docs.inrupt.com/client-libraries/javascript',
+    'clientlibjs_docs': 'https://docs.inrupt.com/developer-tools/javascript/client-libraries/',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
