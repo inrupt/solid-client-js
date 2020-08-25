@@ -414,6 +414,55 @@ describe("removeBoolean", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
+  it("removes equivalent booleans with different serialisations", () => {
+    const thingWithSerialised1 = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1",
+      "boolean"
+    );
+    const thingWithSerialised0 = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "0",
+      "boolean"
+    );
+    const thingWithSerialisedTrue = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "true",
+      "boolean"
+    );
+    const thingWithSerialisedFalse = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "false",
+      "boolean"
+    );
+
+    const updatedThingWithoutSerialised1 = removeBoolean(
+      thingWithSerialised1,
+      "https://some.vocab/predicate",
+      true
+    );
+    const updatedThingWithoutSerialised0 = removeBoolean(
+      thingWithSerialised0,
+      "https://some.vocab/predicate",
+      false
+    );
+    const updatedThingWithoutSerialisedTrue = removeBoolean(
+      thingWithSerialisedTrue,
+      "https://some.vocab/predicate",
+      true
+    );
+    const updatedThingWithoutSerialisedFalse = removeBoolean(
+      thingWithSerialisedFalse,
+      "https://some.vocab/predicate",
+      false
+    );
+
+    expect(Array.from(updatedThingWithoutSerialised1)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSerialised0)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSerialisedTrue)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSerialisedFalse)).toEqual([]);
+  });
+
   it("accepts Properties as Named Nodes", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -564,6 +613,33 @@ describe("removeDatetime", () => {
     expect(Array.from(updatedThing)).toEqual([]);
   });
 
+  it("removes equivalent Datetimes with different serialisations", () => {
+    const thingWithRoundedDatetime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12T13:37:42Z",
+      "dateTime"
+    );
+    const thingWithSpecificDatetime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12T12:37:42.000+01:00",
+      "dateTime"
+    );
+
+    const updatedThingWithoutRoundedDatetime = removeDatetime(
+      thingWithRoundedDatetime,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+    );
+    const updatedThingWithoutSpecificDatetime = removeDatetime(
+      thingWithSpecificDatetime,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+    );
+
+    expect(Array.from(updatedThingWithoutRoundedDatetime)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSpecificDatetime)).toEqual([]);
+  });
+
   it("accepts Properties as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -654,12 +730,18 @@ describe("removeDatetime", () => {
       "1955-06-08T13:37:42Z",
       "dateTime"
     );
+    const mockQuadWithInvalidObject = getMockQuadWithLiteralFor(
+      "https://some.vocab/predicate",
+      (undefined as unknown) as string,
+      "dateTime"
+    );
     const mockQuadWithDifferentPredicate = getMockQuadWithLiteralFor(
       "https://some-other.vocab/predicate",
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
     thingWithOtherQuads.add(mockQuadWithDifferentObject);
+    thingWithOtherQuads.add(mockQuadWithInvalidObject);
     thingWithOtherQuads.add(mockQuadWithDifferentPredicate);
 
     const updatedThing = removeDatetime(
@@ -670,6 +752,7 @@ describe("removeDatetime", () => {
 
     expect(Array.from(updatedThing)).toEqual([
       mockQuadWithDifferentObject,
+      mockQuadWithInvalidObject,
       mockQuadWithDifferentPredicate,
     ]);
   });
@@ -715,6 +798,44 @@ describe("removeDecimal", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("removes equivalent Decimals with different serialisations", () => {
+    const thingWithPlainDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1337",
+      "decimal"
+    );
+    const thingWithSignedDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "+1337",
+      "decimal"
+    );
+    const thingWithZeroedDecimal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "01337.0",
+      "decimal"
+    );
+
+    const updatedThingWithoutPlainDecimal = removeDecimal(
+      thingWithPlainDecimal,
+      "https://some.vocab/predicate",
+      1337
+    );
+    const updatedThingWithoutSignedDecimal = removeDecimal(
+      thingWithSignedDecimal,
+      "https://some.vocab/predicate",
+      1337
+    );
+    const updatedThingWithoutZeroedDecimal = removeDecimal(
+      thingWithZeroedDecimal,
+      "https://some.vocab/predicate",
+      1337
+    );
+
+    expect(Array.from(updatedThingWithoutPlainDecimal)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSignedDecimal)).toEqual([]);
+    expect(Array.from(updatedThingWithoutZeroedDecimal)).toEqual([]);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -865,6 +986,33 @@ describe("removeInteger", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("removes equivalent integers with different serialisations", () => {
+    const thingWithUnsignedInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+    const thingWithSignedInteger = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "+42",
+      "integer"
+    );
+
+    const updatedThingWithoutUnsignedInteger = removeInteger(
+      thingWithUnsignedInteger,
+      "https://some.vocab/predicate",
+      42
+    );
+    const updatedThingWithoutSignedInteger = removeInteger(
+      thingWithSignedInteger,
+      "https://some.vocab/predicate",
+      42
+    );
+
+    expect(Array.from(updatedThingWithoutUnsignedInteger)).toEqual([]);
+    expect(Array.from(updatedThingWithoutSignedInteger)).toEqual([]);
   });
 
   it("accepts Properties as Named Nodes", () => {

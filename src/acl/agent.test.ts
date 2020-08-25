@@ -49,7 +49,7 @@ function addAclRuleQuads(
   agent: IriString,
   resource: IriString,
   access: Access,
-  type: "resource" | "default",
+  type: "resource" | "default" | "legacyDefault",
   ruleIri?: IriString,
   targetType:
     | "http://www.w3.org/ns/auth/acl#agent"
@@ -70,9 +70,16 @@ function addAclRuleQuads(
     DataFactory.quad(
       DataFactory.namedNode(subjectIri),
       DataFactory.namedNode(
-        type === "resource"
-          ? "http://www.w3.org/ns/auth/acl#accessTo"
-          : "http://www.w3.org/ns/auth/acl#default"
+        ((_type: typeof type) => {
+          switch (_type) {
+            case "resource":
+              return "http://www.w3.org/ns/auth/acl#accessTo";
+            case "default":
+              return "http://www.w3.org/ns/auth/acl#default";
+            case "legacyDefault":
+              return "http://www.w3.org/ns/auth/acl#defaultForNew";
+          }
+        })(type)
       ),
       DataFactory.namedNode(resource)
     )
@@ -2494,5 +2501,109 @@ describe("setAgentDefaultAccess", () => {
     );
     // Make sure the default Access Modes granted in 2 and 5 are in separate ACL Rules:
     expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toBe(false);
+  });
+
+  it("does not forget to clean up the legacy defaultForNew predicate when setting default access", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "legacyDefault",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = setAgentDefaultAccess(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      }
+    );
+
+    // Explicitly check that the agent given resource access doesn't get additional privilege:
+    // The newly created resource rule does not give any default access.
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
+        // The agent given resource access should no longer have default access
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(0);
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(0);
+  });
+
+  it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
+    let sourceDataset = addAclRuleQuads(
+      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "default",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: true, control: true },
+      "legacyDefault",
+      "https://arbitrary.pod/resource/?ext=acl#owner"
+    );
+
+    const updatedDataset = setAgentDefaultAccess(
+      sourceDataset,
+      "https://some.pod/profileDoc#webId",
+      {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      }
+    );
+
+    // Explicitly check that the agent given default access no longer has 'defaultForNew'
+    // access: the legacy predicate is not written back if the access is modified.
+    getThingAll(updatedDataset).forEach((thing) => {
+      if (
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+          "https://some.pod/profileDoc#webId"
+        )
+      ) {
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        ).toHaveLength(1);
+        // The agent given resource access should no longer have legacy default access.
+        expect(
+          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        ).toHaveLength(0);
+      }
+    });
+
+    // Roughly check that the ACL dataset is as we expect it
+    const updatedQuads: Quad[] = Array.from(updatedDataset);
+    expect(updatedQuads).toHaveLength(4);
   });
 });

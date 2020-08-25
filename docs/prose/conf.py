@@ -59,7 +59,7 @@ extensions = [
     'myst_parser',
 ]
 
-apidocsbasepath = ('https://' + os.environ.get('VERCEL_URL') + '/api/api%s', '') if 'VERCEL_URL' in os.environ else ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s','')
+apidocsbasepath = ('https://' + os.environ.get('VERCEL_URL') + '/api%s', '') if 'VERCEL_URL' in os.environ else ('https://docs.inrupt.com/client-libraries/api/js/solid-client%s','')
 extlinks = {
     'apisolidclient': apidocsbasepath,
 }
@@ -93,7 +93,7 @@ html_title = 'Inrupt {0} Documentation'.format(name)
 html_theme_options = {
     'project_title': 'Inrupt {0} Documentation'.format(name),
     'banner': True,
-    'banner_msg': 'This is a Beta (i.e. in progress) version of the manual. Content and features are subject to change.',
+    'banner_msg': 'All libraries and documentation are currently in Beta. Content and features are subject to change.',
     'robots_index': True,
     'github_editable': True,
     'github_org': 'inrupt',

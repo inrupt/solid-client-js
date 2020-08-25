@@ -468,7 +468,7 @@ describe("getDatetime", () => {
   it("returns the datetime value for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "1990-11-12T13:37:42Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -481,7 +481,7 @@ describe("getDatetime", () => {
   it("accepts Properties as Named Nodes", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "1990-11-12T13:37:42Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -515,7 +515,7 @@ describe("getDatetime", () => {
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         "https://some.vocab/predicate",
-        "1990-11-12T13:37:42Z",
+        "1990-11-12T13:37:42.000Z",
         "dateTime"
       )
     );
@@ -536,7 +536,7 @@ describe("getDatetime", () => {
   it("returns null if no datetime value was found for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "1990-11-12T13:37:42Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
 
@@ -562,8 +562,8 @@ describe("getDatetimeAll", () => {
   it("returns the datetime values for the given Predicate", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
-      "1955-06-08T13:37:42Z",
-      "1990-11-12T13:37:42Z",
+      "1955-06-08T13:37:42.000Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
@@ -577,8 +577,8 @@ describe("getDatetimeAll", () => {
   it("accepts Properties as Named Nodes", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
-      "1955-06-08T13:37:42Z",
-      "1990-11-12T13:37:42Z",
+      "1955-06-08T13:37:42.000Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
@@ -613,7 +613,7 @@ describe("getDatetimeAll", () => {
     thingWithDifferentDatatypes.add(
       getMockQuadWithLiteralFor(
         "https://some.vocab/predicate",
-        "1990-11-12T13:37:42Z",
+        "1990-11-12T13:37:42.000Z",
         "dateTime"
       )
     );
@@ -637,7 +637,7 @@ describe("getDatetimeAll", () => {
   it("returns an empty array if no datetime values were found for the given Predicate", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "1990-11-12T13:37:42Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
 
@@ -650,7 +650,7 @@ describe("getDatetimeAll", () => {
     const thingWithNonDatetime = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
       "Not a datetime",
-      "1990-11-12T13:37:42Z",
+      "1990-11-12T13:37:42.000Z",
       "dateTime"
     );
 

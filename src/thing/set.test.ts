@@ -329,7 +329,7 @@ describe("setBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
   });
@@ -353,7 +353,7 @@ describe("setBoolean", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "0"),
+        object: literalOfType("boolean", "false"),
       })
     ).toBe(true);
   });
@@ -402,7 +402,7 @@ describe("setBoolean", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
@@ -436,7 +436,7 @@ describe("setBoolean", () => {
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("boolean", "1"),
+        object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
   });
@@ -469,7 +469,7 @@ describe("setDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
@@ -493,7 +493,7 @@ describe("setDatetime", () => {
       quadHas(updatedQuads[0], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
@@ -542,7 +542,7 @@ describe("setDatetime", () => {
     expect(
       quadHas(updatedQuads[0], {
         predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
@@ -576,7 +576,7 @@ describe("setDatetime", () => {
       quadHas(updatedQuads[1], {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42Z"),
+        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
     ).toBe(true);
   });
