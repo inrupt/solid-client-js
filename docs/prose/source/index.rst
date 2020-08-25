@@ -63,6 +63,7 @@ Issues & Help
 
    /installation
    /tutorial/read-write-data
+   /tutorial/read-write-files
    /tutorial/manage-access-control-list
    /reference
    /api
