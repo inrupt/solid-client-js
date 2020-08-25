@@ -301,8 +301,3 @@ URL as well as the updated dataset.
 If the given URL already contains a dataset, that dataset is replaced
 with the updated dataset.
 
-.. toctree::
-   :titlesonly:
-   :hidden:
-
-   /tutorial/read-write-files
