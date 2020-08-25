@@ -565,6 +565,72 @@ describe("createAclFromFallbackAcl", () => {
     );
   });
 
+  it("supports the legacy acl:defaultForNew predicate", () => {
+    const aclDataset: AclDataset = Object.assign(dataset(), {
+      internal_accessTo: "https://arbitrary.pod/container/",
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/container/.acl",
+        isRawData: false,
+      },
+    });
+    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#defaultForNew"),
+        DataFactory.namedNode("https://arbitrary.pod/container/")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
+      )
+    );
+    aclDataset.add(
+      DataFactory.quad(
+        DataFactory.namedNode(subjectIri),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
+      )
+    );
+    const solidDataset = Object.assign(dataset(), {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/container/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/container/resource.acl",
+      },
+      internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
+    });
+
+    const resourceAcl = createAclFromFallbackAcl(solidDataset);
+
+    const resourceAclQuads = Array.from(resourceAcl);
+    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads[3].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#accessTo"
+    );
+    expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.internal_accessTo).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAcl.internal_resourceInfo.sourceIri).toBe(
+      "https://arbitrary.pod/container/resource.acl"
+    );
+  });
+
   it("does not copy over Resource rules from the fallback ACL", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/container/",

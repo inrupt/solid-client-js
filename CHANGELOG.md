@@ -16,6 +16,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   solid-client data structures in your unit tests.
 - `getFileWithAcl`: like `getSolidDatasetWithAcl`, this function lets you fetch a file along with
   its ACLs, if available.
+- The legacy predicate `acl:defaultForNew` is now supported by our library. If you interact with a
+  server where it is used to stipulate default access, `@inrupt/solid-client` will behave as expected.
 
 ### Bugs fixed
 
