@@ -34,6 +34,7 @@ import {
   addStringNoLocale,
   addNamedNode,
   addLiteral,
+  addTerm,
 } from "./add";
 
 function getMockEmptyThing(iri = "https://arbitrary.vocab/subject") {
@@ -1506,6 +1507,186 @@ describe("addLiteral", () => {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value"),
+      })
+    ).toBe(true);
+  });
+});
+
+describe("addTerm", () => {
+  it("adds the given NamedNode value for the given predicate", () => {
+    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+
+    const updatedThing = addTerm(
+      thing,
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/other-resource#object")
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(1);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+      })
+    ).toBe(true);
+  });
+
+  it("adds the given Literal value for the given predicate", () => {
+    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+
+    const updatedThing = addTerm(
+      thing,
+      "https://some.vocab/predicate",
+      DataFactory.literal(
+        "Some string",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+      )
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(1);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.literal(
+          "Some string",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+        ),
+      })
+    ).toBe(true);
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+
+    const updatedThing = addTerm(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      DataFactory.namedNode("https://some.pod/other-resource#object")
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(1);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+      })
+    ).toBe(true);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thing = getMockEmptyThing("https://arbitrary.pod/resource#subject");
+
+    const updatedThing = addTerm(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
+    );
+
+    expect(Array.from(thing)).toHaveLength(0);
+    expect(Array.from(updatedThing)).toHaveLength(1);
+  });
+
+  it("also works on ThingLocals", () => {
+    const localSubject: LocalNode = Object.assign(
+      DataFactory.blankNode("Arbitrary blank node"),
+      { internal_name: "localSubject" }
+    );
+    const datasetWithThingLocal = dataset();
+    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
+      internal_localSubject: localSubject,
+    });
+
+    const updatedThing = addTerm(
+      thingLocal,
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/other-resource#object")
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(1);
+    expect(
+      quadHas(updatedQuads[0], {
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+      })
+    ).toBe(true);
+    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+      "localSubject"
+    );
+  });
+
+  it("preserves existing values for the same Predicate", () => {
+    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    thing.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.pod/resource#subject"),
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.namedNode("https://some.pod/other-resource#object")
+      )
+    );
+
+    const updatedThing = addTerm(
+      thing,
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/yet-another-resource#object")
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(2);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+      })
+    ).toBe(true);
+    expect(
+      quadHas(updatedQuads[1], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode(
+          "https://some.pod/yet-another-resource#object"
+        ),
+      })
+    ).toBe(true);
+  });
+
+  it("preserves existing Quads with different Predicates", () => {
+    const thing = getMockEmptyThing("https://some.pod/resource#subject");
+    thing.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.pod/resource#subject"),
+        DataFactory.namedNode("https://some-other.vocab/predicate"),
+        literalOfType("string", "Some other value")
+      )
+    );
+
+    const updatedThing = addTerm(
+      thing,
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/other-resource#object")
+    );
+
+    const updatedQuads = Array.from(updatedThing);
+    expect(updatedQuads).toHaveLength(2);
+    expect(
+      quadHas(updatedQuads[0], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some-other.vocab/predicate",
+        object: literalOfType("string", "Some other value"),
+      })
+    ).toBe(true);
+    expect(
+      quadHas(updatedQuads[1], {
+        subject: "https://some.pod/resource#subject",
+        predicate: "https://some.vocab/predicate",
+        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
     ).toBe(true);
   });
