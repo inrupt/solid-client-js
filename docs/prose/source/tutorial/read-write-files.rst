@@ -36,7 +36,7 @@ Write a File
 There are two approaches to writing files:
 
 1. you know exactly at which URL your file should be saved (potentially overwriting any data that sat there previously).
-2. you know what [Container](../glossary#container) should be the parent of your file, like saving it into a folder.
+2. you know what :term:`Container` should be the parent of your file, like saving it into a folder.
 
 Write a file directly at a URL
 ------------------------------
