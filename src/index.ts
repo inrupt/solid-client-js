@@ -131,6 +131,7 @@ export {
   addStringNoLocale,
   addLiteral,
   addNamedNode,
+  addTerm,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[addStringNoLocale]] */
   addStringNoLocale as addStringUnlocalized,
@@ -148,6 +149,7 @@ export {
   setStringNoLocale,
   setLiteral,
   setNamedNode,
+  setTerm,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[setStringNoLocale]] */
   setStringNoLocale as setStringUnlocalized,

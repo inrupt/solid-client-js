@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Literal, NamedNode } from "rdf-js";
+import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import {
   Thing,
   Url,
@@ -210,59 +210,64 @@ export const setStringNoLocale: SetOfType<string> = (
 /**
  * Create a new Thing with existing values replaced by the given Named Node for the given Property.
  *
- * This preserves existing values for the given Property. To replace them, see [[setNamedNode]].
+ * This replaces existing values for the given Property. To preserve them, see [[addNamedNode]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other set*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to set a NamedNode on.
  * @param property Property for which to set the value.
- * @param value The NamedNode to set on `tihng` for the given `property`.
+ * @param value The NamedNode to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export function setNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: NamedNode
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function setNamedNode(
-  thing: Thing,
-  property: Url | UrlString,
-  value: NamedNode
-): Thing {
-  const newThing = removeAll(thing, property);
-
-  const predicateNode = asNamedNode(property);
-  newThing.add(
-    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
-  );
-
-  return newThing;
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
+  return setTerm(thing, property, value);
 }
 
 /**
  * Create a new Thing with existing values replaced by the given Literal for the given Property.
  *
- * This preserves existing values for the given Property. To replace them, see [[setLiteral]].
+ * This replaces existing values for the given Property. To preserve them, see [[addLiteral]].
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.
  *
  * @ignore This should not be needed due to the other set*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @param thing The [[Thing]] to set a Literal on.
  * @param property Property for which to set the value.
- * @param value The Literal to set on `tihng` for the given `property`.
+ * @param value The Literal to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export function setLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Literal
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function setLiteral(
-  thing: Thing,
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
+  return setTerm(thing, property, value);
+}
+
+/**
+ * Creates a new Thing with existing values replaced by the given Term for the given Property.
+ *
+ * This replaces existing values for the given Property. To preserve them, see [[addTerm]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @ignore This should not be needed due to the other set*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @param thing The [[Thing]] to set a Term on.
+ * @param property Property for which to set the value.
+ * @param value The raw RDF/JS value to set on `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ * @since Not released yet.
+ */
+export function setTerm<T extends Thing>(
+  thing: T,
   property: Url | UrlString,
-  value: Literal
-): Thing {
+  value: Quad_Object
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);

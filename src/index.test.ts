@@ -79,6 +79,7 @@ import {
   addStringNoLocale,
   addLiteral,
   addNamedNode,
+  addTerm,
   setUrl,
   setIri,
   setBoolean,
@@ -89,6 +90,7 @@ import {
   setStringNoLocale,
   setLiteral,
   setNamedNode,
+  setTerm,
   removeAll,
   removeUrl,
   removeIri,
@@ -250,6 +252,7 @@ it("exports the public API from the entry file", () => {
   expect(addStringNoLocale).toBeDefined();
   expect(addLiteral).toBeDefined();
   expect(addNamedNode).toBeDefined();
+  expect(addTerm).toBeDefined();
   expect(setUrl).toBeDefined();
   expect(setIri).toBeDefined();
   expect(setBoolean).toBeDefined();
@@ -260,6 +263,7 @@ it("exports the public API from the entry file", () => {
   expect(setStringNoLocale).toBeDefined();
   expect(setLiteral).toBeDefined();
   expect(setNamedNode).toBeDefined();
+  expect(setTerm).toBeDefined();
   expect(removeAll).toBeDefined();
   expect(removeUrl).toBeDefined();
   expect(removeIri).toBeDefined();

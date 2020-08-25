@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Literal, NamedNode } from "rdf-js";
+import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import {
   Thing,
   UrlString,
@@ -222,19 +222,8 @@ export function addNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: NamedNode
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function addNamedNode(
-  thing: Thing,
-  property: Url | UrlString,
-  value: NamedNode
-): Thing {
-  const predicateNode = asNamedNode(property);
-  const newThing = cloneThing(thing);
-
-  newThing.add(
-    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
-  );
-  return newThing;
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
+  return addTerm(thing, property, value);
 }
 
 /**
@@ -254,12 +243,29 @@ export function addLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Literal
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function addLiteral(
-  thing: Thing,
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
+  return addTerm(thing, property, value);
+}
+
+/**
+ * Creates a new Thing with a Term added for a Property.
+ *
+ * This preserves existing values for the given Property. To replace them, see [[setTerm]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @ignore This should not be needed due to the other add*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @param thing The [[Thing]] to add a Term to.
+ * @param property Property for which to add a value.
+ * @param value The Term to add.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ * @since Not released yet.
+ */
+export function addTerm<T extends Thing>(
+  thing: T,
   property: Url | UrlString,
-  value: Literal
-): Thing {
+  value: Quad_Object
+): T extends ThingLocal ? ThingLocal : ThingPersisted {
   const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
