@@ -86,6 +86,7 @@ export {
   isThing,
   asUrl,
   asIri,
+  thingAsMarkdown,
 } from "./thing/thing";
 export {
   getUrl,
