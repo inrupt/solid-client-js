@@ -65,8 +65,10 @@ import {
   getStringNoLocaleAll,
   getLiteral,
   getNamedNode,
+  getTerm,
   getLiteralAll,
   getNamedNodeAll,
+  getTermAll,
   addUrl,
   addIri,
   addBoolean,
@@ -234,8 +236,10 @@ it("exports the public API from the entry file", () => {
   expect(getStringNoLocaleAll).toBeDefined();
   expect(getLiteral).toBeDefined();
   expect(getNamedNode).toBeDefined();
+  expect(getTerm).toBeDefined();
   expect(getLiteralAll).toBeDefined();
   expect(getNamedNodeAll).toBeDefined();
+  expect(getTermAll).toBeDefined();
   expect(addUrl).toBeDefined();
   expect(addIri).toBeDefined();
   expect(addBoolean).toBeDefined();

@@ -43,6 +43,8 @@ import {
   getStringNoLocaleAll,
   getLiteralAll,
   getNamedNodeAll,
+  getTerm,
+  getTermAll,
 } from "./get";
 
 function getMockQuadWithLiteralFor(
@@ -1666,6 +1668,30 @@ function getMockThingWithNamedNode(
   });
   return thing;
 }
+function getMockThingWithNamedNodes(
+  predicate: IriString,
+  object1: IriString,
+  object2: IriString
+): Thing {
+  const plainDataset = dataset();
+  const quad1 = DataFactory.quad(
+    DataFactory.namedNode("https://arbitrary.vocab/subject"),
+    DataFactory.namedNode(predicate),
+    DataFactory.namedNode(object1)
+  );
+  const quad2 = DataFactory.quad(
+    DataFactory.namedNode("https://arbitrary.vocab/subject"),
+    DataFactory.namedNode(predicate),
+    DataFactory.namedNode(object2)
+  );
+  plainDataset.add(quad1);
+  plainDataset.add(quad2);
+
+  const thing: Thing = Object.assign(plainDataset, {
+    internal_url: "https://arbitrary.vocab/subject",
+  });
+  return thing;
+}
 
 describe("getNamedNode", () => {
   it("returns the Named Node for the given Predicate", () => {
@@ -1738,31 +1764,6 @@ describe("getNamedNode", () => {
 });
 
 describe("getNamedNodeAll", () => {
-  function getMockThingWithNamedNodes(
-    predicate: IriString,
-    object1: IriString,
-    object2: IriString
-  ): Thing {
-    const plainDataset = dataset();
-    const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(object1)
-    );
-    const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(object2)
-    );
-    plainDataset.add(quad1);
-    plainDataset.add(quad2);
-
-    const thing: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
-    return thing;
-  }
-
   it("returns the Named Nodes for the given Predicate", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
@@ -1831,5 +1832,171 @@ describe("getNamedNodeAll", () => {
     );
     expect(foundNamedNodes).toHaveLength(1);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
+  });
+});
+
+describe("getTerm", () => {
+  it("returns the NamedNode for the given Predicate", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object"
+    );
+
+    const foundTerm = getTerm(
+      thingWithNamedNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as NamedNode).termType).toBe("NamedNode");
+    expect((foundTerm as NamedNode).value).toBe("https://some.vocab/object");
+  });
+
+  it("returns the Literal for the given Predicate", () => {
+    const thingWithLiteral = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const foundTerm = getTerm(thingWithLiteral, "https://some.vocab/predicate");
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as Literal).termType).toBe("Literal");
+    expect((foundTerm as Literal).value).toBe("Some string");
+    expect((foundTerm as Literal).datatype.value).toBe(
+      "http://www.w3.org/2001/XMLSchema#string"
+    );
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object"
+    );
+
+    const foundTerm = getTerm(
+      thingWithNamedNode,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as NamedNode).termType).toBe("NamedNode");
+    expect((foundTerm as NamedNode).value).toBe("https://some.vocab/object");
+  });
+
+  it("returns null if no value was found", () => {
+    const plainDataset = dataset();
+
+    const thingWithoutTerm: Thing = Object.assign(plainDataset, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getTerm(thingWithoutTerm, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+});
+
+describe("getTermAll", () => {
+  it("returns the Named Nodes for the given Predicate", () => {
+    const thingWithNamedNodes = getMockThingWithNamedNodes(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object1",
+      "https://some.vocab/object2"
+    );
+
+    const foundTerms = getTermAll(
+      thingWithNamedNodes,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerms).toHaveLength(2);
+    expect(foundTerms[0].termType).toBe("NamedNode");
+    expect(foundTerms[0].value).toBe("https://some.vocab/object1");
+    expect(foundTerms[1].termType).toBe("NamedNode");
+    expect(foundTerms[1].value).toBe("https://some.vocab/object2");
+  });
+
+  it("returns the Literals for the given Predicate", () => {
+    const thingWithLiterals = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "Some string 1",
+      "Some string 2",
+      "string"
+    );
+
+    const foundTerms = getTermAll(
+      thingWithLiterals,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerms).toHaveLength(2);
+    expect(foundTerms[0].termType).toBe("Literal");
+    expect(foundTerms[0].value).toBe("Some string 1");
+    expect((foundTerms[0] as Literal).datatype.value).toBe(
+      "http://www.w3.org/2001/XMLSchema#string"
+    );
+    expect(foundTerms[1].termType).toBe("Literal");
+    expect(foundTerms[1].value).toBe("Some string 2");
+    expect((foundTerms[1] as Literal).datatype.value).toBe(
+      "http://www.w3.org/2001/XMLSchema#string"
+    );
+  });
+
+  it("returns Terms of different TermTypes for the given Predicate", () => {
+    const thingWithMixedTerms = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object1"
+    );
+    const existingQuad = Array.from(thingWithMixedTerms)[0];
+    thingWithMixedTerms.add(
+      DataFactory.quad(
+        existingQuad.subject,
+        existingQuad.predicate,
+        DataFactory.literal(
+          "Some string",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
+        )
+      )
+    );
+
+    const foundTerms = getTermAll(
+      thingWithMixedTerms,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerms).toHaveLength(2);
+    expect(foundTerms[0].termType).toBe("NamedNode");
+    expect(foundTerms[0].value).toBe("https://some.vocab/object1");
+    expect(foundTerms[1].termType).toBe("Literal");
+    expect(foundTerms[1].value).toBe("Some string");
+    expect((foundTerms[1] as Literal).datatype.value).toBe(
+      "http://www.w3.org/2001/XMLSchema#string"
+    );
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithNamedNodes = getMockThingWithNamedNodes(
+      "https://some.vocab/predicate",
+      "https://some.vocab/object1",
+      "https://some.vocab/object2"
+    );
+
+    const foundNamedNodes = getTermAll(
+      thingWithNamedNodes,
+      DataFactory.namedNode("https://some.vocab/predicate")
+    );
+    expect(foundNamedNodes).toHaveLength(2);
+    expect(foundNamedNodes[0].termType).toBe("NamedNode");
+    expect(foundNamedNodes[0].value).toBe("https://some.vocab/object1");
+    expect(foundNamedNodes[1].termType).toBe("NamedNode");
+    expect(foundNamedNodes[1].value).toBe("https://some.vocab/object2");
+  });
+
+  it("returns an empty array if no values were found", () => {
+    const plainDataset = dataset();
+
+    const thingWithoutTerms: Thing = Object.assign(plainDataset, {
+      internal_url: "https://arbitrary.vocab/subject",
+    });
+
+    expect(
+      getTermAll(thingWithoutTerms, "https://some.vocab/predicate")
+    ).toEqual([]);
   });
 });

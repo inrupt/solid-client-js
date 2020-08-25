@@ -106,8 +106,10 @@ export {
   getStringNoLocaleAll,
   getLiteral,
   getNamedNode,
+  getTerm,
   getLiteralAll,
   getNamedNodeAll,
+  getTermAll,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[getStringNoLocale]] */
   getStringNoLocale as getStringUnlocalizedOne,
