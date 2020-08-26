@@ -58,6 +58,7 @@ export {
   saveSolidDatasetInContainer,
   createContainerInContainer,
   getSolidDatasetWithAcl,
+  solidDatasetAsMarkdown,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchLitDatasetWithAcl]] */
   getSolidDatasetWithAcl as unstable_fetchLitDatasetWithAcl,
