@@ -174,13 +174,7 @@ export function addStringWithLocale<T extends Thing>(
   property: Url | UrlString,
   value: string,
   locale: string
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function addStringWithLocale(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  locale: string
-): Thing {
+): T {
   const literal = DataFactory.literal(value, normalizeLocale(locale));
   return addLiteral(thing, property, literal);
 }
@@ -222,7 +216,7 @@ export function addNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: NamedNode
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   return addTerm(thing, property, value);
 }
 
@@ -243,7 +237,7 @@ export function addLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Literal
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   return addTerm(thing, property, value);
 }
 
@@ -265,7 +259,7 @@ export function addTerm<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Quad_Object
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   const predicateNode = asNamedNode(property);
   const newThing = cloneThing(thing);
 
@@ -280,13 +274,7 @@ function addLiteralOfType<T extends Thing>(
   property: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-function addLiteralOfType(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  type: UrlString
-): Thing {
+): T {
   const literal = DataFactory.literal(value, type);
   return addLiteral(thing, property, literal);
 }
@@ -301,4 +289,4 @@ type AddOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Type
-) => T extends ThingLocal ? ThingLocal : ThingPersisted;
+) => T;

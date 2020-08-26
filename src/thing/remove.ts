@@ -55,7 +55,7 @@ import { filterThing } from "./thing";
 export function removeAll<T extends Thing>(
   thing: T,
   property: Url | UrlString
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
+): T;
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
   const predicateNode = asNamedNode(property);
 
@@ -197,13 +197,7 @@ export function removeStringWithLocale<T extends Thing>(
   property: Url | UrlString,
   value: string,
   locale: string
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeStringWithLocale(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  locale: string
-): Thing {
+): T {
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
   // must call directly `removeLiteral` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
@@ -248,12 +242,7 @@ export function removeNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: NamedNode
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeNamedNode(
-  thing: Thing,
-  property: Url | UrlString,
-  value: NamedNode
-): Thing {
+): T {
   const predicateNode = asNamedNode(property);
   const updatedThing = filterThing(thing, (quad) => {
     return (
@@ -276,12 +265,7 @@ export function removeLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Literal
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function removeLiteral(
-  thing: Thing,
-  property: Url | UrlString,
-  value: Literal
-): Thing {
+): T {
   const predicateNode = asNamedNode(property);
   const updatedThing = filterThing(thing, (quad) => {
     return (
@@ -304,7 +288,7 @@ function removeLiteralMatching<T extends Thing>(
   property: Url | UrlString,
   type: XmlSchemaTypeIri,
   matcher: (serialisedValue: string) => boolean
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   const predicateNode = asNamedNode(property);
   const updatedThing = filterThing(thing, (quad) => {
     // Copy every value from the old thing into the new thing, unless it:
@@ -335,4 +319,4 @@ type RemoveOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Type
-) => T extends ThingLocal ? ThingLocal : ThingPersisted;
+) => T;
