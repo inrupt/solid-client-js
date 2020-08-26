@@ -41,6 +41,7 @@ import {
   createSolidDataset,
   createContainerAt,
   createContainerInContainer,
+  solidDatasetAsMarkdown,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -49,6 +50,11 @@ import {
   SolidDataset,
   LocalNode,
 } from "../interfaces";
+import { mockSolidDatasetFrom } from "./mock";
+import { createThing, setThing } from "../thing/thing";
+import { mockThingFrom } from "../thing/mock";
+import { addStringNoLocale } from "../thing/add";
+import { removeStringNoLocale } from "../thing/remove";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -1800,6 +1806,203 @@ describe("createContainerInContainer", () => {
 
     expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
+    );
+  });
+});
+
+describe("solidDatasetAsMarkdown", () => {
+  it("returns a readable version of an empty, unsaved SolidDataset", () => {
+    const emptyDataset = createSolidDataset();
+
+    expect(solidDatasetAsMarkdown(emptyDataset)).toBe(
+      `# SolidDataset (no URL yet)\n\n<empty>\n`
+    );
+  });
+
+  it("returns a readable version of an empty SolidDataset with a known URL", () => {
+    const datasetWithSourceUrl = mockSolidDatasetFrom(
+      "https://some.pod/resource"
+    );
+
+    expect(solidDatasetAsMarkdown(datasetWithSourceUrl)).toBe(
+      `# SolidDataset: https://some.pod/resource\n\n<empty>\n`
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains an unsaved Thing", () => {
+    let thing = createThing({ name: "thing" });
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const datasetWithUnsavedThing = setThing(createSolidDataset(), thing);
+
+    expect(solidDatasetAsMarkdown(datasetWithUnsavedThing)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Some other string" (string)\n\n' +
+        "(2 new values added / 0 values removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains a fetched Thing that has been changed", () => {
+    let thing = mockThingFrom("https://some.pod/resource#thing");
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const datasetWithSavedThing = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing
+    );
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThing.internal_changeLog = { additions: [], deletions: [] };
+    let changedThing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing = removeStringNoLocale(
+      changedThing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const changedDataset = setThing(datasetWithSavedThing, changedThing);
+
+    expect(solidDatasetAsMarkdown(changedDataset)).toBe(
+      "# SolidDataset: https://some.pod/resource\n\n" +
+        "## Thing: https://some.pod/resource#thing\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Yet another string" (string)\n\n' +
+        "(1 new value added / 1 value removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains multiple Things", () => {
+    let thing1 = createThing({ name: "thing1" });
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    let thing2 = createThing({ name: "thing2" });
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithMultipleThings = setThing(createSolidDataset(), thing1);
+    datasetWithMultipleThings = setThing(datasetWithMultipleThings, thing2);
+
+    expect(solidDatasetAsMarkdown(datasetWithMultipleThings)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing1`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n\n' +
+        "(1 new value added / 0 values removed)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing2`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some other string" (string)\n\n' +
+        "(1 new value added / 0 values removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains multiple fetched Things that have been changed", () => {
+    let thing1 = mockThingFrom("https://some.pod/resource#thing1");
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let thing2 = mockThingFrom("https://some.pod/resource#thing2");
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithSavedThings = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing1
+    );
+    datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
+
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThings.internal_changeLog = {
+      additions: [],
+      deletions: [],
+    };
+    let changedThing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing1 = removeStringNoLocale(
+      changedThing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const changedThing2 = removeStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedDataset = setThing(datasetWithSavedThings, changedThing1);
+    changedDataset = setThing(changedDataset, changedThing2);
+
+    expect(solidDatasetAsMarkdown(changedDataset)).toBe(
+      "# SolidDataset: https://some.pod/resource\n\n" +
+        "## Thing: https://some.pod/resource#thing1\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Yet another string" (string)\n\n' +
+        "(1 new value added / 1 value removed)\n\n" +
+        "## Thing: https://some.pod/resource#thing2\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n\n' +
+        "(0 new values added / 1 value removed)\n"
+    );
+  });
+
+  it("does not show a list of changes if none is available", () => {
+    const datasetWithoutChangeLog = dataset();
+    datasetWithoutChangeLog.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.literal("Arbitrary string")
+      )
+    );
+
+    expect(solidDatasetAsMarkdown(datasetWithoutChangeLog)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing: https://arbitrary.pod/resource#thing\n\n" +
+        "Property: https://arbitrary.vocab/predicate\n" +
+        '- "Arbitrary string" (string)\n'
     );
   });
 });

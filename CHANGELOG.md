@@ -6,8 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ### New features
 
-- `thingAsMarkdown()`: a function that takes a Thing and returns a string representation of it
-  that can assist in debugging issues.
+- `thingAsMarkdown()` and `solidDatasetAsMarkdown()`: functions that take a Thing and SolidDataset,
+  respectively, and returns a string representation of it that can assist in debugging issues.
 
 ## [0.2.0] - 2020-08-27
 

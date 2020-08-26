@@ -35,6 +35,7 @@ import {
   Url,
   internal_toIriString,
   IriString,
+  Thing,
 } from "../interfaces";
 import {
   internal_parseResourceInfo,
@@ -42,6 +43,7 @@ import {
   internal_fetchAcl,
   getSourceUrl,
 } from "./resource";
+import { getThingAll, thingAsMarkdown, internal_toNode } from "../thing/thing";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -470,6 +472,62 @@ export async function createContainerInContainer(
   });
 
   return resourceWithResourceInfo;
+}
+
+/**
+ * Gets a human-readable representation of the given SolidDataset to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param solidDataset The [[SolidDataset]] to get a human-readable representation of.
+ * @since Not released yet.
+ */
+export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
+  let readableSolidDataset: string = "";
+
+  if (hasResourceInfo(solidDataset)) {
+    readableSolidDataset += `# SolidDataset: ${solidDataset.internal_resourceInfo.sourceIri}\n`;
+  } else {
+    readableSolidDataset += `# SolidDataset (no URL yet)\n`;
+  }
+
+  const things = getThingAll(solidDataset);
+  if (things.length === 0) {
+    readableSolidDataset += "\n<empty>\n";
+  } else {
+    things.forEach((thing) => {
+      readableSolidDataset += "\n" + thingAsMarkdown(thing);
+      if (hasChangelog(solidDataset)) {
+        readableSolidDataset +=
+          "\n" + getReadableChangeLogSummary(solidDataset, thing) + "\n";
+      }
+    });
+  }
+
+  return readableSolidDataset;
+}
+
+function getReadableChangeLogSummary(
+  solidDataset: WithChangeLog,
+  thing: Thing
+): string {
+  const subject = internal_toNode(thing);
+  const nrOfAdditions = solidDataset.internal_changeLog.additions.reduce(
+    (count, addition) => (addition.subject.equals(subject) ? count + 1 : count),
+    0
+  );
+  const nrOfDeletions = solidDataset.internal_changeLog.deletions.reduce(
+    (count, deletion) => (deletion.subject.equals(subject) ? count + 1 : count),
+    0
+  );
+  const additionString =
+    nrOfAdditions === 1
+      ? "1 new value added"
+      : nrOfAdditions + " new values added";
+  const deletionString =
+    nrOfDeletions === 1 ? "1 value removed" : nrOfDeletions + " values removed";
+  return `(${additionString} / ${deletionString})`;
 }
 
 function getNamedNodesForLocalNodes(quad: Quad): Quad {
