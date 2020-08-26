@@ -462,17 +462,14 @@ export function internal_toNode(
  * @param thing Thing to clone.
  * @returns A new Thing with the same Quads as `input`.
  */
-export function cloneThing<T extends Thing>(
-  thing: T
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function cloneThing(thing: Thing): Thing {
+export function cloneThing<T extends Thing>(thing: T): T {
   const cloned = clone(thing);
   if (isThingLocal(thing)) {
     (cloned as ThingLocal).internal_localSubject = thing.internal_localSubject;
-    return cloned as ThingLocal;
+    return cloned as T;
   }
-  (cloned as ThingPersisted).internal_url = thing.internal_url;
-  return cloned as ThingPersisted;
+  (cloned as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
+  return cloned as T;
 }
 
 /**
@@ -484,19 +481,15 @@ export function cloneThing(thing: Thing): Thing {
 export function filterThing<T extends Thing>(
   thing: T,
   callback: (quad: Quad) => boolean
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function filterThing(
-  thing: Thing,
-  callback: (quad: Quad) => boolean
-): Thing {
+): T {
   const filtered = filter(thing, callback);
   if (isThingLocal(thing)) {
     (filtered as ThingLocal).internal_localSubject =
       thing.internal_localSubject;
-    return filtered as ThingLocal;
+    return filtered as T;
   }
-  (filtered as ThingPersisted).internal_url = thing.internal_url;
-  return filtered as ThingPersisted;
+  (filtered as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
+  return filtered as T;
 }
 
 /**

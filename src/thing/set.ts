@@ -176,13 +176,7 @@ export function setStringWithLocale<T extends Thing>(
   property: Url | UrlString,
   value: string,
   locale: string
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
-export function setStringWithLocale(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  locale: string
-): Thing {
+): T {
   const literal = DataFactory.literal(value, normalizeLocale(locale));
   return setLiteral(thing, property, literal);
 }
@@ -224,7 +218,7 @@ export function setNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: NamedNode
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   return setTerm(thing, property, value);
 }
 
@@ -245,7 +239,7 @@ export function setLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Literal
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   return setTerm(thing, property, value);
 }
 
@@ -267,7 +261,7 @@ export function setTerm<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Quad_Object
-): T extends ThingLocal ? ThingLocal : ThingPersisted {
+): T {
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
@@ -283,7 +277,7 @@ function setLiteralOfType<T extends Thing>(
   property: Url | UrlString,
   value: string,
   type: XmlSchemaTypeIri
-): T extends ThingLocal ? ThingLocal : ThingPersisted;
+): T;
 function setLiteralOfType(
   thing: Thing,
   property: Url | UrlString,
@@ -308,4 +302,4 @@ type SetOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Type
-) => T extends ThingLocal ? ThingLocal : ThingPersisted;
+) => T;
