@@ -8,7 +8,7 @@
 
 ## Data access and permissions management - solid-client
 
-[@inrupt/solid-client](https://docs.inrupt.com/client-libraries/solid-client-js/) allows developers to access data and manage permissions on data stored in Solid Pods.
+[@inrupt/solid-client](https://docs.inrupt.com/developer-tools/javascript/client-libraries/) allows developers to access data and manage permissions on data stored in Solid Pods.
 
 ## Authentication - solid-client-authn
 
@@ -49,7 +49,7 @@ If you have questions about working with Solid or just want to share what you’
 
 ## Documentation
 
-- [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/client-libraries/solid-client-js)
+- [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
 - [Homepage](https://docs.inrupt.com/)
 
 # Changelog
