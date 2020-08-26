@@ -144,7 +144,7 @@ export function internal_getContainerPath(resourcePath: string): string {
 /**
  * Verify whether the given Resource has a resource ACL attached.
  *
- * A Resource returned using [[getSolidDatasetWithAcl]], i.e., the returned `dataset,
+ * A Resource returned using [[getSolidDatasetWithAcl]], i.e., the returned `dataset`,
  * has its resource ACL attached if its resource ACL exists and the current user
  * has Control access to the Resource. Otherwise, the Resource will not have a resource ACL attached.
  *
@@ -196,7 +196,7 @@ export function getResourceAcl(
 /**
  * Verify whether the given Resource has a fallback ACL attached.
  *
- * A Resource returned using [[getSolidDatasetWithAcl]], i.e., the returned `dataset,
+ * A Resource returned using [[getSolidDatasetWithAcl]], i.e., the returned `dataset`,
  * has a fallback ACL attached if the current user
  * has Control access to the Resource's Container from which the Resource inherits its ACL.
  * This function verifies that the fallback ACL is accessible.
@@ -217,7 +217,7 @@ export function hasFallbackAcl<Resource extends WithAcl>(
  * Return the fallback ACL attached to a Resource.
  *
  * Given a Resource that has a fallback ACL attached and is accessible by the user
- * (see [[hasFallbackAcl]]), this function returns the Resource ACL.
+ * (see [[hasFallbackAcl]]), this function returns the fallback ACL.
  *
  *
  * _Note_: The Web Access Control specification is not yet finalised. As such, this
