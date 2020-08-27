@@ -227,7 +227,7 @@ export async function saveSolidDatasetAt(
  *
  * @param url URL of the empty Container that is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @since Not released yet.
+ * @since 0.2.0
  */
 export async function createContainerAt(
   url: UrlString | Url,
@@ -421,7 +421,7 @@ export async function saveSolidDatasetInContainer(
  *
  * @param containerUrl URL of the Container in which the empty Container is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @since Not released yet.
+ * @since 0.2.0
  */
 export async function createContainerInContainer(
   containerUrl: UrlString | Url,

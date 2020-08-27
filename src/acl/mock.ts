@@ -41,7 +41,7 @@ import { mockContainerFrom } from "../resource/mock";
  *
  * @param resource The Resource that we should pretend has its own ACL.
  * @returns The input Resource, with an empty Resource ACL attached.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function addMockResourceAclTo<T extends WithResourceInfo>(
   resource: T
@@ -83,7 +83,7 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
  *
  * @param resource The Resource that we should pretend has one of its Container's ACL attached.
  * @returns The input Resource, with an empty Fallback ACL attached.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function addMockFallbackAclTo<T extends WithResourceInfo>(
   resource: T
