@@ -42,7 +42,7 @@ type Unpromisify<T> = T extends Promise<infer R> ? R : T;
  *
  * @param url The URL from which the mocked SolidDataset pretends to be retrieved.
  * @returns A mocked SolidDataset.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function mockSolidDatasetFrom(
   url: Url | UrlString
@@ -71,7 +71,7 @@ export function mockSolidDatasetFrom(
  *
  * @param url The URL from which the mocked Container pretends to be retrieved — this should end in a slash.
  * @returns A mocked SolidDataset.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function mockContainerFrom(
   url: Url | UrlString
@@ -96,7 +96,7 @@ export function mockContainerFrom(
  *
  * @param url The URL from which the mocked File pretends to be retrieved.
  * @Returns A mocked File.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function mockFileFrom(
   url: Url | UrlString,

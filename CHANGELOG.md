@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.2.0] - 2020-08-27
+
 ### New features
 
 - `hasResourceInfo`: a function that can verify whether its parameter (e.g. a file or a

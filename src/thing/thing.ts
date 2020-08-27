@@ -288,6 +288,7 @@ export function createThing(options: CreateThingOptions = {}): Thing {
 /**
  * @param input An value that might be a [[Thing]].
  * @returns Whether `input` is a Thing.
+ * @since 0.2.0
  */
 export function isThing<X>(input: X | Thing): input is Thing {
   return (
