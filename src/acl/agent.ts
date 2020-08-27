@@ -52,21 +52,22 @@ import { removeIri, removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 
 /**
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * interface is still experimental and can change in a non-major release.
+ * _Note_: The Web Access Control specification is not yet finalised. As such, this
+ * interface is still experimental and subject to change, even in a non-major release.
  */
 export type AgentAccess = Record<WebId, Access>;
 
 /**
- * Find out what Access Modes have been granted to a given Agent specifically for a given Resource.
+ * Returns an Agent's explicitly-granted Access Modes for the given Resource.
  *
- * Keep in mind that this function will not tell you what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
+ * The function does not return Access Modes granted indirectly to the Agent through other
+ * ACL rules, e.g., public or group-specific permissions.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
- * @returns Which Access Modes have been granted to the Agent specifically for the given SolidDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Access Modes that have been explicitly granted to the Agent for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control access to a given Resource or its Container).
  */
 export function getAgentAccess(
   resourceInfo: WithAcl & WithResourceInfo,
@@ -82,14 +83,15 @@ export function getAgentAccess(
 }
 
 /**
- * Find out what Access Modes have been granted to specific Agents for a given Resource.
+ * Returns all explicitly-granted Access Modes per Agent for the given Resource.
  *
- * Keep in mind that this function will not tell you what access arbitrary Agents might have through other ACL rules, e.g. public or group-specific permissions.
+ * The function does not return Access Modes granted indirectly to Agents through other
+ * ACL rules, e.g., public or group-specific permissions.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param resourceInfo Information about the Resource to which Agents may have been granted access.
- * @returns Which Access Modes have been granted to which Agents specifically for the given SolidDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Access Modes per Agent that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control access to a given Resource or its Container).
  */
 export function getAgentAccessAll(
   resourceInfo: WithAcl & WithResourceInfo
@@ -106,17 +108,19 @@ export function getAgentAccessAll(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to an Agent for its associated Resource.
+ * Returns the Access Modes explicitly granted to an Agent for the Resource
+ * associated with an ACL (Access ControlList).
  *
- * Keep in mind that this function will not tell you:
- * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to child Resources, in case the associated Resource is a Container (see [[getAgentDefaultAccessModes]] for that).
+ * The function does not return:
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * - Access Modes granted indirectly to the Agent through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to the Agent for the child Resources if the associated Resource is a Container (see [[getAgentDefaultAccess]] instead).
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ *
+ * @param aclDataset The SolidDataset that contains ACL rules.
  * @param agent WebID of the Agent for which to retrieve what access it has to the Resource.
- * @returns Which Access Modes have been granted to the Agent specifically for the Resource the given ACL SolidDataset is associated with.
+ * @returns Access Modes that have been explicitly granted to an Agent for the Resource associated with an ACL SolidDataset.
  */
 export function getAgentResourceAccess(
   aclDataset: AclDataset,
@@ -133,16 +137,18 @@ export function getAgentResourceAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to specific Agents for the associated Resource.
+ * Returns the explicitly granted Access Modes per Agent for the Resource associated
+ * with an ACL (Access Control List).
  *
- * Keep in mind that this function will not tell you:
- * - what access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to child Resources, in case the associated Resource is a Container.
+ * The function does not return:
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * - Access Modes granted indirectly to Agents through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to Agents for the child Resources if the associated Resource is a Container.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
- * @returns Which Access Modes have been granted to which Agents specifically for the Resource the given ACL SolidDataset is associated with.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ *
+ * @param aclDataset The SolidDataset that contains ACL rules.
+ * @returns Access Modes per Agent that have been explicitly granted for the Resource associated with an ACL SolidDataset.
  */
 export function getAgentResourceAccessAll(aclDataset: AclDataset): AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
@@ -155,20 +161,20 @@ export function getAgentResourceAccessAll(aclDataset: AclDataset): AgentAccess {
 }
 
 /**
- * Given an ACL SolidDataset, modify the ACL Rules to set specific Access Modes for a given Agent.
+ * Modifies the resource ACL (Access Control List) to set the Access Modes for the given Agent.
  *
- * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of Access Modes
- * to the given Agent, those will be overridden by the given Access Modes.
+ * If rules already exist for the Agent in the resource ACL, they are overriden by the new rules with the new Access Modes.
  *
- * Keep in mind that this function will not modify:
- * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to child Resources.
+ * This function does not modify:
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * - Access Modes granted indirectly to Agents through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to Agents for the child Resources if the associated Resource is a Container.
+ *
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
- * @param access The Access Modes to grant to the Agent.
+ * @param access The Access Modes to grant to the Agent for the Resource.
  */
 export function setAgentResourceAccess(
   aclDataset: AclDataset,
@@ -207,17 +213,18 @@ export function setAgentResourceAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to an Agent for the associated Container Resource's child Resources.
+ * Returns an Agent's Access Modes explicitly granted for the children of the
+ * Container associated with the given ACL (Access Control List).
  *
- * Keep in mind that this function will not tell you:
- * - what access the given Agent has through other ACL rules, e.g. public or group-specific permissions.
- * - what access the given Agent has to the Container Resource itself (see [[getAgentResourceAccess]] for that).
+ * The function does not return:
+ * - Access Modes granted indirectly to the Agent through other ACL rules, e.g. public or group-specific permissions.
+ * - Access Modes granted to the Agent for the Container Resource itself (see [[getAgentResourceAccess]] instead).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules for a certain Container.
  * @param agent WebID of the Agent for which to retrieve what access it has to the Container's children.
- * @returns Which Access Modes have been granted to the Agent specifically for the children of the Container associated with the given ACL SolidDataset.
+ * @returns Access Modes that have been explicitly granted to an Agent for the children of the Container associated with the given ACL.
  */
 export function getAgentDefaultAccess(
   aclDataset: AclDataset,
@@ -234,16 +241,18 @@ export function getAgentDefaultAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to specific Agents for the associated Container Resource's child Resources.
+ * Returns the Access Modes, per Agent, that have been explicitly granted for the children
+ * of the Container associated with the given ACL (Access Control List).
  *
- * Keep in mind that this function will not tell you:
- * - what access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to the Container Resource itself (see [[getAgentResourceAccessAll]] for that).
+ * The function does not return:
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * - Access Modes granted indirectly to the Agents through other ACL rules, e.g. public or group-specific permissions.
+ * - Access Modes granted to the Agents for the Container Resource itself (see [[getAgentResourceAccessAll]] instead).
+
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
- * @returns Which Access Modes have been granted to which Agents specifically for the children of the Container associated with the given ACL SolidDataset.
+ * @returns Access Modes, per Agent, that have been explicitly granted for the children of the Container associated with the given ACL.
  */
 export function getAgentDefaultAccessAll(aclDataset: AclDataset): AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
@@ -257,16 +266,15 @@ export function getAgentDefaultAccessAll(aclDataset: AclDataset): AgentAccess {
 }
 
 /**
- * Given an ACL SolidDataset, modify the ACL Rules to set specific default Access Modes for a given Agent.
+ * Modifies the default ACL (Access Control List) to set an Agent's Access Modes for the Container's children.
  *
- * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of default Access Modes
- * to the given Agent, those will be overridden by the given Access Modes.
+ * If rules already exist for the Agent in the default ACL, they are overriden by new rules with the new Access Modes.
  *
- * Keep in mind that this function will not modify:
- * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to the Container itself.
+ * This function does not modify:
+ * - Access Modes granted indirectly to the Agent through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to the Agent for the Container Resource itself
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
@@ -324,13 +332,13 @@ function isAgentAclRule(aclRule: AclRule): boolean {
 }
 
 /**
- * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
+ * Given an ACL Rule, returns two new ACL Rules that cover all the input Rule's use cases,
  * except for giving the given Agent access to the given Resource.
  *
  * @param rule The ACL Rule that should no longer apply for a given Agent to a given Resource.
  * @param agent The Agent that should be removed from the Rule for the given Resource.
  * @param resourceIri The Resource to which the Rule should no longer apply for the given Agent.
- * @returns A tuple with the original ACL Rule sans the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
+ * @returns A tuple with the original ACL Rule without the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
  */
 function removeAgentFromRule(
   rule: AclRule,
