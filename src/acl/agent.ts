@@ -162,19 +162,24 @@ export function getAgentResourceAccessAll(aclDataset: AclDataset): AgentAccess {
 
 /**
  * Modifies the resource ACL (Access Control List) to set the Access Modes for the given Agent.
+ * Specifically, the function returns a new resource ACL initialised with the given ACL and
+ * new rules for the Agent's access.
  *
- * If rules already exist for the Agent in the resource ACL, they are overriden by the new rules with the new Access Modes.
+ * If rules for Agent's access already exist in the given ACL, in the returned ACL,
+ * they are replaced by the new rules.
  *
  * This function does not modify:
  *
  * - Access Modes granted indirectly to Agents through other ACL rules, e.g., public or group-specific permissions.
  * - Access Modes granted to Agents for the child Resources if the associated Resource is a Container.
+ * - The original ACL.
  *
  * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
  * @param access The Access Modes to grant to the Agent for the Resource.
+ * @returns A new resource ACL initialised with the given `aclDataset` and `access` for the `agent`.
  */
 export function setAgentResourceAccess(
   aclDataset: AclDataset,
@@ -267,18 +272,22 @@ export function getAgentDefaultAccessAll(aclDataset: AclDataset): AgentAccess {
 
 /**
  * Modifies the default ACL (Access Control List) to set an Agent's Access Modes for the Container's children.
+ * Specifically, the function returns a new default ACL initialised with the given ACL and
+ * new rules for the Agent's access.
  *
- * If rules already exist for the Agent in the default ACL, they are overriden by new rules with the new Access Modes.
+ * If rules already exist for the Agent in the given ACL, in the returned ACL, they are replaced by the new rules.
  *
  * This function does not modify:
  * - Access Modes granted indirectly to the Agent through other ACL rules, e.g., public or group-specific permissions.
- * - Access Modes granted to the Agent for the Container Resource itself
+ * - Access Modes granted to the Agent for the Container Resource itself.
+ * - The original ACL.
  *
  * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param agent The Agent to grant specific Access Modes.
  * @param access The Access Modes to grant to the Agent.
+ * @returns A new default ACL initialised with the given `aclDataset` and `access` for the `agent`.
  */
 export function setAgentDefaultAccess(
   aclDataset: AclDataset,
