@@ -19,10 +19,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad, NamedNode } from "rdf-js";
+import { Quad, NamedNode, Quad_Object } from "rdf-js";
 import { dataset, DataFactory } from "../rdfjs";
 import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
-import { isLocalNode, resolveIriForLocalNodes } from "../datatypes";
+import {
+  isLocalNode,
+  isNamedNode,
+  resolveIriForLocalNode,
+  resolveIriForLocalNodes,
+} from "../datatypes";
 import {
   UrlString,
   SolidDataset,
@@ -43,7 +48,12 @@ import {
   internal_fetchAcl,
   getSourceUrl,
 } from "./resource";
-import { getThingAll, thingAsMarkdown, internal_toNode } from "../thing/thing";
+import {
+  thingAsMarkdown,
+  getThingAll,
+  internal_getReadableValue,
+  internal_toNode,
+} from "../thing/thing";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -506,6 +516,113 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
   }
 
   return readableSolidDataset;
+}
+
+/**
+ * Gets a human-readable representation of the local changes to a Resource to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param solidDataset The Resource of which to get a human-readable representation of the changes applied to it locally.
+ * @since Not released yet.
+ */
+export function changeLogAsMarkdown(
+  solidDataset: SolidDataset & WithChangeLog
+): string {
+  if (!hasResourceInfo(solidDataset)) {
+    return "This is a newly initialized SolidDataset, so there is no source to compare it to.";
+  }
+  if (
+    !hasChangelog(solidDataset) ||
+    (solidDataset.internal_changeLog.additions.length === 0 &&
+      solidDataset.internal_changeLog.deletions.length === 0)
+  ) {
+    return (
+      `## Changes compared to ${getSourceUrl(solidDataset)}\n\n` +
+      `This SolidDataset has not been modified since it was fetched from ${getSourceUrl(
+        solidDataset
+      )}.\n`
+    );
+  }
+
+  let readableChangeLog = `## Changes compared to ${getSourceUrl(
+    solidDataset
+  )}\n`;
+
+  const changeLogsByThingAndProperty = sortChangeLogByThingAndProperty(
+    solidDataset
+  );
+  Object.keys(changeLogsByThingAndProperty).forEach((thingUrl) => {
+    readableChangeLog += `\n### Thing: ${thingUrl}\n`;
+    const changeLogByProperty = changeLogsByThingAndProperty[thingUrl];
+    Object.keys(changeLogByProperty).forEach((propertyUrl) => {
+      readableChangeLog += `\nProperty: ${propertyUrl}\n`;
+      const deleted = changeLogByProperty[propertyUrl].deleted;
+      const added = changeLogByProperty[propertyUrl].added;
+      deleted.forEach(
+        (deletedValue) =>
+          (readableChangeLog += `- Removed: ${internal_getReadableValue(
+            deletedValue
+          )}\n`)
+      );
+      added.forEach(
+        (addedValue) =>
+          (readableChangeLog += `- Added: ${internal_getReadableValue(
+            addedValue
+          )}\n`)
+      );
+    });
+  });
+
+  return readableChangeLog;
+}
+
+function sortChangeLogByThingAndProperty(
+  solidDataset: WithChangeLog & WithResourceInfo
+) {
+  const changeLogsByThingAndProperty: Record<
+    UrlString,
+    Record<UrlString, { added: Quad_Object[]; deleted: Quad_Object[] }>
+  > = {};
+  solidDataset.internal_changeLog.deletions.forEach((deletion) => {
+    const subjectNode = isLocalNode(deletion.subject)
+      ? resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
+      : deletion.subject;
+    if (!isNamedNode(subjectNode) || !isNamedNode(deletion.predicate)) {
+      return;
+    }
+    const thingUrl = internal_toIriString(subjectNode);
+    const propertyUrl = internal_toIriString(deletion.predicate);
+    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
+      added: [],
+      deleted: [],
+    };
+    changeLogsByThingAndProperty[thingUrl][propertyUrl].deleted.push(
+      deletion.object
+    );
+  });
+  solidDataset.internal_changeLog.additions.forEach((addition) => {
+    const subjectNode = isLocalNode(addition.subject)
+      ? resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
+      : addition.subject;
+    if (!isNamedNode(subjectNode) || !isNamedNode(addition.predicate)) {
+      return;
+    }
+    const thingUrl = internal_toIriString(subjectNode);
+    const propertyUrl = internal_toIriString(addition.predicate);
+    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
+      added: [],
+      deleted: [],
+    };
+    changeLogsByThingAndProperty[thingUrl][propertyUrl].added.push(
+      addition.object
+    );
+  });
+
+  return changeLogsByThingAndProperty;
 }
 
 function getReadableChangeLogSummary(
