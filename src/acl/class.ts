@@ -47,14 +47,15 @@ import { getThingAll, setThing } from "../thing/thing";
 import { setIri } from "../thing/set";
 
 /**
- * Find out what Access Modes have been granted to everyone for a given Resource.
+ * Returns the Access Modes granted to the public in general for a Resource.
  *
- * Keep in mind that this function will not tell you what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
+ * This function does not return Access Modes granted to specific Agents
+ * through other ACL (Access Control List) rules, e.g., agent- or group-specific permissions.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
  * @param resourceInfo Information about the Resource to which the given Agent may have been granted access.
- * @returns Which Access Modes have been granted to everyone for the given SolidDataset, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Access Modes granted to the public in general for the Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getPublicAccess(
   resourceInfo: WithAcl & WithResourceInfo
@@ -69,16 +70,17 @@ export function getPublicAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to everyone for its associated Resource.
+ * Returns the Access Modes granted to the public in general for the Resource
+ * associated with an ACL (Access Control List).
  *
- * Keep in mind that this function will not tell you:
- * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to child Resources, in case the associated Resource is a Container (see [[getDefaultResourceAccess]] for that).
+ * This function does not return:
+ * - Access Modes granted to specific Agents through other ACL rules, e.g., agent- or group-specific permissions.
+ * - Access Modes to child Resources if the associated Resource is a Container (see [[getPublicDefaultAccess]] instead).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
- * @returns Which Access Modes have been granted to everyone for the Resource the given ACL SolidDataset is associated with.
+ * @param aclDataset The SolidDataset that contains Access Control List rules.
+ * @returns Access Modes granted to the public in general for the Resource associated with the `aclDataset`.
  */
 export function getPublicResourceAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
@@ -95,16 +97,17 @@ export function getPublicResourceAccess(aclDataset: AclDataset): Access {
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to everyone for the associated Container Resource's child Resources.
+ * Returns the Access Modes granted to the public in general for the child Resources
+ * of the Container associated with an ACL (Access Control List).
  *
- * Keep in mind that this function will not tell you:
- * - what access specific Agents have through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access anyone has to the Container Resource itself (see [[getPublicResourceAccess]] for that).
+ * This function does not return:
+ * - Access Modes granted to Agents through other ACL rules, e.g., agent- or group-specific permissions.
+ * - Access Modes to the Container Resource itself (see [[getPublicResourceAccess]] instead).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules for a certain Container.
- * @returns Which Access Modes have been granted to everyone for the children of the Container associated with the given ACL SolidDataset.
+ * @param aclDataset The SolidDataset that contains Access Control List rules for a certain Container.
+ * @returns Access Modes granted to the public in general for the children of the Container associated with the given `aclDataset`.
  */
 export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
@@ -121,19 +124,23 @@ export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
 }
 
 /**
- * Given an ACL SolidDataset, modify the ACL Rules to set specific Access Modes for the public.
+ * Modifies the resource ACL (Access Control List) to set the Access Modes for the public.
+ * Specifically, the function returns a new resource ACL (Access Control List) initialised
+ * with the given resource ACL and new rules for the given public access.
  *
- * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of Access Modes
- * to the public, those will be overridden by the given Access Modes.
+ * If rules for public access already exist in the given ACL, in the *returned* ACL,
+ * they are replaced by the new rules.
  *
- * Keep in mind that this function will not modify:
- * - access arbitrary Agents might have been given through other ACL rules, e.g. agent- or group-specific permissions.
- * - what access arbitrary Agents have to child Resources.
+ * This function does not modify:
+ * - Access Modes granted to Agents through other ACL rules, e.g., agent- or group-specific permissions.
+ * - Access Modes to child Resources if the associated Resource is a Container.
+ * - The original ACL.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param aclDataset The SolidDataset that contains Access Control List rules.
  * @param access The Access Modes to grant to the public.
+ * @returns A new resource ACL initialised with the given `aclDataset` and public `access`.
  */
 export function setPublicResourceAccess(
   aclDataset: AclDataset,
@@ -168,19 +175,23 @@ export function setPublicResourceAccess(
 }
 
 /**
- * Given an ACL SolidDataset, modify the ACL Rules to set specific default Access Modes for the public.
+ * Modifies the default ACL (Access Control List) to set the public's default Access Modes
+ * to child resources. Specifically, the function returns a new default ACL initialised
+ * with the given default ACL and new rules for the given public access.
  *
- * If the given ACL SolidDataset already includes ACL Rules that grant a certain set of default Access Modes
- * to the public, those will be overridden by the given Access Modes.
+ * If rules for public access already exist in the given ACL, in the *returned* ACL,
+ * they are replaced by the new rules.
  *
- * Keep in mind that this function will not modify:
- * - access arbitrary Agents might have been given through other ACL rules, e.g. public or group-specific permissions.
- * - what access arbitrary Agents have to the Container itself.
+ * This function does not modify:
+ * - Access Modes granted to Agents through other ACL rules, e.g., agent- or group-specific permissions.
+ * - Access Modes to Container Resource itself.
+ * - The original ACL.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param aclDataset The SolidDataset that contains Access Control List rules.
  * @param access The Access Modes to grant to the public.
+ * @returns A new default ACL initialised with the given `aclDataset` and public `access`.
  */
 export function setPublicDefaultAccess(
   aclDataset: AclDataset,
