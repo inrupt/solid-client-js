@@ -355,7 +355,7 @@ export function thingAsMarkdown(thing: Thing): string {
       thingAsMarkdown += `\nProperty: ${predicate}\n`;
       const values = getTermAll(thing, predicate);
       values.forEach((value) => {
-        thingAsMarkdown += `- ${getReadableValue(value)}\n`;
+        thingAsMarkdown += `- ${internal_getReadableValue(value)}\n`;
       });
     }
   }
@@ -363,7 +363,8 @@ export function thingAsMarkdown(thing: Thing): string {
   return thingAsMarkdown;
 }
 
-function getReadableValue(value: Quad_Object): string {
+/** @hidden For internal use only. */
+export function internal_getReadableValue(value: Quad_Object): string {
   if (isNamedNode(value)) {
     return `<${value.value}> (URL)`;
   }

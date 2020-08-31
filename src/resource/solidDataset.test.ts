@@ -42,6 +42,7 @@ import {
   createContainerAt,
   createContainerInContainer,
   solidDatasetAsMarkdown,
+  changeLogAsMarkdown,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -2003,6 +2004,183 @@ describe("solidDatasetAsMarkdown", () => {
         "## Thing: https://arbitrary.pod/resource#thing\n\n" +
         "Property: https://arbitrary.vocab/predicate\n" +
         '- "Arbitrary string" (string)\n'
+    );
+  });
+});
+
+describe("changeLogAsMarkdown", () => {
+  it("returns a readable version of an in-memory-only SolidDataset", () => {
+    const freshDataset = createSolidDataset();
+
+    expect(
+      changeLogAsMarkdown(
+        (freshDataset as unknown) as SolidDataset & WithChangeLog
+      )
+    ).toBe(
+      "This is a newly initialized SolidDataset, so there is no source to compare it to."
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that has not been changed yet", () => {
+    const unchangedDataset = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(
+      changeLogAsMarkdown(
+        (unchangedDataset as unknown) as SolidDataset & WithChangeLog
+      )
+    ).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that had changes that were undone again", () => {
+    let thing = mockThingFrom("https://arbitrary.pod/resource#thing");
+    thing = addStringNoLocale(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
+    );
+    const newDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const changedDataset = setThing(newDataset, thing);
+    const undoneThing = removeStringNoLocale(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
+    );
+    const undoneDataset = setThing(changedDataset, undoneThing);
+
+    expect(changeLogAsMarkdown(undoneDataset)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+    );
+  });
+
+  it("returns a readable version of local changes to a SolidDataset", () => {
+    let thing1 = mockThingFrom("https://some.pod/resource#thing1");
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let thing2 = mockThingFrom("https://some.pod/resource#thing2");
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithSavedThings = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing1
+    );
+    datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
+
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThings.internal_changeLog = {
+      additions: [],
+      deletions: [],
+    };
+    let changedThing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing1 = removeStringNoLocale(
+      changedThing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedThing2 = removeStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    changedThing2 = removeStringNoLocale(
+      changedThing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedDataset = setThing(datasetWithSavedThings, changedThing1);
+    changedDataset = setThing(changedDataset, changedThing2);
+
+    let newThing = createThing({ name: "thing3" });
+    newThing = addStringNoLocale(
+      newThing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    changedDataset = setThing(changedDataset, newThing);
+
+    expect(changeLogAsMarkdown(changedDataset)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "### Thing: https://some.pod/resource#thing1\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- Removed: "Some other string" (string)\n' +
+        '- Added: "Yet another string" (string)\n\n' +
+        "### Thing: https://some.pod/resource#thing2\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- Removed: "Some string" (string)\n' +
+        '- Removed: "Some other string" (string)\n\n' +
+        "### Thing: https://some.pod/resource#thing3\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- Added: "Some string" (string)\n'
+    );
+  });
+
+  it("does not choke on invalid Quads that found their way into the ChangeLog", () => {
+    let thing = createThing({ name: "thing" });
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    const datasetWithInvalidChangeLog = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing
+    );
+
+    // Pretend that the deletions and additions contain the same Quad:
+    datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
+      datasetWithInvalidChangeLog.internal_changeLog.additions[0]
+    );
+
+    const quadWithInvalidSubject = DataFactory.quad(
+      // We'd never use a variable as the Subject:
+      DataFactory.variable("Arbitrary variable name"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.literal("Arbitrary object")
+    );
+    const quadWithInvalidPredicate = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
+      // Predicates should always be NamedNodes:
+      DataFactory.literal("Not a NamedNode") as any,
+      DataFactory.literal("Arbitrary object")
+    );
+    datasetWithInvalidChangeLog.internal_changeLog.additions.push(
+      quadWithInvalidSubject,
+      quadWithInvalidPredicate
+    );
+    datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
+      quadWithInvalidSubject,
+      quadWithInvalidPredicate
+    );
+
+    expect(changeLogAsMarkdown(datasetWithInvalidChangeLog)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "### Thing: https://some.pod/resource#thing\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- Removed: "Some string" (string)\n' +
+        '- Added: "Some string" (string)\n'
     );
   });
 });
