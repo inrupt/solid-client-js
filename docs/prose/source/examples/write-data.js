@@ -33,7 +33,7 @@ const profile = getThing(
 // BEGIN-EXAMPLE-WRITE-DATA
 
 import {
-  setStringUnlocalised,
+  setStringNoLocale,
   setThing,
   saveSolidDatasetAt,
 } from "@inrupt/solid-client";
@@ -42,13 +42,13 @@ import { FOAF } from "@inrupt/vocab-common-rdf";
 /*
    Start with a previously fetched Thing (i.e. profile).
 
-   Use setStringUnlocalised to create a NEW Thing 
+   Use setStringNoLocale to create a NEW Thing
      (i.e., updatedProfile) with the updated name data.
 
    The passed-in Thing (i.e. profile) is unmodified.
 */
 
-const updatedProfile = setStringUnlocalised(profile, FOAF.name, "Vincent");
+const updatedProfile = setStringNoLocale(profile, FOAF.name, "Vincent");
 
 /*
    Create a new dataset (i.e., updatedProfileResource) from 
