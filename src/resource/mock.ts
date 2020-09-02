@@ -32,16 +32,16 @@ import { getFile } from "./nonRdfData";
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;
 
 /**
- * Function for use in unit tests to mock a persisted [[SolidDataset]].
+ * ```{warning}
+ * Do not use this function in production code. For use in **unit tests**.
+ * ```
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new SolidDataset but, as opposed to [[createSolidDataset]],
- * it adds metadata that would also have been present had an empty SolidDataset been fetched from
- * the given URL. This is useful to mock a SolidDataset in tests of code that call e.g.
- * [[getSourceUrl]].
+ * This function initialises a new [[SolidDataset]] with metadata as though the
+ * SolidDataset has been retrieved from the given URL. The mock SolidDataset can be used in
+ * unit tests that require persisted SolidDatasets; e.g., unit tests that call [[getSourceUrl]].
  *
- * @param url The URL from which the mocked SolidDataset pretends to be retrieved.
- * @returns A mocked SolidDataset.
+ * @param url The URL from which the returned SolidDataset appears to be retrieved.
+ * @returns A mock SolidDataset that appears to be retrieved from the `url`.
  * @since 0.2.0
  */
 export function mockSolidDatasetFrom(
@@ -61,16 +61,16 @@ export function mockSolidDatasetFrom(
 }
 
 /**
- * Function for use in unit tests to mock a persisted [[SolidDataset]] representing a Container.
+ * ```{warning}
+ * Do not use this function in production code. For use in **unit tests**.
+ * ```
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new SolidDataset but, as opposed to [[createSolidDataset]],
- * it adds metadata that would also have been present had an empty SolidDataset been fetched from
- * the given URL, and was a Container. This is useful to mock a SolidDataset in tests of code that
- * call e.g. [[isContainer]].
+ * This function initialises a new Container [[SolidDataset]] with metadata as though the
+ * Container has been retrieved from the given URL. The mock SolidDataset can be used in
+ * unit tests that require persisted Containers; e.g., unit tests that call [[isContainer]].
  *
- * @param url The URL from which the mocked Container pretends to be retrieved — this should end in a slash.
- * @returns A mocked SolidDataset.
+ * @param url The URL from which the returned Container appears to be retrieved. The `url` must end in a slash.
+ * @returns A mock SolidDataset that appears to be retrieved from the `url`.
  * @since 0.2.0
  */
 export function mockContainerFrom(
@@ -87,15 +87,16 @@ export function mockContainerFrom(
 }
 
 /**
- * Function for use in unit tests to mock a persisted File.
+ * ```{warning}
+ * Do not use this function in production code. For use in **unit tests**.
+ * ```
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new File, and adds metadata that would also have been present had an
- * empty file been fetched from the given URL. This is useful to mock a File in tests of code that
- * call e.g. [[getSourceUrl]].
+ * This function initialises a new File with metadata as though the
+ * File has been retrieved from the given URL. The mock File can be used in
+ * unit tests that require persisted Files; e.g. unit tests that call [[getSourceUrl]].
  *
- * @param url The URL from which the mocked File pretends to be retrieved.
- * @Returns A mocked File.
+ * @param url The URL from which the returned File appears to be retrieved.
+ * @Returns A mock File that appears to be retrieved from the `url`.
  * @since 0.2.0
  */
 export function mockFileFrom(
