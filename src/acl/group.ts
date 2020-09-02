@@ -45,15 +45,16 @@ import {
 import { acl } from "../constants";
 
 /**
- * Find out what Access Modes have been granted to a given Group of agents specifically for a given Resource.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you what access members of the given Group have through other ACL rules, e.g. public permissions.
+ * Returns a Group's explicity-granted Access Modes for a given Resource.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return Access Modes granted indirectly to the Group through other
+ * ACL rules, e.g., public permissions.
  *
  * @param resourceInfo Information about the Resource to which the given Group may have been granted access.
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
- * @returns Which Access Modes have been granted to the Group specifically for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Access Modes that have been explicitly granted to the `group` for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getGroupAccess(
   resourceInfo: WithAcl & WithResourceInfo,
@@ -69,14 +70,15 @@ export function getGroupAccess(
 }
 
 /**
- * Find out what Access Modes have been granted to specific Groups of agents for a given Resource.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you what access members of each Group have through other ACL rules, e.g. public permissions.
+ * Returns all explicitly-granted Access Modes per Group for the given Resource.
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return Access Modes granted indirectly to the Group through other
+ * ACL rules, e.g., public permissions.
  *
  * @param resourceInfo Information about the Resource to which the given Group may have been granted access.
- * @returns Which Access Modes have been granted to which Groups specifically for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
+ * @returns Access Modes per Group that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getGroupAccessAll(
   resourceInfo: WithAcl & WithResourceInfo
@@ -93,17 +95,19 @@ export function getGroupAccessAll(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to a Group for its associated Resource.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you:
- * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to child Resources, in case the associated Resource is a Container (see [[getGroupDefaultAccessModes]] for that).
+ * Returns the Access Modes explicitly granted to a Group for the Resource
+ * associated with an ACL (Access ControlList).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return:
+ * - Access Modes granted indirectly to the Group through other ACL rules, e.g., public permissions.
+ * - Access Modes granted to the Group for the child Resources if the associated Resource is a Container
+ *   (see [[getGroupDefaultAccess]] instead).
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param aclDataset The SolidDataset that contains Access Control List rules.
  * @param group URL of the Group for which to retrieve what access it has to the Resource.
- * @returns Which Access Modes have been granted to the Group specifically for the Resource the given ACL SolidDataset is associated with.
+ * @returns Access Modes explicitly granted to a Group for the Resource associated with an ACL.
  */
 export function getGroupResourceAccess(
   aclDataset: AclDataset,
@@ -120,16 +124,17 @@ export function getGroupResourceAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to specific Groups for the associated Resource.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you:
- * - what access arbitrary members of these Groups might have been given through other ACL rules, e.g. public permissions.
- * - what access arbitrary members of these Groups have to child Resources, in case the associated Resource is a Container.
+ * Returns the explicitly granted Access Modes per Group for the Resource associated
+ * with an ACL (Access Control List).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return:
+ * - Access Modes granted indirectly to the Group through other ACL rules, e.g., public permissions.
+ * - Access Modes granted to Groups for the child Resources if the associated Resource is a Container.
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules.
- * @returns Which Access Modes have been granted to which Groups specifically for the Resource the given ACL SolidDataset is associated with.
+ * @param aclDataset The SolidDataset that contains Access Control List rules.
+ * @returns Access Modes per Group that have been explicitly granted for the Resource associated with an ACL.
  */
 export function getGroupResourceAccessAll(
   aclDataset: AclDataset
@@ -143,17 +148,18 @@ export function getGroupResourceAccessAll(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to a given Group for the associated Container Resource's child Resources.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you:
- * - what access members of the given Group have through other ACL rules, e.g. public permissions.
- * - what access members of the given Group have to the Container Resource itself (see [[getGroupResourceAccess]] for that).
+ * Returns a Group's Access Modes explicitly granted for the children of the
+ * Container associated with an ACL (Access ControlList).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return:
+ * - Access Modes granted indirectly to the Group through other ACL rules, e.g. public permissions.
+ * - Access Modes granted to the Group for the Container Resource itself (see [[getGroupResourceAccess]] instead).
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules for a certain Container.
+ * @param aclDataset The SolidDataset that contains ACL rules for a certain Container.
  * @param group URL of the Group for which to retrieve what access it has to the child Resources of the given Container.
- * @returns Which Access Modes have been granted to the Group specifically for the children of the Container associated with the given ACL SolidDataset.
+ * @returns Access Modes that have been explicitly granted to the Group for the children of the Container associated with the given ACL.
  */
 export function getGroupDefaultAccess(
   aclDataset: AclDataset,
@@ -170,16 +176,17 @@ export function getGroupDefaultAccess(
 }
 
 /**
- * Given an ACL SolidDataset, find out which access modes it provides to specific Groups for the associated Container Resource's child Resources.
+ * _Note_: This function is still experimental and subject to change, even in a non-major release.
  *
- * Keep in mind that this function will not tell you:
- * - what access arbitrary members of these Groups have through other ACL rules, e.g. public permissions.
- * - what access arbitrary members of these Groups have to the Container Resource itself (see [[getGroupResourceAccessAll]] for that).
+ * Returns the Access Modes, per Group, that have been explicitly granted for the children
+ * of the Container associated with the given ACL (Access Control List).
  *
- * Also, please note that this function is still experimental: its API can change in non-major releases.
+ * The function does not return:
+ * - Access Modes granted indirectly to the Groups through other ACL rules, e.g. public permissions.
+ * - Access Modes granted to the Groups for the Container Resource itself (see [[getGroupResourceAccessAll]] instead).
  *
- * @param aclDataset The SolidDataset that contains Access-Control List rules for a certain Container.
- * @returns Which Access Modes have been granted to which Groups specifically for the children of the Container associated with the given ACL SolidDataset.
+ * @param aclDataset The SolidDataset that contains Access Control List rules for a certain Container.
+ * @returns Access Modes per Group that have been explicitly granted for the children of the Container associated with the given ACL SolidDataset.
  */
 export function getGroupDefaultAccessAll(
   aclDataset: AclDataset
