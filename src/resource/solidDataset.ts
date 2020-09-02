@@ -560,18 +560,24 @@ export function changeLogAsMarkdown(
       readableChangeLog += `\nProperty: ${propertyUrl}\n`;
       const deleted = changeLogByProperty[propertyUrl].deleted;
       const added = changeLogByProperty[propertyUrl].added;
-      deleted.forEach(
-        (deletedValue) =>
-          (readableChangeLog += `- Removed: ${internal_getReadableValue(
-            deletedValue
-          )}\n`)
-      );
-      added.forEach(
-        (addedValue) =>
-          (readableChangeLog += `- Added: ${internal_getReadableValue(
-            addedValue
-          )}\n`)
-      );
+      if (deleted.length > 0) {
+        readableChangeLog += "- Removed:\n";
+        deleted.forEach(
+          (deletedValue) =>
+            (readableChangeLog += `  - ${internal_getReadableValue(
+              deletedValue
+            )}\n`)
+        );
+      }
+      if (added.length > 0) {
+        readableChangeLog += "- Added:\n";
+        added.forEach(
+          (addedValue) =>
+            (readableChangeLog += `  - ${internal_getReadableValue(
+              addedValue
+            )}\n`)
+        );
+      }
     });
   });
 
