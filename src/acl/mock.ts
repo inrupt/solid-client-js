@@ -32,15 +32,16 @@ import { createAcl, internal_getContainerPath } from "./acl";
 import { mockContainerFrom } from "../resource/mock";
 
 /**
- * Function for use in unit tests to mock a [[SolidDataset]] that has its own ACL attached.
+ * ```{warning}
+ * Do not use this function in production code. For use in **unit tests** that
+ * require a [[SolidDataset]] with a resource ACL (Access Control List).
+ * ```
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new empty ACL and attaches it to a given [[SolidDataset].
- * This is useful to mock a SolidDataset with an ACL in tests of code that call e.g.
- * [[getResourceAcl]].
+ * Initialises a new empty ACL and attaches it to a given [[SolidDataset]] for use
+ * in **unit tests**; e.g., unit tests that call [[getResourceAcl]].
  *
- * @param resource The Resource that we should pretend has its own ACL.
- * @returns The input Resource, with an empty Resource ACL attached.
+ * @param resource The Resource to mock up with a new resource ACL.
+ * @returns The input Resource with an empty resource ACL attached.
  * @since 0.2.0
  */
 export function addMockResourceAclTo<T extends WithResourceInfo>(
@@ -73,16 +74,17 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
 }
 
 /**
- * Function for use in unit tests to mock a [[SolidDataset]] that has one of its Container's ACL attached.
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new empty ACL and attaches it to a given [[SolidDataset] as its
- * fallback ACL.
- * This is useful to mock a SolidDataset with an ACL in tests of code that call e.g.
- * [[getFallbackAcl]].
+ * ```{warning}
+ * Do not use this function in production code.  For use in **unit tests** that require a
+ * [[SolidDataset]] with a fallback ACL (Access Control List).
+ * ```
  *
- * @param resource The Resource that we should pretend has one of its Container's ACL attached.
- * @returns The input Resource, with an empty Fallback ACL attached.
+ * Initialises a new empty fallback ACL and attaches it to a given [[SolidDataset]] for use
+ * in **unit tests**; e.g., unit tests that call [[getFallbackAcl]].
+ *
+ * @param resource The Resource to mock up with new fallback ACL.
+ * @returns The input Resource with an empty fallback ACL attached.
  * @since 0.2.0
  */
 export function addMockFallbackAclTo<T extends WithResourceInfo>(
