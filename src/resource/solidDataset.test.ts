@@ -2125,15 +2125,19 @@ describe("changeLogAsMarkdown", () => {
       "## Changes compared to https://some.pod/resource\n\n" +
         "### Thing: https://some.pod/resource#thing1\n\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- Removed: "Some other string" (string)\n' +
-        '- Added: "Yet another string" (string)\n\n' +
+        "- Removed:\n" +
+        '  - "Some other string" (string)\n' +
+        "- Added:\n" +
+        '  - "Yet another string" (string)\n\n' +
         "### Thing: https://some.pod/resource#thing2\n\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- Removed: "Some string" (string)\n' +
-        '- Removed: "Some other string" (string)\n\n' +
+        "- Removed:\n" +
+        '  - "Some string" (string)\n' +
+        '  - "Some other string" (string)\n\n' +
         "### Thing: https://some.pod/resource#thing3\n\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- Added: "Some string" (string)\n'
+        "- Added:\n" +
+        '  - "Some string" (string)\n'
     );
   });
 
@@ -2179,8 +2183,10 @@ describe("changeLogAsMarkdown", () => {
       "## Changes compared to https://some.pod/resource\n\n" +
         "### Thing: https://some.pod/resource#thing\n\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- Removed: "Some string" (string)\n' +
-        '- Added: "Some string" (string)\n'
+        "- Removed:\n" +
+        '  - "Some string" (string)\n' +
+        "- Added:\n" +
+        '  - "Some string" (string)\n'
     );
   });
 });
