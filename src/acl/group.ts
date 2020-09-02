@@ -45,8 +45,8 @@ import {
 import { acl } from "../constants";
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
- *
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  * Returns a Group's explicity-granted Access Modes for a given Resource.
  *
  * The function does not return Access Modes granted indirectly to the Group through other
@@ -70,7 +70,8 @@ export function getGroupAccess(
 }
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
  * Returns all explicitly-granted Access Modes per Group for the given Resource.
  *
@@ -95,7 +96,8 @@ export function getGroupAccessAll(
 }
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
  * Returns the Access Modes explicitly granted to a Group for the Resource
  * associated with an ACL (Access ControlList).
@@ -124,7 +126,8 @@ export function getGroupResourceAccess(
 }
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
  * Returns the explicitly granted Access Modes per Group for the Resource associated
  * with an ACL (Access Control List).
@@ -148,7 +151,8 @@ export function getGroupResourceAccessAll(
 }
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
  * Returns a Group's Access Modes explicitly granted for the children of the
  * Container associated with an ACL (Access ControlList).
@@ -176,7 +180,8 @@ export function getGroupDefaultAccess(
 }
 
 /**
- * _Note_: This function is still experimental and subject to change, even in a non-major release.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
  * Returns the Access Modes, per Group, that have been explicitly granted for the children
  * of the Container associated with the given ACL (Access Control List).
