@@ -404,7 +404,7 @@ export function getLiteralAll(
  * @returns A Term for the given Property, if present, or null otherwise.
  * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @see https://rdf.js.org/data-model-spec/
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function getTerm(
   thing: Thing,
@@ -427,7 +427,7 @@ export function getTerm(
  * @returns The Terms for the given Property.
  * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
  * @see https://rdf.js.org/data-model-spec/
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function getTermAll(
   thing: Thing,

@@ -491,7 +491,7 @@ export async function createContainerInContainer(
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
  * @param solidDataset The [[SolidDataset]] to get a human-readable representation of.
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
   let readableSolidDataset: string = "";
@@ -525,7 +525,7 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
  * @param solidDataset The Resource of which to get a human-readable representation of the changes applied to it locally.
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function changeLogAsMarkdown(
   solidDataset: SolidDataset & WithChangeLog

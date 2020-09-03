@@ -255,7 +255,7 @@ export function setLiteral<T extends Thing>(
  * @param property Property for which to set the value.
  * @param value The raw RDF/JS value to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function setTerm<T extends Thing>(
   thing: T,

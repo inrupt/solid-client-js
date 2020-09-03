@@ -335,7 +335,7 @@ export const asIri = asUrl;
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
  * @param thing The Thing to get a human-readable representation of.
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function thingAsMarkdown(thing: Thing): string {
   let thingAsMarkdown: string = "";

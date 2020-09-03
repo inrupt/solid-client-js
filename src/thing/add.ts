@@ -253,7 +253,7 @@ export function addLiteral<T extends Thing>(
  * @param property Property for which to add a value.
  * @param value The Term to add.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
- * @since Not released yet.
+ * @since 0.3.0
  */
 export function addTerm<T extends Thing>(
   thing: T,
