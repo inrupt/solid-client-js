@@ -100,7 +100,7 @@ export function getGroupAccessAll(
  * ```
  *
  * Returns the Access Modes explicitly granted to a Group for the Resource
- * associated with an ACL (Access ControlList).
+ * associated with an ACL (Access Control List).
  *
  * The function does not return:
  * - Access Modes granted indirectly to the Group through other ACL rules, e.g., public permissions.
