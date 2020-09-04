@@ -6,7 +6,6 @@ umd
 whitesource/
 LICENSE_DEPENDENCIES
 LICENSE_DEPENDENCIES_ALL
-docs/prose/build/
 docs/api/build/
 docs/api/source/api/
 docs/dist/
