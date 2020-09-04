@@ -137,6 +137,10 @@ export function internal_getContainerPath(resourcePath: string): string {
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Verifies whether the given Resource has a resource ACL (Access Control List) attached.
  *
  * The [[hasResourceAcl]] function checks that:
@@ -144,9 +148,6 @@ export function internal_getContainerPath(resourcePath: string): string {
  * - the user calling [[hasResourceAcl]] has Control access to the Resource.
  *
  * To retrieve a Resource with its ACLs, see [[getSolidDatasetWithAcl]].
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
  *
  * @param resource A Resource that might have an ACL attached.
  * @returns `true` if the Resource has a resource ACL attached that is accessible by the user.
@@ -164,15 +165,15 @@ export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
  * Returns the resource ACL (Access Control List) attached to a Resource.
  *
  * If the Resource has its resource ACL attached and is accessible by the user
  * (see [[hasResourceAcl]]), the function returns the resource ACL.
  * If the Resource does not have a resource ACL attached or is inaccessible by the user,
  * the function returns `null`.
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
  *
  * @param resource A Resource with potentially an ACL attached.
  * @returns The resource ACL if available and `null` if not.
@@ -193,6 +194,10 @@ export function getResourceAcl(
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Verifies whether the given Resource has a fallback ACL (Access Control List) attached.
  *
  * A fallback ACL for a Resource is inherited from the Resource's parent Container
@@ -206,9 +211,6 @@ export function getResourceAcl(
  *
  * To retrieve a Resource with its ACLs, see [[getSolidDatasetWithAcl]].
  *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- *
  * @param resource A [[SolidDataset]] that might have a fallback ACL attached.
  *
  * @returns `true` if the Resource has a fallback ACL attached that is accessible to the user.
@@ -220,15 +222,16 @@ export function hasFallbackAcl<Resource extends WithAcl>(
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Returns the fallback ACL (Access Control List) attached to a Resource.
  *
  * If the Resource has a fallback ACL attached and is accessible by the user
  * (see [[hasFallbackAcl]]), the function returns the fallback ACL.
  * If the Resource does not hava a fallback ACL attached or is inaccessible by the user,
  * the function returns `null`.
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
  *
  * @param resource A Resource with potentially a fallback ACL attached.
  * @returns The fallback ACL if available or `null` if not.
@@ -243,10 +246,11 @@ export function getFallbackAcl(dataset: WithAcl): AclDataset | null {
 }
 
 /**
- * Creates an empty resource ACL (Access Control List) for a given Resource.
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Creates an empty resource ACL (Access Control List) for a given Resource.
  *
  * @param targetResource A Resource that does not have its own ACL yet (see [[hasResourceAcl]]).
  * @returns An empty resource ACL for the given Resource.
@@ -266,13 +270,14 @@ export function createAcl(
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Creates a resource ACL (Access Control List), initialised from the fallback ACL
  * inherited from the given Resource's Container (or another of its ancestor Containers).
  * That is, the new ACL has the same rules/entries as the fallback ACL that currently
  * applies to the Resource.
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
  *
  * @param resource A Resource without its own resource ACL (see [[hasResourceAcl]]) but with an accessible fallback ACL (see [[hasFallbackAcl]]).
  * @returns A resource ACL initialised with the rules/entries from the Resource's fallback ACL.
@@ -560,10 +565,11 @@ export function internal_getAccessByIri(
 }
 
 /**
- * Saves the resource ACL for a Resource.
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Saves the resource ACL for a Resource.
  *
  * @param resource The Resource to which the given resource ACL applies.
  * @param resourceAcl An [[AclDataset]] whose ACL Rules will apply to `resource`.
@@ -592,13 +598,14 @@ export async function saveAclFor(
 }
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Removes the resource ACL (Access Control List) from a Resource.
  *
  * Once the resource ACL is removed from the Resource, the Resource relies on the
  * fallback ACL inherited from the Resource's parent Container (or another of its ancestor Containers).
- *
- * _Note_: The Web Access Control specification is not yet finalised. As such, this
- * function is still experimental and subject to change, even in a non-major release.
  *
  * @param resource The Resource for which you want to delete the ACL.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
