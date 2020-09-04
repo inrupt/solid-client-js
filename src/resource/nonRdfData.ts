@@ -50,12 +50,14 @@ function containsReserved(header: Headers): boolean {
 }
 
 /**
- * Gets a file at a given URL, and returns it as a blob of data.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
+ * Retrieves a file from a URL and returns the file as a blob.
  *
- * @param url The URL of the fetched file
+ * @param url The URL of the file to return
  * @param options Fetching options: a custom fetcher and/or headers.
+ * @returns The file as a blob.
  */
 export async function getFile(
   input: Url | UrlString,
@@ -82,23 +84,27 @@ export async function getFile(
 }
 
 /**
- * Experimental: get a file and it's associated Access Control List.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * This is an experimental function that gets both a file, the linked ACL Resource (if
- * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
- * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
- * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[getFile]] instead.
+ * Retrieves a file, its resource ACL (Access Control List) if available,
+ * and its fallback ACL from a URL and returns them as a blob.
  *
- * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
- * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
- * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
- * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
- * authenticated user.
+ * If the user calling the function does not have access to the file's resource ACL,
+ * [[hasAccessibleAcl]] on the returned blob returns false.
+ * If the user has access to the file's resource ACL but the resource ACL,
+ * [[getResourceAcl]] on the returned blob returns null.
+ * If the fallback ACL is inaccessible by the user,
+ * [[getFallbackAcl]] on the returned blob returns null.
+ *
+ * ```{tip}
+ * To retrieve the ACLs, the function results in multiple HTTP requests rather than a single
+ * request as mandated by the Solid spec. As such, prefer [[getFile]] instead.
+ * ```
  *
  * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
- * @returns A file and the ACLs that apply to it, if available to the authenticated user.
+ * @returns A file and its ACLs, if available to the authenticated user, as a blob.
  * @since 0.2.0
  */
 export async function getFileWithAcl(
@@ -115,9 +121,9 @@ const defaultSaveOptions = {
 };
 
 /**
- * Deletes a file at a given URL
- *
- * Please note that this function is still experimental: its API can change in non-major releases.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ * Deletes a file at a given URL.
  *
  * @param input The URL of the file to delete
  */
@@ -147,17 +153,15 @@ type SaveFileOptions = GetFileOptions & {
 };
 
 /**
- * Saves a file in a folder at a given URL. The server will return the final
- * filename (which may or may not be the given `slug`), it will return it in
- * the response's Location header.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * If something went wrong saving the file, the returned Promise will be rejected with an Error.
+ * Saves a file in a folder associated with the given URL. The final filename may or may
+ * not be the given `slug`.
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
- *
- * @param folderUrl The URL of the folder where the new file is saved
- * @param file The file to be written
- * @param options Additional parameters for file creation (e.g. a slug)
+ * @param folderUrl The URL of the folder where the new file is saved.
+ * @param file The file to be written.
+ * @param options Additional parameters for file creation (e.g. a slug).
  */
 export async function saveFileInContainer(
   folderUrl: Url | UrlString,
@@ -193,15 +197,14 @@ export async function saveFileInContainer(
 }
 
 /**
- * Saves a file at a given URL, erasing any previous content.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * If something went wrong saving the file, the returned Promise will be rejected with an Error.
+ * Saves a file at a given URL, replacing any previous content.
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
- *
- * @param fileUrl The URL where the file is saved
- * @param file The file to be written
- * @param options Additional parameters for file creation (e.g. a slug)
+ * @param fileUrl The URL where the file is saved.
+ * @param file The file to be written.
+ * @param options Additional parameters for file creation (e.g. a slug).
  */
 export async function overwriteFile(
   fileUrl: Url | UrlString,
