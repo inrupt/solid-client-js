@@ -138,6 +138,71 @@ export async function getSolidDatasetWithAcl(
   return Object.assign(solidDataset, { internal_acl: acl });
 }
 
+type UpdateableDataset = SolidDataset &
+  WithChangeLog &
+  WithResourceInfo & { resourceInfo: { sourceIri: IriString } };
+
+/**
+ * Create a SPARQL UPDATE Patch request from a [[SolidDataset]] with a changelog.
+ * @param solidDataset the [[SolidDataset]] that has been locally updated, and that should be persisted.
+ * @returns an HTTP PATCH request configuration object, aligned with the [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters), containing a SPARQL UPDATE.
+ * @hidden
+ */
+async function prepareSolidDatasetUpdate(
+  solidDataset: UpdateableDataset
+): Promise<RequestInit> {
+  const deleteStatement =
+    solidDataset.internal_changeLog.deletions.length > 0
+      ? `DELETE DATA {${(
+          await triplesToTurtle(
+            solidDataset.internal_changeLog.deletions.map(
+              getNamedNodesForLocalNodes
+            )
+          )
+        ).trim()}};`
+      : "";
+  const insertStatement =
+    solidDataset.internal_changeLog.additions.length > 0
+      ? `INSERT DATA {${(
+          await triplesToTurtle(
+            solidDataset.internal_changeLog.additions.map(
+              getNamedNodesForLocalNodes
+            )
+          )
+        ).trim()}};`
+      : "";
+
+  return {
+    method: "PATCH",
+    body: `${deleteStatement} ${insertStatement}`,
+    headers: {
+      "Content-Type": "application/sparql-update",
+    },
+  };
+}
+
+/**
+ * Create a Put request to write a locally created [[SolidDataset]] to a Pod.
+ * @param solidDataset the [[SolidDataset]] that has been locally updated, and that should be persisted.
+ * @returns an HTTP PUT request configuration object, aligned with the [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters), containing a serialization of the [[SolidDataset]].
+ * @hidden
+ */
+async function prepareSolidDatasetCreation(
+  solidDataset: SolidDataset
+): Promise<RequestInit> {
+  return {
+    method: "PUT",
+    body: await triplesToTurtle(
+      Array.from(solidDataset).map(getNamedNodesForLocalNodes)
+    ),
+    headers: {
+      "Content-Type": "text/turtle",
+      "If-None-Match": "*",
+      Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
+    },
+  };
+}
+
 /**
  * Given a SolidDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
  *
@@ -159,50 +224,9 @@ export async function saveSolidDatasetAt(
     ...options,
   };
 
-  let requestInit: RequestInit;
-
-  if (isUpdate(solidDataset, url)) {
-    const deleteStatement =
-      solidDataset.internal_changeLog.deletions.length > 0
-        ? `DELETE DATA {${(
-            await triplesToTurtle(
-              solidDataset.internal_changeLog.deletions.map(
-                getNamedNodesForLocalNodes
-              )
-            )
-          ).trim()}};`
-        : "";
-    const insertStatement =
-      solidDataset.internal_changeLog.additions.length > 0
-        ? `INSERT DATA {${(
-            await triplesToTurtle(
-              solidDataset.internal_changeLog.additions.map(
-                getNamedNodesForLocalNodes
-              )
-            )
-          ).trim()}};`
-        : "";
-
-    requestInit = {
-      method: "PATCH",
-      body: `${deleteStatement} ${insertStatement}`,
-      headers: {
-        "Content-Type": "application/sparql-update",
-      },
-    };
-  } else {
-    requestInit = {
-      method: "PUT",
-      body: await triplesToTurtle(
-        Array.from(solidDataset).map(getNamedNodesForLocalNodes)
-      ),
-      headers: {
-        "Content-Type": "text/turtle",
-        "If-None-Match": "*",
-        Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
-      },
-    };
-  }
+  const requestInit = isUpdate(solidDataset, url)
+    ? await prepareSolidDatasetUpdate(solidDataset)
+    : await prepareSolidDatasetCreation(solidDataset);
 
   const response = await config.fetch(url, requestInit);
 
@@ -343,9 +367,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
 function isUpdate(
   solidDataset: SolidDataset,
   url: UrlString
-): solidDataset is SolidDataset &
-  WithChangeLog &
-  WithResourceInfo & { resourceInfo: { sourceIri: IriString } } {
+): solidDataset is UpdateableDataset {
   return (
     hasChangelog(solidDataset) &&
     hasResourceInfo(solidDataset) &&
