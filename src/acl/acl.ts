@@ -49,7 +49,7 @@ import { setIri } from "../thing/set";
 import {
   getSourceUrl,
   internal_defaultFetchOptions,
-  internal_fetchResourceInfo,
+  getResourceInfo,
 } from "../resource/resource";
 import { addIri } from "..";
 
@@ -100,12 +100,7 @@ export async function internal_fetchFallbackAcl(
 
   const containerPath = internal_getContainerPath(resourcePath);
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
-  const containerInfo = {
-    internal_resourceInfo: await internal_fetchResourceInfo(
-      containerIri,
-      options
-    ),
-  };
+  const containerInfo = await getResourceInfo(containerIri, options);
 
   if (!hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,

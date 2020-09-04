@@ -27,6 +27,7 @@ import {
   overwriteFile,
   createSolidDataset,
   getSolidDataset,
+  getResourceInfo,
   fetchResourceInfoWithAcl,
   isContainer,
   isRawData,
@@ -203,6 +204,7 @@ it("exports the public API from the entry file", () => {
   expect(overwriteFile).toBeDefined();
   expect(createSolidDataset).toBeDefined();
   expect(getSolidDataset).toBeDefined();
+  expect(getResourceInfo).toBeDefined();
   expect(fetchResourceInfoWithAcl).toBeDefined();
   expect(isContainer).toBeDefined();
   expect(isRawData).toBeDefined();
