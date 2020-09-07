@@ -622,7 +622,9 @@ export async function deleteAclFor<
 
   if (!response.ok) {
     throw new Error(
-      `Deleting the ACL failed: ${response.status} ${response.statusText}.`
+      `Deleting the ACL of the Resource at \`${getSourceUrl(
+        resource
+      )}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 

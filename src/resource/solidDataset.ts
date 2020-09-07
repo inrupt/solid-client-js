@@ -90,7 +90,7 @@ export async function getSolidDataset(
   });
   if (!response.ok) {
     throw new Error(
-      `Fetching the Resource failed: ${response.status} ${response.statusText}.`
+      `Fetching the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
   const data = await response.text();
@@ -231,8 +231,14 @@ export async function saveSolidDatasetAt(
   const response = await config.fetch(url, requestInit);
 
   if (!response.ok) {
+    const diagnostics = isUpdate(solidDataset, url)
+      ? "The changes that were sent to the Pod are listed below.\n\n" +
+        changeLogAsMarkdown(solidDataset)
+      : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
+        solidDatasetAsMarkdown(solidDataset);
     throw new Error(
-      `Storing the Resource failed: ${response.status} ${response.statusText}.`
+      `Storing the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.\n\n` +
+        diagnostics
     );
   }
 
@@ -301,7 +307,7 @@ export async function createContainerAt(
     }
 
     throw new Error(
-      `Creating the empty Container failed: ${response.status} ${response.statusText}.`
+      `Creating the empty Container at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
@@ -345,7 +351,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
 
   if (!createResponse.ok) {
     throw new Error(
-      `Creating the empty Container failed: ${createResponse.status} ${createResponse.statusText}.`
+      `Creating the empty Container at \`${url}\` failed: ${createResponse.status} ${createResponse.statusText}.`
     );
   }
 
@@ -418,14 +424,16 @@ export async function saveSolidDatasetInContainer(
 
   if (!response.ok) {
     throw new Error(
-      `Storing the Resource in the Container failed: ${response.status} ${response.statusText}.`
+      `Storing the Resource in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.\n\n` +
+        "The SolidDataset that was sent to the Pod is listed below.\n\n" +
+        solidDatasetAsMarkdown(solidDataset)
     );
   }
 
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location for the newly saved SolidDataset."
+      "Could not determine the location of the newly saved SolidDataset."
     );
   }
 
@@ -481,14 +489,14 @@ export async function createContainerInContainer(
 
   if (!response.ok) {
     throw new Error(
-      `Creating an empty Container in the Container failed: ${response.status} ${response.statusText}.`
+      `Creating an empty Container in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location for the newly created Container."
+      "Could not determine the location of the newly created Container."
     );
   }
 

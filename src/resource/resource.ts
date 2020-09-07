@@ -63,7 +63,7 @@ export async function getResourceInfo(
   const response = await config.fetch(url, { method: "HEAD" });
   if (!response.ok) {
     throw new Error(
-      `Fetching the Resource metadata failed: ${response.status} ${response.statusText}.`
+      `Fetching the metadata of the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 

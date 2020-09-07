@@ -304,12 +304,14 @@ describe("getSolidDataset", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 403 Forbidden.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -320,12 +322,14 @@ describe("getSolidDataset", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 404 Not Found.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
@@ -416,15 +420,14 @@ describe("getSolidDatasetWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = getSolidDatasetWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 403 Forbidden.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -435,15 +438,14 @@ describe("getSolidDatasetWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = getSolidDatasetWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 404 Not Found.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
@@ -472,46 +474,6 @@ describe("saveSolidDatasetAt", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-  });
-
-  it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
-
-    const fetchPromise = saveSolidDatasetAt(
-      "https://arbitrary.pod/resource",
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource failed: 403 Forbidden.")
-    );
-  });
-
-  it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
-
-    const fetchPromise = saveSolidDatasetAt(
-      "https://arbitrary.pod/resource",
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource failed: 404 Not Found.")
-    );
   });
 
   describe("when saving a new resource", () => {
@@ -640,6 +602,48 @@ describe("saveSolidDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
         "If-None-Match": "*",
       });
+    });
+
+    it("returns a meaningful error when the server returns a 403", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not allowed", { status: 403 }))
+        );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        dataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+      );
+    });
+
+    it("returns a meaningful error when the server returns a 404", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        dataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+      );
     });
   });
 
@@ -921,6 +925,92 @@ describe("saveSolidDatasetAt", () => {
         deletions: [],
       });
     });
+
+    it("returns a meaningful error when the server returns a 403", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not allowed", { status: 403 }))
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+          "The changes that were sent to the Pod are listed below.\n\n"
+      );
+    });
+
+    it("returns a meaningful error when the server returns a 404", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+          "The changes that were sent to the Pod are listed below.\n\n"
+      );
+    });
   });
 });
 
@@ -1174,12 +1264,14 @@ describe("createContainerAt", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
+    const fetchPromise = createContainerAt("https://some.pod/container/", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Creating the empty Container failed: 403 Forbidden.")
+      new Error(
+        "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -1248,7 +1340,9 @@ describe("createContainerAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        new Error("Creating the empty Container failed: 409 Conflict.")
+        new Error(
+          "Creating the empty Container at `https://arbitrary.pod/container/` failed: 409 Conflict."
+        )
       );
       expect(mockFetch.mock.calls).toHaveLength(1);
     });
@@ -1314,15 +1408,14 @@ describe("createContainerAt", () => {
           Promise.resolve(new Response("Forbidden", { status: 403 }))
         );
 
-      const fetchPromise = createContainerAt(
-        "https://arbitrary.pod/container/",
-        {
-          fetch: mockFetch,
-        }
-      );
+      const fetchPromise = createContainerAt("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
 
       await expect(fetchPromise).rejects.toThrow(
-        new Error("Creating the empty Container failed: 403 Forbidden.")
+        new Error(
+          "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+        )
       );
     });
   });
@@ -1370,7 +1463,7 @@ describe("saveSolidDatasetInContainer", () => {
       );
 
     const fetchPromise = saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1378,7 +1471,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource in the Container failed: 403 Forbidden.")
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: 403 Forbidden."
     );
   });
 
@@ -1390,7 +1483,7 @@ describe("saveSolidDatasetInContainer", () => {
       );
 
     const fetchPromise = saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1398,7 +1491,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource in the Container failed: 404 Not Found.")
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: 404 Not Found."
     );
   });
 
@@ -1417,7 +1510,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location for the newly saved SolidDataset."
+        "Could not determine the location of the newly saved SolidDataset."
       )
     );
   });
@@ -1655,7 +1748,7 @@ describe("createContainerInContainer", () => {
       );
 
     const fetchPromise = createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
+      "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
       }
@@ -1663,7 +1756,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container failed: 403 Forbidden."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 403 Forbidden."
       )
     );
   });
@@ -1676,7 +1769,7 @@ describe("createContainerInContainer", () => {
       );
 
     const fetchPromise = createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
+      "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
       }
@@ -1684,7 +1777,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container failed: 404 Not Found."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 404 Not Found."
       )
     );
   });
@@ -1703,7 +1796,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location for the newly created Container."
+        "Could not determine the location of the newly created Container."
       )
     );
   });

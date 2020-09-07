@@ -271,7 +271,9 @@ describe("fetchResourceInfoWithAcl", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 403 Forbidden.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -290,7 +292,9 @@ describe("fetchResourceInfoWithAcl", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 404 Not Found.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 
@@ -613,7 +617,9 @@ describe("fetchResourceInfo", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 403 Forbidden.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -629,7 +635,9 @@ describe("fetchResourceInfo", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 404 Not Found.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
