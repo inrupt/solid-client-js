@@ -4,7 +4,6 @@
     "src/**/*.ts",
     "./*.js",
     "website/**/*.js",
-    "website/**/*.jsx",
-    "docs/prose/source/examples/*.js"
+    "website/**/*.jsx"
   ]
 }
