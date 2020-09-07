@@ -9,6 +9,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - `getResourceInfo`: Function fetching metadata for a resource, without fetching the resource itself. This enables
   having lightwheight interaction with a Pod before fetching a large file.
 
+### Bugs fixed
+
+- When creating a new Container on Node Solid Server using `createContainerAt`, no error would be
+  thrown when the Container already exists. Now, as with other Solid servers, an error will be
+  thrown if the Container you are trying to create already exists.
+
 ## [0.3.0] - 2020-09-03
 
 ### New features

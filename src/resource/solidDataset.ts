@@ -47,6 +47,7 @@ import {
   internal_defaultFetchOptions,
   internal_fetchAcl,
   getSourceUrl,
+  getResourceInfo,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -332,6 +333,21 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
     ...internal_defaultFetchOptions,
     ...options,
   };
+
+  let existingContainer;
+  try {
+    existingContainer = await getResourceInfo(url, options);
+  } catch (e) {
+    // To create the Container, we'd want it to not exist yet. In other words, we'd expect to get
+    // an error here in the happy path - so do nothing.
+    // FIXME: Check that the status code of the error is actually a 404, and rethrow the error if
+    //        not. This depends on fixing https://github.com/inrupt/solid-client-js/issues/436.
+  }
+  if (typeof existingContainer !== "undefined") {
+    throw new Error(
+      `The Container at \`${url}\` already exists, and therefore cannot be created again.`
+    );
+  }
 
   const dummyUrl = url + ".dummy";
 
