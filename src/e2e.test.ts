@@ -214,32 +214,35 @@ describe.each([
       `${rootContainer}lit-pod-acl-test/`
     );
 
-    if (hasResourceAcl(datasetWithAcl)) {
-      const acl = getResourceAcl(datasetWithAcl);
-      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-      const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
-      expect(fakeWebIdAccess).toEqual({
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-
-      // Cleanup
-      const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
-        read: false,
-        append: false,
-        write: false,
-        control: false,
-      });
-      await saveAclFor(datasetWithAcl, cleanedAcl);
+    if (!hasResourceAcl(datasetWithAcl)) {
+      throw new Error(
+        `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+      );
     }
+    const acl = getResourceAcl(datasetWithAcl);
+    const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+    const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
+    const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
+    expect(fakeWebIdAccess).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+
+    // Cleanup
+    const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+    await saveAclFor(datasetWithAcl, cleanedAcl);
   });
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
@@ -247,16 +250,19 @@ describe.each([
       `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
     );
     if (
-      hasFallbackAcl(dataset) &&
-      hasAccessibleAcl(dataset) &&
-      !hasResourceAcl(dataset)
+      !hasFallbackAcl(dataset) ||
+      !hasAccessibleAcl(dataset) ||
+      hasResourceAcl(dataset)
     ) {
-      const newResourceAcl = createAclFromFallbackAcl(dataset);
-      const existingFallbackAcl = getFallbackAcl(dataset);
-      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-        getPublicResourceAccess(newResourceAcl)
+      throw new Error(
+        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
       );
     }
+    const newResourceAcl = createAclFromFallbackAcl(dataset);
+    const existingFallbackAcl = getFallbackAcl(dataset);
+    expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+      getPublicResourceAccess(newResourceAcl)
+    );
   });
 
   it("can fetch a non-RDF file and its metadata", async () => {
