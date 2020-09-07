@@ -143,7 +143,7 @@ export async function deleteFile(
 
   if (!response.ok) {
     throw new Error(
-      `Deleting the file failed: ${response.status} ${response.statusText}.`
+      `Deleting the file at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 }
@@ -173,14 +173,14 @@ export async function saveFileInContainer(
 
   if (!response.ok) {
     throw new Error(
-      `Saving the file failed: ${response.status} ${response.statusText}.`
+      `Saving the file in \`${folderUrl}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location for the newly saved file."
+      "Could not determine the location of the newly saved file."
     );
   }
 
@@ -216,7 +216,7 @@ export async function overwriteFile(
 
   if (!response.ok) {
     throw new Error(
-      `Saving the file failed: ${response.status} ${response.statusText}.`
+      `Overwriting the file at \`${fileUrlString}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 

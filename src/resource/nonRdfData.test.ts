@@ -429,7 +429,7 @@ describe("Non-RDF data deletion", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the file failed: 400 Bad request"
+      "Deleting the file at `https://some.url` failed: 400 Bad request"
     );
   });
 });
@@ -600,7 +600,9 @@ describe("Write non-RDF data into a folder", () => {
       saveFileInContainer("https://some.url", mockBlob, {
         fetch: mockFetch,
       })
-    ).rejects.toThrow("Saving the file failed: 403 Forbidden.");
+    ).rejects.toThrow(
+      "Saving the file in `https://some.url` failed: 403 Forbidden."
+    );
   });
 
   it("throws when the server did not return the location of the newly-saved file", async () => {
@@ -617,7 +619,7 @@ describe("Write non-RDF data into a folder", () => {
         fetch: mockFetch,
       })
     ).rejects.toThrow(
-      "Could not determine the location for the newly saved file."
+      "Could not determine the location of the newly saved file."
     );
   });
 });
@@ -736,6 +738,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       overwriteFile("https://some.url", mockBlob, {
         fetch: mockFetch,
       })
-    ).rejects.toThrow("Saving the file failed: 403 Forbidden.");
+    ).rejects.toThrow(
+      "Overwriting the file at `https://some.url` failed: 403 Forbidden."
+    );
   });
 });

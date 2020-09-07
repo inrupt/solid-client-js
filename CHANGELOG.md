@@ -8,6 +8,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `getResourceInfo`: Function fetching metadata for a resource, without fetching the resource itself. This enables
   having lightwheight interaction with a Pod before fetching a large file.
+- When fetching data from or storing data to a Pod results in an error, those error messages now
+  contain more information about what data was being sent, and where it was sent to.
 
 ### Bugs fixed
 
