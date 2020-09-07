@@ -140,7 +140,7 @@ export async function getSolidDatasetWithAcl(
 
 type UpdateableDataset = SolidDataset &
   WithChangeLog &
-  WithResourceInfo & { resourceInfo: { sourceIri: IriString } };
+  WithResourceInfo & { internal_resourceInfo: { sourceIri: IriString } };
 
 /**
  * Create a SPARQL UPDATE Patch request from a [[SolidDataset]] with a changelog.
