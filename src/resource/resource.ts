@@ -47,14 +47,14 @@ export const internal_defaultFetchOptions = {
  * @param url URL to fetch Resource metadata from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
- * @hidden
+ * @since Not released yet
  */
-export async function internal_fetchResourceInfo(
+export async function getResourceInfo(
   url: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo["internal_resourceInfo"]> {
+): Promise<WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -69,7 +69,7 @@ export async function internal_fetchResourceInfo(
 
   const resourceInfo = internal_parseResourceInfo(response);
 
-  return resourceInfo;
+  return { internal_resourceInfo: resourceInfo };
 }
 
 /**
@@ -126,15 +126,9 @@ export async function fetchResourceInfoWithAcl(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<WithResourceInfo & WithAcl> {
-  const resourceInfo = await internal_fetchResourceInfo(url, options);
-  const acl = await internal_fetchAcl(
-    { internal_resourceInfo: resourceInfo },
-    options
-  );
-  return Object.assign(
-    { internal_resourceInfo: resourceInfo },
-    { internal_acl: acl }
-  );
+  const resourceInfo = await getResourceInfo(url, options);
+  const acl = await internal_fetchAcl(resourceInfo, options);
+  return Object.assign(resourceInfo, { internal_acl: acl });
 }
 
 /**
