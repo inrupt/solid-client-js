@@ -92,14 +92,14 @@ export async function getFile(
  *
  * If the user calling the function does not have access to the file's resource ACL,
  * [[hasAccessibleAcl]] on the returned blob returns false.
- * If the user has access to the file's resource ACL but the resource ACL,
+ * If the user has access to the file's resource ACL but the resource ACL does not exist,
  * [[getResourceAcl]] on the returned blob returns null.
  * If the fallback ACL is inaccessible by the user,
  * [[getFallbackAcl]] on the returned blob returns null.
  *
  * ```{tip}
  * To retrieve the ACLs, the function results in multiple HTTP requests rather than a single
- * request as mandated by the Solid spec. As such, prefer [[getFile]] instead.
+ * request as mandated by the Solid spec. As such, prefer [[getFile]] instead if you do not need the ACL.
  * ```
  *
  * @param url The URL of the fetched file
