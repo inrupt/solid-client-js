@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### New features
+
+- `getResourceInfo`: Function fetching metadata for a resource, without fetching the resource itself. This enables
+  having lightwheight interaction with a Pod before fetching a large file.
+
 ## [0.3.0] - 2020-09-03
 
 ### New features
