@@ -25,6 +25,7 @@ export {
   getSourceUrl,
   getSourceIri,
   getContentType,
+  getResourceInfo,
   fetchResourceInfoWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
   /** @deprecated See [[fetchResourceInfoWithAcl]] */

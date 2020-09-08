@@ -1,8 +1,0 @@
-# pip install -r requirements.txt
-
-
-sphinx-copybutton
-sphinx-tabs
-pydata-sphinx-theme
-myst-parser
-Sphinx
