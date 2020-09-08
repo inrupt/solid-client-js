@@ -11,6 +11,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - When fetching data from or storing data to a Pod results in an error, those error messages now
   contain more information about what data was being sent, and where it was sent to.
 
+### Bugs fixed
+
+- When creating a new Container on Node Solid Server using `createContainerAt`, no error would be
+  thrown when the Container already exists. Now, as with other Solid servers, an error will be
+  thrown if the Container you are trying to create already exists.
+
 ## [0.3.0] - 2020-09-03
 
 ### New features

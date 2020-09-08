@@ -1288,6 +1288,10 @@ describe("createContainerAt", () => {
             )
           )
         )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        )
         // Creating a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
@@ -1305,19 +1309,23 @@ describe("createContainerAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls).toHaveLength(5);
       expect(mockFetch.mock.calls[1][0]).toBe(
-        "https://arbitrary.pod/container/.dummy"
+        "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("HEAD");
       expect(mockFetch.mock.calls[2][0]).toBe(
         "https://arbitrary.pod/container/.dummy"
       );
-      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("PUT");
       expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[4][0]).toBe(
         "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+      expect(mockFetch.mock.calls[4][1]?.method).toBe("HEAD");
     });
 
     it("does not attempt to create a dummy file on a regular 409 error", async () => {
@@ -1359,6 +1367,10 @@ describe("createContainerAt", () => {
             )
           )
         )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        )
         // Creating a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
@@ -1376,21 +1388,53 @@ describe("createContainerAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls).toHaveLength(5);
       expect(mockFetch.mock.calls[1][0]).toBe(
-        "https://arbitrary.pod/container/.dummy"
+        "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("HEAD");
       expect(mockFetch.mock.calls[2][0]).toBe(
         "https://arbitrary.pod/container/.dummy"
       );
-      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("PUT");
       expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[4][0]).toBe(
         "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+      expect(mockFetch.mock.calls[4][1]?.method).toBe("HEAD");
     });
 
+    it("returns an error when the Container already exists", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(Promise.resolve(new Response()));
+
+      const fetchPromise = createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error(
+          "The Container at `https://arbitrary.pod/container/` already exists, and therefore cannot be created again."
+        )
+      );
+    });
     it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
       const mockFetch = jest
         .fn(window.fetch)
@@ -1402,6 +1446,10 @@ describe("createContainerAt", () => {
               { status: 409 }
             )
           )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
         )
         // Creating a dummy file:
         .mockReturnValueOnce(
