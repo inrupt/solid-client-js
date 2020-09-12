@@ -50,15 +50,14 @@ import {
   getSourceUrl,
   internal_defaultFetchOptions,
   getResourceInfo,
+  FetchOptions,
 } from "../resource/resource";
 import { addIri } from "..";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<AclDataset | null> {
   if (!hasAccessibleAcl(dataset)) {
     return null;
@@ -83,9 +82,7 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: WithAccessibleAcl,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<AclDataset | null> {
   const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;
@@ -578,9 +575,7 @@ export function internal_getAccessByIri(
 export async function saveAclFor(
   resource: WithAccessibleAcl,
   resourceAcl: AclDataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<AclDataset & WithResourceInfo> {
   const savedDataset = await saveSolidDatasetAt(
     resource.internal_resourceInfo.aclUrl,
@@ -614,9 +609,7 @@ export async function deleteAclFor<
   Resource extends WithResourceInfo & WithAccessibleAcl
 >(
   resource: Resource,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<Resource & { acl: { resourceAcl: null } }> {
   const config = {
     ...internal_defaultFetchOptions,

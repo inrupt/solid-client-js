@@ -48,6 +48,7 @@ import {
   internal_fetchAcl,
   getSourceUrl,
   getResourceInfo,
+  FetchOptions,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -74,9 +75,7 @@ export function createSolidDataset(): SolidDataset {
  */
 export async function getSolidDataset(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo> {
   url = internal_toIriString(url);
   const config = {
@@ -130,9 +129,7 @@ export async function getSolidDataset(
  */
 export async function getSolidDatasetWithAcl(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
@@ -215,9 +212,7 @@ async function prepareSolidDatasetCreation(
 export async function saveSolidDatasetAt(
   url: UrlString | Url,
   solidDataset: SolidDataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
   const config = {
@@ -274,9 +269,7 @@ export async function saveSolidDatasetAt(
  */
 export async function createContainerAt(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : url + "/";
@@ -399,7 +392,7 @@ function isUpdate(
 }
 
 type SaveInContainerOptions = Partial<
-  typeof internal_defaultFetchOptions & {
+  FetchOptions & {
     slugSuggestion: string;
   }
 >;

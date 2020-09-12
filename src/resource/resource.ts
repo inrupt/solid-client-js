@@ -35,8 +35,10 @@ import {
   internal_fetchFallbackAcl,
 } from "../acl/acl";
 
+export type FetchOptions = { fetch: typeof window.fetch };
+
 /** @internal */
-export const internal_defaultFetchOptions = {
+export const internal_defaultFetchOptions: FetchOptions = {
   fetch: fetch,
 };
 
@@ -51,9 +53,7 @@ export const internal_defaultFetchOptions = {
  */
 export async function getResourceInfo(
   url: UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -82,9 +82,7 @@ export async function getResourceInfo(
  */
 export async function internal_fetchAcl(
   resourceInfo: WithResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<WithAcl["internal_acl"]> {
   if (!hasAccessibleAcl(resourceInfo)) {
     return {
@@ -122,9 +120,7 @@ export async function internal_fetchAcl(
  */
 export async function fetchResourceInfoWithAcl(
   url: UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  options: Partial<FetchOptions> = internal_defaultFetchOptions
 ): Promise<WithResourceInfo & WithAcl> {
   const resourceInfo = await getResourceInfo(url, options);
   const acl = await internal_fetchAcl(resourceInfo, options);
