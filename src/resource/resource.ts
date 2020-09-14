@@ -35,7 +35,7 @@ import {
   internal_fetchFallbackAcl,
 } from "../acl/acl";
 
-/** @internal */
+/** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
   fetch: fetch,
 };
