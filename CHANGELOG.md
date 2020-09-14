@@ -17,6 +17,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   thrown when the Container already exists. Now, as with other Solid servers, an error will be
   thrown if the Container you are trying to create already exists.
 
+### Bugs fixed
+
+- The second, optional parameter to functions like `getSolidDataset`, which allows you to pass e.g.
+  your own `fetch` function, was not included in our type definitions. This prevented editors from
+  autocompleting them, and could cause compilation errors for developers using TypeScript.
+
 ## [0.3.0] - 2020-09-03
 
 ### New features
