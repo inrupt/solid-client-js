@@ -26,10 +26,12 @@ export {
   getSourceIri,
   getContentType,
   getResourceInfo,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
   // Aliases for deprecated exports to preserve backwards compatibility:
-  /** @deprecated See [[fetchResourceInfoWithAcl]] */
-  fetchResourceInfoWithAcl as unstable_fetchResourceInfoWithAcl,
+  /** @deprecated See [[getResourceInfoWithAcl]] */
+  getResourceInfoWithAcl as fetchResourceInfoWithAcl,
+  /** @deprecated See [[getResourceInfoWithAcl]] */
+  getResourceInfoWithAcl as unstable_fetchResourceInfoWithAcl,
   /** @deprecated See [[isRawData]] */
   isRawData as isLitDataset,
   /** @deprecated See [[getSourceUrl]] */

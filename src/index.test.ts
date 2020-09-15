@@ -28,7 +28,7 @@ import {
   createSolidDataset,
   getSolidDataset,
   getResourceInfo,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
   isContainer,
   isRawData,
   getContentType,
@@ -192,6 +192,7 @@ import {
   saveLitDatasetAt,
   saveLitDatasetInContainer,
   getFetchedFrom,
+  fetchResourceInfoWithAcl,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -205,7 +206,7 @@ it("exports the public API from the entry file", () => {
   expect(createSolidDataset).toBeDefined();
   expect(getSolidDataset).toBeDefined();
   expect(getResourceInfo).toBeDefined();
-  expect(fetchResourceInfoWithAcl).toBeDefined();
+  expect(getResourceInfoWithAcl).toBeDefined();
   expect(isContainer).toBeDefined();
   expect(isRawData).toBeDefined();
   expect(getContentType).toBeDefined();
@@ -372,4 +373,5 @@ it("still exports deprecated methods", () => {
   expect(saveLitDatasetInContainer).toBeDefined();
   expect(fetchLitDatasetWithAcl).toBeDefined();
   expect(getFetchedFrom).toBeDefined();
+  expect(fetchResourceInfoWithAcl).toBeDefined();
 });

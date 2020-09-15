@@ -30,7 +30,7 @@ import {
   saveSolidDatasetAt,
   isRawData,
   getContentType,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
   getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
@@ -134,10 +134,10 @@ describe.each([
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
-    const rdfResourceInfo = await fetchResourceInfoWithAcl(
+    const rdfResourceInfo = await getResourceInfoWithAcl(
       `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
     );
-    const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
+    const nonRdfResourceInfo = await getResourceInfoWithAcl(
       `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
     );
     expect(isRawData(rdfResourceInfo)).toBe(false);
