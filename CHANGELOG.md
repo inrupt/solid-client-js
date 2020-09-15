@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Deprecations
+
+- The experimental function `fetchResourceInfoWithAcl` has been deprecated. It is replaced by the
+  otherwise identical (but still experimental) `getResourceInfoWithAcl`.
+
 ### New features
 
 - `getResourceInfo`: Function fetching metadata for a resource, without fetching the resource itself. This enables

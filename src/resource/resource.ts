@@ -120,7 +120,7 @@ export async function internal_fetchAcl(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
  */
-export async function fetchResourceInfoWithAcl(
+export async function getResourceInfoWithAcl(
   url: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions

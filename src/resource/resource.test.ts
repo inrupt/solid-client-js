@@ -37,7 +37,7 @@ import {
   isContainer,
   isRawData,
   getContentType,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
 } from "./resource";
 import { WithResourceInfo, IriString } from "../interfaces";
 
@@ -172,7 +172,7 @@ describe("fetchAcl", () => {
   });
 });
 
-describe("fetchResourceInfoWithAcl", () => {
+describe("getResourceInfoWithAcl", () => {
   it("returns both the Resource's own ACL as well as its Container's", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
@@ -189,7 +189,7 @@ describe("fetchResourceInfoWithAcl", () => {
       );
     });
 
-    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -220,7 +220,7 @@ describe("fetchResourceInfoWithAcl", () => {
       >;
     };
 
-    await fetchResourceInfoWithAcl("https://some.pod/resource");
+    await getResourceInfoWithAcl("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
@@ -246,7 +246,7 @@ describe("fetchResourceInfoWithAcl", () => {
       )
     );
 
-    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -263,7 +263,7 @@ describe("fetchResourceInfoWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchResourceInfoWithAcl(
+    const fetchPromise = getResourceInfoWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -284,7 +284,7 @@ describe("fetchResourceInfoWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchResourceInfoWithAcl(
+    const fetchPromise = getResourceInfoWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -307,7 +307,7 @@ describe("fetchResourceInfoWithAcl", () => {
         )
       );
 
-    await fetchResourceInfoWithAcl("https://some.pod/resource", {
+    await getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -317,7 +317,7 @@ describe("fetchResourceInfoWithAcl", () => {
   });
 });
 
-describe("fetchResourceInfo", () => {
+describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
