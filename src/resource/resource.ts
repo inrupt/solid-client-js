@@ -47,7 +47,7 @@ export const internal_defaultFetchOptions = {
  * @param url URL to fetch Resource metadata from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
- * @since Not released yet
+ * @since 0.4.0
  */
 export async function getResourceInfo(
   url: UrlString,
