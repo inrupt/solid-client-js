@@ -141,58 +141,6 @@ import {
   addMockResourceAclTo,
   addMockFallbackAclTo,
   // Deprecated functions still exported for backwards compatibility:
-  getStringUnlocalizedOne,
-  getStringUnlocalizedAll,
-  addStringUnlocalized,
-  setStringUnlocalized,
-  removeStringUnlocalized,
-  getStringInLocaleOne,
-  getStringInLocaleAll,
-  addStringInLocale,
-  setStringInLocale,
-  removeStringInLocale,
-  unstable_fetchFile,
-  unstable_deleteFile,
-  unstable_saveFileInContainer,
-  unstable_overwriteFile,
-  unstable_fetchResourceInfoWithAcl,
-  unstable_saveAclFor,
-  unstable_deleteAclFor,
-  unstable_fetchLitDatasetWithAcl,
-  unstable_hasFallbackAcl,
-  unstable_getFallbackAcl,
-  unstable_hasResourceAcl,
-  unstable_getResourceAcl,
-  unstable_createAcl,
-  unstable_createAclFromFallbackAcl,
-  unstable_getAgentAccessOne,
-  unstable_getAgentAccessAll,
-  unstable_getAgentResourceAccessOne,
-  unstable_getAgentResourceAccessAll,
-  unstable_setAgentResourceAccess,
-  unstable_getAgentDefaultAccessOne,
-  unstable_getAgentDefaultAccessAll,
-  unstable_setAgentDefaultAccess,
-  unstable_getPublicAccess,
-  unstable_getPublicResourceAccess,
-  unstable_getPublicDefaultAccess,
-  unstable_setPublicResourceAccess,
-  unstable_setPublicDefaultAccess,
-  unstable_hasAccessibleAcl,
-  unstable_getGroupAccessOne,
-  unstable_getGroupAccessAll,
-  unstable_getGroupResourceAccessOne,
-  unstable_getGroupResourceAccessAll,
-  unstable_getGroupDefaultAccessOne,
-  unstable_getGroupDefaultAccessAll,
-  createLitDataset,
-  fetchLitDataset,
-  fetchLitDatasetWithAcl,
-  isLitDataset,
-  saveLitDatasetAt,
-  saveLitDatasetInContainer,
-  getFetchedFrom,
-  fetchResourceInfoWithAcl,
 } from "./index";
 
 // These tests aren't too useful in preventing bugs, but they work around this issue:
@@ -321,57 +269,5 @@ it("exports the public API from the entry file", () => {
   expect(addMockFallbackAclTo).toBeDefined();
 });
 
-it("still exports deprecated methods", () => {
-  expect(getStringInLocaleOne).toBeDefined();
-  expect(getStringUnlocalizedOne).toBeDefined();
-  expect(getStringInLocaleAll).toBeDefined();
-  expect(getStringUnlocalizedAll).toBeDefined();
-  expect(addStringInLocale).toBeDefined();
-  expect(addStringUnlocalized).toBeDefined();
-  expect(setStringInLocale).toBeDefined();
-  expect(setStringUnlocalized).toBeDefined();
-  expect(removeStringInLocale).toBeDefined();
-  expect(removeStringUnlocalized).toBeDefined();
-  expect(unstable_fetchFile).toBeDefined();
-  expect(unstable_deleteFile).toBeDefined();
-  expect(unstable_saveFileInContainer).toBeDefined();
-  expect(unstable_overwriteFile).toBeDefined();
-  expect(unstable_fetchResourceInfoWithAcl).toBeDefined();
-  expect(unstable_saveAclFor).toBeDefined();
-  expect(unstable_deleteAclFor).toBeDefined();
-  expect(unstable_fetchLitDatasetWithAcl).toBeDefined();
-  expect(unstable_hasFallbackAcl).toBeDefined();
-  expect(unstable_getFallbackAcl).toBeDefined();
-  expect(unstable_hasResourceAcl).toBeDefined();
-  expect(unstable_getResourceAcl).toBeDefined();
-  expect(unstable_createAcl).toBeDefined();
-  expect(unstable_createAclFromFallbackAcl).toBeDefined();
-  expect(unstable_getAgentAccessOne).toBeDefined();
-  expect(unstable_getAgentAccessAll).toBeDefined();
-  expect(unstable_getAgentResourceAccessOne).toBeDefined();
-  expect(unstable_getAgentResourceAccessAll).toBeDefined();
-  expect(unstable_setAgentResourceAccess).toBeDefined();
-  expect(unstable_getAgentDefaultAccessOne).toBeDefined();
-  expect(unstable_getAgentDefaultAccessAll).toBeDefined();
-  expect(unstable_setAgentDefaultAccess).toBeDefined();
-  expect(unstable_getPublicAccess).toBeDefined();
-  expect(unstable_getPublicResourceAccess).toBeDefined();
-  expect(unstable_getPublicDefaultAccess).toBeDefined();
-  expect(unstable_setPublicResourceAccess).toBeDefined();
-  expect(unstable_setPublicDefaultAccess).toBeDefined();
-  expect(unstable_hasAccessibleAcl).toBeDefined();
-  expect(unstable_getGroupAccessOne).toBeDefined();
-  expect(unstable_getGroupAccessAll).toBeDefined();
-  expect(unstable_getGroupResourceAccessOne).toBeDefined();
-  expect(unstable_getGroupResourceAccessAll).toBeDefined();
-  expect(unstable_getGroupDefaultAccessOne).toBeDefined();
-  expect(unstable_getGroupDefaultAccessAll).toBeDefined();
-  expect(createLitDataset).toBeDefined();
-  expect(fetchLitDataset).toBeDefined();
-  expect(isLitDataset).toBeDefined();
-  expect(saveLitDatasetAt).toBeDefined();
-  expect(saveLitDatasetInContainer).toBeDefined();
-  expect(fetchLitDatasetWithAcl).toBeDefined();
-  expect(getFetchedFrom).toBeDefined();
-  expect(fetchResourceInfoWithAcl).toBeDefined();
-});
+// eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:
+it("still exports deprecated methods", () => {});
