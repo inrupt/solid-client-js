@@ -580,6 +580,13 @@ export async function saveAclFor(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset & WithResourceInfo> {
+  if (!hasAccessibleAcl(resource)) {
+    throw new Error(
+      `Could not determine the location of the ACL for the Resource at \`${getSourceUrl(
+        resource
+      )}\`; possibly the current user does not have Control access to that Resource. Try calling \`hasAccessibleAcl()\` before calling \`saveAclFor()\`.`
+    );
+  }
   const savedDataset = await saveSolidDatasetAt(
     resource.internal_resourceInfo.aclUrl,
     resourceAcl,
