@@ -1729,6 +1729,29 @@ describe("saveAclFor", () => {
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
+  it("returns a meaningful error when it cannot determine where to save the ACL", async () => {
+    const withResourceInfo: WithAccessibleAcl = {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: undefined as any,
+      },
+    };
+    const aclResource: AclDataset = Object.assign(dataset(), {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource.acl",
+        isRawData: false,
+      },
+      internal_accessTo: "https://arbitrary.pod/resource",
+    });
+
+    const fetchPromise = saveAclFor(withResourceInfo, aclResource);
+
+    await expect(fetchPromise).rejects.toThrow(
+      "Could not determine the location of the ACL for the Resource at `https://arbitrary.pod/resource`; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
+    );
+  });
+
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
       .fn(window.fetch)
