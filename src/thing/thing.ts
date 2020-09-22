@@ -78,13 +78,16 @@ export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
-): Thing {
+): Thing | null {
   const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
   const scope: NamedNode | null = options.scope
     ? asNamedNode(options.scope)
     : null;
 
   const thingDataset = solidDataset.match(subject, null, null, scope);
+  if (thingDataset.size === 0) {
+    return null;
+  }
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
@@ -131,9 +134,12 @@ export function getThingAll(
     }
   }
 
-  const things: Thing[] = subjectNodes.map((subjectNode) =>
-    getThing(solidDataset, subjectNode, options)
-  );
+  const things: Thing[] = subjectNodes.map(
+    (subjectNode) => getThing(solidDataset, subjectNode, options)
+    // We can make the type assertion here because `getThing` only returns `null` if no data with
+    // the given subject node can be found, and in this case the subject node was extracted from
+    // existing data (i.e. that can be found by definition):
+  ) as Thing[];
 
   return things;
 }
