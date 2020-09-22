@@ -10,6 +10,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Previously, if no data with the given URL could be found, `getThing` would return a new, empty
   Thing. From now on, it will return `null` in those situations.
 
+### Bugs fixed
+
+- `createAclFromFallbackAcl` did not correctly initialise the new ACL: rules that applied to the
+  applicable Resource's children _before_ the new ACL was created (i.e. defined in the fallback ACL)
+  no longer applied after saving the new one. This is now fixed.
+
 ## [0.4.0] - 2020-09-15
 
 ### Deprecations
