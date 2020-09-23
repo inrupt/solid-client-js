@@ -346,7 +346,7 @@ describe("Non-RDF data deletion", () => {
       >;
     };
 
-    fetcher.fetch.mockReturnValue(
+    fetcher.fetch.mockReturnValueOnce(
       Promise.resolve(
         new Response(undefined, { status: 200, statusText: "Deleted" })
       )

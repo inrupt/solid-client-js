@@ -18,6 +18,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   applicable Resource's children _before_ the new ACL was created (i.e. defined in the fallback ACL)
   no longer applied after saving the new one. This is now fixed.
 
+### New features
+
+- `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
+  and a Container from the user's Pod, respectively.
+
 ## [0.4.0] - 2020-09-15
 
 ### Deprecations
