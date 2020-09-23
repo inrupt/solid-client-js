@@ -78,13 +78,16 @@ export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
-): Thing {
+): Thing | null {
   const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
   const scope: NamedNode | null = options.scope
     ? asNamedNode(options.scope)
     : null;
 
   const thingDataset = solidDataset.match(subject, null, null, scope);
+  if (thingDataset.size === 0) {
+    return null;
+  }
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
@@ -131,9 +134,12 @@ export function getThingAll(
     }
   }
 
-  const things: Thing[] = subjectNodes.map((subjectNode) =>
-    getThing(solidDataset, subjectNode, options)
-  );
+  const things: Thing[] = subjectNodes.map(
+    (subjectNode) => getThing(solidDataset, subjectNode, options)
+    // We can make the type assertion here because `getThing` only returns `null` if no data with
+    // the given subject node can be found, and in this case the subject node was extracted from
+    // existing data (i.e. that can be found by definition):
+  ) as Thing[];
 
   return things;
 }
@@ -245,31 +251,42 @@ function cloneLitStructs<Dataset extends SolidDataset>(
   return freshDataset as Dataset;
 }
 
-interface CreateThingLocalOptions {
+/** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL will be determined when it is saved. */
+export type CreateThingLocalOptions = {
   /**
    * The name that should be used for this [[Thing]] when constructing its URL.
    *
    * If not provided, a random one will be generated.
    */
   name?: string;
-}
-interface CreateThingPersistedOptions {
+};
+/** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL is already known. */
+export type CreateThingPersistedOptions = {
   /**
    * The URL of the newly created [[Thing]].
    */
   url: UrlString;
-}
+};
+/** The options you pass to [[createThing]].
+ * - To specify the URL for the initialised Thing, pass [[CreateThingPersistedOptions]].
+ * - To have the URL determined during the save, pass [[CreateThingLocalOptions]].
+ */
 export type CreateThingOptions =
   | CreateThingLocalOptions
   | CreateThingPersistedOptions;
 /**
- * Initialise a new [[Thing]] in memory.
+ * Initialise a new [[Thing]] in memory with a given URL.
  *
- * @param options See [[CreateThingOptions]].
+ * @param options See [[CreateThingPersistedOptions]] for how to specify the new [[Thing]]'s URL.
  */
 export function createThing(
   options: CreateThingPersistedOptions
 ): ThingPersisted;
+/**
+ * Initialise a new [[Thing]] in memory.
+ *
+ * @param options Optional parameters that affect the final URL of this [[Thing]] when saved.
+ */
 export function createThing(options?: CreateThingLocalOptions): ThingLocal;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {

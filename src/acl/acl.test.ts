@@ -499,7 +499,7 @@ describe("createAcl", () => {
 });
 
 describe("createAclFromFallbackAcl", () => {
-  it("creates a new ACL including existing default rules as Resource rules", () => {
+  it("creates a new ACL including existing default rules as Resource and default rules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
@@ -550,11 +550,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
@@ -616,11 +622,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
