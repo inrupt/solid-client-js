@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ### Breaking changes
 
 - All previously deprecated functions have been removed (their replacements are still available).
+- Previously, if no data with the given URL could be found, `getThing` would return a new, empty
+  Thing. From now on, it will return `null` in those situations.
 
 ### Bugs fixed
 
