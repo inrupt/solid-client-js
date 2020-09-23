@@ -207,6 +207,14 @@ async function prepareSolidDatasetCreation(
 /**
  * Given a SolidDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
  *
+ * A SolidDataset keeps track of the data changes compared to the data in the Pod; i.e.,
+ * the changelog tracks both the old value and new values of the property being modified. This
+ * function applies the changes to the current SolidDataset. If the old value specified in the
+ * changelog does not correspond to the value currently in the Pod, this function will throw an
+ * error.
+ * The SolidDataset returned by this function will be up-to-date with the data on the Pod after
+ * saving.
+ *
  * @param url URL to save `solidDataset` to.
  * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
