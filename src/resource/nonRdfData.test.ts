@@ -39,6 +39,7 @@ import {
   getFileWithAcl,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
+import { WithResourceInfo } from "../interfaces";
 
 describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
@@ -374,6 +375,37 @@ describe("Non-RDF data deletion", () => {
       );
 
     const response = await deleteFile("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched File as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 200, statusText: "Deleted" })
+        )
+      );
+
+    const mockFile: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://some.url",
+      },
+    };
+
+    const response = await deleteFile(mockFile, {
       fetch: mockFetch,
     });
 

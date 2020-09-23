@@ -195,7 +195,10 @@ export function hasResourceInfo<T>(
   resource: T
 ): resource is T & WithResourceInfo {
   const potentialResourceInfo = resource as T & WithResourceInfo;
-  return typeof potentialResourceInfo.internal_resourceInfo === "object";
+  return (
+    typeof potentialResourceInfo === "object" &&
+    typeof potentialResourceInfo.internal_resourceInfo === "object"
+  );
 }
 
 /** @internal */

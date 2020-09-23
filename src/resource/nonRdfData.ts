@@ -28,8 +28,13 @@ import {
   Url,
   UrlString,
   internal_toIriString,
+  hasResourceInfo,
 } from "../interfaces";
-import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
+import {
+  internal_parseResourceInfo,
+  internal_fetchAcl,
+  getSourceIri,
+} from "./resource";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;
@@ -116,26 +121,24 @@ export async function getFileWithAcl(
   return Object.assign(file, { internal_acl: acl });
 }
 
-const defaultSaveOptions = {
-  fetch: fetch,
-};
-
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.
  * ```
  * Deletes a file at a given URL.
  *
- * @param input The URL of the file to delete
+ * @param file The URL of the file to delete
  */
 export async function deleteFile(
-  input: Url | UrlString,
+  file: Url | UrlString | WithResourceInfo,
   options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<void> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
   };
-  const url = internal_toIriString(input);
+  const url = hasResourceInfo(file)
+    ? internal_toIriString(getSourceIri(file))
+    : internal_toIriString(file);
   const response = await config.fetch(url, {
     ...config.init,
     method: "DELETE",
