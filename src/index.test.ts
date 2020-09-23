@@ -35,9 +35,11 @@ import {
   getSourceUrl,
   getSourceIri,
   saveSolidDatasetAt,
+  deleteSolidDataset,
   createContainerAt,
   saveSolidDatasetInContainer,
   createContainerInContainer,
+  deleteContainer,
   saveAclFor,
   deleteAclFor,
   getThing,
@@ -161,9 +163,11 @@ it("exports the public API from the entry file", () => {
   expect(getSourceUrl).toBeDefined();
   expect(getSourceIri).toBeDefined();
   expect(saveSolidDatasetAt).toBeDefined();
+  expect(deleteSolidDataset).toBeDefined();
   expect(createContainerAt).toBeDefined();
   expect(saveSolidDatasetInContainer).toBeDefined();
   expect(createContainerInContainer).toBeDefined();
+  expect(deleteContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThing).toBeDefined();

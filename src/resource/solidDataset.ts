@@ -271,6 +271,33 @@ export async function saveSolidDatasetAt(
 }
 
 /**
+ * Deletes the SolidDataset at a given URL.
+ *
+ * @param file The (URL of the) SolidDataset to delete
+ */
+export async function deleteSolidDataset(
+  solidDataset: Url | UrlString | WithResourceInfo,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<void> {
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+  const url = hasResourceInfo(solidDataset)
+    ? internal_toIriString(getSourceUrl(solidDataset))
+    : internal_toIriString(solidDataset);
+  const response = await config.fetch(url, { method: "DELETE" });
+
+  if (!response.ok) {
+    throw new Error(
+      `Deleting the SolidDataset at \`${url}\` failed: ${response.status} ${response.statusText}.`
+    );
+  }
+}
+
+/**
  * Create an empty Container at the given URL.
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
@@ -536,6 +563,39 @@ export async function createContainerInContainer(
   });
 
   return resourceWithResourceInfo;
+}
+
+/**
+ * Deletes the Container at a given URL.
+ *
+ * @param file The (URL of the) Container to delete
+ */
+export async function deleteContainer(
+  container: Url | UrlString | WithResourceInfo,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<void> {
+  const url = hasResourceInfo(container)
+    ? internal_toIriString(getSourceUrl(container))
+    : internal_toIriString(container);
+  if (!url.endsWith("/")) {
+    throw new Error(
+      `You're trying to delete the Container at \`${url}\`, but Container URLs should end in a \`/\`. Are you sure this is a Container?`
+    );
+  }
+
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+  const response = await config.fetch(url, { method: "DELETE" });
+
+  if (!response.ok) {
+    throw new Error(
+      `Deleting the Container at \`${url}\` failed: ${response.status} ${response.statusText}.`
+    );
+  }
 }
 
 /**

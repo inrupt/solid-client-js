@@ -8,6 +8,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - All previously deprecated functions have been removed (their replacements are still available).
 
+### New features
+
+- `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
+  and a Container from the user's Pod, respectively.
+
 ## [0.4.0] - 2020-09-15
 
 ### Deprecations

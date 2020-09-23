@@ -43,6 +43,8 @@ import {
   createContainerInContainer,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
+  deleteSolidDataset,
+  deleteContainer,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -1014,6 +1016,96 @@ describe("saveSolidDatasetAt", () => {
   });
 });
 
+describe("deleteSolidDataset", () => {
+  it("should DELETE a remote SolidDataset using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteSolidDataset("https://some.url");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote SolidDataset using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched SolidDataset as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.url");
+
+    const response = await deleteSolidDataset(mockSolidDataset, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the SolidDataset at `https://some.url` failed: 400 Bad request"
+    );
+  });
+});
+
 describe("createContainerAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -1948,6 +2040,105 @@ describe("createContainerInContainer", () => {
 
     expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
+    );
+  });
+});
+
+describe("deleteContainer", () => {
+  it("should DELETE a remote Container using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteContainer("https://some.pod/container/");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote Container using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched Container as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockContainer = mockSolidDatasetFrom("https://some.pod/container/");
+
+    const response = await deleteContainer(mockContainer, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error when the target is not a Container", async () => {
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const deletionPromise = deleteContainer(mockSolidDataset);
+
+    await expect(deletionPromise).rejects.toThrow(
+      "You're trying to delete the Container at `https://some.pod/resource`, but Container URLs should end in a `/`. Are you sure this is a Container?"
+    );
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the Container at `https://some.pod/container/` failed: 400 Bad request"
     );
   });
 });
