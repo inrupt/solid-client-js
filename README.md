@@ -14,7 +14,7 @@
 `solid-client-authn` is a suite of libraries designed to authenticate with Solid identity servers.
 The libraries share a common API and include different modules for different deployment environments:
 
-[@inrupt/solid-client-authn-browser](https://github.com/inrupt/solid-client-authn-browser) allows apps running on a broswer to authenticate against a Solid server. This is necessary when the resources on your Pod are not public.
+[@inrupt/solid-client-authn-browser](https://github.com/inrupt/solid-client-authn-browser) allows apps running in a browser to authenticate against a Solid server. This is necessary when the resources on your Pod are not public.
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
 
