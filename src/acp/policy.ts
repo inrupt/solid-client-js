@@ -28,12 +28,24 @@ import {
   UrlString,
 } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
-import { saveSolidDatasetAt } from "../resource/solidDataset";
+import {
+  createSolidDataset,
+  saveSolidDatasetAt,
+} from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
 import { createThing, getThing, setThing } from "../thing/thing";
 
 export type PolicyDataset = SolidDataset;
 export type AccessPolicy = Thing;
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Initialise a new empty [[SolidDataset]] to story [[AccessPolicy]]'s in.
+ */
+export const createPolicyDataset = createSolidDataset;
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
