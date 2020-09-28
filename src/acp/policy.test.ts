@@ -35,8 +35,13 @@ import { rdf, acp } from "../constants";
 import { createSolidDataset } from "../resource/solidDataset";
 import { getUrl, getUrlAll } from "../thing/get";
 import { setUrl } from "../thing/set";
-import { createThing, getThing, setThing } from "../thing/thing";
-import { savePolicyDatasetAt } from "./policy";
+import { asUrl, createThing, getThing, setThing } from "../thing/thing";
+import {
+  createPolicy,
+  getPolicy,
+  getPolicyAll,
+  savePolicyDatasetAt,
+} from "./policy";
 
 const policyUrl = "https://some.pod/policy-resource";
 
@@ -86,5 +91,85 @@ describe("savePolicyDatasetAt", () => {
     await savePolicyDatasetAt(policyUrl, createSolidDataset());
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(policyUrl);
+  });
+});
+
+describe("createPolicy", () => {
+  it("creates a Thing of type acp:AccessPolicy", () => {
+    const newPolicy = createPolicy("https://some.pod/policy-resource#policy");
+
+    expect(getUrl(newPolicy, rdf.type)).toBe(acp.AccessPolicy);
+    expect(asUrl(newPolicy)).toBe("https://some.pod/policy-resource#policy");
+  });
+});
+
+describe("getPolicy", () => {
+  it("returns the Policy with the given URL", () => {
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    const policyDataset = setThing(createSolidDataset(), mockPolicy);
+
+    expect(
+      getPolicy(policyDataset, "https://some.pod/policy-resource#policy")
+    ).not.toBeNull();
+  });
+
+  it("returns null if the given URL identifies something that is not an Access Policy", () => {
+    let notAPolicy = createThing({
+      url: "https://some.pod/policy-resource#not-a-policy",
+    });
+    notAPolicy = setUrl(
+      notAPolicy,
+      rdf.type,
+      "https://arbitrary.vocab/not-a-policy"
+    );
+    const policyDataset = setThing(createSolidDataset(), notAPolicy);
+
+    expect(
+      getPolicy(policyDataset, "https://some.pod/policy-resource#not-a-policy")
+    ).toBeNull();
+  });
+
+  it("returns null if there is no Thing at the given URL", () => {
+    expect(
+      getPolicy(createSolidDataset(), "https://some.pod/policy-resource#policy")
+    ).toBeNull();
+  });
+});
+
+describe("getPolicyAll", () => {
+  it("returns included Policies", () => {
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    const policyDataset = setThing(createSolidDataset(), mockPolicy);
+
+    expect(getPolicyAll(policyDataset)).toHaveLength(1);
+  });
+
+  it("returns only those Things whose type is of acp:AccessPolicy", () => {
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    let notAPolicy = createThing({
+      url: "https://some.pod/policy-resource#not-a-policy",
+    });
+    notAPolicy = setUrl(
+      notAPolicy,
+      rdf.type,
+      "https://arbitrary.vocab/not-a-policy"
+    );
+    let policyDataset = setThing(createSolidDataset(), mockPolicy);
+    policyDataset = setThing(policyDataset, notAPolicy);
+
+    expect(getPolicyAll(policyDataset)).toHaveLength(1);
+  });
+
+  it("returns an empty array if there are no Thing in the given PolicyDataset", () => {
+    expect(getPolicyAll(createSolidDataset())).toHaveLength(0);
   });
 });
