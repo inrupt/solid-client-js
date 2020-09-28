@@ -241,12 +241,11 @@ export async function overwriteFile(
   }
 
   const blobClone = new Blob([file]);
-
   const resourceInfo = internal_parseResourceInfo(response);
+  resourceInfo.sourceIri = fileUrlString;
+  resourceInfo.isRawData = true;
 
-  return Object.assign(blobClone, {
-    internal_resourceInfo: resourceInfo,
-  });
+  return Object.assign(blobClone, { internal_resourceInfo: resourceInfo });
 }
 
 /**

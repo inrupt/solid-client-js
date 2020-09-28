@@ -693,6 +693,7 @@ describe("setThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -738,6 +739,7 @@ describe("setThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -967,6 +969,7 @@ describe("removeThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     aclDataset.add(thingQuad);
@@ -984,6 +987,7 @@ describe("removeThing", () => {
     expect(updatedDataset.internal_resourceInfo).toEqual({
       sourceIri: "https://arbitrary.pod/resource.acl",
       isRawData: false,
+      linkedResources: {},
     });
   });
 
@@ -1104,6 +1108,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1138,6 +1143,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );

@@ -402,6 +402,7 @@ describe("Non-RDF data deletion", () => {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://some.url",
+        linkedResources: {},
       },
     };
 
@@ -528,6 +529,7 @@ describe("Write non-RDF data into a folder", () => {
       contentType: undefined,
       sourceIri: "https://some.url/someFileName",
       isRawData: true,
+      linkedResources: {},
     });
   });
 
@@ -747,6 +749,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       contentType: undefined,
       sourceIri: "https://some.url",
       isRawData: true,
+      linkedResources: {},
     });
   });
 
@@ -767,17 +770,15 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   });
 
   it("should PUT a remote resource using the provided fetcher, and return the saved file", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, {
-            status: 201,
-            statusText: "Created",
-            url: "https://some.url",
-          } as ResponseInit)
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          url: "https://some.url",
+        } as ResponseInit)
+      )
+    );
 
     const savedFile = await overwriteFile("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -796,6 +797,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       contentType: undefined,
       sourceIri: "https://some.url",
       isRawData: true,
+      linkedResources: {},
     });
   });
 

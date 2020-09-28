@@ -62,6 +62,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -81,6 +84,7 @@ describe("fetchAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -114,6 +118,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -158,6 +165,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -486,15 +496,58 @@ describe("getResourceInfo", () => {
     );
   });
 
-  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+  it("exposes the URLs of linked Resources", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response(undefined, {
+        mockResponse(undefined, {
           headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
+            Link:
+              '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
           },
+          url: "https://some.pod",
         })
       )
+    );
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({
+      acl: ["https://some.pod/aclresource.acl"],
+      "http://www.w3.org/ns/solid/terms#podOwner": [
+        "https://some.pod/profile#WebId",
+      ],
+      alternate: ["https://some.pod/rss", "https://some.pod/atom"],
+    });
+  });
+
+  it("exposes when no Resources were linked", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(undefined, {
+        url: "https://arbitrary.pod",
+      })
+    );
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({});
+  });
+
+  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          Link: '<arbitrary-resource>; rel="not-acl"',
+        },
+        url: "https://arbitrary.pod",
+        // We need the type assertion because in non-mock situations,
+        // you cannot set the URL manually:
+      } as ResponseInit)
     );
 
     const solidDatasetInfo = await getResourceInfo(
@@ -648,6 +701,7 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -659,6 +713,7 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-container",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -682,6 +737,7 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -693,6 +749,7 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-soliddataset.png",
         isRawData: true,
+        linkedResources: {},
       },
     };
 
@@ -707,6 +764,7 @@ describe("getContentType", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         contentType: "multipart/form-data; boundary=something",
+        linkedResources: {},
       },
     };
 
@@ -720,6 +778,7 @@ describe("getContentType", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -733,6 +792,7 @@ describe("getSourceIri", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
+        linkedResources: {},
       },
     });
 

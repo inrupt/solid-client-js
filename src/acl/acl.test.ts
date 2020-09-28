@@ -75,6 +75,9 @@ describe("fetchResourceAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest
@@ -103,6 +106,9 @@ describe("fetchResourceAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -124,6 +130,7 @@ describe("fetchResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -138,6 +145,9 @@ describe("fetchResourceAcl", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -169,6 +179,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -204,6 +217,9 @@ describe("fetchFallbackAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -228,6 +244,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/with-acl/without-acl/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -296,6 +315,9 @@ describe("fetchFallbackAcl", () => {
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl:
           "https://arbitrary.pod/arbitrary-parent/no-control-access/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -326,6 +348,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
 
@@ -388,6 +413,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -396,6 +422,9 @@ describe("getResourceAcl", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toEqual(aclDataset);
@@ -407,6 +436,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -414,7 +444,10 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
-        unsafe_aclUrl: "https://arbitrary.pod/other-resource.acl",
+        aclUrl: "https://arbitrary.pod/other-resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/other-resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -426,6 +459,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -433,7 +467,10 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
-        unsafe_aclUrl: "https://arbitrary.pod/resource.acl",
+        aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -445,6 +482,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -458,6 +496,7 @@ describe("getFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -481,6 +520,9 @@ describe("createAcl", () => {
         sourceIri: "https://some.pod/container/resource",
         isRawData: false,
         aclUrl: "https://some.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     });
@@ -505,6 +547,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -543,6 +586,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -577,6 +623,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -615,6 +662,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -649,6 +699,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -687,6 +738,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -704,6 +758,7 @@ describe("getAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -795,6 +850,7 @@ describe("getAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1207,6 +1263,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1245,6 +1302,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1284,6 +1342,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1322,6 +1381,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1360,6 +1420,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1405,6 +1466,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1459,6 +1521,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1511,6 +1574,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/container/",
     });
@@ -1556,6 +1620,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1601,6 +1666,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1646,6 +1712,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1700,12 +1767,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1724,12 +1795,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1747,12 +1822,14 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: undefined as any,
+        linkedResources: {},
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1775,12 +1852,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1803,12 +1884,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://some-other.pod/resource",
     });
@@ -1829,12 +1914,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1859,12 +1948,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary-other.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1894,6 +1987,9 @@ describe("deleteAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1919,6 +2015,9 @@ describe("deleteAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1944,6 +2043,9 @@ describe("deleteAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1966,6 +2068,9 @@ describe("deleteAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1992,6 +2097,9 @@ describe("deleteAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 

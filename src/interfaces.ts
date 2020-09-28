@@ -116,10 +116,18 @@ export type WithResourceInfo = {
      * The URL reported by the server as possibly containing an ACL file. Note that this file might
      * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
      *
+     * `linkedResources`, which this property is redundant with, was added later.
+     * Thus, this one will be removed at some point.
+     *
      * @ignore We anticipate the Solid spec to change how the ACL gets accessed, which would result
      *         in this API changing as well.
      */
     aclUrl?: UrlString;
+    /**
+     * An object of the links in the `Link` header, keyed by their `rel`.
+     * @hidden
+     */
+    linkedResources: Record<string, string[]>;
     /**
      * Access permissions for the current user and the general public for this resource.
      *

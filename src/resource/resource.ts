@@ -154,6 +154,7 @@ export function internal_parseResourceInfo(
     sourceIri: response.url,
     isRawData: !isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
+    linkedResources: {},
   };
 
   const linkHeader = response.headers.get("Link");
@@ -167,6 +168,13 @@ export function internal_parseResourceInfo(
         resourceInfo.sourceIri
       ).href;
     }
+    // Parse all link headers and expose them in a standard way
+    // (this can replace the parsing of the ACL link above):
+    resourceInfo.linkedResources = parsedLinks.refs.reduce((rels, ref) => {
+      rels[ref.rel] ??= [];
+      rels[ref.rel].push(new URL(ref.uri, resourceInfo.sourceIri).href);
+      return rels;
+    }, resourceInfo.linkedResources);
   }
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
