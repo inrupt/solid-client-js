@@ -39,6 +39,7 @@ import {
   getThing,
   getThingAll,
   isThingLocal,
+  removeThing,
   setThing,
 } from "../thing/thing";
 
@@ -140,4 +141,39 @@ export function getPolicyAll(policyResource: PolicyDataset): Policy[] {
       getUrlAll(thing, rdf.type).includes(acp.AccessPolicy)
   ) as Policy[];
   return foundPolicies;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove the given [[Policy]] from the given [[PolicyDataset]].
+ *
+ * @param policyResource The Resource that contains Access Policies.
+ * @param policy The Access Policy to remove from the Access Policy Resource.
+ */
+export function removePolicy(
+  policyResource: PolicyDataset,
+  policy: Url | UrlString | Policy
+): PolicyDataset {
+  return removeThing(policyResource, policy);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Insert the given [[Policy]] into the given [[PolicyDataset]], replacing previous instances of that Policy.
+ *
+ * @param policyResource The Resource that contains Access Policies.
+ * @param policy The Access Policy to insert into the Access Policy Resource.
+ * @returns A new Access Policy Resource equal to the given Access Policy Resource, but with the given Access Policy.
+ */
+export function setPolicy(
+  policyResource: PolicyDataset,
+  policy: Policy
+): PolicyDataset {
+  return setThing(policyResource, policy);
 }

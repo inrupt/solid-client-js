@@ -34,13 +34,22 @@ import { Response } from "cross-fetch";
 import { rdf, acp } from "../constants";
 import { createSolidDataset } from "../resource/solidDataset";
 import { getUrl, getUrlAll } from "../thing/get";
+import { removeUrl } from "../thing/remove";
 import { setUrl } from "../thing/set";
-import { asUrl, createThing, getThing, setThing } from "../thing/thing";
+import {
+  asUrl,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import {
   createPolicy,
   getPolicy,
   getPolicyAll,
+  removePolicy,
   savePolicyDatasetAt,
+  setPolicy,
 } from "./policy";
 
 const policyUrl = "https://some.pod/policy-resource";
@@ -171,5 +180,75 @@ describe("getPolicyAll", () => {
 
   it("returns an empty array if there are no Thing in the given PolicyDataset", () => {
     expect(getPolicyAll(createSolidDataset())).toHaveLength(0);
+  });
+});
+
+describe("setPolicy", () => {
+  it("replaces existing instances of the set Access Policy", () => {
+    const somePredicate = "https://some.vocab/predicate";
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, somePredicate, "https://example.test");
+    const policyDataset = setThing(createSolidDataset(), mockPolicy);
+
+    const updatedPolicy = removeUrl(
+      mockPolicy,
+      somePredicate,
+      "https://example.test"
+    );
+
+    const updatedPolicyDataset = setPolicy(policyDataset, updatedPolicy);
+
+    const policyAfterUpdate = getPolicy(
+      updatedPolicyDataset,
+      "https://some.pod/policy-resource#policy"
+    );
+    expect(getUrl(policyAfterUpdate!, somePredicate)).toBeNull();
+  });
+});
+
+describe("removePolicy", () => {
+  it("removes the given Access Policy from the Access Policy Resource", () => {
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    const policyDataset = setThing(createSolidDataset(), mockPolicy);
+
+    const updatedPolicyDataset = removePolicy(policyDataset, mockPolicy);
+    expect(getThingAll(updatedPolicyDataset)).toHaveLength(0);
+  });
+
+  it("accepts a plain URL to remove an Access Policy", () => {
+    let mockPolicy = createThing({
+      url: "https://some.pod/policy-resource#policy",
+    });
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    const policyDataset = setThing(createSolidDataset(), mockPolicy);
+
+    const updatedPolicyDataset = removePolicy(
+      policyDataset,
+      "https://some.pod/policy-resource#policy"
+    );
+    expect(getThingAll(updatedPolicyDataset)).toHaveLength(0);
+  });
+
+  it("does not remove unrelated policies", () => {
+    let mockPolicy1 = createThing({
+      url: "https://some.pod/policy-resource#policy1",
+    });
+    mockPolicy1 = setUrl(mockPolicy1, rdf.type, acp.AccessPolicy);
+    let mockPolicy2 = createThing({
+      url: "https://some.pod/policy-resource#policy2",
+    });
+    mockPolicy2 = setUrl(mockPolicy2, rdf.type, acp.AccessPolicy);
+    let policyDataset = setThing(createSolidDataset(), mockPolicy1);
+    policyDataset = setThing(policyDataset, mockPolicy2);
+
+    const updatedPolicyDataset = removePolicy(policyDataset, mockPolicy1);
+
+    expect(getThingAll(updatedPolicyDataset)).toHaveLength(1);
   });
 });
