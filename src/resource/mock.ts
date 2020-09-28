@@ -54,6 +54,7 @@ export function mockSolidDatasetFrom(
       sourceIri: internal_toIriString(url),
       isRawData: false,
       contentType: "text/turtle",
+      linkedResources: {},
     },
   });
 
@@ -111,6 +112,7 @@ export function mockFileFrom(
       sourceIri: internal_toIriString(url),
       isRawData: true,
       contentType: options?.contentType,
+      linkedResources: {},
     },
   });
 

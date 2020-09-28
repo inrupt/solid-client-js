@@ -167,14 +167,15 @@ describe("getSolidDataset", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          Link: '<arbitrary-resource>; rel="not-acl"',
+        },
+        url: "https://arbitrary.pod",
+        // We need the type assertion because in non-mock situations,
+        // you cannot set the URL manually:
+      } as ResponseInit)
     );
 
     const solidDataset = await getSolidDataset(
@@ -671,6 +672,7 @@ describe("saveSolidDatasetAt", () => {
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
         sourceIri: fromUrl,
         isRawData: false,
+        linkedResources: {},
       };
 
       return Object.assign(mockDataset, {
@@ -1230,14 +1232,15 @@ describe("createContainerAt", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          Link: '<arbitrary-resource>; rel="not-acl"',
+        },
+        url: "https://arbitrary.pod",
+        // We need the type assertion because in non-mock situations,
+        // you cannot set the URL manually:
+      } as ResponseInit)
     );
 
     const solidDataset = await createContainerAt(

@@ -263,6 +263,7 @@ export function createAcl(
     internal_resourceInfo: {
       sourceIri: targetResource.internal_resourceInfo.aclUrl,
       isRawData: false,
+      linkedResources: {},
     },
   });
 

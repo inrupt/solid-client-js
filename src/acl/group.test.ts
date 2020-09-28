@@ -138,6 +138,7 @@ function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
     internal_resourceInfo: {
       sourceIri: sourceIri,
       isRawData: false,
+      linkedResources: {},
     },
   });
 }
