@@ -27,6 +27,8 @@ export {
   getContentType,
   getResourceInfo,
   getResourceInfoWithAcl,
+  getPodOwner,
+  isPodOwner,
 } from "./resource/resource";
 export {
   getFile,
