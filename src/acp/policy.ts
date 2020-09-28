@@ -23,7 +23,7 @@ import { acp, rdf } from "../constants";
 import {
   internal_toIriString,
   SolidDataset,
-  Thing,
+  ThingPersisted,
   Url,
   UrlString,
 } from "../interfaces";
@@ -32,18 +32,25 @@ import {
   createSolidDataset,
   saveSolidDatasetAt,
 } from "../resource/solidDataset";
+import { getUrl, getUrlAll } from "../thing/get";
 import { setUrl } from "../thing/set";
-import { createThing, getThing, setThing } from "../thing/thing";
+import {
+  createThing,
+  getThing,
+  getThingAll,
+  isThingLocal,
+  setThing,
+} from "../thing/thing";
 
 export type PolicyDataset = SolidDataset;
-export type AccessPolicy = Thing;
+export type Policy = ThingPersisted;
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Initialise a new empty [[SolidDataset]] to story [[AccessPolicy]]'s in.
+ * Initialise a new empty [[SolidDataset]] to story [[Policy]]'s in.
  */
 export const createPolicyDataset = createSolidDataset;
 
@@ -52,7 +59,7 @@ export const createPolicyDataset = createSolidDataset;
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Mark a given [[SolidDataset]] as containing [[AccessPolicy]]'s, and save it to the given URL.
+ * Mark a given [[SolidDataset]] as containing [[Policy]]'s, and save it to the given URL.
  *
  * @param url URL to save this Access Policy SolidDataset at.
  * @param dataset The SolidDataset containing Access Policies to save.
@@ -71,4 +78,66 @@ export async function savePolicyDatasetAt(
   dataset = setThing(dataset, datasetThing);
 
   return saveSolidDatasetAt(url, dataset, options);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Initialise a new, empty [[Policy]].
+ *
+ * @param url URL that identifies this Access Policy.
+ */
+export function createPolicy(url: Url | UrlString): Policy {
+  const stringUrl = internal_toIriString(url);
+  let policyThing = createThing({ url: stringUrl });
+  policyThing = setUrl(policyThing, rdf.type, acp.AccessPolicy);
+
+  return policyThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the [[Policy]] with the given URL from an [[PolicyDataset]].
+ *
+ * @param policyResource The Resource that contains the given Access Policy.
+ * @param url URL that identifies this Access Policy.
+ * @returns The requested Access Policy, if it exists, or `null` if it does not.
+ */
+export function getPolicy(
+  policyResource: PolicyDataset,
+  url: Url | UrlString
+): Policy | null {
+  const foundThing = getThing(policyResource, url);
+  if (
+    foundThing === null ||
+    getUrl(foundThing, rdf.type) !== acp.AccessPolicy
+  ) {
+    return null;
+  }
+
+  return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get all [[Policy]]'s in a given [[PolicyDataset]].
+ *
+ * @param policyResource The Resource that contains Access Policies.
+ */
+export function getPolicyAll(policyResource: PolicyDataset): Policy[] {
+  const foundThings = getThingAll(policyResource);
+  const foundPolicies = foundThings.filter(
+    (thing) =>
+      !isThingLocal(thing) &&
+      getUrlAll(thing, rdf.type).includes(acp.AccessPolicy)
+  ) as Policy[];
+  return foundPolicies;
 }

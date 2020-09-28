@@ -67,6 +67,21 @@ export interface GetThingOptions {
    **/
   scope?: Url | UrlString;
 }
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: UrlString | Url,
+  options?: GetThingOptions
+): ThingPersisted | null;
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: LocalNode,
+  options?: GetThingOptions
+): ThingLocal | null;
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: UrlString | Url | LocalNode,
+  options?: GetThingOptions
+): Thing | null;
 /**
  * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
  *
