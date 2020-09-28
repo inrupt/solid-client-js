@@ -30,6 +30,7 @@ import {
   hasResourceInfo,
   internal_toIriString,
   Url,
+  WebId,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -232,6 +233,59 @@ export function getSourceUrl(
 }
 /** @hidden Alias of getSourceUrl for those who prefer to use IRI terminology. */
 export const getSourceIri = getSourceUrl;
+
+/**
+ * Given a Resource that exposes information about the owner of the Pod it is in, returns the WebID of that owner.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The given Resource is the root of the Pod.
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns The WebID of the owner of the Pod the Resource is in, if provided, or `null` if not.
+ */
+export function getPodOwner(resource: WithResourceInfo): WebId | null {
+  if (!hasResourceInfo(resource)) {
+    return null;
+  }
+
+  const podOwners =
+    resource.internal_resourceInfo.linkedResources[
+      "http://www.w3.org/ns/solid/terms#podOwner"
+    ] ?? [];
+
+  return podOwners.length === 1 ? podOwners[0] : null;
+}
+
+/**
+ * Given a WebID and a Resource that exposes information about the owner of the Pod it is in, returns whether the given WebID is the owner of the Pod.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The given Resource is the root of the Pod.
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param webId The WebID of which to check whether it is the Pod Owner's.
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns Whether the given WebID is the Pod Owner's, if the Pod Owner is exposed, or `null` if it is not exposed.
+ */
+export function isPodOwner(
+  webId: WebId,
+  resource: WithResourceInfo
+): boolean | null {
+  const podOwner = getPodOwner(resource);
+
+  if (typeof podOwner !== "string") {
+    return null;
+  }
+
+  return podOwner === webId;
+}
 
 /**
  * Parse a WAC-Allow header into user and public access booleans.

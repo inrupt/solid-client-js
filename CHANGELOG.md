@@ -25,6 +25,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Previously, if no data with the given URL could be found, `getThing` would return a new, empty
   Thing. From now on, it will return `null` in those situations.
 
+### New features
+
+- `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
+  if supported by the Pod server and exposed to the current user.
+
 ### Bugs fixed
 
 - `createAclFromFallbackAcl` did not correctly initialise the new ACL: rules that applied to the

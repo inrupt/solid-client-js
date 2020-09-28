@@ -31,7 +31,13 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { internal_fetchAcl, getResourceInfo, getSourceIri } from "./resource";
+import {
+  internal_fetchAcl,
+  getResourceInfo,
+  getSourceIri,
+  getPodOwner,
+  isPodOwner,
+} from "./resource";
 
 import {
   isContainer,
@@ -802,5 +808,93 @@ describe("getSourceIri", () => {
 
   it("returns null if no source IRI is known", () => {
     expect(getSourceIri(new Blob())).toBeNull();
+  });
+});
+
+describe("getPodOwner", () => {
+  it("returns the Pod Owner when known", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBe("https://some.pod/profile#WebId");
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {
+          "not-pod-owner": ["https://arbitrary.url"],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBeNull();
+  });
+
+  it("returns null if no Resource Info is attached to the given Resource", () => {
+    expect(getPodOwner({} as WithResourceInfo)).toBeNull();
+  });
+});
+
+describe("isPodOwner", () => {
+  it("returns true when the Pod Owner is known and equal to the given WebID", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(isPodOwner("https://some.pod/profile#WebId", resourceInfo)).toBe(
+      true
+    );
+  });
+
+  it("returns false when the Pod Owner is known but not equal to the given WebID", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(
+      isPodOwner("https://some-other.pod/profile#WebId", resourceInfo)
+    ).toBe(false);
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {},
+      },
+    };
+
+    expect(
+      isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
+    ).toBeNull();
   });
 });
