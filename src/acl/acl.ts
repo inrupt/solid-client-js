@@ -294,18 +294,16 @@ export function createAclFromFallbackAcl(
     fallbackAclRules,
     resource.internal_acl.fallbackAcl.internal_accessTo
   );
-  const resourceAclRules = defaultAclRules.map((rule) => {
+  const newAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
     rule = removeAll(rule, acl.defaultForNew);
     rule = setIri(rule, acl.accessTo, getSourceUrl(resource));
+    rule = setIri(rule, acl.default, getSourceUrl(resource));
     return rule;
   });
 
   // Iterate over every ACL Rule we want to import, inserting them into `emptyResourceAcl` one by one:
-  const initialisedResourceAcl = resourceAclRules.reduce(
-    setThing,
-    emptyResourceAcl
-  );
+  const initialisedResourceAcl = newAclRules.reduce(setThing, emptyResourceAcl);
 
   return initialisedResourceAcl;
 }
@@ -582,6 +580,13 @@ export async function saveAclFor(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset & WithResourceInfo> {
+  if (!hasAccessibleAcl(resource)) {
+    throw new Error(
+      `Could not determine the location of the ACL for the Resource at \`${getSourceUrl(
+        resource
+      )}\`; possibly the current user does not have Control access to that Resource. Try calling \`hasAccessibleAcl()\` before calling \`saveAclFor()\`.`
+    );
+  }
   const savedDataset = await saveSolidDatasetAt(
     resource.internal_resourceInfo.aclUrl,
     resourceAcl,

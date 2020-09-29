@@ -44,3 +44,8 @@ export const rdf = {
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
 } as const;
+
+/** @internal */
+export const acp = {
+  AccessPolicyResource: "http://www.w3.org/ns/solid/acp#AccessPolicyResource",
+};

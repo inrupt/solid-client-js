@@ -499,7 +499,7 @@ describe("createAcl", () => {
 });
 
 describe("createAclFromFallbackAcl", () => {
-  it("creates a new ACL including existing default rules as Resource rules", () => {
+  it("creates a new ACL including existing default rules as Resource and default rules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
@@ -550,11 +550,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
@@ -616,11 +622,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
@@ -1727,6 +1739,29 @@ describe("saveAclFor", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
+  });
+
+  it("returns a meaningful error when it cannot determine where to save the ACL", async () => {
+    const withResourceInfo: WithAccessibleAcl = {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: undefined as any,
+      },
+    };
+    const aclResource: AclDataset = Object.assign(dataset(), {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource.acl",
+        isRawData: false,
+      },
+      internal_accessTo: "https://arbitrary.pod/resource",
+    });
+
+    const fetchPromise = saveAclFor(withResourceInfo, aclResource);
+
+    await expect(fetchPromise).rejects.toThrow(
+      "Could not determine the location of the ACL for the Resource at `https://arbitrary.pod/resource`; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
+    );
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {

@@ -67,6 +67,12 @@ describe.each([
       `${rootContainer}lit-pod-test.ttl#thing1`
     );
 
+    if (existingThing === null) {
+      throw new Error(
+        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing1\` exists.`
+      );
+    }
+
     expect(getStringNoLocale(existingThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
@@ -88,10 +94,11 @@ describe.each([
       savedDataset,
       `${rootContainer}lit-pod-test.ttl#thing1`
     );
-    expect(getStringNoLocale(savedThing, foaf.name)).toBe(
+    expect(savedThing).not.toBeNull();
+    expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
-    expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
+    expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
   });
 
   // FIXME: An NSS bug prevents it from understand our changing of booleans,
@@ -105,6 +112,12 @@ describe.each([
       dataset,
       `${rootContainer}lit-pod-test.ttl#thing2`
     );
+
+    if (existingThing === null) {
+      throw new Error(
+        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing2\` exists.`
+      );
+    }
 
     const currentValue = getBoolean(
       existingThing,
@@ -126,9 +139,13 @@ describe.each([
       savedDataset,
       `${rootContainer}lit-pod-test.ttl#thing2`
     );
+
     // See FIXME above to explain specific setup.
     // eslint-disable-next-line jest/no-standalone-expect
-    expect(getBoolean(savedThing, "https://example.com/boolean")).toBe(
+    expect(savedThing).not.toBeNull();
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(getBoolean(savedThing!, "https://example.com/boolean")).toBe(
       !currentValue
     );
   });
