@@ -101,6 +101,16 @@ describe("savePolicyDatasetAt", () => {
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(policyUrl);
   });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+
+    await savePolicyDatasetAt(policyUrl, createSolidDataset(), {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toBe(policyUrl);
+  });
 });
 
 describe("createPolicy", () => {
