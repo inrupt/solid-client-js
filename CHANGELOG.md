@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.5.0] - 2020-09-24
+
 ### Breaking changes
 
 - All previously deprecated functions have been removed (their replacements are still available).
