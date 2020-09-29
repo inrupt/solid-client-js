@@ -471,23 +471,34 @@ describe("Write non-RDF data into a folder", () => {
     type: "binary",
   } as Blob;
 
+  type MockFetch = jest.Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit?]
+  >;
+  function setMockOnFetch(
+    fetch: MockFetch,
+    saveResponse = new Response(undefined, {
+      status: 201,
+      statusText: "Created",
+      headers: { Location: "someFileName" },
+    }),
+    headResponse = new Response(undefined, {
+      status: 200,
+      url: "https://some.url/someFileName",
+    } as ResponseInit)
+  ): MockFetch {
+    fetch
+      .mockResolvedValueOnce(saveResponse)
+      .mockResolvedValueOnce(headResponse);
+    return fetch;
+  }
+
   it("should default to the included fetcher if no other is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
 
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "https://some.url/someFileName" },
-        })
-      )
-    );
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
 
     const response = await saveFileInContainer("https://some.url", mockBlob);
 
@@ -496,21 +507,10 @@ describe("Write non-RDF data into a folder", () => {
 
   it("should POST to a remote resource using the included fetcher, and return the saved file", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
 
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "someFileName" },
-        })
-      )
-    );
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
 
     const savedFile = await saveFileInContainer("https://some.url", mockBlob);
 
@@ -524,22 +524,15 @@ describe("Write non-RDF data into a folder", () => {
     expect(mockCall[1]?.method).toEqual("POST");
     expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(savedFile).toBeInstanceOf(Blob);
-    expect(savedFile.internal_resourceInfo).toEqual({
+    expect(savedFile!.internal_resourceInfo).toEqual({
+      contentType: undefined,
       sourceIri: "https://some.url/someFileName",
       isRawData: true,
     });
   });
 
   it("should use the provided fetcher if available", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "https://some.url/someFileName" },
-        })
-      )
-    );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     const response = await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -549,15 +542,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should POST a remote resource using the provided fetcher", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "https://some.url/someFileName" },
-        })
-      )
-    );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     const response = await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -572,15 +557,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should pass the suggested slug through", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "https://some.url/someFileName" },
-        })
-      )
-    );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     const savedFile = await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -598,14 +575,27 @@ describe("Write non-RDF data into a folder", () => {
     expect(mockCall[1]?.body).toEqual(mockBlob);
   });
 
+  it("returns null if the current user does not have Read access to the new file", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch = setMockOnFetch(
+      fetcher.fetch,
+      undefined,
+      new Response(undefined, { status: 403 })
+    );
+
+    const savedFile = await saveFileInContainer("https://some.url", mockBlob);
+
+    expect(savedFile).toBeNull();
+  });
+
   it("throws when a reserved header is passed", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
-      );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await expect(
       saveFileInContainer("https://some.url", mockBlob, {
@@ -620,13 +610,10 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("throws when saving failed", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 403, statusText: "Forbidden" })
-        )
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, { status: 403, statusText: "Forbidden" })
+    );
 
     await expect(
       saveFileInContainer("https://some.url", mockBlob, {
@@ -637,14 +624,59 @@ describe("Write non-RDF data into a folder", () => {
     );
   });
 
+  it("throws when the server returns a different location for the saved file", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, {
+        status: 201,
+        statusText: "Created",
+        headers: { Location: "someFileName" },
+      }),
+      new Response(undefined, {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+        url: "https://some.url/someOtherFileName",
+      } as ResponseInit)
+    );
+
+    await expect(
+      saveFileInContainer("https://some.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toThrow(
+      "Data integrity error: the server reports a URL of `https://some.url/someOtherFileName` for the file saved to `https://some.url/someFileName`."
+    );
+  });
+
+  it("throws when the server reports an RDF Content Type for the saved file", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, {
+        status: 201,
+        statusText: "Created",
+        headers: { Location: "someFileName" },
+      }),
+      new Response(undefined, {
+        status: 200,
+        headers: { "Content-Type": "text/turtle" },
+        url: "https://some.url/someFileName",
+      } as ResponseInit)
+    );
+
+    await expect(
+      saveFileInContainer("https://some.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toThrow(
+      "Data integrity error: the server reports that the file saved to `https://some.url/someFileName` is not a file."
+    );
+  });
+
   it("throws when the server did not return the location of the newly-saved file", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, { status: 201, statusText: "Created" })
+    );
 
     await expect(
       saveFileInContainer("https://some.url", mockBlob, {
@@ -690,7 +722,11 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     fetcher.fetch.mockReturnValue(
       Promise.resolve(
-        new Response(undefined, { status: 201, statusText: "Created" })
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          url: "https://some.url",
+        } as ResponseInit)
       )
     );
 
@@ -708,6 +744,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
+      contentType: undefined,
       sourceIri: "https://some.url",
       isRawData: true,
     });
@@ -734,7 +771,11 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       .fn(window.fetch)
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
+          new Response(undefined, {
+            status: 201,
+            statusText: "Created",
+            url: "https://some.url",
+          } as ResponseInit)
         )
       );
 
@@ -752,6 +793,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile.internal_resourceInfo).toEqual({
+      contentType: undefined,
       sourceIri: "https://some.url",
       isRawData: true,
     });
