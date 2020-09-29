@@ -28,6 +28,8 @@ import {
   Access,
   SolidDataset,
   hasResourceInfo,
+  internal_toIriString,
+  Url,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -179,8 +181,13 @@ export function internal_parseResourceInfo(
  * @param resource Resource for which to check whether it is a Container.
  * @returns Whether `resource` is a Container.
  */
-export function isContainer(resource: WithResourceInfo): boolean {
-  return getSourceUrl(resource).endsWith("/");
+export function isContainer(
+  resource: Url | UrlString | WithResourceInfo
+): boolean {
+  const containerUrl = hasResourceInfo(resource)
+    ? getSourceUrl(resource)
+    : internal_toIriString(resource);
+  return containerUrl.endsWith("/");
 }
 
 /**
