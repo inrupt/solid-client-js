@@ -664,6 +664,16 @@ describe("isContainer", () => {
 
     expect(isContainer(resourceInfo)).toBe(false);
   });
+
+  it("should recognise a Container's URL", () => {
+    expect(isContainer("https://arbitrary.pod/container/")).toBe(true);
+  });
+
+  it("should recognise non-Container URLs", () => {
+    expect(isContainer("https://arbitrary.pod/container/not-a-container")).toBe(
+      false
+    );
+  });
 });
 
 describe("isRawData", () => {

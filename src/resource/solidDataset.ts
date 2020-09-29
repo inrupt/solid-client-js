@@ -48,6 +48,7 @@ import {
   internal_fetchAcl,
   getSourceUrl,
   getResourceInfo,
+  isContainer,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -579,7 +580,7 @@ export async function deleteContainer(
   const url = hasResourceInfo(container)
     ? internal_toIriString(getSourceUrl(container))
     : internal_toIriString(container);
-  if (!url.endsWith("/")) {
+  if (!isContainer(container)) {
     throw new Error(
       `You're trying to delete the Container at \`${url}\`, but Container URLs should end in a \`/\`. Are you sure this is a Container?`
     );
