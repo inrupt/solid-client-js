@@ -49,6 +49,7 @@ import {
   getSourceUrl,
   getResourceInfo,
   isContainer,
+  isRawData,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -445,13 +446,13 @@ type SaveInContainerOptions = Partial<
  * @param containerUrl URL of the Container in which to create a new Resource.
  * @param solidDataset The [[SolidDataset]] to save to a new Resource in the given Container.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A Promise resolving to a [[SolidDataset]] containing the stored data linked to the new Resource, or rejecting if saving it failed.
+ * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or to `null` if the current user does not have Read access to the newly-created Resource. The Promise rejects if the save failed.
  */
 export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
   solidDataset: SolidDataset,
   options: SaveInContainerOptions = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo> {
+): Promise<(SolidDataset & WithResourceInfo) | null> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -491,14 +492,29 @@ export async function saveSolidDatasetInContainer(
 
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
-  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-    sourceIri: resourceIri,
-    isRawData: false,
-  };
+
+  let resourceInfo: WithResourceInfo;
+  try {
+    resourceInfo = await getResourceInfo(resourceIri, options);
+  } catch (e) {
+    return null;
+  }
+
+  if (getSourceUrl(resourceInfo) !== resourceIri) {
+    throw new Error(
+      `Data integrity error: the server reports a URL of \`${getSourceUrl(
+        resourceInfo
+      )}\` for the SolidDataset saved to \`${resourceIri}\`.`
+    );
+  }
+  if (isRawData(resourceInfo)) {
+    throw new Error(
+      `Data integrity error: the server reports that the SolidDataset saved to \`${resourceIri}\` is not a SolidDataset.`
+    );
+  }
+
   const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(solidDataset, {
-    internal_resourceInfo: resourceInfo,
-  });
+    WithResourceInfo = Object.assign(solidDataset, resourceInfo);
 
   const resourceWithResolvedIris = resolveLocalIrisInSolidDataset(
     resourceWithResourceInfo
@@ -520,7 +536,7 @@ export async function saveSolidDatasetInContainer(
 export async function createContainerInContainer(
   containerUrl: UrlString | Url,
   options: SaveInContainerOptions = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo> {
+): Promise<(SolidDataset & WithResourceInfo) | null> {
   containerUrl = internal_toIriString(containerUrl);
   const config = {
     ...internal_defaultFetchOptions,
@@ -554,15 +570,28 @@ export async function createContainerInContainer(
 
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
-  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-    sourceIri: resourceIri,
-    isRawData: false,
-  };
-  const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(dataset(), {
-    internal_resourceInfo: resourceInfo,
-  });
 
+  let resourceInfo: WithResourceInfo;
+  try {
+    resourceInfo = await getResourceInfo(resourceIri, options);
+  } catch (e) {
+    return null;
+  }
+  if (getSourceUrl(resourceInfo) !== resourceIri) {
+    throw new Error(
+      `Data integrity error: the server reports a URL of \`${getSourceUrl(
+        resourceInfo
+      )}\` for the Container saved to \`${resourceIri}\`.`
+    );
+  }
+  if (isRawData(resourceInfo)) {
+    throw new Error(
+      `Data integrity error: the server reports that the Container saved to \`${resourceIri}\` is not a Container.`
+    );
+  }
+
+  const resourceWithResourceInfo: SolidDataset &
+    WithResourceInfo = Object.assign(dataset(), resourceInfo);
   return resourceWithResourceInfo;
 }
 

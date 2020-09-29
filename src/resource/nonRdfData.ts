@@ -34,6 +34,8 @@ import {
   internal_parseResourceInfo,
   internal_fetchAcl,
   getSourceIri,
+  getResourceInfo,
+  isRawData,
 } from "./resource";
 
 type GetFileOptions = {
@@ -165,12 +167,13 @@ type SaveFileOptions = GetFileOptions & {
  * @param folderUrl The URL of the folder where the new file is saved.
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
+ * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
 export async function saveFileInContainer(
   folderUrl: Url | UrlString,
   file: Blob,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<(Blob & WithResourceInfo) | null> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
 
@@ -191,12 +194,26 @@ export async function saveFileInContainer(
 
   const blobClone = new Blob([file]);
 
-  return Object.assign(blobClone, {
-    internal_resourceInfo: {
-      sourceIri: fileIri,
-      isRawData: true,
-    },
-  });
+  let resourceInfo: WithResourceInfo;
+  try {
+    resourceInfo = await getResourceInfo(fileIri, options);
+  } catch (e) {
+    return null;
+  }
+
+  if (getSourceIri(resourceInfo) !== fileIri) {
+    throw new Error(
+      `Data integrity error: the server reports a URL of \`${getSourceIri(
+        resourceInfo
+      )}\` for the file saved to \`${fileIri}\`.`
+    );
+  }
+  if (!isRawData(resourceInfo)) {
+    throw new Error(
+      `Data integrity error: the server reports that the file saved to \`${fileIri}\` is not a file.`
+    );
+  }
+  return Object.assign(blobClone, resourceInfo);
 }
 
 /**
@@ -225,11 +242,10 @@ export async function overwriteFile(
 
   const blobClone = new Blob([file]);
 
+  const resourceInfo = internal_parseResourceInfo(response);
+
   return Object.assign(blobClone, {
-    internal_resourceInfo: {
-      sourceIri: fileUrlString,
-      isRawData: true,
-    },
+    internal_resourceInfo: resourceInfo,
   });
 }
 
