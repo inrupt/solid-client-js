@@ -584,11 +584,16 @@ export async function createContainerInContainer(
       )}\` for the Container saved to \`${resourceIri}\`.`
     );
   }
-  if (isRawData(resourceInfo)) {
-    throw new Error(
-      `Data integrity error: the server reports that the Container saved to \`${resourceIri}\` is not a Container.`
-    );
-  }
+  // Unfortunately, Node Solid Serve does not expose that a newly-created Container is RDF data on a HEAD request:
+  // https://github.com/solid/node-solid-server/issues/1481
+  // When that bug is fixed, this integrity check can be re-enabled,
+  // and the manual assignment to isRawData removed:
+  resourceInfo.internal_resourceInfo.isRawData = false;
+  // if (isRawData(resourceInfo)) {
+  //   throw new Error(
+  //     `Data integrity error: the server reports that the Container saved to \`${resourceIri}\` is not a Container.`
+  //   );
+  // }
 
   const resourceWithResourceInfo: SolidDataset &
     WithResourceInfo = Object.assign(dataset(), resourceInfo);
