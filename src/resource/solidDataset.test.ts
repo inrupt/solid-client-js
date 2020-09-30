@@ -2057,7 +2057,11 @@ describe("createContainerInContainer", () => {
     );
   });
 
-  it("throws when the server reports a non-RDF Content Type for the saved Container", async () => {
+  // Unfortunately a bug in Node Solid Server causes this integrity check to always fail,
+  // so it has been disabled:
+  // https://github.com/solid/node-solid-server/issues/1481
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("throws when the server reports a non-RDF Content Type for the saved Container", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
       new Response(undefined, {
