@@ -303,6 +303,7 @@ export function createThing(
  * @param options Optional parameters that affect the final URL of this [[Thing]] when saved.
  */
 export function createThing(options?: CreateThingLocalOptions): ThingLocal;
+export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
     const url = (options as CreateThingPersistedOptions).url;
