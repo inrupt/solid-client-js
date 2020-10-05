@@ -37,6 +37,7 @@ import {
   getSourceIri,
   getPodOwner,
   isPodOwner,
+  internal_cloneResource,
 } from "./resource";
 
 import {
@@ -46,6 +47,7 @@ import {
   getResourceInfoWithAcl,
 } from "./resource";
 import { WithResourceInfo, IriString } from "../interfaces";
+import { dataset } from "../rdfjs";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -896,5 +898,36 @@ describe("isPodOwner", () => {
     expect(
       isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
     ).toBeNull();
+  });
+});
+
+describe("cloneResource", () => {
+  it("returns a new but equal Dataset", () => {
+    const sourceObject = Object.assign(dataset(), { some: "property" });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal Blob", () => {
+    const sourceObject = Object.assign(new Blob(["Some text"]), {
+      some: "property",
+    });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal plain object", () => {
+    const sourceObject = { some: "property" };
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject).toEqual(sourceObject);
+    expect(clonedObject).not.toBe(sourceObject);
   });
 });

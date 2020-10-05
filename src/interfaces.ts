@@ -42,6 +42,17 @@ export type WebId = UrlString;
  * A SolidDataset represents all Quads from a single Resource.
  */
 export type SolidDataset = DatasetCore;
+
+/**
+ * A File is anything stored on a Pod in a format that solid-client does not have special affordances for, e.g. an image, or a plain JSON file.
+ */
+export type File = Blob;
+
+/**
+ * A Resource is something that can be fetched from a Pod - either structured data in a [[SolidDataset]], or any other [[File]].
+ */
+export type Resource = SolidDataset | File;
+
 /**
  * A Thing represents all Quads with a given Subject URL and a given Named
  * Graph, from a single Resource.
@@ -143,7 +154,7 @@ export type WithResourceInfo = {
 /**
  * @hidden Data structure to keep track of operations done by us; should not be read or manipulated by the developer.
  */
-export type WithChangeLog = {
+export type WithChangeLog = SolidDataset & {
   internal_changeLog: {
     additions: Quad[];
     deletions: Quad[];
@@ -169,7 +180,9 @@ export type WithAcl = {
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type WithResourceAcl<Resource extends WithAcl = WithAcl> = Resource & {
+export type WithResourceAcl<
+  ResourceExt extends WithAcl = WithAcl
+> = ResourceExt & {
   internal_acl: {
     resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
   };
@@ -181,7 +194,9 @@ export type WithResourceAcl<Resource extends WithAcl = WithAcl> = Resource & {
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type WithFallbackAcl<Resource extends WithAcl = WithAcl> = Resource & {
+export type WithFallbackAcl<
+  ResourceExt extends WithAcl = WithAcl
+> = ResourceExt & {
   internal_acl: {
     fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
   };
@@ -222,28 +237,14 @@ export function hasChangelog<T extends SolidDataset>(
 }
 
 /**
- * Verify whether a given SolidDataset was fetched together with its Access Control List.
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- *
- * @param dataset A [[SolidDataset]] that may have its ACLs attached.
- * @returns True if `dataset` was fetched together with its ACLs.
- */
-export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
-  const potentialAcl = dataset as T & WithAcl;
-  return typeof potentialAcl.internal_acl === "object";
-}
-
-/**
  * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
  *
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
 export type WithAccessibleAcl<
-  Resource extends WithResourceInfo = WithResourceInfo
-> = Resource & {
+  ResourceExt extends WithResourceInfo = WithResourceInfo
+> = ResourceExt & {
   internal_resourceInfo: {
     aclUrl: Exclude<
       WithResourceInfo["internal_resourceInfo"]["aclUrl"],
@@ -264,9 +265,9 @@ export type WithAccessibleAcl<
  * @param dataset A [[SolidDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
  */
-export function hasAccessibleAcl<Resource extends WithResourceInfo>(
-  dataset: Resource
-): dataset is WithAccessibleAcl<Resource> {
+export function hasAccessibleAcl<ResourceExt extends WithResourceInfo>(
+  dataset: ResourceExt
+): dataset is WithAccessibleAcl<ResourceExt> {
   return typeof dataset.internal_resourceInfo.aclUrl === "string";
 }
 

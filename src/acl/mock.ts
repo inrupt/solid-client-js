@@ -27,7 +27,7 @@ import {
   WithFallbackAcl,
   UrlString,
 } from "../interfaces";
-import { getSourceIri } from "../resource/resource";
+import { getSourceIri, internal_cloneResource } from "../resource/resource";
 import { createAcl, internal_getContainerPath } from "./acl";
 import { mockContainerFrom } from "../resource/mock";
 
@@ -50,7 +50,7 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
   const aclUrl =
     resource.internal_resourceInfo.aclUrl ?? "https://your.pod/mock-acl.ttl";
   const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
-    resource,
+    internal_cloneResource(resource),
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
@@ -96,7 +96,7 @@ export function addMockFallbackAclTo<T extends WithResourceInfo>(
   const aclDataset = createAcl(mockContainer);
 
   const resourceWithFallbackAcl: typeof resource &
-    WithFallbackAcl = Object.assign(resource, {
+    WithFallbackAcl = Object.assign(internal_cloneResource(resource), {
     internal_acl: {
       resourceAcl:
         ((resource as unknown) as WithAcl).internal_acl?.resourceAcl ?? null,
@@ -112,7 +112,7 @@ function setMockAclUrl<T extends WithResourceInfo>(
   aclUrl: UrlString
 ): T & WithAccessibleAcl {
   const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
-    resource,
+    internal_cloneResource(resource),
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
