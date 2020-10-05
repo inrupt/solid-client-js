@@ -50,6 +50,7 @@ import {
   getResourceInfo,
   isContainer,
   isRawData,
+  internal_cloneResource,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -260,7 +261,7 @@ export async function saveSolidDatasetAt(
   };
   const storedDataset: SolidDataset &
     WithChangeLog &
-    WithResourceInfo = Object.assign(solidDataset, {
+    WithResourceInfo = Object.assign(internal_cloneResource(solidDataset), {
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -514,7 +515,10 @@ export async function saveSolidDatasetInContainer(
   }
 
   const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(solidDataset, resourceInfo);
+    WithResourceInfo = Object.assign(
+    internal_cloneResource(solidDataset),
+    resourceInfo
+  );
 
   const resourceWithResolvedIris = resolveLocalIrisInSolidDataset(
     resourceWithResourceInfo
