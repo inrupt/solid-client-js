@@ -21,9 +21,22 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { hasLinkedAcr, WithLinkedAcpAccessControl } from "./control";
-import { acp } from "../constants";
+import {
+  createAccessControl,
+  getAccessControl,
+  getAccessControlAll,
+  hasLinkedAcr,
+  removeAccessControl,
+  setAccessControl,
+  WithLinkedAcpAccessControl,
+} from "./control";
+import { acp, rdf } from "../constants";
 import { WithAccessibleAcl, WithResourceInfo } from "../interfaces";
+import { getIri } from "../thing/get";
+import { createSolidDataset } from "../resource/solidDataset";
+import { createThing, getThing, setThing } from "../thing/thing";
+import { mockAcrFor } from "./mock";
+import { setUrl } from "../thing/set";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -65,5 +78,153 @@ describe("hasLinkedAcr", () => {
     };
 
     expect(hasLinkedAcr(withLinkedAcr)).toBe(false);
+  });
+});
+
+describe("createAccessControl", () => {
+  it("sets the type of the new Access Control to acp:AccessControl", () => {
+    const newAccessControl = createAccessControl();
+
+    expect(getIri(newAccessControl, rdf.type)).toBe(acp.AccessControl);
+  });
+});
+
+describe("getAccessControl", () => {
+  it("returns the Access Control if found", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = setUrl(
+      createThing({ url: accessControlUrl }),
+      rdf.type,
+      acp.AccessControl
+    );
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      accessControl
+    );
+
+    const foundAccessControl = getAccessControl(
+      accessControlResource,
+      accessControlUrl
+    );
+
+    expect(foundAccessControl).toEqual(accessControl);
+  });
+
+  it("returns null if the specified Thing is not an Access Control", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = createThing({ url: accessControlUrl });
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      accessControl
+    );
+
+    const foundAccessControl = getAccessControl(
+      accessControlResource,
+      accessControlUrl
+    );
+
+    expect(foundAccessControl).toBeNull();
+  });
+
+  it("returns null if the Access Control could not be found", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = createThing({ url: accessControlUrl });
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      accessControl
+    );
+
+    const foundAccessControl = getAccessControl(
+      accessControlResource,
+      "https://some-other.pod/access-control-resource.ttl#access-control"
+    );
+
+    expect(foundAccessControl).toBeNull();
+  });
+});
+
+describe("getAccessControlAll", () => {
+  it("returns all included Access Controls", () => {
+    const accessControl = setUrl(createThing(), rdf.type, acp.AccessControl);
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      accessControl
+    );
+
+    const foundAccessControls = getAccessControlAll(accessControlResource);
+
+    expect(foundAccessControls).toEqual([accessControl]);
+  });
+
+  it("ignores Things that are not Access Controls", () => {
+    const accessControl = setUrl(createThing(), rdf.type, acp.AccessControl);
+    const notAnAccessControl = setUrl(
+      createThing(),
+      rdf.type,
+      "https://some.vocab/not-access-control"
+    );
+    let accessControlResource = mockAcrFor("https://some.pod/resource");
+    accessControlResource = setThing(accessControlResource, accessControl);
+    accessControlResource = setThing(accessControlResource, notAnAccessControl);
+
+    const foundAccessControls = getAccessControlAll(accessControlResource);
+
+    expect(foundAccessControls).toEqual([accessControl]);
+  });
+
+  it("returns an empty array if no Access Controls could be found", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+
+    const foundAccessControl = getAccessControlAll(accessControlResource);
+
+    expect(foundAccessControl).toEqual([]);
+  });
+});
+
+describe("setAccessControl", () => {
+  it("adds the given Access Control to the given Access Control Resource", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = setUrl(
+      createThing({ url: accessControlUrl }),
+      rdf.type,
+      acp.AccessControl
+    );
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+
+    const newAccessControlResource = setAccessControl(
+      accessControlResource,
+      accessControl
+    );
+
+    expect(getThing(newAccessControlResource, accessControlUrl)).toEqual(
+      accessControl
+    );
+  });
+});
+
+describe("removeAccessControl", () => {
+  it("removes the given Access Control from the given Access Control Resource", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = setUrl(
+      createThing({ url: accessControlUrl }),
+      rdf.type,
+      acp.AccessControl
+    );
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      accessControl
+    );
+
+    const newAccessControlResource = removeAccessControl(
+      accessControlResource,
+      accessControl
+    );
+
+    expect(getThing(newAccessControlResource, accessControlUrl)).toBeNull();
   });
 });
