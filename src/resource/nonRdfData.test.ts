@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 
 jest.mock("../fetcher", () => ({
   fetch: jest
@@ -31,6 +31,7 @@ jest.mock("../fetcher", () => ({
     ),
 }));
 
+import type { Mock } from "jest-mock";
 import {
   getFile,
   deleteFile,
@@ -211,7 +212,7 @@ describe("getFileWithAcl", () => {
           : undefined;
       const init: ResponseInit & { url: string } = {
         headers: headers,
-        url: url,
+        url: url as string,
       };
       return Promise.resolve(new Response(undefined, init));
     });
@@ -470,7 +471,7 @@ describe("Non-RDF data deletion", () => {
 describe("Write non-RDF data into a folder", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
 
-  type MockFetch = jest.Mock<
+  type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
     [RequestInfo, RequestInit?]
   >;
@@ -577,10 +578,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("returns null if the current user does not have Read access to the new file", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
 
     fetcher.fetch = setMockOnFetch(
