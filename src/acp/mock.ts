@@ -19,9 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { UrlString, WithResourceInfo } from "../interfaces";
+import { UrlString } from "../interfaces";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { getSourceUrl } from "../resource/resource";
 import { AccessControlResource } from "./control";
 
 /**
