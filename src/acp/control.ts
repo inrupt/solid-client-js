@@ -219,6 +219,22 @@ export function addPolicyUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Get all Policies that apply to the Resource to which the given Access Control is linked, and
+ * which can be removed by anyone with Write access to the Access Control Resource that contains the
+ * Access Control.
+ *
+ * @param accessControl The Access Control of which to get the Policies.
+ * @returns The Policies that are listed in this Access Control as applying to the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
+ */
+export function getPolicyUrlAll(accessControl: AccessControl): UrlString[] {
+  return getIriAll(accessControl, acp.apply);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Add an Access Policy to an Access Control such that that Policy applies to the Resource to which
  * the Access Control is linked, and that it can only be removed by the current user and by the
  * owner of the Pod in which the Resource resides.
@@ -233,6 +249,24 @@ export function addConstantPolicyUrl(
 ): AccessControl {
   return addIri(accessControl, acp.applyConstant, policyUrl);
 }
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get all Policies that apply to the Resource to which the given Access Control is linked, and
+ * which can only be removed by the person who added the Policy to the Access Control or the owner
+ * of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to get the Policies.
+ * @returns The Policies that are listed in this Access Control as applying to the Resource it is linked to, and as removable only by whoever added the Policy or the Pod owner.
+ */
+export function getConstantPolicyUrlAll(
+  accessControl: AccessControl
+): UrlString[] {
+  return getIriAll(accessControl, acp.applyConstant);
+}
+
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
@@ -256,6 +290,24 @@ export function addMemberPolicyUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Get all Policies that apply to the children of the Resource to which the given Access Control is
+ * linked, and which can be removed by anyone with Write access to the Access Control Resource that
+ * contains the Access Control.
+ *
+ * @param accessControl The Access Control of which to get the Policies.
+ * @returns The Policies that are listed in this Access Control as applying to the children of the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
+ */
+export function getMemberPolicyUrlAll(
+  accessControl: AccessControl
+): UrlString[] {
+  return getIriAll(accessControl, acp.applyMembers);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Add an Access Policy to an Access Control such that that Policy applies to the children of the
  * Resource to which the Access Control is linked, and that it can only be removed by the current
  * user and by the owner of the Pod in which the Resource resides.
@@ -269,4 +321,21 @@ export function addConstantMemberPolicyUrl(
   policyUrl: Url | UrlString | ThingPersisted
 ): AccessControl {
   return addIri(accessControl, acp.applyMembersConstant, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get all Policies that apply to the children of the Resource to which the given Access Control is
+ * linked, and which can only be removed by the person who added the Policy to the Access Control or
+ * the owner of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to get the Policies.
+ * @returns The Policies that are listed in this Access Control as applying to the children of the Resource it is linked to, and as removable only by whoever added the Policy or the Pod owner.
+ */
+export function getConstantMemberPolicyUrlAll(
+  accessControl: AccessControl
+): UrlString[] {
+  return getIriAll(accessControl, acp.applyMembersConstant);
 }

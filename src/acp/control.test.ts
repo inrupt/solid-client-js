@@ -29,6 +29,10 @@ import {
   createAccessControl,
   getAccessControl,
   getAccessControlAll,
+  getConstantMemberPolicyUrlAll,
+  getConstantPolicyUrlAll,
+  getMemberPolicyUrlAll,
+  getPolicyUrlAll,
   hasLinkedAcr,
   removeAccessControl,
   setAccessControl,
@@ -41,6 +45,7 @@ import { createThing, getThing, setThing } from "../thing/thing";
 import { mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { DataFactory } from "n3";
+import { addIri } from "../thing/add";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -285,6 +290,49 @@ describe("addPolicyUrl", () => {
   });
 });
 
+describe("getPolicyUrlAll", () => {
+  it("returns all applicable policies", () => {
+    const policyUrl1 = "https://some.pod/policies.ttl#policy1";
+    const policyUrl2 = "https://some.pod/policies.ttl#policy2";
+    let control = createThing();
+    control = addIri(control, acp.apply, policyUrl1);
+    control = addIri(control, acp.apply, policyUrl2);
+
+    const policyUrls = getPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
+  });
+
+  it("does not return constant, member or constant member policies", () => {
+    const policyUrl = "https://some.pod/policies.ttl#policy";
+    const constantPolicyUrl = "https://some.pod/policies.ttl#constant-policy";
+    const memberPolicyUrl = "https://some.pod/policies.ttl#member-policy";
+    const constantMemberPolicyUrl =
+      "https://some.pod/policies.ttl#constant-member-policy";
+    let control = createThing();
+    control = addIri(control, acp.apply, policyUrl);
+    control = addIri(control, acp.applyConstant, constantPolicyUrl);
+    control = addIri(control, acp.applyMembers, memberPolicyUrl);
+    control = addIri(
+      control,
+      acp.applyMembersConstant,
+      constantMemberPolicyUrl
+    );
+
+    const policyUrls = getPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([policyUrl]);
+  });
+
+  it("returns an empty array if no policies were added to the Control yet", () => {
+    const control = createThing();
+
+    const policyUrls = getPolicyUrlAll(control);
+
+    expect(policyUrls).toHaveLength(0);
+  });
+});
+
 describe("addConstantPolicyUrl", () => {
   it("adds the given policy as a constant policy to the given Access Control", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
@@ -339,6 +387,49 @@ describe("addConstantPolicyUrl", () => {
   });
 });
 
+describe("getConstantPolicyUrlAll", () => {
+  it("returns all applicable constant policies", () => {
+    const policyUrl1 = "https://some.pod/policies.ttl#policy1";
+    const policyUrl2 = "https://some.pod/policies.ttl#policy2";
+    let control = createThing();
+    control = addIri(control, acp.applyConstant, policyUrl1);
+    control = addIri(control, acp.applyConstant, policyUrl2);
+
+    const policyUrls = getConstantPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
+  });
+
+  it("does not return regular, member or constant member policies", () => {
+    const policyUrl = "https://some.pod/policies.ttl#policy";
+    const constantPolicyUrl = "https://some.pod/policies.ttl#constant-policy";
+    const memberPolicyUrl = "https://some.pod/policies.ttl#member-policy";
+    const constantMemberPolicyUrl =
+      "https://some.pod/policies.ttl#constant-member-policy";
+    let control = createThing();
+    control = addIri(control, acp.apply, policyUrl);
+    control = addIri(control, acp.applyConstant, constantPolicyUrl);
+    control = addIri(control, acp.applyMembers, memberPolicyUrl);
+    control = addIri(
+      control,
+      acp.applyMembersConstant,
+      constantMemberPolicyUrl
+    );
+
+    const policyUrls = getConstantPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([constantPolicyUrl]);
+  });
+
+  it("returns an empty array if no constant policies were added to the Control yet", () => {
+    const control = createThing();
+
+    const policyUrls = getConstantPolicyUrlAll(control);
+
+    expect(policyUrls).toHaveLength(0);
+  });
+});
+
 describe("addMemberPolicyUrl", () => {
   it("adds the given policy as a member policy to the given Access Control", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
@@ -390,6 +481,49 @@ describe("addMemberPolicyUrl", () => {
     addMemberPolicyUrl(control, policyUrl);
 
     expect(getIriAll(control, acp.applyMembers)).not.toContain(policyUrl);
+  });
+});
+
+describe("getMemberPolicyUrlAll", () => {
+  it("returns all applicable member policies", () => {
+    const policyUrl1 = "https://some.pod/policies.ttl#policy1";
+    const policyUrl2 = "https://some.pod/policies.ttl#policy2";
+    let control = createThing();
+    control = addIri(control, acp.applyMembers, policyUrl1);
+    control = addIri(control, acp.applyMembers, policyUrl2);
+
+    const policyUrls = getMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
+  });
+
+  it("does not return regular, constant or constant member policies", () => {
+    const policyUrl = "https://some.pod/policies.ttl#policy";
+    const constantPolicyUrl = "https://some.pod/policies.ttl#constant-policy";
+    const memberPolicyUrl = "https://some.pod/policies.ttl#member-policy";
+    const constantMemberPolicyUrl =
+      "https://some.pod/policies.ttl#constant-member-policy";
+    let control = createThing();
+    control = addIri(control, acp.apply, policyUrl);
+    control = addIri(control, acp.applyConstant, constantPolicyUrl);
+    control = addIri(control, acp.applyMembers, memberPolicyUrl);
+    control = addIri(
+      control,
+      acp.applyMembersConstant,
+      constantMemberPolicyUrl
+    );
+
+    const policyUrls = getMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([memberPolicyUrl]);
+  });
+
+  it("returns an empty array if no member policies were added to the Control yet", () => {
+    const control = createThing();
+
+    const policyUrls = getMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toHaveLength(0);
   });
 });
 
@@ -456,5 +590,48 @@ describe("addConstantMemberPolicyUrl", () => {
     expect(getIriAll(control, acp.applyMembersConstant)).not.toContain(
       policyUrl
     );
+  });
+});
+
+describe("getConstantMemberPolicyUrlAll", () => {
+  it("returns all applicable constant member policies", () => {
+    const policyUrl1 = "https://some.pod/policies.ttl#policy1";
+    const policyUrl2 = "https://some.pod/policies.ttl#policy2";
+    let control = createThing();
+    control = addIri(control, acp.applyMembersConstant, policyUrl1);
+    control = addIri(control, acp.applyMembersConstant, policyUrl2);
+
+    const policyUrls = getConstantMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
+  });
+
+  it("does not return regular, constant or member policies", () => {
+    const policyUrl = "https://some.pod/policies.ttl#policy";
+    const constantPolicyUrl = "https://some.pod/policies.ttl#constant-policy";
+    const memberPolicyUrl = "https://some.pod/policies.ttl#member-policy";
+    const constantMemberPolicyUrl =
+      "https://some.pod/policies.ttl#constant-member-policy";
+    let control = createThing();
+    control = addIri(control, acp.apply, policyUrl);
+    control = addIri(control, acp.applyConstant, constantPolicyUrl);
+    control = addIri(control, acp.applyMembers, memberPolicyUrl);
+    control = addIri(
+      control,
+      acp.applyMembersConstant,
+      constantMemberPolicyUrl
+    );
+
+    const policyUrls = getConstantMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toEqual([constantMemberPolicyUrl]);
+  });
+
+  it("returns an empty array if no constant member policies were added to the Control yet", () => {
+    const control = createThing();
+
+    const policyUrls = getConstantMemberPolicyUrlAll(control);
+
+    expect(policyUrls).toHaveLength(0);
   });
 });
