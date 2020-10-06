@@ -22,6 +22,10 @@
 import { describe, it, expect } from "@jest/globals";
 
 import {
+  addConstantMemberPolicyUrl,
+  addConstantPolicyUrl,
+  addMemberPolicyUrl,
+  addPolicyUrl,
   createAccessControl,
   getAccessControl,
   getAccessControlAll,
@@ -32,11 +36,11 @@ import {
 } from "./control";
 import { acp, rdf } from "../constants";
 import { WithAccessibleAcl, WithResourceInfo } from "../interfaces";
-import { getIri } from "../thing/get";
-import { createSolidDataset } from "../resource/solidDataset";
+import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
 import { mockAcrFor } from "./mock";
-import { setUrl } from "../thing/set";
+import { setIri, setUrl } from "../thing/set";
+import { DataFactory } from "n3";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -226,5 +230,231 @@ describe("removeAccessControl", () => {
     );
 
     expect(getThing(newAccessControlResource, accessControlUrl)).toBeNull();
+  });
+});
+
+describe("addPolicyUrl", () => {
+  it("adds the given policy as a regular policy to the given Access Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(updatedControl, acp.apply)).toContain(policyUrl);
+  });
+
+  it("does not remove existing policies", () => {
+    const existingPolicyUrl = "https://some.pod/policy.ttl#some-other-policy";
+    const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = setIri(createThing(), acp.apply, existingPolicyUrl);
+
+    const updatedControl = addPolicyUrl(control, newPolicyUrl);
+
+    expect(getIriAll(updatedControl, acp.apply)).toContain(existingPolicyUrl);
+  });
+
+  it("accepts policy URLs as NamedNodes", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addPolicyUrl(
+      control,
+      DataFactory.namedNode(policyUrl)
+    );
+
+    expect(getIriAll(updatedControl, acp.apply)).toContain(policyUrl);
+  });
+
+  it("accepts policy URLs as Things with URLs", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const policy = createThing({ url: policyUrl });
+    const control = createThing();
+
+    const updatedControl = addPolicyUrl(control, policy);
+
+    expect(getIriAll(updatedControl, acp.apply)).toContain(policyUrl);
+  });
+
+  it("does not modify the input Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    addPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(control, acp.apply)).not.toContain(policyUrl);
+  });
+});
+
+describe("addConstantPolicyUrl", () => {
+  it("adds the given policy as a constant policy to the given Access Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addConstantPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyConstant)).toContain(policyUrl);
+  });
+
+  it("does not remove existing constant policies", () => {
+    const existingPolicyUrl = "https://some.pod/policy.ttl#some-other-policy";
+    const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = setIri(createThing(), acp.applyConstant, existingPolicyUrl);
+
+    const updatedControl = addConstantPolicyUrl(control, newPolicyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyConstant)).toContain(
+      existingPolicyUrl
+    );
+  });
+
+  it("accepts policy URLs as NamedNodes", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addConstantPolicyUrl(
+      control,
+      DataFactory.namedNode(policyUrl)
+    );
+
+    expect(getIriAll(updatedControl, acp.applyConstant)).toContain(policyUrl);
+  });
+
+  it("accepts policy URLs as Things with URLs", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const policy = createThing({ url: policyUrl });
+    const control = createThing();
+
+    const updatedControl = addConstantPolicyUrl(control, policy);
+
+    expect(getIriAll(updatedControl, acp.applyConstant)).toContain(policyUrl);
+  });
+
+  it("does not modify the input Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    addConstantPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(control, acp.applyConstant)).not.toContain(policyUrl);
+  });
+});
+
+describe("addMemberPolicyUrl", () => {
+  it("adds the given policy as a member policy to the given Access Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addMemberPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyMembers)).toContain(policyUrl);
+  });
+
+  it("does not remove existing member policies", () => {
+    const existingPolicyUrl = "https://some.pod/policy.ttl#some-other-policy";
+    const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = setIri(createThing(), acp.applyMembers, existingPolicyUrl);
+
+    const updatedControl = addMemberPolicyUrl(control, newPolicyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyMembers)).toContain(
+      existingPolicyUrl
+    );
+  });
+
+  it("accepts policy URLs as NamedNodes", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addMemberPolicyUrl(
+      control,
+      DataFactory.namedNode(policyUrl)
+    );
+
+    expect(getIriAll(updatedControl, acp.applyMembers)).toContain(policyUrl);
+  });
+
+  it("accepts policy URLs as Things with URLs", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const policy = createThing({ url: policyUrl });
+    const control = createThing();
+
+    const updatedControl = addMemberPolicyUrl(control, policy);
+
+    expect(getIriAll(updatedControl, acp.applyMembers)).toContain(policyUrl);
+  });
+
+  it("does not modify the input Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    addMemberPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(control, acp.applyMembers)).not.toContain(policyUrl);
+  });
+});
+
+describe("addConstantMemberPolicyUrl", () => {
+  it("adds the given policy as a constant member policy to the given Access Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addConstantMemberPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyMembersConstant)).toContain(
+      policyUrl
+    );
+  });
+
+  it("does not remove constant member existing policies", () => {
+    const existingPolicyUrl = "https://some.pod/policy.ttl#some-other-policy";
+    const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = setIri(
+      createThing(),
+      acp.applyMembersConstant,
+      existingPolicyUrl
+    );
+
+    const updatedControl = addConstantMemberPolicyUrl(control, newPolicyUrl);
+
+    expect(getIriAll(updatedControl, acp.applyMembersConstant)).toContain(
+      existingPolicyUrl
+    );
+  });
+
+  it("accepts policy URLs as NamedNodes", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    const updatedControl = addConstantMemberPolicyUrl(
+      control,
+      DataFactory.namedNode(policyUrl)
+    );
+
+    expect(getIriAll(updatedControl, acp.applyMembersConstant)).toContain(
+      policyUrl
+    );
+  });
+
+  it("accepts policy URLs as Things with URLs", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const policy = createThing({ url: policyUrl });
+    const control = createThing();
+
+    const updatedControl = addConstantMemberPolicyUrl(control, policy);
+
+    expect(getIriAll(updatedControl, acp.applyMembersConstant)).toContain(
+      policyUrl
+    );
+  });
+
+  it("does not modify the input Control", () => {
+    const policyUrl = "https://some.pod/policy.ttl#some-policy";
+    const control = createThing();
+
+    addConstantMemberPolicyUrl(control, policyUrl);
+
+    expect(getIriAll(control, acp.applyMembersConstant)).not.toContain(
+      policyUrl
+    );
   });
 });

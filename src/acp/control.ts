@@ -24,15 +24,16 @@ import {
   hasResourceInfo,
   SolidDataset,
   Thing,
+  ThingPersisted,
   Url,
   UrlString,
   WithResourceInfo,
 } from "../interfaces";
+import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { setIri } from "../thing/set";
 import {
   createThing,
-  CreateThingOptions,
   getThing,
   getThingAll,
   removeThing,
@@ -106,6 +107,10 @@ export type WithLinkedAcpAccessControl<
 };
 
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Initialise a new [[AccessControl]].
  */
 export function createAccessControl(
@@ -116,6 +121,10 @@ export function createAccessControl(
   return accessControl;
 }
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Find an [[AccessControl]] with a given URL in a given Access Control Resource.
  *
  * @returns The requested Access Control, or `null` if it could not be found.
@@ -136,6 +145,10 @@ export function getAccessControl(
   return foundThing;
 }
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Get all [[AccessControl]]s in a given Access Control Resource.
  */
 export function getAccessControlAll(
@@ -149,6 +162,10 @@ export function getAccessControlAll(
   );
 }
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Insert an [[AccessControl]] into an [[AccessControlResource]], replacing previous instances of that Access Control.
  *
  * @param accessControlResource The Access Control Resource to insert an Access Control into.
@@ -162,6 +179,10 @@ export function setAccessControl(
   return setThing(accessControlResource, accessControl);
 }
 /**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Remove an [[AccessControl]] from an [[AccessControlResource]].
  *
  * @param accessControlResource The Access Control Resource to remove an Access Control from.
@@ -173,4 +194,79 @@ export function removeAccessControl(
   accessControl: AccessControl
 ): AccessControlResource {
   return removeThing(accessControlResource, accessControl);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add an Access Policy to an Access Control such that that Policy applies to the Resource to which
+ * the Access Control is linked.
+ *
+ * @param accessControl The Access Control to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given policy added to it.
+ */
+export function addPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return addIri(accessControl, acp.apply, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add an Access Policy to an Access Control such that that Policy applies to the Resource to which
+ * the Access Control is linked, and that it can only be removed by the current user and by the
+ * owner of the Pod in which the Resource resides.
+ *
+ * @param accessControl The Access Control to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given policy added to it as a "Constant" Policy.
+ */
+export function addConstantPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return addIri(accessControl, acp.applyConstant, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add an Access Policy to an Access Control such that that Policy applies to the children of the
+ * Resource to which the Access Control is linked.
+ *
+ * @param accessControl The Access Control to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the children of the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given policy added to it as a Member Policy.
+ */
+export function addMemberPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return addIri(accessControl, acp.applyMembers, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add an Access Policy to an Access Control such that that Policy applies to the children of the
+ * Resource to which the Access Control is linked, and that it can only be removed by the current
+ * user and by the owner of the Pod in which the Resource resides.
+ *
+ * @param accessControl The Access Control to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the children of the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given policy added to it as a "Constant" Member Policy.
+ */
+export function addConstantMemberPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return addIri(accessControl, acp.applyMembersConstant, policyUrl);
 }
