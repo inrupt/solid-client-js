@@ -51,6 +51,7 @@ import {
   deleteAclFor,
   createAcl,
   internal_getContainerPath,
+  hasAcl,
 } from "./acl";
 import {
   WithResourceInfo,
@@ -59,6 +60,7 @@ import {
   AclDataset,
   Access,
   WithAccessibleAcl,
+  WithAcl,
 } from "../interfaces";
 
 function mockResponse(
@@ -403,6 +405,25 @@ describe("getContainerPath", () => {
 
   it("does not prefix a slash if the input did not do so either", () => {
     expect(internal_getContainerPath("container/resource")).toBe("container/");
+  });
+});
+
+describe("hasAcl", () => {
+  it("returns true if a Resource was fetched with its ACL Resources attached", () => {
+    const withAcl: WithAcl = {
+      internal_acl: {
+        resourceAcl: null,
+        fallbackAcl: null,
+      },
+    };
+
+    expect(hasAcl(withAcl)).toBe(true);
+  });
+
+  it("returns false if a Resource was fetched without its ACL Resources attached", () => {
+    const withoutAcl = {};
+
+    expect(hasAcl(withoutAcl)).toBe(false);
   });
 });
 

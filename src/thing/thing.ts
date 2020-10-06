@@ -44,15 +44,10 @@ import {
   LocalNode,
   ThingPersisted,
   WithChangeLog,
-  WithResourceInfo,
   hasChangelog,
   hasResourceInfo,
-  hasAcl,
-  WithAcl,
-  AclDataset,
 } from "../interfaces";
-import { internal_isAclDataset } from "../acl/acl";
-import { getSourceUrl } from "../resource/resource";
+import { getSourceUrl, internal_cloneResource } from "../resource/resource";
 import { getTermAll } from "./get";
 
 /**
@@ -171,6 +166,10 @@ export function setThing<Dataset extends SolidDataset>(
   thing: Thing
 ): Dataset & WithChangeLog {
   const newDataset = removeThing(solidDataset, thing);
+  newDataset.internal_changeLog = {
+    additions: [...newDataset.internal_changeLog.additions],
+    deletions: [...newDataset.internal_changeLog.deletions],
+  };
 
   for (const quad of thing) {
     newDataset.add(quad);
@@ -197,33 +196,33 @@ export function removeThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
   thing: UrlString | Url | LocalNode | Thing
 ): Dataset & WithChangeLog {
-  const newSolidDataset = withChangeLog(cloneLitStructs(solidDataset));
+  const newSolidDataset = withChangeLog(internal_cloneResource(solidDataset));
+  newSolidDataset.internal_changeLog = {
+    additions: [...newSolidDataset.internal_changeLog.additions],
+    deletions: [...newSolidDataset.internal_changeLog.deletions],
+  };
   const resourceIri: UrlString | undefined = hasResourceInfo(newSolidDataset)
     ? getSourceUrl(newSolidDataset)
     : undefined;
 
   const thingSubject = internal_toNode(thing);
-  // Copy every Quad from the input dataset into what is to be the output dataset,
-  // unless its Subject is the same as that of the Thing that is to be removed:
-  for (const quad of solidDataset) {
+  const existingQuads = Array.from(newSolidDataset);
+  existingQuads.forEach((quad) => {
     if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
       // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
-      newSolidDataset.add(quad);
-    } else if (
-      !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
-    ) {
-      newSolidDataset.add(quad);
-    } else if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
-      // If this Quad was added to the SolidDataset since it was fetched from the Pod,
-      // remove it from the additions rather than adding it to the deletions,
-      // to avoid asking the Pod to remove a Quad that does not exist there:
-      newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
-        (addition) => addition != quad
-      );
-    } else {
-      newSolidDataset.internal_changeLog.deletions.push(quad);
+      return;
     }
-  }
+    if (isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })) {
+      newSolidDataset.delete(quad);
+      if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
+        newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
+          (addition) => addition !== quad
+        );
+      } else {
+        newSolidDataset.internal_changeLog.deletions.push(quad);
+      }
+    }
+  });
   return newSolidDataset;
 }
 
@@ -232,38 +231,10 @@ function withChangeLog<Dataset extends SolidDataset>(
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
     ? solidDataset
-    : Object.assign(solidDataset, {
+    : Object.assign(internal_cloneResource(solidDataset), {
         internal_changeLog: { additions: [], deletions: [] },
       });
   return newSolidDataset;
-}
-
-function cloneLitStructs<Dataset extends SolidDataset>(
-  solidDataset: Dataset
-): Dataset {
-  const freshDataset = dataset();
-  if (hasChangelog(solidDataset)) {
-    (freshDataset as SolidDataset & WithChangeLog).internal_changeLog = {
-      additions: [...solidDataset.internal_changeLog.additions],
-      deletions: [...solidDataset.internal_changeLog.deletions],
-    };
-  }
-  if (hasResourceInfo(solidDataset)) {
-    (freshDataset as SolidDataset & WithResourceInfo).internal_resourceInfo = {
-      ...solidDataset.internal_resourceInfo,
-    };
-  }
-  if (hasAcl(solidDataset)) {
-    (freshDataset as SolidDataset & WithAcl).internal_acl = {
-      ...solidDataset.internal_acl,
-    };
-  }
-  if (internal_isAclDataset(solidDataset)) {
-    (freshDataset as AclDataset).internal_accessTo =
-      solidDataset.internal_accessTo;
-  }
-
-  return freshDataset as Dataset;
 }
 
 /** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL will be determined when it is saved. */

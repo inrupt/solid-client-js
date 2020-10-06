@@ -50,6 +50,7 @@ import {
   getSourceUrl,
   internal_defaultFetchOptions,
   getResourceInfo,
+  internal_cloneResource,
 } from "../resource/resource";
 import { addIri } from "..";
 
@@ -134,6 +135,20 @@ export function internal_getContainerPath(resourcePath: string): string {
     ) + "/";
 
   return containerPath;
+}
+
+/**
+ * Verify whether a given SolidDataset was fetched together with its Access Control List.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param dataset A [[SolidDataset]] that may have its ACLs attached.
+ * @returns True if `dataset` was fetched together with its ACLs.
+ */
+export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
+  const potentialAcl = dataset as T & WithAcl;
+  return typeof potentialAcl.internal_acl === "object";
 }
 
 /**
@@ -307,13 +322,6 @@ export function createAclFromFallbackAcl(
   const initialisedResourceAcl = newAclRules.reduce(setThing, emptyResourceAcl);
 
   return initialisedResourceAcl;
-}
-
-/** @internal */
-export function internal_isAclDataset(
-  dataset: SolidDataset
-): dataset is AclDataset {
-  return typeof (dataset as AclDataset).internal_accessTo === "string";
 }
 
 /** @internal */
@@ -641,7 +649,7 @@ export async function deleteAclFor<
     );
   }
 
-  const storedResource = Object.assign(resource, {
+  const storedResource = Object.assign(internal_cloneResource(resource), {
     acl: {
       resourceAcl: null,
     },

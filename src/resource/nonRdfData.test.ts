@@ -468,9 +468,7 @@ describe("Non-RDF data deletion", () => {
 });
 
 describe("Write non-RDF data into a folder", () => {
-  const mockBlob = {
-    type: "binary",
-  } as Blob;
+  const mockBlob = new Blob(["mock blob data"], { type: "binary" });
 
   type MockFetch = jest.Mock<
     ReturnType<typeof window.fetch>,
@@ -691,9 +689,7 @@ describe("Write non-RDF data into a folder", () => {
 });
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
-  const mockBlob = {
-    type: "binary",
-  } as Blob;
+  const mockBlob = new Blob(["mock blob data"], { type: "binary" });
 
   it("should default to the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
