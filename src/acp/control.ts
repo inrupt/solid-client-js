@@ -31,6 +31,7 @@ import {
 } from "../interfaces";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
+import { removeAll, removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
 import {
   createThing,
@@ -229,6 +230,42 @@ export function addPolicyUrl(
 export function getPolicyUrlAll(accessControl: AccessControl): UrlString[] {
   return getIriAll(accessControl, acp.apply);
 }
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove a given Policy that applies to the Resource to which the given Access Control is linked,
+ * and which can be removed by anyone with Write access to the Access Control Resource that contains
+ * the Access Control.
+ *
+ * @param accessControl The Access Control of which to remove the Policies.
+ * @param policyUrl URL of the Policy that should no longer apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given Policy removed from it.
+ */
+export function removePolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return removeIri(accessControl, acp.apply, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove all Policies that apply to the Resource to which the given Access Control is linked, and
+ * which can be removed by anyone with Write access to the Access Control Resource that contains the
+ * Access Control.
+ *
+ * @param accessControl The Access Control of which to remove the Policies.
+ * @returns A new Access Control equal to the given Access Control, but with all Policies removed from it.
+ */
+export function removePolicyUrlAll(
+  accessControl: AccessControl
+): AccessControl {
+  return removeAll(accessControl, acp.apply);
+}
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -266,6 +303,42 @@ export function getConstantPolicyUrlAll(
 ): UrlString[] {
   return getIriAll(accessControl, acp.applyConstant);
 }
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove a given Policy that applies to the Resource to which the given Access Control is linked,
+ * and which can only be removed by the person who added the Policy to the Access Control or the
+ * owner of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to remove the Constant Policy.
+ * @param policyUrl URL of the Constant Policy that should no longer apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given Constant Policy removed from it.
+ */
+export function removeConstantPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return removeIri(accessControl, acp.applyConstant, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove all Policies that apply to the Resource to which the given Access Control is linked, and
+ * which can only be removed by the person who added the Policy to the Access Control or the owner
+ * of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to remove the Policies.
+ * @returns A new Access Control equal to the given Access Control, but with all Constant Policies removed from it.
+ */
+export function removeConstantPolicyUrlAll(
+  accessControl: AccessControl
+): AccessControl {
+  return removeAll(accessControl, acp.applyConstant);
+}
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -301,6 +374,42 @@ export function getMemberPolicyUrlAll(
   accessControl: AccessControl
 ): UrlString[] {
   return getIriAll(accessControl, acp.applyMembers);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove a given Policy that applies to the children of the Resource to which the given Access
+ * Control is linked, and which can be removed by anyone with Write access to the Access Control
+ * Resource that contains the Access Control.
+ *
+ * @param accessControl The Access Control of which to remove the Member Policy.
+ * @param policyUrl URL of the Member Policy that should no longer apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given Member Policy removed from it.
+ */
+export function removeMemberPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return removeIri(accessControl, acp.applyMembers, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove all Policies that apply to the children of the Resource to which the given Access Control
+ * is linked, and which can be removed by anyone with Write access to the Access Control Resource
+ * that contains the Access Control.
+ *
+ * @param accessControl The Access Control of which to remove the Member Policies.
+ * @returns A new Access Control equal to the given Access Control, but with all Member Policies removed from it.
+ */
+export function removeMemberPolicyUrlAll(
+  accessControl: AccessControl
+): AccessControl {
+  return removeAll(accessControl, acp.applyMembers);
 }
 
 /**
@@ -338,4 +447,40 @@ export function getConstantMemberPolicyUrlAll(
   accessControl: AccessControl
 ): UrlString[] {
   return getIriAll(accessControl, acp.applyMembersConstant);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove a given Policy that applies to the children of the Resource to which the given Access
+ * Control is linked, and which can only be removed by the person who added the Policy to the Access
+ * Control or the owner of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to remove the Constant Member Policy.
+ * @param policyUrl URL of the Constant Member Policy that should no longer apply to the Resource to which the Access Control is linked.
+ * @returns A new Access Control equal to the given Access Control, but with the given Constant Member Policy removed from it.
+ */
+export function removeConstantMemberPolicyUrl(
+  accessControl: AccessControl,
+  policyUrl: Url | UrlString | ThingPersisted
+): AccessControl {
+  return removeIri(accessControl, acp.applyMembersConstant, policyUrl);
+}
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove all Policies that apply to the children of the Resource to which the given Access Control
+ * is linked, and which can only be removed by the person who added the Policy to the Access Control
+ * or the owner of the Pod that contains the Resource the Access Control is linked to.
+ *
+ * @param accessControl The Access Control of which to remove the Policies.
+ * @returns A new Access Control equal to the given Access Control, but with all Constant Member Policies removed from it.
+ */
+export function removeConstantMemberPolicyUrlAll(
+  accessControl: AccessControl
+): AccessControl {
+  return removeAll(accessControl, acp.applyMembersConstant);
 }
