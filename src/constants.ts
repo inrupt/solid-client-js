@@ -52,7 +52,5 @@ export const acp = {
   AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
   accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
   apply: "http://www.w3.org/ns/solid/acp#apply",
-  applyConstant: "http://www.w3.org/ns/solid/acp#applyConstant",
   applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
-  applyMembersConstant: "http://www.w3.org/ns/solid/acp#applyMembersConstant",
 } as const;
