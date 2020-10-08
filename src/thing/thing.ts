@@ -317,6 +317,7 @@ export function isThing<X>(input: X | Thing): input is Thing {
  */
 export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
 export function asUrl(thing: ThingPersisted): UrlString;
+export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
 export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
   if (isThingLocal(thing)) {
     if (typeof baseUrl === "undefined") {
