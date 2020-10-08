@@ -24,7 +24,7 @@ copyright = '2020-present, Inrupt Inc.'
 # -- product name -----
 # -- Separately update code samples and toc links and docs-navbar since not using substitutions--
 
-name = 'solid-client'
+name = 'solid-client API'
 repo_name = '{0}-js'.format(name)
 
 pygments_style = 'sphinx'
