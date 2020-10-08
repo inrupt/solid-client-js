@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- The type definition of `asUrl` caused the compiler to complain when passing it a Thing of which
+  the final URL was either known or not known yet, when using TypeScript.
+
 ## [0.5.0] - 2020-09-24
 
 ### Breaking changes

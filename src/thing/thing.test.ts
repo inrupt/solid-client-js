@@ -1200,6 +1200,16 @@ describe("asIri", () => {
     );
   });
 
+  it("accepts a Thing of which it is not known whether it is persisted yet", () => {
+    const thing: Thing = Object.assign(dataset(), {
+      internal_url: "https://some.pod/resource#thing",
+    });
+
+    expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
+      "https://some.pod/resource#thing"
+    );
+  });
+
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-name",
