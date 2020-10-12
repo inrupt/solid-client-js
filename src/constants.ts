@@ -49,4 +49,8 @@ export const foaf = {
 export const acp = {
   AccessPolicyResource: "http://www.w3.org/ns/solid/acp#AccessPolicyResource",
   AccessPolicy: "http://www.w3.org/ns/solid/acp#AccessPolicy",
-};
+  AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
+  accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
+  apply: "http://www.w3.org/ns/solid/acp#apply",
+  applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
+} as const;

@@ -27,15 +27,19 @@ import {
   hasAccessibleAcl,
   Access,
   SolidDataset,
+  File,
   hasResourceInfo,
   internal_toIriString,
   Url,
+  WebId,
+  Resource,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
 } from "../acl/acl";
+import { clone as cloneDataset } from "../rdfjs";
 
 /** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
@@ -154,6 +158,7 @@ export function internal_parseResourceInfo(
     sourceIri: response.url,
     isRawData: !isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
+    linkedResources: {},
   };
 
   const linkHeader = response.headers.get("Link");
@@ -167,6 +172,13 @@ export function internal_parseResourceInfo(
         resourceInfo.sourceIri
       ).href;
     }
+    // Parse all link headers and expose them in a standard way
+    // (this can replace the parsing of the ACL link above):
+    resourceInfo.linkedResources = parsedLinks.refs.reduce((rels, ref) => {
+      rels[ref.rel] ??= [];
+      rels[ref.rel].push(new URL(ref.uri, resourceInfo.sourceIri).href);
+      return rels;
+    }, resourceInfo.linkedResources);
   }
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
@@ -213,9 +225,9 @@ export function getContentType(resource: WithResourceInfo): string | null {
  * @returns The URL from which the Resource has been fetched, or null if it is not known.
  */
 export function getSourceUrl(resource: WithResourceInfo): string;
-export function getSourceUrl(resource: SolidDataset | Blob): string | null;
+export function getSourceUrl(resource: Resource): string | null;
 export function getSourceUrl(
-  resource: SolidDataset | Blob | WithResourceInfo
+  resource: Resource | WithResourceInfo
 ): string | null {
   if (hasResourceInfo(resource)) {
     return resource.internal_resourceInfo.sourceIri;
@@ -224,6 +236,103 @@ export function getSourceUrl(
 }
 /** @hidden Alias of getSourceUrl for those who prefer to use IRI terminology. */
 export const getSourceIri = getSourceUrl;
+
+/** @hidden Used to instantiate a separate instance from input parameters */
+export function internal_cloneResource<ResourceExt extends object>(
+  resource: ResourceExt
+): ResourceExt {
+  let clonedResource;
+  if (typeof (resource as File).slice === "function") {
+    // If given Resource is a File:
+    clonedResource = (resource as File).slice();
+  } else if (typeof (resource as SolidDataset).match === "function") {
+    // If given Resource is a SolidDataset:
+    // (We use the existince of a `match` method as a heuristic:)
+    clonedResource = cloneDataset(resource as SolidDataset);
+  } else {
+    // If it is just a plain object containing metadata:
+    clonedResource = { ...resource };
+  }
+
+  return Object.assign(
+    clonedResource,
+    // Although the RDF/JS data structures use classes and mutation,
+    // we only attach atomic properties that we never mutate.
+    // Hence, `copyNonClassProperties` is a heuristic that allows us to only clone our own data
+    // structures, rather than references to the same mutable instances of RDF/JS data structures:
+    copyNonClassProperties(resource)
+  ) as ResourceExt;
+}
+
+function copyNonClassProperties(source: object): object {
+  const copy: Record<string, unknown> = {};
+  Object.keys(source).forEach((key) => {
+    const value = (source as Record<string, unknown>)[key];
+    if (typeof value !== "object" || value === null) {
+      copy[key] = value;
+      return;
+    }
+    if (value.constructor.name !== "Object") {
+      return;
+    }
+    copy[key] = value;
+  });
+
+  return copy;
+}
+
+/**
+ * Given a Resource that exposes information about the owner of the Pod it is in, returns the WebID of that owner.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The given Resource is the root of the Pod.
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns The WebID of the owner of the Pod the Resource is in, if provided, or `null` if not.
+ */
+export function getPodOwner(resource: WithResourceInfo): WebId | null {
+  if (!hasResourceInfo(resource)) {
+    return null;
+  }
+
+  const podOwners =
+    resource.internal_resourceInfo.linkedResources[
+      "http://www.w3.org/ns/solid/terms#podOwner"
+    ] ?? [];
+
+  return podOwners.length === 1 ? podOwners[0] : null;
+}
+
+/**
+ * Given a WebID and a Resource that exposes information about the owner of the Pod it is in, returns whether the given WebID is the owner of the Pod.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The given Resource is the root of the Pod.
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param webId The WebID of which to check whether it is the Pod Owner's.
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns Whether the given WebID is the Pod Owner's, if the Pod Owner is exposed, or `null` if it is not exposed.
+ */
+export function isPodOwner(
+  webId: WebId,
+  resource: WithResourceInfo
+): boolean | null {
+  const podOwner = getPodOwner(resource);
+
+  if (typeof podOwner !== "string") {
+    return null;
+  }
+
+  return podOwner === webId;
+}
 
 /**
  * Parse a WAC-Allow header into user and public access booleans.

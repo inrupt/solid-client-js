@@ -19,24 +19,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "jsdom",
-  clearMocks: true,
-  collectCoverage: true,
-  coverageThreshold: {
-    global: {
-      branches: 100,
-      functions: 100,
-      lines: 100,
-      statements: 100,
-    },
-  },
-  coveragePathIgnorePatterns: ["/node_modules/", "<rootDir>/dist"],
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    // By default we only run unit tests:
-    "e2e.test.ts",
-  ],
-  injectGlobals: false,
-};
+import { describe, it, expect } from "@jest/globals";
+import { mockAcrFor } from "./mock";
+
+describe("mockAcrFor", () => {
+  it("should attach the URL of the Resource it applies to", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
+
+    expect(mockedAcr.accessTo).toBe("https://some.pod/resource");
+  });
+});

@@ -180,7 +180,7 @@ describe.each([
     );
 
     await deleteFile(`${rootContainer}container-test/some-container/`);
-    await deleteFile(getSourceUrl(newContainer2));
+    await deleteFile(getSourceUrl(newContainer2!));
   });
 
   it("should be able to read and update ACLs", async () => {

@@ -23,6 +23,7 @@ import {
   Url,
   UrlString,
   SolidDataset,
+  File,
   WithResourceInfo,
   internal_toIriString,
 } from "../interfaces";
@@ -54,6 +55,7 @@ export function mockSolidDatasetFrom(
       sourceIri: internal_toIriString(url),
       isRawData: false,
       contentType: "text/turtle",
+      linkedResources: {},
     },
   });
 
@@ -106,11 +108,12 @@ export function mockFileFrom(
   }>
 ): Unpromisify<ReturnType<typeof getFile>> {
   const file = new Blob();
-  const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(file, {
+  const fileWithResourceInfo: File & WithResourceInfo = Object.assign(file, {
     internal_resourceInfo: {
       sourceIri: internal_toIriString(url),
       isRawData: true,
       contentType: options?.contentType,
+      linkedResources: {},
     },
   });
 

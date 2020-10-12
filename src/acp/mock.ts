@@ -19,24 +19,29 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "jsdom",
-  clearMocks: true,
-  collectCoverage: true,
-  coverageThreshold: {
-    global: {
-      branches: 100,
-      functions: 100,
-      lines: 100,
-      statements: 100,
-    },
-  },
-  coveragePathIgnorePatterns: ["/node_modules/", "<rootDir>/dist"],
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    // By default we only run unit tests:
-    "e2e.test.ts",
-  ],
-  injectGlobals: false,
-};
+import { UrlString } from "../interfaces";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { AccessControlResource } from "./control";
+
+/**
+ *
+ * ```{warning}
+ * Do not use this function in production code.  For use in **unit tests** that require a
+ * [[AccessControlResource]].
+ * ```
+ *
+ * Initialises a new empty Access Control Resource for a given Resource for use
+ * in **unit tests**.
+ *
+ * @param resourceUrl The URL of the Resource to which the mocked ACR should apply.
+ * @returns The mocked empty Access Control Resource for the given Resource.
+ */
+export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
+  const acrUrl = new URL("access-control-resource", resourceUrl).href;
+  const acr: AccessControlResource = Object.assign(
+    mockSolidDatasetFrom(acrUrl),
+    { accessTo: resourceUrl }
+  );
+
+  return acr;
+}

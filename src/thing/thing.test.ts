@@ -693,6 +693,7 @@ describe("setThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -738,6 +739,7 @@ describe("setThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -967,6 +969,7 @@ describe("removeThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     aclDataset.add(thingQuad);
@@ -984,6 +987,7 @@ describe("removeThing", () => {
     expect(updatedDataset.internal_resourceInfo).toEqual({
       sourceIri: "https://arbitrary.pod/resource.acl",
       isRawData: false,
+      linkedResources: {},
     });
   });
 
@@ -1104,6 +1108,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1138,6 +1143,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1197,6 +1203,16 @@ describe("asIri", () => {
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
+    );
+  });
+
+  it("accepts a Thing of which it is not known whether it is persisted yet", () => {
+    const thing: Thing = Object.assign(dataset(), {
+      internal_url: "https://some.pod/resource#thing",
+    });
+
+    expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
+      "https://some.pod/resource#thing"
     );
   });
 

@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -31,7 +31,14 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { internal_fetchAcl, getResourceInfo, getSourceIri } from "./resource";
+import {
+  internal_fetchAcl,
+  getResourceInfo,
+  getSourceIri,
+  getPodOwner,
+  isPodOwner,
+  internal_cloneResource,
+} from "./resource";
 
 import {
   isContainer,
@@ -40,6 +47,7 @@ import {
   getResourceInfoWithAcl,
 } from "./resource";
 import { WithResourceInfo, IriString } from "../interfaces";
+import { dataset } from "../rdfjs";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -48,13 +56,15 @@ function mockResponse(
   return new Response(body, init);
 }
 
+type MockedFetch = jest.Mock<
+  ReturnType<typeof window.fetch>,
+  Parameters<typeof window.fetch>
+>;
+
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
     const mockResourceInfo: WithResourceInfo = {
@@ -62,6 +72,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -81,6 +94,7 @@ describe("fetchAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -104,7 +118,7 @@ describe("fetchAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
@@ -114,6 +128,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -148,7 +165,7 @@ describe("fetchAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
@@ -158,6 +175,9 @@ describe("fetchAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -184,7 +204,7 @@ describe("getResourceInfoWithAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
@@ -214,10 +234,7 @@ describe("getResourceInfoWithAcl", () => {
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
     await getResourceInfoWithAcl("https://some.pod/resource");
@@ -320,10 +337,7 @@ describe("getResourceInfoWithAcl", () => {
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
     await getResourceInfo("https://some.pod/resource");
@@ -486,16 +500,58 @@ describe("getResourceInfo", () => {
     );
   });
 
-  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+  it("exposes the URLs of linked Resources", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response(undefined, {
+        mockResponse(undefined, {
           headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
+            Link:
+              '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
           },
+          url: "https://some.pod",
         })
       )
     );
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({
+      acl: ["https://some.pod/aclresource.acl"],
+      "http://www.w3.org/ns/solid/terms#podOwner": [
+        "https://some.pod/profile#WebId",
+      ],
+      alternate: ["https://some.pod/rss", "https://some.pod/atom"],
+    });
+  });
+
+  it("exposes when no Resources were linked", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(undefined, {
+        url: "https://arbitrary.pod",
+      })
+    );
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({});
+  });
+
+  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
@@ -648,6 +704,7 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -659,6 +716,7 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-container",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -682,6 +740,7 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -693,6 +752,7 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-soliddataset.png",
         isRawData: true,
+        linkedResources: {},
       },
     };
 
@@ -707,6 +767,7 @@ describe("getContentType", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         contentType: "multipart/form-data; boundary=something",
+        linkedResources: {},
       },
     };
 
@@ -720,6 +781,7 @@ describe("getContentType", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -733,6 +795,7 @@ describe("getSourceIri", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
+        linkedResources: {},
       },
     });
 
@@ -742,5 +805,124 @@ describe("getSourceIri", () => {
 
   it("returns null if no source IRI is known", () => {
     expect(getSourceIri(new Blob())).toBeNull();
+  });
+});
+
+describe("getPodOwner", () => {
+  it("returns the Pod Owner when known", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBe("https://some.pod/profile#WebId");
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {
+          "not-pod-owner": ["https://arbitrary.url"],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBeNull();
+  });
+
+  it("returns null if no Resource Info is attached to the given Resource", () => {
+    expect(getPodOwner({} as WithResourceInfo)).toBeNull();
+  });
+});
+
+describe("isPodOwner", () => {
+  it("returns true when the Pod Owner is known and equal to the given WebID", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(isPodOwner("https://some.pod/profile#WebId", resourceInfo)).toBe(
+      true
+    );
+  });
+
+  it("returns false when the Pod Owner is known but not equal to the given WebID", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(
+      isPodOwner("https://some-other.pod/profile#WebId", resourceInfo)
+    ).toBe(false);
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {},
+      },
+    };
+
+    expect(
+      isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
+    ).toBeNull();
+  });
+});
+
+describe("cloneResource", () => {
+  it("returns a new but equal Dataset", () => {
+    const sourceObject = Object.assign(dataset(), { some: "property" });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal Blob", () => {
+    const sourceObject = Object.assign(new Blob(["Some text"]), {
+      some: "property",
+    });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal plain object", () => {
+    const sourceObject = { some: "property" };
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject).toEqual(sourceObject);
+    expect(clonedObject).not.toBe(sourceObject);
   });
 });
