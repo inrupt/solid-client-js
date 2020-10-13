@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
   and a Container from the user's Pod, respectively.
 
+## [0.5.1] - 2020-10-13
+
 ### Bugs fixed
 
 - The type definition of `asUrl` caused the compiler to complain when passing it a Thing of which
