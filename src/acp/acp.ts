@@ -23,10 +23,12 @@ import { acp } from "../constants";
 import {
   internal_toIriString,
   SolidDataset,
+  File,
   Url,
   UrlString,
   WithResourceInfo,
 } from "../interfaces";
+import { getFile } from "../resource/nonRdfData";
 import {
   getResourceInfo,
   getSourceUrl,
@@ -69,6 +71,35 @@ export async function getSolidDatasetWithAcp(
   const solidDataset = await getSolidDataset(urlString, config);
   const acp = await fetchAcp(solidDataset, config);
   return Object.assign(solidDataset, acp);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Fetch a file, its associated Access Control Resource (if available to the current user),
+ * and all the Access Control Policies referred to therein, if available to the current user.
+ *
+ * @param url URL of the file to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A file and the ACR that applies to it, if available to the authenticated user, and the APRs that are referred to therein, if available to the authenticated user.
+ */
+export async function getFileWithAcp(
+  url: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<File & WithAcp> {
+  const urlString = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const file = await getFile(urlString, config);
+  const acp = await fetchAcp(file, config);
+  return Object.assign(file, acp);
 }
 
 /**
