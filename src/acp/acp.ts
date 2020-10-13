@@ -28,6 +28,7 @@ import {
   WithResourceInfo,
 } from "../interfaces";
 import {
+  getResourceInfo,
   getSourceUrl,
   internal_defaultFetchOptions,
 } from "../resource/resource";
@@ -68,6 +69,36 @@ export async function getSolidDatasetWithAcp(
   const solidDataset = await getSolidDataset(urlString, config);
   const acp = await fetchAcp(solidDataset, config);
   return Object.assign(solidDataset, acp);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Retrieve information about a Resource, its associated Access Control Resource (if available to
+ * the current user), and all the Access Control Policies referred to therein, if available to the
+ * current user, without fetching the Resource itself.
+ *
+ * @param url URL of the Resource about which to fetch its information.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Metadata describing a Resource, and the ACR that applies to it, if available to the authenticated user, and the APRs that are referred to therein, if available to the authenticated user.
+ */
+export async function getResourceInfoWithAcp(
+  url: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<WithResourceInfo & WithAcp> {
+  const urlString = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const resourceInfo = await getResourceInfo(urlString, config);
+  const acp = await fetchAcp(resourceInfo, config);
+  return Object.assign(resourceInfo, acp);
 }
 
 export type WithAcp = {
