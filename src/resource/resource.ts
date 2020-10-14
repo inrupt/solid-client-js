@@ -100,15 +100,17 @@ export async function internal_fetchAcl(
       fallbackAcl: null,
     };
   }
-  const [resourceAcl, fallbackAcl] = await Promise.all([
-    internal_fetchResourceAcl(resourceInfo, options),
-    internal_fetchFallbackAcl(resourceInfo, options),
-  ]);
+  const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
 
-  return {
-    fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl,
-  };
+  const acl =
+    resourceAcl === null
+      ? {
+          resourceAcl: null,
+          fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
+        }
+      : { resourceAcl: resourceAcl, fallbackAcl: null };
+
+  return acl;
 }
 
 /**

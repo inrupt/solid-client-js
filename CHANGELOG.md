@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes have been implemented but not released yet:
 
+### Bugs fixed
+
+- All `get*WithAcl()` functions would always fetch _both_ the Resource's own ACL and its fallback
+  ACL, causing issues when the Resource is the Pod's root, but not at the root of the domain,
+  resulting in an attempt to find a fallback ACL for a Resource outside of the Pod. These functions
+  will now only attempt to fetch the Fallback ACL if the Resource's own ACL is not available. Hence,
+  only at most one of the two will be available at any time.
+
 The following sections document changes that have been released already:
 
 ## [0.6.0] - 2020-10-14
