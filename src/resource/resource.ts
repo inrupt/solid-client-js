@@ -286,7 +286,6 @@ function copyNonClassProperties(source: object): object {
  *
  * Data about the owner of the Pod is exposed when the following conditions hold:
  * - The Pod server supports exposing the Pod owner
- * - The given Resource is the root of the Pod.
  * - The current user is allowed to see who the Pod owner is.
  *
  * If one or more of those conditions are false, this function will return `null`.
@@ -313,7 +312,6 @@ export function getPodOwner(resource: WithResourceInfo): WebId | null {
  *
  * Data about the owner of the Pod is exposed when the following conditions hold:
  * - The Pod server supports exposing the Pod owner
- * - The given Resource is the root of the Pod.
  * - The current user is allowed to see who the Pod owner is.
  *
  * If one or more of those conditions are false, this function will return `null`.
