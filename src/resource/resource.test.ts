@@ -87,8 +87,6 @@ describe("fetchAcl", () => {
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource.acl"
     );
-    expect(mockedFetcher.fetch.mock.calls[1][0]).toEqual("https://some.pod/");
-    expect(mockedFetcher.fetch.mock.calls[1][1]?.method).toEqual("HEAD");
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
@@ -197,7 +195,7 @@ describe("fetchAcl", () => {
 });
 
 describe("getResourceInfoWithAcl", () => {
-  it("returns both the Resource's own ACL as well as its Container's", async () => {
+  it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
         url === "https://some.pod/resource"
@@ -225,6 +223,41 @@ describe("getResourceInfoWithAcl", () => {
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .sourceIri
     ).toBe("https://some.pod/resource.acl");
+    expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
+    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+  });
+
+  it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(new Response("Not found", { status: 404 }));
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url as string,
+        })
+      );
+    });
+
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .sourceIri

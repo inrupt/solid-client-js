@@ -180,10 +180,15 @@ export type WithChangeLog = SolidDataset & {
  * @hidden Developers should use [[getResourceAcl]] and [[getFallbackAcl]] to access these.
  */
 export type WithAcl = {
-  internal_acl: {
-    resourceAcl: AclDataset | null;
-    fallbackAcl: AclDataset | null;
-  };
+  internal_acl:
+    | {
+        resourceAcl: AclDataset;
+        fallbackAcl: null;
+      }
+    | {
+        resourceAcl: null;
+        fallbackAcl: AclDataset | null;
+      };
 };
 
 /**

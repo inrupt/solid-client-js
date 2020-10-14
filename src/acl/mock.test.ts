@@ -78,17 +78,6 @@ describe("addMockResourceAclTo", () => {
       "https://some.pod/arbitrary-location.acl"
     );
   });
-
-  it("preserves an already-attached fallback ACL", () => {
-    const mockedFile = mockFileFrom("https://some.pod/resource");
-    const mockedFileWithMockedFallbackAcl = addMockFallbackAclTo(mockedFile);
-
-    const mockedFileWithMockedResourceAcl = addMockResourceAclTo(
-      mockedFileWithMockedFallbackAcl
-    );
-
-    expect(hasFallbackAcl(mockedFileWithMockedResourceAcl)).toBe(true);
-  });
 });
 
 describe("addMockFallbackAclTo", () => {
@@ -124,16 +113,5 @@ describe("addMockFallbackAclTo", () => {
 
     expect(getFallbackAcl(mockedFileWithMockedAcl)).toBeDefined();
     expect(getFallbackAcl(mockedFileWithMockedAcl)).not.toBeNull();
-  });
-
-  it("preserves an already-attached resource ACL", () => {
-    const mockedFile = mockFileFrom("https://some.pod/resource");
-    const mockedFileWithMockedResourceAcl = addMockResourceAclTo(mockedFile);
-
-    const mockedFileWithMockedFallbackAcl = addMockFallbackAclTo(
-      mockedFileWithMockedResourceAcl
-    );
-
-    expect(hasResourceAcl(mockedFileWithMockedFallbackAcl)).toBe(true);
   });
 });

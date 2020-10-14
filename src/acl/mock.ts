@@ -64,9 +64,7 @@ export function addMockResourceAclTo<T extends WithServerResourceInfo>(
     WithResourceAcl = Object.assign(resourceWithAclUrl, {
     internal_acl: {
       resourceAcl: aclDataset,
-      fallbackAcl:
-        ((resourceWithAclUrl as unknown) as WithAcl).internal_acl
-          ?.fallbackAcl ?? null,
+      fallbackAcl: null,
     },
   });
 
@@ -98,8 +96,7 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   const resourceWithFallbackAcl: typeof resource &
     WithFallbackAcl = Object.assign(internal_cloneResource(resource), {
     internal_acl: {
-      resourceAcl:
-        ((resource as unknown) as WithAcl).internal_acl?.resourceAcl ?? null,
+      resourceAcl: null,
       fallbackAcl: aclDataset,
     },
   });
