@@ -293,6 +293,7 @@ function copyNonClassProperties(source: object): object {
  *
  * @param resource A Resource that contains information about the owner of the Pod it is in.
  * @returns The WebID of the owner of the Pod the Resource is in, if provided, or `null` if not.
+ * @since Not released yet.
  */
 export function getPodOwner(resource: WithResourceInfo): WebId | null {
   if (!hasResourceInfo(resource)) {
@@ -320,6 +321,7 @@ export function getPodOwner(resource: WithResourceInfo): WebId | null {
  * @param webId The WebID of which to check whether it is the Pod Owner's.
  * @param resource A Resource that contains information about the owner of the Pod it is in.
  * @returns Whether the given WebID is the Pod Owner's, if the Pod Owner is exposed, or `null` if it is not exposed.
+ * @since Not released yet.
  */
 export function isPodOwner(
   webId: WebId,
