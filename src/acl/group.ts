@@ -24,7 +24,7 @@ import {
   Access,
   AclRule,
   WithAcl,
-  WithResourceInfo,
+  WithServerResourceInfo,
   IriString,
   UrlString,
 } from "../interfaces";
@@ -57,7 +57,7 @@ import { acl } from "../constants";
  * @returns Access Modes that have been explicitly granted to the `group` for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getGroupAccess(
-  resourceInfo: WithAcl & WithResourceInfo,
+  resourceInfo: WithAcl & WithServerResourceInfo,
   group: UrlString
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
@@ -82,7 +82,7 @@ export function getGroupAccess(
  * @returns Access Modes per Group that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getGroupAccessAll(
-  resourceInfo: WithAcl & WithResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo
 ): Record<IriString, Access> | null {
   if (hasResourceAcl(resourceInfo)) {
     const resourceAcl = getResourceAcl(resourceInfo);

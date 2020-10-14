@@ -26,7 +26,7 @@ import {
   File,
   Url,
   UrlString,
-  WithResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { getFile } from "../resource/nonRdfData";
 import {
@@ -120,7 +120,7 @@ export async function getResourceInfoWithAcp(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo & WithAcp> {
+): Promise<WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
@@ -149,7 +149,7 @@ export type WithAccessibleAcr = WithAcp & {
 };
 
 async function fetchAcp(
-  resource: WithResourceInfo,
+  resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<WithAcp> {
   if (!hasLinkedAcr(resource)) {

@@ -43,7 +43,7 @@ import * as SolidDatasetModule from "../resource/solidDataset";
 import * as FileModule from "../resource/nonRdfData";
 import * as ResourceModule from "../resource/resource";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { File, UrlString, WithResourceInfo } from "../interfaces";
+import { File, UrlString, WithServerResourceInfo } from "../interfaces";
 import { AccessControlResource } from "./control";
 import { createThing, setThing } from "../thing/thing";
 import { addIri } from "../thing/add";
@@ -63,7 +63,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
   });
 
   let acr: AccessControlResource &
-    WithResourceInfo = Object.assign(
+    WithServerResourceInfo = Object.assign(
     mockSolidDatasetFrom(accessTo + "?ext=acr"),
     { accessTo: accessTo }
   );
@@ -357,15 +357,18 @@ describe("getFileWithAcp", () => {
   });
 
   it("returns an empty Object if no APRs were referenced", async () => {
-    const mockedFile: File & WithResourceInfo = Object.assign(new Blob(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/resource",
-        isRawData: true,
-        linkedResources: {
-          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    const mockedFile: File & WithServerResourceInfo = Object.assign(
+      new Blob(),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: true,
+          linkedResources: {
+            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+          },
         },
-      },
-    });
+      }
+    );
     const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
       policies: [],
       memberPolicies: [],
@@ -385,15 +388,18 @@ describe("getFileWithAcp", () => {
   });
 
   it("fetches all referenced ACPs once", async () => {
-    const mockedFile: File & WithResourceInfo = Object.assign(new Blob(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/resource",
-        isRawData: true,
-        linkedResources: {
-          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    const mockedFile: File & WithServerResourceInfo = Object.assign(
+      new Blob(),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: true,
+          linkedResources: {
+            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+          },
         },
-      },
-    });
+      }
+    );
     const mockedAcr = mockAcr("https://some.pod/resource", {
       policies: ["https://some.pod/policy-resource#a-policy"],
       memberPolicies: [
@@ -437,15 +443,18 @@ describe("getFileWithAcp", () => {
   });
 
   it("lists Access Policy Resources that could not be fetched as null", async () => {
-    const mockedFile: File & WithResourceInfo = Object.assign(new Blob(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/resource",
-        isRawData: true,
-        linkedResources: {
-          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    const mockedFile: File & WithServerResourceInfo = Object.assign(
+      new Blob(),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: true,
+          linkedResources: {
+            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+          },
         },
-      },
-    });
+      }
+    );
     const mockedAcr = mockAcr("https://some.pod/resource", {
       policies: ["https://some.pod/policy-resource#a-policy"],
       memberPolicies: [
@@ -478,15 +487,18 @@ describe("getFileWithAcp", () => {
   });
 
   it("does not add the ACR itself to the APR list", async () => {
-    const mockedFile: File & WithResourceInfo = Object.assign(new Blob(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/resource",
-        isRawData: true,
-        linkedResources: {
-          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    const mockedFile: File & WithServerResourceInfo = Object.assign(
+      new Blob(),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: true,
+          linkedResources: {
+            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+          },
         },
-      },
-    });
+      }
+    );
     const mockedAcr = mockAcr("https://some.pod/resource", {
       policies: ["https://some.pod/resource?ext=acr#a-policy"],
       memberPolicies: [
@@ -565,7 +577,7 @@ describe("getResourceInfoWithAcp", () => {
   });
 
   it("returns an empty Object if no APRs were referenced", async () => {
-    const mockedResourceInfo: WithResourceInfo = {
+    const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
@@ -597,7 +609,7 @@ describe("getResourceInfoWithAcp", () => {
   });
 
   it("fetches all referenced ACPs once", async () => {
-    const mockedResourceInfo: WithResourceInfo = {
+    const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
@@ -653,7 +665,7 @@ describe("getResourceInfoWithAcp", () => {
   });
 
   it("lists Access Policy Resources that could not be fetched as null", async () => {
-    const mockedResourceInfo: WithResourceInfo = {
+    const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
@@ -696,7 +708,7 @@ describe("getResourceInfoWithAcp", () => {
   });
 
   it("does not add the ACR itself to the APR list", async () => {
-    const mockedResourceInfo: WithResourceInfo = {
+    const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,

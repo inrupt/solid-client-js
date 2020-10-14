@@ -673,7 +673,6 @@ describe("saveSolidDatasetAt", () => {
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
         sourceIri: fromUrl,
         isRawData: false,
-        linkedResources: {},
       };
 
       return Object.assign(mockDataset, {
@@ -1575,18 +1574,9 @@ describe("saveSolidDatasetInContainer", () => {
       status: 201,
       statusText: "Created",
       headers: { Location: "resource" },
-    }),
-    headResponse = new Response(undefined, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/turtle",
-      },
-      url: "https://some.pod/resource",
-    } as ResponseInit)
+    })
   ): MockFetch {
-    fetch
-      .mockResolvedValueOnce(saveResponse)
-      .mockResolvedValueOnce(headResponse);
+    fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
@@ -1594,13 +1584,12 @@ describe("saveSolidDatasetInContainer", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: MockFetch;
     };
-    mockedFetcher.fetch = setMockOnFetch(mockedFetcher.fetch);
 
     await saveSolidDatasetInContainer("https://some.pod/container/", dataset());
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(2);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -1616,7 +1605,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -1671,54 +1660,6 @@ describe("saveSolidDatasetInContainer", () => {
       new Error(
         "Could not determine the location of the newly saved SolidDataset."
       )
-    );
-  });
-
-  it("throws when the server returns a different location for the saved SolidDataset", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      new Response(undefined, {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "someResource" },
-      }),
-      new Response(undefined, {
-        status: 200,
-        headers: { "Content-Type": "text/plain" },
-        url: "https://some.url/someOtherResource",
-      } as ResponseInit)
-    );
-
-    await expect(
-      saveSolidDatasetInContainer("https://some.url", dataset(), {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      "Data integrity error: the server reports a URL of `https://some.url/someOtherResource` for the SolidDataset saved to `https://some.url/someResource`."
-    );
-  });
-
-  it("throws when the server reports a non-RDF Content Type for the saved SolidDataset", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      new Response(undefined, {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "someResource" },
-      }),
-      new Response(undefined, {
-        status: 200,
-        headers: { "Content-Type": "image/png" },
-        url: "https://some.url/someResource",
-      } as ResponseInit)
-    );
-
-    await expect(
-      saveSolidDatasetInContainer("https://some.url", dataset(), {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      "Data integrity error: the server reports that the SolidDataset saved to `https://some.url/someResource` is not a SolidDataset."
     );
   });
 
@@ -1826,11 +1767,7 @@ describe("saveSolidDatasetInContainer", () => {
       jest.fn(window.fetch),
       new Response("Arbitrary response", {
         headers: { Location: "https://some.pod/container/resource" },
-      }),
-      new Response("Arbitrary response", {
-        headers: { "Content-Type": "text/turtle" },
-        url: "https://some.pod/container/resource",
-      } as ResponseInit)
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1886,11 +1823,7 @@ describe("saveSolidDatasetInContainer", () => {
       jest.fn(window.fetch),
       new Response("Arbitrary response", {
         headers: { Location: "/container/resource" },
-      }),
-      new Response(undefined, {
-        headers: { "Content-Type": "text/turtle" },
-        url: "https://some.pod/container/resource",
-      } as ResponseInit)
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1905,24 +1838,6 @@ describe("saveSolidDatasetInContainer", () => {
       "https://some.pod/container/resource"
     );
   });
-
-  it("returns null if the current user does not have Read access to the newly-created Resource", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      undefined,
-      new Response(undefined, { status: 403 })
-    );
-
-    const savedSolidDataset = await saveSolidDatasetInContainer(
-      "https://some.pod/container/",
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    expect(savedSolidDataset).toBeNull();
-  });
 });
 
 describe("createContainerInContainer", () => {
@@ -1936,18 +1851,9 @@ describe("createContainerInContainer", () => {
       status: 201,
       statusText: "Created",
       headers: { Location: "child" },
-    }),
-    headResponse = new Response(undefined, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/turtle",
-      },
-      url: "https://some.pod/child",
-    } as ResponseInit)
+    })
   ): MockFetch {
-    fetch
-      .mockResolvedValueOnce(saveResponse)
-      .mockResolvedValueOnce(headResponse);
+    fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
@@ -1961,7 +1867,7 @@ describe("createContainerInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(2);
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -1973,7 +1879,7 @@ describe("createContainerInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -2033,58 +1939,6 @@ describe("createContainerInContainer", () => {
     );
   });
 
-  it("throws when the server returns a different location for the saved Container", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      new Response(undefined, {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "child" },
-      }),
-      new Response(undefined, {
-        status: 200,
-        headers: { "Content-Type": "text/plain" },
-        url: "https://some.pod/other-child",
-      } as ResponseInit)
-    );
-
-    await expect(
-      createContainerInContainer("https://some.pod/", {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      "Data integrity error: the server reports a URL of `https://some.pod/other-child` for the Container saved to `https://some.pod/child`."
-    );
-  });
-
-  // Unfortunately a bug in Node Solid Server causes this integrity check to always fail,
-  // so it has been disabled:
-  // https://github.com/solid/node-solid-server/issues/1481
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip("throws when the server reports a non-RDF Content Type for the saved Container", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      new Response(undefined, {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "child" },
-      }),
-      new Response(undefined, {
-        status: 200,
-        headers: { "Content-Type": "image/png" },
-        url: "https://some.pod/child",
-      } as ResponseInit)
-    );
-
-    await expect(
-      createContainerInContainer("https://some.pod/", {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      "Data integrity error: the server reports that the Container saved to `https://some.pod/child` is not a Container."
-    );
-  });
-
   it("sends the right headers to create a Container", async () => {
     const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
@@ -2138,11 +1992,7 @@ describe("createContainerInContainer", () => {
         headers: {
           Location: "https://some.pod/parent-container/child-container/",
         },
-      }),
-      new Response(undefined, {
-        headers: { "Content-Type": "text/turtle" },
-        url: "https://some.pod/parent-container/child-container/",
-      } as ResponseInit)
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -2164,11 +2014,7 @@ describe("createContainerInContainer", () => {
         headers: {
           Location: "parent-container/child-container/",
         },
-      }),
-      new Response(undefined, {
-        headers: { "Content-Type": "text/turtle" },
-        url: "https://some.pod/parent-container/child-container/",
-      } as ResponseInit)
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -2181,27 +2027,6 @@ describe("createContainerInContainer", () => {
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
     );
-  });
-
-  it("returns null if the current user does not have Read access to the newly-created Container", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
-      new Response("Arbitrary response", {
-        headers: {
-          Location: "https://some.pod/parent-container/child-container/",
-        },
-      }),
-      new Response(undefined, { status: 403 })
-    );
-
-    const savedSolidDataset = await createContainerInContainer(
-      "https://some.pod/parent-container/",
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    expect(savedSolidDataset).toBeNull();
   });
 });
 

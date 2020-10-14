@@ -35,6 +35,7 @@ import {
   WithAccessibleAcl,
   WithResourceAcl,
   WithFallbackAcl,
+  WithServerResourceInfo,
 } from "../interfaces";
 import {
   createThing,
@@ -56,7 +57,7 @@ import { addIri } from "..";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
-  dataset: WithResourceInfo,
+  dataset: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -167,7 +168,9 @@ export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
  * @param resource A Resource that might have an ACL attached.
  * @returns `true` if the Resource has a resource ACL attached that is accessible by the user.
  */
-export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
+export function hasResourceAcl<
+  Resource extends WithAcl & WithServerResourceInfo
+>(
   resource: Resource
 ): resource is Resource & WithResourceAcl & WithAccessibleAcl {
   return (
@@ -194,13 +197,13 @@ export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
  * @returns The resource ACL if available and `null` if not.
  */
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo & WithResourceAcl
+  resource: WithAcl & WithServerResourceInfo & WithResourceAcl
 ): AclDataset;
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo
+  resource: WithAcl & WithServerResourceInfo
 ): AclDataset | null;
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo
+  resource: WithAcl & WithServerResourceInfo
 ): AclDataset | null {
   if (!hasResourceAcl(resource)) {
     return null;

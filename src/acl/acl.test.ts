@@ -54,7 +54,7 @@ import {
   hasAcl,
 } from "./acl";
 import {
-  WithResourceInfo,
+  WithServerResourceInfo,
   ThingPersisted,
   AclRule,
   AclDataset,
@@ -72,7 +72,7 @@ function mockResponse(
 
 describe("fetchResourceAcl", () => {
   it("returns the fetched ACL SolidDataset", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -103,7 +103,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -128,7 +128,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the source SolidDataset has no known ACL IRI", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
@@ -142,7 +142,7 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the ACL was not found", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
@@ -2003,7 +2003,7 @@ describe("deleteAclFor", () => {
         [RequestInfo, RequestInit?]
       >;
     };
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
@@ -2031,7 +2031,7 @@ describe("deleteAclFor", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
@@ -2059,7 +2059,7 @@ describe("deleteAclFor", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
@@ -2084,7 +2084,7 @@ describe("deleteAclFor", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
@@ -2113,7 +2113,7 @@ describe("deleteAclFor", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,

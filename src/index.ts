@@ -179,6 +179,7 @@ export {
   ThingLocal,
   LocalNode,
   hasResourceInfo,
+  hasServerResourceInfo,
   WithResourceInfo,
   WithChangeLog,
   hasAccessibleAcl,
