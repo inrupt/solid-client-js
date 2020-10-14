@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+The following changes have been implemented but not released yet:
+
 ### Breaking changes
 
 - `saveSolidDatasetInContainer`, `saveFileInContainer` and `createContainerInContainer` now return
@@ -16,6 +18,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 - `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
   and a Container from the user's Pod, respectively.
+- `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
+  if supported by the Pod server and exposed to the current user.
+
+The following sections document changes that have been released already:
 
 ## [0.5.1] - 2020-10-13
 
@@ -31,11 +37,6 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - All previously deprecated functions have been removed (their replacements are still available).
 - Previously, if no data with the given URL could be found, `getThing` would return a new, empty
   Thing. From now on, it will return `null` in those situations.
-
-### New features
-
-- `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
-  if supported by the Pod server and exposed to the current user.
 
 ### Bugs fixed
 
