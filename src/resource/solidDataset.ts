@@ -283,6 +283,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
  * Deletes the SolidDataset at a given URL.
  *
  * @param file The (URL of the) SolidDataset to delete
+ * @since 0.6.0
  */
 export async function deleteSolidDataset(
   solidDataset: Url | UrlString | WithResourceInfo,
@@ -584,6 +585,7 @@ export async function createContainerInContainer(
  * Deletes the Container at a given URL.
  *
  * @param file The (URL of the) Container to delete
+ * @since 0.6.0
  */
 export async function deleteContainer(
   container: Url | UrlString | WithResourceInfo,
