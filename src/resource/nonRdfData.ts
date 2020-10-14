@@ -30,6 +30,7 @@ import {
   UrlString,
   internal_toIriString,
   hasResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
 import {
   internal_parseResourceInfo,
@@ -71,7 +72,7 @@ function containsReserved(header: Headers): boolean {
 export async function getFile(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<File & WithResourceInfo> {
+): Promise<File & WithServerResourceInfo> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
@@ -85,9 +86,12 @@ export async function getFile(
   }
   const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
-  const fileWithResourceInfo: File & WithResourceInfo = Object.assign(data, {
-    internal_resourceInfo: resourceInfo,
-  });
+  const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
+    data,
+    {
+      internal_resourceInfo: resourceInfo,
+    }
+  );
 
   return fileWithResourceInfo;
 }
@@ -119,7 +123,7 @@ export async function getFile(
 export async function getFileWithAcl(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<File & WithResourceInfo & WithAcl> {
+): Promise<File & WithServerResourceInfo & WithAcl> {
   const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
   return Object.assign(file, { internal_acl: acl });
@@ -171,11 +175,11 @@ type SaveFileOptions = GetFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer(
+export async function saveFileInContainer<FileExt extends File>(
   folderUrl: Url | UrlString,
-  file: File,
+  file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
-): Promise<(File & WithResourceInfo) | null> {
+): Promise<FileExt & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
 
@@ -196,25 +200,14 @@ export async function saveFileInContainer(
 
   const blobClone = internal_cloneResource(file);
 
-  let resourceInfo: WithResourceInfo;
-  try {
-    resourceInfo = await getResourceInfo(fileIri, options);
-  } catch (e) {
-    return null;
-  }
+  const resourceInfo: WithResourceInfo = {
+    internal_resourceInfo: {
+      isRawData: true,
+      sourceIri: fileIri,
+      contentType: file.type.length > 0 ? file.type : undefined,
+    },
+  };
 
-  if (getSourceIri(resourceInfo) !== fileIri) {
-    throw new Error(
-      `Data integrity error: the server reports a URL of \`${getSourceIri(
-        resourceInfo
-      )}\` for the file saved to \`${fileIri}\`.`
-    );
-  }
-  if (!isRawData(resourceInfo)) {
-    throw new Error(
-      `Data integrity error: the server reports that the file saved to \`${fileIri}\` is not a file.`
-    );
-  }
   return Object.assign(blobClone, resourceInfo);
 }
 

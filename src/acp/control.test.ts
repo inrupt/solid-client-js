@@ -39,7 +39,7 @@ import {
   WithLinkedAcpAccessControl,
 } from "./control";
 import { acp, rdf } from "../constants";
-import { WithAccessibleAcl, WithResourceInfo } from "../interfaces";
+import { WithAccessibleAcl, WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
 import { mockAcrFor } from "./mock";
@@ -78,7 +78,7 @@ describe("hasLinkedAcr", () => {
   });
 
   it("returns false if a Resource does not expose anything Access Control-related", () => {
-    const withLinkedAcr: WithResourceInfo = {
+    const withLinkedAcr: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: false,
         sourceIri: "https://some.pod/resource",

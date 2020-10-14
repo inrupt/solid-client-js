@@ -21,7 +21,7 @@
 
 import {
   IriString,
-  WithResourceInfo,
+  WithServerResourceInfo,
   WithAcl,
   Access,
   AclDataset,
@@ -60,7 +60,7 @@ import { setIri } from "../thing/set";
  * @returns Access Modes granted to the public in general for the Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getPublicAccess(
-  resourceInfo: WithAcl & WithResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
     return getPublicResourceAccess(resourceInfo.internal_acl.resourceAcl);

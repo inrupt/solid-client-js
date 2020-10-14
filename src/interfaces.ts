@@ -112,7 +112,7 @@ type internal_WacAllow = {
 };
 
 /**
- * [[SolidDataset]]s fetched by solid-client include this metadata describing its relation to a Pod Resource.
+ * Data that was sent to a Pod includes this metadata describing its relation to the Pod Resource it was sent to.
  *
  * **Do not read these properties directly**; their internal representation may change at any time.
  * Instead, use functions such as [[getSourceUrl]], [[isRawData]] and [[getContentType]].
@@ -123,6 +123,18 @@ export type WithResourceInfo = {
     sourceIri: UrlString;
     isRawData: boolean;
     contentType?: string;
+  };
+};
+
+/**
+ * Data that was fetched from a Pod includes this metadata describing its relation to the Pod Resource it was fetched from.
+ *
+ * **Do not read these properties directly**; their internal representation may change at any time.
+ * Instead, use functions such as [[getSourceUrl]], [[isRawData]] and [[getContentType]].
+ */
+export type WithServerResourceInfo = WithResourceInfo & {
+  /** @hidden */
+  internal_resourceInfo: {
     /**
      * The URL reported by the server as possibly containing an ACL file. Note that this file might
      * not necessarily exist, in which case the ACL of the nearest Container with an ACL applies.
@@ -208,10 +220,10 @@ export function internal_toIriString(iri: Iri | IriString): IriString {
 }
 
 /**
- * Verify whether a given SolidDataset includes metadata about where it was retrieved from.
+ * Verify whether a given SolidDataset includes metadata about where it was sent to.
  *
  * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
- * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
+ * @returns True if `dataset` includes metadata about the Resource it was sent to, false if not.
  * @since 0.2.0
  */
 export function hasResourceInfo<T>(
@@ -221,6 +233,25 @@ export function hasResourceInfo<T>(
   return (
     typeof potentialResourceInfo === "object" &&
     typeof potentialResourceInfo.internal_resourceInfo === "object"
+  );
+}
+
+/**
+ * Verify whether a given SolidDataset includes metadata about where it was retrieved from.
+ *
+ * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
+ * @returns True if `dataset` includes metadata about the Resource it was retrieved from, false if not.
+ * @since Not released yet.
+ */
+export function hasServerResourceInfo<T>(
+  resource: T
+): resource is T & WithServerResourceInfo {
+  const potentialResourceInfo = resource as T & WithServerResourceInfo;
+  return (
+    typeof potentialResourceInfo === "object" &&
+    typeof potentialResourceInfo.internal_resourceInfo === "object" &&
+    typeof potentialResourceInfo.internal_resourceInfo.linkedResources ===
+      "object"
   );
 }
 
@@ -243,11 +274,11 @@ export function hasChangelog<T extends SolidDataset>(
  * function is still experimental and can change in a non-major release.
  */
 export type WithAccessibleAcl<
-  ResourceExt extends WithResourceInfo = WithResourceInfo
+  ResourceExt extends WithServerResourceInfo = WithServerResourceInfo
 > = ResourceExt & {
   internal_resourceInfo: {
     aclUrl: Exclude<
-      WithResourceInfo["internal_resourceInfo"]["aclUrl"],
+      WithServerResourceInfo["internal_resourceInfo"]["aclUrl"],
       undefined
     >;
   };
@@ -265,7 +296,7 @@ export type WithAccessibleAcl<
  * @param dataset A [[SolidDataset]].
  * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
  */
-export function hasAccessibleAcl<ResourceExt extends WithResourceInfo>(
+export function hasAccessibleAcl<ResourceExt extends WithServerResourceInfo>(
   dataset: ResourceExt
 ): dataset is WithAccessibleAcl<ResourceExt> {
   return typeof dataset.internal_resourceInfo.aclUrl === "string";

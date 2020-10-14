@@ -21,13 +21,13 @@
 
 import { acp, rdf } from "../constants";
 import {
-  hasResourceInfo,
+  hasServerResourceInfo,
   SolidDataset,
   Thing,
   ThingPersisted,
   Url,
   UrlString,
-  WithResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
@@ -54,11 +54,11 @@ import {
  * @param resource Resource which may or may not be governed by Access Policies.
  * @returns True if the Resource refers to an Access Control Resource and is hence governed by Access Policies, or false if it does not.
  */
-export function hasLinkedAcr<Resource extends WithResourceInfo>(
+export function hasLinkedAcr<Resource extends WithServerResourceInfo>(
   resource: Resource
 ): resource is WithLinkedAcpAccessControl<Resource> {
   return (
-    hasResourceInfo(resource) &&
+    hasServerResourceInfo(resource) &&
     Array.isArray(
       resource.internal_resourceInfo.linkedResources[acp.accessControl]
     ) &&
@@ -98,7 +98,7 @@ export type AccessControl = Thing;
  * user.
  */
 export type WithLinkedAcpAccessControl<
-  Resource extends WithResourceInfo = WithResourceInfo
+  Resource extends WithServerResourceInfo = WithServerResourceInfo
 > = Resource & {
   internal_resourceInfo: {
     linkedResources: {

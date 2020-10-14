@@ -46,7 +46,11 @@ import {
   getContentType,
   getResourceInfoWithAcl,
 } from "./resource";
-import { WithResourceInfo, IriString } from "../interfaces";
+import {
+  WithResourceInfo,
+  IriString,
+  WithServerResourceInfo,
+} from "../interfaces";
 import { dataset } from "../rdfjs";
 
 function mockResponse(
@@ -67,7 +71,7 @@ describe("fetchAcl", () => {
       fetch: MockedFetch;
     };
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -90,7 +94,7 @@ describe("fetchAcl", () => {
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
     const mockFetch = jest.fn(window.fetch);
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -123,7 +127,7 @@ describe("fetchAcl", () => {
       );
     });
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -170,7 +174,7 @@ describe("fetchAcl", () => {
       );
     });
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
@@ -704,7 +708,6 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
-        linkedResources: {},
       },
     };
 
@@ -716,7 +719,6 @@ describe("isContainer", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-container",
         isRawData: false,
-        linkedResources: {},
       },
     };
 
@@ -740,7 +742,6 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/",
         isRawData: false,
-        linkedResources: {},
       },
     };
 
@@ -752,7 +753,6 @@ describe("isRawData", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/not-a-soliddataset.png",
         isRawData: true,
-        linkedResources: {},
       },
     };
 
@@ -767,7 +767,6 @@ describe("getContentType", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         contentType: "multipart/form-data; boundary=something",
-        linkedResources: {},
       },
     };
 
@@ -781,7 +780,6 @@ describe("getContentType", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
-        linkedResources: {},
       },
     };
 
@@ -795,7 +793,6 @@ describe("getSourceIri", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
-        linkedResources: {},
       },
     });
 
@@ -810,7 +807,7 @@ describe("getSourceIri", () => {
 
 describe("getPodOwner", () => {
   it("returns the Pod Owner when known", () => {
-    const resourceInfo: WithResourceInfo = {
+    const resourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://arbitrary.pod",
@@ -826,7 +823,7 @@ describe("getPodOwner", () => {
   });
 
   it("returns null if the Pod Owner is not exposed", () => {
-    const resourceInfo: WithResourceInfo = {
+    const resourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://arbitrary.pod/not-the-root",
@@ -839,14 +836,14 @@ describe("getPodOwner", () => {
     expect(getPodOwner(resourceInfo)).toBeNull();
   });
 
-  it("returns null if no Resource Info is attached to the given Resource", () => {
-    expect(getPodOwner({} as WithResourceInfo)).toBeNull();
+  it("returns null if no Server Resource Info is attached to the given Resource", () => {
+    expect(getPodOwner({} as WithServerResourceInfo)).toBeNull();
   });
 });
 
 describe("isPodOwner", () => {
   it("returns true when the Pod Owner is known and equal to the given WebID", () => {
-    const resourceInfo: WithResourceInfo = {
+    const resourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://arbitrary.pod",
@@ -864,7 +861,7 @@ describe("isPodOwner", () => {
   });
 
   it("returns false when the Pod Owner is known but not equal to the given WebID", () => {
-    const resourceInfo: WithResourceInfo = {
+    const resourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://arbitrary.pod",
@@ -882,7 +879,7 @@ describe("isPodOwner", () => {
   });
 
   it("returns null if the Pod Owner is not exposed", () => {
-    const resourceInfo: WithResourceInfo = {
+    const resourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
         sourceIri: "https://arbitrary.pod/not-the-root",
