@@ -50,7 +50,12 @@ export const acp = {
   AccessPolicyResource: "http://www.w3.org/ns/solid/acp#AccessPolicyResource",
   AccessPolicy: "http://www.w3.org/ns/solid/acp#AccessPolicy",
   AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
+  Read: "http://www.w3.org/ns/solid/acp#Read",
+  Append: "http://www.w3.org/ns/solid/acp#Append",
+  Write: "http://www.w3.org/ns/solid/acp#Write",
   accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
   apply: "http://www.w3.org/ns/solid/acp#apply",
   applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
+  allow: "http://www.w3.org/ns/solid/acp#allow",
+  deny: "http://www.w3.org/ns/solid/acp#deny",
 } as const;
