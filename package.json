@@ -1,7 +1,7 @@
 {
   "name": "@inrupt/solid-client",
   "description": "Make your web apps work with Solid Pods.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "license": "MIT",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/**\" && jest",
