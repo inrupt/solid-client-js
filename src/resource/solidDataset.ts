@@ -41,6 +41,7 @@ import {
   internal_toIriString,
   IriString,
   Thing,
+  WithServerResourceInfo,
 } from "../interfaces";
 import {
   internal_parseResourceInfo,
@@ -80,7 +81,7 @@ export async function getSolidDataset(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo> {
+): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
@@ -105,7 +106,7 @@ export async function getSolidDataset(
   const resourceInfo = internal_parseResourceInfo(response);
 
   const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(resource, {
+    WithServerResourceInfo = Object.assign(resource, {
     internal_resourceInfo: resourceInfo,
   });
 
@@ -136,7 +137,7 @@ export async function getSolidDatasetWithAcl(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo & WithAcl> {
+): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
   return Object.assign(solidDataset, { internal_acl: acl });
@@ -144,7 +145,7 @@ export async function getSolidDatasetWithAcl(
 
 type UpdateableDataset = SolidDataset &
   WithChangeLog &
-  WithResourceInfo & { internal_resourceInfo: { sourceIri: IriString } };
+  WithServerResourceInfo & { internal_resourceInfo: { sourceIri: IriString } };
 
 /**
  * Create a SPARQL UPDATE Patch request from a [[SolidDataset]] with a changelog.
@@ -215,21 +216,23 @@ async function prepareSolidDatasetCreation(
  * function applies the changes to the current SolidDataset. If the old value specified in the
  * changelog does not correspond to the value currently in the Pod, this function will throw an
  * error.
- * The SolidDataset returned by this function will be up-to-date with the data on the Pod after
- * saving.
+ * The SolidDataset returned by this function will contain the data sent to the Pod, and a ChangeLog
+ * up-to-date with the saved data. Note that if the data on the server was modified in between the
+ * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.
+ * To make sure you have the latest data, call [[getSolidDataset]] again after saving the data.
  *
  * @param url URL to save `solidDataset` to.
  * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or rejecting if saving it failed.
  */
-export async function saveSolidDatasetAt(
+export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   url: UrlString | Url,
-  solidDataset: SolidDataset,
+  solidDataset: Dataset,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo & WithChangeLog> {
+): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
@@ -254,17 +257,20 @@ export async function saveSolidDatasetAt(
     );
   }
 
-  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+  const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     ...internal_parseResourceInfo(response),
     sourceIri: url,
     isRawData: false,
   };
-  const storedDataset: SolidDataset &
+  const storedDataset: Dataset &
     WithChangeLog &
-    WithResourceInfo = Object.assign(internal_cloneResource(solidDataset), {
-    internal_changeLog: { additions: [], deletions: [] },
-    internal_resourceInfo: resourceInfo,
-  });
+    WithServerResourceInfo = Object.assign(
+    internal_cloneResource(solidDataset),
+    {
+      internal_changeLog: { additions: [], deletions: [] },
+      internal_resourceInfo: resourceInfo,
+    }
+  );
 
   const storedDatasetWithResolvedIris = resolveLocalIrisInSolidDataset(
     storedDataset
@@ -277,6 +283,7 @@ export async function saveSolidDatasetAt(
  * Deletes the SolidDataset at a given URL.
  *
  * @param file The (URL of the) SolidDataset to delete
+ * @since 0.6.0
  */
 export async function deleteSolidDataset(
   solidDataset: Url | UrlString | WithResourceInfo,
@@ -315,7 +322,7 @@ export async function createContainerAt(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithResourceInfo> {
+): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : url + "/";
   const config = {
@@ -353,7 +360,7 @@ export async function createContainerAt(
   const resourceInfo = internal_parseResourceInfo(response);
   const containerDataset: SolidDataset &
     WithChangeLog &
-    WithResourceInfo = Object.assign(dataset(), {
+    WithServerResourceInfo = Object.assign(dataset(), {
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -416,7 +423,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   const resourceInfo = internal_parseResourceInfo(containerInfoResponse);
   const containerDataset: SolidDataset &
     WithChangeLog &
-    WithResourceInfo = Object.assign(dataset(), {
+    WithServerResourceInfo = Object.assign(dataset(), {
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -447,13 +454,13 @@ type SaveInContainerOptions = Partial<
  * @param containerUrl URL of the Container in which to create a new Resource.
  * @param solidDataset The [[SolidDataset]] to save to a new Resource in the given Container.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or to `null` if the current user does not have Read access to the newly-created Resource. The Promise rejects if the save failed.
+ * @returns A Promise resolving to a [[SolidDataset]] containing the saved data. The Promise rejects if the save failed.
  */
 export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
   solidDataset: SolidDataset,
   options: SaveInContainerOptions = internal_defaultFetchOptions
-): Promise<(SolidDataset & WithResourceInfo) | null> {
+): Promise<SolidDataset & WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -494,25 +501,12 @@ export async function saveSolidDatasetInContainer(
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
 
-  let resourceInfo: WithResourceInfo;
-  try {
-    resourceInfo = await getResourceInfo(resourceIri, options);
-  } catch (e) {
-    return null;
-  }
-
-  if (getSourceUrl(resourceInfo) !== resourceIri) {
-    throw new Error(
-      `Data integrity error: the server reports a URL of \`${getSourceUrl(
-        resourceInfo
-      )}\` for the SolidDataset saved to \`${resourceIri}\`.`
-    );
-  }
-  if (isRawData(resourceInfo)) {
-    throw new Error(
-      `Data integrity error: the server reports that the SolidDataset saved to \`${resourceIri}\` is not a SolidDataset.`
-    );
-  }
+  const resourceInfo: WithResourceInfo = {
+    internal_resourceInfo: {
+      isRawData: false,
+      sourceIri: resourceIri,
+    },
+  };
 
   const resourceWithResourceInfo: SolidDataset &
     WithResourceInfo = Object.assign(
@@ -540,7 +534,7 @@ export async function saveSolidDatasetInContainer(
 export async function createContainerInContainer(
   containerUrl: UrlString | Url,
   options: SaveInContainerOptions = internal_defaultFetchOptions
-): Promise<(SolidDataset & WithResourceInfo) | null> {
+): Promise<SolidDataset & WithResourceInfo> {
   containerUrl = internal_toIriString(containerUrl);
   const config = {
     ...internal_defaultFetchOptions,
@@ -575,29 +569,12 @@ export async function createContainerInContainer(
   const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
     .href;
 
-  let resourceInfo: WithResourceInfo;
-  try {
-    resourceInfo = await getResourceInfo(resourceIri, options);
-  } catch (e) {
-    return null;
-  }
-  if (getSourceUrl(resourceInfo) !== resourceIri) {
-    throw new Error(
-      `Data integrity error: the server reports a URL of \`${getSourceUrl(
-        resourceInfo
-      )}\` for the Container saved to \`${resourceIri}\`.`
-    );
-  }
-  // Unfortunately, Node Solid Serve does not expose that a newly-created Container is RDF data on a HEAD request:
-  // https://github.com/solid/node-solid-server/issues/1481
-  // When that bug is fixed, this integrity check can be re-enabled,
-  // and the manual assignment to isRawData removed:
-  resourceInfo.internal_resourceInfo.isRawData = false;
-  // if (isRawData(resourceInfo)) {
-  //   throw new Error(
-  //     `Data integrity error: the server reports that the Container saved to \`${resourceIri}\` is not a Container.`
-  //   );
-  // }
+  const resourceInfo: WithResourceInfo = {
+    internal_resourceInfo: {
+      isRawData: false,
+      sourceIri: resourceIri,
+    },
+  };
 
   const resourceWithResourceInfo: SolidDataset &
     WithResourceInfo = Object.assign(dataset(), resourceInfo);
@@ -608,6 +585,7 @@ export async function createContainerInContainer(
  * Deletes the Container at a given URL.
  *
  * @param file The (URL of the) Container to delete
+ * @since 0.6.0
  */
 export async function deleteContainer(
   container: Url | UrlString | WithResourceInfo,

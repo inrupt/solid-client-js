@@ -20,7 +20,7 @@
  */
 
 import {
-  WithResourceInfo,
+  WithServerResourceInfo,
   WithResourceAcl,
   WithAcl,
   WithAccessibleAcl,
@@ -44,7 +44,7 @@ import { mockContainerFrom } from "../resource/mock";
  * @returns The input Resource with an empty resource ACL attached.
  * @since 0.2.0
  */
-export function addMockResourceAclTo<T extends WithResourceInfo>(
+export function addMockResourceAclTo<T extends WithServerResourceInfo>(
   resource: T
 ): T & WithResourceAcl {
   const aclUrl =
@@ -87,7 +87,7 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
  * @returns The input Resource with an empty fallback ACL attached.
  * @since 0.2.0
  */
-export function addMockFallbackAclTo<T extends WithResourceInfo>(
+export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   resource: T
 ): T & WithFallbackAcl {
   const containerUrl = internal_getContainerPath(getSourceIri(resource));
@@ -107,7 +107,7 @@ export function addMockFallbackAclTo<T extends WithResourceInfo>(
   return resourceWithFallbackAcl;
 }
 
-function setMockAclUrl<T extends WithResourceInfo>(
+function setMockAclUrl<T extends WithServerResourceInfo>(
   resource: T,
   aclUrl: UrlString
 ): T & WithAccessibleAcl {

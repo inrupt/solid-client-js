@@ -31,10 +31,16 @@ Steps to reproduce the behavior:
 
 **Environment**
 
-<!-- Please run `npx envinfo` in your project folder and paste the output here: -->
+<!--
+Please run
+
+  npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
+
+in your project folder and paste the output here:
+-->
 
 ```
-$ npx envinfo
+$ npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
 
 
 ```

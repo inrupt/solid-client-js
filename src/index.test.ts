@@ -131,6 +131,7 @@ import {
   setPublicResourceAccess,
   setPublicDefaultAccess,
   hasResourceInfo,
+  hasServerResourceInfo,
   hasAccessibleAcl,
   getGroupAccess,
   getGroupAccessAll,
@@ -262,6 +263,7 @@ it("exports the public API from the entry file", () => {
   expect(setPublicDefaultAccess).toBeDefined();
   expect(getPublicDefaultAccess).toBeDefined();
   expect(hasResourceInfo).toBeDefined();
+  expect(hasServerResourceInfo).toBeDefined();
   expect(hasAccessibleAcl).toBeDefined();
   expect(getGroupAccess).toBeDefined();
   expect(getGroupAccessAll).toBeDefined();

@@ -22,7 +22,6 @@
 import LinkHeader from "http-link-header";
 import {
   UrlString,
-  WithResourceInfo,
   WithAcl,
   hasAccessibleAcl,
   Access,
@@ -33,6 +32,9 @@ import {
   Url,
   WebId,
   Resource,
+  WithServerResourceInfo,
+  WithResourceInfo,
+  hasServerResourceInfo,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
@@ -60,7 +62,7 @@ export async function getResourceInfo(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo> {
+): Promise<WithServerResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -79,7 +81,7 @@ export async function getResourceInfo(
 }
 
 /**
- * This (currently internal) function fetches the ACL indicated in the [[WithResourceInfo]]
+ * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
  * attached to a resource.
  *
  * @internal
@@ -87,7 +89,7 @@ export async function getResourceInfo(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  */
 export async function internal_fetchAcl(
-  resourceInfo: WithResourceInfo,
+  resourceInfo: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -131,7 +133,7 @@ export async function getResourceInfoWithAcl(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo & WithAcl> {
+): Promise<WithServerResourceInfo & WithAcl> {
   const resourceInfo = await getResourceInfo(url, options);
   const acl = await internal_fetchAcl(resourceInfo, options);
   return Object.assign(resourceInfo, { internal_acl: acl });
@@ -142,7 +144,7 @@ export async function getResourceInfoWithAcl(
  */
 export function internal_parseResourceInfo(
   response: Response
-): WithResourceInfo["internal_resourceInfo"] {
+): WithServerResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
   // If the server offers a Turtle or JSON-LD serialisation on its own accord,
@@ -154,7 +156,7 @@ export function internal_parseResourceInfo(
     contentTypeParts.length > 0 &&
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
-  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+  const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     sourceIri: response.url,
     isRawData: !isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
@@ -292,10 +294,10 @@ function copyNonClassProperties(source: object): object {
  *
  * @param resource A Resource that contains information about the owner of the Pod it is in.
  * @returns The WebID of the owner of the Pod the Resource is in, if provided, or `null` if not.
- * @since Not released yet.
+ * @since 0.6.0
  */
-export function getPodOwner(resource: WithResourceInfo): WebId | null {
-  if (!hasResourceInfo(resource)) {
+export function getPodOwner(resource: WithServerResourceInfo): WebId | null {
+  if (!hasServerResourceInfo(resource)) {
     return null;
   }
 
@@ -319,11 +321,11 @@ export function getPodOwner(resource: WithResourceInfo): WebId | null {
  * @param webId The WebID of which to check whether it is the Pod Owner's.
  * @param resource A Resource that contains information about the owner of the Pod it is in.
  * @returns Whether the given WebID is the Pod Owner's, if the Pod Owner is exposed, or `null` if it is not exposed.
- * @since Not released yet.
+ * @since 0.6.0
  */
 export function isPodOwner(
   webId: WebId,
-  resource: WithResourceInfo
+  resource: WithServerResourceInfo
 ): boolean | null {
   const podOwner = getPodOwner(resource);
 

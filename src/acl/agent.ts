@@ -20,7 +20,7 @@
  */
 
 import {
-  WithResourceInfo,
+  WithServerResourceInfo,
   WithChangeLog,
   WithAcl,
   AclDataset,
@@ -73,7 +73,7 @@ export type AgentAccess = Record<WebId, Access>;
  * @returns Access Modes that have been explicitly granted to the Agent for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control access to a given Resource or its Container).
  */
 export function getAgentAccess(
-  resourceInfo: WithAcl & WithResourceInfo,
+  resourceInfo: WithAcl & WithServerResourceInfo,
   agent: WebId
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
@@ -98,7 +98,7 @@ export function getAgentAccess(
  * @returns Access Modes per Agent that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control access to a given Resource or its Container).
  */
 export function getAgentAccessAll(
-  resourceInfo: WithAcl & WithResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo
 ): AgentAccess | null {
   if (hasResourceAcl(resourceInfo)) {
     const resourceAcl = getResourceAcl(resourceInfo);

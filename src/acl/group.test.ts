@@ -27,7 +27,7 @@ import {
   Access,
   AclDataset,
   WithAcl,
-  WebId,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 import {
@@ -113,10 +113,10 @@ function addAclRuleQuads(
 }
 
 function addAclDatasetToSolidDataset(
-  solidDataset: SolidDataset & WithResourceInfo,
+  solidDataset: SolidDataset & WithServerResourceInfo,
   aclDataset: AclDataset,
   type: "resource" | "fallback"
-): SolidDataset & WithResourceInfo & WithAcl {
+): SolidDataset & WithServerResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
@@ -133,7 +133,9 @@ function addAclDatasetToSolidDataset(
   return Object.assign(solidDataset, { internal_acl: acl });
 }
 
-function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
+function getMockDataset(
+  sourceIri: IriString
+): SolidDataset & WithServerResourceInfo {
   return Object.assign(dataset(), {
     internal_resourceInfo: {
       sourceIri: sourceIri,
