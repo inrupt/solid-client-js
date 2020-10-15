@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes have been implemented but not released yet:
 
+The following sections document changes that have been released already:
+
+## [0.6.0] - 2020-10-14
+
 ### New features
 
 - `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
@@ -14,8 +18,6 @@ The following changes have been implemented but not released yet:
   Resource is present, such as which server-managed Resources are linked to it.
 - `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
   if supported by the Pod server and exposed to the current user.
-
-The following sections document changes that have been released already:
 
 ## [0.5.1] - 2020-10-13
 
