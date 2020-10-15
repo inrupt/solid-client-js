@@ -32,7 +32,9 @@ import {
   createSolidDataset,
   saveSolidDatasetAt,
 } from "../resource/solidDataset";
-import { getUrl, getUrlAll } from "../thing/get";
+import { addIri } from "../thing/add";
+import { getIriAll, getUrl, getUrlAll } from "../thing/get";
+import { removeAll } from "../thing/remove";
 import { setUrl } from "../thing/set";
 import {
   createThing,
@@ -45,6 +47,11 @@ import {
 
 export type PolicyDataset = SolidDataset;
 export type Policy = ThingPersisted;
+export type AccessModes = {
+  read: boolean;
+  append: boolean;
+  write: boolean;
+};
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -176,4 +183,97 @@ export function setPolicy(
   policy: Policy
 ): PolicyDataset {
   return setThing(policyResource, policy);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Access Policy based on the given
+ * Access Policy, but with the given Access Modes allowed on it.
+ *
+ * @param policy An Access Policy on which to set the modes to allow.
+ * @param modes Modes to allow for this Access Policy.
+ */
+export function setAllowModesOnPolicy(
+  policy: Policy,
+  modes: AccessModes
+): Policy {
+  let newPolicy = removeAll(policy, acp.allow);
+
+  if (modes.read === true) {
+    newPolicy = addIri(newPolicy, acp.allow, acp.Read);
+  }
+  if (modes.append === true) {
+    newPolicy = addIri(newPolicy, acp.allow, acp.Append);
+  }
+  if (modes.write === true) {
+    newPolicy = addIri(newPolicy, acp.allow, acp.Write);
+  }
+
+  return newPolicy;
+}
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]], return which [[AccessModes]] it allows.
+ *
+ * @param policy An Access Policy of which you want to know which Access Modes it allows.
+ */
+export function getAllowModesOnPolicy(policy: Policy): AccessModes {
+  const allowedModes = getIriAll(policy, acp.allow);
+  return {
+    read: allowedModes.includes(acp.Read),
+    append: allowedModes.includes(acp.Append),
+    write: allowedModes.includes(acp.Write),
+  };
+}
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Access Policy based on the given
+ * Access Policy, but with the given Access Modes disallowed on it.
+ *
+ * @param policy An Access Policy on which to set the modes to disallow.
+ * @param modes Modes to disallow for this Access Policy.
+ */
+export function setDenyModesOnPolicy(
+  policy: Policy,
+  modes: AccessModes
+): Policy {
+  let newPolicy = removeAll(policy, acp.deny);
+
+  if (modes.read === true) {
+    newPolicy = addIri(newPolicy, acp.deny, acp.Read);
+  }
+  if (modes.append === true) {
+    newPolicy = addIri(newPolicy, acp.deny, acp.Append);
+  }
+  if (modes.write === true) {
+    newPolicy = addIri(newPolicy, acp.deny, acp.Write);
+  }
+
+  return newPolicy;
+}
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]], return which [[AccessModes]] it disallows.
+ *
+ * @param policy An Access Policy of which you want to know which Access Modes it disallows.
+ */
+export function getDenyModesOnPolicy(policy: Policy): AccessModes {
+  const deniedModes = getIriAll(policy, acp.deny);
+  return {
+    read: deniedModes.includes(acp.Read),
+    append: deniedModes.includes(acp.Append),
+    write: deniedModes.includes(acp.Write),
+  };
 }
