@@ -20,12 +20,32 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { mockAcrFor } from "./mock";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { addMockAcrTo, mockAcrFor } from "./mock";
 
 describe("mockAcrFor", () => {
   it("should attach the URL of the Resource it applies to", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
 
     expect(mockedAcr.accessTo).toBe("https://some.pod/resource");
+  });
+});
+
+describe("addMockAcrTo", () => {
+  it("attaches the given ACR to the given Resource", () => {
+    const resource = mockSolidDatasetFrom("https://some.pod/resource");
+    const acr = mockAcrFor("https://some.pod/resource?ext=acr");
+
+    const withMockAcr = addMockAcrTo(resource, acr);
+
+    expect(withMockAcr.internal_acp.acr).toEqual(acr);
+  });
+
+  it("generates a mock ACR if none is provided", () => {
+    const resource = mockSolidDatasetFrom("https://some.pod/resource");
+
+    const withMockAcr = addMockAcrTo(resource);
+
+    expect(withMockAcr.internal_acp.acr).not.toBeNull();
   });
 });

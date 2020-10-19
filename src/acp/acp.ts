@@ -265,6 +265,19 @@ export type WithAccessibleAcr = WithAcp & {
   };
 };
 
+/**
+ * @param resource Resource of which to check whether it has an Access Control Resource attached.
+ * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getAccessControl]].
+ */
+export function hasAccessibleAcr(
+  resource: WithAcp
+): resource is WithAccessibleAcr {
+  return (
+    typeof resource.internal_acp === "object" &&
+    typeof resource.internal_acp.acr === "object"
+  );
+}
+
 async function fetchAcp(
   resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
@@ -332,7 +345,9 @@ async function fetchPolicyDataset(
 function getReferencedPolicyUrls(acr: AccessControlResource): UrlString[] {
   const policyUrls: UrlString[] = [];
 
-  const controls = getAccessControlAll(acr);
+  const controls = getAccessControlAll({
+    internal_acp: { acr: acr, aprs: {} },
+  });
   controls.forEach((control) => {
     policyUrls.push(...getPolicyUrlAll(control).map(getResourceUrl));
     policyUrls.push(...getMemberPolicyUrlAll(control).map(getResourceUrl));
