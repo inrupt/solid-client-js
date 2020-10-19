@@ -309,10 +309,7 @@ describe("setForbiddenRuleOnPolicy", () => {
   it("sets the provided rules as the forbidden rules for the policy", () => {
     const myPolicy = setForbiddenRuleOnPolicy(
       mockPolicy("https://some.pod/policy-resource#policy"),
-      [
-        mockRule("https://some.pod/rule-resource#a-rule"),
-        mockRule("https://some.pod/rule-resource#another-rule"),
-      ]
+      mockRule("https://some.pod/rule-resource#a-rule")
     );
     expect(
       myPolicy.has(
@@ -323,40 +320,16 @@ describe("setForbiddenRuleOnPolicy", () => {
         )
       )
     ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_NONE),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(true);
   });
 
   it("removes any previous forbidden rules for on the policy", () => {
     const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
       forbidden: [mockRule("https://some.pod/rule-resource#another-rule")],
     });
-    const myPolicy = setForbiddenRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#a-rule"),
-    ]);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_NONE),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(false);
-  });
-
-  it("clears forbidden rules for on the policy if no rule is set", () => {
-    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
-      forbidden: [mockRule("https://some.pod/rule-resource#another-rule")],
-    });
-    const myPolicy = setForbiddenRuleOnPolicy(mockedPolicy, []);
+    const myPolicy = setForbiddenRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#a-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -373,9 +346,10 @@ describe("setForbiddenRuleOnPolicy", () => {
       optional: [mockRule("https://some.pod/rule-resource#optional-rule")],
       required: [mockRule("https://some.pod/rule-resource#required-rule")],
     });
-    const myPolicy = setForbiddenRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#forbidden-rule"),
-    ]);
+    const myPolicy = setForbiddenRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#forbidden-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -398,9 +372,10 @@ describe("setForbiddenRuleOnPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy("https://some.pod/policy-resource#policy");
-    setForbiddenRuleOnPolicy(myPolicy, [
-      mockRule("https://some.pod/rule-resource#rule"),
-    ]);
+    setForbiddenRuleOnPolicy(
+      myPolicy,
+      mockRule("https://some.pod/rule-resource#rule")
+    );
     expect(myPolicy.size).toEqual(0);
   });
 });
@@ -409,10 +384,7 @@ describe("setOptionalRuleOnPolicy", () => {
   it("sets the provided rules as the optional rules for the policy", () => {
     const myPolicy = setOptionalRuleOnPolicy(
       mockPolicy("https://some.pod/policy-resource#policy"),
-      [
-        mockRule("https://some.pod/rule-resource#a-rule"),
-        mockRule("https://some.pod/rule-resource#another-rule"),
-      ]
+      mockRule("https://some.pod/rule-resource#a-rule")
     );
     expect(
       myPolicy.has(
@@ -423,40 +395,16 @@ describe("setOptionalRuleOnPolicy", () => {
         )
       )
     ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_ANY),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(true);
   });
 
   it("removes any previous optional rules for on the policy", () => {
     const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
       optional: [mockRule("https://some.pod/rule-resource#another-rule")],
     });
-    const myPolicy = setOptionalRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#a-rule"),
-    ]);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_ANY),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(false);
-  });
-
-  it("clears optional rules for on the policy if no rule is set", () => {
-    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
-      optional: [mockRule("https://some.pod/rule-resource#another-rule")],
-    });
-    const myPolicy = setOptionalRuleOnPolicy(mockedPolicy, []);
+    const myPolicy = setOptionalRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#a-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -473,9 +421,10 @@ describe("setOptionalRuleOnPolicy", () => {
       forbidden: [mockRule("https://some.pod/rule-resource#forbidden-rule")],
       required: [mockRule("https://some.pod/rule-resource#required-rule")],
     });
-    const myPolicy = setOptionalRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#optional-rule"),
-    ]);
+    const myPolicy = setOptionalRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#optional-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -498,9 +447,10 @@ describe("setOptionalRuleOnPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy("https://some.pod/policy-resource#policy");
-    setOptionalRuleOnPolicy(myPolicy, [
-      mockRule("https://some.pod/rule-resource#rule"),
-    ]);
+    setOptionalRuleOnPolicy(
+      myPolicy,
+      mockRule("https://some.pod/rule-resource#rule")
+    );
     expect(myPolicy.size).toEqual(0);
   });
 });
@@ -509,10 +459,7 @@ describe("setRequiredRuleOnPolicy", () => {
   it("sets the provided rules as the required rules for the policy", () => {
     const myPolicy = setRequiredRuleOnPolicy(
       mockPolicy("https://some.pod/policy-resource#policy"),
-      [
-        mockRule("https://some.pod/rule-resource#a-rule"),
-        mockRule("https://some.pod/rule-resource#another-rule"),
-      ]
+      mockRule("https://some.pod/rule-resource#a-rule")
     );
     expect(
       myPolicy.has(
@@ -523,40 +470,16 @@ describe("setRequiredRuleOnPolicy", () => {
         )
       )
     ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_ALL),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(true);
   });
 
   it("removes any previous required rules for on the policy", () => {
     const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
       required: [mockRule("https://some.pod/rule-resource#another-rule")],
     });
-    const myPolicy = setRequiredRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#a-rule"),
-    ]);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(
-          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
-          DataFactory.namedNode(ACP_ALL),
-          DataFactory.namedNode("https://some.pod/rule-resource#another-rule")
-        )
-      )
-    ).toBe(false);
-  });
-
-  it("clears required rules for on the policy if no rule is set", () => {
-    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
-      required: [mockRule("https://some.pod/rule-resource#another-rule")],
-    });
-    const myPolicy = setRequiredRuleOnPolicy(mockedPolicy, []);
+    const myPolicy = setRequiredRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#a-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -573,9 +496,10 @@ describe("setRequiredRuleOnPolicy", () => {
       forbidden: [mockRule("https://some.pod/rule-resource#forbidden-rule")],
       optional: [mockRule("https://some.pod/rule-resource#optional-rule")],
     });
-    const myPolicy = setRequiredRuleOnPolicy(mockedPolicy, [
-      mockRule("https://some.pod/rule-resource#required-rule"),
-    ]);
+    const myPolicy = setRequiredRuleOnPolicy(
+      mockedPolicy,
+      mockRule("https://some.pod/rule-resource#required-rule")
+    );
     expect(
       myPolicy.has(
         DataFactory.quad(
@@ -598,9 +522,10 @@ describe("setRequiredRuleOnPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy("https://some.pod/policy-resource#policy");
-    setRequiredRuleOnPolicy(myPolicy, [
-      mockRule("https://some.pod/rule-resource#rule"),
-    ]);
+    setRequiredRuleOnPolicy(
+      myPolicy,
+      mockRule("https://some.pod/rule-resource#rule")
+    );
     expect(myPolicy.size).toEqual(0);
   });
 });

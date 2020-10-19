@@ -52,7 +52,7 @@ export function addRequiredRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Set the rules refining the scope of a given the [[Policy]]. If an agent
+ * Overwrites the rule refining the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is **not** present in **any** of the required rules,
  * they will not be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
@@ -60,15 +60,8 @@ export function addRequiredRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the required rules replaced.
  * @since Unreleased
  */
-export function setRequiredRuleOnPolicy(policy: Policy, rules: Rule[]): Policy {
-  if (rules.length === 0) {
-    return removeAll(policy, acp.allOf);
-  }
-  let updatedPolicy = setIri(policy, acp.allOf, rules[0]);
-  rules.slice(1).forEach((ruleToAdd: Rule) => {
-    updatedPolicy = addRequiredRuleToPolicy(updatedPolicy, ruleToAdd);
-  });
-  return updatedPolicy;
+export function setRequiredRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+  return setIri(policy, acp.allOf, rule);
 }
 
 /**
@@ -107,7 +100,7 @@ export function addOptionalRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Set the rules extending the scope of a given the [[Policy]]. If an agent
+ * Overwrite the rule extending the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is present in **any** of the required rules,
  * they will be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
@@ -115,15 +108,8 @@ export function addOptionalRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setOptionalRuleOnPolicy(policy: Policy, rules: Rule[]): Policy {
-  if (rules.length === 0) {
-    return removeAll(policy, acp.anyOf);
-  }
-  let updatedPolicy = setIri(policy, acp.anyOf, rules[0]);
-  rules.slice(1).forEach((ruleToAdd: Rule) => {
-    updatedPolicy = addOptionalRuleToPolicy(updatedPolicy, ruleToAdd);
-  });
-  return updatedPolicy;
+export function setOptionalRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+  return setIri(policy, acp.anyOf, rule);
 }
 
 /**
@@ -170,18 +156,8 @@ export function addForbiddenRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setForbiddenRuleOnPolicy(
-  policy: Policy,
-  rules: Rule[]
-): Policy {
-  if (rules.length === 0) {
-    return removeAll(policy, acp.noneOf);
-  }
-  let updatedPolicy = setIri(policy, acp.noneOf, rules[0]);
-  rules.slice(1).forEach((ruleToAdd: Rule) => {
-    updatedPolicy = addForbiddenRuleToPolicy(updatedPolicy, ruleToAdd);
-  });
-  return updatedPolicy;
+export function setForbiddenRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+  return setIri(policy, acp.noneOf, rule);
 }
 
 /**
