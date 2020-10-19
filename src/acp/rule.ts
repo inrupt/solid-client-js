@@ -52,6 +52,26 @@ export function addRequiredRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Removes a rule that refines the scope of a given the [[Policy]]. If an agent
+ * requesting access to a resource is **not** present in **any** of the required rules,
+ * they will not be granted access.
+ * @param policy The [[Policy]] from which the rule should be removed.
+ * @param rule The rule to remove from the policy.
+ * @returns A new [[Policy]] clone of the original one, with the rule removed.
+ * @since Unreleased
+ */
+export function removeRequiredRuleFromPolicy(
+  policy: Policy,
+  rule: Rule
+): Policy {
+  return removeIri(policy, acp.allOf, rule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Overwrites the rule refining the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is **not** present in **any** of the required rules,
  * they will not be granted access.
@@ -100,6 +120,26 @@ export function addOptionalRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Removes a rule that extends the scope of a given the [[Policy]]. If an agent
+ * requesting access to a resource is present in **any** of the required rules,
+ * they will be granted access.
+ * @param policy The [[Policy]] from which the rule should be removed.
+ * @param rule The rule to remove from the policy.
+ * @returns A new [[Policy]] clone of the original one, with the rule removed.
+ * @since Unreleased
+ */
+export function removeOptionalRuleFromPolicy(
+  policy: Policy,
+  rule: Rule
+): Policy {
+  return removeIri(policy, acp.anyOf, rule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Overwrite the rule extending the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is present in **any** of the required rules,
  * they will be granted access.
@@ -141,6 +181,26 @@ export function getOptionalRuleOnPolicyAll(policy: Policy): UrlString[] {
  */
 export function addForbiddenRuleToPolicy(policy: Policy, rule: Rule): Policy {
   return addIri(policy, acp.noneOf, rule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Removes a rule that restricts the scope of a given the [[Policy]]. If an agent
+ * requesting access to a resource is present in **any** of the forbidden rules,
+ * they will **not** be granted access.
+ * @param policy The [[Policy]] from which the rule should be removed.
+ * @param rule The rule to remove from the policy.
+ * @returns A new [[Policy]] clone of the original one, with the rule removed.
+ * @since Unreleased
+ */
+export function removeForbiddenRuleFromPolicy(
+  policy: Policy,
+  rule: Rule
+): Policy {
+  return removeIri(policy, acp.noneOf, rule);
 }
 
 /**

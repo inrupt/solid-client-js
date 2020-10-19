@@ -28,6 +28,9 @@ import {
   getForbiddenRuleOnPolicyAll,
   getOptionalRuleOnPolicyAll,
   getRequiredRuleOnPolicyAll,
+  removeForbiddenRuleFromPolicy,
+  removeOptionalRuleFromPolicy,
+  removeRequiredRuleFromPolicy,
   Rule,
   setForbiddenRuleOnPolicy,
   setOptionalRuleOnPolicy,
@@ -626,5 +629,143 @@ describe("getRequiredRulesOnPolicyAll", () => {
     expect(requiredRules).not.toContainEqual(
       "https://some.pod/rule-resource#optional-rule"
     );
+  });
+});
+
+describe("removeRequiredRuleFromPolicy", () => {
+  it("removes the rule from the rules required by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      required: [mockedRule],
+    });
+    const result = removeRequiredRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ALL),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(false);
+  });
+
+  it("does not remove the rule from the rules optional/forbidden by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      optional: [mockedRule],
+      forbidden: [mockedRule],
+    });
+    const result = removeRequiredRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ANY),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_NONE),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
+  });
+});
+
+describe("removeOptionalRuleFromPolicy", () => {
+  it("removes the rule from the rules required by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      optional: [mockedRule],
+    });
+    const result = removeOptionalRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ANY),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(false);
+  });
+
+  it("does not remove the rule from the rules required/forbidden by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      required: [mockedRule],
+      forbidden: [mockedRule],
+    });
+    const result = removeOptionalRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ALL),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_NONE),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
+  });
+});
+
+describe("removeForbiddenRuleFromPolicy", () => {
+  it("removes the rule from the rules forbidden by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      forbidden: [mockedRule],
+    });
+    const result = removeForbiddenRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_NONE),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(false);
+  });
+
+  it("does not remove the rule from the rules required/optional by the given policy", () => {
+    const mockedRule = mockRule("https://some.pod/rule-resource#rule");
+    const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
+      required: [mockedRule],
+      optional: [mockedRule],
+    });
+    const result = removeForbiddenRuleFromPolicy(mockedPolicy, mockedRule);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ALL),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
+    expect(
+      result.has(
+        DataFactory.quad(
+          DataFactory.namedNode("https://some.pod/policy-resource#policy"),
+          DataFactory.namedNode(ACP_ANY),
+          DataFactory.namedNode("https://some.pod/rule-resource#rule")
+        )
+      )
+    ).toEqual(true);
   });
 });
