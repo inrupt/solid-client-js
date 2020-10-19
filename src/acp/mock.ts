@@ -19,8 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { UrlString } from "../interfaces";
+import { UrlString, WithResourceInfo } from "../interfaces";
 import { mockSolidDatasetFrom } from "../resource/mock";
+import { getSourceUrl, internal_cloneResource } from "../resource/resource";
+import { WithAccessibleAcr } from "./acp";
 import { AccessControlResource } from "./control";
 
 /**
@@ -44,4 +46,36 @@ export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
   );
 
   return acr;
+}
+
+/**
+ * ```{warning}
+ * Do not use this function in production code.  For use in **unit tests** that require a
+ * Resource with an [[AccessControlResource]].
+ * ```
+ *
+ * Attaches an Access Control Resource to a given [[SolidDataset]] for use
+ * in **unit tests**; e.g., unit tests that call [[getAccessControl]].
+ *
+ * @param resource The Resource to mock up with a new resource ACL.
+ * @param accessControlResource The Access Control Resource to attach to the given Resource.
+ * @returns The input Resource with an empty resource ACL attached.
+ */
+export function addMockAcrTo<T extends WithResourceInfo>(
+  resource: T,
+  accessControlResource: AccessControlResource = mockAcrFor(
+    getSourceUrl(resource)
+  )
+): T & WithAccessibleAcr {
+  const resourceWithAcr: typeof resource & WithAccessibleAcr = Object.assign(
+    internal_cloneResource(resource),
+    {
+      internal_acp: {
+        acr: accessControlResource,
+        aprs: {},
+      },
+    }
+  );
+
+  return resourceWithAcr;
 }

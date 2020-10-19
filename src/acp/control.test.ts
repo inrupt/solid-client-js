@@ -42,10 +42,12 @@ import { acp, rdf } from "../constants";
 import { WithAccessibleAcl, WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
-import { mockAcrFor } from "./mock";
+import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { DataFactory } from "n3";
 import { addIri } from "../thing/add";
+import { createSolidDataset } from "../resource/solidDataset";
+import { mockSolidDatasetFrom } from "../resource/mock";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -111,9 +113,13 @@ describe("getAccessControl", () => {
       mockAcrFor("https://some.pod/resource"),
       accessControl
     );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
     const foundAccessControl = getAccessControl(
-      accessControlResource,
+      resourceWithAcr,
       accessControlUrl
     );
 
@@ -128,9 +134,13 @@ describe("getAccessControl", () => {
       mockAcrFor("https://some.pod/resource"),
       accessControl
     );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
     const foundAccessControl = getAccessControl(
-      accessControlResource,
+      resourceWithAcr,
       accessControlUrl
     );
 
@@ -145,13 +155,27 @@ describe("getAccessControl", () => {
       mockAcrFor("https://some.pod/resource"),
       accessControl
     );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
     const foundAccessControl = getAccessControl(
-      accessControlResource,
+      resourceWithAcr,
       "https://some-other.pod/access-control-resource.ttl#access-control"
     );
 
     expect(foundAccessControl).toBeNull();
+  });
+
+  it("throws an error if the given Resource does not have an Access Control Resource", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(() => getAccessControl(withoutAcr as any, accessControlUrl)).toThrow(
+      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+    );
   });
 });
 
@@ -162,8 +186,12 @@ describe("getAccessControlAll", () => {
       mockAcrFor("https://some.pod/resource"),
       accessControl
     );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
-    const foundAccessControls = getAccessControlAll(accessControlResource);
+    const foundAccessControls = getAccessControlAll(resourceWithAcr);
 
     expect(foundAccessControls).toEqual([accessControl]);
   });
@@ -178,18 +206,34 @@ describe("getAccessControlAll", () => {
     let accessControlResource = mockAcrFor("https://some.pod/resource");
     accessControlResource = setThing(accessControlResource, accessControl);
     accessControlResource = setThing(accessControlResource, notAnAccessControl);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
-    const foundAccessControls = getAccessControlAll(accessControlResource);
+    const foundAccessControls = getAccessControlAll(resourceWithAcr);
 
     expect(foundAccessControls).toEqual([accessControl]);
   });
 
   it("returns an empty array if no Access Controls could be found", () => {
     const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
-    const foundAccessControl = getAccessControlAll(accessControlResource);
+    const foundAccessControl = getAccessControlAll(resourceWithAcr);
 
     expect(foundAccessControl).toEqual([]);
+  });
+
+  it("throws an error if the given Resource does not have an Access Control Resource", () => {
+    const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(() => getAccessControlAll(withoutAcr as any)).toThrow(
+      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+    );
   });
 });
 
@@ -203,14 +247,33 @@ describe("setAccessControl", () => {
       acp.AccessControl
     );
     const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
-    const newAccessControlResource = setAccessControl(
-      accessControlResource,
+    const newWithAccessControlResource = setAccessControl(
+      resourceWithAcr,
       accessControl
     );
 
-    expect(getThing(newAccessControlResource, accessControlUrl)).toEqual(
-      accessControl
+    expect(
+      getThing(newWithAccessControlResource.internal_acp.acr, accessControlUrl)
+    ).toEqual(accessControl);
+  });
+
+  it("throws an error if the given Resource does not have an Access Control Resource", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = setUrl(
+      createThing({ url: accessControlUrl }),
+      rdf.type,
+      acp.AccessControl
+    );
+    const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(() => setAccessControl(withoutAcr as any, accessControl)).toThrow(
+      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
     );
   });
 });
@@ -228,13 +291,34 @@ describe("removeAccessControl", () => {
       mockAcrFor("https://some.pod/resource"),
       accessControl
     );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
 
-    const newAccessControlResource = removeAccessControl(
-      accessControlResource,
+    const newWithAccessControlResource = removeAccessControl(
+      resourceWithAcr,
       accessControl
     );
 
-    expect(getThing(newAccessControlResource, accessControlUrl)).toBeNull();
+    expect(
+      getThing(newWithAccessControlResource.internal_acp.acr, accessControlUrl)
+    ).toBeNull();
+  });
+
+  it("throws an error if the given Resource does not have an Access Control Resource", () => {
+    const accessControlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const accessControl = setUrl(
+      createThing({ url: accessControlUrl }),
+      rdf.type,
+      acp.AccessControl
+    );
+    const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(() => removeAccessControl(withoutAcr as any, accessControl)).toThrow(
+      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+    );
   });
 });
 

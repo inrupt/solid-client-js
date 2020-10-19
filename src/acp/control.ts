@@ -29,6 +29,7 @@ import {
   UrlString,
   WithServerResourceInfo,
 } from "../interfaces";
+import { getSourceUrl, internal_cloneResource } from "../resource/resource";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
@@ -40,6 +41,7 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
+import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "./acp";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -126,16 +128,17 @@ export function createAccessControl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Find an [[AccessControl]] with a given URL in a given Access Control Resource.
+ * Find an [[AccessControl]] with a given URL in a given Resource with an Access Control Resource.
  *
  * @returns The requested Access Control, or `null` if it could not be found.
  */
 export function getAccessControl(
-  accessControlResource: AccessControlResource,
+  withAccessControlResource: WithAccessibleAcr,
   url: Parameters<typeof getThing>[1],
   options?: Parameters<typeof getThing>[2]
 ): AccessControl | null {
-  const foundThing = getThing(accessControlResource, url, options);
+  const acr = getAcr(withAccessControlResource);
+  const foundThing = getThing(acr, url, options);
   if (
     foundThing === null ||
     !getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
@@ -150,13 +153,14 @@ export function getAccessControl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all [[AccessControl]]s in a given Access Control Resource.
+ * Get all [[AccessControl]]s in the Access Control Resource of a given Resource.
  */
 export function getAccessControlAll(
-  accessControlResource: AccessControlResource,
+  withAccessControlResource: WithAccessibleAcr,
   options?: Parameters<typeof getThingAll>[1]
 ): AccessControl[] {
-  const foundThings = getThingAll(accessControlResource, options);
+  const acr = getAcr(withAccessControlResource);
+  const foundThings = getThingAll(acr, options);
 
   return foundThings.filter((foundThing) =>
     getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
@@ -167,34 +171,64 @@ export function getAccessControlAll(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Insert an [[AccessControl]] into an [[AccessControlResource]], replacing previous instances of that Access Control.
+ * Insert an [[AccessControl]] into the [[AccessControlResource]] of a Resource, replacing previous
+ * instances of that Access Control.
  *
- * @param accessControlResource The Access Control Resource to insert an Access Control into.
- * @param accessControl The Access Control to insert into the given Access Control Resource.
- * @returns A new Access Control Resource equal to the given Access Control Resource, but with the given Access Control.
+ * @param withAccessControlResource A Resource with the Access Control Resource into which to insert an Access Control.
+ * @param accessControl The Access Control to insert into the Access Control Resource.
+ * @returns The given Resource with a new Access Control Resource equal to the original Access Control Resource, but with the given Access Control.
  */
-export function setAccessControl(
-  accessControlResource: AccessControlResource,
+export function setAccessControl<ResourceExt extends WithAccessibleAcr>(
+  withAccessControlResource: ResourceExt,
   accessControl: AccessControl
-): AccessControlResource {
-  return setThing(accessControlResource, accessControl);
+): ResourceExt {
+  const acr = getAcr(withAccessControlResource);
+  const updatedAcr = setThing(acr, accessControl);
+  const updatedResource = setAcr(withAccessControlResource, updatedAcr);
+  return updatedResource;
 }
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Remove an [[AccessControl]] from an [[AccessControlResource]].
+ * Remove an [[AccessControl]] from the [[AccessControlResource]] of a Resource.
  *
- * @param accessControlResource The Access Control Resource to remove an Access Control from.
+ * @param withAccessControlResource A Resource with the Access Control Resource from which to remove an Access Control.
  * @param accessControl The Access Control to remove from the given Access Control Resource.
- * @returns A new Access Control Resource equal to the given Access Control Resource, excluding the given Access Control.
+ * @returns The given Resource with a new Access Control Resource equal to the original Access Control Resource, excluding the given Access Control.
  */
-export function removeAccessControl(
-  accessControlResource: AccessControlResource,
+export function removeAccessControl<ResourceExt extends WithAccessibleAcr>(
+  withAccessControlResource: ResourceExt,
   accessControl: AccessControl
-): AccessControlResource {
-  return removeThing(accessControlResource, accessControl);
+): ResourceExt {
+  const acr = getAcr(withAccessControlResource);
+  const updatedAcr = removeThing(acr, accessControl);
+  const updatedResource = setAcr(withAccessControlResource, updatedAcr);
+  return updatedResource;
+}
+
+function getAcr(resource: WithAccessibleAcr): AccessControlResource {
+  if (!hasAccessibleAcr(resource)) {
+    throw new Error(
+      `Cannot work with Access Controls on a Resource (${getSourceUrl(
+        resource
+      )}) that does not have an Access Control Resource.`
+    );
+  }
+  return resource.internal_acp.acr;
+}
+
+function setAcr<ResourceExt extends WithAcp>(
+  resource: ResourceExt,
+  acr: AccessControlResource
+): ResourceExt & WithAccessibleAcr {
+  return Object.assign(internal_cloneResource(resource), {
+    internal_acp: {
+      ...resource.internal_acp,
+      acr: acr,
+    },
+  });
 }
 
 /**
