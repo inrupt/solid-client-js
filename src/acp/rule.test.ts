@@ -146,11 +146,12 @@ describe("addForbiddenRuleToPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy("https://some.pod/policy-resource#policy");
+    const mypolicySize = myPolicy.size;
     addForbiddenRuleToPolicy(
       myPolicy,
       mockRule("https://some.pod/rule-resource#rule")
     );
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toEqual(mypolicySize);
   });
 });
 
