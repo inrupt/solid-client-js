@@ -605,7 +605,7 @@ describe("setRequiredRuleOnPolicy", () => {
   });
 });
 
-describe("getForbiddenRulesOnpolicyAll", () => {
+describe("getForbiddenRuleOnPolicyAll", () => {
   it("returns all the forbidden rules for the given policy", () => {
     const mockedPolicy = mockPolicy("https://some.pod/policy-resource#policy", {
       forbidden: [
