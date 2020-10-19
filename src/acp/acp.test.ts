@@ -32,24 +32,25 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import {
-  getFileWithAccessDatasets,
-  getFileWithAcp,
-  getResourceInfoWithAccessDatasets,
-  getResourceInfoWithAcp,
-  getSolidDatasetWithAccessDatasets,
-  getSolidDatasetWithAcp,
-  WithAccessibleAcr,
-} from "./acp";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
 import * as FileModule from "../resource/nonRdfData";
 import * as ResourceModule from "../resource/resource";
-import { mockSolidDatasetFrom } from "../resource/mock";
-import { File, UrlString, WithServerResourceInfo } from "../interfaces";
-import { AccessControlResource } from "./control";
+import {
+  getFileWithAccessDatasets,
+  getFileWithAcr,
+  getReferencedPolicyUrlAll,
+  getResourceInfoWithAccessDatasets,
+  getResourceInfoWithAcr,
+  getSolidDatasetWithAccessDatasets,
+  getSolidDatasetWithAcr,
+} from "./acp";
+import { UrlString, WithServerResourceInfo, File } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
 import { addIri } from "../thing/add";
+import { AccessControlResource } from "./control";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { addMockAcrTo } from "./mock";
 
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
@@ -75,7 +76,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
   return acr;
 }
 
-describe("getSolidDatasetWithAcp", () => {
+describe("getSolidDatasetWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -84,7 +85,7 @@ describe("getSolidDatasetWithAcp", () => {
       >;
     };
 
-    await getSolidDatasetWithAcp("https://some.pod/resource");
+    await getSolidDatasetWithAcr("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -94,7 +95,7 @@ describe("getSolidDatasetWithAcp", () => {
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
 
-    await getSolidDatasetWithAcp("https://some.pod/resource", {
+    await getSolidDatasetWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -114,7 +115,7 @@ describe("getSolidDatasetWithAcp", () => {
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
-    const fetchedDataset = await getSolidDatasetWithAcp(
+    const fetchedDataset = await getSolidDatasetWithAcr(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -124,7 +125,7 @@ describe("getSolidDatasetWithAcp", () => {
     expect(fetchedDataset.internal_acp.acr).toBeNull();
   });
 
-  it("returns an empty Object if no APRs were referenced", async () => {
+  it("attaches the fetched ACR to the returned SolidDataset", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
       "https://arbitrary.pod/resource"
     );
@@ -143,175 +144,15 @@ describe("getSolidDatasetWithAcp", () => {
       .mockResolvedValueOnce(mockedSolidDataset)
       .mockResolvedValueOnce(mockedAcr);
 
-    const fetchedDataset = await getSolidDatasetWithAcp(
+    const fetchedDataset = await getSolidDatasetWithAcr(
       "https://some.pod/resource"
     );
 
-    expect(fetchedDataset.internal_acp.acr).not.toBeNull();
-    expect((fetchedDataset as WithAccessibleAcr).internal_acp.aprs).toEqual({});
-  });
-
-  it("fetches all referenced ACPs once", async () => {
-    const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://some.pod/resource"
-    );
-    mockedSolidDataset.internal_resourceInfo.linkedResources = {
-      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-    };
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/policy-resource#a-policy"],
-      memberPolicies: [
-        "https://some.pod/policy-resource#a-member-policy",
-        "https://some.pod/policy-resource#another-member-policy",
-      ],
-    });
-    const mockedAcp = mockSolidDatasetFrom("https://some.pod/policy-resource");
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedSolidDataset)
-      .mockResolvedValueOnce(mockedAcr)
-      .mockResolvedValueOnce(mockedAcp);
-
-    const fetchedDataset = await getSolidDatasetWithAcp(
-      "https://some.pod/resource"
-    );
-
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(3);
-    expect(mockedGetSolidDataset.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
-    );
-    expect(mockedGetSolidDataset.mock.calls[1][0]).toBe(
-      "https://some.pod/resource?ext=acr"
-    );
-    expect(mockedGetSolidDataset.mock.calls[2][0]).toBe(
-      "https://some.pod/policy-resource"
-    );
-    expect(fetchedDataset.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedDataset as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeDefined();
-    expect(
-      (fetchedDataset as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).not.toBeNull();
-  });
-
-  it("lists Access Policy Resources that could not be fetched as null", async () => {
-    const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://some.pod/resource"
-    );
-    mockedSolidDataset.internal_resourceInfo.linkedResources = {
-      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-    };
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/policy-resource#a-policy"],
-      memberPolicies: [
-        "https://some.pod/policy-resource#a-member-policy",
-        "https://some.pod/policy-resource#another-member-policy",
-      ],
-    });
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedSolidDataset)
-      .mockResolvedValueOnce(mockedAcr)
-      .mockRejectedValueOnce(
-        new Error("Could not fetch this Access Policy Resource")
-      );
-
-    const fetchedDataset = await getSolidDatasetWithAcp(
-      "https://some.pod/resource"
-    );
-
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(3);
-    expect(fetchedDataset.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedDataset as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeNull();
-  });
-
-  it("does not add the ACR itself to the APR list", async () => {
-    const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://some.pod/resource"
-    );
-    mockedSolidDataset.internal_resourceInfo.linkedResources = {
-      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-    };
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/resource?ext=acr#a-policy"],
-      memberPolicies: [
-        "https://some.pod/resource?ext=acr#a-member-policy",
-        "https://some.pod/resource?ext=acr#another-member-policy",
-      ],
-    });
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedSolidDataset)
-      .mockResolvedValueOnce(mockedAcr);
-
-    const fetchedDataset = await getSolidDatasetWithAcp(
-      "https://some.pod/resource"
-    );
-
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(fetchedDataset.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedDataset as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/resource?ext=acr"
-      ]
-    ).not.toBeDefined();
-  });
-
-  it("does not add the SolidDataset itself to the APR list", async () => {
-    const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://some.pod/resource"
-    );
-    mockedSolidDataset.internal_resourceInfo.linkedResources = {
-      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-    };
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/resource#a-policy"],
-      memberPolicies: [
-        "https://some.pod/resource#a-member-policy",
-        "https://some.pod/resource#another-member-policy",
-      ],
-    });
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedSolidDataset)
-      .mockResolvedValueOnce(mockedAcr);
-
-    const fetchedDataset = await getSolidDatasetWithAcp(
-      "https://some.pod/resource"
-    );
-
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(fetchedDataset.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedDataset as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/resource"
-      ]
-    ).not.toBeDefined();
+    expect(fetchedDataset.internal_acp.acr).toBe(mockedAcr);
   });
 });
 
-describe("getFileWithAcp", () => {
+describe("getFileWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -320,7 +161,7 @@ describe("getFileWithAcp", () => {
       >;
     };
 
-    await getFileWithAcp("https://some.pod/resource");
+    await getFileWithAcr("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -330,7 +171,7 @@ describe("getFileWithAcp", () => {
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
 
-    await getFileWithAcp("https://some.pod/resource", {
+    await getFileWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -350,7 +191,7 @@ describe("getFileWithAcp", () => {
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
-    const fetchedFile = await getFileWithAcp("https://some.pod/resource", {
+    const fetchedFile = await getFileWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -359,7 +200,7 @@ describe("getFileWithAcp", () => {
     expect(fetchedFile.internal_acp.acr).toBeNull();
   });
 
-  it("returns an empty Object if no APRs were referenced", async () => {
+  it("attaches the fetched ACR to the returned File", async () => {
     const mockedFile: File & WithServerResourceInfo = Object.assign(
       new Blob(),
       {
@@ -384,153 +225,13 @@ describe("getFileWithAcp", () => {
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
 
-    const fetchedFile = await getFileWithAcp("https://some.pod/resource");
+    const fetchedFile = await getFileWithAcr("https://some.pod/resource");
 
-    expect(fetchedFile.internal_acp.acr).not.toBeNull();
-    expect((fetchedFile as WithAccessibleAcr).internal_acp.aprs).toEqual({});
-  });
-
-  it("fetches all referenced ACPs once", async () => {
-    const mockedFile: File & WithServerResourceInfo = Object.assign(
-      new Blob(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: true,
-          linkedResources: {
-            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-          },
-        },
-      }
-    );
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/policy-resource#a-policy"],
-      memberPolicies: [
-        "https://some.pod/policy-resource#a-member-policy",
-        "https://some.pod/policy-resource#another-member-policy",
-      ],
-    });
-    const mockedAcp = mockSolidDatasetFrom("https://some.pod/policy-resource");
-    const mockedGetFile = jest.spyOn(FileModule, "getFile");
-    mockedGetFile.mockResolvedValueOnce(mockedFile);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedAcr)
-      .mockResolvedValueOnce(mockedAcp);
-
-    const fetchedFile = await getFileWithAcp("https://some.pod/resource");
-
-    expect(mockedGetFile.mock.calls).toHaveLength(1);
-    expect(mockedGetFile.mock.calls[0][0]).toBe("https://some.pod/resource");
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(mockedGetSolidDataset.mock.calls[0][0]).toBe(
-      "https://some.pod/resource?ext=acr"
-    );
-    expect(mockedGetSolidDataset.mock.calls[1][0]).toBe(
-      "https://some.pod/policy-resource"
-    );
-    expect(fetchedFile.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedFile as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeDefined();
-    expect(
-      (fetchedFile as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).not.toBeNull();
-  });
-
-  it("lists Access Policy Resources that could not be fetched as null", async () => {
-    const mockedFile: File & WithServerResourceInfo = Object.assign(
-      new Blob(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: true,
-          linkedResources: {
-            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-          },
-        },
-      }
-    );
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/policy-resource#a-policy"],
-      memberPolicies: [
-        "https://some.pod/policy-resource#a-member-policy",
-        "https://some.pod/policy-resource#another-member-policy",
-      ],
-    });
-    const mockedGetFile = jest.spyOn(FileModule, "getFile");
-    mockedGetFile.mockResolvedValueOnce(mockedFile);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedAcr)
-      .mockRejectedValueOnce(
-        new Error("Could not fetch this Access Policy Resource")
-      );
-
-    const fetchedFile = await getFileWithAcp("https://some.pod/resource");
-
-    expect(mockedGetFile.mock.calls).toHaveLength(1);
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(fetchedFile.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedFile as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeNull();
-  });
-
-  it("does not add the ACR itself to the APR list", async () => {
-    const mockedFile: File & WithServerResourceInfo = Object.assign(
-      new Blob(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: true,
-          linkedResources: {
-            [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
-          },
-        },
-      }
-    );
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/resource?ext=acr#a-policy"],
-      memberPolicies: [
-        "https://some.pod/resource?ext=acr#a-member-policy",
-        "https://some.pod/resource?ext=acr#another-member-policy",
-      ],
-    });
-    const mockedGetFile = jest.spyOn(FileModule, "getFile");
-    mockedGetFile.mockResolvedValueOnce(mockedFile);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
-
-    const fetchedFile = await getFileWithAcp("https://some.pod/resource");
-
-    expect(mockedGetFile.mock.calls).toHaveLength(1);
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(1);
-    expect(fetchedFile.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedFile as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/resource?ext=acr"
-      ]
-    ).not.toBeDefined();
+    expect(fetchedFile.internal_acp.acr).toBe(mockedAcr);
   });
 });
 
-describe("getResourceInfoWithAcp", () => {
+describe("getResourceInfoWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -539,7 +240,7 @@ describe("getResourceInfoWithAcp", () => {
       >;
     };
 
-    await getResourceInfoWithAcp("https://some.pod/resource");
+    await getResourceInfoWithAcr("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -549,7 +250,7 @@ describe("getResourceInfoWithAcp", () => {
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
 
-    await getResourceInfoWithAcp("https://some.pod/resource", {
+    await getResourceInfoWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -569,7 +270,7 @@ describe("getResourceInfoWithAcp", () => {
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
-    const fetchedResourceInfo = await getResourceInfoWithAcp(
+    const fetchedResourceInfo = await getResourceInfoWithAcr(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -578,7 +279,9 @@ describe("getResourceInfoWithAcp", () => {
     expect(mockFetch.mock.calls[1][0]).toEqual("https://some.pod/acr.ttl");
     expect(fetchedResourceInfo.internal_acp.acr).toBeNull();
   });
+});
 
+describe("getReferencedPolicyUrlAll", () => {
   it("returns an empty Object if no APRs were referenced", async () => {
     const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
@@ -593,25 +296,14 @@ describe("getResourceInfoWithAcp", () => {
       policies: [],
       memberPolicies: [],
     });
-    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
-    mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
+    const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
 
-    const fetchedResourceInfo = await getResourceInfoWithAcp(
-      "https://some.pod/resource"
-    );
+    const policyUrls = getReferencedPolicyUrlAll(withMockedAcr);
 
-    expect(fetchedResourceInfo.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedResourceInfo as WithAccessibleAcr).internal_acp.aprs
-    ).toEqual({});
+    expect(policyUrls).toHaveLength(0);
   });
 
-  it("fetches all referenced ACPs once", async () => {
+  it("only includes one mention of a Resource that was referenced multiple times", async () => {
     const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
@@ -628,52 +320,20 @@ describe("getResourceInfoWithAcp", () => {
         "https://some.pod/policy-resource#another-member-policy",
       ],
     });
-    const mockedAcp = mockSolidDatasetFrom("https://some.pod/policy-resource");
-    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
-    mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedAcr)
-      .mockResolvedValueOnce(mockedAcp);
+    const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
 
-    const fetchedResourceInfo = await getResourceInfoWithAcp(
-      "https://some.pod/resource"
-    );
+    const policyUrls = getReferencedPolicyUrlAll(withMockedAcr);
 
-    expect(mockedGetResourceInfo.mock.calls).toHaveLength(1);
-    expect(mockedGetResourceInfo.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
-    );
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(mockedGetSolidDataset.mock.calls[0][0]).toBe(
-      "https://some.pod/resource?ext=acr"
-    );
-    expect(mockedGetSolidDataset.mock.calls[1][0]).toBe(
-      "https://some.pod/policy-resource"
-    );
-    expect(fetchedResourceInfo.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedResourceInfo as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeDefined();
-    expect(
-      (fetchedResourceInfo as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).not.toBeNull();
+    expect(policyUrls).toEqual(["https://some.pod/policy-resource"]);
   });
 
-  it("lists Access Policy Resources that could not be fetched as null", async () => {
+  it("includes all referenced Policy Resources", async () => {
     const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
+        sourceIri: "https://some.pod/resource",
         isRawData: true,
         linkedResources: {
-          [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
         },
       },
     };
@@ -681,36 +341,20 @@ describe("getResourceInfoWithAcp", () => {
       policies: ["https://some.pod/policy-resource#a-policy"],
       memberPolicies: [
         "https://some.pod/policy-resource#a-member-policy",
-        "https://some.pod/policy-resource#another-member-policy",
+        "https://some.pod/other-policy-resource#another-member-policy",
       ],
     });
-    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
-    mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset
-      .mockResolvedValueOnce(mockedAcr)
-      .mockRejectedValueOnce(
-        new Error("Could not fetch this Access Policy Resource")
-      );
+    const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
 
-    const fetchedResourceInfo = await getResourceInfoWithAcp(
-      "https://some.pod/resource"
-    );
+    const policyUrls = getReferencedPolicyUrlAll(withMockedAcr);
 
-    expect(mockedGetResourceInfo.mock.calls).toHaveLength(1);
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(2);
-    expect(fetchedResourceInfo.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedResourceInfo as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/policy-resource"
-      ]
-    ).toBeNull();
+    expect(policyUrls).toEqual([
+      "https://some.pod/policy-resource",
+      "https://some.pod/other-policy-resource",
+    ]);
   });
 
-  it("does not add the ACR itself to the APR list", async () => {
+  it("attaches the fetched ACR to the returned ResourceInfo", async () => {
     const mockedResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -720,12 +364,9 @@ describe("getResourceInfoWithAcp", () => {
         },
       },
     };
-    const mockedAcr = mockAcr("https://some.pod/resource", {
-      policies: ["https://some.pod/resource?ext=acr#a-policy"],
-      memberPolicies: [
-        "https://some.pod/resource?ext=acr#a-member-policy",
-        "https://some.pod/resource?ext=acr#another-member-policy",
-      ],
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
     });
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
@@ -735,18 +376,11 @@ describe("getResourceInfoWithAcp", () => {
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
 
-    const fetchedResourceInfo = await getResourceInfoWithAcp(
+    const fetchedResourceInfo = await getResourceInfoWithAcr(
       "https://some.pod/resource"
     );
 
-    expect(mockedGetResourceInfo.mock.calls).toHaveLength(1);
-    expect(mockedGetSolidDataset.mock.calls).toHaveLength(1);
-    expect(fetchedResourceInfo.internal_acp.acr).not.toBeNull();
-    expect(
-      (fetchedResourceInfo as WithAccessibleAcr).internal_acp.aprs[
-        "https://some.pod/resource?ext=acr"
-      ]
-    ).not.toBeDefined();
+    expect(fetchedResourceInfo.internal_acp.acr).toBe(mockedAcr);
   });
 });
 

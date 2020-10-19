@@ -52,14 +52,13 @@ import { PolicyDataset } from "./policy";
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Fetch a SolidDataset, its associated Access Control Resource (if available to the current user),
- * and all the Access Control Policies referred to therein, if available to the current user.
+ * Fetch a SolidDataset and its associated Access Control Resource (if available to the current user).
  *
  * @param url URL of the SolidDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A SolidDataset and the ACR that applies to it, if available to the authenticated user, and the APRs that are referred to therein, if available to the authenticated user.
+ * @returns A SolidDataset and the ACR that applies to it, if available to the authenticated user.
  */
-export async function getSolidDatasetWithAcp(
+export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
@@ -72,7 +71,7 @@ export async function getSolidDatasetWithAcp(
   };
 
   const solidDataset = await getSolidDataset(urlString, config);
-  const acp = await fetchAcp(solidDataset, config);
+  const acp = await fetchAcr(solidDataset, config);
   return Object.assign(solidDataset, acp);
 }
 
@@ -81,14 +80,13 @@ export async function getSolidDatasetWithAcp(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Fetch a file, its associated Access Control Resource (if available to the current user),
- * and all the Access Control Policies referred to therein, if available to the current user.
+ * Fetch a file and its associated Access Control Resource (if available to the current user).
  *
  * @param url URL of the file to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A file and the ACR that applies to it, if available to the authenticated user, and the APRs that are referred to therein, if available to the authenticated user.
+ * @returns A file and the ACR that applies to it, if available to the authenticated user.
  */
-export async function getFileWithAcp(
+export async function getFileWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
@@ -101,7 +99,7 @@ export async function getFileWithAcp(
   };
 
   const file = await getFile(urlString, config);
-  const acp = await fetchAcp(file, config);
+  const acp = await fetchAcr(file, config);
   return Object.assign(file, acp);
 }
 
@@ -110,15 +108,14 @@ export async function getFileWithAcp(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Retrieve information about a Resource, its associated Access Control Resource (if available to
- * the current user), and all the Access Control Policies referred to therein, if available to the
- * current user, without fetching the Resource itself.
+ * Retrieve information about a Resource and its associated Access Control Resource (if available to
+ * the current user), without fetching the Resource itself.
  *
  * @param url URL of the Resource about which to fetch its information.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns Metadata describing a Resource, and the ACR that applies to it, if available to the authenticated user, and the APRs that are referred to therein, if available to the authenticated user.
+ * @returns Metadata describing a Resource, and the ACR that applies to it, if available to the authenticated user.
  */
-export async function getResourceInfoWithAcp(
+export async function getResourceInfoWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
@@ -131,7 +128,7 @@ export async function getResourceInfoWithAcp(
   };
 
   const resourceInfo = await getResourceInfo(urlString, config);
-  const acp = await fetchAcp(resourceInfo, config);
+  const acp = await fetchAcr(resourceInfo, config);
   return Object.assign(resourceInfo, acp);
 }
 
@@ -168,8 +165,8 @@ export async function getSolidDatasetWithAccessDatasets(
     const acl = await internal_fetchAcl(solidDataset, config);
     return Object.assign(solidDataset, { internal_acl: acl });
   } else {
-    const acp = await fetchAcp(solidDataset, config);
-    return Object.assign(solidDataset, acp);
+    const acr = await fetchAcr(solidDataset, config);
+    return Object.assign(solidDataset, acr);
   }
 }
 
@@ -206,8 +203,8 @@ export async function getFileWithAccessDatasets(
     const acl = await internal_fetchAcl(file, config);
     return Object.assign(file, { internal_acl: acl });
   } else {
-    const acp = await fetchAcp(file, config);
-    return Object.assign(file, acp);
+    const acr = await fetchAcr(file, config);
+    return Object.assign(file, acr);
   }
 }
 
@@ -244,20 +241,15 @@ export async function getResourceInfoWithAccessDatasets(
     const acl = await internal_fetchAcl(resourceInfo, config);
     return Object.assign(resourceInfo, { internal_acl: acl });
   } else {
-    const acp = await fetchAcp(resourceInfo, config);
-    return Object.assign(resourceInfo, acp);
+    const acr = await fetchAcr(resourceInfo, config);
+    return Object.assign(resourceInfo, acr);
   }
 }
 
 export type WithAcp = {
-  internal_acp:
-    | {
-        acr: AccessControlResource;
-        aprs: Record<UrlString, PolicyDataset | null>;
-      }
-    | {
-        acr: null;
-      };
+  internal_acp: {
+    acr: AccessControlResource | null;
+  };
 };
 export type WithAccessibleAcr = WithAcp & {
   internal_acp: {
@@ -278,7 +270,7 @@ export function hasAccessibleAcr(
   );
 }
 
-async function fetchAcp(
+async function fetchAcr(
   resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<WithAcp> {
@@ -311,43 +303,35 @@ async function fetchAcp(
   const acrDataset: AccessControlResource = Object.assign(acr, {
     accessTo: getSourceUrl(resource),
   });
-  const policyUrls = getReferencedPolicyUrls(acrDataset)
-    // Prevent the Resource itself, and the Access Control Resource, from being fetched again:
-    .filter((policyUrl) => ![resourceUrl, acrUrl].includes(policyUrl));
-  const policyDatasets = await Promise.all(
-    policyUrls.map((url) => fetchPolicyDataset(url, options))
-  );
   const acpInfo: WithAccessibleAcr = {
     internal_acp: {
       acr: acrDataset,
-      aprs: {},
     },
   };
-  policyUrls.forEach((policyUrl, i) => {
-    acpInfo.internal_acp.aprs[policyUrl] = policyDatasets[i];
-  });
   return acpInfo;
 }
 
-async function fetchPolicyDataset(
-  url: UrlString,
-  options: Partial<typeof internal_defaultFetchOptions>
-): Promise<PolicyDataset | null> {
-  try {
-    return await getSolidDataset(url, options);
-  } catch (e) {
-    // We expect fetching of Access Policy Resources to fail often,
-    // specifically when the current user does not have access to that Resource.
-    return null;
-  }
-}
-
-function getReferencedPolicyUrls(acr: AccessControlResource): UrlString[] {
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * To make it easy to fetch all the relevant Access Policy Resources,
+ * this function returns all referenced Access Policy Resources referenced in an
+ * Access Control Resource.
+ * In other words, if Access Controls refer to different Policies in the same
+ * Access Policy Resource, this function will only return that Access Policy
+ * Resource's URL once.
+ *
+ * @param withAcr A Resource with an Access Control Resource attached.
+ * @returns List of all unique Access Policy Resources that are referenced in the given Access Control Resource.
+ */
+export function getReferencedPolicyUrlAll(
+  withAcr: WithAccessibleAcr
+): UrlString[] {
   const policyUrls: UrlString[] = [];
 
-  const controls = getAccessControlAll({
-    internal_acp: { acr: acr, aprs: {} },
-  });
+  const controls = getAccessControlAll(withAcr);
   controls.forEach((control) => {
     policyUrls.push(...getPolicyUrlAll(control).map(getResourceUrl));
     policyUrls.push(...getMemberPolicyUrlAll(control).map(getResourceUrl));
