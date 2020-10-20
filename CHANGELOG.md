@@ -8,7 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### Bugs fixed
 
-- When writing non-RDF data, the request headers were incorrectly set, resulting in incorrect headers.
+- When writing non-RDF data, the request headers were incorrectly set.
 
 The following sections document changes that have been released already:
 
