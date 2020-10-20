@@ -38,9 +38,56 @@ import {
   saveFileInContainer,
   overwriteFile,
   getFileWithAcl,
+  flattenHeaders,
 } from "./nonRdfData";
 import { Headers, Response } from "cross-fetch";
 import { WithResourceInfo } from "../interfaces";
+
+describe("flattenHeaders", () => {
+  it("returns an empty object for undefined headers", () => {
+    expect(flattenHeaders(undefined)).toEqual({});
+  });
+
+  it("returns well-formed headers as-is", () => {
+    const headers: Record<string, string> = {
+      test: "value",
+    };
+    expect(flattenHeaders(headers)).toEqual(headers);
+  });
+
+  it("transforms an incoming Headers object into a flat headers structure", () => {
+    const myHeaders = new Headers();
+    myHeaders.append("accept", "application/json");
+    myHeaders.append("content-type", "text/turtle");
+    // The following needs to be ignored because `node-fetch::Headers` and
+    // `lib.dom.d.ts::Headers` don't align. It doesn't break the way we
+    // use them currently, but it's something that must be cleaned up
+    // at some point.
+    // eslint-disable-next-line
+    // @ts-ignore
+    const flatHeaders = flattenHeaders(myHeaders);
+    expect(Object.entries(flatHeaders)).toEqual([
+      ["accept", "application/json"],
+      ["content-type", "text/turtle"],
+    ]);
+  });
+
+  it("supports non-iterable headers if they provide a reasonably standard way of browsing them", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const myHeaders: any = {};
+    myHeaders["forEach"] = (
+      callback: (value: string, key: string) => void
+    ): void => {
+      callback("application/json", "accept");
+      callback("text/turtle", "content-type");
+    };
+    const flatHeaders = flattenHeaders(myHeaders);
+    expect(Object.entries(flatHeaders)).toEqual([
+      ["accept", "application/json"],
+      ["content-type", "text/turtle"],
+    ]);
+  });
+});
 
 describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
@@ -543,11 +590,9 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual(
-      new Headers({
-        "Content-Type": "binary",
-      })
-    );
+    expect(mockCall[1]?.headers).toEqual({
+      "content-type": "binary",
+    });
     expect(mockCall[1]?.method).toEqual("POST");
     expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(savedFile).toBeInstanceOf(Blob);
@@ -577,9 +622,7 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual(
-      new Headers({ "Content-Type": "binary" })
-    );
+    expect(mockCall[1]?.headers).toEqual({ "content-type": "binary" });
     expect(mockCall[1]?.body).toEqual(mockBlob);
   });
 
@@ -593,12 +636,10 @@ describe("Write non-RDF data into a folder", () => {
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual(
-      new Headers({
-        "Content-Type": "binary",
-        Slug: "someFileName",
-      })
-    );
+    expect(mockCall[1]?.headers).toEqual({
+      "content-type": "binary",
+      slug: "someFileName",
+    });
     expect(mockCall[1]?.body).toEqual(mockBlob);
   });
 
@@ -726,11 +767,9 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const mockCall = fetcher.fetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual(
-      new Headers({
-        "Content-Type": "binary",
-      })
-    );
+    expect(mockCall[1]?.headers).toEqual({
+      "content-type": "binary",
+    });
     expect(mockCall[1]?.method).toEqual("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
@@ -776,9 +815,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
     const mockCall = mockFetch.mock.calls[0];
     expect(mockCall[0]).toEqual("https://some.url");
-    expect(mockCall[1]?.headers).toEqual(
-      new Headers({ "Content-Type": "binary" })
-    );
+    expect(mockCall[1]?.headers).toEqual({ "content-type": "binary" });
     expect(mockCall[1]?.method).toEqual("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 

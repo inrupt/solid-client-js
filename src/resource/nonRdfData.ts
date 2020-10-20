@@ -20,7 +20,7 @@
  */
 
 import { fetch } from "../fetcher";
-import { Headers } from "cross-fetch";
+import { Headers as CrossHeaders } from "cross-fetch";
 import {
   File,
   UploadRequestInit,
@@ -244,6 +244,36 @@ export async function overwriteFile(
 }
 
 /**
+ * @hidden
+ * This function feels unnecessarily complicated, but is required in order to
+ * have Headers according to type definitions in both Node and browser environments.
+ * This might require a fix upstream to be cleaned up.
+ *
+ * @param headersToFlatten A structure containing headers potentially in several formats
+ */
+export function flattenHeaders(
+  headersToFlatten: Headers | Record<string, string> | string[][] | undefined
+): Record<string, string> {
+  if (typeof headersToFlatten === "undefined") {
+    return {};
+  }
+  const flatHeaders: Record<string, string> = {};
+
+  // If the headers are already a Record<string, string>,
+  // they can directly be returned.
+  if (typeof headersToFlatten.forEach !== "function") {
+    // FIXME: This will break when passed a string[][]
+    //        (as shown when the type assertions are removed).
+    return headersToFlatten as Record<string, string>;
+  }
+
+  (headersToFlatten as Headers).forEach((value: string, key: string) => {
+    flatHeaders[key] = value;
+  });
+  return flatHeaders;
+}
+
+/**
  * Internal function that performs the actual write HTTP query, either POST
  * or PUT depending on the use case.
  *
@@ -262,7 +292,7 @@ async function writeFile(
     ...defaultGetFileOptions,
     ...options,
   };
-  const headers = new Headers(config.init?.headers ?? {});
+  const headers = new CrossHeaders(config.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
@@ -281,7 +311,7 @@ async function writeFile(
 
   return await config.fetch(targetUrlString, {
     ...config.init,
-    headers,
+    headers: flattenHeaders(headers),
     method,
     body: file,
   });
