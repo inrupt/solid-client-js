@@ -60,14 +60,10 @@ describe("flattenHeaders", () => {
     myHeaders.append("accept", "application/json");
     myHeaders.append("Content-Type", "text/turtle");
     const flatHeaders = flattenHeaders(myHeaders);
-    expect(Object.entries(flatHeaders)).toContainEqual([
-      "accept",
-      "application/json",
-    ]);
-    expect(Object.entries(flatHeaders)).toContainEqual([
-      "content-type",
-      "text/turtle",
-    ]);
+    expect(flatHeaders).toEqual({
+      accept: "application/json",
+      "content-type": "text/turtle",
+    });
   });
 
   it("supports non-iterable headers if they provide a reasonably standard way of browsing them", () => {
