@@ -279,9 +279,9 @@ export function flattenHeaders(
   let flatHeaders: Record<string, string> = {};
 
   if (isHeadersArray(headersToFlatten)) {
-    for (const header of headersToFlatten.values()) {
-      flatHeaders[header[0]] = header[1];
-    }
+    headersToFlatten.forEach(([key, value]) => {
+      flatHeaders[key] = value;
+    });
     // Note that the following line must be a elsif, because string[][] has a forEach,
     // but it returns string[] instead of <key, value>
   } else if (hasHeadersObjectForEach(headersToFlatten)) {
