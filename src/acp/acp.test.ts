@@ -33,8 +33,11 @@ jest.mock("../fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import {
+  getFileWithAccessDatasets,
   getFileWithAcp,
+  getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcp,
+  getSolidDatasetWithAccessDatasets,
   getSolidDatasetWithAcp,
   WithAccessibleAcr,
 } from "./acp";
@@ -744,5 +747,454 @@ describe("getResourceInfoWithAcp", () => {
         "https://some.pod/resource?ext=acr"
       ]
     ).not.toBeDefined();
+  });
+});
+
+describe("getSolidDatasetWithAccessDatasets", () => {
+  it("fetches the Resource at the given URL", async () => {
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+
+    await getSolidDatasetWithAccessDatasets("https://some.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACL when the SolidDataset at the given URL exposes one", async () => {
+    const mockDataset = mockSolidDatasetFrom("https://arbitrary.pod/resource");
+    mockDataset.internal_resourceInfo.aclUrl = "https://some.pod/resource.acl";
+    mockDataset.internal_resourceInfo.linkedResources = {
+      acl: ["https://some.pod/resource.acl"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
+
+    await getSolidDatasetWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource.acl",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACR when the SolidDataset at the given URL exposes one", async () => {
+    const mockDataset = mockSolidDatasetFrom("https://arbitrary.pod/resource");
+    mockDataset.internal_resourceInfo.linkedResources = {
+      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
+
+    await getSolidDatasetWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource?ext=acr",
+      expect.anything()
+    );
+  });
+
+  it("does not fetch any Access Dataset if none is exposed", async () => {
+    const mockDataset = mockSolidDatasetFrom("https://arbitrary.pod/resource");
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
+
+    await getSolidDatasetWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes on the given fetcher to the Resource and ACL fetcher", async () => {
+    const mockDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    mockDataset.internal_resourceInfo.aclUrl = "https://some.pod/resource.acl";
+    mockDataset.internal_resourceInfo.linkedResources = {
+      acl: ["https://some.pod/resource.acl"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    await getSolidDatasetWithAccessDatasets("https://some.pod/resource", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
+    expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
+      1,
+      "https://some.pod/resource",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
+      2,
+      "https://some.pod/resource.acl",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+  });
+
+  it("passes on the given fetcher to the Resource and ACR fetcher", async () => {
+    const mockDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    mockDataset.internal_resourceInfo.linkedResources = {
+      [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    await getSolidDatasetWithAccessDatasets("https://some.pod/resource", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
+    expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
+      1,
+      "https://some.pod/resource",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
+      2,
+      "https://some.pod/resource?ext=acr",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+  });
+});
+
+describe("getFileWithAccessDatasets", () => {
+  it("fetches the Resource at the given URL", async () => {
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+
+    await getFileWithAccessDatasets("https://some.pod/resource");
+
+    expect(mockedGetFile).toHaveBeenCalledTimes(1);
+    expect(mockedGetFile).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACL when the File at the given URL exposes one", async () => {
+    const mockFile = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: { acl: ["https://some.pod/resource.acl"] },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+    mockedGetFile.mockResolvedValueOnce(mockFile);
+
+    await getFileWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource.acl",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACR when the File at the given URL exposes one", async () => {
+    const mockFile = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        linkedResources: {
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+        },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+    mockedGetFile.mockResolvedValueOnce(mockFile);
+
+    await getFileWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource?ext=acr",
+      expect.anything()
+    );
+  });
+
+  it("does not fetch any Access Dataset if none is exposed", async () => {
+    const mockFile = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        linkedResources: {},
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+    mockedGetFile.mockResolvedValueOnce(mockFile);
+
+    await getFileWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).not.toHaveBeenCalled();
+  });
+
+  it("passes on the given fetcher to the Resource and ACL fetcher", async () => {
+    const mockFile = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: { acl: ["https://some.pod/resource.acl"] },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+    mockedGetFile.mockResolvedValueOnce(mockFile);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    await getFileWithAccessDatasets("https://some.pod/resource", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetFile).toHaveBeenCalledTimes(1);
+    expect(mockedGetFile).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource.acl",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+  });
+
+  it("passes on the given fetcher to the Resource and ACR fetcher", async () => {
+    const mockFile = Object.assign(new Blob(), {
+      internal_resourceInfo: {
+        linkedResources: {
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+        },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetFile = jest.spyOn(FileModule, "getFile");
+    mockedGetFile.mockResolvedValueOnce(mockFile);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    await getFileWithAccessDatasets("https://some.pod/resource", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetFile).toHaveBeenCalledTimes(1);
+    expect(mockedGetFile).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource?ext=acr",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+  });
+});
+
+describe("getResourceInfoWithAccessDatasets", () => {
+  it("fetches the ResourceInfo for the given URL", async () => {
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+
+    await getResourceInfoWithAccessDatasets("https://some.pod/resource");
+
+    expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
+    expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACL when the Resource at the given URL exposes one", async () => {
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: { acl: ["https://some.pod/resource.acl"] },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
+
+    await getResourceInfoWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource.acl",
+      expect.anything()
+    );
+  });
+
+  it("fetches the ACR when the Resource at the given URL exposes one", async () => {
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        linkedResources: {
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+        },
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
+
+    await getResourceInfoWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource?ext=acr",
+      expect.anything()
+    );
+  });
+
+  it("does not fetch any Access Dataset if none is exposed", async () => {
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        linkedResources: {},
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+      },
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
+
+    await getResourceInfoWithAccessDatasets("https://arbitrary.pod/resource");
+
+    expect(mockedGetSolidDataset).not.toHaveBeenCalled();
+  });
+
+  it("passes on the given fetcher to the ResourceInfo and ACL fetcher", async () => {
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        aclUrl: "https://some.pod/.acl",
+        linkedResources: { acl: ["https://some.pod/.acl"] },
+        sourceIri: "https://some.pod/",
+        isRawData: true,
+      },
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    // We specifically use the root Resource here,
+    // because otherwise `getResourceInfo` would be called on the parent Resource
+    // to find a fallback ACL:
+    await getResourceInfoWithAccessDatasets("https://some.pod/", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
+    expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
+      "https://some.pod/",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/.acl",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+  });
+
+  it("passes on the given fetcher to the ResourceInfo and ACR fetcher", async () => {
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        linkedResources: {
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+        },
+        sourceIri: "https://some.pod/resource",
+        isRawData: true,
+      },
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
+    const mockedFetcher = jest
+      .fn(window.fetch)
+      .mockResolvedValue(new Response());
+
+    await getResourceInfoWithAccessDatasets("https://some.pod/resource", {
+      fetch: mockedFetcher,
+    });
+
+    expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
+    expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
+      "https://some.pod/resource",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
+    expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
+    expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
+      "https://some.pod/resource?ext=acr",
+      expect.objectContaining({ fetch: mockedFetcher })
+    );
   });
 });
