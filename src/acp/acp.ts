@@ -29,6 +29,7 @@ import {
   WithServerResourceInfo,
   WithAcl,
   hasAccessibleAcl,
+  WithResourceInfo,
 } from "../interfaces";
 import { getFile } from "../resource/nonRdfData";
 import {
@@ -281,7 +282,7 @@ async function fetchAcr(
       },
     };
   }
-  let acr: SolidDataset;
+  let acr: SolidDataset & WithResourceInfo;
   try {
     acr = await getSolidDataset(
       // Whereas a Resource can generally have multiple linked Resources for the same relation,
