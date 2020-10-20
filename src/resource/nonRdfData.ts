@@ -40,6 +40,7 @@ import {
   isRawData,
   internal_cloneResource,
 } from "./resource";
+import { type } from "rdf-namespaces/dist/dc";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;
@@ -243,6 +244,24 @@ export async function overwriteFile(
   return Object.assign(blobClone, { internal_resourceInfo: resourceInfo });
 }
 
+function isHeadersArray(
+  headers: Headers | Record<string, string> | string[][]
+): headers is string[][] {
+  return Array.isArray(headers);
+}
+
+/**
+ * The return type of this function is misleading: it should ONLY be used to check
+ * whether an object has a forEach method that returns <key, value> pairs.
+ *
+ * @param headers A headers object that might have a forEach
+ */
+function hasHeadersObjectForEach(
+  headers: Headers | Record<string, string> | string[][]
+): headers is Headers {
+  return typeof (headers as Headers).forEach === "function";
+}
+
 /**
  * @hidden
  * This function feels unnecessarily complicated, but is required in order to
@@ -257,19 +276,25 @@ export function flattenHeaders(
   if (typeof headersToFlatten === "undefined") {
     return {};
   }
-  const flatHeaders: Record<string, string> = {};
 
-  // If the headers are already a Record<string, string>,
-  // they can directly be returned.
-  if (typeof headersToFlatten.forEach !== "function") {
-    // FIXME: This will break when passed a string[][]
-    //        (as shown when the type assertions are removed).
-    return headersToFlatten as Record<string, string>;
+  let flatHeaders: Record<string, string> = {};
+
+  if (isHeadersArray(headersToFlatten)) {
+    for (const header of headersToFlatten.values()) {
+      flatHeaders[header[0]] = header[1];
+    }
+    // Note that the following line must be a elsif, because string[][] has a forEach,
+    // but it returns string[] instead of <key, value>
+  } else if (hasHeadersObjectForEach(headersToFlatten)) {
+    headersToFlatten.forEach((value: string, key: string) => {
+      flatHeaders[key] = value;
+    });
+  } else {
+    // If the headers are already a Record<string, string>,
+    // they can directly be returned.
+    flatHeaders = headersToFlatten;
   }
 
-  (headersToFlatten as Headers).forEach((value: string, key: string) => {
-    flatHeaders[key] = value;
-  });
   return flatHeaders;
 }
 
