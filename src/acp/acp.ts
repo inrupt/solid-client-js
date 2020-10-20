@@ -27,12 +27,15 @@ import {
   Url,
   UrlString,
   WithServerResourceInfo,
+  WithAcl,
+  hasAccessibleAcl,
 } from "../interfaces";
 import { getFile } from "../resource/nonRdfData";
 import {
   getResourceInfo,
   getSourceUrl,
   internal_defaultFetchOptions,
+  internal_fetchAcl,
 } from "../resource/resource";
 import { getSolidDataset } from "../resource/solidDataset";
 import {
@@ -130,6 +133,120 @@ export async function getResourceInfoWithAcp(
   const resourceInfo = await getResourceInfo(urlString, config);
   const acp = await fetchAcp(resourceInfo, config);
   return Object.assign(resourceInfo, acp);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Fetch a SolidDataset, and:
+ * - if the Resource is governed by an ACR: its associated Access Control Resource (if available to
+ *                                          the current user), and all the Access Control Policies
+ *                                          referred to therein, if available to the current user.
+ * - if the Resource is governed by an ACL: its associated Resource ACL (if available to the current
+ *                                          user), or its Fallback ACL if it does not exist.
+ *
+ * @param url URL of the SolidDataset to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A SolidDataset and either the ACL access data or the ACR access data, if available to the current user.
+ */
+export async function getSolidDatasetWithAccessDatasets(
+  url: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset & (WithAcp | WithAcl)> {
+  const urlString = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const solidDataset = await getSolidDataset(urlString, config);
+  if (hasAccessibleAcl(solidDataset)) {
+    const acl = await internal_fetchAcl(solidDataset, config);
+    return Object.assign(solidDataset, { internal_acl: acl });
+  } else {
+    const acp = await fetchAcp(solidDataset, config);
+    return Object.assign(solidDataset, acp);
+  }
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Fetch a File, and:
+ * - if the Resource is governed by an ACR: its associated Access Control Resource (if available to
+ *                                          the current user), and all the Access Control Policies
+ *                                          referred to therein, if available to the current user.
+ * - if the Resource is governed by an ACL: its associated Resource ACL (if available to the current
+ *                                          user), or its Fallback ACL if it does not exist.
+ *
+ * @param url URL of the File to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A File and either the ACL access data or the ACR access data, if available to the current user.
+ */
+export async function getFileWithAccessDatasets(
+  url: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<File & (WithAcp | WithAcl)> {
+  const urlString = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const file = await getFile(urlString, config);
+  if (hasAccessibleAcl(file)) {
+    const acl = await internal_fetchAcl(file, config);
+    return Object.assign(file, { internal_acl: acl });
+  } else {
+    const acp = await fetchAcp(file, config);
+    return Object.assign(file, acp);
+  }
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Fetch information about a Resource, and:
+ * - if the Resource is governed by an ACR: its associated Access Control Resource (if available to
+ *                                          the current user), and all the Access Control Policies
+ *                                          referred to therein, if available to the current user.
+ * - if the Resource is governed by an ACL: its associated Resource ACL (if available to the current
+ *                                          user), or its Fallback ACL if it does not exist.
+ *
+ * @param url URL of the Resource information about which to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Information about a Resource and either the ACL access data or the ACR access data, if available to the current user.
+ */
+export async function getResourceInfoWithAccessDatasets(
+  url: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<WithServerResourceInfo & (WithAcp | WithAcl)> {
+  const urlString = internal_toIriString(url);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const resourceInfo = await getResourceInfo(urlString, config);
+  if (hasAccessibleAcl(resourceInfo)) {
+    const acl = await internal_fetchAcl(resourceInfo, config);
+    return Object.assign(resourceInfo, { internal_acl: acl });
+  } else {
+    const acp = await fetchAcp(resourceInfo, config);
+    return Object.assign(resourceInfo, acp);
+  }
 }
 
 export type WithAcp = {
