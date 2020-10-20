@@ -59,12 +59,6 @@ describe("flattenHeaders", () => {
     const myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
     myHeaders.append("Content-Type", "text/turtle");
-    // The following needs to be ignored because `node-fetch::Headers` and
-    // `lib.dom.d.ts::Headers` don't align. It doesn't break the way we
-    // use them currently, but it's something that must be cleaned up
-    // at some point.
-    // eslint-disable-next-line
-    // @ts-ignore
     const flatHeaders = flattenHeaders(myHeaders);
     expect(Object.entries(flatHeaders)).toContainEqual([
       "accept",
