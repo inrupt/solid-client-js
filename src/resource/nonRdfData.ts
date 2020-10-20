@@ -20,7 +20,6 @@
  */
 
 import { fetch } from "../fetcher";
-import { Headers as CrossHeaders } from "cross-fetch";
 import {
   File,
   UploadRequestInit,
@@ -56,8 +55,8 @@ const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
 /**
  * Some of the headers must be set by the library, rather than directly.
  */
-function containsReserved(header: Headers): boolean {
-  return RESERVED_HEADERS.some((reserved) => header.has(reserved));
+function containsReserved(header: Record<string, string>): boolean {
+  return RESERVED_HEADERS.some((reserved) => header[reserved] !== undefined);
 }
 
 /**
@@ -317,7 +316,7 @@ async function writeFile(
     ...defaultGetFileOptions,
     ...options,
   };
-  const headers = new CrossHeaders(config.init?.headers ?? {});
+  const headers = flattenHeaders(config.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
@@ -328,15 +327,15 @@ async function writeFile(
 
   // If a slug is in the parameters, set the request headers accordingly
   if (config.slug !== undefined) {
-    headers.append("Slug", config.slug);
+    headers["Slug"] = config.slug;
   }
-  headers.append("Content-Type", file.type);
+  headers["Content-Type"] = file.type;
 
   const targetUrlString = internal_toIriString(targetUrl);
 
   return await config.fetch(targetUrlString, {
     ...config.init,
-    headers: flattenHeaders(headers),
+    headers,
     method,
     body: file,
   });
