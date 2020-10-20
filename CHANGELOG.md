@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes have been implemented but not released yet:
 
+### Bugs fixed
+
+- When writing non-RDF data, the request headers were incorrectly set, resulting in incorrect headers.
+
 The following sections document changes that have been released already:
 
 ## [0.6.1] - 2020-10-15
