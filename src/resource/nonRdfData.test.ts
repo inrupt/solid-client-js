@@ -76,10 +76,10 @@ describe("flattenHeaders", () => {
       callback("text/turtle", "Content-Type");
     };
     const flatHeaders = flattenHeaders(myHeaders);
-    expect(Object.entries(flatHeaders)).toEqual([
-      ["accept", "application/json"],
-      ["Content-Type", "text/turtle"],
-    ]);
+    expect(flatHeaders).toEqual({
+      accept: "application/json",
+      "Content-Type": "text/turtle",
+    });
   });
 
   it("transforms an incoming string[][] array into a flat headers structure", () => {
@@ -88,10 +88,10 @@ describe("flattenHeaders", () => {
       ["Content-Type", "text/turtle"],
     ];
     const flatHeaders = flattenHeaders(myHeaders);
-    expect(Object.entries(flatHeaders)).toEqual([
-      ["accept", "application/json"],
-      ["Content-Type", "text/turtle"],
-    ]);
+    expect(flatHeaders).toEqual({
+      accept: "application/json",
+      "Content-Type": "text/turtle",
+    });
   });
 });
 
