@@ -58,6 +58,11 @@ describe.each([
   ["https://lit-e2e-test.inrupt.net/public/"],
   ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
 ])("End-to-end tests against %s", (rootContainer) => {
+  // Tests that should only run against either NSS or ESS,
+  // e.g. because something is not (properly) implemented on the other.
+  const on_ess_it = rootContainer.includes("demo-ess") ? it : it.skip;
+  const on_nss_it = rootContainer.includes("demo-ess") ? it.skip : it;
+
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
@@ -103,10 +108,9 @@ describe.each([
 
   // FIXME: An NSS bug prevents it from understand our changing of booleans,
   // and thus causes this test to fail.
-  // Once the bug is fixed, `ess` should be replaced by a regular `it` again.
+  // Once the bug is fixed, `on_ess_it` should be replaced by a regular `it` again.
   // See https://github.com/solid/node-solid-server/issues/1468.
-  const ess = rootContainer.includes("demo-ess") ? it : it.skip;
-  ess("can read and write booleans", async () => {
+  on_ess_it("can read and write booleans", async () => {
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
@@ -162,9 +166,8 @@ describe.each([
   });
 
   // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
-  // Once the bug is fixed, this should be cleaned up.
-  const nss = rootContainer.includes("demo-ess") ? it.skip : it;
-  nss("can create and remove empty Containers", async () => {
+  // Once the bug is fixed, `on_nss_it` should be replaced by a regular `it` again.
+  on_nss_it("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
       `${rootContainer}container-test/some-container/`
     );
