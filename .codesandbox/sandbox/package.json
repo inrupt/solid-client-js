@@ -1,14 +1,15 @@
 {
-  "name": "vanilla-typescript",
+  "name": "solid-client-sandbox",
   "version": "1.0.0",
-  "description": "JavaScript and TypeScript example starter project",
+  "description": "Example project calling out to solid-client",
   "main": "index.html",
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html"
   },
   "dependencies": {
-    "@inrupt/solid-client": "0.1.0",
+    "@inrupt/solid-client": "../../",
+    "@inrupt/solid-client-authn-browser": "0.2.2 - 1.x",
     "rdf-namespaces": "1.8.0"
   },
   "devDependencies": {
@@ -17,5 +18,8 @@
   "keywords": [
     "typescript",
     "javascript"
+  ],
+  "browserslist": [
+    "since 2017-06"
   ]
 }
