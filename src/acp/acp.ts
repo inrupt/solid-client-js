@@ -38,13 +38,15 @@ import {
   internal_defaultFetchOptions,
   internal_fetchAcl,
 } from "../resource/resource";
-import { getSolidDataset } from "../resource/solidDataset";
+import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
   getAccessControlAll,
   getMemberPolicyUrlAll,
   getPolicyUrlAll,
   hasLinkedAcr,
+  internal_getAcr,
+  internal_setAcr,
 } from "./control";
 import { PolicyDataset } from "./policy";
 
@@ -245,6 +247,33 @@ export async function getResourceInfoWithAccessDatasets(
     const acr = await fetchAcr(resourceInfo, config);
     return Object.assign(resourceInfo, acr);
   }
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Save a Resource's Access Control Resource.
+ *
+ * @param resource Resource with an Access Control Resource that should be saved.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ */
+export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
+  resource: ResourceExt,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<ResourceExt> {
+  const acr = internal_getAcr(resource);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const savedAcr = await saveSolidDatasetAt(getSourceUrl(acr), acr, config);
+
+  return internal_setAcr(resource, savedAcr);
 }
 
 export type WithAcp = {

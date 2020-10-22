@@ -44,6 +44,7 @@ import {
   getResourceInfoWithAcr,
   getSolidDatasetWithAccessDatasets,
   getSolidDatasetWithAcr,
+  saveAcrFor,
 } from "./acp";
 import { UrlString, WithServerResourceInfo, File } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
@@ -830,5 +831,82 @@ describe("getResourceInfoWithAccessDatasets", () => {
       "https://some.pod/resource?ext=acr",
       expect.objectContaining({ fetch: mockedFetcher })
     );
+  });
+});
+
+describe("saveAcrFor", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource");
+    const mockedResource = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      mockedAcr
+    );
+
+    await saveAcrFor(mockedResource);
+
+    expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource");
+    const mockedResource = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      mockedAcr
+    );
+
+    await saveAcrFor(mockedResource, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends the ACR to the Pod", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockedSaveSolidDatasetAt = jest.spyOn(
+      SolidDatasetModule,
+      "saveSolidDatasetAt"
+    );
+    const mockedAcr = mockAcr("https://some.pod/resource");
+    const mockedResource = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    await saveAcrFor(mockedResource, {
+      fetch: mockFetch,
+    });
+
+    expect(mockedSaveSolidDatasetAt).toHaveBeenCalledTimes(1);
+    expect(mockedSaveSolidDatasetAt).toHaveBeenCalledWith(
+      "https://some.pod/resource?ext=acr",
+      mockedAcr,
+      expect.objectContaining({ fetch: mockFetch })
+    );
+  });
+
+  it("attaches the saved ACR to the returned Resource", async () => {
+    const mockedSaveSolidDatasetAt = jest.spyOn(
+      SolidDatasetModule,
+      "saveSolidDatasetAt"
+    );
+    const mockedAcr = mockAcr("https://some.pod/resource");
+    const mockedResource = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const fakeReturnedAcr = { fake: "ACR" } as any;
+    mockedSaveSolidDatasetAt.mockResolvedValueOnce(fakeReturnedAcr);
+
+    const savedResource = await saveAcrFor(mockedResource);
+
+    expect(savedResource.internal_acp.acr).toEqual(fakeReturnedAcr);
   });
 });
