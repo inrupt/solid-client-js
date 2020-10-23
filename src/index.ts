@@ -27,6 +27,8 @@ export {
   getContentType,
   getResourceInfo,
   getResourceInfoWithAcl,
+  getPodOwner,
+  isPodOwner,
 } from "./resource/resource";
 export {
   getFile,
@@ -39,9 +41,11 @@ export {
   createSolidDataset,
   getSolidDataset,
   saveSolidDatasetAt,
+  deleteSolidDataset,
   createContainerAt,
   saveSolidDatasetInContainer,
   createContainerInContainer,
+  deleteContainer,
   getSolidDatasetWithAcl,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
@@ -175,6 +179,7 @@ export {
   ThingLocal,
   LocalNode,
   hasResourceInfo,
+  hasServerResourceInfo,
   WithResourceInfo,
   WithChangeLog,
   hasAccessibleAcl,

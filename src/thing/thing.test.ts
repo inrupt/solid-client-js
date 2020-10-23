@@ -154,7 +154,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithMultipleThings,
       "https://some.vocab/subject"
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -167,7 +167,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithAThing,
       DataFactory.namedNode("https://some.vocab/subject")
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -182,9 +182,23 @@ describe("getThing", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
 
-    const thing = getThing(datasetWithThingLocal, localSubject);
+    const thing = getThing(datasetWithThingLocal, localSubject) as Thing;
 
     expect(Array.from(thing)).toEqual([quadWithLocalSubject]);
+  });
+
+  it("returns null if the given SolidDataset does not include Quads with the given Subject", () => {
+    const datasetWithoutTheThing = dataset();
+    datasetWithoutTheThing.add(
+      getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
+    );
+
+    const thing = getThing(
+      datasetWithoutTheThing,
+      "https://some.vocab/subject"
+    );
+
+    expect(thing).toBeNull();
   });
 
   it("returns Quads from all Named Graphs if no scope was specified", () => {
@@ -202,7 +216,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject"
-    );
+    ) as Thing;
 
     expect(thing.size).toEqual(2);
     expect(Array.from(thing)).toContain(quadInDefaultGraph);
@@ -227,7 +241,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -250,7 +264,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -273,7 +287,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -679,6 +693,7 @@ describe("setThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -724,6 +739,7 @@ describe("setThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -953,6 +969,7 @@ describe("removeThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     aclDataset.add(thingQuad);
@@ -970,6 +987,7 @@ describe("removeThing", () => {
     expect(updatedDataset.internal_resourceInfo).toEqual({
       sourceIri: "https://arbitrary.pod/resource.acl",
       isRawData: false,
+      linkedResources: {},
     });
   });
 
@@ -1090,6 +1108,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1124,6 +1143,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1183,6 +1203,16 @@ describe("asIri", () => {
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
+    );
+  });
+
+  it("accepts a Thing of which it is not known whether it is persisted yet", () => {
+    const thing: Thing = Object.assign(dataset(), {
+      internal_url: "https://some.pod/resource#thing",
+    });
+
+    expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
+      "https://some.pod/resource#thing"
     );
   });
 

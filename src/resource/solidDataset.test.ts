@@ -19,7 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
+import type { Mock } from "jest-mock";
+
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -43,6 +45,8 @@ import {
   createContainerInContainer,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
+  deleteSolidDataset,
+  deleteContainer,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -165,15 +169,15 @@ describe("getSolidDataset", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
-    );
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
@@ -335,7 +339,7 @@ describe("getSolidDataset", () => {
 });
 
 describe("getSolidDatasetWithAcl", () => {
-  it("returns both the Resource's own ACL as well as its Container's", async () => {
+  it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
         url === "https://some.pod/resource"
@@ -346,7 +350,7 @@ describe("getSolidDatasetWithAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
@@ -363,6 +367,41 @@ describe("getSolidDatasetWithAcl", () => {
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .sourceIri
     ).toBe("https://some.pod/resource.acl");
+    expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
+    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+  });
+
+  it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(new Response("Not found", { status: 404 }));
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url as string,
+        })
+      );
+    });
+
+    const fetchedSolidDataset = await getSolidDatasetWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .sourceIri
@@ -1014,6 +1053,96 @@ describe("saveSolidDatasetAt", () => {
   });
 });
 
+describe("deleteSolidDataset", () => {
+  it("should DELETE a remote SolidDataset using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteSolidDataset("https://some.url");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote SolidDataset using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched SolidDataset as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.url");
+
+    const response = await deleteSolidDataset(mockSolidDataset, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the SolidDataset at `https://some.url` failed: 400 Bad request"
+    );
+  });
+});
+
 describe("createContainerAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -1138,15 +1267,15 @@ describe("createContainerAt", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
-    );
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
 
     const solidDataset = await createContainerAt(
       "https://some.pod/container/",
@@ -1470,27 +1599,36 @@ describe("createContainerAt", () => {
 });
 
 describe("saveSolidDatasetInContainer", () => {
-  const mockResponse = new Response("Arbitrary response", {
-    headers: { Location: "https://arbitrary.pod/container/resource" },
-  });
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    Parameters<typeof window.fetch>
+  >;
+  function setMockOnFetch(
+    fetch: MockFetch,
+    saveResponse = new Response(undefined, {
+      status: 201,
+      statusText: "Created",
+      headers: { Location: "resource" },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(saveResponse);
+    return fetch;
+  }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
 
     await saveSolidDatasetInContainer("https://some.pod/container/", dataset());
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -1500,15 +1638,16 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not allowed", { status: 403 })
+    );
 
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -1524,12 +1663,10 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
-
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not found", { status: 404 })
+    );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
       dataset(),
@@ -1544,9 +1681,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("returns a meaningful error when the server does not return the new Resource's location", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch), new Response());
 
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
@@ -1564,9 +1699,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sends the given SolidDataset to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
     const mockDataset = dataset();
     mockDataset.add(
       DataFactory.quad(
@@ -1585,7 +1718,6 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(
@@ -1602,9 +1734,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sets relative IRIs for LocalNodes", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
     const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-subject-name",
     });
@@ -1629,19 +1759,16 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls).toHaveLength(1);
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
     );
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1655,12 +1782,10 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1673,12 +1798,11 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "https://some.pod/container/resource" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: { Location: "https://some.pod/container/resource" },
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1689,19 +1813,13 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
 
   it("resolves relative IRIs in the returned SolidDataset", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "https://some.pod/container/resource" },
-        })
-      )
-    );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-subject-name",
@@ -1720,28 +1838,27 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     const storedSolidDataset = await saveSolidDatasetInContainer(
-      "https://some.pod/container/",
+      "https://some.pod/",
       mockDataset,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
-      "https://some.pod/container/resource#some-subject-name"
+    expect(Array.from(storedSolidDataset!)[0].subject.value).toBe(
+      "https://some.pod/resource#some-subject-name"
     );
-    expect(Array.from(storedSolidDataset)[0].object.value).toBe(
-      "https://some.pod/container/resource#some-object-name"
+    expect(Array.from(storedSolidDataset!)[0].object.value).toBe(
+      "https://some.pod/resource#some-object-name"
     );
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "/container/resource" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: { Location: "/container/resource" },
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1752,48 +1869,59 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
 });
 
 describe("createContainerInContainer", () => {
-  const mockResponse = new Response("Arbitrary response", {
-    headers: { Location: "https://arbitrary.pod/container/resource" },
-  });
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit?]
+  >;
+  function setMockOnFetch(
+    fetch: MockFetch,
+    saveResponse = new Response(undefined, {
+      status: 201,
+      statusText: "Created",
+      headers: { Location: "child" },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(saveResponse);
+    return fetch;
+  }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
+    mockedFetcher.fetch = setMockOnFetch(mockedFetcher.fetch);
 
     await createContainerInContainer("https://some.pod/parent-container/");
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
     });
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not allowed", { status: 403 })
+    );
 
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
@@ -1810,11 +1938,10 @@ describe("createContainerInContainer", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not found", { status: 404 })
+    );
 
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
@@ -1831,9 +1958,7 @@ describe("createContainerInContainer", () => {
   });
 
   it("returns a meaningful error when the server does not return the new Container's location", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch), new Response());
 
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
@@ -1850,9 +1975,7 @@ describe("createContainerInContainer", () => {
   });
 
   it("sends the right headers to create a Container", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
@@ -1873,17 +1996,12 @@ describe("createContainerInContainer", () => {
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
-    await createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
-      {
-        fetch: mockFetch,
-        slugSuggestion: "child-container/",
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+      slugSuggestion: "child-container/",
+    });
 
     expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
       slug: "child-container/",
@@ -1891,16 +2009,11 @@ describe("createContainerInContainer", () => {
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
-    await createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
-      {
-        fetch: mockFetch,
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+    });
 
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug
@@ -1908,14 +2021,13 @@ describe("createContainerInContainer", () => {
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: {
-            Location: "https://some.pod/parent-container/child-container/",
-          },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: {
+          Location: "https://some.pod/parent-container/child-container/",
+        },
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -1925,18 +2037,19 @@ describe("createContainerInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
     );
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "/parent-container/child-container/" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: {
+          Location: "parent-container/child-container/",
+        },
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -1946,8 +2059,107 @@ describe("createContainerInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
+    );
+  });
+});
+
+describe("deleteContainer", () => {
+  it("should DELETE a remote Container using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteContainer("https://some.pod/container/");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote Container using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched Container as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockContainer = mockSolidDatasetFrom("https://some.pod/container/");
+
+    const response = await deleteContainer(mockContainer, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error when the target is not a Container", async () => {
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const deletionPromise = deleteContainer(mockSolidDataset);
+
+    await expect(deletionPromise).rejects.toThrow(
+      "You're trying to delete the Container at `https://some.pod/resource`, but Container URLs should end in a `/`. Are you sure this is a Container?"
+    );
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the Container at `https://some.pod/container/` failed: 400 Bad request"
     );
   });
 });

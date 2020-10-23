@@ -20,14 +20,14 @@
  */
 
 import {
-  WithResourceInfo,
+  WithServerResourceInfo,
   WithResourceAcl,
   WithAcl,
   WithAccessibleAcl,
   WithFallbackAcl,
   UrlString,
 } from "../interfaces";
-import { getSourceIri } from "../resource/resource";
+import { getSourceIri, internal_cloneResource } from "../resource/resource";
 import { createAcl, internal_getContainerPath } from "./acl";
 import { mockContainerFrom } from "../resource/mock";
 
@@ -44,13 +44,13 @@ import { mockContainerFrom } from "../resource/mock";
  * @returns The input Resource with an empty resource ACL attached.
  * @since 0.2.0
  */
-export function addMockResourceAclTo<T extends WithResourceInfo>(
+export function addMockResourceAclTo<T extends WithServerResourceInfo>(
   resource: T
 ): T & WithResourceAcl {
   const aclUrl =
     resource.internal_resourceInfo.aclUrl ?? "https://your.pod/mock-acl.ttl";
   const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
-    resource,
+    internal_cloneResource(resource),
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
@@ -64,9 +64,7 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
     WithResourceAcl = Object.assign(resourceWithAclUrl, {
     internal_acl: {
       resourceAcl: aclDataset,
-      fallbackAcl:
-        ((resourceWithAclUrl as unknown) as WithAcl).internal_acl
-          ?.fallbackAcl ?? null,
+      fallbackAcl: null,
     },
   });
 
@@ -87,7 +85,7 @@ export function addMockResourceAclTo<T extends WithResourceInfo>(
  * @returns The input Resource with an empty fallback ACL attached.
  * @since 0.2.0
  */
-export function addMockFallbackAclTo<T extends WithResourceInfo>(
+export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   resource: T
 ): T & WithFallbackAcl {
   const containerUrl = internal_getContainerPath(getSourceIri(resource));
@@ -96,10 +94,9 @@ export function addMockFallbackAclTo<T extends WithResourceInfo>(
   const aclDataset = createAcl(mockContainer);
 
   const resourceWithFallbackAcl: typeof resource &
-    WithFallbackAcl = Object.assign(resource, {
+    WithFallbackAcl = Object.assign(internal_cloneResource(resource), {
     internal_acl: {
-      resourceAcl:
-        ((resource as unknown) as WithAcl).internal_acl?.resourceAcl ?? null,
+      resourceAcl: null,
       fallbackAcl: aclDataset,
     },
   });
@@ -107,12 +104,12 @@ export function addMockFallbackAclTo<T extends WithResourceInfo>(
   return resourceWithFallbackAcl;
 }
 
-function setMockAclUrl<T extends WithResourceInfo>(
+function setMockAclUrl<T extends WithServerResourceInfo>(
   resource: T,
   aclUrl: UrlString
 ): T & WithAccessibleAcl {
   const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
-    resource,
+    internal_cloneResource(resource),
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,

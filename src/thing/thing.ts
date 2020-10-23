@@ -44,15 +44,10 @@ import {
   LocalNode,
   ThingPersisted,
   WithChangeLog,
-  WithResourceInfo,
   hasChangelog,
   hasResourceInfo,
-  hasAcl,
-  WithAcl,
-  AclDataset,
 } from "../interfaces";
-import { internal_isAclDataset } from "../acl/acl";
-import { getSourceUrl } from "../resource/resource";
+import { getSourceUrl, internal_cloneResource } from "../resource/resource";
 import { getTermAll } from "./get";
 
 /**
@@ -67,6 +62,21 @@ export interface GetThingOptions {
    **/
   scope?: Url | UrlString;
 }
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: UrlString | Url,
+  options?: GetThingOptions
+): ThingPersisted | null;
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: LocalNode,
+  options?: GetThingOptions
+): ThingLocal | null;
+export function getThing(
+  solidDataset: SolidDataset,
+  thingUrl: UrlString | Url | LocalNode,
+  options?: GetThingOptions
+): Thing | null;
 /**
  * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
  *
@@ -78,13 +88,16 @@ export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
-): Thing {
+): Thing | null {
   const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
   const scope: NamedNode | null = options.scope
     ? asNamedNode(options.scope)
     : null;
 
   const thingDataset = solidDataset.match(subject, null, null, scope);
+  if (thingDataset.size === 0) {
+    return null;
+  }
 
   if (isLocalNode(subject)) {
     const thing: ThingLocal = Object.assign(thingDataset, {
@@ -131,9 +144,12 @@ export function getThingAll(
     }
   }
 
-  const things: Thing[] = subjectNodes.map((subjectNode) =>
-    getThing(solidDataset, subjectNode, options)
-  );
+  const things: Thing[] = subjectNodes.map(
+    (subjectNode) => getThing(solidDataset, subjectNode, options)
+    // We can make the type assertion here because `getThing` only returns `null` if no data with
+    // the given subject node can be found, and in this case the subject node was extracted from
+    // existing data (i.e. that can be found by definition):
+  ) as Thing[];
 
   return things;
 }
@@ -150,6 +166,10 @@ export function setThing<Dataset extends SolidDataset>(
   thing: Thing
 ): Dataset & WithChangeLog {
   const newDataset = removeThing(solidDataset, thing);
+  newDataset.internal_changeLog = {
+    additions: [...newDataset.internal_changeLog.additions],
+    deletions: [...newDataset.internal_changeLog.deletions],
+  };
 
   for (const quad of thing) {
     newDataset.add(quad);
@@ -176,33 +196,33 @@ export function removeThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
   thing: UrlString | Url | LocalNode | Thing
 ): Dataset & WithChangeLog {
-  const newSolidDataset = withChangeLog(cloneLitStructs(solidDataset));
+  const newSolidDataset = withChangeLog(internal_cloneResource(solidDataset));
+  newSolidDataset.internal_changeLog = {
+    additions: [...newSolidDataset.internal_changeLog.additions],
+    deletions: [...newSolidDataset.internal_changeLog.deletions],
+  };
   const resourceIri: UrlString | undefined = hasResourceInfo(newSolidDataset)
     ? getSourceUrl(newSolidDataset)
     : undefined;
 
   const thingSubject = internal_toNode(thing);
-  // Copy every Quad from the input dataset into what is to be the output dataset,
-  // unless its Subject is the same as that of the Thing that is to be removed:
-  for (const quad of solidDataset) {
+  const existingQuads = Array.from(newSolidDataset);
+  existingQuads.forEach((quad) => {
     if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
       // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
-      newSolidDataset.add(quad);
-    } else if (
-      !isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })
-    ) {
-      newSolidDataset.add(quad);
-    } else if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
-      // If this Quad was added to the SolidDataset since it was fetched from the Pod,
-      // remove it from the additions rather than adding it to the deletions,
-      // to avoid asking the Pod to remove a Quad that does not exist there:
-      newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
-        (addition) => addition != quad
-      );
-    } else {
-      newSolidDataset.internal_changeLog.deletions.push(quad);
+      return;
     }
-  }
+    if (isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })) {
+      newSolidDataset.delete(quad);
+      if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
+        newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
+          (addition) => addition !== quad
+        );
+      } else {
+        newSolidDataset.internal_changeLog.deletions.push(quad);
+      }
+    }
+  });
   return newSolidDataset;
 }
 
@@ -211,66 +231,50 @@ function withChangeLog<Dataset extends SolidDataset>(
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
     ? solidDataset
-    : Object.assign(solidDataset, {
+    : Object.assign(internal_cloneResource(solidDataset), {
         internal_changeLog: { additions: [], deletions: [] },
       });
   return newSolidDataset;
 }
 
-function cloneLitStructs<Dataset extends SolidDataset>(
-  solidDataset: Dataset
-): Dataset {
-  const freshDataset = dataset();
-  if (hasChangelog(solidDataset)) {
-    (freshDataset as SolidDataset & WithChangeLog).internal_changeLog = {
-      additions: [...solidDataset.internal_changeLog.additions],
-      deletions: [...solidDataset.internal_changeLog.deletions],
-    };
-  }
-  if (hasResourceInfo(solidDataset)) {
-    (freshDataset as SolidDataset & WithResourceInfo).internal_resourceInfo = {
-      ...solidDataset.internal_resourceInfo,
-    };
-  }
-  if (hasAcl(solidDataset)) {
-    (freshDataset as SolidDataset & WithAcl).internal_acl = {
-      ...solidDataset.internal_acl,
-    };
-  }
-  if (internal_isAclDataset(solidDataset)) {
-    (freshDataset as AclDataset).internal_accessTo =
-      solidDataset.internal_accessTo;
-  }
-
-  return freshDataset as Dataset;
-}
-
-interface CreateThingLocalOptions {
+/** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL will be determined when it is saved. */
+export type CreateThingLocalOptions = {
   /**
    * The name that should be used for this [[Thing]] when constructing its URL.
    *
    * If not provided, a random one will be generated.
    */
   name?: string;
-}
-interface CreateThingPersistedOptions {
+};
+/** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL is already known. */
+export type CreateThingPersistedOptions = {
   /**
    * The URL of the newly created [[Thing]].
    */
   url: UrlString;
-}
+};
+/** The options you pass to [[createThing]].
+ * - To specify the URL for the initialised Thing, pass [[CreateThingPersistedOptions]].
+ * - To have the URL determined during the save, pass [[CreateThingLocalOptions]].
+ */
 export type CreateThingOptions =
   | CreateThingLocalOptions
   | CreateThingPersistedOptions;
 /**
- * Initialise a new [[Thing]] in memory.
+ * Initialise a new [[Thing]] in memory with a given URL.
  *
- * @param options See [[CreateThingOptions]].
+ * @param options See [[CreateThingPersistedOptions]] for how to specify the new [[Thing]]'s URL.
  */
 export function createThing(
   options: CreateThingPersistedOptions
 ): ThingPersisted;
+/**
+ * Initialise a new [[Thing]] in memory.
+ *
+ * @param options Optional parameters that affect the final URL of this [[Thing]] when saved.
+ */
 export function createThing(options?: CreateThingLocalOptions): ThingLocal;
+export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
     const url = (options as CreateThingPersistedOptions).url;
@@ -313,6 +317,7 @@ export function isThing<X>(input: X | Thing): input is Thing {
  */
 export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
 export function asUrl(thing: ThingPersisted): UrlString;
+export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
 export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
   if (isThingLocal(thing)) {
     if (typeof baseUrl === "undefined") {

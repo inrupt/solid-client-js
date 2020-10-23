@@ -23,7 +23,8 @@ import {
   Url,
   UrlString,
   SolidDataset,
-  WithResourceInfo,
+  File,
+  WithServerResourceInfo,
   internal_toIriString,
 } from "../interfaces";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
@@ -49,11 +50,12 @@ export function mockSolidDatasetFrom(
 ): Unpromisify<ReturnType<typeof getSolidDataset>> {
   const solidDataset = createSolidDataset();
   const solidDatasetWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(solidDataset, {
+    WithServerResourceInfo = Object.assign(solidDataset, {
     internal_resourceInfo: {
       sourceIri: internal_toIriString(url),
       isRawData: false,
       contentType: "text/turtle",
+      linkedResources: {},
     },
   });
 
@@ -102,17 +104,21 @@ export function mockContainerFrom(
 export function mockFileFrom(
   url: Url | UrlString,
   options?: Partial<{
-    contentType: WithResourceInfo["internal_resourceInfo"]["contentType"];
+    contentType: WithServerResourceInfo["internal_resourceInfo"]["contentType"];
   }>
 ): Unpromisify<ReturnType<typeof getFile>> {
   const file = new Blob();
-  const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(file, {
-    internal_resourceInfo: {
-      sourceIri: internal_toIriString(url),
-      isRawData: true,
-      contentType: options?.contentType,
-    },
-  });
+  const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
+    file,
+    {
+      internal_resourceInfo: {
+        sourceIri: internal_toIriString(url),
+        isRawData: true,
+        contentType: options?.contentType,
+        linkedResources: {},
+      },
+    }
+  );
 
   return fileWithResourceInfo;
 }

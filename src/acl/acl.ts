@@ -35,6 +35,7 @@ import {
   WithAccessibleAcl,
   WithResourceAcl,
   WithFallbackAcl,
+  WithServerResourceInfo,
 } from "../interfaces";
 import {
   createThing,
@@ -50,12 +51,13 @@ import {
   getSourceUrl,
   internal_defaultFetchOptions,
   getResourceInfo,
+  internal_cloneResource,
 } from "../resource/resource";
 import { addIri } from "..";
 
 /** @internal */
 export async function internal_fetchResourceAcl(
-  dataset: WithResourceInfo,
+  dataset: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -137,6 +139,20 @@ export function internal_getContainerPath(resourcePath: string): string {
 }
 
 /**
+ * Verify whether a given SolidDataset was fetched together with its Access Control List.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param dataset A [[SolidDataset]] that may have its ACLs attached.
+ * @returns True if `dataset` was fetched together with its ACLs.
+ */
+export function hasAcl<T extends object>(dataset: T): dataset is T & WithAcl {
+  const potentialAcl = dataset as T & WithAcl;
+  return typeof potentialAcl.internal_acl === "object";
+}
+
+/**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
@@ -152,7 +168,9 @@ export function internal_getContainerPath(resourcePath: string): string {
  * @param resource A Resource that might have an ACL attached.
  * @returns `true` if the Resource has a resource ACL attached that is accessible by the user.
  */
-export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
+export function hasResourceAcl<
+  Resource extends WithAcl & WithServerResourceInfo
+>(
   resource: Resource
 ): resource is Resource & WithResourceAcl & WithAccessibleAcl {
   return (
@@ -179,13 +197,13 @@ export function hasResourceAcl<Resource extends WithAcl & WithResourceInfo>(
  * @returns The resource ACL if available and `null` if not.
  */
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo & WithResourceAcl
+  resource: WithAcl & WithServerResourceInfo & WithResourceAcl
 ): AclDataset;
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo
+  resource: WithAcl & WithServerResourceInfo
 ): AclDataset | null;
 export function getResourceAcl(
-  resource: WithAcl & WithResourceInfo
+  resource: WithAcl & WithServerResourceInfo
 ): AclDataset | null {
   if (!hasResourceAcl(resource)) {
     return null;
@@ -263,6 +281,7 @@ export function createAcl(
     internal_resourceInfo: {
       sourceIri: targetResource.internal_resourceInfo.aclUrl,
       isRawData: false,
+      linkedResources: {},
     },
   });
 
@@ -294,27 +313,18 @@ export function createAclFromFallbackAcl(
     fallbackAclRules,
     resource.internal_acl.fallbackAcl.internal_accessTo
   );
-  const resourceAclRules = defaultAclRules.map((rule) => {
+  const newAclRules = defaultAclRules.map((rule) => {
     rule = removeAll(rule, acl.default);
     rule = removeAll(rule, acl.defaultForNew);
     rule = setIri(rule, acl.accessTo, getSourceUrl(resource));
+    rule = setIri(rule, acl.default, getSourceUrl(resource));
     return rule;
   });
 
   // Iterate over every ACL Rule we want to import, inserting them into `emptyResourceAcl` one by one:
-  const initialisedResourceAcl = resourceAclRules.reduce(
-    setThing,
-    emptyResourceAcl
-  );
+  const initialisedResourceAcl = newAclRules.reduce(setThing, emptyResourceAcl);
 
   return initialisedResourceAcl;
-}
-
-/** @internal */
-export function internal_isAclDataset(
-  dataset: SolidDataset
-): dataset is AclDataset {
-  return typeof (dataset as AclDataset).internal_accessTo === "string";
 }
 
 /** @internal */
@@ -582,6 +592,13 @@ export async function saveAclFor(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset & WithResourceInfo> {
+  if (!hasAccessibleAcl(resource)) {
+    throw new Error(
+      `Could not determine the location of the ACL for the Resource at \`${getSourceUrl(
+        resource
+      )}\`; possibly the current user does not have Control access to that Resource. Try calling \`hasAccessibleAcl()\` before calling \`saveAclFor()\`.`
+    );
+  }
   const savedDataset = await saveSolidDatasetAt(
     resource.internal_resourceInfo.aclUrl,
     resourceAcl,
@@ -635,7 +652,7 @@ export async function deleteAclFor<
     );
   }
 
-  const storedResource = Object.assign(resource, {
+  const storedResource = Object.assign(internal_cloneResource(resource), {
     acl: {
       resourceAcl: null,
     },

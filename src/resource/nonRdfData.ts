@@ -22,14 +22,24 @@
 import { fetch } from "../fetcher";
 import { Headers } from "cross-fetch";
 import {
+  File,
   UploadRequestInit,
   WithResourceInfo,
   WithAcl,
   Url,
   UrlString,
   internal_toIriString,
+  hasResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
-import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
+import {
+  internal_parseResourceInfo,
+  internal_fetchAcl,
+  getSourceIri,
+  getResourceInfo,
+  isRawData,
+  internal_cloneResource,
+} from "./resource";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;
@@ -62,7 +72,7 @@ function containsReserved(header: Headers): boolean {
 export async function getFile(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<File & WithServerResourceInfo> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
@@ -76,9 +86,12 @@ export async function getFile(
   }
   const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
-  const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(data, {
-    internal_resourceInfo: resourceInfo,
-  });
+  const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
+    data,
+    {
+      internal_resourceInfo: resourceInfo,
+    }
+  );
 
   return fileWithResourceInfo;
 }
@@ -110,32 +123,30 @@ export async function getFile(
 export async function getFileWithAcl(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo & WithAcl> {
+): Promise<File & WithServerResourceInfo & WithAcl> {
   const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
   return Object.assign(file, { internal_acl: acl });
 }
-
-const defaultSaveOptions = {
-  fetch: fetch,
-};
 
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.
  * ```
  * Deletes a file at a given URL.
  *
- * @param input The URL of the file to delete
+ * @param file The URL of the file to delete
  */
 export async function deleteFile(
-  input: Url | UrlString,
+  file: Url | UrlString | WithResourceInfo,
   options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<void> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
   };
-  const url = internal_toIriString(input);
+  const url = hasResourceInfo(file)
+    ? internal_toIriString(getSourceIri(file))
+    : internal_toIriString(file);
   const response = await config.fetch(url, {
     ...config.init,
     method: "DELETE",
@@ -162,12 +173,13 @@ type SaveFileOptions = GetFileOptions & {
  * @param folderUrl The URL of the folder where the new file is saved.
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
+ * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer(
+export async function saveFileInContainer<FileExt extends File>(
   folderUrl: Url | UrlString,
-  file: Blob,
+  file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<FileExt & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
 
@@ -186,14 +198,17 @@ export async function saveFileInContainer(
 
   const fileIri = new URL(locationHeader, new URL(folderUrlString).origin).href;
 
-  const blobClone = new Blob([file]);
+  const blobClone = internal_cloneResource(file);
 
-  return Object.assign(blobClone, {
+  const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
-      sourceIri: fileIri,
       isRawData: true,
+      sourceIri: fileIri,
+      contentType: file.type.length > 0 ? file.type : undefined,
     },
-  });
+  };
+
+  return Object.assign(blobClone, resourceInfo);
 }
 
 /**
@@ -208,9 +223,9 @@ export async function saveFileInContainer(
  */
 export async function overwriteFile(
   fileUrl: Url | UrlString,
-  file: Blob,
+  file: File,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<File & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
@@ -220,14 +235,12 @@ export async function overwriteFile(
     );
   }
 
-  const blobClone = new Blob([file]);
+  const blobClone = internal_cloneResource(file);
+  const resourceInfo = internal_parseResourceInfo(response);
+  resourceInfo.sourceIri = fileUrlString;
+  resourceInfo.isRawData = true;
 
-  return Object.assign(blobClone, {
-    internal_resourceInfo: {
-      sourceIri: fileUrlString,
-      isRawData: true,
-    },
-  });
+  return Object.assign(blobClone, { internal_resourceInfo: resourceInfo });
 }
 
 /**
@@ -241,7 +254,7 @@ export async function overwriteFile(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: Blob,
+  file: File,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {

@@ -4,9 +4,51 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+The following changes have been implemented but not released yet:
+
+The following sections document changes that have been released already:
+
+## [0.6.1] - 2020-10-15
+
+### Bugs fixed
+
+- All `get*WithAcl()` functions would always fetch _both_ the Resource's own ACL and its fallback
+  ACL, causing issues when the Resource is the Pod's root, but not at the root of the domain,
+  resulting in an attempt to find a fallback ACL for a Resource outside of the Pod. These functions
+  will now only attempt to fetch the Fallback ACL if the Resource's own ACL is not available. Hence,
+  only at most one of the two will be available at any time.
+
+## [0.6.0] - 2020-10-14
+
+### New features
+
+- `deleteSolidDataset` and `deleteContainer`: two functions that allow you to delete a SolidDataset
+  and a Container from the user's Pod, respectively.
+- `hasServerResourceInfo`: a function that determines whether server-provided information about the
+  Resource is present, such as which server-managed Resources are linked to it.
+- `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
+  if supported by the Pod server and exposed to the current user.
+
+## [0.5.1] - 2020-10-13
+
+### Bugs fixed
+
+- The type definition of `asUrl` caused the compiler to complain when passing it a Thing of which
+  the final URL was either known or not known yet, when using TypeScript.
+
+## [0.5.0] - 2020-09-24
+
 ### Breaking changes
 
 - All previously deprecated functions have been removed (their replacements are still available).
+- Previously, if no data with the given URL could be found, `getThing` would return a new, empty
+  Thing. From now on, it will return `null` in those situations.
+
+### Bugs fixed
+
+- `createAclFromFallbackAcl` did not correctly initialise the new ACL: rules that applied to the
+  applicable Resource's children _before_ the new ACL was created (i.e. defined in the fallback ACL)
+  no longer applied after saving the new one. This is now fixed.
 
 ## [0.4.0] - 2020-09-15
 

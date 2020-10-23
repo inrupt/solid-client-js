@@ -29,15 +29,19 @@ import {
   getSolidDataset,
   getResourceInfo,
   getResourceInfoWithAcl,
+  getPodOwner,
+  isPodOwner,
   isContainer,
   isRawData,
   getContentType,
   getSourceUrl,
   getSourceIri,
   saveSolidDatasetAt,
+  deleteSolidDataset,
   createContainerAt,
   saveSolidDatasetInContainer,
   createContainerInContainer,
+  deleteContainer,
   saveAclFor,
   deleteAclFor,
   getThing,
@@ -127,6 +131,7 @@ import {
   setPublicResourceAccess,
   setPublicDefaultAccess,
   hasResourceInfo,
+  hasServerResourceInfo,
   hasAccessibleAcl,
   getGroupAccess,
   getGroupAccessAll,
@@ -155,15 +160,19 @@ it("exports the public API from the entry file", () => {
   expect(getSolidDataset).toBeDefined();
   expect(getResourceInfo).toBeDefined();
   expect(getResourceInfoWithAcl).toBeDefined();
+  expect(getPodOwner).toBeDefined();
+  expect(isPodOwner).toBeDefined();
   expect(isContainer).toBeDefined();
   expect(isRawData).toBeDefined();
   expect(getContentType).toBeDefined();
   expect(getSourceUrl).toBeDefined();
   expect(getSourceIri).toBeDefined();
   expect(saveSolidDatasetAt).toBeDefined();
+  expect(deleteSolidDataset).toBeDefined();
   expect(createContainerAt).toBeDefined();
   expect(saveSolidDatasetInContainer).toBeDefined();
   expect(createContainerInContainer).toBeDefined();
+  expect(deleteContainer).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThing).toBeDefined();
@@ -254,6 +263,7 @@ it("exports the public API from the entry file", () => {
   expect(setPublicDefaultAccess).toBeDefined();
   expect(getPublicDefaultAccess).toBeDefined();
   expect(hasResourceInfo).toBeDefined();
+  expect(hasServerResourceInfo).toBeDefined();
   expect(hasAccessibleAcl).toBeDefined();
   expect(getGroupAccess).toBeDefined();
   expect(getGroupAccessAll).toBeDefined();
