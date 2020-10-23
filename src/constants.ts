@@ -62,4 +62,6 @@ export const acp = {
   allOf: "http://www.w3.org/ns/solid/acp#allOf",
   anyOf: "http://www.w3.org/ns/solid/acp#anyOf",
   noneOf: "http://www.w3.org/ns/solid/acp#noneOf",
+  access: "http://www.w3.org/ns/solid/acp#access",
+  accessMembers: "http://www.w3.org/ns/solid/acp#accessMembers",
 } as const;
