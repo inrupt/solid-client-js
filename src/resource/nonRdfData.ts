@@ -20,7 +20,6 @@
  */
 
 import { fetch } from "../fetcher";
-import { Headers } from "cross-fetch";
 import {
   File,
   UploadRequestInit,
@@ -40,6 +39,7 @@ import {
   isRawData,
   internal_cloneResource,
 } from "./resource";
+import { type } from "rdf-namespaces/dist/dc";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;
@@ -55,8 +55,8 @@ const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
 /**
  * Some of the headers must be set by the library, rather than directly.
  */
-function containsReserved(header: Headers): boolean {
-  return RESERVED_HEADERS.some((reserved) => header.has(reserved));
+function containsReserved(header: Record<string, string>): boolean {
+  return RESERVED_HEADERS.some((reserved) => header[reserved] !== undefined);
 }
 
 /**
@@ -243,6 +243,60 @@ export async function overwriteFile(
   return Object.assign(blobClone, { internal_resourceInfo: resourceInfo });
 }
 
+function isHeadersArray(
+  headers: Headers | Record<string, string> | string[][]
+): headers is string[][] {
+  return Array.isArray(headers);
+}
+
+/**
+ * The return type of this function is misleading: it should ONLY be used to check
+ * whether an object has a forEach method that returns <key, value> pairs.
+ *
+ * @param headers A headers object that might have a forEach
+ */
+function hasHeadersObjectForEach(
+  headers: Headers | Record<string, string> | string[][]
+): headers is Headers {
+  return typeof (headers as Headers).forEach === "function";
+}
+
+/**
+ * @hidden
+ * This function feels unnecessarily complicated, but is required in order to
+ * have Headers according to type definitions in both Node and browser environments.
+ * This might require a fix upstream to be cleaned up.
+ *
+ * @param headersToFlatten A structure containing headers potentially in several formats
+ */
+export function flattenHeaders(
+  headersToFlatten: Headers | Record<string, string> | string[][] | undefined
+): Record<string, string> {
+  if (typeof headersToFlatten === "undefined") {
+    return {};
+  }
+
+  let flatHeaders: Record<string, string> = {};
+
+  if (isHeadersArray(headersToFlatten)) {
+    headersToFlatten.forEach(([key, value]) => {
+      flatHeaders[key] = value;
+    });
+    // Note that the following line must be a elsif, because string[][] has a forEach,
+    // but it returns string[] instead of <key, value>
+  } else if (hasHeadersObjectForEach(headersToFlatten)) {
+    headersToFlatten.forEach((value: string, key: string) => {
+      flatHeaders[key] = value;
+    });
+  } else {
+    // If the headers are already a Record<string, string>,
+    // they can directly be returned.
+    flatHeaders = headersToFlatten;
+  }
+
+  return flatHeaders;
+}
+
 /**
  * Internal function that performs the actual write HTTP query, either POST
  * or PUT depending on the use case.
@@ -262,7 +316,7 @@ async function writeFile(
     ...defaultGetFileOptions,
     ...options,
   };
-  const headers = new Headers(config.init?.headers ?? {});
+  const headers = flattenHeaders(config.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
@@ -273,9 +327,9 @@ async function writeFile(
 
   // If a slug is in the parameters, set the request headers accordingly
   if (config.slug !== undefined) {
-    headers.append("Slug", config.slug);
+    headers["Slug"] = config.slug;
   }
-  headers.append("Content-Type", file.type);
+  headers["Content-Type"] = file.type;
 
   const targetUrlString = internal_toIriString(targetUrl);
 
