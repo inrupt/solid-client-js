@@ -6,40 +6,41 @@ labels: "bug"
 assignees: ""
 ---
 
-**Search terms you've used**
+<!-- 
+Thank you for reporting an issue.
 
+Please fill in as much of the template below as you're able. Feel free to delete any section you don't think applies, but be aware that the more comprehensive your description, the easier it is to take it into account. 
+-->
+
+### Search terms you've used
 <!-- What search terms have you used to check whether this bug was already reported? -->
 
-**Describe the bug**
+### Bug description
+<!-- A short description of what the problem is. -->
 
-<!-- A clear and concise description of what the bug is. -->
+### To Reproduce
+1. 
+2. 
+3. 
+4. 
 
-**To Reproduce**
-Steps to reproduce the behavior:
-
-1. Given this data: `…`
-2. Call this function `…`
-3. See error
-
-**CodeSandbox**
+**Minimal reproduction**
 
 <!--
 Adding a minimal reproduction of the bug makes it as easy as possible to get it fixed.
-To do so, fork the following CodeSandbox, and share the resulting link here:
-
+To do so, fork the following CodeSandbox, insert the minimal code that demonstrates the problem,
+and share the resulting link here:
 https://codesandbox.io/s/github/inrupt/solid-client-js/tree/master/.codesandbox/sandbox
+
 -->
 
-**Expected behavior**
+### Expected result
+<!-- A clear and concise description of what you expected to happen -->
 
-<!-- A clear and concise description of what you expected to happen. -->
+### Actual result
+<!-- A description of what actually happened 
 
-**Log output**
-
-<!-- If applicable, add log output to help explain your problem. -->
-
-**Environment**
-
+### Environment
 <!--
 Please run
 
@@ -50,10 +51,7 @@ in your project folder and paste the output here:
 
 ```
 $ npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
-
-
 ```
 
-**Additional context**
-
-<!-- Add any other context about the problem here. -->
+## Additional information
+<!-- Add any other relevant information that might be useful to understand and find a solution to the problem -->
