@@ -19,6 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * @jest-environment node
+ */
+
 import { foaf, schema } from "rdf-namespaces";
 import {
   getSolidDataset,
