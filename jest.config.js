@@ -36,7 +36,8 @@ module.exports = {
   testPathIgnorePatterns: [
     "/node_modules/",
     // By default we only run unit tests:
-    "e2e.test.ts",
+    "/src/e2e-node/",
+    "/src/e2e-browser/",
   ],
   injectGlobals: false,
 };

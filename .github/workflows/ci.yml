@@ -28,11 +28,66 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
-    - run: npm run e2e-test
+    - run: npm run e2e-test-node
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
       # end-to-end tests only need to run on one OS:
       if: runner.os == 'Linux' && matrix.node-version == '12.x'
+    # Ideally, we'd autodetect installed browsers and run them headlessly.
+    # See https://github.com/DevExpress/testcafe/issues/5641
+    - name: Prepare browser-based end-to-end tests
+      run: |
+        cd .codesandbox/sandbox
+        npm install
+        cd ../..
+    - name: Run browser-based end-to-end tests (Linux)
+      # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
+      run: npm run e2e-test-browser -- firefox:headless,chrome:headless
+      # The Node version does not influence how well our tests run in the browser,
+      # so we only need to test in one:
+      # (But I've explicitly set it to *not* run in the oldest version,
+      # rather than running in the newest, so ensure that changing Node versions in CI
+      # does not cause end-to-end tests to stop running.)
+      if: matrix.node-version != '10.x' && runner.os == 'Linux'
+      env:
+        TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
+        TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
+        TESTCAFE_ESS_PROD_GLUU_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_PASSWORD }}
+    - name: Run browser-based end-to-end tests (Windows)
+      run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless
+      # The Node version does not influence how well our tests run in the browser,
+      # so we only need to test in one:
+      # (But I've explicitly set it to *not* run in the oldest version,
+      # rather than running in the newest, so ensure that changing Node versions in CI
+      # does not cause end-to-end tests to stop running.)
+      if: matrix.node-version != '10.x' && runner.os == 'Windows'
+      env:
+        TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
+        TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
+        TESTCAFE_ESS_PROD_GLUU_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_PASSWORD }}
+    - name: Run browser-based end-to-end tests (MacOS)
+      # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
+      # enabled, which results in TestCafe needing screen recording permission, which it cannot
+      # obtain programmatically. Thus, we have to run the browser as a remote as a workaround.
+      # Source: https://devexpress.github.io/testcafe/documentation/guides/continuous-integration/github-actions.html#step-2---create-a-job
+      run: |
+        export HOSTNAME=localhost
+        export PORT1=1337
+        export PORT2=1338
+        npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} &
+        pid=$!
+        open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
+        wait $pid
+      # The Node version does not influence how well our tests run in the browser,
+      # so we only need to test in one:
+      # (But I've explicitly set it to *not* run in the oldest version,
+      # rather than running in the newest, so ensure that changing Node versions in CI
+      # does not cause end-to-end tests to stop running.)
+      if: matrix.node-version != '10.x' && runner.os == 'macOS'
+      env:
+        TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
+        TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
+        TESTCAFE_ESS_PROD_GLUU_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_PASSWORD }}
     - run: npx prettier --check "src/**"
     - run: npm run check-licenses
     - run: npm audit --audit-level=moderate

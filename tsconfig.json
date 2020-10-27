@@ -67,7 +67,10 @@
     "out": "website/docs/api",
     "exclude": [
       "node_modules/**",
+      ".codesandbox/**",
       "**/*.test.ts",
+      // End-to-end tests:
+      "src/e2e-*/**",
       // Re-exported functions are already documented in their own modules:
       "src/index.ts",
       // Constants are only used internally:
