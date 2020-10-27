@@ -139,7 +139,7 @@ export function getAccessControl(
   url: Parameters<typeof getThing>[1],
   options?: Parameters<typeof getThing>[2]
 ): AccessControl | null {
-  const acr = getAcr(withAccessControlResource);
+  const acr = internal_getAcr(withAccessControlResource);
   const foundThing = getThing(acr, url, options);
   if (
     foundThing === null ||
@@ -161,7 +161,7 @@ export function getAccessControlAll(
   withAccessControlResource: WithAccessibleAcr,
   options?: Parameters<typeof getThingAll>[1]
 ): AccessControl[] {
-  const acr = getAcr(withAccessControlResource);
+  const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
   return foundThings.filter((foundThing) =>
@@ -184,9 +184,12 @@ export function setAccessControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
   accessControl: AccessControl
 ): ResourceExt {
-  const acr = getAcr(withAccessControlResource);
+  const acr = internal_getAcr(withAccessControlResource);
   const updatedAcr = setThing(acr, accessControl);
-  const updatedResource = setAcr(withAccessControlResource, updatedAcr);
+  const updatedResource = internal_setAcr(
+    withAccessControlResource,
+    updatedAcr
+  );
   return updatedResource;
 }
 /**
@@ -204,13 +207,19 @@ export function removeAccessControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
   accessControl: AccessControl
 ): ResourceExt {
-  const acr = getAcr(withAccessControlResource);
+  const acr = internal_getAcr(withAccessControlResource);
   const updatedAcr = removeThing(acr, accessControl);
-  const updatedResource = setAcr(withAccessControlResource, updatedAcr);
+  const updatedResource = internal_setAcr(
+    withAccessControlResource,
+    updatedAcr
+  );
   return updatedResource;
 }
 
-function getAcr(resource: WithAccessibleAcr): AccessControlResource {
+/** @hidden */
+export function internal_getAcr(
+  resource: WithAccessibleAcr
+): AccessControlResource {
   if (!hasAccessibleAcr(resource)) {
     throw new Error(
       `Cannot work with Access Controls on a Resource (${getSourceUrl(
@@ -221,7 +230,8 @@ function getAcr(resource: WithAccessibleAcr): AccessControlResource {
   return resource.internal_acp.acr;
 }
 
-function setAcr<ResourceExt extends WithAcp>(
+/** @hidden */
+export function internal_setAcr<ResourceExt extends WithAcp>(
   resource: ResourceExt,
   acr: AccessControlResource
 ): ResourceExt & WithAccessibleAcr {
@@ -249,14 +259,14 @@ export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
   policyUrl: Url | UrlString | ThingPersisted
 ): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   let acrThing = getThing(acr, acrUrl) ?? createThing({ url: acrUrl });
   acrThing = addIri(acrThing, acp.access, policyUrl);
   const updatedAcr = setThing(acr, acrThing);
 
-  const updatedResource = setAcr(resourceWithAcr, updatedAcr);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
   return updatedResource;
 }
 
@@ -276,14 +286,14 @@ export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
   policyUrl: Url | UrlString | ThingPersisted
 ): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   let acrThing = getThing(acr, acrUrl) ?? createThing({ url: acrUrl });
   acrThing = addIri(acrThing, acp.accessMembers, policyUrl);
   const updatedAcr = setThing(acr, acrThing);
 
-  const updatedResource = setAcr(resourceWithAcr, updatedAcr);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
   return updatedResource;
 }
 
@@ -301,7 +311,7 @@ export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
 export function getAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
 ): UrlString[] {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -325,7 +335,7 @@ export function getAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
 export function getMemberAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
 ): UrlString[] {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -350,7 +360,7 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
   policyUrl: Url | UrlString | ThingPersisted
 ): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -360,7 +370,7 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   const updatedAcrThing = removeIri(acrThing, acp.access, policyUrl);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
-  return setAcr(resourceWithAcr, updatedAcr);
+  return internal_setAcr(resourceWithAcr, updatedAcr);
 }
 
 /**
@@ -379,7 +389,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
   policyUrl: Url | UrlString | ThingPersisted
 ): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -389,7 +399,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   const updatedAcrThing = removeIri(acrThing, acp.accessMembers, policyUrl);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
-  return setAcr(resourceWithAcr, updatedAcr);
+  return internal_setAcr(resourceWithAcr, updatedAcr);
 }
 
 /**
@@ -405,7 +415,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
 export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
 ): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -415,7 +425,7 @@ export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   const updatedAcrThing = removeAll(acrThing, acp.access);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
-  return setAcr(resourceWithAcr, updatedAcr);
+  return internal_setAcr(resourceWithAcr, updatedAcr);
 }
 
 /**
@@ -432,7 +442,7 @@ export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
 export function removeMemberAcrPolicyUrlAll<
   ResourceExt extends WithAccessibleAcr
 >(resourceWithAcr: ResourceExt): ResourceExt {
-  const acr = getAcr(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
 
   const acrThing = getThing(acr, acrUrl);
@@ -442,7 +452,7 @@ export function removeMemberAcrPolicyUrlAll<
   const updatedAcrThing = removeAll(acrThing, acp.accessMembers);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
-  return setAcr(resourceWithAcr, updatedAcr);
+  return internal_setAcr(resourceWithAcr, updatedAcr);
 }
 
 /**
