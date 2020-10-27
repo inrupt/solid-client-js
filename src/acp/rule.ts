@@ -19,15 +19,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp } from "../constants";
-import { SolidDataset, ThingPersisted, UrlString } from "../interfaces";
+import { acp, rdf } from "../constants";
+import {
+  internal_toIriString,
+  SolidDataset,
+  ThingPersisted,
+  Url,
+  UrlString,
+  WebId,
+} from "../interfaces";
 import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
-import { removeAll, removeIri } from "../thing/remove";
-import { setIri } from "../thing/set";
+import { getIriAll, getUrl } from "../thing/get";
+import { removeIri } from "../thing/remove";
+import { setIri, setUrl } from "../thing/set";
+import { createThing, getThing } from "../thing/thing";
 import { Policy } from "./policy";
 
-export type RuleDataset = SolidDataset;
 export type Rule = ThingPersisted;
 
 /**
@@ -43,7 +50,7 @@ export type Rule = ThingPersisted;
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addRequiredRuleToPolicy(policy: Policy, rule: Rule): Policy {
+export function addRequiredRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return addIri(policy, acp.allOf, rule);
 }
 
@@ -60,7 +67,7 @@ export function addRequiredRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeRequiredRuleFromPolicy(
+export function removeRequiredRuleForPolicy(
   policy: Policy,
   rule: Rule
 ): Policy {
@@ -80,7 +87,7 @@ export function removeRequiredRuleFromPolicy(
  * @returns A new [[Policy]] clone of the original one, with the required rules replaced.
  * @since Unreleased
  */
-export function setRequiredRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+export function setRequiredRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return setIri(policy, acp.allOf, rule);
 }
 
@@ -94,7 +101,7 @@ export function setRequiredRuleOnPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A list of the required [[Rule]]'s
  * @since unreleased
  */
-export function getRequiredRuleOnPolicyAll(policy: Policy): UrlString[] {
+export function getRequiredRuleForPolicyAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
 
@@ -111,7 +118,7 @@ export function getRequiredRuleOnPolicyAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addOptionalRuleToPolicy(policy: Policy, rule: Rule): Policy {
+export function addOptionalRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return addIri(policy, acp.anyOf, rule);
 }
 
@@ -128,7 +135,7 @@ export function addOptionalRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeOptionalRuleFromPolicy(
+export function removeOptionalRuleForPolicy(
   policy: Policy,
   rule: Rule
 ): Policy {
@@ -148,7 +155,7 @@ export function removeOptionalRuleFromPolicy(
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setOptionalRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+export function setOptionalRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return setIri(policy, acp.anyOf, rule);
 }
 
@@ -162,7 +169,7 @@ export function setOptionalRuleOnPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A list of the optional [[Rule]]'s
  * @since unreleased
  */
-export function getOptionalRuleOnPolicyAll(policy: Policy): UrlString[] {
+export function getOptionalRuleForPolicyAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
 
@@ -179,7 +186,7 @@ export function getOptionalRuleOnPolicyAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addForbiddenRuleToPolicy(policy: Policy, rule: Rule): Policy {
+export function addForbiddenRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return addIri(policy, acp.noneOf, rule);
 }
 
@@ -196,7 +203,7 @@ export function addForbiddenRuleToPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeForbiddenRuleFromPolicy(
+export function removeForbiddenRuleForPolicy(
   policy: Policy,
   rule: Rule
 ): Policy {
@@ -216,7 +223,7 @@ export function removeForbiddenRuleFromPolicy(
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setForbiddenRuleOnPolicy(policy: Policy, rule: Rule): Policy {
+export function setForbiddenRuleForPolicy(policy: Policy, rule: Rule): Policy {
   return setIri(policy, acp.noneOf, rule);
 }
 
@@ -230,6 +237,258 @@ export function setForbiddenRuleOnPolicy(policy: Policy, rule: Rule): Policy {
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getForbiddenRuleOnPolicyAll(policy: Policy): UrlString[] {
+export function getForbiddenRuleForPolicyAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.noneOf);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Initialise a new, empty [[Rule]].
+ *
+ * @param url URL that identifies this [[Rule]].
+ */
+export function createRule(url: Url | UrlString): Rule {
+  const stringUrl = internal_toIriString(url);
+  let ruleThing = createThing({ url: stringUrl });
+  ruleThing = setUrl(ruleThing, rdf.type, acp.Rule);
+  return ruleThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the [[Rule]] with the given URL from an [[RuleDataset]].
+ *
+ * @param ruleResource The Resource that contains the given [[Rule]].
+ * @param url URL that identifies this [[Rule]].
+ * @returns The requested [[Rule]], if it exists, or `null` if it does not.
+ */
+export function getRule(
+  ruleResource: SolidDataset,
+  url: Url | UrlString
+): Rule | null {
+  const foundThing = getThing(ruleResource, url);
+  if (foundThing === null || getUrl(foundThing, rdf.type) !== acp.Rule) {
+    return null;
+  }
+  return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * List all the agents a [[Rule]] applies **directly** to. This will not include agents
+ * that are part of a group the [[Rule]] applies to, nor will it include specific agent
+ * classes, such as authenticated or public agents.
+ *
+ * @param rule The rule from which agents are read.
+ * @returns A list of the WebIDs of agents included in the rule.
+ * @since Unreleased
+ */
+export function getAgentForRuleAll(rule: Rule): WebId[] {
+  return getIriAll(rule, acp.agent).filter(
+    (agent: WebId) =>
+      agent !== acp.PublicAgent && agent !== acp.AuthenticatedAgent
+  );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Overwrite the agents the [[Rule]] applies to with the provided agents.
+ *
+ * @param rule The rule for which agents are set.
+ * @param agents The list of agents the rule should apply to.
+ * @returns A copy of the input rule, applying to a different set of agents.
+ * @since Unreleased
+ */
+export function setAgentForRule(rule: Rule, agent: WebId): Rule {
+  // Preserve the special agent classes authenticated and public, which we
+  // don't want to overwrite with this function.
+  const isPublic = hasPublicForRule(rule);
+  const isAuthenticated = hasAuthenticatedForRule(rule);
+  let result = setIri(rule, acp.agent, agent);
+  // Restore public and authenticated
+  result = setPublicForRule(result, isPublic);
+  result = setAuthenticatedForRule(result, isAuthenticated);
+  return result;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Apply the [[Rule]] to an additional agent.
+ *
+ * @param rule The [[Rule]] to be applied to an additional agent.
+ * @param agent The agent the [[Rule]] should apply to.
+ * @returns A copy of the [[Rule]], applying to an additional agent.
+ * @since Unreleased
+ */
+export function addAgentForRule(rule: Rule, agent: WebId): Rule {
+  return addIri(rule, acp.agent, agent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Prevent the [[Rule]] from applying to a given agent directly. This will not
+ * remove the agent from any groups the rule applies to.
+ *
+ * @param rule The [[Rule]] that should no longer apply to a given agent.
+ * @param agent The agent the rule should no longer apply to.
+ * @returns A copy of the rule, not applying to the given agent.
+ * @since Unreleased
+ */
+export function removeAgentForRule(rule: Rule, agent: WebId): Rule {
+  return removeIri(rule, acp.agent, agent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Lists all the groups a [[Rule]] applies to.
+ *
+ * @param rule The rule from which groups are read.
+ * @returns A list of the [[URL]]'s of groups included in the rule.
+ * @since Unreleased
+ */
+export function getGroupForRuleAll(rule: Rule): UrlString[] {
+  return getIriAll(rule, acp.group);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Overwrite the groups the [[Rule]] applies to with the provided groups.
+ *
+ * @param rule The rule for which groups are set.
+ * @param agents The list of groups the rule should apply to.
+ * @returns A copy of the input rule, applying to a different set of groups.
+ * @since Unreleased
+ */
+export function setGroupForRule(rule: Rule, group: UrlString): Rule {
+  return setIri(rule, acp.group, group);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Apply the [[Rule]] to an additional group.
+ *
+ * @param rule The [[Rule]] to be applied to an additional group.
+ * @param agent The group the [[Rule]] should apply to.
+ * @returns A copy of the [[Rule]], applying to an additional group.
+ * @since Unreleased
+ */
+export function addGroupForRule(rule: Rule, group: UrlString): Rule {
+  return addIri(rule, acp.group, group);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Prevent the [[Rule]] from applying to a given group.
+ *
+ * @param rule The [[Rule]] that should no longer apply to a given group.
+ * @param agent The group the rule should no longer apply to.
+ * @returns A copy of the rule, not applying to the given group.
+ * @since Unreleased
+ */
+export function removeGroupForRule(rule: Rule, group: UrlString): Rule {
+  return removeIri(rule, acp.group, group);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Check if the rule applies to any agent.
+ *
+ * @param rule The rule checked for public access.
+ * @returns Whether the rule applies to any agent or not.
+ */
+export function hasPublicForRule(rule: Rule): boolean {
+  return (
+    getIriAll(rule, acp.agent).filter((agent) => agent === acp.PublicAgent)
+      .length > 0
+  );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Enable or disable a rule from applying to any agent.
+ *
+ * @param rule The rule being modified.
+ * @param hasPublic A boolean indicating whether the rule should apply or not to any agent.
+ * @returns A copy of the rule, updated to apply/not apply to any agent.
+ * @status Unreleased
+ */
+export function setPublicForRule(rule: Rule, hasPublic: boolean): Rule {
+  return hasPublic
+    ? addIri(rule, acp.agent, acp.PublicAgent)
+    : removeIri(rule, acp.agent, acp.PublicAgent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Check if the rule applies to any authenticated agent.
+ *
+ * @param rule The rule checked for authenticated access.
+ * @returns Whether the rule applies to any authenticated agent or not.
+ */
+export function hasAuthenticatedForRule(rule: Rule): boolean {
+  return (
+    getIriAll(rule, acp.agent).filter(
+      (agent) => agent === acp.AuthenticatedAgent
+    ).length > 0
+  );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Enable or disable a rule from applying to any authenticated agent.
+ *
+ * @param rule The rule being modified.
+ * @param hasPublic A boolean indicating whether the rule should apply or not to any authenticated agent.
+ * @returns A copy of the rule, updated to apply/not apply to any authenticated agent.
+ * @status Unreleased
+ */
+export function setAuthenticatedForRule(
+  rule: Rule,
+  authenticated: boolean
+): Rule {
+  return authenticated
+    ? addIri(rule, acp.agent, acp.AuthenticatedAgent)
+    : removeIri(rule, acp.agent, acp.AuthenticatedAgent);
 }

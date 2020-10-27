@@ -48,7 +48,6 @@ import {
   internal_getAcr,
   internal_setAcr,
 } from "./control";
-import { PolicyDataset } from "./policy";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
