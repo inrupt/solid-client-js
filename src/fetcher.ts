@@ -23,6 +23,10 @@
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */
 export const fetch: typeof window.fetch = (resource, init) => {
+  /* istanbul ignore if: `require` is always defined in the unit test environment */
+  if (typeof window === "object" && typeof require !== "function") {
+    return window.fetch;
+  }
   // Implementation note: it's up to the client application to resolve these module names to the
   // respective npm packages. At least one commonly used tool (Webpack) is only able to do that if
   // the module names are literal strings.

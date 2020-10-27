@@ -38,13 +38,7 @@ import { getIriAll, getUrl, getUrlAll } from "../thing/get";
 import { mockThingFrom } from "../thing/mock";
 import { removeUrl } from "../thing/remove";
 import { setUrl } from "../thing/set";
-import {
-  asUrl,
-  createThing,
-  getThing,
-  getThingAll,
-  setThing,
-} from "../thing/thing";
+import { asUrl, createThing, getThingAll, setThing } from "../thing/thing";
 import {
   createPolicy,
   getAllowModesOnPolicy,
@@ -52,72 +46,12 @@ import {
   getPolicy,
   getPolicyAll,
   removePolicy,
-  savePolicyDatasetAt,
   setAllowModesOnPolicy,
   setDenyModesOnPolicy,
   setPolicy,
 } from "./policy";
 
 const policyUrl = "https://some.pod/policy-resource";
-
-describe("savePolicyDatasetAt", () => {
-  it("sets the type of acp:AccessPolicy if not set yet", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
-    const newDataset = createSolidDataset();
-
-    const savedDataset = await savePolicyDatasetAt(policyUrl, newDataset, {
-      fetch: mockFetch,
-    });
-
-    const savedDatasetThing = getThing(savedDataset, policyUrl);
-    expect(savedDatasetThing).not.toBeNull();
-    expect(getUrl(savedDatasetThing!, rdf.type)).toBe(acp.AccessPolicyResource);
-  });
-
-  it("overwrites an existing type that might be set", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
-    let newDatasetThing = createThing({ url: policyUrl });
-    newDatasetThing = setUrl(
-      newDatasetThing,
-      rdf.type,
-      "https://arbitrary.vocab/ArbitraryClass"
-    );
-    const newDataset = setThing(createSolidDataset(), newDatasetThing);
-
-    const savedDataset = await savePolicyDatasetAt(policyUrl, newDataset, {
-      fetch: mockFetch,
-    });
-
-    const savedDatasetThing = getThing(savedDataset, policyUrl);
-    expect(savedDatasetThing).not.toBeNull();
-    expect(getUrlAll(savedDatasetThing!, rdf.type)).toEqual([
-      acp.AccessPolicyResource,
-    ]);
-  });
-
-  it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
-    };
-
-    await savePolicyDatasetAt(policyUrl, createSolidDataset());
-
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(policyUrl);
-  });
-
-  it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
-
-    await savePolicyDatasetAt(policyUrl, createSolidDataset(), {
-      fetch: mockFetch,
-    });
-
-    expect(mockFetch.mock.calls[0][0]).toBe(policyUrl);
-  });
-});
 
 describe("createPolicy", () => {
   it("creates a Thing of type acp:AccessPolicy", () => {
