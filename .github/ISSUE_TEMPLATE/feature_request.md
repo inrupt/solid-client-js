@@ -9,7 +9,7 @@ assignees: ""
 <!-- 
 Thank you for reporting an issue.
 
-Please fill in as much of the template below as you're able. Feel free to delete any section you want to skip. 
+Please fill in as much of the template below as you're able. Feel free to delete any section you don't think applies, but be aware that the more comprehensive your description, the easier it is to take it into account. 
 -->
 
 ### Search terms you've used
