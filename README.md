@@ -8,11 +8,13 @@
 
 ## Data access and permissions management - solid-client
 
-[@inrupt/solid-client](https://docs.inrupt.com/client-libraries/solid-client-js/) allows developers to access data and manage permissions on data stored in Solid Pods.
+[@inrupt/solid-client](https://docs.inrupt.com/developer-tools/javascript/client-libraries/) allows developers to access data and manage permissions on data stored in Solid Pods.
 
 ## Authentication - solid-client-authn
+`solid-client-authn` is a suite of libraries designed to authenticate with Solid identity servers.
+The libraries include different modules for different deployment environments:
 
-[@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn) allows developers to authenticate against a Solid server. This is necessary when the resources on your Pod are not public.
+[@inrupt/solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser) allows apps running in a browser to authenticate against a Solid server. This is only necessary if you wish to access private resources in a Pod (to access public resources you could simply use standard `window.fetch()`).
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
 
@@ -49,7 +51,7 @@ If you have questions about working with Solid or just want to share what you’
 
 ## Documentation
 
-- [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/client-libraries/solid-client-js)
+- [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
 - [Homepage](https://docs.inrupt.com/)
 
 # Changelog

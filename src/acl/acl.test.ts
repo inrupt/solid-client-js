@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -51,14 +51,16 @@ import {
   deleteAclFor,
   createAcl,
   internal_getContainerPath,
+  hasAcl,
 } from "./acl";
 import {
-  WithResourceInfo,
+  WithServerResourceInfo,
   ThingPersisted,
   AclRule,
   AclDataset,
   Access,
   WithAccessibleAcl,
+  WithAcl,
 } from "../interfaces";
 
 function mockResponse(
@@ -70,11 +72,14 @@ function mockResponse(
 
 describe("fetchResourceAcl", () => {
   it("returns the fetched ACL SolidDataset", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest
@@ -98,11 +103,14 @@ describe("fetchResourceAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -120,10 +128,11 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the source SolidDataset has no known ACL IRI", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -133,11 +142,14 @@ describe("fetchResourceAcl", () => {
   });
 
   it("returns null if the ACL was not found", async () => {
-    const sourceDataset: WithResourceInfo = {
+    const sourceDataset: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -169,6 +181,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -204,6 +219,9 @@ describe("fetchFallbackAcl", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -228,6 +246,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/with-acl/without-acl/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -296,6 +317,9 @@ describe("fetchFallbackAcl", () => {
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl:
           "https://arbitrary.pod/arbitrary-parent/no-control-access/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
@@ -326,6 +350,9 @@ describe("fetchFallbackAcl", () => {
         // in which case we wouldn't be able to reliably determine the effective ACL.
         // Hence, the function requires the given SolidDataset to have one known:
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
 
@@ -381,6 +408,25 @@ describe("getContainerPath", () => {
   });
 });
 
+describe("hasAcl", () => {
+  it("returns true if a Resource was fetched with its ACL Resources attached", () => {
+    const withAcl: WithAcl = {
+      internal_acl: {
+        resourceAcl: null,
+        fallbackAcl: null,
+      },
+    };
+
+    expect(hasAcl(withAcl)).toBe(true);
+  });
+
+  it("returns false if a Resource was fetched without its ACL Resources attached", () => {
+    const withoutAcl = {};
+
+    expect(hasAcl(withoutAcl)).toBe(false);
+  });
+});
+
 describe("getResourceAcl", () => {
   it("returns the attached Resource ACL Dataset", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
@@ -388,6 +434,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -396,6 +443,9 @@ describe("getResourceAcl", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toEqual(aclDataset);
@@ -407,6 +457,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -414,7 +465,10 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
-        unsafe_aclUrl: "https://arbitrary.pod/other-resource.acl",
+        aclUrl: "https://arbitrary.pod/other-resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/other-resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -426,6 +480,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -433,7 +488,10 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
-        unsafe_aclUrl: "https://arbitrary.pod/resource.acl",
+        aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -445,6 +503,7 @@ describe("getResourceAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     expect(getResourceAcl(solidDataset)).toBeNull();
@@ -458,6 +517,7 @@ describe("getFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const solidDataset = Object.assign(dataset(), {
@@ -481,6 +541,9 @@ describe("createAcl", () => {
         sourceIri: "https://some.pod/container/resource",
         isRawData: false,
         aclUrl: "https://some.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: null, resourceAcl: null },
     });
@@ -499,12 +562,13 @@ describe("createAcl", () => {
 });
 
 describe("createAclFromFallbackAcl", () => {
-  it("creates a new ACL including existing default rules as Resource rules", () => {
+  it("creates a new ACL including existing default rules as Resource and default rules", () => {
     const aclDataset: AclDataset = Object.assign(dataset(), {
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -543,6 +607,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -550,11 +617,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
@@ -571,6 +644,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -609,6 +683,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -616,11 +693,17 @@ describe("createAclFromFallbackAcl", () => {
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
     const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(4);
+    expect(resourceAclQuads).toHaveLength(5);
     expect(resourceAclQuads[3].predicate.value).toBe(
       "http://www.w3.org/ns/auth/acl#accessTo"
     );
     expect(resourceAclQuads[3].object.value).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(resourceAclQuads[4].predicate.value).toBe(
+      "http://www.w3.org/ns/auth/acl#default"
+    );
+    expect(resourceAclQuads[4].object.value).toBe(
       "https://arbitrary.pod/container/resource"
     );
     expect(resourceAcl.internal_accessTo).toBe(
@@ -637,6 +720,7 @@ describe("createAclFromFallbackAcl", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
@@ -675,6 +759,9 @@ describe("createAclFromFallbackAcl", () => {
         sourceIri: "https://arbitrary.pod/container/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
+        },
       },
       internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
     });
@@ -692,6 +779,7 @@ describe("getAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -783,6 +871,7 @@ describe("getAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1195,6 +1284,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1233,6 +1323,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1272,6 +1363,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1310,6 +1402,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1348,6 +1441,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1393,6 +1487,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1447,6 +1542,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1499,6 +1595,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/container/",
     });
@@ -1544,6 +1641,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1589,6 +1687,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1634,6 +1733,7 @@ describe("removeEmptyAclRules", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1688,12 +1788,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1712,12 +1816,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1727,6 +1835,31 @@ describe("saveAclFor", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
+  });
+
+  it("returns a meaningful error when it cannot determine where to save the ACL", async () => {
+    const withResourceInfo: WithAccessibleAcl = {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: undefined as any,
+        linkedResources: {},
+      },
+    };
+    const aclResource: AclDataset = Object.assign(dataset(), {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource.acl",
+        isRawData: false,
+        linkedResources: {},
+      },
+      internal_accessTo: "https://arbitrary.pod/resource",
+    });
+
+    const fetchPromise = saveAclFor(withResourceInfo, aclResource);
+
+    await expect(fetchPromise).rejects.toThrow(
+      "Could not determine the location of the ACL for the Resource at `https://arbitrary.pod/resource`; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
+    );
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -1740,12 +1873,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
     });
@@ -1755,7 +1892,7 @@ describe("saveAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource failed: 403 Forbidden.")
+      "Storing the Resource at `https://arbitrary.pod/resource.acl` failed: 403 Forbidden."
     );
   });
 
@@ -1768,12 +1905,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://some-other.pod/resource",
     });
@@ -1794,12 +1935,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1824,12 +1969,16 @@ describe("saveAclFor", () => {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: false,
         aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
+        },
       },
     };
     const aclResource: AclDataset = Object.assign(dataset(), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary-other.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
@@ -1854,11 +2003,14 @@ describe("deleteAclFor", () => {
         [RequestInfo, RequestInit?]
       >;
     };
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1879,11 +2031,14 @@ describe("deleteAclFor", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1904,11 +2059,14 @@ describe("deleteAclFor", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1926,11 +2084,14 @@ describe("deleteAclFor", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1939,7 +2100,9 @@ describe("deleteAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Deleting the ACL failed: 403 Forbidden.")
+      new Error(
+        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -1950,11 +2113,14 @@ describe("deleteAclFor", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const mockResource: WithResourceInfo & WithAccessibleAcl = {
+    const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: true,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -1963,7 +2129,9 @@ describe("deleteAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Deleting the ACL failed: 404 Not Found.")
+      new Error(
+        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });

@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
-import { NamedNode } from "rdf-js";
+import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { DataFactory } from "n3";
 import {
   getThing,
@@ -32,6 +32,7 @@ import {
   asUrl,
   internal_toNode,
   isThing,
+  thingAsMarkdown,
 } from "./thing";
 import {
   IriString,
@@ -47,6 +48,15 @@ import {
 } from "../interfaces";
 import { createSolidDataset } from "../resource/solidDataset";
 import { mockThingFrom } from "./mock";
+import {
+  addStringNoLocale,
+  addInteger,
+  addStringWithLocale,
+  addIri,
+  addBoolean,
+  addDatetime,
+  addDecimal,
+} from "./add";
 
 function getMockQuad(
   terms: Partial<{
@@ -144,7 +154,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithMultipleThings,
       "https://some.vocab/subject"
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -157,7 +167,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithAThing,
       DataFactory.namedNode("https://some.vocab/subject")
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -172,9 +182,23 @@ describe("getThing", () => {
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
 
-    const thing = getThing(datasetWithThingLocal, localSubject);
+    const thing = getThing(datasetWithThingLocal, localSubject) as Thing;
 
     expect(Array.from(thing)).toEqual([quadWithLocalSubject]);
+  });
+
+  it("returns null if the given SolidDataset does not include Quads with the given Subject", () => {
+    const datasetWithoutTheThing = dataset();
+    datasetWithoutTheThing.add(
+      getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
+    );
+
+    const thing = getThing(
+      datasetWithoutTheThing,
+      "https://some.vocab/subject"
+    );
+
+    expect(thing).toBeNull();
   });
 
   it("returns Quads from all Named Graphs if no scope was specified", () => {
@@ -192,7 +216,7 @@ describe("getThing", () => {
     const thing = getThing(
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject"
-    );
+    ) as Thing;
 
     expect(thing.size).toEqual(2);
     expect(Array.from(thing)).toContain(quadInDefaultGraph);
@@ -217,7 +241,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -240,7 +264,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: "https://some.vocab/namedGraph" }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -263,7 +287,7 @@ describe("getThing", () => {
       datasetWithMultipleNamedGraphs,
       "https://some.vocab/subject",
       { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
-    );
+    ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
   });
@@ -669,6 +693,7 @@ describe("setThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -714,6 +739,7 @@ describe("setThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     });
     datasetWithLocalSubject.add(oldThingQuad);
@@ -943,6 +969,7 @@ describe("removeThing", () => {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
+        linkedResources: {},
       },
     });
     aclDataset.add(thingQuad);
@@ -960,6 +987,7 @@ describe("removeThing", () => {
     expect(updatedDataset.internal_resourceInfo).toEqual({
       sourceIri: "https://arbitrary.pod/resource.acl",
       isRawData: false,
+      linkedResources: {},
     });
   });
 
@@ -1080,6 +1108,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1114,6 +1143,7 @@ describe("removeThing", () => {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
+          linkedResources: {},
         },
       }
     );
@@ -1176,6 +1206,16 @@ describe("asIri", () => {
     );
   });
 
+  it("accepts a Thing of which it is not known whether it is persisted yet", () => {
+    const thing: Thing = Object.assign(dataset(), {
+      internal_url: "https://some.pod/resource#thing",
+    });
+
+    expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
+      "https://some.pod/resource#thing"
+    );
+  });
+
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-name",
@@ -1202,5 +1242,212 @@ describe("toNode", () => {
     const node1 = internal_toNode(thing);
     const node2 = internal_toNode(thing);
     expect(node1.equals(node2)).toBe(true);
+  });
+});
+
+describe("thingAsMarkdown", () => {
+  it("returns a readable version of an empty, unsaved Thing", () => {
+    const emptyThing = createThing({ name: "empty-thing" });
+
+    expect(thingAsMarkdown(emptyThing)).toBe(
+      "## Thing (no URL yet — identifier: `#empty-thing`)\n\n<empty>\n"
+    );
+  });
+
+  it("returns a readable version of an empty Thing with a known URL", () => {
+    const emptyThing = mockThingFrom("https://some.pod/resource#thing");
+
+    expect(thingAsMarkdown(emptyThing)).toBe(
+      "## Thing: https://some.pod/resource#thing\n\n<empty>\n"
+    );
+  });
+
+  it("returns a readable version of a Thing with just one property", () => {
+    let thingWithValue = createThing({ name: "with-one-value" });
+    thingWithValue = addStringNoLocale(
+      thingWithValue,
+      "https://some.vocab/predicate",
+      "Some value"
+    );
+
+    expect(thingAsMarkdown(thingWithValue)).toBe(
+      "## Thing (no URL yet — identifier: `#with-one-value`)\n" +
+        "\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some value" (string)\n'
+    );
+  });
+
+  it("returns a readable version of a Thing with multiple properties and values", () => {
+    let thingWithValues = createThing({ name: "with-values" });
+    thingWithValues = addStringNoLocale(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      "Some value"
+    );
+    thingWithValues = addStringWithLocale(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      "Some other value",
+      "en-gb"
+    );
+    thingWithValues = addBoolean(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      true
+    );
+    thingWithValues = addDatetime(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+    );
+    thingWithValues = addDecimal(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      13.37
+    );
+    thingWithValues = addInteger(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      42
+    );
+    thingWithValues = addIri(
+      thingWithValues,
+      "https://some.vocab/other-predicate",
+      "https://some.url"
+    );
+
+    expect(thingAsMarkdown(thingWithValues)).toBe(
+      "## Thing (no URL yet — identifier: `#with-values`)\n" +
+        "\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some value" (string)\n' +
+        '- "Some other value" (en-gb string)\n' +
+        "- true (boolean)\n" +
+        "- Mon, 12 Nov 1990 13:37:42 GMT (datetime)\n" +
+        "- 13.37 (decimal)\n" +
+        "- 42 (integer)\n" +
+        "\n" +
+        "Property: https://some.vocab/other-predicate\n" +
+        "- <https://some.url> (URL)\n"
+    );
+  });
+
+  it("returns a readable version of a Thing that points to other Things", () => {
+    let thing1 = createThing({ name: "thing1" });
+    const thing2 = createThing({ name: "thing2" });
+    const thing3 = mockThingFrom("https://some.pod/resource#thing3");
+    thing1 = addIri(thing1, "https://some.vocab/predicate", thing2);
+    thing1 = addIri(thing1, "https://some.vocab/predicate", thing3);
+
+    expect(thingAsMarkdown(thing1)).toBe(
+      "## Thing (no URL yet — identifier: `#thing1`)\n" +
+        "\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- <#thing2> (URL)\n" +
+        "- <https://some.pod/resource#thing3> (URL)\n"
+    );
+  });
+
+  it("returns a readable version of a Thing with values that we do not explicitly provide convenience functions for", () => {
+    const thingWithRdfValues = createThing({ name: "with-rdf-values" });
+    const someBlankNode = DataFactory.blankNode("blank-node-id");
+    const someLiteral = DataFactory.literal(
+      "some-serialised-value",
+      DataFactory.namedNode("https://some.vocab/datatype")
+    );
+    thingWithRdfValues.add(
+      DataFactory.quad(
+        thingWithRdfValues.internal_localSubject,
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        someBlankNode
+      )
+    );
+    thingWithRdfValues.add(
+      DataFactory.quad(
+        thingWithRdfValues.internal_localSubject,
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        someLiteral
+      )
+    );
+    thingWithRdfValues.add(
+      DataFactory.quad(
+        thingWithRdfValues.internal_localSubject,
+        DataFactory.namedNode("https://some.vocab/predicate"),
+        DataFactory.quad(
+          DataFactory.blankNode("Arbitrary Subject in an RDF* nested Quad."),
+          DataFactory.namedNode("https://some.vocab/predicate"),
+          DataFactory.literal("Arbitrary Object in an RDF* nested Quad.")
+        )
+      )
+    );
+
+    expect(thingAsMarkdown(thingWithRdfValues)).toBe(
+      "## Thing (no URL yet — identifier: `#with-rdf-values`)\n" +
+        "\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- [blank-node-id] (RDF/JS BlankNode)\n" +
+        "- [some-serialised-value] (RDF/JS Literal of type: `https://some.vocab/datatype`)\n" +
+        "- ??? (nested RDF* Quad)\n"
+    );
+  });
+
+  it("returns a readable version even of a Thing that contains invalid data", () => {
+    const thingWithValues = createThing({ name: "with-values" });
+    function addInvalidValue(value: Quad_Object) {
+      thingWithValues.add(
+        DataFactory.quad(
+          thingWithValues.internal_localSubject,
+          DataFactory.namedNode("https://some.vocab/predicate"),
+          value
+        )
+      );
+    }
+
+    const invalidDatatype: Literal = {
+      equals: () => false,
+      language: "",
+      termType: "Literal",
+      value: "With invalid datatype",
+      datatype: new Error("Not a valid datatype") as any,
+    };
+    addInvalidValue(invalidDatatype);
+    addInvalidValue(
+      DataFactory.literal(
+        "Not a boolean",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")
+      )
+    );
+    addInvalidValue(
+      DataFactory.literal(
+        "Not a datetime",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#dateTime")
+      )
+    );
+    addInvalidValue(
+      DataFactory.literal(
+        "Not a decimal",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#decimal")
+      )
+    );
+    addInvalidValue(
+      DataFactory.literal(
+        "Not an integer",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
+      )
+    );
+    addInvalidValue(DataFactory.variable("some-variable"));
+
+    expect(thingAsMarkdown(thingWithValues)).toBe(
+      "## Thing (no URL yet — identifier: `#with-values`)\n" +
+        "\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- [With invalid datatype] (RDF/JS Literal of unknown type)\n" +
+        "- Invalid data: `Not a boolean` (boolean)\n" +
+        "- Invalid data: `Not a datetime` (datetime)\n" +
+        "- Invalid data: `Not a decimal` (decimal)\n" +
+        "- Invalid data: `Not an integer` (integer)\n" +
+        "- ?some-variable (RDF/JS Variable)\n"
+    );
   });
 });

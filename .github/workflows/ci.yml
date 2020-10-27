@@ -34,9 +34,6 @@ jobs:
       # end-to-end tests only need to run on one OS:
       if: runner.os == 'Linux' && matrix.node-version == '12.x'
     - run: npx prettier --check "src/**"
-      # Prettier for some reason reports that the formatting is off on Windows.
-      # Since a single check is sufficient for code formatting, we skip it there:
-      if: runner.os != 'Windows'
     - run: npm run check-licenses
     - run: npm audit --audit-level=moderate
     - name: Archive code coverage results

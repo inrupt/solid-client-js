@@ -40,9 +40,10 @@ import {
   WithResourceInfo,
   IriString,
   AclDataset,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { getThingAll } from "../thing/thing";
-import { getIriAll } from "../thing/get";
+import { getIri, getIriAll } from "../thing/get";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
@@ -132,10 +133,10 @@ function addAclRuleQuads(
 }
 
 function addAclDatasetToSolidDataset(
-  solidDataset: SolidDataset & WithResourceInfo,
+  solidDataset: SolidDataset & WithServerResourceInfo,
   aclDataset: AclDataset,
   type: "resource" | "fallback"
-): SolidDataset & WithResourceInfo & WithAcl {
+): SolidDataset & WithServerResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
@@ -152,11 +153,14 @@ function addAclDatasetToSolidDataset(
   return Object.assign(solidDataset, { internal_acl: acl });
 }
 
-function getMockDataset(sourceIri: IriString): SolidDataset & WithResourceInfo {
+function getMockDataset(
+  sourceIri: IriString
+): SolidDataset & WithServerResourceInfo {
   return Object.assign(dataset(), {
     internal_resourceInfo: {
       sourceIri: sourceIri,
       isRawData: false,
+      linkedResources: {},
     },
   });
 }
@@ -956,21 +960,16 @@ describe("setAgentResourceAccess", () => {
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
-          "https://some.pod/profileDoc#webId"
-        )
-      ) {
-        // The agent given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(0);
-      } else {
-        // The pre-existing agent should still have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(1);
-      }
+      // The agent given resource access should not have default access
+      const expectedNrOfDefaultRules = getIriAll(
+        thing,
+        "http://www.w3.org/ns/auth/acl#agent"
+      ).includes("https://some.pod/profileDoc#webId")
+        ? 0
+        : 1;
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+      ).toHaveLength(expectedNrOfDefaultRules);
     });
 
     // Roughly check that the ACL dataset is as we expect it
@@ -1030,28 +1029,20 @@ describe("setAgentResourceAccess", () => {
 
     // Explicitly check that the group ACL is separate from the modified agent ACL
     getThingAll(updatedDataset).forEach((thing) => {
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").length > 0
-      ) {
-        // The agent given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
-        ).toHaveLength(0);
+      const isAgentGroupRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#agentGroup") !== null;
+      const isAgentClassRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#agentClass") !== null;
+      const isOriginRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#origin") !== null;
+      if (!isAgentGroupRule && !isAgentClassRule && !isOriginRule) {
+        return;
       }
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").length > 0
-      ) {
-        // The agent given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
-        ).toHaveLength(0);
-      }
-      if (getIriAll(thing, "http://www.w3.org/ns/auth/acl#origin").length > 0) {
-        // The origin given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
-        ).toHaveLength(0);
-      }
+
+      // Any actors other than the specified agent should not have been given resource access:
+      expect(
+        getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+      ).toBeNull();
     });
 
     // Roughly check that the ACL dataset is as we expect it
@@ -1929,21 +1920,16 @@ describe("setAgentDefaultAccess", () => {
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
-          "https://some.pod/profileDoc#webId"
-        )
-      ) {
-        // The agent given default access should not have resource access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
-        ).toHaveLength(0);
-      } else {
-        // The pre-existing agent should still have resource access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
-        ).toHaveLength(1);
-      }
+      // The agent given default access should not have resource access
+      const expectedNrOfResourceRules = getIriAll(
+        thing,
+        "http://www.w3.org/ns/auth/acl#agent"
+      ).includes("https://some.pod/profileDoc#webId")
+        ? 0
+        : 1;
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+      ).toHaveLength(expectedNrOfResourceRules);
     });
 
     // Roughly check that the ACL dataset is as we expect it
@@ -1951,7 +1937,7 @@ describe("setAgentDefaultAccess", () => {
     expect(updatedQuads).toHaveLength(13);
   });
 
-  it("does not copy over access for an unrelated Group or Agent Class", async () => {
+  it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
     let sourceDataset = addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
@@ -1979,6 +1965,15 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agent"
     );
+    sourceDataset = addAclRuleQuads(
+      sourceDataset,
+      "https://arbitrary.pod/profileDoc#webId",
+      "https://arbitrary.pod/resource",
+      { read: true, append: true, write: false, control: false },
+      "resource",
+      "https://arbitrary.pod/resource/?ext=acl#owner",
+      "http://www.w3.org/ns/auth/acl#origin"
+    );
 
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
@@ -1993,27 +1988,23 @@ describe("setAgentDefaultAccess", () => {
 
     // Explicitly check that the group ACL is separate from the modified agent ACL
     getThingAll(updatedDataset).forEach((thing) => {
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").length > 0
-      ) {
-        // The agent given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(0);
+      const isAgentGroupRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#agentGroup") !== null;
+      const isAgentClassRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#agentClass") !== null;
+      const isOriginRule =
+        getIri(thing, "http://www.w3.org/ns/auth/acl#origin") !== null;
+      if (!isAgentGroupRule && !isAgentClassRule && !isOriginRule) {
+        return;
       }
-      if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").length > 0
-      ) {
-        // The agent given resource access should not have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(0);
-      }
+
+      // Any actors other than the specified agent should not have been given default access:
+      expect(getIri(thing, "http://www.w3.org/ns/auth/acl#default")).toBeNull();
     });
 
     // Roughly check that the ACL dataset is as we expect it
     const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(17);
+    expect(updatedQuads).toHaveLength(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -2536,18 +2527,19 @@ describe("setAgentDefaultAccess", () => {
     // The newly created resource rule does not give any default access.
     getThingAll(updatedDataset).forEach((thing) => {
       if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+        !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
           "https://some.pod/profileDoc#webId"
         )
       ) {
-        // The agent given resource access should no longer have default access
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(0);
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
-        ).toHaveLength(0);
+        return;
       }
+      // The agent given resource access should no longer have default access
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+      ).toHaveLength(0);
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+      ).toHaveLength(0);
     });
 
     // Roughly check that the ACL dataset is as we expect it
@@ -2588,18 +2580,19 @@ describe("setAgentDefaultAccess", () => {
     // access: the legacy predicate is not written back if the access is modified.
     getThingAll(updatedDataset).forEach((thing) => {
       if (
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
+        !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agent").includes(
           "https://some.pod/profileDoc#webId"
         )
       ) {
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
-        ).toHaveLength(1);
-        // The agent given resource access should no longer have legacy default access.
-        expect(
-          getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
-        ).toHaveLength(0);
+        return;
       }
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+      ).toHaveLength(1);
+      // The agent given resource access should no longer have legacy default access.
+      expect(
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+      ).toHaveLength(0);
     });
 
     // Roughly check that the ACL dataset is as we expect it

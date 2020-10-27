@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Literal, Quad } from "rdf-js";
+import { NamedNode, Literal, Quad, Term } from "rdf-js";
 import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri } from "./interfaces";
 
@@ -225,11 +225,7 @@ export function normalizeLocale(locale: string): string {
  * @returns Whether `value` is a Named Node.
  */
 export function isNamedNode<T>(value: T | NamedNode): value is NamedNode {
-  return (
-    typeof value === "object" &&
-    typeof (value as NamedNode).termType === "string" &&
-    (value as NamedNode).termType === "NamedNode"
-  );
+  return isTerm(value) && value.termType === "NamedNode";
 }
 
 /**
@@ -238,10 +234,21 @@ export function isNamedNode<T>(value: T | NamedNode): value is NamedNode {
  * @returns Whether `value` is a Literal.
  */
 export function isLiteral<T>(value: T | Literal): value is Literal {
+  return isTerm(value) && value.termType === "Literal";
+}
+
+/**
+ * @internal Library users shouldn't need to be exposed to raw Terms.
+ * @param value The value that might or might not be a Term.
+ * @returns Whether `value` is a Term.
+ */
+export function isTerm<T>(value: T | Term): value is Term {
   return (
+    value !== null &&
     typeof value === "object" &&
-    typeof (value as Literal).termType === "string" &&
-    (value as Literal).termType === "Literal"
+    typeof (value as Term).termType === "string" &&
+    typeof (value as Term).value === "string" &&
+    typeof (value as Term).equals === "function"
   );
 }
 
@@ -252,9 +259,8 @@ export function isLiteral<T>(value: T | Literal): value is Literal {
  */
 export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
   return (
-    typeof value === "object" &&
-    typeof (value as LocalNode).termType === "string" &&
-    (value as LocalNode).termType === "BlankNode" &&
+    isTerm(value) &&
+    value.termType === "BlankNode" &&
     typeof (value as LocalNode).internal_name === "string"
   );
 }

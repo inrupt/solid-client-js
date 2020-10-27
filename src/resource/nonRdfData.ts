@@ -20,16 +20,26 @@
  */
 
 import { fetch } from "../fetcher";
-import { Headers } from "cross-fetch";
 import {
+  File,
   UploadRequestInit,
   WithResourceInfo,
   WithAcl,
   Url,
   UrlString,
   internal_toIriString,
+  hasResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
-import { internal_parseResourceInfo, internal_fetchAcl } from "./resource";
+import {
+  internal_parseResourceInfo,
+  internal_fetchAcl,
+  getSourceIri,
+  getResourceInfo,
+  isRawData,
+  internal_cloneResource,
+} from "./resource";
+import { type } from "rdf-namespaces/dist/dc";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;
@@ -45,22 +55,24 @@ const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
 /**
  * Some of the headers must be set by the library, rather than directly.
  */
-function containsReserved(header: Headers): boolean {
-  return RESERVED_HEADERS.some((reserved) => header.has(reserved));
+function containsReserved(header: Record<string, string>): boolean {
+  return RESERVED_HEADERS.some((reserved) => header[reserved] !== undefined);
 }
 
 /**
- * Gets a file at a given URL, and returns it as a blob of data.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
+ * Retrieves a file from a URL and returns the file as a blob.
  *
- * @param url The URL of the fetched file
+ * @param url The URL of the file to return
  * @param options Fetching options: a custom fetcher and/or headers.
+ * @returns The file as a blob.
  */
 export async function getFile(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<File & WithServerResourceInfo> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
@@ -74,62 +86,67 @@ export async function getFile(
   }
   const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
-  const fileWithResourceInfo: Blob & WithResourceInfo = Object.assign(data, {
-    internal_resourceInfo: resourceInfo,
-  });
+  const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
+    data,
+    {
+      internal_resourceInfo: resourceInfo,
+    }
+  );
 
   return fileWithResourceInfo;
 }
 
 /**
- * Experimental: get a file and it's associated Access Control List.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * This is an experimental function that gets both a file, the linked ACL Resource (if
- * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
- * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
- * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[getFile]] instead.
+ * Retrieves a file, its resource ACL (Access Control List) if available,
+ * and its fallback ACL from a URL and returns them as a blob.
  *
- * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
- * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
- * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
- * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
- * authenticated user.
+ * If the user calling the function does not have access to the file's resource ACL,
+ * [[hasAccessibleAcl]] on the returned blob returns false.
+ * If the user has access to the file's resource ACL but the resource ACL does not exist,
+ * [[getResourceAcl]] on the returned blob returns null.
+ * If the fallback ACL is inaccessible by the user,
+ * [[getFallbackAcl]] on the returned blob returns null.
+ *
+ * ```{tip}
+ * To retrieve the ACLs, the function results in multiple HTTP requests rather than a single
+ * request as mandated by the Solid spec. As such, prefer [[getFile]] instead if you do not need the ACL.
+ * ```
  *
  * @param url The URL of the fetched file
  * @param options Fetching options: a custom fetcher and/or headers.
- * @returns A file and the ACLs that apply to it, if available to the authenticated user.
- * @since Not released yet.
+ * @returns A file and its ACLs, if available to the authenticated user, as a blob.
+ * @since 0.2.0
  */
 export async function getFileWithAcl(
   input: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo & WithAcl> {
+): Promise<File & WithServerResourceInfo & WithAcl> {
   const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
   return Object.assign(file, { internal_acl: acl });
 }
 
-const defaultSaveOptions = {
-  fetch: fetch,
-};
-
 /**
- * Deletes a file at a given URL
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ * Deletes a file at a given URL.
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
- *
- * @param input The URL of the file to delete
+ * @param file The URL of the file to delete
  */
 export async function deleteFile(
-  input: Url | UrlString,
+  file: Url | UrlString | WithResourceInfo,
   options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<void> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
   };
-  const url = internal_toIriString(input);
+  const url = hasResourceInfo(file)
+    ? internal_toIriString(getSourceIri(file))
+    : internal_toIriString(file);
   const response = await config.fetch(url, {
     ...config.init,
     method: "DELETE",
@@ -137,7 +154,7 @@ export async function deleteFile(
 
   if (!response.ok) {
     throw new Error(
-      `Deleting the file failed: ${response.status} ${response.statusText}.`
+      `Deleting the file at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 }
@@ -147,84 +164,137 @@ type SaveFileOptions = GetFileOptions & {
 };
 
 /**
- * Saves a file in a folder at a given URL. The server will return the final
- * filename (which may or may not be the given `slug`), it will return it in
- * the response's Location header.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * If something went wrong saving the file, the returned Promise will be rejected with an Error.
+ * Saves a file in a folder associated with the given URL. The final filename may or may
+ * not be the given `slug`.
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
- *
- * @param folderUrl The URL of the folder where the new file is saved
- * @param file The file to be written
- * @param options Additional parameters for file creation (e.g. a slug)
+ * @param folderUrl The URL of the folder where the new file is saved.
+ * @param file The file to be written.
+ * @param options Additional parameters for file creation (e.g. a slug).
+ * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer(
+export async function saveFileInContainer<FileExt extends File>(
   folderUrl: Url | UrlString,
-  file: Blob,
+  file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<FileExt & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
 
   if (!response.ok) {
     throw new Error(
-      `Saving the file failed: ${response.status} ${response.statusText}.`
+      `Saving the file in \`${folderUrl}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location for the newly saved file."
+      "Could not determine the location of the newly saved file."
     );
   }
 
   const fileIri = new URL(locationHeader, new URL(folderUrlString).origin).href;
 
-  const blobClone = new Blob([file]);
+  const blobClone = internal_cloneResource(file);
 
-  return Object.assign(blobClone, {
+  const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
-      sourceIri: fileIri,
       isRawData: true,
+      sourceIri: fileIri,
+      contentType: file.type.length > 0 ? file.type : undefined,
     },
-  });
+  };
+
+  return Object.assign(blobClone, resourceInfo);
 }
 
 /**
- * Saves a file at a given URL, erasing any previous content.
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * If something went wrong saving the file, the returned Promise will be rejected with an Error.
+ * Saves a file at a given URL, replacing any previous content.
  *
- * Please note that this function is still experimental: its API can change in non-major releases.
- *
- * @param fileUrl The URL where the file is saved
- * @param file The file to be written
- * @param options Additional parameters for file creation (e.g. a slug)
+ * @param fileUrl The URL where the file is saved.
+ * @param file The file to be written.
+ * @param options Additional parameters for file creation (e.g. a slug).
  */
 export async function overwriteFile(
   fileUrl: Url | UrlString,
-  file: Blob,
+  file: File,
   options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<Blob & WithResourceInfo> {
+): Promise<File & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
   if (!response.ok) {
     throw new Error(
-      `Saving the file failed: ${response.status} ${response.statusText}.`
+      `Overwriting the file at \`${fileUrlString}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
-  const blobClone = new Blob([file]);
+  const blobClone = internal_cloneResource(file);
+  const resourceInfo = internal_parseResourceInfo(response);
+  resourceInfo.sourceIri = fileUrlString;
+  resourceInfo.isRawData = true;
 
-  return Object.assign(blobClone, {
-    internal_resourceInfo: {
-      sourceIri: fileUrlString,
-      isRawData: true,
-    },
-  });
+  return Object.assign(blobClone, { internal_resourceInfo: resourceInfo });
+}
+
+function isHeadersArray(
+  headers: Headers | Record<string, string> | string[][]
+): headers is string[][] {
+  return Array.isArray(headers);
+}
+
+/**
+ * The return type of this function is misleading: it should ONLY be used to check
+ * whether an object has a forEach method that returns <key, value> pairs.
+ *
+ * @param headers A headers object that might have a forEach
+ */
+function hasHeadersObjectForEach(
+  headers: Headers | Record<string, string> | string[][]
+): headers is Headers {
+  return typeof (headers as Headers).forEach === "function";
+}
+
+/**
+ * @hidden
+ * This function feels unnecessarily complicated, but is required in order to
+ * have Headers according to type definitions in both Node and browser environments.
+ * This might require a fix upstream to be cleaned up.
+ *
+ * @param headersToFlatten A structure containing headers potentially in several formats
+ */
+export function flattenHeaders(
+  headersToFlatten: Headers | Record<string, string> | string[][] | undefined
+): Record<string, string> {
+  if (typeof headersToFlatten === "undefined") {
+    return {};
+  }
+
+  let flatHeaders: Record<string, string> = {};
+
+  if (isHeadersArray(headersToFlatten)) {
+    headersToFlatten.forEach(([key, value]) => {
+      flatHeaders[key] = value;
+    });
+    // Note that the following line must be a elsif, because string[][] has a forEach,
+    // but it returns string[] instead of <key, value>
+  } else if (hasHeadersObjectForEach(headersToFlatten)) {
+    headersToFlatten.forEach((value: string, key: string) => {
+      flatHeaders[key] = value;
+    });
+  } else {
+    // If the headers are already a Record<string, string>,
+    // they can directly be returned.
+    flatHeaders = headersToFlatten;
+  }
+
+  return flatHeaders;
 }
 
 /**
@@ -238,7 +308,7 @@ export async function overwriteFile(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: Blob,
+  file: File,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
@@ -246,7 +316,7 @@ async function writeFile(
     ...defaultGetFileOptions,
     ...options,
   };
-  const headers = new Headers(config.init?.headers ?? {});
+  const headers = flattenHeaders(config.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
@@ -257,9 +327,9 @@ async function writeFile(
 
   // If a slug is in the parameters, set the request headers accordingly
   if (config.slug !== undefined) {
-    headers.append("Slug", config.slug);
+    headers["Slug"] = config.slug;
   }
-  headers.append("Content-Type", file.type);
+  headers["Content-Type"] = file.type;
 
   const targetUrlString = internal_toIriString(targetUrl);
 

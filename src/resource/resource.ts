@@ -22,20 +22,28 @@
 import LinkHeader from "http-link-header";
 import {
   UrlString,
-  WithResourceInfo,
   WithAcl,
   hasAccessibleAcl,
   Access,
   SolidDataset,
+  File,
   hasResourceInfo,
+  internal_toIriString,
+  Url,
+  WebId,
+  Resource,
+  WithServerResourceInfo,
+  WithResourceInfo,
+  hasServerResourceInfo,
 } from "../interfaces";
 import { fetch } from "../fetcher";
 import {
   internal_fetchResourceAcl,
   internal_fetchFallbackAcl,
 } from "../acl/acl";
+import { clone as cloneDataset } from "../rdfjs";
 
-/** @internal */
+/** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
   fetch: fetch,
 };
@@ -47,14 +55,14 @@ export const internal_defaultFetchOptions = {
  * @param url URL to fetch Resource metadata from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  * @returns Promise resolving to the metadata describing the given Resource, or rejecting if fetching it failed.
- * @hidden
+ * @since 0.4.0
  */
-export async function internal_fetchResourceInfo(
+export async function getResourceInfo(
   url: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo["internal_resourceInfo"]> {
+): Promise<WithServerResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -63,17 +71,17 @@ export async function internal_fetchResourceInfo(
   const response = await config.fetch(url, { method: "HEAD" });
   if (!response.ok) {
     throw new Error(
-      `Fetching the Resource metadata failed: ${response.status} ${response.statusText}.`
+      `Fetching the metadata of the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`
     );
   }
 
   const resourceInfo = internal_parseResourceInfo(response);
 
-  return resourceInfo;
+  return { internal_resourceInfo: resourceInfo };
 }
 
 /**
- * This (currently internal) function fetches the ACL indicated in the [[WithResourceInfo]]
+ * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
  * attached to a resource.
  *
  * @internal
@@ -81,7 +89,7 @@ export async function internal_fetchResourceInfo(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
  */
 export async function internal_fetchAcl(
-  resourceInfo: WithResourceInfo,
+  resourceInfo: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -92,15 +100,17 @@ export async function internal_fetchAcl(
       fallbackAcl: null,
     };
   }
-  const [resourceAcl, fallbackAcl] = await Promise.all([
-    internal_fetchResourceAcl(resourceInfo, options),
-    internal_fetchFallbackAcl(resourceInfo, options),
-  ]);
+  const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
 
-  return {
-    fallbackAcl: fallbackAcl,
-    resourceAcl: resourceAcl,
-  };
+  const acl =
+    resourceAcl === null
+      ? {
+          resourceAcl: null,
+          fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
+        }
+      : { resourceAcl: resourceAcl, fallbackAcl: null };
+
+  return acl;
 }
 
 /**
@@ -120,21 +130,15 @@ export async function internal_fetchAcl(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
  */
-export async function fetchResourceInfoWithAcl(
+export async function getResourceInfoWithAcl(
   url: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<WithResourceInfo & WithAcl> {
-  const resourceInfo = await internal_fetchResourceInfo(url, options);
-  const acl = await internal_fetchAcl(
-    { internal_resourceInfo: resourceInfo },
-    options
-  );
-  return Object.assign(
-    { internal_resourceInfo: resourceInfo },
-    { internal_acl: acl }
-  );
+): Promise<WithServerResourceInfo & WithAcl> {
+  const resourceInfo = await getResourceInfo(url, options);
+  const acl = await internal_fetchAcl(resourceInfo, options);
+  return Object.assign(resourceInfo, { internal_acl: acl });
 }
 
 /**
@@ -142,7 +146,7 @@ export async function fetchResourceInfoWithAcl(
  */
 export function internal_parseResourceInfo(
   response: Response
-): WithResourceInfo["internal_resourceInfo"] {
+): WithServerResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
   // If the server offers a Turtle or JSON-LD serialisation on its own accord,
@@ -154,10 +158,11 @@ export function internal_parseResourceInfo(
     contentTypeParts.length > 0 &&
     ["text/turtle", "application/ld+json"].includes(contentTypeParts[0]);
 
-  const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+  const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     sourceIri: response.url,
     isRawData: !isSolidDataset,
     contentType: response.headers.get("Content-Type") ?? undefined,
+    linkedResources: {},
   };
 
   const linkHeader = response.headers.get("Link");
@@ -171,6 +176,13 @@ export function internal_parseResourceInfo(
         resourceInfo.sourceIri
       ).href;
     }
+    // Parse all link headers and expose them in a standard way
+    // (this can replace the parsing of the ACL link above):
+    resourceInfo.linkedResources = parsedLinks.refs.reduce((rels, ref) => {
+      rels[ref.rel] ??= [];
+      rels[ref.rel].push(new URL(ref.uri, resourceInfo.sourceIri).href);
+      return rels;
+    }, resourceInfo.linkedResources);
   }
 
   const wacAllowHeader = response.headers.get("WAC-Allow");
@@ -185,8 +197,13 @@ export function internal_parseResourceInfo(
  * @param resource Resource for which to check whether it is a Container.
  * @returns Whether `resource` is a Container.
  */
-export function isContainer(resource: WithResourceInfo): boolean {
-  return getSourceUrl(resource).endsWith("/");
+export function isContainer(
+  resource: Url | UrlString | WithResourceInfo
+): boolean {
+  const containerUrl = hasResourceInfo(resource)
+    ? getSourceUrl(resource)
+    : internal_toIriString(resource);
+  return containerUrl.endsWith("/");
 }
 
 /**
@@ -212,9 +229,9 @@ export function getContentType(resource: WithResourceInfo): string | null {
  * @returns The URL from which the Resource has been fetched, or null if it is not known.
  */
 export function getSourceUrl(resource: WithResourceInfo): string;
-export function getSourceUrl(resource: SolidDataset | Blob): string | null;
+export function getSourceUrl(resource: Resource): string | null;
 export function getSourceUrl(
-  resource: SolidDataset | Blob | WithResourceInfo
+  resource: Resource | WithResourceInfo
 ): string | null {
   if (hasResourceInfo(resource)) {
     return resource.internal_resourceInfo.sourceIri;
@@ -223,6 +240,103 @@ export function getSourceUrl(
 }
 /** @hidden Alias of getSourceUrl for those who prefer to use IRI terminology. */
 export const getSourceIri = getSourceUrl;
+
+/** @hidden Used to instantiate a separate instance from input parameters */
+export function internal_cloneResource<ResourceExt extends object>(
+  resource: ResourceExt
+): ResourceExt {
+  let clonedResource;
+  if (typeof (resource as File).slice === "function") {
+    // If given Resource is a File:
+    clonedResource = (resource as File).slice();
+  } else if (typeof (resource as SolidDataset).match === "function") {
+    // If given Resource is a SolidDataset:
+    // (We use the existince of a `match` method as a heuristic:)
+    clonedResource = cloneDataset(resource as SolidDataset);
+  } else {
+    // If it is just a plain object containing metadata:
+    clonedResource = { ...resource };
+  }
+
+  return Object.assign(
+    clonedResource,
+    // Although the RDF/JS data structures use classes and mutation,
+    // we only attach atomic properties that we never mutate.
+    // Hence, `copyNonClassProperties` is a heuristic that allows us to only clone our own data
+    // structures, rather than references to the same mutable instances of RDF/JS data structures:
+    copyNonClassProperties(resource)
+  ) as ResourceExt;
+}
+
+function copyNonClassProperties(source: object): object {
+  const copy: Record<string, unknown> = {};
+  Object.keys(source).forEach((key) => {
+    const value = (source as Record<string, unknown>)[key];
+    if (typeof value !== "object" || value === null) {
+      copy[key] = value;
+      return;
+    }
+    if (value.constructor.name !== "Object") {
+      return;
+    }
+    copy[key] = value;
+  });
+
+  return copy;
+}
+
+/**
+ * Given a Resource that exposes information about the owner of the Pod it is in, returns the WebID of that owner.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns The WebID of the owner of the Pod the Resource is in, if provided, or `null` if not.
+ * @since 0.6.0
+ */
+export function getPodOwner(resource: WithServerResourceInfo): WebId | null {
+  if (!hasServerResourceInfo(resource)) {
+    return null;
+  }
+
+  const podOwners =
+    resource.internal_resourceInfo.linkedResources[
+      "http://www.w3.org/ns/solid/terms#podOwner"
+    ] ?? [];
+
+  return podOwners.length === 1 ? podOwners[0] : null;
+}
+
+/**
+ * Given a WebID and a Resource that exposes information about the owner of the Pod it is in, returns whether the given WebID is the owner of the Pod.
+ *
+ * Data about the owner of the Pod is exposed when the following conditions hold:
+ * - The Pod server supports exposing the Pod owner
+ * - The current user is allowed to see who the Pod owner is.
+ *
+ * If one or more of those conditions are false, this function will return `null`.
+ *
+ * @param webId The WebID of which to check whether it is the Pod Owner's.
+ * @param resource A Resource that contains information about the owner of the Pod it is in.
+ * @returns Whether the given WebID is the Pod Owner's, if the Pod Owner is exposed, or `null` if it is not exposed.
+ * @since 0.6.0
+ */
+export function isPodOwner(
+  webId: WebId,
+  resource: WithServerResourceInfo
+): boolean | null {
+  const podOwner = getPodOwner(resource);
+
+  if (typeof podOwner !== "string") {
+    return null;
+  }
+
+  return podOwner === webId;
+}
 
 /**
  * Parse a WAC-Allow header into user and public access booleans.

@@ -5,6 +5,7 @@ DatasetCore {
   "internal_resourceInfo": Object {
     "contentType": "text/plain;charset=UTF-8",
     "isRawData": true,
+    "linkedResources": Object {},
     "sourceIri": "https://arbitrary.pod/resource",
   },
   "quads": Set {

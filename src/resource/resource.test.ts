@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -33,17 +33,25 @@ jest.mock("../fetcher.ts", () => ({
 import { Response } from "cross-fetch";
 import {
   internal_fetchAcl,
-  internal_fetchResourceInfo,
+  getResourceInfo,
   getSourceIri,
+  getPodOwner,
+  isPodOwner,
+  internal_cloneResource,
 } from "./resource";
 
 import {
   isContainer,
   isRawData,
   getContentType,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
 } from "./resource";
-import { WithResourceInfo, IriString } from "../interfaces";
+import {
+  WithResourceInfo,
+  IriString,
+  WithServerResourceInfo,
+} from "../interfaces";
+import { dataset } from "../rdfjs";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -52,20 +60,25 @@ function mockResponse(
   return new Response(body, init);
 }
 
+type MockedFetch = jest.Mock<
+  ReturnType<typeof window.fetch>,
+  Parameters<typeof window.fetch>
+>;
+
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -74,17 +87,16 @@ describe("fetchAcl", () => {
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource.acl"
     );
-    expect(mockedFetcher.fetch.mock.calls[1][0]).toEqual("https://some.pod/");
-    expect(mockedFetcher.fetch.mock.calls[1][1]?.method).toEqual("HEAD");
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
     const mockFetch = jest.fn(window.fetch);
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
+        linkedResources: {},
       },
     };
 
@@ -108,16 +120,19 @@ describe("fetchAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -152,16 +167,19 @@ describe("fetchAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
 
-    const mockResourceInfo: WithResourceInfo = {
+    const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
         isRawData: false,
         aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
       },
     };
 
@@ -176,8 +194,8 @@ describe("fetchAcl", () => {
   });
 });
 
-describe("fetchResourceInfoWithAcl", () => {
-  it("returns both the Resource's own ACL as well as its Container's", async () => {
+describe("getResourceInfoWithAcl", () => {
+  it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
         url === "https://some.pod/resource"
@@ -188,12 +206,12 @@ describe("fetchResourceInfoWithAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
 
-    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -205,6 +223,41 @@ describe("fetchResourceInfoWithAcl", () => {
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .sourceIri
     ).toBe("https://some.pod/resource.acl");
+    expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
+    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+  });
+
+  it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(new Response("Not found", { status: 404 }));
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url as string,
+        })
+      );
+    });
+
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .sourceIri
@@ -218,13 +271,10 @@ describe("fetchResourceInfoWithAcl", () => {
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
-    await fetchResourceInfoWithAcl("https://some.pod/resource");
+    await getResourceInfoWithAcl("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls).toEqual([
       [
@@ -250,7 +300,7 @@ describe("fetchResourceInfoWithAcl", () => {
       )
     );
 
-    const fetchedSolidDataset = await fetchResourceInfoWithAcl(
+    const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
@@ -267,7 +317,7 @@ describe("fetchResourceInfoWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = fetchResourceInfoWithAcl(
+    const fetchPromise = getResourceInfoWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -275,7 +325,9 @@ describe("fetchResourceInfoWithAcl", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 403 Forbidden.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -286,7 +338,7 @@ describe("fetchResourceInfoWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = fetchResourceInfoWithAcl(
+    const fetchPromise = getResourceInfoWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
@@ -294,7 +346,9 @@ describe("fetchResourceInfoWithAcl", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 404 Not Found.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 
@@ -307,7 +361,7 @@ describe("fetchResourceInfoWithAcl", () => {
         )
       );
 
-    await fetchResourceInfoWithAcl("https://some.pod/resource", {
+    await getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -317,16 +371,13 @@ describe("fetchResourceInfoWithAcl", () => {
   });
 });
 
-describe("fetchResourceInfo", () => {
+describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockedFetch;
     };
 
-    await internal_fetchResourceInfo("https://some.pod/resource");
+    await getResourceInfo("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
@@ -339,7 +390,7 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await internal_fetchResourceInfo("https://some.pod/resource", {
+    await getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -356,14 +407,16 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.sourceIri).toBe("https://some.pod/resource");
+    expect(solidDatasetInfo.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource"
+    );
   });
 
   it("knows when the Resource contains a SolidDataset", async () => {
@@ -376,14 +429,14 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.isRawData).toBe(false);
+    expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(false);
   });
 
   it("knows when the Resource does not contain a SolidDataset", async () => {
@@ -396,14 +449,14 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.isRawData).toBe(true);
+    expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(true);
   });
 
   it("marks a Resource as not a SolidDataset when its Content Type is unknown", async () => {
@@ -415,14 +468,14 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.isRawData).toBe(true);
+    expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(true);
   });
 
   it("exposes the Content Type when known", async () => {
@@ -435,14 +488,16 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.contentType).toBe("text/turtle; charset=UTF-8");
+    expect(solidDatasetInfo.internal_resourceInfo.contentType).toBe(
+      "text/turtle; charset=UTF-8"
+    );
   });
 
   it("does not expose a Content-Type when none is known", async () => {
@@ -450,14 +505,14 @@ describe("fetchResourceInfo", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(mockResponse()));
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
       }
     );
 
-    expect(solidDatasetInfo.contentType).toBeUndefined();
+    expect(solidDatasetInfo.internal_resourceInfo.contentType).toBeUndefined();
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
@@ -472,33 +527,75 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(solidDatasetInfo.aclUrl).toBe(
+    expect(solidDatasetInfo.internal_resourceInfo.aclUrl).toBe(
       "https://some.pod/container/aclresource.acl"
     );
   });
 
-  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+  it("exposes the URLs of linked Resources", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response(undefined, {
+        mockResponse(undefined, {
           headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
+            Link:
+              '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
           },
+          url: "https://some.pod",
         })
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(solidDatasetInfo.aclUrl).toBeUndefined();
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({
+      acl: ["https://some.pod/aclresource.acl"],
+      "http://www.w3.org/ns/solid/terms#podOwner": [
+        "https://some.pod/profile#WebId",
+      ],
+      alternate: ["https://some.pod/rss", "https://some.pod/atom"],
+    });
+  });
+
+  it("exposes when no Resources were linked", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(undefined, {
+        url: "https://arbitrary.pod",
+      })
+    );
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({});
+  });
+
+  it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
+
+    const solidDatasetInfo = await getResourceInfo(
+      "https://some.pod/container/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(solidDatasetInfo.internal_resourceInfo.aclUrl).toBeUndefined();
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
@@ -512,12 +609,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(solidDatasetInfo.permissions).toEqual({
+    expect(solidDatasetInfo.internal_resourceInfo.permissions).toEqual({
       user: {
         read: true,
         append: true,
@@ -545,12 +642,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(solidDatasetInfo.permissions).toEqual({
+    expect(solidDatasetInfo.internal_resourceInfo.permissions).toEqual({
       user: {
         read: false,
         append: false,
@@ -575,12 +672,12 @@ describe("fetchResourceInfo", () => {
       )
     );
 
-    const solidDatasetInfo = await internal_fetchResourceInfo(
+    const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
       { fetch: mockFetch }
     );
 
-    expect(solidDatasetInfo.permissions).toBeUndefined();
+    expect(solidDatasetInfo.internal_resourceInfo.permissions).toBeUndefined();
   });
 
   it("does not request the actual data from the server", async () => {
@@ -592,7 +689,7 @@ describe("fetchResourceInfo", () => {
         )
       );
 
-    await internal_fetchResourceInfo("https://some.pod/resource", {
+    await getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
@@ -608,15 +705,14 @@ describe("fetchResourceInfo", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = internal_fetchResourceInfo(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 403 Forbidden.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -627,15 +723,14 @@ describe("fetchResourceInfo", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = internal_fetchResourceInfo(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource metadata failed: 404 Not Found.")
+      new Error(
+        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
@@ -661,6 +756,16 @@ describe("isContainer", () => {
     };
 
     expect(isContainer(resourceInfo)).toBe(false);
+  });
+
+  it("should recognise a Container's URL", () => {
+    expect(isContainer("https://arbitrary.pod/container/")).toBe(true);
+  });
+
+  it("should recognise non-Container URLs", () => {
+    expect(isContainer("https://arbitrary.pod/container/not-a-container")).toBe(
+      false
+    );
   });
 });
 
@@ -730,5 +835,124 @@ describe("getSourceIri", () => {
 
   it("returns null if no source IRI is known", () => {
     expect(getSourceIri(new Blob())).toBeNull();
+  });
+});
+
+describe("getPodOwner", () => {
+  it("returns the Pod Owner when known", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBe("https://some.pod/profile#WebId");
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {
+          "not-pod-owner": ["https://arbitrary.url"],
+        },
+      },
+    };
+
+    expect(getPodOwner(resourceInfo)).toBeNull();
+  });
+
+  it("returns null if no Server Resource Info is attached to the given Resource", () => {
+    expect(getPodOwner({} as WithServerResourceInfo)).toBeNull();
+  });
+});
+
+describe("isPodOwner", () => {
+  it("returns true when the Pod Owner is known and equal to the given WebID", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(isPodOwner("https://some.pod/profile#WebId", resourceInfo)).toBe(
+      true
+    );
+  });
+
+  it("returns false when the Pod Owner is known but not equal to the given WebID", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(
+      isPodOwner("https://some-other.pod/profile#WebId", resourceInfo)
+    ).toBe(false);
+  });
+
+  it("returns null if the Pod Owner is not exposed", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod/not-the-root",
+        linkedResources: {},
+      },
+    };
+
+    expect(
+      isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
+    ).toBeNull();
+  });
+});
+
+describe("cloneResource", () => {
+  it("returns a new but equal Dataset", () => {
+    const sourceObject = Object.assign(dataset(), { some: "property" });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal Blob", () => {
+    const sourceObject = Object.assign(new Blob(["Some text"]), {
+      some: "property",
+    });
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject.some).toBe("property");
+    expect(clonedObject).not.toBe(sourceObject);
+  });
+
+  it("returns a new but equal plain object", () => {
+    const sourceObject = { some: "property" };
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject).toEqual(sourceObject);
+    expect(clonedObject).not.toBe(sourceObject);
   });
 });

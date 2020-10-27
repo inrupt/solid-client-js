@@ -19,7 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
+import type { Mock } from "jest-mock";
+
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -41,6 +43,10 @@ import {
   createSolidDataset,
   createContainerAt,
   createContainerInContainer,
+  solidDatasetAsMarkdown,
+  changeLogAsMarkdown,
+  deleteSolidDataset,
+  deleteContainer,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -49,6 +55,11 @@ import {
   SolidDataset,
   LocalNode,
 } from "../interfaces";
+import { mockSolidDatasetFrom } from "./mock";
+import { createThing, setThing } from "../thing/thing";
+import { mockThingFrom } from "../thing/mock";
+import { addStringNoLocale } from "../thing/add";
+import { removeStringNoLocale } from "../thing/remove";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -158,15 +169,15 @@ describe("getSolidDataset", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
-    );
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
@@ -297,12 +308,14 @@ describe("getSolidDataset", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 403 Forbidden.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -313,18 +326,20 @@ describe("getSolidDataset", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
+    const fetchPromise = getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 404 Not Found.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
 
 describe("getSolidDatasetWithAcl", () => {
-  it("returns both the Resource's own ACL as well as its Container's", async () => {
+  it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
       const headers =
         url === "https://some.pod/resource"
@@ -335,7 +350,7 @@ describe("getSolidDatasetWithAcl", () => {
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
-          url: url,
+          url: url as string,
         })
       );
     });
@@ -352,6 +367,41 @@ describe("getSolidDatasetWithAcl", () => {
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
         .sourceIri
     ).toBe("https://some.pod/resource.acl");
+    expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
+    expect(mockFetch.mock.calls).toHaveLength(2);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+  });
+
+  it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(new Response("Not found", { status: 404 }));
+      }
+
+      const headers =
+        url === "https://some.pod/resource"
+          ? { Link: '<resource.acl>; rel="acl"' }
+          : url === "https://some.pod/"
+          ? { Link: '<.acl>; rel="acl"' }
+          : undefined;
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: headers,
+          url: url as string,
+        })
+      );
+    });
+
+    const fetchedSolidDataset = await getSolidDatasetWithAcl(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource"
+    );
+    expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
         .sourceIri
@@ -409,15 +459,14 @@ describe("getSolidDatasetWithAcl", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = getSolidDatasetWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 403 Forbidden.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -428,15 +477,14 @@ describe("getSolidDatasetWithAcl", () => {
         Promise.resolve(new Response("Not found", { status: 404 }))
       );
 
-    const fetchPromise = getSolidDatasetWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the Resource failed: 404 Not Found.")
+      new Error(
+        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      )
     );
   });
 });
@@ -465,46 +513,6 @@ describe("saveSolidDatasetAt", () => {
     });
 
     expect(mockFetch.mock.calls).toHaveLength(1);
-  });
-
-  it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
-
-    const fetchPromise = saveSolidDatasetAt(
-      "https://arbitrary.pod/resource",
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource failed: 403 Forbidden.")
-    );
-  });
-
-  it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
-
-    const fetchPromise = saveSolidDatasetAt(
-      "https://arbitrary.pod/resource",
-      dataset(),
-      {
-        fetch: mockFetch,
-      }
-    );
-
-    await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource failed: 404 Not Found.")
-    );
   });
 
   describe("when saving a new resource", () => {
@@ -633,6 +641,48 @@ describe("saveSolidDatasetAt", () => {
       expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
         "If-None-Match": "*",
       });
+    });
+
+    it("returns a meaningful error when the server returns a 403", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not allowed", { status: 403 }))
+        );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        dataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+      );
+    });
+
+    it("returns a meaningful error when the server returns a 404", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        dataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+      );
     });
   });
 
@@ -914,6 +964,182 @@ describe("saveSolidDatasetAt", () => {
         deletions: [],
       });
     });
+
+    it("returns a meaningful error when the server returns a 403", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not allowed", { status: 403 }))
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+          "The changes that were sent to the Pod are listed below.\n\n"
+      );
+    });
+
+    it("returns a meaningful error when the server returns a 404", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+          "The changes that were sent to the Pod are listed below.\n\n"
+      );
+    });
+  });
+});
+
+describe("deleteSolidDataset", () => {
+  it("should DELETE a remote SolidDataset using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteSolidDataset("https://some.url");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote SolidDataset using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched SolidDataset as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.url");
+
+    const response = await deleteSolidDataset(mockSolidDataset, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.url",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteSolidDataset("https://some.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the SolidDataset at `https://some.url` failed: 400 Bad request"
+    );
   });
 });
 
@@ -1041,15 +1267,15 @@ describe("createContainerAt", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            Link: '<arbitrary-resource>; rel="not-acl"',
-          },
-        })
-      )
-    );
+    const mockResponse = new Response(undefined, {
+      headers: {
+        Link: '<arbitrary-resource>; rel="not-acl"',
+      },
+      url: "https://arbitrary.pod",
+      // We need the type assertion because in non-mock situations,
+      // you cannot set the URL manually:
+    } as ResponseInit);
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
 
     const solidDataset = await createContainerAt(
       "https://some.pod/container/",
@@ -1167,12 +1393,14 @@ describe("createContainerAt", () => {
         Promise.resolve(new Response("Not allowed", { status: 403 }))
       );
 
-    const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
+    const fetchPromise = createContainerAt("https://some.pod/container/", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Creating the empty Container failed: 403 Forbidden.")
+      new Error(
+        "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+      )
     );
   });
 
@@ -1188,6 +1416,10 @@ describe("createContainerAt", () => {
               { status: 409 }
             )
           )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
         )
         // Creating a dummy file:
         .mockReturnValueOnce(
@@ -1206,19 +1438,23 @@ describe("createContainerAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls).toHaveLength(5);
       expect(mockFetch.mock.calls[1][0]).toBe(
-        "https://arbitrary.pod/container/.dummy"
+        "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("HEAD");
       expect(mockFetch.mock.calls[2][0]).toBe(
         "https://arbitrary.pod/container/.dummy"
       );
-      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("PUT");
       expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[4][0]).toBe(
         "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+      expect(mockFetch.mock.calls[4][1]?.method).toBe("HEAD");
     });
 
     it("does not attempt to create a dummy file on a regular 409 error", async () => {
@@ -1241,7 +1477,9 @@ describe("createContainerAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        new Error("Creating the empty Container failed: 409 Conflict.")
+        new Error(
+          "Creating the empty Container at `https://arbitrary.pod/container/` failed: 409 Conflict."
+        )
       );
       expect(mockFetch.mock.calls).toHaveLength(1);
     });
@@ -1257,6 +1495,10 @@ describe("createContainerAt", () => {
               { status: 409 }
             )
           )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
         )
         // Creating a dummy file:
         .mockReturnValueOnce(
@@ -1275,21 +1517,53 @@ describe("createContainerAt", () => {
         fetch: mockFetch,
       });
 
-      expect(mockFetch.mock.calls).toHaveLength(4);
+      expect(mockFetch.mock.calls).toHaveLength(5);
       expect(mockFetch.mock.calls[1][0]).toBe(
-        "https://arbitrary.pod/container/.dummy"
+        "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[1][1]?.method).toBe("PUT");
+      expect(mockFetch.mock.calls[1][1]?.method).toBe("HEAD");
       expect(mockFetch.mock.calls[2][0]).toBe(
         "https://arbitrary.pod/container/.dummy"
       );
-      expect(mockFetch.mock.calls[2][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[2][1]?.method).toBe("PUT");
       expect(mockFetch.mock.calls[3][0]).toBe(
+        "https://arbitrary.pod/container/.dummy"
+      );
+      expect(mockFetch.mock.calls[3][1]?.method).toBe("DELETE");
+      expect(mockFetch.mock.calls[4][0]).toBe(
         "https://arbitrary.pod/container/"
       );
-      expect(mockFetch.mock.calls[3][1]?.method).toBe("HEAD");
+      expect(mockFetch.mock.calls[4][1]?.method).toBe("HEAD");
     });
 
+    it("returns an error when the Container already exists", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(Promise.resolve(new Response()));
+
+      const fetchPromise = createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error(
+          "The Container at `https://arbitrary.pod/container/` already exists, and therefore cannot be created again."
+        )
+      );
+    });
     it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
       const mockFetch = jest
         .fn(window.fetch)
@@ -1302,47 +1576,59 @@ describe("createContainerAt", () => {
             )
           )
         )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        )
         // Creating a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Forbidden", { status: 403 }))
         );
 
-      const fetchPromise = createContainerAt(
-        "https://arbitrary.pod/container/",
-        {
-          fetch: mockFetch,
-        }
-      );
+      const fetchPromise = createContainerAt("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
 
       await expect(fetchPromise).rejects.toThrow(
-        new Error("Creating the empty Container failed: 403 Forbidden.")
+        new Error(
+          "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+        )
       );
     });
   });
 });
 
 describe("saveSolidDatasetInContainer", () => {
-  const mockResponse = new Response("Arbitrary response", {
-    headers: { Location: "https://arbitrary.pod/container/resource" },
-  });
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    Parameters<typeof window.fetch>
+  >;
+  function setMockOnFetch(
+    fetch: MockFetch,
+    saveResponse = new Response(undefined, {
+      status: 201,
+      statusText: "Created",
+      headers: { Location: "resource" },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(saveResponse);
+    return fetch;
+  }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
 
     await saveSolidDatasetInContainer("https://some.pod/container/", dataset());
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -1352,18 +1638,19 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not allowed", { status: 403 })
+    );
 
     const fetchPromise = saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1371,19 +1658,17 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource in the Container failed: 403 Forbidden.")
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: 403 Forbidden."
     );
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
-
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not found", { status: 404 })
+    );
     const fetchPromise = saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1391,14 +1676,12 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Storing the Resource in the Container failed: 404 Not Found.")
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: 404 Not Found."
     );
   });
 
   it("returns a meaningful error when the server does not return the new Resource's location", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch), new Response());
 
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
@@ -1410,15 +1693,13 @@ describe("saveSolidDatasetInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location for the newly saved SolidDataset."
+        "Could not determine the location of the newly saved SolidDataset."
       )
     );
   });
 
   it("sends the given SolidDataset to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
     const mockDataset = dataset();
     mockDataset.add(
       DataFactory.quad(
@@ -1437,7 +1718,6 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(
@@ -1454,9 +1734,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sets relative IRIs for LocalNodes", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
     const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-subject-name",
     });
@@ -1481,19 +1759,16 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls).toHaveLength(1);
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
     );
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1507,12 +1782,10 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await saveSolidDatasetInContainer(
-      "https://arbitrary.pod/container/",
+      "https://some.pod/container/",
       dataset(),
       {
         fetch: mockFetch,
@@ -1525,12 +1798,11 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "https://some.pod/container/resource" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: { Location: "https://some.pod/container/resource" },
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1541,19 +1813,13 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
 
   it("resolves relative IRIs in the returned SolidDataset", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "https://some.pod/container/resource" },
-        })
-      )
-    );
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
       internal_name: "some-subject-name",
@@ -1572,28 +1838,27 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     const storedSolidDataset = await saveSolidDatasetInContainer(
-      "https://some.pod/container/",
+      "https://some.pod/",
       mockDataset,
       {
         fetch: mockFetch,
       }
     );
 
-    expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
-      "https://some.pod/container/resource#some-subject-name"
+    expect(Array.from(storedSolidDataset!)[0].subject.value).toBe(
+      "https://some.pod/resource#some-subject-name"
     );
-    expect(Array.from(storedSolidDataset)[0].object.value).toBe(
-      "https://some.pod/container/resource#some-object-name"
+    expect(Array.from(storedSolidDataset!)[0].object.value).toBe(
+      "https://some.pod/resource#some-object-name"
     );
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "/container/resource" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: { Location: "/container/resource" },
+      })
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -1604,51 +1869,62 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/container/resource"
     );
   });
 });
 
 describe("createContainerInContainer", () => {
-  const mockResponse = new Response("Arbitrary response", {
-    headers: { Location: "https://arbitrary.pod/container/resource" },
-  });
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit?]
+  >;
+  function setMockOnFetch(
+    fetch: MockFetch,
+    saveResponse = new Response(undefined, {
+      status: 201,
+      statusText: "Created",
+      headers: { Location: "child" },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(saveResponse);
+    return fetch;
+  }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
+    mockedFetcher.fetch = setMockOnFetch(mockedFetcher.fetch);
 
     await createContainerInContainer("https://some.pod/parent-container/");
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
     });
 
+    // Two calls expected: one to store the dataset, one to retrieve its details
+    // (e.g. Linked Resources).
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not allowed", { status: 403 })
+    );
 
     const fetchPromise = createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
+      "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
       }
@@ -1656,20 +1932,19 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container failed: 403 Forbidden."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 403 Forbidden."
       )
     );
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Not found", { status: 404 })
+    );
 
     const fetchPromise = createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
+      "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
       }
@@ -1677,15 +1952,13 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container failed: 404 Not Found."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 404 Not Found."
       )
     );
   });
 
   it("returns a meaningful error when the server does not return the new Container's location", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch), new Response());
 
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
@@ -1696,15 +1969,13 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location for the newly created Container."
+        "Could not determine the location of the newly created Container."
       )
     );
   });
 
   it("sends the right headers to create a Container", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
@@ -1725,17 +1996,12 @@ describe("createContainerInContainer", () => {
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
-    await createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
-      {
-        fetch: mockFetch,
-        slugSuggestion: "child-container/",
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+      slugSuggestion: "child-container/",
+    });
 
     expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
       slug: "child-container/",
@@ -1743,16 +2009,11 @@ describe("createContainerInContainer", () => {
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
 
-    await createContainerInContainer(
-      "https://arbitrary.pod/parent-container/",
-      {
-        fetch: mockFetch,
-      }
-    );
+    await createContainerInContainer("https://some.pod/parent-container/", {
+      fetch: mockFetch,
+    });
 
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug
@@ -1760,14 +2021,13 @@ describe("createContainerInContainer", () => {
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: {
-            Location: "https://some.pod/parent-container/child-container/",
-          },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: {
+          Location: "https://some.pod/parent-container/child-container/",
+        },
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -1777,18 +2037,19 @@ describe("createContainerInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
     );
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response("Arbitrary response", {
-          headers: { Location: "/parent-container/child-container/" },
-        })
-      )
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("Arbitrary response", {
+        headers: {
+          Location: "parent-container/child-container/",
+        },
+      })
     );
 
     const savedSolidDataset = await createContainerInContainer(
@@ -1798,8 +2059,487 @@ describe("createContainerInContainer", () => {
       }
     );
 
-    expect(savedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
       "https://some.pod/parent-container/child-container/"
+    );
+  });
+});
+
+describe("deleteContainer", () => {
+  it("should DELETE a remote Container using the included fetcher if no other fetcher is available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    fetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { status: 200, statusText: "Deleted" })
+    );
+
+    const response = await deleteContainer("https://some.pod/container/");
+
+    expect(fetcher.fetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should DELETE a remote Container using the provided fetcher", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const response = await deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should accept a fetched Container as target", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" })
+      );
+
+    const mockContainer = mockSolidDatasetFrom("https://some.pod/container/");
+
+    const response = await deleteContainer(mockContainer, {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls).toEqual([
+      [
+        "https://some.pod/container/",
+        {
+          method: "DELETE",
+        },
+      ],
+    ]);
+    expect(response).toBeUndefined();
+  });
+
+  it("should throw an error when the target is not a Container", async () => {
+    const mockSolidDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const deletionPromise = deleteContainer(mockSolidDataset);
+
+    await expect(deletionPromise).rejects.toThrow(
+      "You're trying to delete the Container at `https://some.pod/resource`, but Container URLs should end in a `/`. Are you sure this is a Container?"
+    );
+  });
+
+  it("should throw an error on a failed request", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+
+    const deletionPromise = deleteContainer("https://some.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toThrow(
+      "Deleting the Container at `https://some.pod/container/` failed: 400 Bad request"
+    );
+  });
+});
+
+describe("solidDatasetAsMarkdown", () => {
+  it("returns a readable version of an empty, unsaved SolidDataset", () => {
+    const emptyDataset = createSolidDataset();
+
+    expect(solidDatasetAsMarkdown(emptyDataset)).toBe(
+      `# SolidDataset (no URL yet)\n\n<empty>\n`
+    );
+  });
+
+  it("returns a readable version of an empty SolidDataset with a known URL", () => {
+    const datasetWithSourceUrl = mockSolidDatasetFrom(
+      "https://some.pod/resource"
+    );
+
+    expect(solidDatasetAsMarkdown(datasetWithSourceUrl)).toBe(
+      `# SolidDataset: https://some.pod/resource\n\n<empty>\n`
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains an unsaved Thing", () => {
+    let thing = createThing({ name: "thing" });
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const datasetWithUnsavedThing = setThing(createSolidDataset(), thing);
+
+    expect(solidDatasetAsMarkdown(datasetWithUnsavedThing)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Some other string" (string)\n\n' +
+        "(2 new values added / 0 values removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains a fetched Thing that has been changed", () => {
+    let thing = mockThingFrom("https://some.pod/resource#thing");
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const datasetWithSavedThing = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing
+    );
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThing.internal_changeLog = { additions: [], deletions: [] };
+    let changedThing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing = removeStringNoLocale(
+      changedThing,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const changedDataset = setThing(datasetWithSavedThing, changedThing);
+
+    expect(solidDatasetAsMarkdown(changedDataset)).toBe(
+      "# SolidDataset: https://some.pod/resource\n\n" +
+        "## Thing: https://some.pod/resource#thing\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Yet another string" (string)\n\n' +
+        "(1 new value added / 1 value removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains multiple Things", () => {
+    let thing1 = createThing({ name: "thing1" });
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    let thing2 = createThing({ name: "thing2" });
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithMultipleThings = setThing(createSolidDataset(), thing1);
+    datasetWithMultipleThings = setThing(datasetWithMultipleThings, thing2);
+
+    expect(solidDatasetAsMarkdown(datasetWithMultipleThings)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing1`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n\n' +
+        "(1 new value added / 0 values removed)\n\n" +
+        "## Thing (no URL yet — identifier: `#thing2`)\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some other string" (string)\n\n' +
+        "(1 new value added / 0 values removed)\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that contains multiple fetched Things that have been changed", () => {
+    let thing1 = mockThingFrom("https://some.pod/resource#thing1");
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let thing2 = mockThingFrom("https://some.pod/resource#thing2");
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithSavedThings = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing1
+    );
+    datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
+
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThings.internal_changeLog = {
+      additions: [],
+      deletions: [],
+    };
+    let changedThing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing1 = removeStringNoLocale(
+      changedThing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    const changedThing2 = removeStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedDataset = setThing(datasetWithSavedThings, changedThing1);
+    changedDataset = setThing(changedDataset, changedThing2);
+
+    expect(solidDatasetAsMarkdown(changedDataset)).toBe(
+      "# SolidDataset: https://some.pod/resource\n\n" +
+        "## Thing: https://some.pod/resource#thing1\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n' +
+        '- "Yet another string" (string)\n\n' +
+        "(1 new value added / 1 value removed)\n\n" +
+        "## Thing: https://some.pod/resource#thing2\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        '- "Some string" (string)\n\n' +
+        "(0 new values added / 1 value removed)\n"
+    );
+  });
+
+  it("does not show a list of changes if none is available", () => {
+    const datasetWithoutChangeLog = dataset();
+    datasetWithoutChangeLog.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
+        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+        DataFactory.literal("Arbitrary string")
+      )
+    );
+
+    expect(solidDatasetAsMarkdown(datasetWithoutChangeLog)).toBe(
+      "# SolidDataset (no URL yet)\n\n" +
+        "## Thing: https://arbitrary.pod/resource#thing\n\n" +
+        "Property: https://arbitrary.vocab/predicate\n" +
+        '- "Arbitrary string" (string)\n'
+    );
+  });
+});
+
+describe("changeLogAsMarkdown", () => {
+  it("returns a readable version of an in-memory-only SolidDataset", () => {
+    const freshDataset = createSolidDataset();
+
+    expect(
+      changeLogAsMarkdown(
+        (freshDataset as unknown) as SolidDataset & WithChangeLog
+      )
+    ).toBe(
+      "This is a newly initialized SolidDataset, so there is no source to compare it to."
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that has not been changed yet", () => {
+    const unchangedDataset = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(
+      changeLogAsMarkdown(
+        (unchangedDataset as unknown) as SolidDataset & WithChangeLog
+      )
+    ).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+    );
+  });
+
+  it("returns a readable version of a SolidDataset that had changes that were undone again", () => {
+    let thing = mockThingFrom("https://arbitrary.pod/resource#thing");
+    thing = addStringNoLocale(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
+    );
+    const newDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const changedDataset = setThing(newDataset, thing);
+    const undoneThing = removeStringNoLocale(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
+    );
+    const undoneDataset = setThing(changedDataset, undoneThing);
+
+    expect(changeLogAsMarkdown(undoneDataset)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+    );
+  });
+
+  it("returns a readable version of local changes to a SolidDataset", () => {
+    let thing1 = mockThingFrom("https://some.pod/resource#thing1");
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let thing2 = mockThingFrom("https://some.pod/resource#thing2");
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    thing2 = addStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let datasetWithSavedThings = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing1
+    );
+    datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
+
+    // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
+    datasetWithSavedThings.internal_changeLog = {
+      additions: [],
+      deletions: [],
+    };
+    let changedThing1 = addStringNoLocale(
+      thing1,
+      "https://some.vocab/predicate",
+      "Yet another string"
+    );
+    changedThing1 = removeStringNoLocale(
+      changedThing1,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedThing2 = removeStringNoLocale(
+      thing2,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    changedThing2 = removeStringNoLocale(
+      changedThing2,
+      "https://some.vocab/predicate",
+      "Some other string"
+    );
+    let changedDataset = setThing(datasetWithSavedThings, changedThing1);
+    changedDataset = setThing(changedDataset, changedThing2);
+
+    let newThing = createThing({ name: "thing3" });
+    newThing = addStringNoLocale(
+      newThing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    changedDataset = setThing(changedDataset, newThing);
+
+    expect(changeLogAsMarkdown(changedDataset)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "### Thing: https://some.pod/resource#thing1\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- Removed:\n" +
+        '  - "Some other string" (string)\n' +
+        "- Added:\n" +
+        '  - "Yet another string" (string)\n\n' +
+        "### Thing: https://some.pod/resource#thing2\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- Removed:\n" +
+        '  - "Some string" (string)\n' +
+        '  - "Some other string" (string)\n\n' +
+        "### Thing: https://some.pod/resource#thing3\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- Added:\n" +
+        '  - "Some string" (string)\n'
+    );
+  });
+
+  it("does not choke on invalid Quads that found their way into the ChangeLog", () => {
+    let thing = createThing({ name: "thing" });
+    thing = addStringNoLocale(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+    const datasetWithInvalidChangeLog = setThing(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      thing
+    );
+
+    // Pretend that the deletions and additions contain the same Quad:
+    datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
+      datasetWithInvalidChangeLog.internal_changeLog.additions[0]
+    );
+
+    const quadWithInvalidSubject = DataFactory.quad(
+      // We'd never use a variable as the Subject:
+      DataFactory.variable("Arbitrary variable name"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.literal("Arbitrary object")
+    );
+    const quadWithInvalidPredicate = DataFactory.quad(
+      DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
+      // Predicates should always be NamedNodes:
+      DataFactory.literal("Not a NamedNode") as any,
+      DataFactory.literal("Arbitrary object")
+    );
+    datasetWithInvalidChangeLog.internal_changeLog.additions.push(
+      quadWithInvalidSubject,
+      quadWithInvalidPredicate
+    );
+    datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
+      quadWithInvalidSubject,
+      quadWithInvalidPredicate
+    );
+
+    expect(changeLogAsMarkdown(datasetWithInvalidChangeLog)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "### Thing: https://some.pod/resource#thing\n\n" +
+        "Property: https://some.vocab/predicate\n" +
+        "- Removed:\n" +
+        '  - "Some string" (string)\n' +
+        "- Added:\n" +
+        '  - "Some string" (string)\n'
     );
   });
 });

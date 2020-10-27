@@ -44,3 +44,28 @@ export const rdf = {
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
 } as const;
+
+/** @internal */
+export const acp = {
+  AccessPolicyResource: "http://www.w3.org/ns/solid/acp#AccessPolicyResource",
+  AccessPolicy: "http://www.w3.org/ns/solid/acp#AccessPolicy",
+  AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
+  Read: "http://www.w3.org/ns/solid/acp#Read",
+  Append: "http://www.w3.org/ns/solid/acp#Append",
+  Write: "http://www.w3.org/ns/solid/acp#Write",
+  Rule: "http://www.w3.org/ns/solid/acp#Rule",
+  accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
+  apply: "http://www.w3.org/ns/solid/acp#apply",
+  applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
+  allow: "http://www.w3.org/ns/solid/acp#allow",
+  deny: "http://www.w3.org/ns/solid/acp#deny",
+  allOf: "http://www.w3.org/ns/solid/acp#allOf",
+  anyOf: "http://www.w3.org/ns/solid/acp#anyOf",
+  noneOf: "http://www.w3.org/ns/solid/acp#noneOf",
+  access: "http://www.w3.org/ns/solid/acp#access",
+  accessMembers: "http://www.w3.org/ns/solid/acp#accessMembers",
+  agent: "http://www.w3.org/ns/solid/acp#agent",
+  group: "http://www.w3.org/ns/solid/acp#group",
+  PublicAgent: "http://www.w3.org/ns/solid/acp#PublicAgent",
+  AuthenticatedAgent: "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
+} as const;

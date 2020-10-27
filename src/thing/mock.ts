@@ -37,7 +37,7 @@ import { dataset } from "../rdfjs";
  *
  * @param url The URL that the mocked Thing pretends identifies it.
  * @returns A new Thing, pretending to be identified by the given URL.
- * @since Not released yet.
+ * @since 0.2.0
  */
 export function mockThingFrom(url: Url | UrlString): ThingPersisted {
   const thing: ThingPersisted = Object.assign(dataset(), {

@@ -21,6 +21,15 @@ Steps to reproduce the behavior:
 2. Call this function `…`
 3. See error
 
+**CodeSandbox**
+
+<!--
+Adding a minimal reproduction of the bug makes it as easy as possible to get it fixed.
+To do so, fork the following CodeSandbox, and share the resulting link here:
+
+https://codesandbox.io/s/github/inrupt/solid-client-js/tree/master/.codesandbox/sandbox
+-->
+
 **Expected behavior**
 
 <!-- A clear and concise description of what you expected to happen. -->
@@ -31,10 +40,16 @@ Steps to reproduce the behavior:
 
 **Environment**
 
-<!-- Please run `npx envinfo` in your project folder and paste the output here: -->
+<!--
+Please run
+
+  npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
+
+in your project folder and paste the output here:
+-->
 
 ```
-$ npx envinfo
+$ npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
 
 
 ```

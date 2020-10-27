@@ -31,6 +31,7 @@ import {
   deserializeInteger,
   xmlSchemaTypes,
   XmlSchemaTypeIri,
+  isTerm,
 } from "../datatypes";
 
 /**
@@ -322,6 +323,7 @@ export function getStringNoLocaleAll(
  * @param property The given Property for which you want the NamedNode value.
  * @returns A NamedNode value for the given Property, if present, or null otherwise.
  * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/#namednode-interface
  */
 export function getNamedNode(
   thing: Thing,
@@ -343,6 +345,7 @@ export function getNamedNode(
  * @param property The given Property for which you want the NamedNode values.
  * @returns The NamedNode values for the given Property.
  * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/#namednode-interface
  */
 export function getNamedNodeAll(
   thing: Thing,
@@ -360,6 +363,7 @@ export function getNamedNodeAll(
  * @param property The given Property for which you want the Literal value.
  * @returns A Literal value for the given Property, if present, or null otherwise.
  * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/#literal-interface
  */
 export function getLiteral(
   thing: Thing,
@@ -381,6 +385,7 @@ export function getLiteral(
  * @param property The given Property for which you want the Literal values.
  * @returns The Literal values for the given Property.
  * @ignore This should not be needed due to the other get*All() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/#literal-interface
  */
 export function getLiteralAll(
   thing: Thing,
@@ -389,6 +394,48 @@ export function getLiteralAll(
   const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuads = findAll(thing, literalMatcher);
+
+  return matchingQuads.map((quad) => quad.object);
+}
+
+/**
+ * @param thing The [[Thing]] to read a raw RDF/JS value from.
+ * @param property The given Property for which you want the raw value.
+ * @returns A Term for the given Property, if present, or null otherwise.
+ * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/
+ * @since 0.3.0
+ */
+export function getTerm(
+  thing: Thing,
+  property: Url | UrlString
+): Quad_Object | null {
+  const termMatcher = getTermMatcher(property);
+
+  const matchingQuad = findOne(thing, termMatcher);
+
+  if (matchingQuad === null) {
+    return null;
+  }
+
+  return matchingQuad.object;
+}
+
+/**
+ * @param thing The [[Thing]] to read the raw RDF/JS values from.
+ * @param property The given Property for which you want the raw values.
+ * @returns The Terms for the given Property.
+ * @ignore This should not be needed due to the other get*() functions. If you do find yourself needing it, please file a feature request for your use case.
+ * @see https://rdf.js.org/data-model-spec/
+ * @since 0.3.0
+ */
+export function getTermAll(
+  thing: Thing,
+  property: Url | UrlString
+): Quad_Object[] {
+  const namedNodeMatcher = getTermMatcher(property);
+
+  const matchingQuads = findAll(thing, namedNodeMatcher);
 
   return matchingQuads.map((quad) => quad.object);
 }
@@ -451,6 +498,17 @@ function getLiteralMatcher(property: Url | UrlString): Matcher<Literal> {
     quad: Quad
   ): quad is QuadWithObject<Literal> {
     return predicateNode.equals(quad.predicate) && isLiteral(quad.object);
+  };
+  return matcher;
+}
+
+function getTermMatcher(property: Url | UrlString): Matcher<Quad_Object> {
+  const predicateNode = asNamedNode(property);
+
+  const matcher = function matcher(
+    quad: Quad
+  ): quad is QuadWithObject<NamedNode> {
+    return predicateNode.equals(quad.predicate) && isTerm(quad.object);
   };
   return matcher;
 }

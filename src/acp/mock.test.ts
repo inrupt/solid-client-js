@@ -19,22 +19,33 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// BEGIN-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
+import { describe, it, expect } from "@jest/globals";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { addMockAcrTo, mockAcrFor } from "./mock";
 
-import {
-  setAgentResourceAccess,
-} from "@inrupt/solid-client";
+describe("mockAcrFor", () => {
+  it("should attach the URL of the Resource it applies to", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
 
-const resourceAcl = /* Obtained previously in the section "Change Access to a Resource" */;
-const webId = "https://example.com/profile#webid";
+    expect(mockedAcr.accessTo).toBe("https://some.pod/resource");
+  });
+});
 
-const updatedAcl = setAgentResourceAccess(
-  resourceAcl,
-  webId,
-  { read: true, append: true, write: false, control: false },
-);
+describe("addMockAcrTo", () => {
+  it("attaches the given ACR to the given Resource", () => {
+    const resource = mockSolidDatasetFrom("https://some.pod/resource");
+    const acr = mockAcrFor("https://some.pod/resource?ext=acr");
 
-// `updatedAcl` can now be saved back to the Pod
-// using `saveAclFor()`.
+    const withMockAcr = addMockAcrTo(resource, acr);
 
-// END-EXAMPLE-WRITE-ACL-RESOURCE-AGENT
+    expect(withMockAcr.internal_acp.acr).toEqual(acr);
+  });
+
+  it("generates a mock ACR if none is provided", () => {
+    const resource = mockSolidDatasetFrom("https://some.pod/resource");
+
+    const withMockAcr = addMockAcrTo(resource);
+
+    expect(withMockAcr.internal_acp.acr).not.toBeNull();
+  });
+});

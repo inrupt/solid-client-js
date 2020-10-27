@@ -19,6 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * @jest-environment node
+ */
+
 import { foaf, schema } from "rdf-namespaces";
 import {
   getSolidDataset,
@@ -30,7 +34,7 @@ import {
   saveSolidDatasetAt,
   isRawData,
   getContentType,
-  fetchResourceInfoWithAcl,
+  getResourceInfoWithAcl,
   getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
@@ -58,7 +62,17 @@ describe.each([
   ["https://lit-e2e-test.inrupt.net/public/"],
   ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
 ])("End-to-end tests against %s", (rootContainer) => {
-  it("should be able to read and update data in a Pod", async () => {
+  // Tests that should only run against either NSS or ESS,
+  // e.g. because something is not (properly) implemented on the other.
+  const on_ess_it = rootContainer.includes("demo-ess") ? it : it.skip;
+  const on_nss_it = rootContainer.includes("demo-ess") ? it.skip : it;
+
+  // FIXME: ESS currently has enabled Access Control Policies,
+  // resulting in this Pod no longer being publicly writeable.
+  // We can re-enable it once we can write to ESS Pods again in Node.js.
+  // (Either via a working solid-client-authn-node,
+  // or because the Pod has been made publicly-writable using ACPs.)
+  on_nss_it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
@@ -67,6 +81,14 @@ describe.each([
       `${rootContainer}lit-pod-test.ttl#thing1`
     );
 
+    if (existingThing === null) {
+      throw new Error(
+        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing1\` exists.`
+      );
+    }
+
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
     expect(getStringNoLocale(existingThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
@@ -88,23 +110,41 @@ describe.each([
       savedDataset,
       `${rootContainer}lit-pod-test.ttl#thing1`
     );
-    expect(getStringNoLocale(savedThing, foaf.name)).toBe(
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(savedThing).not.toBeNull();
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
-    expect(getStringNoLocale(savedThing, foaf.nick)).toBe(randomNick);
+    // See FIXME above to explain specific setup.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
   });
 
   // FIXME: An NSS bug prevents it from understand our changing of booleans,
   // and thus causes this test to fail.
-  // Once the bug is fixed, `ess` should be replaced by a regular `it` again.
+  // Once the bug is fixed, it can be enabled for NSS again.
   // See https://github.com/solid/node-solid-server/issues/1468.
-  const ess = rootContainer.includes("demo-ess") ? it : it.skip;
-  ess("can read and write booleans", async () => {
+  // FIXME: Additionally, ESS currently has enabled Access Control Policies,
+  // resulting in this Pod no longer being publicly writeable.
+  // We can re-enable it once we can write to ESS Pods again in Node.js.
+  // (Either via a working solid-client-authn-node,
+  // or because the Pod has been made publicly-writable using ACPs.)
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("can read and write booleans", async () => {
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
       `${rootContainer}lit-pod-test.ttl#thing2`
     );
+
+    if (existingThing === null) {
+      throw new Error(
+        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing2\` exists.`
+      );
+    }
 
     const currentValue = getBoolean(
       existingThing,
@@ -126,18 +166,18 @@ describe.each([
       savedDataset,
       `${rootContainer}lit-pod-test.ttl#thing2`
     );
-    // See FIXME above to explain specific setup.
-    // eslint-disable-next-line jest/no-standalone-expect
-    expect(getBoolean(savedThing, "https://example.com/boolean")).toBe(
+
+    expect(savedThing).not.toBeNull();
+    expect(getBoolean(savedThing!, "https://example.com/boolean")).toBe(
       !currentValue
     );
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
-    const rdfResourceInfo = await fetchResourceInfoWithAcl(
+    const rdfResourceInfo = await getResourceInfoWithAcl(
       `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
     );
-    const nonRdfResourceInfo = await fetchResourceInfoWithAcl(
+    const nonRdfResourceInfo = await getResourceInfoWithAcl(
       `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
     );
     expect(isRawData(rdfResourceInfo)).toBe(false);
@@ -145,9 +185,8 @@ describe.each([
   });
 
   // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
-  // Once the bug is fixed, this should be cleaned up.
-  const nss = rootContainer.includes("demo-ess") ? it.skip : it;
-  nss("can create and remove empty Containers", async () => {
+  // Once the bug is fixed, `on_nss_it` should be replaced by a regular `it` again.
+  on_nss_it("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
       `${rootContainer}container-test/some-container/`
     );
@@ -166,7 +205,10 @@ describe.each([
     await deleteFile(getSourceUrl(newContainer2));
   });
 
-  it("should be able to read and update ACLs", async () => {
+  // ESS currently has enabled Access Control Policies,
+  // and Web Access Control will be turned off shortly.
+  // Thus, only run this against Node Solid Server.
+  on_nss_it("should be able to read and update ACLs", async () => {
     const fakeWebId =
       "https://example.com/fake-webid#" +
       Date.now().toString() +
@@ -214,32 +256,35 @@ describe.each([
       `${rootContainer}lit-pod-acl-test/`
     );
 
-    if (hasResourceAcl(datasetWithAcl)) {
-      const acl = getResourceAcl(datasetWithAcl);
-      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-      const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
-      const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
-      expect(fakeWebIdAccess).toEqual({
-        read: true,
-        append: false,
-        write: false,
-        control: false,
-      });
-
-      // Cleanup
-      const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
-        read: false,
-        append: false,
-        write: false,
-        control: false,
-      });
-      await saveAclFor(datasetWithAcl, cleanedAcl);
+    if (!hasResourceAcl(datasetWithAcl)) {
+      throw new Error(
+        `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+      );
     }
+    const acl = getResourceAcl(datasetWithAcl);
+    const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+    const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
+    const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
+    expect(fakeWebIdAccess).toEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+
+    // Cleanup
+    const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+    await saveAclFor(datasetWithAcl, cleanedAcl);
   });
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
@@ -247,16 +292,19 @@ describe.each([
       `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
     );
     if (
-      hasFallbackAcl(dataset) &&
-      hasAccessibleAcl(dataset) &&
-      !hasResourceAcl(dataset)
+      !hasFallbackAcl(dataset) ||
+      !hasAccessibleAcl(dataset) ||
+      hasResourceAcl(dataset)
     ) {
-      const newResourceAcl = createAclFromFallbackAcl(dataset);
-      const existingFallbackAcl = getFallbackAcl(dataset);
-      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-        getPublicResourceAccess(newResourceAcl)
+      throw new Error(
+        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
       );
     }
+    const newResourceAcl = createAclFromFallbackAcl(dataset);
+    const existingFallbackAcl = getFallbackAcl(dataset);
+    expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+      getPublicResourceAccess(newResourceAcl)
+    );
   });
 
   it("can fetch a non-RDF file and its metadata", async () => {

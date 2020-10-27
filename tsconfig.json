@@ -80,6 +80,9 @@
       "src/formats/turtle.ts",
       // Internal wrapper for RDF/JS implementations:
       "src/rdfjs.ts",
+      // We currently only have low-level functions for Access Control Policies,
+      // which we do not want to expose to developers yet:
+      "src/acp/**",
     ],
     "excludeNotExported": true,
     "stripInternal": true,
