@@ -27,11 +27,6 @@ import {
   Url,
   UrlString,
 } from "../interfaces";
-import { internal_defaultFetchOptions } from "../resource/resource";
-import {
-  createSolidDataset,
-  saveSolidDatasetAt,
-} from "../resource/solidDataset";
 import { addIri } from "../thing/add";
 import { getIriAll, getUrl, getUrlAll } from "../thing/get";
 import { removeAll } from "../thing/remove";
@@ -45,48 +40,12 @@ import {
   setThing,
 } from "../thing/thing";
 
-export type PolicyDataset = SolidDataset;
 export type Policy = ThingPersisted;
 export type AccessModes = {
   read: boolean;
   append: boolean;
   write: boolean;
 };
-
-/**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Initialise a new empty [[SolidDataset]] to story [[Policy]]'s in.
- */
-export const createPolicyDataset = createSolidDataset;
-
-/**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Mark a given [[SolidDataset]] as containing [[Policy]]'s, and save it to the given URL.
- *
- * @param url URL to save this Access Policy SolidDataset at.
- * @param dataset The SolidDataset containing Access Policies to save.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- */
-export async function savePolicyDatasetAt(
-  url: Url | UrlString,
-  dataset: PolicyDataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): ReturnType<typeof saveSolidDatasetAt> {
-  url = internal_toIriString(url);
-  let datasetThing = getThing(dataset, url) ?? createThing({ url: url });
-  datasetThing = setUrl(datasetThing, rdf.type, acp.AccessPolicyResource);
-  dataset = setThing(dataset, datasetThing);
-
-  return saveSolidDatasetAt(url, dataset, options);
-}
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -117,7 +76,7 @@ export function createPolicy(url: Url | UrlString): Policy {
  * @returns The requested Access Policy, if it exists, or `null` if it does not.
  */
 export function getPolicy(
-  policyResource: PolicyDataset,
+  policyResource: SolidDataset,
   url: Url | UrlString
 ): Policy | null {
   const foundThing = getThing(policyResource, url);
@@ -140,7 +99,7 @@ export function getPolicy(
  *
  * @param policyResource The Resource that contains Access Policies.
  */
-export function getPolicyAll(policyResource: PolicyDataset): Policy[] {
+export function getPolicyAll(policyResource: SolidDataset): Policy[] {
   const foundThings = getThingAll(policyResource);
   const foundPolicies = foundThings.filter(
     (thing) =>
@@ -161,9 +120,9 @@ export function getPolicyAll(policyResource: PolicyDataset): Policy[] {
  * @param policy The Access Policy to remove from the Access Policy Resource.
  */
 export function removePolicy(
-  policyResource: PolicyDataset,
+  policyResource: SolidDataset,
   policy: Url | UrlString | Policy
-): PolicyDataset {
+): SolidDataset {
   return removeThing(policyResource, policy);
 }
 
@@ -179,9 +138,9 @@ export function removePolicy(
  * @returns A new Access Policy Resource equal to the given Access Policy Resource, but with the given Access Policy.
  */
 export function setPolicy(
-  policyResource: PolicyDataset,
+  policyResource: SolidDataset,
   policy: Policy
-): PolicyDataset {
+): SolidDataset {
   return setThing(policyResource, policy);
 }
 
