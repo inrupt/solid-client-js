@@ -56,7 +56,7 @@ import {
   createContainerInContainer,
   getBoolean,
   setBoolean,
-} from "./index";
+} from "../index";
 
 describe.each([
   ["https://lit-e2e-test.inrupt.net/public/"],

@@ -4,8 +4,8 @@
   "version": "0.6.1",
   "license": "MIT",
   "scripts": {
-    "test": "eslint --config .eslintrc.js \"src/**\" && jest",
-    "e2e-test": "jest --config=jest.e2e.config.js",
+    "test": "eslint --config .eslintrc.js \"src/\" --ext .js,.jsx,.ts,.tsx && jest",
+    "e2e-test-node": "jest --config=jest.e2e.config.js",
     "e2e-test-browser": "testcafe",
     "build": "rollup --config rollup.config.js",
     "prepublishOnly": "yarn run build",
