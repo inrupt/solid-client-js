@@ -21,7 +21,7 @@ Please fill in as much of the template below as you're able. Feel free to delete
 
 ### Expected functionality/enhancement
 
-<!-- How should the new feature work -->
+<!-- How would you like the new feature work -->
 
 ### Actual functionality/enhancement
 
