@@ -76,6 +76,7 @@ jobs:
         export PORT2=1338
         npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} &
         pid=$!
+        sleep 1s
         open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
         wait $pid
       # The Node version does not influence how well our tests run in the browser,
