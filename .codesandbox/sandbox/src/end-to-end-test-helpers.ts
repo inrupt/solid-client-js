@@ -10,20 +10,22 @@ import {
 import { Session } from "@inrupt/solid-client-authn-browser";
 
 export function getHelpers(podRoot: string, session: Session) {
-  const aprUrl = getAprUrl();
+  const policyResourceUrl = getPolicyResourceUrl();
 
-  function getAprUrl(baseUrl: string = podRoot) {
+  function getPolicyResourceUrl(baseUrl: string = podRoot) {
     return (
       baseUrl +
       `solid-client-tests/browser/acp/policies-${session.info.sessionId}.ttl`
     );
   }
 
-  async function initialiseApr() {
-    let inputRule = acp.createRule(aprUrl + "#rule-public");
+  async function initialisePolicyResource() {
+    let inputRule = acp.createRule(policyResourceUrl + "#rule-public");
     inputRule = acp.setPublicForRule(inputRule, true);
 
-    let inputPolicy = acp.createPolicy(aprUrl + "#policy-publicRead");
+    let inputPolicy = acp.createPolicy(
+      policyResourceUrl + "#policy-publicRead"
+    );
     inputPolicy = acp.addRequiredRuleForPolicy(inputPolicy, inputRule);
     inputPolicy = acp.setAllowModesOnPolicy(inputPolicy, {
       read: true,
@@ -31,46 +33,51 @@ export function getHelpers(podRoot: string, session: Session) {
       write: false,
     });
 
-    let apr = createSolidDataset();
-    apr = setThing(apr, inputRule);
-    apr = setThing(apr, inputPolicy);
+    let policyResource = createSolidDataset();
+    policyResource = setThing(policyResource, inputRule);
+    policyResource = setThing(policyResource, inputPolicy);
 
-    return saveSolidDatasetAt(aprUrl, apr, { fetch: session.fetch });
-  }
-
-  async function fetchAprUnauthenticated(baseUrl: string = podRoot) {
-    // Explicitly fetching this without passing the Session's fetcher,
-    // to verify whether public Read access works:
-    return getSolidDataset(getAprUrl(baseUrl));
-  }
-
-  async function setAprPublicRead() {
-    const resourceWithApr = await acp.getSolidDatasetWithAcr(aprUrl, {
+    return saveSolidDatasetAt(policyResourceUrl, policyResource, {
       fetch: session.fetch,
     });
-    if (!acp.hasAccessibleAcr(resourceWithApr)) {
+  }
+
+  async function fetchPolicyResourceUnauthenticated(baseUrl: string = podRoot) {
+    // Explicitly fetching this without passing the Session's fetcher,
+    // to verify whether public Read access works:
+    return getSolidDataset(getPolicyResourceUrl(baseUrl));
+  }
+
+  async function setPolicyResourcePublicRead() {
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+      policyResourceUrl,
+      {
+        fetch: session.fetch,
+      }
+    );
+    if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
         `The test Resource at [${getSourceUrl(
-          resourceWithApr
+          resourceWithAcr
         )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
       );
     }
     let inputControl = acp.createAccessControl();
     inputControl = acp.addPolicyUrl(
       inputControl,
-      aprUrl + "#policy-publicRead"
+      policyResourceUrl + "#policy-publicRead"
     );
-    const changedResourceWithApr = acp.setAccessControl(
-      resourceWithApr,
+    const changedResourceWithAcr = acp.setAccessControl(
+      resourceWithAcr,
       inputControl
     );
-    return acp.saveAcrFor(changedResourceWithApr, {
+    return acp.saveAcrFor(changedResourceWithAcr, {
       fetch: session.fetch,
     });
   }
 
-  async function deleteApr() {
-    return deleteSolidDataset(aprUrl, { fetch: session.fetch });
+  async function deletePolicyResource() {
+    return deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
   }
 
   function getSessionInfo() {
@@ -78,10 +85,10 @@ export function getHelpers(podRoot: string, session: Session) {
   }
 
   return {
-    initialiseApr,
-    fetchAprUnauthenticated,
-    setAprPublicRead,
-    deleteApr,
+    initialisePolicyResource,
+    fetchPolicyResourceUnauthenticated,
+    setPolicyResourcePublicRead,
+    deletePolicyResource,
     getSessionInfo,
   };
 }
