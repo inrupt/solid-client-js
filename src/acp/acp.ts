@@ -41,7 +41,7 @@ import {
 import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
-  getAccessControlAll,
+  getControlAll,
   getAcrPolicyUrlAll,
   getMemberAcrPolicyUrlAll,
   getMemberPolicyUrlAll,
@@ -290,7 +290,7 @@ export type WithAccessibleAcr = WithAcp & {
 
 /**
  * @param resource Resource of which to check whether it has an Access Control Resource attached.
- * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getAccessControl]].
+ * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getControl]].
  */
 export function hasAccessibleAcr(
   resource: WithAcp
@@ -362,7 +362,7 @@ export function getReferencedPolicyUrlAll(
 ): UrlString[] {
   const policyUrls: UrlString[] = [];
 
-  const controls = getAccessControlAll(withAcr);
+  const controls = getControlAll(withAcr);
   controls.forEach((control) => {
     policyUrls.push(...getPolicyUrlAll(control).map(getResourceUrl));
     policyUrls.push(...getMemberPolicyUrlAll(control).map(getResourceUrl));

@@ -41,13 +41,13 @@ import { setUrl } from "../thing/set";
 import { asUrl, createThing, getThingAll, setThing } from "../thing/thing";
 import {
   createPolicy,
-  getAllowModesOnPolicy,
-  getDenyModesOnPolicy,
+  getAllowModes,
+  getDenyModes,
   getPolicy,
   getPolicyAll,
   removePolicy,
-  setAllowModesOnPolicy,
-  setDenyModesOnPolicy,
+  setAllowModes,
+  setDenyModes,
   setPolicy,
 } from "./policy";
 
@@ -203,13 +203,13 @@ describe("removePolicy", () => {
   });
 });
 
-describe("setAllowModesOnPolicy", () => {
+describe("setAllowModes", () => {
   it("sets the given modes on the Policy", () => {
     const policy = mockThingFrom(
       "https://arbitrary.pod/policy-resource#policy"
     );
 
-    const updatedPolicy = setAllowModesOnPolicy(policy, {
+    const updatedPolicy = setAllowModes(policy, {
       read: false,
       append: true,
       write: true,
@@ -225,7 +225,7 @@ describe("setAllowModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.allow, acp.Append);
 
-    const updatedPolicy = setAllowModesOnPolicy(policy, {
+    const updatedPolicy = setAllowModes(policy, {
       read: true,
       append: false,
       write: false,
@@ -238,7 +238,7 @@ describe("setAllowModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.deny, acp.Append);
 
-    const updatedPolicy = setAllowModesOnPolicy(policy, {
+    const updatedPolicy = setAllowModes(policy, {
       read: true,
       append: false,
       write: false,
@@ -248,12 +248,12 @@ describe("setAllowModesOnPolicy", () => {
   });
 });
 
-describe("getAllowModesOnPolicy", () => {
+describe("getAllowModes", () => {
   it("returns all modes that are allowed on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.allow, acp.Append);
 
-    const allowedModes = getAllowModesOnPolicy(policy);
+    const allowedModes = getAllowModes(policy);
 
     expect(allowedModes).toEqual({ read: false, append: true, write: false });
   });
@@ -262,19 +262,19 @@ describe("getAllowModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.deny, acp.Append);
 
-    const allowedModes = getAllowModesOnPolicy(policy);
+    const allowedModes = getAllowModes(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
   });
 });
 
-describe("setDenyModesOnPolicy", () => {
+describe("setDenyModes", () => {
   it("sets the given modes on the Policy", () => {
     const policy = mockThingFrom(
       "https://arbitrary.pod/policy-resource#policy"
     );
 
-    const updatedPolicy = setDenyModesOnPolicy(policy, {
+    const updatedPolicy = setDenyModes(policy, {
       read: false,
       append: true,
       write: true,
@@ -287,7 +287,7 @@ describe("setDenyModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.deny, acp.Append);
 
-    const updatedPolicy = setDenyModesOnPolicy(policy, {
+    const updatedPolicy = setDenyModes(policy, {
       read: true,
       append: false,
       write: false,
@@ -300,7 +300,7 @@ describe("setDenyModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.allow, acp.Append);
 
-    const updatedPolicy = setDenyModesOnPolicy(policy, {
+    const updatedPolicy = setDenyModes(policy, {
       read: true,
       append: false,
       write: false,
@@ -310,12 +310,12 @@ describe("setDenyModesOnPolicy", () => {
   });
 });
 
-describe("getDenyModesOnPolicy", () => {
+describe("getDenyModes", () => {
   it("returns all modes that are denied on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.deny, acp.Append);
 
-    const allowedModes = getDenyModesOnPolicy(policy);
+    const allowedModes = getDenyModes(policy);
 
     expect(allowedModes).toEqual({ read: false, append: true, write: false });
   });
@@ -324,7 +324,7 @@ describe("getDenyModesOnPolicy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
     policy = addIri(policy, acp.allow, acp.Append);
 
-    const allowedModes = getDenyModesOnPolicy(policy);
+    const allowedModes = getDenyModes(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
   });

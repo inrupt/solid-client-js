@@ -54,7 +54,7 @@ export type AccessModes = {
  *
  * Initialise a new, empty [[Policy]].
  *
- * @param url URL that identifies this Access Policy.
+ * @param url URL that identifies this Policy.
  */
 export function createPolicy(url: Url | UrlString): Policy {
   const stringUrl = internal_toIriString(url);
@@ -71,9 +71,9 @@ export function createPolicy(url: Url | UrlString): Policy {
  *
  * Get the [[Policy]] with the given URL from an [[PolicyDataset]].
  *
- * @param policyResource The Resource that contains the given Access Policy.
- * @param url URL that identifies this Access Policy.
- * @returns The requested Access Policy, if it exists, or `null` if it does not.
+ * @param policyResource The Resource that contains the given Policy.
+ * @param url URL that identifies this Policy.
+ * @returns The requested Policy, if it exists, or `null` if it does not.
  */
 export function getPolicy(
   policyResource: SolidDataset,
@@ -117,7 +117,7 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
  * Remove the given [[Policy]] from the given [[PolicyDataset]].
  *
  * @param policyResource The Resource that contains Access Policies.
- * @param policy The Access Policy to remove from the Access Policy Resource.
+ * @param policy The Policy to remove from the resource.
  */
 export function removePolicy(
   policyResource: SolidDataset,
@@ -134,8 +134,8 @@ export function removePolicy(
  * Insert the given [[Policy]] into the given [[PolicyDataset]], replacing previous instances of that Policy.
  *
  * @param policyResource The Resource that contains Access Policies.
- * @param policy The Access Policy to insert into the Access Policy Resource.
- * @returns A new Access Policy Resource equal to the given Access Policy Resource, but with the given Access Policy.
+ * @param policy The Policy to insert into the Resource.
+ * @returns A new dataset equal to the given resource, but with the given Policy.
  */
 export function setPolicy(
   policyResource: SolidDataset,
@@ -149,16 +149,13 @@ export function setPolicy(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Given a [[Policy]] and a set of [[AccessModes]], return a new Access Policy based on the given
- * Access Policy, but with the given Access Modes allowed on it.
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
+ * Policy, but with the given Access Modes allowed on it.
  *
- * @param policy An Access Policy on which to set the modes to allow.
- * @param modes Modes to allow for this Access Policy.
+ * @param policy A Policy on which to set the modes to allow.
+ * @param modes Modes to allow for this Policy.
  */
-export function setAllowModesOnPolicy(
-  policy: Policy,
-  modes: AccessModes
-): Policy {
+export function setAllowModes(policy: Policy, modes: AccessModes): Policy {
   let newPolicy = removeAll(policy, acp.allow);
 
   if (modes.read === true) {
@@ -180,9 +177,9 @@ export function setAllowModesOnPolicy(
  *
  * Given a [[Policy]], return which [[AccessModes]] it allows.
  *
- * @param policy An Access Policy of which you want to know which Access Modes it allows.
+ * @param policy A Policy of which you want to know which Access Modes it allows.
  */
-export function getAllowModesOnPolicy(policy: Policy): AccessModes {
+export function getAllowModes(policy: Policy): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
   return {
     read: allowedModes.includes(acp.Read),
@@ -195,16 +192,13 @@ export function getAllowModesOnPolicy(policy: Policy): AccessModes {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Given a [[Policy]] and a set of [[AccessModes]], return a new Access Policy based on the given
- * Access Policy, but with the given Access Modes disallowed on it.
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
+ * Policy, but with the given Access Modes disallowed on it.
  *
- * @param policy An Access Policy on which to set the modes to disallow.
- * @param modes Modes to disallow for this Access Policy.
+ * @param policy A Policy on which to set the modes to disallow.
+ * @param modes Modes to disallow for this Policy.
  */
-export function setDenyModesOnPolicy(
-  policy: Policy,
-  modes: AccessModes
-): Policy {
+export function setDenyModes(policy: Policy, modes: AccessModes): Policy {
   let newPolicy = removeAll(policy, acp.deny);
 
   if (modes.read === true) {
@@ -226,9 +220,9 @@ export function setDenyModesOnPolicy(
  *
  * Given a [[Policy]], return which [[AccessModes]] it disallows.
  *
- * @param policy An Access Policy of which you want to know which Access Modes it disallows.
+ * @param policy A Policy of which you want to know which Access Modes it disallows.
  */
-export function getDenyModesOnPolicy(policy: Policy): AccessModes {
+export function getDenyModes(policy: Policy): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
   return {
     read: deniedModes.includes(acp.Read),

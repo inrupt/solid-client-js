@@ -21,13 +21,13 @@ export function getHelpers(podRoot: string, session: Session) {
 
   async function initialisePolicyResource() {
     let inputRule = acp.createRule(policyResourceUrl + "#rule-public");
-    inputRule = acp.setPublicForRule(inputRule, true);
+    inputRule = acp.setPublic(inputRule, true);
 
     let inputPolicy = acp.createPolicy(
       policyResourceUrl + "#policy-publicRead"
     );
-    inputPolicy = acp.addRequiredRuleForPolicy(inputPolicy, inputRule);
-    inputPolicy = acp.setAllowModesOnPolicy(inputPolicy, {
+    inputPolicy = acp.addRequiredRule(inputPolicy, inputRule);
+    inputPolicy = acp.setAllowModes(inputPolicy, {
       read: true,
       append: false,
       write: false,
@@ -62,12 +62,12 @@ export function getHelpers(podRoot: string, session: Session) {
         )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
       );
     }
-    let inputControl = acp.createAccessControl();
+    let inputControl = acp.createControl();
     inputControl = acp.addPolicyUrl(
       inputControl,
       policyResourceUrl + "#policy-publicRead"
     );
-    const changedResourceWithAcr = acp.setAccessControl(
+    const changedResourceWithAcr = acp.setControl(
       resourceWithAcr,
       inputControl
     );
