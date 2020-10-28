@@ -40,22 +40,29 @@ fixture("Access Control Policies").page("http://localhost:1234");
 test("Manipulating Access Control Policies", async (t: TestController) => {
   /* Initialise client helpers: */
   const getSessionInfo = ClientFunction(() => E2eHelpers.getSessionInfo());
-  const initialiseApr = ClientFunction(() => E2eHelpers.initialiseApr());
-  const fetchAprUnauthenticated = ClientFunction((podRoot?: string) =>
-    E2eHelpers.fetchAprUnauthenticated(podRoot)
+  const initialisePolicyResource = ClientFunction(() =>
+    E2eHelpers.initialisePolicyResource()
   );
-  const setAcrPublicRead = ClientFunction(() => E2eHelpers.setAprPublicRead());
-  const deleteApr = ClientFunction(() => E2eHelpers.deleteApr());
+  const fetchPolicyResourceUnauthenticated = ClientFunction(
+    (podRoot?: string) => E2eHelpers.fetchPolicyResourceUnauthenticated(podRoot)
+  );
+  const setAcrPublicRead = ClientFunction(() =>
+    E2eHelpers.setPolicyResourcePublicRead()
+  );
+  const deletePolicyResource = ClientFunction(() =>
+    E2eHelpers.deletePolicyResource()
+  );
 
   /* Run the actual test: */
   const essUserPod = process.env.TESTCAFE_ESS_PROD_POD;
   await essUserLogin(t);
   // Create a Resource containing Access Policies and Rules:
-  await initialiseApr();
+  await initialisePolicyResource();
   // Verify that we cannot fetch that Resource yet with a user that is not logged in:
   await t
     .expect(
-      (await returnErrors(() => fetchAprUnauthenticated(essUserPod))).errMsg
+      (await returnErrors(() => fetchPolicyResourceUnauthenticated(essUserPod)))
+        .errMsg
     )
     .match(/401 Unauthorized/);
   // In the Resource's Access Control Resource, apply the Policy
@@ -63,9 +70,11 @@ test("Manipulating Access Control Policies", async (t: TestController) => {
   // and that allows anyone to read it:
   await setAcrPublicRead();
   // Verify that indeed, someone who is not logged in can now read it:
-  await t.expect(fetchAprUnauthenticated(essUserPod)).typeOf("object");
+  await t
+    .expect(fetchPolicyResourceUnauthenticated(essUserPod))
+    .typeOf("object");
   // Now delete the Resource, so that we can recreate it the next time we run this test:
-  await deleteApr();
+  await deletePolicyResource();
 });
 
 /**
