@@ -258,6 +258,35 @@ describe("getResourceInfoWithAcr", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
+  it("attaches the fetched ACR to the returned ResourceInfo", async () => {
+    const mockedResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: true,
+        linkedResources: {
+          [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
+        },
+      },
+    };
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+    });
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
+
+    const fetchedResourceInfo = await getResourceInfoWithAcr(
+      "https://some.pod/resource"
+    );
+
+    expect(fetchedResourceInfo.internal_acp.acr).toBe(mockedAcr);
+  });
+
   it("returns null for the ACR if it is not accessible to the current user", async () => {
     const mockFetch = jest
       .fn(window.fetch)
@@ -353,35 +382,6 @@ describe("getReferencedPolicyUrlAll", () => {
       "https://some.pod/policy-resource",
       "https://some.pod/other-policy-resource",
     ]);
-  });
-
-  it("attaches the fetched ACR to the returned ResourceInfo", async () => {
-    const mockedResourceInfo: WithServerResourceInfo = {
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
-        isRawData: true,
-        linkedResources: {
-          [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
-        },
-      },
-    };
-    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
-      policies: [],
-      memberPolicies: [],
-    });
-    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
-    mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
-    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
-
-    const fetchedResourceInfo = await getResourceInfoWithAcr(
-      "https://some.pod/resource"
-    );
-
-    expect(fetchedResourceInfo.internal_acp.acr).toBe(mockedAcr);
   });
 });
 
