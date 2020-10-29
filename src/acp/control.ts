@@ -130,7 +130,7 @@ export function createControl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Find an \[\[Control\]\] with a given URL in a given Resource with an Access Control Resource.
+ * Find an [[Control]] with a given URL in a given Resource with an Access Control Resource.
  *
  * @returns The requested Access Control, or `null` if it could not be found.
  */
@@ -155,7 +155,7 @@ export function getControl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all \[\[Control\]\]s in the Access Control Resource of a given Resource.
+ * Get all [[Control]]s in the Access Control Resource of a given Resource.
  */
 export function getControlAll(
   withAccessControlResource: WithAccessibleAcr,
@@ -173,7 +173,7 @@ export function getControlAll(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Insert an \[\[Control\]\] into the [[AccessControlResource]] of a Resource, replacing previous
+ * Insert an [[Control]] into the [[AccessControlResource]] of a Resource, replacing previous
  * instances of that Access Control.
  *
  * @param withAccessControlResource A Resource with the Access Control Resource into which to insert an Access Control.
