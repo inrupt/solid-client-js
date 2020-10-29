@@ -177,7 +177,7 @@ export function setAllowModes(policy: Policy, modes: AccessModes): Policy {
  *
  * Given a [[Policy]], return which [[AccessModes]] it allows.
  *
- * @param policy A Policy of which you want to know which Access Modes it allows.
+ * @param policy The Policy for which you want to know the Access Modes it allows.
  */
 export function getAllowModes(policy: Policy): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
@@ -195,7 +195,7 @@ export function getAllowModes(policy: Policy): AccessModes {
  * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
  * Policy, but with the given Access Modes disallowed on it.
  *
- * @param policy A Policy on which to set the modes to disallow.
+ * @param policy The Policy on which to set the modes to disallow.
  * @param modes Modes to disallow for this Policy.
  */
 export function setDenyModes(policy: Policy, modes: AccessModes): Policy {
@@ -220,7 +220,7 @@ export function setDenyModes(policy: Policy, modes: AccessModes): Policy {
  *
  * Given a [[Policy]], return which [[AccessModes]] it disallows.
  *
- * @param policy A Policy of which you want to know which Access Modes it disallows.
+ * @param policy The Policy on which you want to know the Access Modes it disallows.
  */
 export function getDenyModes(policy: Policy): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
