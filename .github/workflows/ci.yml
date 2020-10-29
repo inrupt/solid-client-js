@@ -79,6 +79,10 @@ jobs:
         sleep 1s
         open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
         wait $pid
+      # Connecting to a remote appears to run into a race condition every now and then,
+      # where TestCafe waits for the browser endlessly. 20 minutes should be more than enough at the
+      # time of writing for the end-to-end tests to succeed, so cut them off after that:
+      timeout-minutes: 20
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
       # (But I've explicitly set it to *not* run in the oldest version,
