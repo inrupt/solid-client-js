@@ -152,7 +152,7 @@ export function setPolicy(
  * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
  * Policy, but with the given Access Modes allowed on it.
  *
- * @param policy A Policy on which to set the modes to allow.
+ * @param policy The Policy on which to set the modes to allow.
  * @param modes Modes to allow for this Policy.
  */
 export function setAllowModes(policy: Policy, modes: AccessModes): Policy {
