@@ -56,6 +56,8 @@ import { addMockAcrTo } from "./mock";
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
   memberPolicies: ["https://some.pod/policies#memberPolicy"],
+  acrPolicies: [] as string[],
+  memberAcrPolicies: [] as string[],
 };
 function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
   let control = createThing({ name: "access-control" });
@@ -67,12 +69,23 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
     control = addIri(control, acp.applyMembers, policyUrl);
   });
 
-  let acr: AccessControlResource &
-    WithServerResourceInfo = Object.assign(
-    mockSolidDatasetFrom(accessTo + "?ext=acr"),
-    { accessTo: accessTo }
+  const acrUrl = accessTo + "?ext=acr";
+  let acrThing = createThing({ url: acrUrl });
+  policies.acrPolicies.forEach((policyUrl) => {
+    acrThing = addIri(acrThing, acp.access, policyUrl);
+  });
+  policies.memberAcrPolicies.forEach((policyUrl) => {
+    acrThing = addIri(acrThing, acp.accessMembers, policyUrl);
+  });
+
+  let acr: AccessControlResource & WithServerResourceInfo = Object.assign(
+    mockSolidDatasetFrom(acrUrl),
+    {
+      accessTo: accessTo,
+    }
   );
   acr = setThing(acr, control);
+  acr = setThing(acr, acrThing);
 
   return acr;
 }
@@ -136,6 +149,8 @@ describe("getSolidDatasetWithAcr", () => {
     const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
       policies: [],
       memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
@@ -217,6 +232,8 @@ describe("getFileWithAcr", () => {
     const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
       policies: [],
       memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
     });
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockedFile);
@@ -271,6 +288,8 @@ describe("getResourceInfoWithAcr", () => {
     const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
       policies: [],
       memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
     });
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
@@ -325,6 +344,8 @@ describe("getReferencedPolicyUrlAll", () => {
     const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
       policies: [],
       memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
     });
     const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
 
@@ -349,6 +370,8 @@ describe("getReferencedPolicyUrlAll", () => {
         "https://some.pod/policy-resource#a-member-policy",
         "https://some.pod/policy-resource#another-member-policy",
       ],
+      acrPolicies: [],
+      memberAcrPolicies: [],
     });
     const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
 
@@ -372,6 +395,36 @@ describe("getReferencedPolicyUrlAll", () => {
       memberPolicies: [
         "https://some.pod/policy-resource#a-member-policy",
         "https://some.pod/other-policy-resource#another-member-policy",
+      ],
+      acrPolicies: [],
+      memberAcrPolicies: [],
+    });
+    const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);
+
+    const policyUrls = getReferencedPolicyUrlAll(withMockedAcr);
+
+    expect(policyUrls).toEqual([
+      "https://some.pod/policy-resource",
+      "https://some.pod/other-policy-resource",
+    ]);
+  });
+
+  it("includes referenced ACR Policy Resources", async () => {
+    const mockedResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: true,
+        linkedResources: {
+          [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
+        },
+      },
+    };
+    const mockedAcr = mockAcr("https://some.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+      acrPolicies: ["https://some.pod/policy-resource#an-acr-policy"],
+      memberAcrPolicies: [
+        "https://some.pod/other-policy-resource#another-acr-policy",
       ],
     });
     const withMockedAcr = addMockAcrTo(mockedResourceInfo, mockedAcr);

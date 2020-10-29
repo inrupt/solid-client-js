@@ -42,6 +42,8 @@ import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
   getAccessControlAll,
+  getAcrPolicyUrlAll,
+  getMemberAcrPolicyUrlAll,
   getMemberPolicyUrlAll,
   getPolicyUrlAll,
   hasLinkedAcr,
@@ -365,6 +367,9 @@ export function getReferencedPolicyUrlAll(
     policyUrls.push(...getPolicyUrlAll(control).map(getResourceUrl));
     policyUrls.push(...getMemberPolicyUrlAll(control).map(getResourceUrl));
   });
+
+  policyUrls.push(...getAcrPolicyUrlAll(withAcr).map(getResourceUrl));
+  policyUrls.push(...getMemberAcrPolicyUrlAll(withAcr).map(getResourceUrl));
 
   const uniqueUrls = Array.from(new Set(policyUrls));
   return uniqueUrls;
