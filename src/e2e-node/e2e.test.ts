@@ -206,8 +206,9 @@ describe.each([
   });
 
   // ESS currently has enabled Access Control Policies,
-  // and Web Access Control will be turned off shortly.
-  // Thus, only run this against Node Solid Server.
+  // and Web Access Control has been turned off.
+  // Thus, only run this against Node Solid Server
+  // until a WAC-enabled ESS instance is set up again.
   on_nss_it("should be able to read and update ACLs", async () => {
     const fakeWebId =
       "https://example.com/fake-webid#" +
@@ -287,25 +288,32 @@ describe.each([
     await saveAclFor(datasetWithAcl, cleanedAcl);
   });
 
-  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
-    const dataset = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
-    );
-    if (
-      !hasFallbackAcl(dataset) ||
-      !hasAccessibleAcl(dataset) ||
-      hasResourceAcl(dataset)
-    ) {
-      throw new Error(
-        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
+  // ESS currently has enabled Access Control Policies,
+  // and Web Access Control has been turned off.
+  // Thus, only run this against Node Solid Server
+  // until a WAC-enabled ESS instance is set up again.
+  on_nss_it(
+    "can copy default rules from the fallback ACL as Resource rules to a new ACL",
+    async () => {
+      const dataset = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
+      );
+      if (
+        !hasFallbackAcl(dataset) ||
+        !hasAccessibleAcl(dataset) ||
+        hasResourceAcl(dataset)
+      ) {
+        throw new Error(
+          `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
+        );
+      }
+      const newResourceAcl = createAclFromFallbackAcl(dataset);
+      const existingFallbackAcl = getFallbackAcl(dataset);
+      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+        getPublicResourceAccess(newResourceAcl)
       );
     }
-    const newResourceAcl = createAclFromFallbackAcl(dataset);
-    const existingFallbackAcl = getFallbackAcl(dataset);
-    expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-      getPublicResourceAccess(newResourceAcl)
-    );
-  });
+  );
 
   it("can fetch a non-RDF file and its metadata", async () => {
     const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
