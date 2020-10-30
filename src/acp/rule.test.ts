@@ -28,33 +28,33 @@ import {
   thingAsMarkdown,
 } from "../thing/thing";
 import {
-  addAgentForRule,
-  addForbiddenRuleForPolicy,
-  addGroupForRule,
-  addOptionalRuleForPolicy,
-  addRequiredRuleForPolicy,
+  addAgent,
+  addForbiddenRuleUrl,
+  addGroup,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
   createRule,
-  getAgentForRuleAll,
-  getForbiddenRuleForPolicyAll,
-  getGroupForRuleAll,
-  getOptionalRuleForPolicyAll,
-  getRequiredRuleForPolicyAll,
-  removeForbiddenRuleForPolicy,
-  removeOptionalRuleForPolicy,
-  removeRequiredRuleForPolicy,
+  getAgentAll,
+  getForbiddenRuleurlAll,
+  getGroupAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+  removeForbiddenRuleUrl,
+  removeOptionalRuleUrl,
+  removeRequiredRuleUrl,
   getRule,
-  hasAuthenticatedForRule,
-  hasPublicForRule,
-  removeAgentForRule,
-  removeGroupForRule,
+  hasAuthenticated,
+  hasPublic,
+  removeAgent,
+  removeGroup,
   Rule,
-  setAgentForRule,
-  setAuthenticatedForRule,
-  setForbiddenRuleForPolicy,
-  setGroupForRule,
-  setOptionalRuleForPolicy,
-  setPublicForRule,
-  setRequiredRuleForPolicy,
+  setAgent,
+  setAuthenticated,
+  setForbiddenRuleUrl,
+  setGroup,
+  setOptionalRuleUrl,
+  setPublic,
+  setRequiredRuleUrl,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
@@ -201,9 +201,9 @@ const mockPolicy = (
   return mockPolicy;
 };
 
-describe("addForbiddenRuleForPolicy", () => {
+describe("addForbiddenRuleUrl", () => {
   it("adds the rule in the forbidden rules of the policy", () => {
-    const myPolicy = addForbiddenRuleForPolicy(
+    const myPolicy = addForbiddenRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -218,7 +218,7 @@ describe("addForbiddenRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = addForbiddenRuleForPolicy(
+    const myPolicy = addForbiddenRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_RULE_IRI)
     );
@@ -234,7 +234,7 @@ describe("addForbiddenRuleForPolicy", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const myPolicy = addForbiddenRuleForPolicy(
+    const myPolicy = addForbiddenRuleUrl(
       mockedPolicy,
       mockRule(FORBIDDEN_RULE_IRI)
     );
@@ -253,14 +253,14 @@ describe("addForbiddenRuleForPolicy", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const mypolicySize = myPolicy.size;
-    addForbiddenRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    addForbiddenRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(mypolicySize);
   });
 });
 
-describe("addOptionalRuleForPolicy", () => {
+describe("addOptionalRuleUrl", () => {
   it("adds the rule in the optional rules of the policy", () => {
-    const myPolicy = addOptionalRuleForPolicy(
+    const myPolicy = addOptionalRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -275,7 +275,7 @@ describe("addOptionalRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       optional: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = addOptionalRuleForPolicy(
+    const myPolicy = addOptionalRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_POLICY_IRI)
     );
@@ -291,7 +291,7 @@ describe("addOptionalRuleForPolicy", () => {
       forbidden: [mockRule(FORBIDDEN_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const myPolicy = addOptionalRuleForPolicy(
+    const myPolicy = addOptionalRuleUrl(
       mockedPolicy,
       mockRule(OPTIONAL_RULE_IRI)
     );
@@ -309,14 +309,14 @@ describe("addOptionalRuleForPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    addOptionalRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    addOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(0);
   });
 });
 
-describe("addRequiredRuleForPolicy", () => {
+describe("addRequiredRule", () => {
   it("adds the rule in the required rules of the policy", () => {
-    const myPolicy = addRequiredRuleForPolicy(
+    const myPolicy = addRequiredRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -331,7 +331,7 @@ describe("addRequiredRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       required: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = addRequiredRuleForPolicy(
+    const myPolicy = addRequiredRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_RULE_IRI)
     );
@@ -347,7 +347,7 @@ describe("addRequiredRuleForPolicy", () => {
       forbidden: [mockRule(FORBIDDEN_RULE_IRI)],
       optional: [mockRule(OPTIONAL_RULE_IRI)],
     });
-    const myPolicy = addRequiredRuleForPolicy(
+    const myPolicy = addRequiredRuleUrl(
       mockedPolicy,
       mockRule(OPTIONAL_RULE_IRI)
     );
@@ -365,14 +365,14 @@ describe("addRequiredRuleForPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    addOptionalRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    addOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(0);
   });
 });
 
-describe("setForbiddenRuleForPolicy", () => {
+describe("setForbiddenRuleUrl", () => {
   it("sets the provided rules as the forbidden rules for the policy", () => {
-    const myPolicy = setForbiddenRuleForPolicy(
+    const myPolicy = setForbiddenRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -387,7 +387,7 @@ describe("setForbiddenRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = setForbiddenRuleForPolicy(
+    const myPolicy = setForbiddenRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_RULE_IRI)
     );
@@ -403,7 +403,7 @@ describe("setForbiddenRuleForPolicy", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const myPolicy = setForbiddenRuleForPolicy(
+    const myPolicy = setForbiddenRuleUrl(
       mockedPolicy,
       mockRule(FORBIDDEN_RULE_IRI)
     );
@@ -421,14 +421,14 @@ describe("setForbiddenRuleForPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setForbiddenRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    setForbiddenRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(0);
   });
 });
 
-describe("setOptionalRuleForPolicy", () => {
+describe("setOptionalRuleUrl", () => {
   it("sets the provided rules as the optional rules for the policy", () => {
-    const myPolicy = setOptionalRuleForPolicy(
+    const myPolicy = setOptionalRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -443,7 +443,7 @@ describe("setOptionalRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       optional: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = setOptionalRuleForPolicy(
+    const myPolicy = setOptionalRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_RULE_IRI)
     );
@@ -459,7 +459,7 @@ describe("setOptionalRuleForPolicy", () => {
       forbidden: [mockRule(FORBIDDEN_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const myPolicy = setOptionalRuleForPolicy(
+    const myPolicy = setOptionalRuleUrl(
       mockedPolicy,
       mockRule(OPTIONAL_RULE_IRI)
     );
@@ -477,14 +477,14 @@ describe("setOptionalRuleForPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setOptionalRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    setOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(0);
   });
 });
 
-describe("setRequiredRuleForPolicy", () => {
+describe("setRequiredRuleUrl", () => {
   it("sets the provided rules as the required rules for the policy", () => {
-    const myPolicy = setRequiredRuleForPolicy(
+    const myPolicy = setRequiredRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
@@ -499,7 +499,7 @@ describe("setRequiredRuleForPolicy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       required: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const myPolicy = setRequiredRuleForPolicy(
+    const myPolicy = setRequiredRuleUrl(
       mockedPolicy,
       mockRule(MOCKED_RULE_IRI)
     );
@@ -515,7 +515,7 @@ describe("setRequiredRuleForPolicy", () => {
       forbidden: [mockRule(FORBIDDEN_RULE_IRI)],
       optional: [mockRule(OPTIONAL_RULE_IRI)],
     });
-    const myPolicy = setRequiredRuleForPolicy(
+    const myPolicy = setRequiredRuleUrl(
       mockedPolicy,
       mockRule(REQUIRED_RULE_IRI)
     );
@@ -533,17 +533,17 @@ describe("setRequiredRuleForPolicy", () => {
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setRequiredRuleForPolicy(myPolicy, mockRule(MOCKED_RULE_IRI));
+    setRequiredRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
     expect(myPolicy.size).toEqual(0);
   });
 });
 
-describe("getForbiddenRuleForPolicyAll", () => {
+describe("getForbiddenRuleurlAll", () => {
   it("returns all the forbidden rules for the given policy", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleForPolicyAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
     expect(forbiddenRules).toContainEqual(MOCKED_RULE_IRI.value);
     expect(forbiddenRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
   });
@@ -554,7 +554,7 @@ describe("getForbiddenRuleForPolicyAll", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleForPolicyAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
     expect(forbiddenRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
     expect(forbiddenRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
   });
@@ -565,7 +565,7 @@ describe("getOptionalRulesOnPolicyAll", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       optional: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const optionalRules = getOptionalRuleForPolicyAll(mockedPolicy);
+    const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
     expect(optionalRules).toContainEqual(MOCKED_RULE_IRI.value);
     expect(optionalRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
   });
@@ -576,7 +576,7 @@ describe("getOptionalRulesOnPolicyAll", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const optionalRules = getOptionalRuleForPolicyAll(mockedPolicy);
+    const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
     expect(optionalRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
     expect(optionalRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
   });
@@ -587,7 +587,7 @@ describe("getRequiredRulesOnPolicyAll", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       required: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const requiredRules = getRequiredRuleForPolicyAll(mockedPolicy);
+    const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
     expect(requiredRules).toContainEqual(MOCKED_RULE_IRI.value);
     expect(requiredRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
   });
@@ -598,19 +598,19 @@ describe("getRequiredRulesOnPolicyAll", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const requiredRules = getRequiredRuleForPolicyAll(mockedPolicy);
+    const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
     expect(requiredRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
     expect(requiredRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
   });
 });
 
-describe("removeRequiredRuleForPolicy", () => {
+describe("removeRequiredRule", () => {
   it("removes the rule from the rules required by the given policy", () => {
     const mockedRule = mockRule(MOCKED_RULE_IRI);
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       required: [mockedRule],
     });
-    const result = removeRequiredRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeRequiredRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
     ).toEqual(false);
@@ -622,7 +622,7 @@ describe("removeRequiredRuleForPolicy", () => {
       optional: [mockedRule],
       forbidden: [mockedRule],
     });
-    const result = removeRequiredRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeRequiredRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
     ).toEqual(true);
@@ -632,13 +632,13 @@ describe("removeRequiredRuleForPolicy", () => {
   });
 });
 
-describe("removeOptionalRuleForPolicy", () => {
+describe("removeOptionalRuleUrl", () => {
   it("removes the rule from the rules required by the given policy", () => {
     const mockedRule = mockRule(MOCKED_RULE_IRI);
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       optional: [mockedRule],
     });
-    const result = removeOptionalRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeOptionalRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
     ).toEqual(false);
@@ -650,7 +650,7 @@ describe("removeOptionalRuleForPolicy", () => {
       required: [mockedRule],
       forbidden: [mockedRule],
     });
-    const result = removeOptionalRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeOptionalRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
     ).toEqual(true);
@@ -660,13 +660,13 @@ describe("removeOptionalRuleForPolicy", () => {
   });
 });
 
-describe("removeForbiddenRuleForPolicy", () => {
+describe("removeForbiddenRuleUrl", () => {
   it("removes the rule from the rules forbidden by the given policy", () => {
     const mockedRule = mockRule(MOCKED_RULE_IRI);
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockedRule],
     });
-    const result = removeForbiddenRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeForbiddenRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
     ).toEqual(false);
@@ -678,7 +678,7 @@ describe("removeForbiddenRuleForPolicy", () => {
       required: [mockedRule],
       optional: [mockedRule],
     });
-    const result = removeForbiddenRuleForPolicy(mockedPolicy, mockedRule);
+    const result = removeForbiddenRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
     ).toEqual(true);
@@ -730,12 +730,12 @@ describe("getRule", () => {
   });
 });
 
-describe("getAgentForRuleAll", () => {
+describe("getAgentAll", () => {
   it("returns all the agents a rule applies to by webid", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_ME, MOCK_WEBID_YOU],
     });
-    const agents = getAgentForRuleAll(rule);
+    const agents = getAgentAll(rule);
     expect(agents).toContainEqual(MOCK_WEBID_ME.value);
     expect(agents).toContainEqual(MOCK_WEBID_YOU.value);
   });
@@ -746,17 +746,17 @@ describe("getAgentForRuleAll", () => {
       public: true,
       authenticated: true,
     });
-    const agents = getAgentForRuleAll(rule);
+    const agents = getAgentAll(rule);
     expect(agents).not.toContainEqual(MOCK_GROUP_IRI.value);
     expect(agents).not.toContainEqual(ACP_AUTHENTICATED);
     expect(agents).not.toContainEqual(ACP_PUBLIC);
   });
 });
 
-describe("setAgentForRule", () => {
+describe("setAgent", () => {
   it("sets the given agents for the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setAgentForRule(rule, MOCK_WEBID_ME.value);
+    const result = setAgent(rule, MOCK_WEBID_ME.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
@@ -766,7 +766,7 @@ describe("setAgentForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_YOU],
     });
-    const result = setAgentForRule(rule, MOCK_WEBID_ME.value);
+    const result = setAgent(rule, MOCK_WEBID_ME.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
@@ -779,7 +779,7 @@ describe("setAgentForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_YOU],
     });
-    setAgentForRule(rule, MOCK_WEBID_ME.value);
+    setAgent(rule, MOCK_WEBID_ME.value);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(false);
@@ -793,7 +793,7 @@ describe("setAgentForRule", () => {
       public: true,
       authenticated: true,
     });
-    const result = setAgentForRule(rule, MOCK_WEBID_YOU.value);
+    const result = setAgent(rule, MOCK_WEBID_YOU.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
@@ -806,10 +806,10 @@ describe("setAgentForRule", () => {
   });
 });
 
-describe("addAgentForRule", () => {
+describe("addAgent", () => {
   it("adds the given agent to the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = addAgentForRule(rule, MOCK_WEBID_YOU.value);
+    const result = addAgent(rule, MOCK_WEBID_YOU.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
     ).toBe(true);
@@ -822,7 +822,7 @@ describe("addAgentForRule", () => {
       public: true,
       authenticated: true,
     });
-    const result = addAgentForRule(rule, MOCK_WEBID_YOU.value);
+    const result = addAgent(rule, MOCK_WEBID_YOU.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
     ).toBe(true);
@@ -843,12 +843,12 @@ describe("addAgentForRule", () => {
   });
 });
 
-describe("removeAgentForRule", () => {
+describe("removeAgent", () => {
   it("removes the given agent from the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_YOU],
     });
-    const result = removeAgentForRule(rule, MOCK_WEBID_YOU.value);
+    const result = removeAgent(rule, MOCK_WEBID_YOU.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
     ).toBe(false);
@@ -860,7 +860,7 @@ describe("removeAgentForRule", () => {
       public: true,
       authenticated: true,
     });
-    const result = removeAgentForRule(rule, MOCK_WEBID_YOU.value);
+    const result = removeAgent(rule, MOCK_WEBID_YOU.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
     ).toBe(false);
@@ -881,19 +881,19 @@ describe("removeAgentForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI],
     });
-    const result = removeAgentForRule(rule, MOCK_GROUP_IRI.value);
+    const result = removeAgent(rule, MOCK_GROUP_IRI.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(true);
   });
 });
 
-describe("getGroupForRuleAll", () => {
+describe("getGroupAll", () => {
   it("returns all the groups a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI, MOCK_GROUP_OTHER_IRI],
     });
-    const groups = getGroupForRuleAll(rule);
+    const groups = getGroupAll(rule);
     expect(groups).toContainEqual(MOCK_GROUP_IRI.value);
     expect(groups).toContainEqual(MOCK_GROUP_OTHER_IRI.value);
   });
@@ -904,17 +904,17 @@ describe("getGroupForRuleAll", () => {
       public: true,
       authenticated: true,
     });
-    const groups = getGroupForRuleAll(rule);
+    const groups = getGroupAll(rule);
     expect(groups).not.toContainEqual(MOCK_WEBID_ME.value);
     expect(groups).not.toContainEqual(ACP_AUTHENTICATED.value);
     expect(groups).not.toContainEqual(ACP_PUBLIC.value);
   });
 });
 
-describe("setGroupForRule", () => {
+describe("setGroup", () => {
   it("sets the given groups for the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setGroupForRule(rule, MOCK_GROUP_IRI.value);
+    const result = setGroup(rule, MOCK_GROUP_IRI.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(true);
@@ -924,7 +924,7 @@ describe("setGroupForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_OTHER_IRI],
     });
-    const result = setGroupForRule(rule, MOCK_GROUP_IRI.value);
+    const result = setGroup(rule, MOCK_GROUP_IRI.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(true);
@@ -939,7 +939,7 @@ describe("setGroupForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_OTHER_IRI],
     });
-    setGroupForRule(rule, MOCK_GROUP_IRI.value);
+    setGroup(rule, MOCK_GROUP_IRI.value);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(false);
@@ -951,10 +951,10 @@ describe("setGroupForRule", () => {
   });
 });
 
-describe("addGroupForRule", () => {
+describe("addGroup", () => {
   it("adds the given group to the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = addGroupForRule(rule, "https://your.pod/groups#a-group");
+    const result = addGroup(rule, "https://your.pod/groups#a-group");
     expect(
       result.has(
         DataFactory.quad(
@@ -973,7 +973,7 @@ describe("addGroupForRule", () => {
       public: true,
       authenticated: true,
     });
-    const result = addGroupForRule(rule, MOCK_GROUP_OTHER_IRI.value);
+    const result = addGroup(rule, MOCK_GROUP_OTHER_IRI.value);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_OTHER_IRI)
@@ -996,12 +996,12 @@ describe("addGroupForRule", () => {
   });
 });
 
-describe("removeGroupForRule", () => {
+describe("removeGroup", () => {
   it("removes the given group from the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI],
     });
-    const result = removeGroupForRule(rule, MOCK_GROUP_IRI.value);
+    const result = removeGroup(rule, MOCK_GROUP_IRI.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(false);
@@ -1011,7 +1011,7 @@ describe("removeGroupForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI, MOCK_GROUP_OTHER_IRI],
     });
-    const result = removeGroupForRule(rule, MOCK_GROUP_IRI.value);
+    const result = removeGroup(rule, MOCK_GROUP_IRI.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
     ).toBe(false);
@@ -1026,19 +1026,19 @@ describe("removeGroupForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_ME],
     });
-    const result = removeGroupForRule(rule, MOCK_WEBID_ME.value);
+    const result = removeGroup(rule, MOCK_WEBID_ME.value);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
   });
 });
 
-describe("hasPublicForRule", () => {
+describe("hasPublic", () => {
   it("returns true if the rule applies to the public agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       public: true,
     });
-    expect(hasPublicForRule(rule)).toEqual(true);
+    expect(hasPublic(rule)).toEqual(true);
   });
   it("returns false if the rule only applies to other agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1046,14 +1046,14 @@ describe("hasPublicForRule", () => {
       authenticated: true,
       agents: [MOCK_WEBID_ME],
     });
-    expect(hasPublicForRule(rule)).toEqual(false);
+    expect(hasPublic(rule)).toEqual(false);
   });
 });
 
-describe("setPublicForRule", () => {
+describe("setPublic", () => {
   it("applies to given rule to the public agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setPublicForRule(rule, true);
+    const result = setPublic(rule, true);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
@@ -1063,7 +1063,7 @@ describe("setPublicForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       public: true,
     });
-    const result = setPublicForRule(rule, false);
+    const result = setPublic(rule, false);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(false);
@@ -1071,7 +1071,7 @@ describe("setPublicForRule", () => {
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setPublicForRule(rule, true);
+    setPublic(rule, true);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(false);
@@ -1082,7 +1082,7 @@ describe("setPublicForRule", () => {
       authenticated: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setPublicForRule(rule, true);
+    const result = setPublic(rule, true);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
@@ -1094,12 +1094,12 @@ describe("setPublicForRule", () => {
   });
 });
 
-describe("hasAuthenticatedForRule", () => {
+describe("hasAuthenticated", () => {
   it("returns true if the rule applies to authenticated agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       authenticated: true,
     });
-    expect(hasAuthenticatedForRule(rule)).toEqual(true);
+    expect(hasAuthenticated(rule)).toEqual(true);
   });
   it("returns false if the rule only applies to other agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1107,14 +1107,14 @@ describe("hasAuthenticatedForRule", () => {
       authenticated: false,
       agents: [MOCK_WEBID_ME],
     });
-    expect(hasAuthenticatedForRule(rule)).toEqual(false);
+    expect(hasAuthenticated(rule)).toEqual(false);
   });
 });
 
-describe("setAuthenticatedForRule", () => {
+describe("setAuthenticated", () => {
   it("applies to given rule to authenticated agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setAuthenticatedForRule(rule, true);
+    const result = setAuthenticated(rule, true);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
@@ -1126,7 +1126,7 @@ describe("setAuthenticatedForRule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       authenticated: true,
     });
-    const result = setAuthenticatedForRule(rule, false);
+    const result = setAuthenticated(rule, false);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
@@ -1136,7 +1136,7 @@ describe("setAuthenticatedForRule", () => {
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setPublicForRule(rule, true);
+    setPublic(rule, true);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
     ).toBe(false);
@@ -1147,7 +1147,7 @@ describe("setAuthenticatedForRule", () => {
       public: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setPublicForRule(rule, true);
+    const result = setPublic(rule, true);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);

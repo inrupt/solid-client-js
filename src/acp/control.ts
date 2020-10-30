@@ -75,7 +75,7 @@ export function hasLinkedAcr<Resource extends WithServerResourceInfo>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * An Access Control Resource, containing [[AccessControl]]s specifying which [[AccessPolicy]]'s
+ * An Access Control Resource, containing [[Control]]s specifying which [[Policy]]'s
  * apply to the Resource this Access Control Resource is linked to.
  */
 export type AccessControlResource = SolidDataset &
@@ -86,10 +86,10 @@ export type AccessControlResource = SolidDataset &
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * An Access Control, usually contained in an [[AccessControlResource]]. It describes which
- * [[AccessPolicy]]'s apply to a Resource.
+ * A Control, usually contained in an [[AccessControlResource]]. It describes which
+ * [[Policy]]'s apply to a Resource.
  */
-export type AccessControl = Thing;
+export type Control = Thing;
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -116,29 +116,29 @@ export type WithLinkedAcpAccessControl<
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Initialise a new [[AccessControl]].
+ * Initialise a new [[Control]].
  */
-export function createAccessControl(
+export function createControl(
   options?: Parameters<typeof createThing>[0]
-): AccessControl {
-  let accessControl = createThing(options);
-  accessControl = setIri(accessControl, rdf.type, acp.AccessControl);
-  return accessControl;
+): Control {
+  let control = createThing(options);
+  control = setIri(control, rdf.type, acp.AccessControl);
+  return control;
 }
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Find an [[AccessControl]] with a given URL in a given Resource with an Access Control Resource.
+ * Find an [[Control]] with a given URL in a given Resource with an Access Control Resource.
  *
  * @returns The requested Access Control, or `null` if it could not be found.
  */
-export function getAccessControl(
+export function getControl(
   withAccessControlResource: WithAccessibleAcr,
   url: Parameters<typeof getThing>[1],
   options?: Parameters<typeof getThing>[2]
-): AccessControl | null {
+): Control | null {
   const acr = internal_getAcr(withAccessControlResource);
   const foundThing = getThing(acr, url, options);
   if (
@@ -155,12 +155,12 @@ export function getAccessControl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all [[AccessControl]]s in the Access Control Resource of a given Resource.
+ * Get all [[Control]]s in the Access Control Resource of a given Resource.
  */
-export function getAccessControlAll(
+export function getControlAll(
   withAccessControlResource: WithAccessibleAcr,
   options?: Parameters<typeof getThingAll>[1]
-): AccessControl[] {
+): Control[] {
   const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
@@ -173,19 +173,19 @@ export function getAccessControlAll(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Insert an [[AccessControl]] into the [[AccessControlResource]] of a Resource, replacing previous
+ * Insert an [[Control]] into the [[AccessControlResource]] of a Resource, replacing previous
  * instances of that Access Control.
  *
  * @param withAccessControlResource A Resource with the Access Control Resource into which to insert an Access Control.
- * @param accessControl The Access Control to insert into the Access Control Resource.
+ * @param control The Control to insert into the Access Control Resource.
  * @returns The given Resource with a new Access Control Resource equal to the original Access Control Resource, but with the given Access Control.
  */
-export function setAccessControl<ResourceExt extends WithAccessibleAcr>(
+export function setControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
-  accessControl: AccessControl
+  control: Control
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
-  const updatedAcr = setThing(acr, accessControl);
+  const updatedAcr = setThing(acr, control);
   const updatedResource = internal_setAcr(
     withAccessControlResource,
     updatedAcr
@@ -197,18 +197,18 @@ export function setAccessControl<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Remove an [[AccessControl]] from the [[AccessControlResource]] of a Resource.
+ * Remove an [[Control]] from the [[AccessControlResource]] of a Resource.
  *
  * @param withAccessControlResource A Resource with the Access Control Resource from which to remove an Access Control.
- * @param accessControl The Access Control to remove from the given Access Control Resource.
+ * @param control The [[Control]] to remove from the given Access Control Resource.
  * @returns The given Resource with a new Access Control Resource equal to the original Access Control Resource, excluding the given Access Control.
  */
-export function removeAccessControl<ResourceExt extends WithAccessibleAcr>(
+export function removeControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
-  accessControl: AccessControl
+  control: Control
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
-  const updatedAcr = removeThing(acr, accessControl);
+  const updatedAcr = removeThing(acr, control);
   const updatedResource = internal_setAcr(
     withAccessControlResource,
     updatedAcr
@@ -248,12 +248,12 @@ export function internal_setAcr<ResourceExt extends WithAcp>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add an Access Policy to an Access Control Resource such that that Policy applies to the Access
+ * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to the Access
  * Control Resource itself, rather than the Resource it governs.
  *
- * @param resourceWithAcr The Access Control to which the ACR Policy should be added.
+ * @param resourceWithAcr The [[Control]] to which the ACR Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Access Control Resource.
- * @returns A new Access Control equal to the given Access Control, but with the given ACR Policy added to it.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given ACR Policy added to it.
  */
 export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -275,12 +275,12 @@ export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add an Access Policy to an Access Control Resource such that that Policy applies to the Access
+ * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to the Access
  * Control Resources of child Resources.
  *
- * @param resourceWithAcr The Access Control to which the ACR Policy should be added.
+ * @param resourceWithAcr The [[Control]] to which the ACR Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Access Control Resources of children of the Resource.
- * @returns A new Access Control equal to the given Access Control, but with the given ACR Policy added to it.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given ACR Policy added to it.
  */
 export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -350,11 +350,11 @@ export function getMemberAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Stop the URL of a given Access Policy from applying to an Access Control Resource itself.
+ * Stop the URL of a given [[Policy]] from applying to an Access Control Resource itself.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to which the given URL of a Policy should no longer apply.
  * @param policyUrl The URL of the Policy that should no longer apply.
- * @returns A new Access Control equal to the given Access Control, but with the given ACR Policy removed from it.
+ * @returns A new [[Control]] equal to the given Access Control, but with the given ACR Policy removed from it.
  */
 export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -378,7 +378,7 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Stop the URL of a given Access Policy from applying to the Access Control Resources of the
+ * Stop the URL of a given [[Policy]] from applying to the Access Control Resources of the
  * Resource's children.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to whose children's ACRs the given URL of a Policy should no longer apply.
@@ -410,7 +410,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * Stop all URL of Access Policies from applying to an Access Control Resource itself.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to which no more Policies should apply.
- * @returns A new Access Control equal to the given Access Control, but without any Policy applying to it.
+ * @returns A new [[Control]] equal to the given [[Control]], but without any Policy applying to it.
  */
 export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
@@ -437,7 +437,7 @@ export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * children.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource that should no longer apply Policies to its children's ACRs.
- * @returns A new Access Control equal to the given Access Control, but without any Policy applying to its children's ACRs.
+ * @returns A new [[Control]] equal to the given [[Control]], but without any Policy applying to its children's ACRs.
  */
 export function removeMemberAcrPolicyUrlAll<
   ResourceExt extends WithAccessibleAcr
@@ -460,17 +460,17 @@ export function removeMemberAcrPolicyUrlAll<
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add an Access Policy to an Access Control such that that Policy applies to the Resource to which
- * the Access Control is linked.
+ * Add a [[Policy]] to an [[Control]] such that that Policy applies to the Resource to which
+ * the [[Control]] is linked.
  *
- * @param accessControl The Access Control to which the Policy should be added.
- * @param policyUrl URL of the Policy that should apply to the Resource to which the Access Control is linked.
- * @returns A new Access Control equal to the given Access Control, but with the given policy added to it.
+ * @param accessControl The [[Control]] to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the Resource to which the [[Control]] is linked.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given policy added to it.
  */
 export function addPolicyUrl(
-  accessControl: AccessControl,
+  accessControl: Control,
   policyUrl: Url | UrlString | ThingPersisted
-): AccessControl {
+): Control {
   return addIri(accessControl, acp.apply, policyUrl);
 }
 /**
@@ -478,14 +478,14 @@ export function addPolicyUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all Policies that apply to the Resource to which the given Access Control is linked, and
+ * Get all Policies that apply to the Resource to which the given [[Control]] is linked, and
  * which can be removed by anyone with Write access to the Access Control Resource that contains the
- * Access Control.
+ * [[Control]].
  *
- * @param accessControl The Access Control of which to get the Policies.
- * @returns The Policies that are listed in this Access Control as applying to the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
+ * @param accessControl The [[Control]] of which to get the Policies.
+ * @returns The Policies that are listed in this [[Control]] as applying to the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
  */
-export function getPolicyUrlAll(accessControl: AccessControl): UrlString[] {
+export function getPolicyUrlAll(accessControl: Control): UrlString[] {
   return getIriAll(accessControl, acp.apply);
 }
 /**
@@ -493,18 +493,18 @@ export function getPolicyUrlAll(accessControl: AccessControl): UrlString[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Remove a given Policy that applies to the Resource to which the given Access Control is linked,
+ * Remove a given Policy that applies to the Resource to which the given [[Control]] is linked,
  * and which can be removed by anyone with Write access to the Access Control Resource that contains
  * the Access Control.
  *
- * @param accessControl The Access Control of which to remove the Policies.
- * @param policyUrl URL of the Policy that should no longer apply to the Resource to which the Access Control is linked.
- * @returns A new Access Control equal to the given Access Control, but with the given Policy removed from it.
+ * @param accessControl The [[Control]] of which to remove the Policies.
+ * @param policyUrl URL of the Policy that should no longer apply to the Resource to which the [[Control]] is linked.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given Policy removed from it.
  */
 export function removePolicyUrl(
-  accessControl: AccessControl,
+  accessControl: Control,
   policyUrl: Url | UrlString | ThingPersisted
-): AccessControl {
+): Control {
   return removeIri(accessControl, acp.apply, policyUrl);
 }
 /**
@@ -512,16 +512,14 @@ export function removePolicyUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Remove all Policies that apply to the Resource to which the given Access Control is linked, and
+ * Remove all Policies that apply to the Resource to which the given [[Control]] is linked, and
  * which can be removed by anyone with Write access to the Access Control Resource that contains the
- * Access Control.
+ * [[Control]].
  *
- * @param accessControl The Access Control of which to remove the Policies.
- * @returns A new Access Control equal to the given Access Control, but with all Policies removed from it.
+ * @param accessControl The [[Control]] of which to remove the Policies.
+ * @returns A new [[Control]] equal to the given [[Control]], but with all Policies removed from it.
  */
-export function removePolicyUrlAll(
-  accessControl: AccessControl
-): AccessControl {
+export function removePolicyUrlAll(accessControl: Control): Control {
   return removeAll(accessControl, acp.apply);
 }
 
@@ -530,17 +528,17 @@ export function removePolicyUrlAll(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add an Access Policy to an Access Control such that that Policy applies to the children of the
- * Resource to which the Access Control is linked.
+ * Add a [[Policy]] to an [[Control]] such that that Policy applies to the children of the
+ * Resource to which the [[Control]] is linked.
  *
- * @param accessControl The Access Control to which the Policy should be added.
- * @param policyUrl URL of the Policy that should apply to the children of the Resource to which the Access Control is linked.
- * @returns A new Access Control equal to the given Access Control, but with the given policy added to it as a Member Policy.
+ * @param accessControl The [[Control]] to which the Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the children of the Resource to which the [[Control]] is linked.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given policy added to it as a Member Policy.
  */
 export function addMemberPolicyUrl(
-  accessControl: AccessControl,
+  accessControl: Control,
   policyUrl: Url | UrlString | ThingPersisted
-): AccessControl {
+): Control {
   return addIri(accessControl, acp.applyMembers, policyUrl);
 }
 /**
@@ -548,16 +546,14 @@ export function addMemberPolicyUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all Policies that apply to the children of the Resource to which the given Access Control is
+ * Get all Policies that apply to the children of the Resource to which the given [[Control]] is
  * linked, and which can be removed by anyone with Write access to the Access Control Resource that
- * contains the Access Control.
+ * contains the [[Control]].
  *
- * @param accessControl The Access Control of which to get the Policies.
- * @returns The Policies that are listed in this Access Control as applying to the children of the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
+ * @param accessControl The [[Control]] of which to get the Policies.
+ * @returns The Policies that are listed in this [[Control]] as applying to the children of the Resource it is linked to, and as removable by anyone with Write access to the Access Control Resource.
  */
-export function getMemberPolicyUrlAll(
-  accessControl: AccessControl
-): UrlString[] {
+export function getMemberPolicyUrlAll(accessControl: Control): UrlString[] {
   return getIriAll(accessControl, acp.applyMembers);
 }
 /**
@@ -569,14 +565,14 @@ export function getMemberPolicyUrlAll(
  * Control is linked, and which can be removed by anyone with Write access to the Access Control
  * Resource that contains the Access Control.
  *
- * @param accessControl The Access Control of which to remove the Member Policy.
- * @param policyUrl URL of the Member Policy that should no longer apply to the Resource to which the Access Control is linked.
- * @returns A new Access Control equal to the given Access Control, but with the given Member Policy removed from it.
+ * @param accessControl The [[Control]] of which to remove the Member Policy.
+ * @param policyUrl URL of the Member Policy that should no longer apply to the Resource to which the [[Control]] is linked.
+ * @returns A new [[Control]] equal to the given [[Control]], but with the given Member Policy removed from it.
  */
 export function removeMemberPolicyUrl(
-  accessControl: AccessControl,
+  accessControl: Control,
   policyUrl: Url | UrlString | ThingPersisted
-): AccessControl {
+): Control {
   return removeIri(accessControl, acp.applyMembers, policyUrl);
 }
 /**
@@ -588,11 +584,9 @@ export function removeMemberPolicyUrl(
  * is linked, and which can be removed by anyone with Write access to the Access Control Resource
  * that contains the Access Control.
  *
- * @param accessControl The Access Control of which to remove the Member Policies.
- * @returns A new Access Control equal to the given Access Control, but with all Member Policies removed from it.
+ * @param accessControl The [[Control]] of which to remove the Member Policies.
+ * @returns A new [[Control]] equal to the given [[Control]], but with all Member Policies removed from it.
  */
-export function removeMemberPolicyUrlAll(
-  accessControl: AccessControl
-): AccessControl {
+export function removeMemberPolicyUrlAll(accessControl: Control): Control {
   return removeAll(accessControl, acp.applyMembers);
 }
