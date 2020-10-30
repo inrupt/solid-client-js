@@ -23,6 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import {
   asIri,
   createThing,
+  getThing,
   isThing,
   setThing,
   thingAsMarkdown,
@@ -55,14 +56,18 @@ import {
   setOptionalRuleUrl,
   setPublic,
   setRequiredRuleUrl,
+  getRuleAll,
+  setRule,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
 
-import { Policy } from "./policy";
+import { getPolicy, getPolicyAll, Policy, setPolicy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
-import { ThingPersisted, Url, UrlString, WebId } from "../interfaces";
+import { Thing, ThingPersisted, Url, UrlString, WebId } from "../interfaces";
+import { acp, rdf } from "../constants";
+import { getIriAll, getUrl, removeUrl } from "..";
 
 // Vocabulary terms
 const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
@@ -730,8 +735,39 @@ describe("getRule", () => {
   });
 });
 
+describe("getRuleAll", () => {
+  it("returns an empty array if there are no Rules in the given Dataset", () => {
+    expect(getRuleAll(createSolidDataset())).toHaveLength(0);
+  });
+
+  it("returns all the rules in a rule resource", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const dataset = setThing(createSolidDataset(), rule);
+    let result = getRuleAll(dataset);
+    expect(result).toHaveLength(1);
+
+    const anotherRule = mockRule(OTHER_MOCKED_RULE_IRI);
+    const newDataset = setThing(dataset, anotherRule);
+    result = getRuleAll(newDataset);
+    expect(result).toHaveLength(2);
+  });
+});
+
+describe("setRule", () => {
+  it("sets the Rule in the given empty Dataset", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const dataset = setRule(createSolidDataset(), rule);
+
+    const result = getThing(dataset, MOCKED_RULE_IRI);
+    expect(result).not.toBeNull();
+    expect(
+      getIriAll(result as Thing, rdf.type).includes(acp.Rule)
+    ).toBeTruthy();
+  });
+});
+
 describe("getAgentAll", () => {
-  it("returns all the agents a rule applies to by webid", () => {
+  it("returns all the agents a rule applies to by WebID", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_ME, MOCK_WEBID_YOU],
     });
