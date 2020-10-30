@@ -2,15 +2,17 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+The following changes have been implemented but not released yet:
+
 ## [Unreleased]
 
-The following changes have been implemented but not released yet:
+The following sections document changes that have been released already:
+
+## [0.6.2] - 2020-10-30
 
 ### Bugs fixed
 
 - When writing non-RDF data, the request headers were incorrectly set.
-
-The following sections document changes that have been released already:
 
 ## [0.6.1] - 2020-10-15
 
