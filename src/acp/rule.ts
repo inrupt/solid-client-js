@@ -50,7 +50,7 @@ export type Rule = ThingPersisted;
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addRequiredRule(policy: Policy, rule: Rule): Policy {
+export function addRequiredRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return addIri(policy, acp.allOf, rule);
 }
 
@@ -67,7 +67,10 @@ export function addRequiredRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeRequiredRule(policy: Policy, rule: Rule): Policy {
+export function removeRequiredRuleUrl(
+  policy: Policy,
+  rule: Rule | Url
+): Policy {
   return removeIri(policy, acp.allOf, rule);
 }
 
@@ -84,7 +87,7 @@ export function removeRequiredRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the required rules replaced.
  * @since Unreleased
  */
-export function setRequiredRule(policy: Policy, rule: Rule): Policy {
+export function setRequiredRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return setIri(policy, acp.allOf, rule);
 }
 
@@ -98,7 +101,7 @@ export function setRequiredRule(policy: Policy, rule: Rule): Policy {
  * @returns A list of the required [[Rule]]'s
  * @since unreleased
  */
-export function getRequiredRuleAll(policy: Policy): UrlString[] {
+export function getRequiredRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
 
@@ -115,7 +118,7 @@ export function getRequiredRuleAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addOptionalRule(policy: Policy, rule: Rule): Policy {
+export function addOptionalRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return addIri(policy, acp.anyOf, rule);
 }
 
@@ -132,7 +135,10 @@ export function addOptionalRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeOptionalRule(policy: Policy, rule: Rule): Policy {
+export function removeOptionalRuleUrl(
+  policy: Policy,
+  rule: Rule | Url
+): Policy {
   return removeIri(policy, acp.anyOf, rule);
 }
 
@@ -149,7 +155,7 @@ export function removeOptionalRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setOptionalRule(policy: Policy, rule: Rule): Policy {
+export function setOptionalRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return setIri(policy, acp.anyOf, rule);
 }
 
@@ -163,7 +169,7 @@ export function setOptionalRule(policy: Policy, rule: Rule): Policy {
  * @returns A list of the optional [[Rule]]'s
  * @since unreleased
  */
-export function getOptionalRuleAll(policy: Policy): UrlString[] {
+export function getOptionalRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
 
@@ -180,7 +186,7 @@ export function getOptionalRuleAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addForbiddenRule(policy: Policy, rule: Rule): Policy {
+export function addForbiddenRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return addIri(policy, acp.noneOf, rule);
 }
 
@@ -197,7 +203,10 @@ export function addForbiddenRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeForbiddenRule(policy: Policy, rule: Rule): Policy {
+export function removeForbiddenRuleUrl(
+  policy: Policy,
+  rule: Rule | Url
+): Policy {
   return removeIri(policy, acp.noneOf, rule);
 }
 
@@ -214,7 +223,7 @@ export function removeForbiddenRule(policy: Policy, rule: Rule): Policy {
  * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
  * @since Unreleased
  */
-export function setForbiddenRule(policy: Policy, rule: Rule): Policy {
+export function setForbiddenRuleUrl(policy: Policy, rule: Rule | Url): Policy {
   return setIri(policy, acp.noneOf, rule);
 }
 
@@ -228,7 +237,7 @@ export function setForbiddenRule(policy: Policy, rule: Rule): Policy {
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getForbiddenRuleAll(policy: Policy): UrlString[] {
+export function getForbiddenRuleurlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
 

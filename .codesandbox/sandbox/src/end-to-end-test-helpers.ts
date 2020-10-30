@@ -26,7 +26,7 @@ export function getHelpers(podRoot: string, session: Session) {
     let inputPolicy = acp.createPolicy(
       policyResourceUrl + "#policy-publicRead"
     );
-    inputPolicy = acp.addRequiredRule(inputPolicy, inputRule);
+    inputPolicy = acp.addRequiredRuleUrl(inputPolicy, inputRule);
     inputPolicy = acp.setAllowModes(inputPolicy, {
       read: true,
       append: false,
