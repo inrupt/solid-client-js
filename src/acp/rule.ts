@@ -19,10 +19,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp, rdf } from "../constants";
+import { acl, acp, rdf } from "../constants";
 import {
+  AclRule,
   internal_toIriString,
   SolidDataset,
+  Thing,
   ThingPersisted,
   Url,
   UrlString,
@@ -32,10 +34,20 @@ import { addIri } from "../thing/add";
 import { getIriAll, getUrl } from "../thing/get";
 import { removeIri } from "../thing/remove";
 import { setIri, setUrl } from "../thing/set";
-import { createThing, getThing } from "../thing/thing";
+import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
 import { Policy } from "./policy";
 
 export type Rule = ThingPersisted;
+
+/**
+ * NOTE: Don't export for now (i.e. if exported, should this be `isAcpRule()` so
+ * as not to clash with `isAclRule()`.
+ *
+ * @param thing the [[Thing]] to check to see if it's an ACP rule or not
+ */
+function isRule(thing: Thing): thing is Rule {
+  return getIriAll(thing, rdf.type).includes(acp.Rule);
+}
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -277,6 +289,36 @@ export function getRule(
     return null;
   }
   return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Gets the [[Rule]]s from a [[SolidDataset]].
+ *
+ * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @returns The [[Rule]]s contained in this resource.
+ */
+export function getRuleAll(ruleResource: SolidDataset): Rule[] {
+  const things = getThingAll(ruleResource);
+  return things.filter(isRule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Insert the given [[Rule]] into the given [[SolidDataset]], replacing previous
+ * instances of that Rule.
+ *
+ * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @returns A new RuleDataset equal to the given Rule Resource, but with the given Rule.
+ */
+export function setRule(ruleResource: SolidDataset, rule: Rule): SolidDataset {
+  return setThing(ruleResource, rule);
 }
 
 /**
