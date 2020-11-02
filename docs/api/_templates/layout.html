@@ -19,6 +19,9 @@
     _paq.push(['trackPageView']);
     _paq.push(['enableLinkTracking']);
     (function() {
+      if (navigator.doNotTrack && navigator.doNotTrack === "1") {
+        return;
+      }
       var u="https://inrupt.matomo.cloud/";
       _paq.push(['setTrackerUrl', u+'matomo.php']);
       _paq.push(['setSiteId', '3']);
