@@ -47,8 +47,7 @@ export const foaf = {
 
 /** @internal */
 export const acp = {
-  AccessPolicyResource: "http://www.w3.org/ns/solid/acp#AccessPolicyResource",
-  AccessPolicy: "http://www.w3.org/ns/solid/acp#AccessPolicy",
+  Policy: "http://www.w3.org/ns/solid/acp#Policy",
   AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
   Read: "http://www.w3.org/ns/solid/acp#Read",
   Append: "http://www.w3.org/ns/solid/acp#Append",
