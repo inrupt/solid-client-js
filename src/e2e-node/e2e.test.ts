@@ -184,8 +184,10 @@ describe.each([
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
   });
 
-  // FIXME: An ESS bug regading PUTting containes prevents this test from passing.
-  // Once the bug is fixed, `on_nss_it` should be replaced by a regular `it` again.
+  // ESS currently has enabled Access Control Policies,
+  // and Web Access Control has been turned off.
+  // Thus, only run this against Node Solid Server
+  // until a WAC-enabled ESS instance is set up again.
   on_nss_it("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
       `${rootContainer}container-test/some-container/`
