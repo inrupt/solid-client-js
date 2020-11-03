@@ -6,12 +6,14 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [0.6.4] - 2020-11-03
+
 ### Bugs fixed
 
 - The compiled code of solid-client was not sent to the correct location, causing imports to fail.
   This bug was introduced in version 0.6.2.
-
-The following sections document changes that have been released already:
 
 ## [0.6.3] - 2020-11-03
 
