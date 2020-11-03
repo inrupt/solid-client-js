@@ -57,7 +57,7 @@ describe("createPolicy", () => {
   it("creates a Thing of type acp:AccessPolicy", () => {
     const newPolicy = createPolicy("https://some.pod/policy-resource#policy");
 
-    expect(getUrl(newPolicy, rdf.type)).toBe(acp.AccessPolicy);
+    expect(getUrl(newPolicy, rdf.type)).toBe(acp.Policy);
     expect(asUrl(newPolicy)).toBe("https://some.pod/policy-resource#policy");
   });
 });
@@ -67,7 +67,7 @@ describe("getPolicy", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
     expect(
@@ -103,7 +103,7 @@ describe("getPolicyAll", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
     expect(getPolicyAll(policyDataset)).toHaveLength(1);
@@ -113,7 +113,7 @@ describe("getPolicyAll", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     let notAPolicy = createThing({
       url: "https://some.pod/policy-resource#not-a-policy",
     });
@@ -139,7 +139,7 @@ describe("setPolicy", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     mockPolicy = setUrl(mockPolicy, somePredicate, "https://example.test");
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
@@ -164,7 +164,7 @@ describe("removePolicy", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
     const updatedPolicyDataset = removePolicy(policyDataset, mockPolicy);
@@ -175,7 +175,7 @@ describe("removePolicy", () => {
     let mockPolicy = createThing({
       url: "https://some.pod/policy-resource#policy",
     });
-    mockPolicy = setUrl(mockPolicy, rdf.type, acp.AccessPolicy);
+    mockPolicy = setUrl(mockPolicy, rdf.type, acp.Policy);
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
     const updatedPolicyDataset = removePolicy(
@@ -189,11 +189,11 @@ describe("removePolicy", () => {
     let mockPolicy1 = createThing({
       url: "https://some.pod/policy-resource#policy1",
     });
-    mockPolicy1 = setUrl(mockPolicy1, rdf.type, acp.AccessPolicy);
+    mockPolicy1 = setUrl(mockPolicy1, rdf.type, acp.Policy);
     let mockPolicy2 = createThing({
       url: "https://some.pod/policy-resource#policy2",
     });
-    mockPolicy2 = setUrl(mockPolicy2, rdf.type, acp.AccessPolicy);
+    mockPolicy2 = setUrl(mockPolicy2, rdf.type, acp.Policy);
     let policyDataset = setThing(createSolidDataset(), mockPolicy1);
     policyDataset = setThing(policyDataset, mockPolicy2);
 

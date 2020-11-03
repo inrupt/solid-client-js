@@ -59,7 +59,7 @@ export type AccessModes = {
 export function createPolicy(url: Url | UrlString): Policy {
   const stringUrl = internal_toIriString(url);
   let policyThing = createThing({ url: stringUrl });
-  policyThing = setUrl(policyThing, rdf.type, acp.AccessPolicy);
+  policyThing = setUrl(policyThing, rdf.type, acp.Policy);
 
   return policyThing;
 }
@@ -80,10 +80,7 @@ export function getPolicy(
   url: Url | UrlString
 ): Policy | null {
   const foundThing = getThing(policyResource, url);
-  if (
-    foundThing === null ||
-    getUrl(foundThing, rdf.type) !== acp.AccessPolicy
-  ) {
+  if (foundThing === null || getUrl(foundThing, rdf.type) !== acp.Policy) {
     return null;
   }
 
@@ -103,8 +100,7 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
   const foundThings = getThingAll(policyResource);
   const foundPolicies = foundThings.filter(
     (thing) =>
-      !isThingLocal(thing) &&
-      getUrlAll(thing, rdf.type).includes(acp.AccessPolicy)
+      !isThingLocal(thing) && getUrlAll(thing, rdf.type).includes(acp.Policy)
   ) as Policy[];
   return foundPolicies;
 }
