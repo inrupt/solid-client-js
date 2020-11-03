@@ -57,3 +57,11 @@ that test code, and just tell TypeScript that it contains the test helpers.
 Note that the tests need the URL of a Pod and the credentials to log in to it. These can be set via
 environment variables, or by creating a file `.env.local` in this directory - see .env.defaults for
 an example.
+
+## Running the tests
+
+To run the tests, run `npm install` followed by `npm run build` at the root, then `npm install`
+in `.codesandbox/sandbox`. You can now run `npm run e2e-tests-browser` at the root.
+
+If you want to actually see the interactive parts, remove `:headless` in `.testcaferc.json`. That
+said, most of the tests involve running code without a UI component.
