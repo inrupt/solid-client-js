@@ -77,6 +77,17 @@ test("Manipulating Access Control Policies", async (t: TestController) => {
   await deletePolicyResource();
 });
 
+// eslint-disable-next-line jest/expect-expect, jest/no-done-callback
+test("Creating and removing empty Containers", async (t: TestController) => {
+  const createContainer = ClientFunction(() => E2eHelpers.createContainer());
+  const deleteContainer = ClientFunction(() => E2eHelpers.deleteContainer());
+
+  await essUserLogin(t);
+  const createdContainer = await createContainer();
+  await t.expect(createdContainer).notTypeOf("null");
+  await deleteContainer();
+});
+
 /**
  * TestCafe doesn't provide an assertion to verify that calling a function throws an error,
  * so this function transforms thrown errors into a return value that can be asserted against.
