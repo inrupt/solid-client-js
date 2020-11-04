@@ -1,5 +1,5 @@
 import {
-  acp_lowlevel_preview as acp,
+  acp_v1 as acp,
   createSolidDataset,
   getSolidDataset,
   saveSolidDatasetAt,
