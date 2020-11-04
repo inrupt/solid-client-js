@@ -93,5 +93,13 @@
     "readme": "none",
   },
   "include": ["src/**/*.ts", ".eslintrc.js"],
-  "exclude": []
+  "exclude": [
+    // These end-to-end tests reference code in `.codesandbox`,
+    // which is not part of this project and should not be compiled together with it.
+    // Not excluding this will lead to the root of the repository being used
+    // as the root directory for compilation (instead of /src),
+    // meaning that files that would otherwise be included in /dist directly
+    // (e.g. dist/index.d.ts) will then be hoisted to /dist/src.
+    "src/e2e-browser",
+  ]
 }

@@ -5,5 +5,8 @@
     "./*.js",
     "website/**/*.js",
     "website/**/*.jsx"
-  ]
+  ],
+  // Although we do not want our browser-based end-to-end tests from /src/e2e-browser
+  // to be compiled as part of solid-client, we do want to run ESLint over them.
+  "exclude": []
 }
