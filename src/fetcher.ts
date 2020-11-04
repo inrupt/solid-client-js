@@ -37,11 +37,14 @@ export const fetch: typeof window.fetch = (resource, init) => {
   // https://github.com/webpack/webpack/issues/7713
   let fetch;
 
-  try {
-    fetch = require("solid-auth-client").fetch;
-  } catch (e) {
-    fetch = require("cross-fetch");
-  }
+  // Unfortunately solid-client-authn-browser does not support a default session yet.
+  // Once it does, we can auto-detect if it is available and use it as follows:
+  // try {
+  //   fetch = require("solid-client-authn-browser").fetch;
+  // } catch (e) {
+  // eslint-disable-next-line prefer-const
+  fetch = require("cross-fetch");
+  // }
 
   return fetch(resource, init);
 };
