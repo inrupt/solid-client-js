@@ -26,7 +26,7 @@ import * as acpRule from "./rule";
 import * as acpMock from "./mock";
 
 /** @hidden */
-export const acp_lowlevel_preview = {
+export const acp_v1 = {
   ...acpAcp,
   ...acpControl,
   ...acpPolicy,
