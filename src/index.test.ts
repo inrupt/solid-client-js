@@ -146,7 +146,7 @@ import {
   addMockResourceAclTo,
   addMockFallbackAclTo,
   // Preview API's exported for early adopters:
-  acp_lowlevel_preview,
+  acp_v1,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -282,7 +282,7 @@ it("exports the public API from the entry file", () => {
 });
 
 it("exports preview API's for early adopters", () => {
-  expect(acp_lowlevel_preview).toBeDefined();
+  expect(acp_v1).toBeDefined();
 });
 
 // eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:
