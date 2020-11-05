@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     steps:
-    - uses: actions/checkout@v2.1.0
+    - uses: actions/checkout@v2.3.4
     - name: Mark GitHub Deployment as in progress
       id: start-deployment
       uses: octokit/request-action@v2.x
