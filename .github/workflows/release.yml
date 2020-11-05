@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: Create GitHub Deployment
       id: create-deployment
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@v2
       with:
         route: POST /repos/:repository/deployments
         repository: ${{ github.repository }}
@@ -33,10 +33,10 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     steps:
-    - uses: actions/checkout@v2.1.0
+    - uses: actions/checkout@v2
     - name: Mark GitHub Deployment as in progress
       id: start-deployment
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@v2
       with:
         route: POST /repos/:repository/deployments/:deployment/statuses
         repository: ${{ github.repository }}
@@ -63,7 +63,7 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Mark GitHub Deployment as successful
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@v2
       with:
         route: POST /repos/:repository/deployments/:deployment/statuses
         repository: ${{ github.repository }}
@@ -77,7 +77,7 @@ jobs:
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: Mark GitHub Deployment as failed
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@v2
       if: failure()
       with:
         route: POST /repos/:repository/deployments/:deployment/statuses
