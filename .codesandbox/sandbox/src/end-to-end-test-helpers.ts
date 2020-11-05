@@ -36,22 +36,41 @@ export function getHelpers(podRoot: string, session: Session) {
   }
 
   async function initialisePolicyResource() {
-    let inputRule = acp.createRule(policyResourceUrl + "#rule-public");
-    inputRule = acp.setPublic(inputRule, true);
+    let publicRule = acp.createRule(policyResourceUrl + "#rule-public");
+    publicRule = acp.setPublic(publicRule, true);
 
-    let inputPolicy = acp.createPolicy(
+    let publicReadPolicy = acp.createPolicy(
       policyResourceUrl + "#policy-publicRead"
     );
-    inputPolicy = acp.addRequiredRuleUrl(inputPolicy, inputRule);
-    inputPolicy = acp.setAllowModes(inputPolicy, {
+    publicReadPolicy = acp.addRequiredRuleUrl(publicReadPolicy, publicRule);
+    publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
+      read: true,
+      append: false,
+      write: false,
+    });
+
+    let selfRule = acp.createRule(policyResourceUrl + "#rule-self");
+    selfRule = acp.addAgent(selfRule, session.info.webId!);
+    let selfWriteNoReadPolicy = acp.createPolicy(
+      policyResourceUrl + "#policy-selfWriteNoRead"
+    );
+    selfWriteNoReadPolicy = acp.addRequiredRuleUrl(selfWriteNoReadPolicy, selfRule);
+    selfWriteNoReadPolicy = acp.setAllowModes(selfWriteNoReadPolicy, {
+      read: false,
+      append: true,
+      write: true,
+    });
+    selfWriteNoReadPolicy = acp.setDenyModes(selfWriteNoReadPolicy, {
       read: true,
       append: false,
       write: false,
     });
 
     let policyResource = createSolidDataset();
-    policyResource = setThing(policyResource, inputRule);
-    policyResource = setThing(policyResource, inputPolicy);
+    policyResource = setThing(policyResource, publicRule);
+    policyResource = setThing(policyResource, publicReadPolicy);
+    policyResource = setThing(policyResource, selfRule);
+    policyResource = setThing(policyResource, selfWriteNoReadPolicy);
 
     return saveSolidDatasetAt(policyResourceUrl, policyResource, {
       fetch: session.fetch,
@@ -64,7 +83,22 @@ export function getHelpers(podRoot: string, session: Session) {
     return getSolidDataset(getPolicyResourceUrl(baseUrl));
   }
 
+  async function fetchPolicyResourceAuthenticated() {
+    // Explicitly fetching this without passing the Session's fetcher,
+    // to verify whether public Read access works:
+    return getSolidDataset(getPolicyResourceUrl(), { fetch: session.fetch });
+  }
+
+
   async function setPolicyResourcePublicRead() {
+    return applyPolicyToPolicyResource("policy-publicRead");
+  }
+
+  async function setPolicyResourceSelfWriteNoRead() {
+    return applyPolicyToPolicyResource("policy-selfWriteNoRead");
+  }
+
+  async function applyPolicyToPolicyResource(policyFragmentIdentifier: string) {
     const resourceWithAcr = await acp.getSolidDatasetWithAcr(
       policyResourceUrl,
       {
@@ -81,7 +115,7 @@ export function getHelpers(podRoot: string, session: Session) {
     let inputControl = acp.createControl();
     inputControl = acp.addPolicyUrl(
       inputControl,
-      policyResourceUrl + "#policy-publicRead"
+      policyResourceUrl + "#" + policyFragmentIdentifier
     );
     const changedResourceWithAcr = acp.setControl(
       resourceWithAcr,
@@ -103,7 +137,9 @@ export function getHelpers(podRoot: string, session: Session) {
   return {
     initialisePolicyResource,
     fetchPolicyResourceUnauthenticated,
+    fetchPolicyResourceAuthenticated,
     setPolicyResourcePublicRead,
+    setPolicyResourceSelfWriteNoRead,
     deletePolicyResource,
     getSessionInfo,
     createContainer,

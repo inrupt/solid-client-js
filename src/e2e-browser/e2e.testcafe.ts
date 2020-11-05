@@ -34,10 +34,11 @@ const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
 config({ path: __dirname });
 
-fixture("Access Control Policies").page("http://localhost:1234");
+fixture("End-to-end tests").page("http://localhost:1234");
 
-// eslint-disable-next-line jest/expect-expect, jest/no-done-callback
-test("Manipulating Access Control Policies", async (t: TestController) => {
+/* eslint-disable jest/expect-expect, jest/no-done-callback -- We're not using Jest for these tests */
+
+test("Manipulating Access Control Policies to set public access", async (t: TestController) => {
   /* Initialise client helpers: */
   const getSessionInfo = ClientFunction(() => E2eHelpers.getSessionInfo());
   const initialisePolicyResource = ClientFunction(() =>
@@ -77,6 +78,42 @@ test("Manipulating Access Control Policies", async (t: TestController) => {
   await deletePolicyResource();
 });
 
+test("Manipulating Access Control Policies to deny Read access", async (t: TestController) => {
+  /* Initialise client helpers: */
+  const initialisePolicyResource = ClientFunction(() =>
+    E2eHelpers.initialisePolicyResource()
+  );
+  const fetchPolicyResourceAuthenticated = ClientFunction(() =>
+    E2eHelpers.fetchPolicyResourceAuthenticated()
+  );
+  const setAcrSelfWriteNoRead = ClientFunction(() =>
+    E2eHelpers.setPolicyResourceSelfWriteNoRead()
+  );
+  const deletePolicyResource = ClientFunction(() =>
+    E2eHelpers.deletePolicyResource()
+  );
+
+  /* Run the actual test: */
+  const essUserPod = process.env.TESTCAFE_ESS_PROD_POD;
+  await essUserLogin(t);
+  // Create a Resource containing Access Policies and Rules:
+  await initialisePolicyResource();
+  // Verify that we can fetch the Resource before Denying Read access:
+  await t.expect(fetchPolicyResourceAuthenticated()).typeOf("object");
+  // In the Resource's Access Control Resource, apply the Policy
+  // that just so happens to be defined in the Resource itself,
+  // and that denies Read access to the current user:
+  await setAcrSelfWriteNoRead();
+  // Verify that indeed, someone who is not logged in can now read it:
+  await t
+    .expect(
+      (await returnErrors(() => fetchPolicyResourceAuthenticated())).errMsg
+    )
+    .match(/403 Forbidden/);
+  // Now delete the Resource, so that we can recreate it the next time we run this test:
+  await deletePolicyResource();
+});
+
 // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
 test("Creating and removing empty Containers", async (t: TestController) => {
   const createContainer = ClientFunction(() => E2eHelpers.createContainer());
@@ -87,6 +124,8 @@ test("Creating and removing empty Containers", async (t: TestController) => {
   await t.expect(createdContainer).notTypeOf("null");
   await deleteContainer();
 });
+
+/* eslint-enable jest/expect-expect, jest/no-done-callback */
 
 /**
  * TestCafe doesn't provide an assertion to verify that calling a function throws an error,
