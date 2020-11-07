@@ -18,7 +18,7 @@ The libraries include different modules for different deployment environments:
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
 
-[@inrupt/solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf) allows developers to build interoperable apps by reusing well-known vocabularies. These libraries provide vocabularies available as constants that you just have to import.
+[@inrupt/solid-common-vocab-rdf](https://www.npmjs.com/package/@inrupt/vocab-common-rdf) allows developers to build interoperable apps by reusing well-known vocabularies. These libraries provide vocabularies available as constants that you just have to import.
 
 # Browser support
 
