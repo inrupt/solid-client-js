@@ -195,6 +195,24 @@ describe("getFile", () => {
       "Fetching the File failed: 400 Bad request"
     );
   });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+        )
+      );
+
+    const response = getFile("https://arbitrary.url", {
+      fetch: mockFetch,
+    });
+    await expect(response).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
+  });
 });
 
 describe("getFileWithAcl", () => {
@@ -381,6 +399,26 @@ describe("getFileWithAcl", () => {
     );
   });
 
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
+  });
+
   it("should pass the request headers through", async () => {
     const mockFetch = jest
       .fn(window.fetch)
@@ -551,6 +589,25 @@ describe("Non-RDF data deletion", () => {
     await expect(deletionPromise).rejects.toThrow(
       "Deleting the file at `https://some.url` failed: 400 Bad request"
     );
+  });
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const deletionPromise = deleteFile("https://arbitrary.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -727,6 +784,22 @@ describe("Write non-RDF data into a folder", () => {
       "Could not determine the location of the newly saved file."
     );
   });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+    );
+
+    await expect(
+      saveFileInContainer("https://arbitrary.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
+  });
 });
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
@@ -850,5 +923,24 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     ).rejects.toThrow(
       "Overwriting the file at `https://some.url` failed: 403 Forbidden."
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+        )
+      );
+
+    await expect(
+      overwriteFile("https://arbitrary.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
