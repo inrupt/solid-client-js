@@ -52,6 +52,8 @@ import {
   isContainer,
   isRawData,
   internal_cloneResource,
+  FetchError,
+  internal_isUnsuccessfulResponse,
 } from "./resource";
 import {
   thingAsMarkdown,
@@ -93,9 +95,10 @@ export async function getSolidDataset(
       Accept: "text/turtle",
     },
   });
-  if (!response.ok) {
-    throw new Error(
-      `Fetching the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Fetching the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
   const data = await response.text();
@@ -245,15 +248,16 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const response = await config.fetch(url, requestInit);
 
-  if (!response.ok) {
+  if (internal_isUnsuccessfulResponse(response)) {
     const diagnostics = isUpdate(solidDataset, url)
       ? "The changes that were sent to the Pod are listed below.\n\n" +
         changeLogAsMarkdown(solidDataset)
       : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
         solidDatasetAsMarkdown(solidDataset);
-    throw new Error(
+    throw new FetchError(
       `Storing the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.\n\n` +
-        diagnostics
+        diagnostics,
+      response
     );
   }
 
@@ -300,9 +304,10 @@ export async function deleteSolidDataset(
     : internal_toIriString(solidDataset);
   const response = await config.fetch(url, { method: "DELETE" });
 
-  if (!response.ok) {
-    throw new Error(
-      `Deleting the SolidDataset at \`${url}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Deleting the SolidDataset at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 }
@@ -342,7 +347,7 @@ export async function createContainerAt(
     },
   });
 
-  if (!response.ok) {
+  if (internal_isUnsuccessfulResponse(response)) {
     if (
       response.status === 409 &&
       response.statusText === "Conflict" &&
@@ -352,8 +357,9 @@ export async function createContainerAt(
       return createContainerWithNssWorkaroundAt(url, options);
     }
 
-    throw new Error(
-      `Creating the empty Container at \`${url}\` failed: ${response.status} ${response.statusText}.`
+    throw new FetchError(
+      `Creating the empty Container at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 
@@ -410,9 +416,10 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
     },
   });
 
-  if (!createResponse.ok) {
-    throw new Error(
-      `Creating the empty Container at \`${url}\` failed: ${createResponse.status} ${createResponse.statusText}.`
+  if (internal_isUnsuccessfulResponse(createResponse)) {
+    throw new FetchError(
+      `Creating the empty Container at \`${url}\` failed: ${createResponse.status} ${createResponse.statusText}.`,
+      createResponse
     );
   }
 
@@ -483,11 +490,12 @@ export async function saveSolidDatasetInContainer(
     headers: headers,
   });
 
-  if (!response.ok) {
-    throw new Error(
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
       `Storing the Resource in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.\n\n` +
         "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(solidDataset)
+        solidDatasetAsMarkdown(solidDataset),
+      response
     );
   }
 
@@ -553,9 +561,10 @@ export async function createContainerInContainer(
     headers: headers,
   });
 
-  if (!response.ok) {
-    throw new Error(
-      `Creating an empty Container in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Creating an empty Container in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 
@@ -608,9 +617,10 @@ export async function deleteContainer(
   };
   const response = await config.fetch(url, { method: "DELETE" });
 
-  if (!response.ok) {
-    throw new Error(
-      `Deleting the Container at \`${url}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Deleting the Container at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 }

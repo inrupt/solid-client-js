@@ -38,6 +38,8 @@ import {
   getResourceInfo,
   isRawData,
   internal_cloneResource,
+  internal_isUnsuccessfulResponse,
+  FetchError,
 } from "./resource";
 import { type } from "rdf-namespaces/dist/dc";
 
@@ -79,9 +81,10 @@ export async function getFile(
   };
   const url = internal_toIriString(input);
   const response = await config.fetch(url, config.init);
-  if (!response.ok) {
-    throw new Error(
-      `Fetching the File failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Fetching the File failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
   const resourceInfo = internal_parseResourceInfo(response);
@@ -152,9 +155,10 @@ export async function deleteFile(
     method: "DELETE",
   });
 
-  if (!response.ok) {
-    throw new Error(
-      `Deleting the file at \`${url}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Deleting the file at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 }
@@ -183,9 +187,10 @@ export async function saveFileInContainer<FileExt extends File>(
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
 
-  if (!response.ok) {
-    throw new Error(
-      `Saving the file in \`${folderUrl}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Saving the file in \`${folderUrl}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 
@@ -229,9 +234,10 @@ export async function overwriteFile(
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
-  if (!response.ok) {
-    throw new Error(
-      `Overwriting the file at \`${fileUrlString}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Overwriting the file at \`${fileUrlString}\` failed: ${response.status} ${response.statusText}.`,
+      response
     );
   }
 
