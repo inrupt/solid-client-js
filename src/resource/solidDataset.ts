@@ -396,9 +396,11 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
     existingContainer = await getResourceInfo(url, options);
   } catch (e) {
     // To create the Container, we'd want it to not exist yet. In other words, we'd expect to get
-    // an error here in the happy path - so do nothing.
-    // FIXME: Check that the status code of the error is actually a 404, and rethrow the error if
-    //        not. This depends on fixing https://github.com/inrupt/solid-client-js/issues/436.
+    // a 404 error here in the happy path - so do nothing if that's the case.
+    if (!(e instanceof FetchError) || e.statusCode !== 404) {
+      // (But if we get an error other than a 404, just throw that error like we usually would.)
+      throw e;
+    }
   }
   if (typeof existingContainer !== "undefined") {
     throw new Error(
