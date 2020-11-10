@@ -54,6 +54,7 @@ export {
   mockSolidDatasetFrom,
   mockContainerFrom,
   mockFileFrom,
+  mockFetchError,
 } from "./resource/mock";
 export {
   getThing,
