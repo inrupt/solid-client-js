@@ -1700,6 +1700,42 @@ describe("createContainerAt", () => {
       );
     });
 
+    it("returns an error when it couldn't check whether a Container already exists", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Trying to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Testing whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Not allowed to fetch the existing Container without logging in",
+              { status: 401 }
+            )
+          )
+        );
+
+      const fetchPromise = createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error(
+          "Fetching the metadata of the Resource at `https://arbitrary.pod/container/` failed: 401 Unauthorized.",
+        )
+      );
+    });
+
     it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
       const mockFetch = jest
         .fn(window.fetch)
