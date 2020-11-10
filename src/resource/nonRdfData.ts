@@ -83,7 +83,7 @@ export async function getFile(
   const response = await config.fetch(url, config.init);
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the File failed: ${response.status} ${response.statusText}.`,
+      `Fetching the File failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -157,7 +157,7 @@ export async function deleteFile(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Deleting the file at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      `Deleting the file at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -189,7 +189,7 @@ export async function saveFileInContainer<FileExt extends File>(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Saving the file in \`${folderUrl}\` failed: ${response.status} ${response.statusText}.`,
+      `Saving the file in \`${folderUrl}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -236,7 +236,7 @@ export async function overwriteFile(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Overwriting the file at \`${fileUrlString}\` failed: ${response.status} ${response.statusText}.`,
+      `Overwriting the file at \`${fileUrlString}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }

@@ -108,7 +108,7 @@ describe("mockFetchError", () => {
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
-      "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+      "Fetching the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
     );
     expect(error.statusCode).toBe(404);
     expect(error.statusText).toBe("Not Found");
@@ -119,7 +119,7 @@ describe("mockFetchError", () => {
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
-      "Fetching the Resource at `https://some.pod/resource` failed: 418 I'm a Teapot."
+      "Fetching the Resource at `https://some.pod/resource` failed: `418` `I'm a Teapot`."
     );
     expect(error.statusCode).toBe(418);
     expect(error.statusText).toBe("I'm a Teapot");

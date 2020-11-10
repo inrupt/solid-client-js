@@ -1892,7 +1892,7 @@ describe("saveAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource at `https://arbitrary.pod/resource.acl` failed: 403 Forbidden."
+      "Storing the Resource at `https://arbitrary.pod/resource.acl` failed: `403` `Forbidden`."
     );
   });
 
@@ -2101,7 +2101,7 @@ describe("deleteAclFor", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
       )
     );
   });
@@ -2130,7 +2130,7 @@ describe("deleteAclFor", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: 404 Not Found."
+        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
       )
     );
   });

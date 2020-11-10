@@ -97,7 +97,7 @@ export async function getSolidDataset(
   });
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      `Fetching the Resource at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -255,7 +255,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
       : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
         solidDatasetAsMarkdown(solidDataset);
     throw new FetchError(
-      `Storing the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.\n\n` +
+      `Storing the Resource at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.\n\n` +
         diagnostics,
       response
     );
@@ -306,7 +306,7 @@ export async function deleteSolidDataset(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Deleting the SolidDataset at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      `Deleting the SolidDataset at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -358,7 +358,7 @@ export async function createContainerAt(
     }
 
     throw new FetchError(
-      `Creating the empty Container at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      `Creating the empty Container at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -420,7 +420,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
 
   if (internal_isUnsuccessfulResponse(createResponse)) {
     throw new FetchError(
-      `Creating the empty Container at \`${url}\` failed: ${createResponse.status} ${createResponse.statusText}.`,
+      `Creating the empty Container at \`${url}\` failed: \`${createResponse.status}\` \`${createResponse.statusText}\`.`,
       createResponse
     );
   }
@@ -494,7 +494,7 @@ export async function saveSolidDatasetInContainer(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Storing the Resource in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.\n\n` +
+      `Storing the Resource in the Container at \`${containerUrl}\` failed: \`${response.status}\` \`${response.statusText}\`.\n\n` +
         "The SolidDataset that was sent to the Pod is listed below.\n\n" +
         solidDatasetAsMarkdown(solidDataset),
       response
@@ -565,7 +565,7 @@ export async function createContainerInContainer(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Creating an empty Container in the Container at \`${containerUrl}\` failed: ${response.status} ${response.statusText}.`,
+      `Creating an empty Container in the Container at \`${containerUrl}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
@@ -621,7 +621,7 @@ export async function deleteContainer(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Deleting the Container at \`${url}\` failed: ${response.status} ${response.statusText}.`,
+      `Deleting the Container at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
       response
     );
   }
