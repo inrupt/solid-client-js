@@ -148,7 +148,7 @@ export function mockFetchError(
     status: statusCode,
   }) as Response & { ok: false };
   return new FetchError(
-    `Fetching the Resource at \`${fetchedUrl}\` failed: ${failedResponse.status} ${failedResponse.statusText}.`,
+    `Fetching the Resource at \`${fetchedUrl}\` failed: \`${failedResponse.status}\` \`${failedResponse.statusText}\`.`,
     failedResponse
   );
 }
