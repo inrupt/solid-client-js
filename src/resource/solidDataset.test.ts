@@ -1543,7 +1543,7 @@ describe("createContainerAt", () => {
     it("creates and deletes a dummy file inside the Container when encountering NSS's exact error message", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1552,19 +1552,19 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
         )
-        // Deleting that dummy file:
+        // Mock the response to the request that then tries to delete that dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Deletion successful", { status: 200 }))
         )
-        // Getting the Container's metadata:
+        // Mock the response to the request that fetches the Container's metadata:
         .mockReturnValueOnce(
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
@@ -1622,7 +1622,7 @@ describe("createContainerAt", () => {
     it("appends a trailing slash if not provided", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1631,19 +1631,19 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
         )
-        // Deleting that dummy file:
+        // Mock the response to the request that then tries to delete that dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Deletion successful", { status: 200 }))
         )
-        // Getting the Container's metadata:
+        // Mock the response to the request that fetches the Container's metadata:
         .mockReturnValueOnce(
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
@@ -1674,7 +1674,7 @@ describe("createContainerAt", () => {
     it("returns an error when the Container already exists", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1683,7 +1683,7 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(Promise.resolve(new Response()));
 
       const fetchPromise = createContainerAt(
@@ -1703,7 +1703,7 @@ describe("createContainerAt", () => {
     it("returns an error when it couldn't check whether a Container already exists", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1712,7 +1712,7 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1739,7 +1739,7 @@ describe("createContainerAt", () => {
     it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1748,11 +1748,11 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Forbidden", { status: 403 }))
         );
@@ -1771,7 +1771,7 @@ describe("createContainerAt", () => {
     it("includes the status code and status message when a request failed", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1780,11 +1780,11 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response("I'm a teapot!", {
