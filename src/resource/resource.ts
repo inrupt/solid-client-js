@@ -344,7 +344,7 @@ export function isPodOwner(
  */
 export class FetchError extends Error {
   public readonly statusCode: number;
-  public readonly statusText: string;
+  public readonly statusText?: string;
 
   constructor(message: string, errorResponse: Response & { ok: false }) {
     super(message);

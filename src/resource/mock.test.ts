@@ -21,7 +21,12 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { mockSolidDatasetFrom, mockFileFrom, mockContainerFrom } from "./mock";
+import {
+  mockSolidDatasetFrom,
+  mockFileFrom,
+  mockContainerFrom,
+  mockFetchError,
+} from "./mock";
 import {
   getSourceIri,
   isRawData,
@@ -94,5 +99,40 @@ describe("mockFileFrom", () => {
     });
 
     expect(getContentType(mockedFile)).toBe("image/png");
+  });
+});
+
+describe("mockFetchError", () => {
+  it("returns a fetch-specific Error object containing response details", () => {
+    const error = mockFetchError("https://some.pod/resource");
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe(
+      "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+    );
+    expect(error.statusCode).toBe(404);
+    expect(error.statusText).toBe("Not Found");
+  });
+
+  it("can represent different error statuses", () => {
+    const error = mockFetchError("https://some.pod/resource", 418);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe(
+      "Fetching the Resource at `https://some.pod/resource` failed: 418 I'm a Teapot."
+    );
+    expect(error.statusCode).toBe(418);
+    expect(error.statusText).toBe("I'm a Teapot");
+  });
+
+  it("can represent unknown status codes", () => {
+    const error = mockFetchError("https://some.pod/resource", 1337);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.statusText).toBeUndefined();
+    expect(error.message).toBe(
+      "Fetching the Resource at `https://some.pod/resource` failed: `1337` `undefined`."
+    );
+    expect(error.statusCode).toBe(1337);
   });
 });
