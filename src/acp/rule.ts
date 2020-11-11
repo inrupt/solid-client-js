@@ -531,3 +531,38 @@ export function setAuthenticated(rule: Rule, authenticated: boolean): Rule {
     ? addIri(rule, acp.agent, acp.AuthenticatedAgent)
     : removeIri(rule, acp.agent, acp.AuthenticatedAgent);
 }
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Check if the rule applies to the creator of the Resource.
+ *
+ * @param rule The rule checked for authenticated access.
+ * @returns Whether the rule applies to the creator of the Resource or not.
+ */
+export function hasCreator(rule: Rule): boolean {
+  return (
+    getIriAll(rule, acp.agent).filter((agent) => agent === acp.CreatorAgent)
+      .length > 0
+  );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Enable or disable a rule from applying to the creator of the Resource.
+ *
+ * @param rule The rule being modified.
+ * @param hasPublic A boolean indicating whether the rule should apply or not to the creator of the Resource.
+ * @returns A copy of the rule, updated to apply/not apply to the creator of the Resource.
+ * @status Unreleased
+ */
+export function setCreator(rule: Rule, creator: boolean): Rule {
+  return creator
+    ? addIri(rule, acp.agent, acp.CreatorAgent)
+    : removeIri(rule, acp.agent, acp.CreatorAgent);
+}
