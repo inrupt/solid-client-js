@@ -47,6 +47,7 @@ import {
   changeLogAsMarkdown,
   deleteSolidDataset,
   deleteContainer,
+  internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -1547,7 +1548,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
@@ -1626,7 +1627,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
@@ -1678,7 +1679,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
@@ -1707,7 +1708,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
@@ -1743,7 +1744,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
@@ -1775,7 +1776,7 @@ describe("createContainerAt", () => {
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
-              "Can't write file: PUT not supported on containers, use POST instead",
+              internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
               { status: 409 }
             )
           )
