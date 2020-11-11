@@ -11,7 +11,7 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-20.04, windows-2019, macos-10.15]
-        node-version: [12.x, 10.x]
+        node-version: [14.x, 12.x, 10.x]
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Use Node.js ${{ matrix.node-version }}
@@ -32,7 +32,7 @@ jobs:
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
       # end-to-end tests only need to run on one OS:
-      if: runner.os == 'Linux' && matrix.node-version == '12.x'
+      if: runner.os == 'Linux' && matrix.node-version == '14.x'
     # Ideally, we'd autodetect installed browsers and run them headlessly.
     # See https://github.com/DevExpress/testcafe/issues/5641
     - name: Prepare browser-based end-to-end tests
@@ -45,10 +45,10 @@ jobs:
       run: npm run e2e-test-browser -- firefox:headless,chrome:headless
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
-      # (But I've explicitly set it to *not* run in the oldest version,
+      # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && runner.os == 'Linux'
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux'
       env:
         TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
         TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
@@ -57,10 +57,10 @@ jobs:
       run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
-      # (But I've explicitly set it to *not* run in the oldest version,
+      # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && runner.os == 'Windows'
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows'
       env:
         TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
         TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
@@ -85,10 +85,10 @@ jobs:
       timeout-minutes: 20
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
-      # (But I've explicitly set it to *not* run in the oldest version,
+      # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && runner.os == 'macOS'
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS'
       env:
         TESTCAFE_ESS_PROD_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
         TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
