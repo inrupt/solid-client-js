@@ -1186,7 +1186,7 @@ describe("setAuthenticated", () => {
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setPublic(rule, true);
+    setAuthenticated(rule, true);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
     ).toBe(false);
@@ -1197,7 +1197,7 @@ describe("setAuthenticated", () => {
       public: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setPublic(rule, true);
+    const result = setAuthenticated(rule, true);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
