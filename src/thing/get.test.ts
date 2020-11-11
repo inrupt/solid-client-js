@@ -1200,6 +1200,27 @@ describe("getStringByLocaleAll", () => {
     ]);
   });
 
+  it("allows empty language tags - literal is still an rdf:langString", () => {
+    const thing = dataset()
+      .add(makeQuad(SUBJECT, PREDICATE, "chien", "fr"))
+      .add(makeQuad(SUBJECT, PREDICATE, "dog", ""));
+
+    const thingWithLocaleStrings = Object.assign(thing, {
+      internal_url: SUBJECT,
+    });
+
+    // An empty language tag is valid, and even in Turtle should be serialized
+    // as an rdf:langString, e.g.:
+    //  <SUBJECT> <PREDICATE> "chien"@fr .
+    //  <SUBJECT> <PREDICATE> "dog"^^rdf:langString .
+    expect(
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+    ).toEqual([
+      ["fr", ["chien"]],
+      ["", ["dog"]],
+    ]);
+  });
+
   it("ignores non-string literals...", () => {
     const thing = dataset()
       .add(makeQuad(SUBJECT, PREDICATE, "value 1", "fr"))
