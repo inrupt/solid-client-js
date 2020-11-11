@@ -314,7 +314,7 @@ describe("getSolidDataset", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+        "Fetching the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
       )
     );
   });
@@ -332,9 +332,29 @@ describe("getSolidDataset", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+        "Fetching the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
       )
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -465,7 +485,7 @@ describe("getSolidDatasetWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: 403 Forbidden."
+        "Fetching the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
       )
     );
   });
@@ -483,9 +503,32 @@ describe("getSolidDatasetWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: 404 Not Found."
+        "Fetching the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
       )
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getSolidDatasetWithAcl(
+      "https://arbitrary.pod/resource",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -659,7 +702,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+        "Storing the Resource at `https://some.pod/resource` failed: `403` `Forbidden`.\n\n" +
           "The SolidDataset that was sent to the Pod is listed below.\n\n"
       );
     });
@@ -680,9 +723,32 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+        "Storing the Resource at `https://some.pod/resource` failed: `404` `Not Found`.\n\n" +
           "The SolidDataset that was sent to the Pod is listed below.\n\n"
       );
+    });
+    it("includes the status code and status message when a request failed", async () => {
+      const mockFetch = jest.fn(window.fetch).mockReturnValue(
+        Promise.resolve(
+          new Response("I'm a teapot!", {
+            status: 418,
+            statusText: "I'm a teapot!",
+          })
+        )
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://arbitrary.pod/resource",
+        dataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toMatchObject({
+        statusCode: 418,
+        statusText: "I'm a teapot!",
+      });
     });
   });
 
@@ -1003,7 +1069,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: 403 Forbidden.\n\n" +
+        "Storing the Resource at `https://some.pod/resource` failed: `403` `Forbidden`.\n\n" +
           "The changes that were sent to the Pod are listed below.\n\n"
       );
     });
@@ -1046,9 +1112,40 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: 404 Not Found.\n\n" +
+        "Storing the Resource at `https://some.pod/resource` failed: `404` `Not Found`.\n\n" +
           "The changes that were sent to the Pod are listed below.\n\n"
       );
+    });
+    it("includes the status code and status message when a request failed", async () => {
+      const mockFetch = jest.fn(window.fetch).mockReturnValue(
+        Promise.resolve(
+          new Response("I'm a teapot!", {
+            status: 418,
+            statusText: "I'm a teapot!",
+          })
+        )
+      );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [],
+          deletions: [],
+        },
+        "https://arbitrary.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://arbitrary.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toMatchObject({
+        statusCode: 418,
+        statusText: "I'm a teapot!",
+      });
     });
   });
 });
@@ -1138,8 +1235,26 @@ describe("deleteSolidDataset", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the SolidDataset at `https://some.url` failed: 400 Bad request"
+      "Deleting the SolidDataset at `https://some.url` failed: `400` `Bad request`"
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 418,
+        statusText: "I'm a teapot!",
+      })
+    );
+
+    const deletionPromise = deleteSolidDataset("https://arbitrary.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -1399,16 +1514,36 @@ describe("createContainerAt", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+        "Creating the empty Container at `https://some.pod/container/` failed: `403` `Forbidden`."
       )
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 
   describe("using the workaround for Node Solid Server", () => {
     it("creates and deletes a dummy file inside the Container when encountering NSS's exact error message", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1417,19 +1552,19 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
         )
-        // Deleting that dummy file:
+        // Mock the response to the request that then tries to delete that dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Deletion successful", { status: 200 }))
         )
-        // Getting the Container's metadata:
+        // Mock the response to the request that fetches the Container's metadata:
         .mockReturnValueOnce(
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
@@ -1478,7 +1613,7 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "Creating the empty Container at `https://arbitrary.pod/container/` failed: 409 Conflict."
+          "Creating the empty Container at `https://arbitrary.pod/container/` failed: `409` `Conflict`."
         )
       );
       expect(mockFetch.mock.calls).toHaveLength(1);
@@ -1487,7 +1622,7 @@ describe("createContainerAt", () => {
     it("appends a trailing slash if not provided", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1496,19 +1631,19 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Creation successful.", { status: 200 }))
         )
-        // Deleting that dummy file:
+        // Mock the response to the request that then tries to delete that dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Deletion successful", { status: 200 }))
         )
-        // Getting the Container's metadata:
+        // Mock the response to the request that fetches the Container's metadata:
         .mockReturnValueOnce(
           Promise.resolve(new Response(undefined, { status: 200 }))
         );
@@ -1539,7 +1674,7 @@ describe("createContainerAt", () => {
     it("returns an error when the Container already exists", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1548,7 +1683,7 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(Promise.resolve(new Response()));
 
       const fetchPromise = createContainerAt(
@@ -1564,10 +1699,11 @@ describe("createContainerAt", () => {
         )
       );
     });
-    it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
+
+    it("returns an error when it couldn't check whether a Container already exists", async () => {
       const mockFetch = jest
         .fn(window.fetch)
-        // Trying to create a Container the regular way:
+        // Mock the response to the request that tries to create a Container the regular way:
         .mockReturnValueOnce(
           Promise.resolve(
             new Response(
@@ -1576,11 +1712,47 @@ describe("createContainerAt", () => {
             )
           )
         )
-        // Testing whether the Container already exists
+        // Mock the response to the request that tests whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Not allowed to fetch the existing Container without logging in",
+              { status: 401 }
+            )
+          )
+        );
+
+      const fetchPromise = createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        new Error(
+          "Fetching the metadata of the Resource at `https://arbitrary.pod/container/` failed: `401` `Unauthorized`."
+        )
+      );
+    });
+
+    it("returns a meaningful error when the server returns a 403 creating the dummy file", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Mock the response to the request that tries to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Mock the response to the request that tests whether the Container already exists
         .mockReturnValueOnce(
           Promise.resolve(new Response("Not found", { status: 404 }))
         )
-        // Creating a dummy file:
+        // Mock the response to the request that tries to create a dummy file:
         .mockReturnValueOnce(
           Promise.resolve(new Response("Forbidden", { status: 403 }))
         );
@@ -1591,9 +1763,48 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "Creating the empty Container at `https://some.pod/container/` failed: 403 Forbidden."
+          "Creating the empty Container at `https://some.pod/container/` failed: `403` `Forbidden`."
         )
       );
+    });
+
+    it("includes the status code and status message when a request failed", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Mock the response to the request that tries to create a Container the regular way:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response(
+              "Can't write file: PUT not supported on containers, use POST instead",
+              { status: 409 }
+            )
+          )
+        )
+        // Mock the response to the request that tests whether the Container already exists
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        )
+        // Mock the response to the request that tries to create a dummy file:
+        .mockReturnValueOnce(
+          Promise.resolve(
+            new Response("I'm a teapot!", {
+              status: 418,
+              statusText: "I'm a teapot!",
+            })
+          )
+        );
+
+      const fetchPromise = createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toMatchObject({
+        statusCode: 418,
+        statusText: "I'm a teapot!",
+      });
     });
   });
 });
@@ -1658,7 +1869,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at `https://some.pod/container/` failed: 403 Forbidden."
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: `403` `Forbidden`."
     );
   });
 
@@ -1676,7 +1887,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at `https://some.pod/container/` failed: 404 Not Found."
+      "Storing the Resource in the Container at `https://some.pod/container/` failed: `404` `Not Found`."
     );
   });
 
@@ -1696,6 +1907,28 @@ describe("saveSolidDatasetInContainer", () => {
         "Could not determine the location of the newly saved SolidDataset."
       )
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("I'm a teapot!", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      })
+    );
+    const fetchPromise = saveSolidDatasetInContainer(
+      "https://arbitrary.pod/container/",
+      dataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 
   it("sends the given SolidDataset to the Pod", async () => {
@@ -1932,7 +2165,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 403 Forbidden."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: `403` `Forbidden`."
       )
     );
   });
@@ -1952,7 +2185,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: 404 Not Found."
+        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: `404` `Not Found`."
       )
     );
   });
@@ -1972,6 +2205,28 @@ describe("createContainerInContainer", () => {
         "Could not determine the location of the newly created Container."
       )
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response("I'm a teapot!", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      })
+    );
+
+    const fetchPromise = createContainerInContainer(
+      "https://arbitrary.pod/parent-container/",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 
   it("sends the right headers to create a Container", async () => {
@@ -2159,8 +2414,29 @@ describe("deleteContainer", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the Container at `https://some.pod/container/` failed: 400 Bad request"
+      "Deleting the Container at `https://some.pod/container/` failed: `400` `Bad request`"
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      new Response(undefined, {
+        status: 418,
+        statusText: "I'm a teapot!",
+      })
+    );
+
+    const deletionPromise = deleteContainer(
+      "https://arbitrary.pod/container/",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(deletionPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 

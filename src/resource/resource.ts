@@ -69,9 +69,10 @@ export async function getResourceInfo(
   };
 
   const response = await config.fetch(url, { method: "HEAD" });
-  if (!response.ok) {
-    throw new Error(
-      `Fetching the metadata of the Resource at \`${url}\` failed: ${response.status} ${response.statusText}.`
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Fetching the metadata of the Resource at \`${url}\` failed: \`${response.status}\` \`${response.statusText}\`.`,
+      response
     );
   }
 
@@ -336,6 +337,27 @@ export function isPodOwner(
   }
 
   return podOwner === webId;
+}
+
+/**
+ * Extends the regular JavaScript error object with access to the status code and status message.
+ */
+export class FetchError extends Error {
+  public readonly statusCode: number;
+  public readonly statusText?: string;
+
+  constructor(message: string, errorResponse: Response & { ok: false }) {
+    super(message);
+    this.statusCode = errorResponse.status;
+    this.statusText = errorResponse.statusText;
+  }
+}
+
+/** @internal */
+export function internal_isUnsuccessfulResponse(
+  response: Response
+): response is Response & { ok: false } {
+  return !response.ok;
 }
 
 /**

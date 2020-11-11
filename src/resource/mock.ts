@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Response } from "cross-fetch";
 import {
   Url,
   UrlString,
@@ -29,6 +30,7 @@ import {
 } from "../interfaces";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
 import { getFile } from "./nonRdfData";
+import { FetchError } from "./resource";
 
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;
 
@@ -98,7 +100,7 @@ export function mockContainerFrom(
  * unit tests that require persisted Files; e.g. unit tests that call [[getSourceUrl]].
  *
  * @param url The URL from which the returned File appears to be retrieved.
- * @Returns A mock File that appears to be retrieved from the `url`.
+ * @returns A mock File that appears to be retrieved from the `url`.
  * @since 0.2.0
  */
 export function mockFileFrom(
@@ -121,4 +123,32 @@ export function mockFileFrom(
   );
 
   return fileWithResourceInfo;
+}
+
+/**
+ * ```{warning}
+ * Do not use this function in production code. For use in **unit tests**.
+ * ```
+ *
+ * This function initialises a new Error object with metadata as though the
+ * it was the result of getting a 404 when trying to fetch the Resource at the
+ * given URL. The mock Error can be used in unit tests that require functions
+ * that fetch Resources (like [[getSolidDataset]]) to fail.
+ *
+ * @param url The URL of the Resource that could not be fetched according to the error.
+ * @param statusCode Optional status code (defaults to 404) that caused the error.
+ * @returns A mock Error that represents not having been able to fetch the Resource at `url` due to a 404 Response.
+ * @since Not released yet.
+ */
+export function mockFetchError(
+  fetchedUrl: UrlString,
+  statusCode: number = 404
+): FetchError {
+  const failedResponse = new Response(undefined, {
+    status: statusCode,
+  }) as Response & { ok: false };
+  return new FetchError(
+    `Fetching the Resource at \`${fetchedUrl}\` failed: \`${failedResponse.status}\` \`${failedResponse.statusText}\`.`,
+    failedResponse
+  );
 }

@@ -142,6 +142,7 @@ import {
   mockSolidDatasetFrom,
   mockContainerFrom,
   mockFileFrom,
+  mockFetchError,
   mockThingFrom,
   addMockResourceAclTo,
   addMockFallbackAclTo,
@@ -276,6 +277,7 @@ it("exports the public API from the entry file", () => {
   expect(mockSolidDatasetFrom).toBeDefined();
   expect(mockContainerFrom).toBeDefined();
   expect(mockFileFrom).toBeDefined();
+  expect(mockFetchError).toBeDefined();
   expect(mockThingFrom).toBeDefined();
   expect(addMockResourceAclTo).toBeDefined();
   expect(addMockFallbackAclTo).toBeDefined();

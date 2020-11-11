@@ -6,6 +6,16 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- When a function that makes an HTTP request, such as `getSolidDataset`, receives an error response
+  from the server, the error's status code and status text are now exposed via the `.statusCode`
+  and `.statusText` properties, respectively, on the thrown (/returned in the rejected Promise)
+  Error object.
+- Additionally, to help you mock the above errors in your unit tests, we now export
+  `mockFetchError()`. Pass it the URL the fake fetch targeted, and optionally the status code
+  that caused the error.
+
 The following sections document changes that have been released already:
 
 ## [1.0.0] - 2020-11-04

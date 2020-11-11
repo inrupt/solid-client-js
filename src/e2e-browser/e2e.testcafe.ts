@@ -65,7 +65,7 @@ test("Manipulating Access Control Policies to set public access", async (t: Test
       (await returnErrors(() => fetchPolicyResourceUnauthenticated(essUserPod)))
         .errMsg
     )
-    .match(/401 Unauthorized/);
+    .match(/`401` `Unauthorized`/);
   // In the Resource's Access Control Resource, apply the Policy
   // that just so happens to be defined in the Resource itself,
   // and that allows anyone to read it:
@@ -109,7 +109,7 @@ test("Manipulating Access Control Policies to deny Read access", async (t: TestC
     .expect(
       (await returnErrors(() => fetchPolicyResourceAuthenticated())).errMsg
     )
-    .match(/403 Forbidden/);
+    .match(/`403` `Forbidden`/);
   // Now delete the Resource, so that we can recreate it the next time we run this test:
   await deletePolicyResource();
 });

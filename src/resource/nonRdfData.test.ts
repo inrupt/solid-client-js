@@ -192,8 +192,26 @@ describe("getFile", () => {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: 400 Bad request"
+      "Fetching the File failed: `400` `Bad request`"
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+        )
+      );
+
+    const response = getFile("https://arbitrary.url", {
+      fetch: mockFetch,
+    });
+    await expect(response).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -361,7 +379,7 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the File failed: 403 Forbidden.")
+      new Error("Fetching the File failed: `403` `Forbidden`.")
     );
   });
 
@@ -377,8 +395,28 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the File failed: 404 Not Found.")
+      new Error("Fetching the File failed: `404` `Not Found`.")
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 
   it("should pass the request headers through", async () => {
@@ -420,7 +458,7 @@ describe("getFileWithAcl", () => {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: 400 Bad request"
+      "Fetching the File failed: `400` `Bad request`"
     );
   });
 });
@@ -549,8 +587,27 @@ describe("Non-RDF data deletion", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the file at `https://some.url` failed: 400 Bad request"
+      "Deleting the file at `https://some.url` failed: `400` `Bad request`"
     );
+  });
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const deletionPromise = deleteFile("https://arbitrary.url", {
+      fetch: mockFetch,
+    });
+
+    await expect(deletionPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -709,7 +766,7 @@ describe("Write non-RDF data into a folder", () => {
         fetch: mockFetch,
       })
     ).rejects.toThrow(
-      "Saving the file in `https://some.url` failed: 403 Forbidden."
+      "Saving the file in `https://some.url` failed: `403` `Forbidden`."
     );
   });
 
@@ -726,6 +783,22 @@ describe("Write non-RDF data into a folder", () => {
     ).rejects.toThrow(
       "Could not determine the location of the newly saved file."
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+    );
+
+    await expect(
+      saveFileInContainer("https://arbitrary.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
 
@@ -848,7 +921,26 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         fetch: mockFetch,
       })
     ).rejects.toThrow(
-      "Overwriting the file at `https://some.url` failed: 403 Forbidden."
+      "Overwriting the file at `https://some.url` failed: `403` `Forbidden`."
     );
+  });
+
+  it("includes the status code and status message when a request failed", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+        )
+      );
+
+    await expect(
+      overwriteFile("https://arbitrary.url", mockBlob, {
+        fetch: mockFetch,
+      })
+    ).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
   });
 });
