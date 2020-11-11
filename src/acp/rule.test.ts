@@ -85,6 +85,9 @@ const ACP_PUBLIC = DataFactory.namedNode(
 const ACP_AUTHENTICATED = DataFactory.namedNode(
   "http://www.w3.org/ns/solid/acp#AuthenticatedAgent"
 );
+const ACP_CREATOR = DataFactory.namedNode(
+  "http://www.w3.org/ns/solid/acp#CreatorAgent"
+);
 
 // Test data
 const MOCKED_POLICY_IRI = DataFactory.namedNode(
@@ -150,6 +153,7 @@ const mockRule = (
     groups?: Url[];
     public?: boolean;
     authenticated?: boolean;
+    creator?: boolean;
   }
 ): Rule => {
   let mockedRule = createThing({
@@ -183,6 +187,15 @@ const mockRule = (
         DataFactory.namedNode(asIri(mockedRule)),
         ACP_AGENT,
         ACP_AUTHENTICATED
+      )
+    );
+  }
+  if (content?.creator) {
+    mockedRule = mockedRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(asIri(mockedRule)),
+        ACP_AGENT,
+        ACP_CREATOR
       )
     );
   }
@@ -1184,6 +1197,65 @@ describe("setAuthenticated", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = setPublic(rule, true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
+    ).toBe(true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
+    ).toBe(true);
+  });
+});
+
+describe("hasCreator", () => {
+  it("returns true if the rule applies to the Resource's creator", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      creator: true,
+    });
+    expect(hasCreator(rule)).toEqual(true);
+  });
+  it("returns false if the rule only applies to other agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      public: true,
+      creator: false,
+      agents: [MOCK_WEBID_ME],
+    });
+    expect(hasCreator(rule)).toEqual(false);
+  });
+});
+
+describe("setCreator", () => {
+  it("applies the given rule to the Resource's creator", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const result = setCreator(rule, true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
+    ).toBe(true);
+  });
+
+  it("prevents the rule from applying to the Resource's creator", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      creator: true,
+    });
+    const result = setCreator(rule, false);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    setCreator(rule, true);
+    expect(
+      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
+    ).toBe(false);
+  });
+
+  it("does not change the other agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      public: true,
+      agents: [MOCK_WEBID_ME],
+    });
+    const result = setCreator(rule, true);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);

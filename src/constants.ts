@@ -67,4 +67,5 @@ export const acp = {
   group: "http://www.w3.org/ns/solid/acp#group",
   PublicAgent: "http://www.w3.org/ns/solid/acp#PublicAgent",
   AuthenticatedAgent: "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
+  CreatorAgent: "http://www.w3.org/ns/solid/acp#CreatorAgent",
 } as const;
