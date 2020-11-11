@@ -26,7 +26,6 @@ import {
   getThing,
   isThing,
   setThing,
-  thingAsMarkdown,
 } from "../thing/thing";
 import {
   addAgent,
@@ -58,16 +57,18 @@ import {
   setRequiredRuleUrl,
   getRuleAll,
   setRule,
+  hasCreator,
+  setCreator,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
 
-import { getPolicy, getPolicyAll, Policy, setPolicy } from "./policy";
+import { Policy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
-import { Thing, ThingPersisted, Url, UrlString, WebId } from "../interfaces";
+import { Thing, ThingPersisted, Url, UrlString } from "../interfaces";
 import { acp, rdf } from "../constants";
-import { getIriAll, getUrl, removeUrl } from "..";
+import { getIriAll } from "../index";
 
 // Vocabulary terms
 const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
