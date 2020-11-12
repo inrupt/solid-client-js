@@ -36,7 +36,7 @@ export {
   deleteFile,
   saveFileInContainer,
   overwriteFile,
-} from "./resource/nonRdfData";
+} from "./resource/file";
 export {
   createSolidDataset,
   getSolidDataset,

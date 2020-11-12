@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- It is now possible to import solid-client as an ES module in Node.
+
 ### Bugs fixed
 
 - While the documentation mentioned `hasAcl()`, solid-client did not actually export that function.

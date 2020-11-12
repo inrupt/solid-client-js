@@ -39,7 +39,7 @@ import {
   overwriteFile,
   getFileWithAcl,
   flattenHeaders,
-} from "./nonRdfData";
+} from "./file";
 import { Headers, Response } from "cross-fetch";
 import { WithResourceInfo } from "../interfaces";
 

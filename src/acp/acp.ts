@@ -31,7 +31,7 @@ import {
   hasAccessibleAcl,
   WithResourceInfo,
 } from "../interfaces";
-import { getFile } from "../resource/nonRdfData";
+import { getFile } from "../resource/file";
 import {
   getResourceInfo,
   getSourceUrl,

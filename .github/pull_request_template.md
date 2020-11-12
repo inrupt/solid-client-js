@@ -16,6 +16,7 @@ This PR fixes #<issue ID>.
 - [ ] Relevant documentation, if any, has been written/updated.
 - [ ] The changelog has been updated, if applicable.
 - [ ] New functions/types have been exported in `index.ts`, if applicable.
+- [ ] New modules (i.e. new `.ts` files) are listed in the `exports` field in `package.json`, if applicable.
 - [ ] Commits in this PR are minimal and [have descriptive commit messages](https://chris.beams.io/posts/git-commit/).
 
 <!-- When cutting a release: -->
