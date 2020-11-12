@@ -20,9 +20,9 @@
  */
 
 import { DatasetCore, Quad } from "rdf-js";
-import { quad, literal, namedNode, blankNode, dataset } from "@rdfjs/dataset";
-
-export { dataset } from "@rdfjs/dataset";
+import rdfjsDataset from "@rdfjs/dataset";
+export const dataset = rdfjsDataset.dataset;
+const { quad, literal, namedNode, blankNode } = rdfjsDataset;
 
 /**
  * @internal
