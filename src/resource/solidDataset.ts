@@ -352,7 +352,7 @@ export async function createContainerAt(
       response.status === 409 &&
       response.statusText === "Conflict" &&
       (await response.text()).trim() ===
-        "Can't write file: PUT not supported on containers, use POST instead"
+        internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465
     ) {
       return createContainerWithNssWorkaroundAt(url, options);
     }
@@ -373,6 +373,20 @@ export async function createContainerAt(
 
   return containerDataset;
 }
+
+/**
+ * Unfortunately Node Solid Server does not confirm to the Solid spec when it comes to Container
+ * creation. When we make the (valid, according to the Solid protocol) request to create a
+ * Container, NSS responds with the following exact error message. Thus, when we encounter exactly
+ * this message, we use an NSS-specific workaround ([[createContainerWithNssWorkaroundAt]]). Both
+ * this constant and that workaround should be removed once the NSS issue has been fixed and
+ * no versions of NSS with the issue are in common use/supported anymore.
+ *
+ * @see https://github.com/solid/node-solid-server/issues/1465
+ * @internal
+ */
+export const internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465 =
+  "Can't write file: PUT not supported on containers, use POST instead";
 
 /**
  * Unfortunately Node Solid Server does not confirm to the Solid spec when it comes to Container
