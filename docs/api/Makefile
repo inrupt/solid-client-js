@@ -42,9 +42,9 @@ html: Makefile migrate
 # Also, on macOS, need -i '' but not for Linux
 
 ifdef IS_MAC
-	find $(SOURCECOPYDIR)api/modules/ -type f -name "*.md" -exec sed -i '' -e 's?\.md#?\.html#?g' {} \;
+	find . $(SOURCECOPYDIR)/api/ -type f -name "*.md" -exec sed -i '' -e 's?\.md#?\.html#?g' {} \;
 else
-	find $(SOURCECOPYDIR)api/modules/ -type f -name "*.md" -exec sed -i  -e 's?\.md#?\.html#?g' {} \;
+	find . $(SOURCECOPYDIR)/api/ -type f -name "*.md" -exec sed -i  -e 's?\.md#?\.html#?g' {} \;
 endif
 	@$(SPHINXBUILD) -M $@ "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -c .
 
