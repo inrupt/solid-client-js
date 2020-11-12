@@ -83,6 +83,7 @@ export {
   getDecimalAll,
   getIntegerAll,
   getStringWithLocaleAll,
+  getStringByLocaleAll,
   getStringNoLocaleAll,
   getLiteral,
   getNamedNode,

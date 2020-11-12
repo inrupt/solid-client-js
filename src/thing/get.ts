@@ -283,6 +283,36 @@ export function getStringWithLocaleAll(
 }
 
 /**
+ * Retrieves all language string literals for the specified property from the
+ * specified [[Thing]] (explicitly filters out non-language string literals).
+ *
+ * @param thing The [[Thing]] to read the localised string values from.
+ * @param property The given Property for which you want the localised string values.
+ * @returns A Map of objects, keyed on locale with the value an array of string values (for that locale).
+ */
+export function getStringByLocaleAll(
+  thing: Thing,
+  property: Url | UrlString
+): Map<string, string[]> {
+  const literalMatcher = getLiteralMatcher(property);
+
+  const matchingQuads = findAll(thing, literalMatcher);
+
+  const result = new Map<string, string[]>();
+  matchingQuads.map((quad) => {
+    if (quad.object.datatype.value === xmlSchemaTypes.langString) {
+      const languageTag = quad.object.language;
+      const current: string[] | undefined = result.get(languageTag);
+      current
+        ? result.set(languageTag, [...current, quad.object.value])
+        : result.set(languageTag, [quad.object.value]);
+    }
+  });
+
+  return result;
+}
+
+/**
  * @param thing The [[Thing]] to read a string value from.
  * @param property The given Property for which you want the string value.
  * @returns A string value for the given Property, if present, or null otherwise.
