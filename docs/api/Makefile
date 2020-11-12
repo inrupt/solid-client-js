@@ -42,7 +42,7 @@ migrate: clean
 	
 html: Makefile migrate
 
-# To clean up refs in markdown, 
+# To clean up cross-reference links in markdown (foo.md#somesection) 
 # If making html (e.g. foo.html), use sed to change .md# to .html#
 # Also, on macOS, need -i '' but not for Linux
 
