@@ -283,12 +283,8 @@ export function getStringWithLocaleAll(
 }
 
 /**
- * Retrieves all string literals for the specified property from the specified
- * [[Thing]].
- *
- * Note: Assumes you also want non-locale string literals too (i.e. literals
- * with the xsd:string datatype). These values will be returned in a map entry
- * with a key of the empty string.
+ * Retrieves all language string literals for the specified property from the
+ * specified [[Thing]] (explicitly filters out non-language string literals).
  *
  * @param thing The [[Thing]] to read the localised string values from.
  * @param property The given Property for which you want the localised string values.
