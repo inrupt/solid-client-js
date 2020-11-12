@@ -22,10 +22,17 @@
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */
-export const fetch: typeof window.fetch = (resource, init) => {
+export const fetch: typeof window.fetch = async (resource, init) => {
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof window === "object" && typeof require !== "function") {
-    return window.fetch;
+    return await window.fetch(resource, init);
+  }
+  /* istanbul ignore if: `require` is always defined in the unit test environment */
+  if (typeof require !== "function") {
+    // When using Node.js with ES Modules, require is not defined:
+    const crossFetchModule = await import("cross-fetch");
+    const fetch = crossFetchModule.default;
+    return fetch(resource, init);
   }
   // Implementation note: it's up to the client application to resolve these module names to the
   // respective npm packages. At least one commonly used tool (Webpack) is only able to do that if
@@ -42,9 +49,11 @@ export const fetch: typeof window.fetch = (resource, init) => {
   // try {
   //   fetch = require("solid-client-authn-browser").fetch;
   // } catch (e) {
+  // When enabling the above, make sure to add a similar try {...} catch block using `import`
+  // statements in the elseif above.
   // eslint-disable-next-line prefer-const
   fetch = require("cross-fetch");
   // }
 
-  return fetch(resource, init);
+  return await fetch(resource, init);
 };
