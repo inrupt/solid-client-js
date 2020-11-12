@@ -11,3 +11,5 @@ solid-client API
 
    *
    /modules/*
+   /classes/*
+
