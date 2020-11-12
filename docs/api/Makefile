@@ -31,6 +31,9 @@ migrate: clean
 
    # Copying to SOURCECOPYDIR instead of copying source dir to BUILDDIR
    # in case someone forgets to backslash after build/
+   # Copying source/api/modules -> build/source/modules
+   # Copying source/api/classes -> build/source/classes
+   # Otherwise, after building the docs, the url is dev-tools/api/js/solid-client/api/modules or such.
 
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/api/modules/ $(SOURCECOPYDIR)/modules/
@@ -44,9 +47,9 @@ html: Makefile migrate
 # Also, on macOS, need -i '' but not for Linux
 
 ifdef IS_MAC
-	find . $(SOURCECOPYDIR)/ -type f -name "*.md" -exec sed -i '' -e 's?\.md#?\.html#?g' {} \;
+	find . $(SOURCECOPYDIR) -type f -name "*.md" -exec sed -i '' -e 's?\.md#?\.html#?g' {} \;
 else
-	find . $(SOURCECOPYDIR)/ -type f -name "*.md" -exec sed -i  -e 's?\.md#?\.html#?g' {} \;
+	find . $(SOURCECOPYDIR) -type f -name "*.md" -exec sed -i  -e 's?\.md#?\.html#?g' {} \;
 endif
 	@$(SPHINXBUILD) -M $@ "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -c .
 

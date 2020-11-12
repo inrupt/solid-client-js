@@ -9,7 +9,7 @@ solid-client API
    :glob:
    :titlesonly:
 
-   api/*
-   api/modules/*
-   api/classes/*
+   *
+   /modules/*
+   /classes/*
 
