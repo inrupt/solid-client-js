@@ -19,7 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Response } from "cross-fetch";
+import * as crossFetch from "cross-fetch";
+const { Response } = crossFetch;
 import {
   Url,
   UrlString,
