@@ -30,7 +30,7 @@ import {
   internal_toIriString,
 } from "../interfaces";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
-import { getFile } from "./nonRdfData";
+import { getFile } from "./file";
 import { FetchError } from "./resource";
 
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;

@@ -26,6 +26,27 @@
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./interfaces": "./dist/interfaces.mjs",
+    "./resource/resource": "./dist/resource/resource.mjs",
+    "./resource/solidDataset": "./dist/resource/solidDataset.mjs",
+    "./resource/file": "./dist/resource/file.mjs",
+    "./resource/mock": "./dist/resource/mock.mjs",
+    "./thing/thing": "./dist/thing/thing.mjs",
+    "./thing/get": "./dist/thing/get.mjs",
+    "./thing/add": "./dist/thing/add.mjs",
+    "./thing/set": "./dist/thing/set.mjs",
+    "./thing/remove": "./dist/thing/remove.mjs",
+    "./acl/acl": "./dist/acl/acl.mjs",
+    "./acl/agent": "./dist/acl/agent.mjs",
+    "./acl/group": "./dist/acl/group.mjs",
+    "./acl/class": "./dist/acl/class.mjs",
+    "./acl/mock": "./dist/acl/mock.mjs"
+  },
   "sideEffects": false,
   "repository": {
     "type": "git",

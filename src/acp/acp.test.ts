@@ -34,7 +34,7 @@ jest.mock("../fetcher.ts", () => ({
 import { Response } from "cross-fetch";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
-import * as FileModule from "../resource/nonRdfData";
+import * as FileModule from "../resource/file";
 import * as ResourceModule from "../resource/resource";
 import {
   getFileWithAccessDatasets,

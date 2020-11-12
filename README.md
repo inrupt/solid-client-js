@@ -4,8 +4,8 @@
 permissions on data stored in Solid Pods. It provides an abstraction layer on
 top of both Solid and Resource Description Framework (RDF) principles and is
 compatible with the RDF/JS specification. You can use solid-client in Node.js
-using CommonJS modules and in the browser with a bundler like Webpack, Rollup,
-or Parcel.
+using either CommonJS or ES modules, and in the browser with a bundler like
+Webpack, Rollup, or Parcel.
 
 @inrupt/solid-client is part of a family open source JavaScript libraries designed to support developers building Solid applications.
 
