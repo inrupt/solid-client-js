@@ -20,6 +20,9 @@ The following changes have been implemented but not released yet:
 
 - Our property-based tests discovered a new edge case in which reading a Datetime from the Pod used
   to fail. That edge case is now handled properly.
+- Using solid-client with TypeScript would result in the following error:
+  `error TS2305: Module '"../constants"' has no exported member 'acp'.` This is now fixed, and we
+  are working on preventing such errors in the future.
 
 The following sections document changes that have been released already:
 
