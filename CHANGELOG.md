@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- While the documentation mentioned `hasAcl()`, solid-client did not actually export that function.
+
 The following sections document changes that have been released already:
 
 ## [1.1.0] - 2020-11-16

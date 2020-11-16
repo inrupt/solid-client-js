@@ -133,6 +133,7 @@ export {
 } from "./thing/remove";
 export { mockThingFrom } from "./thing/mock";
 export {
+  hasAcl,
   hasFallbackAcl,
   getFallbackAcl,
   hasResourceAcl,

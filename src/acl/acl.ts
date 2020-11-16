@@ -139,10 +139,11 @@ export function internal_getContainerPath(resourcePath: string): string {
 }
 
 /**
- * Verify whether a given SolidDataset was fetched together with its Access Control List.
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
  *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
+ * Verify whether a given SolidDataset was fetched together with its Access Control List.
  *
  * @param dataset A [[SolidDataset]] that may have its ACLs attached.
  * @returns True if `dataset` was fetched together with its ACLs.
