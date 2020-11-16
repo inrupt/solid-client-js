@@ -112,6 +112,7 @@ import {
   getSolidDatasetWithAcl,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
+  hasAcl,
   hasFallbackAcl,
   getFallbackAcl,
   hasResourceAcl,
@@ -247,6 +248,7 @@ it("exports the public API from the entry file", () => {
   expect(getSolidDatasetWithAcl).toBeDefined();
   expect(solidDatasetAsMarkdown).toBeDefined();
   expect(changeLogAsMarkdown).toBeDefined();
+  expect(hasAcl).toBeDefined();
   expect(hasFallbackAcl).toBeDefined();
   expect(getFallbackAcl).toBeDefined();
   expect(hasResourceAcl).toBeDefined();
