@@ -224,6 +224,32 @@ describe("deserializeDatetime", () => {
     expect(deserializeDatetime("1990-11-12T10:00:00+14:00")).toEqual(
       expectedDateWithMaxPositiveTimezone
     );
+
+    const expectedEarliestRepresentableDate = new Date(-8640000000000000);
+    expect(deserializeDatetime("-271821-04-20T00:00:00.000Z")).toEqual(
+      expectedEarliestRepresentableDate
+    );
+    // Same date, earlier timezone
+    expect(deserializeDatetime("-271821-04-20T01:00:00.000-01:00")).toEqual(
+      expectedEarliestRepresentableDate
+    );
+    // Same date, later timezone
+    expect(deserializeDatetime("-271821-04-19T23:00:00.000+01:00")).toEqual(
+      expectedEarliestRepresentableDate
+    );
+
+    const expectedLatestRepresentableDate = new Date(8640000000000000);
+    expect(deserializeDatetime("275760-09-13T00:00:00.000Z")).toEqual(
+      expectedLatestRepresentableDate
+    );
+    // Same date, earlier timezone
+    expect(deserializeDatetime("275760-09-13T01:00:00.000-01:00")).toEqual(
+      expectedLatestRepresentableDate
+    );
+    // Same date, later timezone
+    expect(deserializeDatetime("275760-09-12T23:00:00.000+01:00")).toEqual(
+      expectedLatestRepresentableDate
+    );
   });
 
   it("returns null if a value is not a serialised datetime", () => {

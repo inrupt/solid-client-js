@@ -16,6 +16,11 @@ The following changes have been implemented but not released yet:
   `mockFetchError()`. Pass it the URL the fake fetch targeted, and optionally the status code
   that caused the error.
 
+### Bugs fixed
+
+- Our property-based tests discovered a new edge case in which reading a Datetime from the Pod used
+  to fail. That edge case is now handled properly.
+
 The following sections document changes that have been released already:
 
 ## [1.0.0] - 2020-11-04
