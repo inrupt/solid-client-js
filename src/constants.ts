@@ -22,7 +22,7 @@
 // TODO: These should be replaced by auto-generated constants,
 //       if we can ensure that unused constants will be excluded from bundles.
 
-/** @internal */
+/** @hidden */
 export const acl = {
   Authorization: "http://www.w3.org/ns/auth/acl#Authorization",
   accessTo: "http://www.w3.org/ns/auth/acl#accessTo",
@@ -35,17 +35,17 @@ export const acl = {
   origin: "http://www.w3.org/ns/auth/acl#origin",
 } as const;
 
-/** @internal */
+/** @hidden */
 export const rdf = {
   type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 } as const;
 
-/** @internal */
+/** @hidden */
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
 } as const;
 
-/** @internal */
+/** @hidden */
 export const acp = {
   Policy: "http://www.w3.org/ns/solid/acp#Policy",
   AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
