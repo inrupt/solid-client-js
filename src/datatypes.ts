@@ -124,14 +124,17 @@ export function deserializeDatetime(literalString: string): Date | null {
   const utcMilliseconds = optionalMillisecondString
     ? Number.parseInt(optionalMillisecondString, 10)
     : 0;
-  const date = new Date(0);
-  date.setUTCFullYear(utcFullYear);
-  date.setUTCMonth(utcMonth);
-  date.setUTCDate(utcDate);
-  date.setUTCHours(utcHours);
-  date.setUTCMinutes(utcMinutes);
-  date.setUTCSeconds(utcSeconds);
-  date.setUTCMilliseconds(utcMilliseconds);
+  const date = new Date(
+    Date.UTC(
+      utcFullYear,
+      utcMonth,
+      utcDate,
+      utcHours,
+      utcMinutes,
+      utcSeconds,
+      utcMilliseconds
+    )
+  );
   return date;
 }
 
