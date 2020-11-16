@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.1.0] - 2020-11-16
+
 ### New features
 
 - When a function that makes an HTTP request, such as `getSolidDataset`, receives an error response
@@ -23,8 +27,6 @@ The following changes have been implemented but not released yet:
 - Using solid-client with TypeScript would result in the following error:
   `error TS2305: Module '"../constants"' has no exported member 'acp'.` This is now fixed, and we
   are working on preventing such errors in the future.
-
-The following sections document changes that have been released already:
 
 ## [1.0.0] - 2020-11-04
 

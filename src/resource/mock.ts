@@ -138,7 +138,7 @@ export function mockFileFrom(
  * @param url The URL of the Resource that could not be fetched according to the error.
  * @param statusCode Optional status code (defaults to 404) that caused the error.
  * @returns A mock Error that represents not having been able to fetch the Resource at `url` due to a 404 Response.
- * @since Not released yet.
+ * @since 1.1.0
  */
 export function mockFetchError(
   fetchedUrl: UrlString,
