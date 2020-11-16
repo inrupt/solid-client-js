@@ -33,6 +33,8 @@ like [Babel](https://babeljs.io), and to add polyfills for e.g. `Map`, `Set`,
 `Promise`, `Headers`, `Array.prototype.includes` and
 `String.prototype.endsWith`.
 
+Additionally, when using this package in an environment other than Node.js, you will need [a polyfill for Node's `buffer` module]((https://www.npmjs.com/package/buffer).
+
 # Installation
 
 For the latest stable version of solid-client:
