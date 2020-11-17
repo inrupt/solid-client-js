@@ -43,6 +43,8 @@ jobs:
   publish-npm:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
+    outputs:
+      version-nr: ${{ steps.determine-npm-version.outputs.version-nr }}
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Mark GitHub Deployment as in progress
@@ -65,11 +67,13 @@ jobs:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
     - name: Prepare prerelease version
+      id: determine-npm-version
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
-        npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
+        VERSION_NR=$(npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER)
+        echo "::set-output name=version-nr::$VERSION_NR"
       env:
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
     - run: npm ci
@@ -114,3 +118,33 @@ jobs:
         state: failure
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  verify-imports:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [14.x, 12.x, 10.x]
+    needs: [prepare-deployment, publish-npm]
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - name: Prepare for publication to npm
+      uses: actions/setup-node@v2.1.2
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: 'https://registry.npmjs.org'
+    - name: Install the preview release of solid-client in the packaging test project
+      run: |
+        cd .github/workflows/cd-packaging-tests/node
+        npm install @inrupt/solid-client@$VERSION_NR
+      env:
+        VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+    - name: Verify that the package can be imported in Node from a CommonJS module
+      run: |
+        cd .github/workflows/cd-packaging-tests/node
+        node --unhandled-rejections=strict commonjs.cjs
+    - name: Verify that the package can be imported in Node from an ES module
+      run: |
+        cd .github/workflows/cd-packaging-tests/node
+        node --unhandled-rejections=strict esmodule.mjs
+      # Node 10 does not support ES modules:
+      if: matrix.node-version != '10.x'
