@@ -148,3 +148,22 @@ jobs:
         node --unhandled-rejections=strict esmodule.mjs
       # Node 10 does not support ES modules:
       if: matrix.node-version != '10.x'
+    - name: Verify that the package can be imported in a Parcel project
+      run: |
+        cd .github/workflows/cd-packaging-tests/bundler-parcel
+        npm install @inrupt/solid-client@$VERSION_NR
+        npx parcel build index.ts
+      # The Node version does not influence whether Parcel can import our modules,
+      # so we only need to test in one:
+      # (But I've explicitly set it to *not* run in the oldest versions,
+      # rather than running in the newest, so ensure that changing Node versions in CI
+      # does not cause these tests to stop running.)
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x'
+      env:
+        VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+    - name: Archive Parcel build artifacts
+      uses: actions/upload-artifact@v2.2.0
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x'
+      with:
+        name: parcel-dist
+        path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
