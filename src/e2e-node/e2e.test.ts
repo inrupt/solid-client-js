@@ -60,19 +60,14 @@ import {
 
 describe.each([
   ["https://lit-e2e-test.inrupt.net/public/"],
-  ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
+  // Since ESS switched to ACPs we no longer have a convenient way to prepare the tests data
+  // with the proper permissions (i.e. public-read-write).
+  // Therefore, end-to-end tests against ESS have been disabled for now.
+  // We can re-enable them once we have a Node library with which we can authenticate,
+  // after which we can set the relevant permissions in the tests themselves:
+  // ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
 ])("End-to-end tests against %s", (rootContainer) => {
-  // Tests that should only run against either NSS or ESS,
-  // e.g. because something is not (properly) implemented on the other.
-  const on_ess_it = rootContainer.includes("demo-ess") ? it : it.skip;
-  const on_nss_it = rootContainer.includes("demo-ess") ? it.skip : it;
-
-  // FIXME: ESS currently has enabled Access Control Policies,
-  // resulting in this Pod no longer being publicly writeable.
-  // We can re-enable it once we can write to ESS Pods again in Node.js.
-  // (Either via a working solid-client-authn-node,
-  // or because the Pod has been made publicly-writable using ACPs.)
-  on_nss_it("should be able to read and update data in a Pod", async () => {
+  it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
@@ -87,8 +82,6 @@ describe.each([
       );
     }
 
-    // See FIXME above to explain specific setup.
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(getStringNoLocale(existingThing, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
@@ -110,16 +103,10 @@ describe.each([
       savedDataset,
       `${rootContainer}lit-pod-test.ttl#thing1`
     );
-    // See FIXME above to explain specific setup.
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(savedThing).not.toBeNull();
-    // See FIXME above to explain specific setup.
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
       "Thing for first end-to-end test"
     );
-    // See FIXME above to explain specific setup.
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
   });
 
@@ -127,11 +114,6 @@ describe.each([
   // and thus causes this test to fail.
   // Once the bug is fixed, it can be enabled for NSS again.
   // See https://github.com/solid/node-solid-server/issues/1468.
-  // FIXME: Additionally, ESS currently has enabled Access Control Policies,
-  // resulting in this Pod no longer being publicly writeable.
-  // We can re-enable it once we can write to ESS Pods again in Node.js.
-  // (Either via a working solid-client-authn-node,
-  // or because the Pod has been made publicly-writable using ACPs.)
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip("can read and write booleans", async () => {
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
@@ -184,11 +166,7 @@ describe.each([
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
   });
 
-  // ESS currently has enabled Access Control Policies,
-  // and Web Access Control has been turned off.
-  // Thus, only run this against Node Solid Server
-  // until a WAC-enabled ESS instance is set up again.
-  on_nss_it("can create and remove empty Containers", async () => {
+  it("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
       `${rootContainer}container-test/some-container/`
     );
@@ -197,8 +175,6 @@ describe.each([
       { slugSuggestion: "some-other-container" }
     );
 
-    // See FIXME above to explain specific setup
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(getSourceUrl(newContainer1)).toBe(
       `${rootContainer}container-test/some-container/`
     );
@@ -207,11 +183,7 @@ describe.each([
     await deleteFile(getSourceUrl(newContainer2));
   });
 
-  // ESS currently has enabled Access Control Policies,
-  // and Web Access Control has been turned off.
-  // Thus, only run this against Node Solid Server
-  // until a WAC-enabled ESS instance is set up again.
-  on_nss_it("should be able to read and update ACLs", async () => {
+  it("should be able to read and update ACLs", async () => {
     const fakeWebId =
       "https://example.com/fake-webid#" +
       Date.now().toString() +
@@ -290,32 +262,25 @@ describe.each([
     await saveAclFor(datasetWithAcl, cleanedAcl);
   });
 
-  // ESS currently has enabled Access Control Policies,
-  // and Web Access Control has been turned off.
-  // Thus, only run this against Node Solid Server
-  // until a WAC-enabled ESS instance is set up again.
-  on_nss_it(
-    "can copy default rules from the fallback ACL as Resource rules to a new ACL",
-    async () => {
-      const dataset = await getSolidDatasetWithAcl(
-        `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
-      );
-      if (
-        !hasFallbackAcl(dataset) ||
-        !hasAccessibleAcl(dataset) ||
-        hasResourceAcl(dataset)
-      ) {
-        throw new Error(
-          `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
-        );
-      }
-      const newResourceAcl = createAclFromFallbackAcl(dataset);
-      const existingFallbackAcl = getFallbackAcl(dataset);
-      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-        getPublicResourceAccess(newResourceAcl)
+  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
+    const dataset = await getSolidDatasetWithAcl(
+      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
+    );
+    if (
+      !hasFallbackAcl(dataset) ||
+      !hasAccessibleAcl(dataset) ||
+      hasResourceAcl(dataset)
+    ) {
+      throw new Error(
+        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
       );
     }
-  );
+    const newResourceAcl = createAclFromFallbackAcl(dataset);
+    const existingFallbackAcl = getFallbackAcl(dataset);
+    expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+      getPublicResourceAccess(newResourceAcl)
+    );
+  });
 
   it("can fetch a non-RDF file and its metadata", async () => {
     const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
