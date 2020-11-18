@@ -135,6 +135,17 @@ export function deserializeDatetime(literalString: string): Date | null {
       utcMilliseconds
     )
   );
+
+  // For the year, values from 0 to 99 map to the years 1900 to 1999. Since the serialisation
+  // always writes out the years fully, we should correct this to actually map to the years 0 to 99.
+  // See
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#Individual_date_and_time_component_values
+  if (utcFullYear >= 0 && utcFullYear < 100) {
+    // Note that we base it on the calculated year, rather than the year that was actually read.
+    // This is because the year might actually differ from the value listed in the serialisation,
+    // i.e. when moving the timezone offset to UTC pushes it into a different year:
+    date.setUTCFullYear(date.getUTCFullYear() - 1900);
+  }
   return date;
 }
 
