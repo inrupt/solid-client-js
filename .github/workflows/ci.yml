@@ -94,6 +94,7 @@ jobs:
         TESTCAFE_ESS_PROD_GLUU_USER: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_USER }}
         TESTCAFE_ESS_PROD_GLUU_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_GLUU_PASSWORD }}
     - run: npx prettier --check "src/**"
+    - run: npx package-check
     - run: npm run check-licenses
     - run: npm audit --audit-level=moderate
     - name: Archive code coverage results
