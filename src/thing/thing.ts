@@ -444,10 +444,13 @@ export function isThingLocal(
 export function internal_toNode(
   thing: UrlString | Url | ThingPersisted
 ): NamedNode;
+/** @hidden */
 export function internal_toNode(thing: LocalNode | ThingLocal): LocalNode;
+/** @hidden */
 export function internal_toNode(
   thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode;
+/** @hidden */
 export function internal_toNode(
   thing: UrlString | Url | LocalNode | Thing
 ): NamedNode | LocalNode {
