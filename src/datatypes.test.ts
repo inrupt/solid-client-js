@@ -225,6 +225,11 @@ describe("deserializeDatetime", () => {
       expectedDateWithMaxPositiveTimezone
     );
 
+    const dateBeforeTheYear100 = new Date(-59042995200000);
+    expect(deserializeDatetime("0099-01-01T00:00:00.000Z")).toEqual(
+      dateBeforeTheYear100
+    );
+
     const expectedEarliestRepresentableDate = new Date(-8640000000000000);
     expect(deserializeDatetime("-271821-04-20T00:00:00.000Z")).toEqual(
       expectedEarliestRepresentableDate
