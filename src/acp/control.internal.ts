@@ -19,26 +19,34 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Url, UrlString, ThingPersisted } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
-import { dataset } from "../rdfjs";
+import { getSourceUrl } from "../resource/resource";
+import { internal_cloneResource } from "../resource/resource.internal";
+import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "./acp";
+import { AccessControlResource } from "./control";
 
-/**
- * Function for use in unit tests to mock a [[Thing]] with a given URL.
- *
- * Warning: do not use this function in actual production code.
- * This function initialises a new empty Thing and sets its URL to a given URL.
- * This is useful to mock a Thing in tests of code that call e.g.
- * [[asUrl]].
- *
- * @param url The URL that the mocked Thing pretends identifies it.
- * @returns A new Thing, pretending to be identified by the given URL.
- * @since 0.2.0
- */
-export function mockThingFrom(url: Url | UrlString): ThingPersisted {
-  const thing: ThingPersisted = Object.assign(dataset(), {
-    internal_url: internal_toIriString(url),
+/** @hidden */
+export function internal_getAcr(
+  resource: WithAccessibleAcr
+): AccessControlResource {
+  if (!hasAccessibleAcr(resource)) {
+    throw new Error(
+      `Cannot work with Access Controls on a Resource (${getSourceUrl(
+        resource
+      )}) that does not have an Access Control Resource.`
+    );
+  }
+  return resource.internal_acp.acr;
+}
+
+/** @hidden */
+export function internal_setAcr<ResourceExt extends WithAcp>(
+  resource: ResourceExt,
+  acr: AccessControlResource
+): ResourceExt & WithAccessibleAcr {
+  return Object.assign(internal_cloneResource(resource), {
+    internal_acp: {
+      ...resource.internal_acp,
+      acr: acr,
+    },
   });
-
-  return thing;
 }

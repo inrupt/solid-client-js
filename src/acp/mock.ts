@@ -21,7 +21,8 @@
 
 import { UrlString, WithResourceInfo } from "../interfaces";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { getSourceUrl, internal_cloneResource } from "../resource/resource";
+import { getSourceUrl } from "../resource/resource";
+import { internal_cloneResource } from "../resource/resource.internal";
 import { WithAccessibleAcr } from "./acp";
 import { AccessControlResource } from "./control";
 

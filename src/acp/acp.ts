@@ -21,7 +21,6 @@
 
 import { acp } from "../constants";
 import {
-  internal_toIriString,
   SolidDataset,
   File,
   Url,
@@ -31,13 +30,14 @@ import {
   hasAccessibleAcl,
   WithResourceInfo,
 } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
 import { getFile } from "../resource/file";
 import {
   getResourceInfo,
   getSourceUrl,
   internal_defaultFetchOptions,
-  internal_fetchAcl,
 } from "../resource/resource";
+import { internal_fetchAcl } from "../resource/resource.internal";
 import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
@@ -47,9 +47,8 @@ import {
   getMemberPolicyUrlAll,
   getPolicyUrlAll,
   hasLinkedAcr,
-  internal_getAcr,
-  internal_setAcr,
 } from "./control";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this

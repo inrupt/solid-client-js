@@ -19,26 +19,25 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Url, UrlString, ThingPersisted } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
-import { dataset } from "../rdfjs";
+import { DatasetCore } from "rdf-js";
 
 /**
- * Function for use in unit tests to mock a [[Thing]] with a given URL.
+ * Verify whether a given value has the required DatasetCore properties.
  *
- * Warning: do not use this function in actual production code.
- * This function initialises a new empty Thing and sets its URL to a given URL.
- * This is useful to mock a Thing in tests of code that call e.g.
- * [[asUrl]].
- *
- * @param url The URL that the mocked Thing pretends identifies it.
- * @returns A new Thing, pretending to be identified by the given URL.
- * @since 0.2.0
+ * @param input Value that might or might not be a DatasetCore
+ * @returns Whether `input` provides the properties prescribed by the RDF/JS Dataset spec 1.0.
+ * @hidden This is an internal convenience function.
  */
-export function mockThingFrom(url: Url | UrlString): ThingPersisted {
-  const thing: ThingPersisted = Object.assign(dataset(), {
-    internal_url: internal_toIriString(url),
-  });
-
-  return thing;
+export function internal_isDatasetCore<X>(
+  input: X | DatasetCore
+): input is DatasetCore {
+  return (
+    typeof input === "object" &&
+    typeof (input as DatasetCore).size === "number" &&
+    typeof (input as DatasetCore).add === "function" &&
+    typeof (input as DatasetCore).delete === "function" &&
+    typeof (input as DatasetCore).has === "function" &&
+    typeof (input as DatasetCore).match === "function" &&
+    Array.from(input as DatasetCore).length === (input as DatasetCore).size
+  );
 }

@@ -20,13 +20,8 @@
  */
 
 import { acp, rdf } from "../constants";
-import {
-  internal_toIriString,
-  SolidDataset,
-  ThingPersisted,
-  Url,
-  UrlString,
-} from "../interfaces";
+import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
 import { addIri } from "../thing/add";
 import { getIriAll, getUrl, getUrlAll } from "../thing/get";
 import { removeAll } from "../thing/remove";

@@ -19,8 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Quad, Quad_Object } from "rdf-js";
-import { dataset, filter, clone, internal_isDatasetCore } from "../rdfjs";
+import { NamedNode } from "rdf-js";
+import { dataset } from "../rdfjs";
+import { internal_isDatasetCore } from "../rdfjs.internal";
 import {
   isLocalNode,
   isEqual,
@@ -28,12 +29,6 @@ import {
   getLocalNode,
   asNamedNode,
   resolveLocalIri,
-  isLiteral,
-  xmlSchemaTypes,
-  deserializeBoolean,
-  deserializeDatetime,
-  deserializeDecimal,
-  deserializeInteger,
 } from "../datatypes";
 import {
   SolidDataset,
@@ -47,8 +42,10 @@ import {
   hasChangelog,
   hasResourceInfo,
 } from "../interfaces";
-import { getSourceUrl, internal_cloneResource } from "../resource/resource";
 import { getTermAll } from "./get";
+import { getSourceUrl } from "../resource/resource";
+import { internal_cloneResource } from "../resource/resource.internal";
+import { internal_toNode, internal_getReadableValue } from "./thing.internal";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -368,62 +365,6 @@ export function thingAsMarkdown(thing: Thing): string {
   return thingAsMarkdown;
 }
 
-/** @hidden For internal use only. */
-export function internal_getReadableValue(value: Quad_Object): string {
-  if (isNamedNode(value)) {
-    return `<${value.value}> (URL)`;
-  }
-  if (isLiteral(value)) {
-    if (!isNamedNode(value.datatype)) {
-      return `[${value.value}] (RDF/JS Literal of unknown type)`;
-    }
-    let val;
-    switch (value.datatype.value) {
-      case xmlSchemaTypes.boolean:
-        val =
-          deserializeBoolean(value.value)?.valueOf() ??
-          `Invalid data: \`${value.value}\``;
-        return val + " (boolean)";
-      case xmlSchemaTypes.dateTime:
-        val =
-          deserializeDatetime(value.value)?.toUTCString() ??
-          `Invalid data: \`${value.value}\``;
-        return val + " (datetime)";
-      case xmlSchemaTypes.decimal:
-        val =
-          deserializeDecimal(value.value)?.toString() ??
-          `Invalid data: \`${value.value}\``;
-        return val + " (decimal)";
-      case xmlSchemaTypes.integer:
-        val =
-          deserializeInteger(value.value)?.toString() ??
-          `Invalid data: \`${value.value}\``;
-        return val + " (integer)";
-      case xmlSchemaTypes.langString:
-        return `"${value.value}" (${value.language} string)`;
-      case xmlSchemaTypes.string:
-        return `"${value.value}" (string)`;
-      default:
-        return `[${value.value}] (RDF/JS Literal of type: \`${value.datatype.value}\`)`;
-    }
-  }
-  if (isLocalNode(value)) {
-    return `<#${value.internal_name}> (URL)`;
-  }
-  if (value.termType === "BlankNode") {
-    return `[${value.value}] (RDF/JS BlankNode)`;
-  }
-  if (value.termType === "Quad") {
-    return `??? (nested RDF* Quad)`;
-  }
-  /* istanbul ignore else: The if statements are exhaustive; if not, TypeScript will complain. */
-  if (value.termType === "Variable") {
-    return `?${value.value} (RDF/JS Variable)`;
-  }
-  /* istanbul ignore next: The if statements are exhaustive; if not, TypeScript will complain. */
-  return value;
-}
-
 /**
  * @param thing The [[Thing]] of which a URL might or might not be known.
  * @return Whether `thing` has no known URL yet.
@@ -435,70 +376,6 @@ export function isThingLocal(
     typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
       "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
   );
-}
-/**
- * @hidden
- * @param thing The Thing whose Subject Node you're interested in.
- * @returns A Node that can be used as the Subject for this Thing's Quads.
- */
-export function internal_toNode(
-  thing: UrlString | Url | ThingPersisted
-): NamedNode;
-/** @hidden */
-export function internal_toNode(thing: LocalNode | ThingLocal): LocalNode;
-/** @hidden */
-export function internal_toNode(
-  thing: UrlString | Url | LocalNode | Thing
-): NamedNode | LocalNode;
-/** @hidden */
-export function internal_toNode(
-  thing: UrlString | Url | LocalNode | Thing
-): NamedNode | LocalNode {
-  if (isNamedNode(thing) || isLocalNode(thing)) {
-    return thing;
-  }
-  if (typeof thing === "string") {
-    return asNamedNode(thing);
-  }
-  if (isThingLocal(thing)) {
-    return thing.internal_localSubject;
-  }
-  return asNamedNode(asUrl(thing));
-}
-
-/**
- * @internal
- * @param thing Thing to clone.
- * @returns A new Thing with the same Quads as `input`.
- */
-export function cloneThing<T extends Thing>(thing: T): T {
-  const cloned = clone(thing);
-  if (isThingLocal(thing)) {
-    (cloned as ThingLocal).internal_localSubject = thing.internal_localSubject;
-    return cloned as T;
-  }
-  (cloned as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
-  return cloned as T;
-}
-
-/**
- * @internal
- * @param thing Thing to clone.
- * @param callback Function that takes a Quad, and returns a boolean indicating whether that Quad should be included in the cloned Dataset.
- * @returns A new Thing with the same Quads as `input`, excluding the ones for which `callback` returned `false`.
- */
-export function filterThing<T extends Thing>(
-  thing: T,
-  callback: (quad: Quad) => boolean
-): T {
-  const filtered = filter(thing, callback);
-  if (isThingLocal(thing)) {
-    (filtered as ThingLocal).internal_localSubject =
-      thing.internal_localSubject;
-    return filtered as T;
-  }
-  (filtered as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
-  return filtered as T;
 }
 
 /**

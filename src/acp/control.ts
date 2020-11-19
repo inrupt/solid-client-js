@@ -30,7 +30,7 @@ import {
   WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
-import { getSourceUrl, internal_cloneResource } from "../resource/resource";
+import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
@@ -42,7 +42,8 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
-import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "./acp";
+import { WithAccessibleAcr } from "./acp";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -214,33 +215,6 @@ export function removeControl<ResourceExt extends WithAccessibleAcr>(
     updatedAcr
   );
   return updatedResource;
-}
-
-/** @hidden */
-export function internal_getAcr(
-  resource: WithAccessibleAcr
-): AccessControlResource {
-  if (!hasAccessibleAcr(resource)) {
-    throw new Error(
-      `Cannot work with Access Controls on a Resource (${getSourceUrl(
-        resource
-      )}) that does not have an Access Control Resource.`
-    );
-  }
-  return resource.internal_acp.acr;
-}
-
-/** @hidden */
-export function internal_setAcr<ResourceExt extends WithAcp>(
-  resource: ResourceExt,
-  acr: AccessControlResource
-): ResourceExt & WithAccessibleAcr {
-  return Object.assign(internal_cloneResource(resource), {
-    internal_acp: {
-      ...resource.internal_acp,
-      acr: acr,
-    },
-  });
 }
 
 /**

@@ -20,13 +20,7 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
-import {
-  Thing,
-  Url,
-  UrlString,
-  ThingLocal,
-  ThingPersisted,
-} from "../interfaces";
+import { Thing, Url, UrlString } from "../interfaces";
 import {
   asNamedNode,
   serializeBoolean,
@@ -38,7 +32,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { internal_toNode } from "./thing";
+import { internal_toNode } from "./thing.internal";
 import { removeAll } from "./remove";
 
 /**

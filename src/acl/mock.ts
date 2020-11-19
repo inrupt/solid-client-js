@@ -22,13 +22,14 @@
 import {
   WithServerResourceInfo,
   WithResourceAcl,
-  WithAcl,
   WithAccessibleAcl,
   WithFallbackAcl,
   UrlString,
 } from "../interfaces";
-import { getSourceIri, internal_cloneResource } from "../resource/resource";
-import { createAcl, internal_getContainerPath } from "./acl";
+import { getSourceIri } from "../resource/resource";
+import { internal_cloneResource } from "../resource/resource.internal";
+import { createAcl } from "./acl";
+import { internal_getContainerPath } from "./acl.internal";
 import { mockContainerFrom } from "../resource/mock";
 
 /**

@@ -22,7 +22,6 @@
 import { acl, acp, rdf } from "../constants";
 import {
   AclRule,
-  internal_toIriString,
   SolidDataset,
   Thing,
   ThingPersisted,
@@ -30,6 +29,7 @@ import {
   UrlString,
   WebId,
 } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
 import { addIri } from "../thing/add";
 import { getIriAll, getUrl } from "../thing/get";
 import { removeIri } from "../thing/remove";
