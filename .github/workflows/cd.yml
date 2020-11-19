@@ -61,8 +61,7 @@ jobs:
         mediaType: '{"previews": ["flash", "ant-man"]}'
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Prepare for publication to npm
-      uses: actions/setup-node@v2.1.2
+    - uses: actions/setup-node@v2.1.2
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
@@ -127,8 +126,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - name: Prepare for publication to npm
-      uses: actions/setup-node@v2.1.2
+    - uses: actions/setup-node@v2.1.2
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -187,3 +185,33 @@ jobs:
       with:
         name: webpack-dist
         path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
+
+  # Run our Node-based end-to-end tests against the published package at least once,
+  # to detect issues introduced by the build process:
+  cd-end-to-end-tests:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [14.x]
+    needs: [prepare-deployment, publish-npm]
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - uses: actions/setup-node@v2.1.2
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: 'https://registry.npmjs.org'
+    - run: npm ci
+    - name: Install the preview release of solid-client
+      # The `--force` allows us to install it even though our own package has the same name.
+      # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
+      run: npm install --force @inrupt/solid-client@$VERSION_NR
+      env:
+        VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+    - name: Make sure that the end-to-end tests run against the just-published package
+      run: |
+        cd src/e2e-node
+        # For all files (`-type f`) in this directory,
+        # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client`:
+        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
+    - name: Run the Node-based end-to-end tests
+      run: npm run e2e-test-node
