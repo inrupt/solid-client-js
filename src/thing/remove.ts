@@ -35,7 +35,10 @@ import {
   deserializeInteger,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { internal_filterThing } from "./thing.internal";
+import {
+  internal_filterThing,
+  internal_throwIfNotThing,
+} from "./thing.internal";
 
 /**
  * Create a new Thing with all values removed for the given Property.
@@ -51,6 +54,7 @@ export function removeAll<T extends Thing>(
   property: Url | UrlString
 ): T;
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
+  internal_throwIfNotThing(thing);
   const predicateNode = asNamedNode(property);
 
   const updatedThing = internal_filterThing(
@@ -75,6 +79,7 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   property,
   value
 ) => {
+  internal_throwIfNotThing(thing);
   const predicateNode = asNamedNode(property);
   const iriNode = isNamedNode(value)
     ? value
@@ -109,6 +114,7 @@ export const removeBoolean: RemoveOfType<boolean> = (
   property,
   value
 ) => {
+  internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
@@ -128,6 +134,7 @@ export const removeBoolean: RemoveOfType<boolean> = (
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
@@ -148,6 +155,7 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
@@ -167,6 +175,7 @@ export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
 export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
@@ -192,6 +201,7 @@ export function removeStringWithLocale<T extends Thing>(
   value: string,
   locale: string
 ): T {
+  internal_throwIfNotThing(thing);
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
   // must call directly `removeLiteral` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
@@ -217,6 +227,7 @@ export const removeStringNoLocale: RemoveOfType<string> = (
   property,
   value
 ) => {
+  internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
@@ -237,6 +248,7 @@ export function removeNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
+  internal_throwIfNotThing(thing);
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (
@@ -260,6 +272,7 @@ export function removeLiteral<T extends Thing>(
   property: Url | UrlString,
   value: Literal
 ): T {
+  internal_throwIfNotThing(thing);
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (
