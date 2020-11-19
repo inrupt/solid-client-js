@@ -30,10 +30,10 @@ import {
   removeThing,
   createThing,
   asUrl,
-  internal_toNode,
   isThing,
   thingAsMarkdown,
 } from "./thing";
+import { internal_toNode } from "./thing.internal";
 import {
   IriString,
   Thing,

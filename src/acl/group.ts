@@ -29,18 +29,20 @@ import {
   UrlString,
 } from "../interfaces";
 import {
+  hasResourceAcl,
+  hasFallbackAcl,
+  getResourceAcl,
+  getFallbackAcl,
+} from "./acl";
+import {
   internal_getAclRules,
   internal_getDefaultAclRulesForResource,
   internal_getAccess,
   internal_combineAccessModes,
   internal_getResourceAclRulesForResource,
-  hasResourceAcl,
-  hasFallbackAcl,
-  getResourceAcl,
-  getFallbackAcl,
   internal_getAclRulesForIri,
   internal_getAccessByIri,
-} from "./acl";
+} from "./acl.internal";
 
 import { acl } from "../constants";
 

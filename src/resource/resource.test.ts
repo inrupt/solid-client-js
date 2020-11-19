@@ -32,13 +32,12 @@ jest.mock("../fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import {
-  internal_fetchAcl,
   getResourceInfo,
   getSourceIri,
   getPodOwner,
   isPodOwner,
-  internal_cloneResource,
 } from "./resource";
+import { internal_cloneResource, internal_fetchAcl } from "./resource.internal";
 
 import {
   isContainer,

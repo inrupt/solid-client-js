@@ -69,6 +69,8 @@
       "node_modules/**",
       ".codesandbox/**",
       "**/*.test.ts",
+      // Internal helpers:
+      "**/*.internal.ts",
       // End-to-end tests:
       "src/e2e-*/**",
       // Re-exported functions are already documented in their own modules:

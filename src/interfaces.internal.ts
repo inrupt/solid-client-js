@@ -19,26 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Url, UrlString, ThingPersisted } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
-import { dataset } from "../rdfjs";
+import { Iri, IriString } from "./interfaces";
 
-/**
- * Function for use in unit tests to mock a [[Thing]] with a given URL.
- *
- * Warning: do not use this function in actual production code.
- * This function initialises a new empty Thing and sets its URL to a given URL.
- * This is useful to mock a Thing in tests of code that call e.g.
- * [[asUrl]].
- *
- * @param url The URL that the mocked Thing pretends identifies it.
- * @returns A new Thing, pretending to be identified by the given URL.
- * @since 0.2.0
- */
-export function mockThingFrom(url: Url | UrlString): ThingPersisted {
-  const thing: ThingPersisted = Object.assign(dataset(), {
-    internal_url: internal_toIriString(url),
-  });
-
-  return thing;
+/** @internal */
+export function internal_toIriString(iri: Iri | IriString): IriString {
+  return typeof iri === "string" ? iri : iri.value;
 }

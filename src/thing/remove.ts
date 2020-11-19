@@ -21,13 +21,7 @@
 
 import { Literal, NamedNode } from "rdf-js";
 import { asIri } from "../index";
-import {
-  Thing,
-  Url,
-  UrlString,
-  ThingPersisted,
-  ThingLocal,
-} from "../interfaces";
+import { Thing, Url, UrlString, ThingPersisted } from "../interfaces";
 import {
   asNamedNode,
   isNamedNode,
@@ -41,7 +35,7 @@ import {
   deserializeInteger,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { filterThing } from "./thing";
+import { internal_filterThing } from "./thing.internal";
 
 /**
  * Create a new Thing with all values removed for the given Property.
@@ -59,7 +53,7 @@ export function removeAll<T extends Thing>(
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
   const predicateNode = asNamedNode(property);
 
-  const updatedThing = filterThing(
+  const updatedThing = internal_filterThing(
     thing,
     (quad) => !quad.predicate.equals(predicateNode)
   );
@@ -88,7 +82,7 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
     ? asNamedNode(value)
     : asNamedNode(asIri(value));
 
-  const updatedThing = filterThing(thing, (quad) => {
+  const updatedThing = internal_filterThing(thing, (quad) => {
     return (
       !quad.predicate.equals(predicateNode) ||
       !isNamedNode(quad.object) ||
@@ -244,7 +238,7 @@ export function removeNamedNode<T extends Thing>(
   value: NamedNode
 ): T {
   const predicateNode = asNamedNode(property);
-  const updatedThing = filterThing(thing, (quad) => {
+  const updatedThing = internal_filterThing(thing, (quad) => {
     return (
       !quad.predicate.equals(predicateNode) ||
       !isNamedNode(quad.object) ||
@@ -267,7 +261,7 @@ export function removeLiteral<T extends Thing>(
   value: Literal
 ): T {
   const predicateNode = asNamedNode(property);
-  const updatedThing = filterThing(thing, (quad) => {
+  const updatedThing = internal_filterThing(thing, (quad) => {
     return (
       !quad.predicate.equals(predicateNode) ||
       !isLiteral(quad.object) ||
@@ -290,7 +284,7 @@ function removeLiteralMatching<T extends Thing>(
   matcher: (serialisedValue: string) => boolean
 ): T {
   const predicateNode = asNamedNode(property);
-  const updatedThing = filterThing(thing, (quad) => {
+  const updatedThing = internal_filterThing(thing, (quad) => {
     // Copy every value from the old thing into the new thing, unless it:
     return !(
       // has the predicate of the value-to-be-removed,

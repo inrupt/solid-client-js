@@ -27,21 +27,17 @@ import {
   WithAcl,
   Url,
   UrlString,
-  internal_toIriString,
   hasResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
+import { getSourceIri, FetchError } from "./resource";
 import {
-  internal_parseResourceInfo,
-  internal_fetchAcl,
-  getSourceIri,
-  getResourceInfo,
-  isRawData,
   internal_cloneResource,
+  internal_fetchAcl,
   internal_isUnsuccessfulResponse,
-  FetchError,
-} from "./resource";
-import { type } from "rdf-namespaces/dist/dc";
+  internal_parseResourceInfo,
+} from "./resource.internal";
 
 type GetFileOptions = {
   fetch: typeof window.fetch;

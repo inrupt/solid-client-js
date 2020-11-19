@@ -34,8 +34,15 @@ import { Response } from "cross-fetch";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
-  internal_fetchResourceAcl,
-  internal_fetchFallbackAcl,
+  getResourceAcl,
+  getFallbackAcl,
+  createAclFromFallbackAcl,
+  saveAclFor,
+  deleteAclFor,
+  createAcl,
+  hasAcl,
+} from "./acl";
+import {
   internal_getAccess,
   internal_getAclRules,
   internal_getResourceAclRules,
@@ -43,16 +50,11 @@ import {
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
   internal_combineAccessModes,
-  getResourceAcl,
-  getFallbackAcl,
   internal_removeEmptyAclRules,
-  createAclFromFallbackAcl,
-  saveAclFor,
-  deleteAclFor,
-  createAcl,
+  internal_fetchResourceAcl,
+  internal_fetchFallbackAcl,
   internal_getContainerPath,
-  hasAcl,
-} from "./acl";
+} from "./acl.internal";
 import {
   WithServerResourceInfo,
   ThingPersisted,

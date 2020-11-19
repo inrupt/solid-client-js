@@ -30,18 +30,17 @@ import {
 } from "../interfaces";
 import { acl, foaf } from "../constants";
 import { getIriAll } from "../thing/get";
+import { hasResourceAcl, hasFallbackAcl } from "./acl";
 import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,
   internal_getDefaultAclRulesForResource,
   internal_getAccess,
   internal_combineAccessModes,
-  hasResourceAcl,
-  hasFallbackAcl,
   internal_removeEmptyAclRules,
   internal_initialiseAclRule,
   internal_duplicateAclRule,
-} from "./acl";
+} from "./acl.internal";
 import { removeIri, removeAll } from "../thing/remove";
 import { getThingAll, setThing } from "../thing/thing";
 import { setIri } from "../thing/set";

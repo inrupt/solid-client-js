@@ -20,14 +20,8 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
-import {
-  Thing,
-  UrlString,
-  ThingLocal,
-  ThingPersisted,
-  Url,
-} from "../interfaces";
-import { cloneThing, internal_toNode } from "./thing";
+import { Thing, UrlString, Url } from "../interfaces";
+import { internal_cloneThing, internal_toNode } from "./thing.internal";
 import {
   asNamedNode,
   serializeBoolean,
@@ -58,7 +52,7 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
   url
 ) => {
   const predicateNode = asNamedNode(property);
-  const newThing = cloneThing(thing);
+  const newThing = internal_cloneThing(thing);
 
   newThing.add(
     DataFactory.quad(
@@ -261,7 +255,7 @@ export function addTerm<T extends Thing>(
   value: Quad_Object
 ): T {
   const predicateNode = asNamedNode(property);
-  const newThing = cloneThing(thing);
+  const newThing = internal_cloneThing(thing);
 
   newThing.add(
     DataFactory.quad(internal_toNode(newThing), predicateNode, value)

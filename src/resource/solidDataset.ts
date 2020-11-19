@@ -38,29 +38,29 @@ import {
   LocalNode,
   WithAcl,
   Url,
-  internal_toIriString,
   IriString,
   Thing,
   WithServerResourceInfo,
 } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
 import {
-  internal_parseResourceInfo,
   internal_defaultFetchOptions,
-  internal_fetchAcl,
   getSourceUrl,
   getResourceInfo,
   isContainer,
-  isRawData,
-  internal_cloneResource,
   FetchError,
-  internal_isUnsuccessfulResponse,
 } from "./resource";
 import {
-  thingAsMarkdown,
-  getThingAll,
+  internal_cloneResource,
+  internal_fetchAcl,
+  internal_isUnsuccessfulResponse,
+  internal_parseResourceInfo,
+} from "./resource.internal";
+import { thingAsMarkdown, getThingAll } from "../thing/thing";
+import {
   internal_getReadableValue,
   internal_toNode,
-} from "../thing/thing";
+} from "../thing/thing.internal";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.

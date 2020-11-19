@@ -27,8 +27,8 @@ import {
   SolidDataset,
   File,
   WithServerResourceInfo,
-  internal_toIriString,
 } from "../interfaces";
+import { internal_toIriString } from "../interfaces.internal";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
 import { getFile } from "./file";
 import { FetchError } from "./resource";
