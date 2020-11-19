@@ -35,7 +35,10 @@ import {
   deserializeInteger,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { internal_filterThing } from "./thing.internal";
+import {
+  internal_filterThing,
+  internal_throwIfNotThing,
+} from "./thing.internal";
 
 /**
  * Create a new Thing with all values removed for the given Property.
@@ -51,6 +54,7 @@ export function removeAll<T extends Thing>(
   property: Url | UrlString
 ): T;
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
+  internal_throwIfNotThing(thing, removeAll);
   const predicateNode = asNamedNode(property);
 
   const updatedThing = internal_filterThing(
@@ -70,11 +74,10 @@ export function removeAll(thing: Thing, property: Url | UrlString): Thing {
  * @param value URL to remove from `thing` for the given `Property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
-  thing,
-  property,
-  value
-) => {
+export const removeUrl: RemoveOfType<
+  Url | UrlString | ThingPersisted
+> = function removeUrl(thing, property, value) {
+  internal_throwIfNotThing(thing, removeUrl);
   const predicateNode = asNamedNode(property);
   const iriNode = isNamedNode(value)
     ? value
@@ -104,11 +107,12 @@ export const removeIri = removeUrl;
  * @param value Boolean to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeBoolean: RemoveOfType<boolean> = (
+export const removeBoolean: RemoveOfType<boolean> = function removeBoolean(
   thing,
   property,
   value
-) => {
+) {
+  internal_throwIfNotThing(thing, removeBoolean);
   return removeLiteralMatching(
     thing,
     property,
@@ -127,7 +131,12 @@ export const removeBoolean: RemoveOfType<boolean> = (
  * @param value Datetime to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
+export const removeDatetime: RemoveOfType<Date> = function removeDatetime(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, removeDatetime);
   return removeLiteralMatching(
     thing,
     property,
@@ -147,7 +156,12 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
  * @param value Decimal to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
+export const removeDecimal: RemoveOfType<number> = function removeDecimal(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, removeDecimal);
   return removeLiteralMatching(
     thing,
     property,
@@ -166,7 +180,12 @@ export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
  * @param value Integer to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
+export const removeInteger: RemoveOfType<number> = function removeInteger(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, removeInteger);
   return removeLiteralMatching(
     thing,
     property,
@@ -192,6 +211,7 @@ export function removeStringWithLocale<T extends Thing>(
   value: string,
   locale: string
 ): T {
+  internal_throwIfNotThing(thing, removeStringWithLocale);
   // Note: Due to how the `DataFactory.literal` constructor behaves, this function
   // must call directly `removeLiteral` directly, with the locale as the data
   // type of the Literal (which is not a valid NamedNode).
@@ -212,11 +232,12 @@ export function removeStringWithLocale<T extends Thing>(
  * @param value String to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-export const removeStringNoLocale: RemoveOfType<string> = (
+export const removeStringNoLocale: RemoveOfType<string> = function removeStringNoLocale(
   thing,
   property,
   value
-) => {
+) {
+  internal_throwIfNotThing(thing, removeStringNoLocale);
   return removeLiteralMatching(
     thing,
     property,
@@ -237,6 +258,7 @@ export function removeNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
+  internal_throwIfNotThing(thing, removeNamedNode);
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (
@@ -260,6 +282,7 @@ export function removeLiteral<T extends Thing>(
   property: Url | UrlString,
   value: Literal
 ): T {
+  internal_throwIfNotThing(thing, removeLiteral);
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (

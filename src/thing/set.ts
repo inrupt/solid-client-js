@@ -32,7 +32,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { internal_toNode } from "./thing.internal";
+import { internal_toNode, internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 
 /**
@@ -47,11 +47,12 @@ import { removeAll } from "./remove";
  * @param url URL to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setUrl: SetOfType<Url | UrlString | Thing> = (
+export const setUrl: SetOfType<Url | UrlString | Thing> = function setUrl(
   thing,
   property,
   url
-) => {
+) {
+  internal_throwIfNotThing(thing, setUrl);
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
@@ -80,7 +81,12 @@ export const setIri = setUrl;
  * @param value Boolean to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
+export const setBoolean: SetOfType<boolean> = function setBoolean(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, setBoolean);
   return setLiteralOfType(
     thing,
     property,
@@ -101,7 +107,12 @@ export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
  * @param value Datetime to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setDatetime: SetOfType<Date> = (thing, property, value) => {
+export const setDatetime: SetOfType<Date> = function setDatetime(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, setDatetime);
   return setLiteralOfType(
     thing,
     property,
@@ -122,7 +133,12 @@ export const setDatetime: SetOfType<Date> = (thing, property, value) => {
  * @param value Decimal to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setDecimal: SetOfType<number> = (thing, property, value) => {
+export const setDecimal: SetOfType<number> = function setDecimal(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, setDecimal);
   return setLiteralOfType(
     thing,
     property,
@@ -143,7 +159,12 @@ export const setDecimal: SetOfType<number> = (thing, property, value) => {
  * @param value Integer to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setInteger: SetOfType<number> = (thing, property, value) => {
+export const setInteger: SetOfType<number> = function setInteger(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, setInteger);
   return setLiteralOfType(
     thing,
     property,
@@ -171,6 +192,7 @@ export function setStringWithLocale<T extends Thing>(
   value: string,
   locale: string
 ): T {
+  internal_throwIfNotThing(thing, setStringWithLocale);
   const literal = DataFactory.literal(value, normalizeLocale(locale));
   return setLiteral(thing, property, literal);
 }
@@ -187,11 +209,12 @@ export function setStringWithLocale<T extends Thing>(
  * @param value Unlocalised string to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-export const setStringNoLocale: SetOfType<string> = (
+export const setStringNoLocale: SetOfType<string> = function setStringNoLocale(
   thing,
   property,
   value
-) => {
+) {
+  internal_throwIfNotThing(thing, setStringNoLocale);
   return setLiteralOfType(thing, property, value, xmlSchemaTypes.string);
 };
 
@@ -213,6 +236,7 @@ export function setNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
+  internal_throwIfNotThing(thing, setNamedNode);
   return setTerm(thing, property, value);
 }
 
@@ -234,6 +258,7 @@ export function setLiteral<T extends Thing>(
   property: Url | UrlString,
   value: Literal
 ): T {
+  internal_throwIfNotThing(thing, setLiteral);
   return setTerm(thing, property, value);
 }
 
@@ -256,6 +281,7 @@ export function setTerm<T extends Thing>(
   property: Url | UrlString,
   value: Quad_Object
 ): T {
+  internal_throwIfNotThing(thing, setTerm);
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);

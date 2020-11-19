@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../interfaces";
+import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
 import {
   setUrl,
   setBoolean,
@@ -301,6 +301,16 @@ describe("setIri", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setUrl(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.url"
+      )
+    ).toThrow("Function `setUrl` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("setBoolean", () => {
@@ -440,6 +450,16 @@ describe("setBoolean", () => {
         object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setBoolean(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        true
+      )
+    ).toThrow("Function `setBoolean` expected a Thing, but received: `null`.");
   });
 });
 
@@ -581,6 +601,16 @@ describe("setDatetime", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setDatetime(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      )
+    ).toThrow("Function `setDatetime` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("setDecimal", () => {
@@ -721,6 +751,16 @@ describe("setDecimal", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setDecimal(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        13.37
+      )
+    ).toThrow("Function `setDecimal` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("setInteger", () => {
@@ -856,6 +896,16 @@ describe("setInteger", () => {
         object: literalOfType("integer", "42"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setInteger(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        42
+      )
+    ).toThrow("Function `setInteger` expected a Thing, but received: `null`.");
   });
 });
 
@@ -1002,6 +1052,19 @@ describe("setStringWithLocale", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setStringWithLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Function `setStringWithLocale` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("setStringNoLocale", () => {
@@ -1142,6 +1205,18 @@ describe("setStringNoLocale", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setStringNoLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string"
+      )
+    ).toThrow(
+      "Function `setStringNoLocale` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("setNamedNode", () => {
@@ -1275,6 +1350,18 @@ describe("setNamedNode", () => {
         object: DataFactory.namedNode("https://some.pod/resource#object"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setNamedNode(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+      )
+    ).toThrow(
+      "Function `setNamedNode` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1414,6 +1501,16 @@ describe("setLiteral", () => {
         object: DataFactory.literal("Some string value"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setLiteral(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.literal("Arbitrary string value")
+      )
+    ).toThrow("Function `setLiteral` expected a Thing, but received: `null`.");
   });
 });
 
@@ -1585,5 +1682,15 @@ describe("setTerm", () => {
         object: DataFactory.namedNode("https://some.pod/resource#object"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setTerm(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+      )
+    ).toThrow("Function `setTerm` expected a Thing, but received: `null`.");
   });
 });

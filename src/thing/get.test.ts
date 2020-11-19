@@ -210,6 +210,12 @@ describe("getIri", () => {
       getUrl(thingWithIri, "https://some-other.vocab/predicate")
     ).toBeNull();
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Function `getUrl` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("getIriAll", () => {
@@ -305,6 +311,12 @@ describe("getIriAll", () => {
       getUrlAll(thingWithIri, "https://some-other.vocab/predicate")
     ).toEqual([]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Function `getUrl` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("getBoolean", () => {
@@ -391,6 +403,15 @@ describe("getBoolean", () => {
     expect(
       getBoolean(thingWithNonBoolean, "https://some.vocab/predicate")
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getBoolean(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getBoolean` expected a Thing, but received: `null`.");
   });
 });
 
@@ -481,6 +502,17 @@ describe("getBooleanAll", () => {
     expect(
       getBooleanAll(thingWithNonBoolean, "https://some.vocab/predicate")
     ).toEqual([false]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getBooleanAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getBooleanAll` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -575,6 +607,15 @@ describe("getDatetime", () => {
     expect(
       getDatetime(thingWithNonDatetime, "https://some.vocab/predicate")
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getDatetime(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getDatetime` expected a Thing, but received: `null`.");
   });
 });
 
@@ -680,6 +721,17 @@ describe("getDatetimeAll", () => {
       getDatetimeAll(thingWithNonDatetime, "https://some.vocab/predicate")
     ).toEqual([expectedDate]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getDatetimeAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getDatetimeAll` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getDecimal", () => {
@@ -758,6 +810,15 @@ describe("getDecimal", () => {
     expect(
       getDecimal(thingWithDecimal, "https://some-other.vocab/predicate")
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getDecimal(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getDecimal` expected a Thing, but received: `null`.");
   });
 });
 
@@ -840,6 +901,17 @@ describe("getDecimalAll", () => {
       getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate")
     ).toEqual([]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getDecimalAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getDecimalAll` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getInteger", () => {
@@ -914,6 +986,15 @@ describe("getInteger", () => {
     expect(
       getInteger(thingWithInteger, "https://some-other.vocab/predicate")
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getInteger(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getInteger` expected a Thing, but received: `null`.");
   });
 });
 
@@ -991,6 +1072,17 @@ describe("getIntegerAll", () => {
     expect(
       getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate")
     ).toEqual([]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getIntegerAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getIntegerAll` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1157,6 +1249,18 @@ describe("getStringWithLocale", () => {
       )
     ).toBeNull();
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getStringWithLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Function `getStringWithLocale` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getStringByLocaleAll", () => {
@@ -1241,6 +1345,17 @@ describe("getStringByLocaleAll", () => {
     expect(
       Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
     ).toEqual([["fr", ["value 1"]]]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getStringByLocaleAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getStringByLocaleAll` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1437,6 +1552,18 @@ describe("getStringWithLocaleAll", () => {
       )
     ).toEqual([]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getStringWithLocaleAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Function `getStringWithLocaleAll` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getStringNoLocale", () => {
@@ -1524,6 +1651,17 @@ describe("getStringNoLocale", () => {
         "https://some-other.vocab/predicate"
       )
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getStringNoLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getStringNoLocale` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1618,6 +1756,17 @@ describe("getStringNoLocaleAll", () => {
       )
     ).toEqual([]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getStringNoLocaleAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getStringNoLocaleAll` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getLiteral", () => {
@@ -1685,6 +1834,15 @@ describe("getLiteral", () => {
         "https://some.vocab/predicate"
       ) as Literal).termType
     ).toBe("Literal");
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getLiteral(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getLiteral` expected a Thing, but received: `null`.");
   });
 });
 
@@ -1760,6 +1918,17 @@ describe("getLiteralAll", () => {
 
     expect(foundLiterals).toHaveLength(1);
     expect(foundLiterals[0].termType).toBe("Literal");
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getLiteralAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getLiteralAll` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1880,6 +2049,17 @@ describe("getNamedNode", () => {
       ) as NamedNode).termType
     ).toBe("NamedNode");
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getNamedNode(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getNamedNode` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getNamedNodeAll", () => {
@@ -1952,6 +2132,17 @@ describe("getNamedNodeAll", () => {
     expect(foundNamedNodes).toHaveLength(1);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getNamedNodeAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow(
+      "Function `getNamedNodeAll` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("getTerm", () => {
@@ -2011,6 +2202,12 @@ describe("getTerm", () => {
     expect(
       getTerm(thingWithoutTerm, "https://some.vocab/predicate")
     ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getTerm((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Function `getTerm` expected a Thing, but received: `null`.");
   });
 });
 
@@ -2117,5 +2314,14 @@ describe("getTermAll", () => {
     expect(
       getTermAll(thingWithoutTerms, "https://some.vocab/predicate")
     ).toEqual([]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getTermAll(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate"
+      )
+    ).toThrow("Function `getTermAll` expected a Thing, but received: `null`.");
   });
 });

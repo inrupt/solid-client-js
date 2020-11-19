@@ -21,7 +21,11 @@
 
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { Thing, UrlString, Url } from "../interfaces";
-import { internal_cloneThing, internal_toNode } from "./thing.internal";
+import {
+  internal_cloneThing,
+  internal_toNode,
+  internal_throwIfNotThing,
+} from "./thing.internal";
 import {
   asNamedNode,
   serializeBoolean,
@@ -46,11 +50,12 @@ import { DataFactory } from "../rdfjs";
  * @param url URL to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addUrl: AddOfType<Url | UrlString | Thing> = (
+export const addUrl: AddOfType<Url | UrlString | Thing> = function addUrl(
   thing,
   property,
   url
-) => {
+) {
+  internal_throwIfNotThing(thing, addUrl);
   const predicateNode = asNamedNode(property);
   const newThing = internal_cloneThing(thing);
 
@@ -78,7 +83,12 @@ export const addIri = addUrl;
  * @param value Boolean to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addBoolean: AddOfType<boolean> = (thing, property, value) => {
+export const addBoolean: AddOfType<boolean> = function addBoolean(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, addBoolean);
   return addLiteralOfType(
     thing,
     property,
@@ -99,7 +109,12 @@ export const addBoolean: AddOfType<boolean> = (thing, property, value) => {
  * @param value Datetime to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addDatetime: AddOfType<Date> = (thing, property, value) => {
+export const addDatetime: AddOfType<Date> = function addDatetime(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, addDatetime);
   return addLiteralOfType(
     thing,
     property,
@@ -120,7 +135,12 @@ export const addDatetime: AddOfType<Date> = (thing, property, value) => {
  * @param value Decimal to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addDecimal: AddOfType<number> = (thing, property, value) => {
+export const addDecimal: AddOfType<number> = function addDecimal(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, addDecimal);
   return addLiteralOfType(
     thing,
     property,
@@ -141,7 +161,12 @@ export const addDecimal: AddOfType<number> = (thing, property, value) => {
  * @param value Integer to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addInteger: AddOfType<number> = (thing, property, value) => {
+export const addInteger: AddOfType<number> = function addInteger(
+  thing,
+  property,
+  value
+) {
+  internal_throwIfNotThing(thing, addInteger);
   return addLiteralOfType(
     thing,
     property,
@@ -169,6 +194,7 @@ export function addStringWithLocale<T extends Thing>(
   value: string,
   locale: string
 ): T {
+  internal_throwIfNotThing(thing, addStringWithLocale);
   const literal = DataFactory.literal(value, normalizeLocale(locale));
   return addLiteral(thing, property, literal);
 }
@@ -185,11 +211,12 @@ export function addStringWithLocale<T extends Thing>(
  * @param value String to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
  */
-export const addStringNoLocale: AddOfType<string> = (
+export const addStringNoLocale: AddOfType<string> = function addStringNoLocale(
   thing,
   property,
   value
-) => {
+) {
+  internal_throwIfNotThing(thing, addStringNoLocale);
   return addLiteralOfType(thing, property, value, xmlSchemaTypes.string);
 };
 
@@ -211,6 +238,7 @@ export function addNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
+  internal_throwIfNotThing(thing, addNamedNode);
   return addTerm(thing, property, value);
 }
 
@@ -232,6 +260,7 @@ export function addLiteral<T extends Thing>(
   property: Url | UrlString,
   value: Literal
 ): T {
+  internal_throwIfNotThing(thing, addLiteral);
   return addTerm(thing, property, value);
 }
 
@@ -254,6 +283,7 @@ export function addTerm<T extends Thing>(
   property: Url | UrlString,
   value: Quad_Object
 ): T {
+  internal_throwIfNotThing(thing, addTerm);
   const predicateNode = asNamedNode(property);
   const newThing = internal_cloneThing(thing);
 

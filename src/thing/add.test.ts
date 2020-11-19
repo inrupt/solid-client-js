@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode } from "../interfaces";
+import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
 import {
   addUrl,
   addBoolean,
@@ -298,6 +298,16 @@ describe("addIri", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addUrl(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.url"
+      )
+    ).toThrow("Function `addUrl` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("addBoolean", () => {
@@ -449,6 +459,16 @@ describe("addBoolean", () => {
         object: literalOfType("boolean", "true"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addBoolean(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        true
+      )
+    ).toThrow("Function `addBoolean` expected a Thing, but received: `null`.");
   });
 });
 
@@ -602,6 +622,16 @@ describe("addDatetime", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addDatetime(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      )
+    ).toThrow("Function `addDatetime` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("addDecimal", () => {
@@ -754,6 +784,16 @@ describe("addDecimal", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addDecimal(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        13.37
+      )
+    ).toThrow("Function `addDecimal` expected a Thing, but received: `null`.");
+  });
 });
 
 describe("addInteger", () => {
@@ -893,6 +933,16 @@ describe("addInteger", () => {
         object: literalOfType("integer", "42"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addInteger(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        42
+      )
+    ).toThrow("Function `addInteger` expected a Thing, but received: `null`.");
   });
 });
 
@@ -1052,6 +1102,19 @@ describe("addStringWithLocale", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addStringWithLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Function `addStringWithLocale` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("addStringNoLocale", () => {
@@ -1203,6 +1266,18 @@ describe("addStringNoLocale", () => {
         object: literalOfType("string", "Some string value"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addStringNoLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string"
+      )
+    ).toThrow(
+      "Function `addStringNoLocale` expected a Thing, but received: `null`."
+    );
   });
 });
 
@@ -1358,6 +1433,18 @@ describe("addNamedNode", () => {
       })
     ).toBe(true);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addNamedNode(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+      )
+    ).toThrow(
+      "Function `addNamedNode` expected a Thing, but received: `null`."
+    );
+  });
 });
 
 describe("addLiteral", () => {
@@ -1509,6 +1596,16 @@ describe("addLiteral", () => {
         object: DataFactory.literal("Some string value"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addLiteral(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.literal("Arbitrary string value")
+      )
+    ).toThrow("Function `addLiteral` expected a Thing, but received: `null`.");
   });
 });
 
@@ -1689,5 +1786,15 @@ describe("addTerm", () => {
         object: DataFactory.namedNode("https://some.pod/other-resource#object"),
       })
     ).toBe(true);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addTerm(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.namedNode("https://arbitrary.pod/resource#object")
+      )
+    ).toThrow("Function `addTerm` expected a Thing, but received: `null`.");
   });
 });

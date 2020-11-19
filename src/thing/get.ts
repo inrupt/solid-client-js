@@ -33,6 +33,7 @@ import {
   XmlSchemaTypeIri,
   isTerm,
 } from "../datatypes";
+import { internal_throwIfNotThing } from "./thing.internal";
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
@@ -43,6 +44,7 @@ export function getUrl(
   thing: Thing,
   property: Url | UrlString
 ): UrlString | null {
+  internal_throwIfNotThing(thing, getUrl);
   const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuad = findOne(thing, namedNodeMatcher);
@@ -65,6 +67,7 @@ export function getUrlAll(
   thing: Thing,
   property: Url | UrlString
 ): UrlString[] {
+  internal_throwIfNotThing(thing, getUrlAll);
   const iriMatcher = getNamedNodeMatcher(property);
 
   const matchingQuads = findAll(thing, iriMatcher);
@@ -83,6 +86,7 @@ export function getBoolean(
   thing: Thing,
   property: Url | UrlString
 ): boolean | null {
+  internal_throwIfNotThing(thing, getBoolean);
   const literalString = getLiteralOfType(
     thing,
     property,
@@ -105,6 +109,7 @@ export function getBooleanAll(
   thing: Thing,
   property: Url | UrlString
 ): boolean[] {
+  internal_throwIfNotThing(thing, getBooleanAll);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
@@ -125,6 +130,7 @@ export function getDatetime(
   thing: Thing,
   property: Url | UrlString
 ): Date | null {
+  internal_throwIfNotThing(thing, getDatetime);
   const literalString = getLiteralOfType(
     thing,
     property,
@@ -147,6 +153,7 @@ export function getDatetimeAll(
   thing: Thing,
   property: Url | UrlString
 ): Date[] {
+  internal_throwIfNotThing(thing, getDatetimeAll);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
@@ -167,6 +174,7 @@ export function getDecimal(
   thing: Thing,
   property: Url | UrlString
 ): number | null {
+  internal_throwIfNotThing(thing, getDecimal);
   const literalString = getLiteralOfType(
     thing,
     property,
@@ -189,6 +197,7 @@ export function getDecimalAll(
   thing: Thing,
   property: Url | UrlString
 ): number[] {
+  internal_throwIfNotThing(thing, getDecimalAll);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
@@ -209,6 +218,7 @@ export function getInteger(
   thing: Thing,
   property: Url | UrlString
 ): number | null {
+  internal_throwIfNotThing(thing, getInteger);
   const literalString = getLiteralOfType(
     thing,
     property,
@@ -231,6 +241,7 @@ export function getIntegerAll(
   thing: Thing,
   property: Url | UrlString
 ): number[] {
+  internal_throwIfNotThing(thing, getIntegerAll);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
@@ -253,6 +264,7 @@ export function getStringWithLocale(
   property: Url | UrlString,
   locale: string
 ): string | null {
+  internal_throwIfNotThing(thing, getStringWithLocale);
   const localeStringMatcher = getLocaleStringMatcher(property, locale);
 
   const matchingQuad = findOne(thing, localeStringMatcher);
@@ -275,6 +287,7 @@ export function getStringWithLocaleAll(
   property: Url | UrlString,
   locale: string
 ): string[] {
+  internal_throwIfNotThing(thing, getStringWithLocaleAll);
   const localeStringMatcher = getLocaleStringMatcher(property, locale);
 
   const matchingQuads = findAll(thing, localeStringMatcher);
@@ -294,6 +307,7 @@ export function getStringByLocaleAll(
   thing: Thing,
   property: Url | UrlString
 ): Map<string, string[]> {
+  internal_throwIfNotThing(thing, getStringByLocaleAll);
   const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuads = findAll(thing, literalMatcher);
@@ -321,6 +335,7 @@ export function getStringNoLocale(
   thing: Thing,
   property: Url | UrlString
 ): string | null {
+  internal_throwIfNotThing(thing, getStringNoLocale);
   const literalString = getLiteralOfType(
     thing,
     property,
@@ -339,6 +354,7 @@ export function getStringNoLocaleAll(
   thing: Thing,
   property: Url | UrlString
 ): string[] {
+  internal_throwIfNotThing(thing, getStringNoLocaleAll);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
@@ -359,6 +375,7 @@ export function getNamedNode(
   thing: Thing,
   property: Url | UrlString
 ): NamedNode | null {
+  internal_throwIfNotThing(thing, getNamedNode);
   const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuad = findOne(thing, namedNodeMatcher);
@@ -381,6 +398,7 @@ export function getNamedNodeAll(
   thing: Thing,
   property: Url | UrlString
 ): NamedNode[] {
+  internal_throwIfNotThing(thing, getNamedNodeAll);
   const namedNodeMatcher = getNamedNodeMatcher(property);
 
   const matchingQuads = findAll(thing, namedNodeMatcher);
@@ -399,6 +417,7 @@ export function getLiteral(
   thing: Thing,
   property: Url | UrlString
 ): Literal | null {
+  internal_throwIfNotThing(thing, getLiteral);
   const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuad = findOne(thing, literalMatcher);
@@ -421,6 +440,7 @@ export function getLiteralAll(
   thing: Thing,
   property: Url | UrlString
 ): Literal[] {
+  internal_throwIfNotThing(thing, getLiteralAll);
   const literalMatcher = getLiteralMatcher(property);
 
   const matchingQuads = findAll(thing, literalMatcher);
@@ -440,6 +460,7 @@ export function getTerm(
   thing: Thing,
   property: Url | UrlString
 ): Quad_Object | null {
+  internal_throwIfNotThing(thing, getTerm);
   const termMatcher = getTermMatcher(property);
 
   const matchingQuad = findOne(thing, termMatcher);
@@ -463,6 +484,7 @@ export function getTermAll(
   thing: Thing,
   property: Url | UrlString
 ): Quad_Object[] {
+  internal_throwIfNotThing(thing, getTermAll);
   const namedNodeMatcher = getTermMatcher(property);
 
   const matchingQuads = findAll(thing, namedNodeMatcher);

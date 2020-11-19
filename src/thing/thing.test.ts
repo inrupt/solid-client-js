@@ -57,6 +57,7 @@ import {
   addDatetime,
   addDecimal,
 } from "./add";
+import { internal_throwIfNotThing } from "./thing.internal";
 
 function getMockQuad(
   terms: Partial<{
@@ -1449,5 +1450,30 @@ describe("thingAsMarkdown", () => {
         "- Invalid data: `Not an integer` (integer)\n" +
         "- ?some-variable (RDF/JS Variable)\n"
     );
+  });
+});
+
+describe("throwIfNotThing", () => {
+  it("throws when passed null", () => {
+    expect(() =>
+      internal_throwIfNotThing((null as unknown) as Thing, () => undefined)
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("logs the function name if available", () => {
+    expect(() =>
+      internal_throwIfNotThing(
+        (null as unknown) as Thing,
+        function arbitraryName() {}
+      )
+    ).toThrow(
+      "Function `arbitraryName` expected a Thing, but received: `null`."
+    );
+  });
+
+  it("does not throw when passed a Thing", () => {
+    expect(() =>
+      internal_throwIfNotThing(createThing(), function arbitraryName() {})
+    ).not.toThrow();
   });
 });
