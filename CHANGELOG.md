@@ -9,6 +9,7 @@ The following changes have been implemented but not released yet:
 ### Bugs fixed
 
 - While the documentation mentioned `hasAcl()`, solid-client did not actually export that function.
+- Dates in between the years 0 and 100 AD were not parsed properly.
 
 The following sections document changes that have been released already:
 

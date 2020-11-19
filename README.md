@@ -19,18 +19,6 @@ or Parcel.
 
 ## Vocabularies and interoperability - solid-common-vocab-rdf
 
-[@inrupt/solid-common-vocab-rdf](https://www.npmjs.com/package/@inrupt/vocab-common-rdf) allows developers to build interoperable apps by reusing well-known vocabularies. These libraries provide vocabularies available as constants that you just have to import.
-
-# Browser support
-
-Our JavaScript Client Libraries use relatively modern JavaScript features that will work in all commonly-used browsers, except Internet Explorer. If you need support for Internet Explorer, it is recommended to pass them through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g. `Set`, `Promise`, `Headers`, `Array.prototype.includes`, `Array.prototype.from` and `String.prototype.endsWith`.
-=======
-[@inrupt/solid-client-authn](https://github.com/inrupt/solid-client-authn)
-allows developers to authenticate against a Solid server. This is necessary when
-the resources on your Pod are not public.
-
-## Vocabularies and interoperability - solid-common-vocab-rdf
-
 [@inrupt/solid-common-vocab-rdf](https://github.com/inrupt/solid-common-vocab-rdf)
 allows developers to build interoperable apps by reusing well-known
 vocabularies. These libraries provide vocabularies available as constants that
@@ -44,7 +32,6 @@ support for Internet Explorer, it is recommended to pass them through a tool
 like [Babel](https://babeljs.io), and to add polyfills for e.g. `Map`, `Set`,
 `Promise`, `Headers`, `Array.prototype.includes` and
 `String.prototype.endsWith`.
->>>>>>> removed special handling for empty locale strings
 
 # Installation
 
@@ -70,15 +57,10 @@ forum is a good place to meet the rest of the community.
 
 ## Bugs and Feature Requests
 
-<<<<<<< HEAD
-- For public feedback, bug reports, and feature requests please file an issue via [GitHub](https://github.com/inrupt/solid-client-js/issues/).
-- For non-public feedback or support inquiries please use the [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
-=======
 - For public feedback, bug reports, and feature requests please file an issue
   via [Github](https://github.com/inrupt/solid-client-js/issues/).
 - For non-public feedback or support inquiries please use the
   [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
->>>>>>> removed special handling for empty locale strings
 
 ## Documentation
 
