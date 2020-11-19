@@ -33,6 +33,7 @@ export function internal_isDatasetCore<X>(
 ): input is DatasetCore {
   return (
     typeof input === "object" &&
+    input !== null &&
     typeof (input as DatasetCore).size === "number" &&
     typeof (input as DatasetCore).add === "function" &&
     typeof (input as DatasetCore).delete === "function" &&

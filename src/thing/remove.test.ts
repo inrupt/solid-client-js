@@ -196,6 +196,12 @@ describe("removeAll", () => {
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithDifferentPredicate]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
 });
 
 describe("removeIri", () => {
@@ -394,6 +400,16 @@ describe("removeIri", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeUrl(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.url"
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
   });
 });
 
@@ -594,6 +610,16 @@ describe("removeBoolean", () => {
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithIntegerNotBoolean]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeBoolean(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        true
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
 });
 
 describe("removeDatetime", () => {
@@ -780,6 +806,16 @@ describe("removeDatetime", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithStringNotDatetime]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeDatetime(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
   });
 });
 
@@ -969,6 +1005,16 @@ describe("removeDecimal", () => {
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithStringNotDecimal]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeDecimal(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        13.37
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
 });
 
 describe("removeInteger", () => {
@@ -1145,6 +1191,16 @@ describe("removeInteger", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithStringNotInteger]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeInteger(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        42
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
   });
 });
 
@@ -1365,6 +1421,17 @@ describe("removeStringWithLocale", () => {
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithInteger]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeStringWithLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string",
+        "nl-NL"
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
 });
 
 describe("removeStringNoLocale", () => {
@@ -1514,6 +1581,16 @@ describe("removeStringNoLocale", () => {
     );
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithInteger]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeStringNoLocale(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        "Arbitrary string"
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
   });
 });
 
@@ -1784,6 +1861,19 @@ describe("removeLiteral", () => {
 
     expect(Array.from(updatedThing)).toEqual([mockQuadWithStringNotInteger]);
   });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeLiteral(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.literal(
+          "42",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
+        )
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
+  });
 });
 
 describe("removeNamedNode", () => {
@@ -1901,5 +1991,15 @@ describe("removeNamedNode", () => {
       mockQuadWithDifferentObject,
       mockQuadWithDifferentPredicate,
     ]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeNamedNode(
+        (null as unknown) as Thing,
+        "https://arbitrary.vocab/predicate",
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    ).toThrow("Expected a Thing, but received: `null`.");
   });
 });

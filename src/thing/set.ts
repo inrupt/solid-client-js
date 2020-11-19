@@ -32,7 +32,7 @@ import {
   xmlSchemaTypes,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
-import { internal_toNode } from "./thing.internal";
+import { internal_toNode, internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 
 /**
@@ -52,6 +52,7 @@ export const setUrl: SetOfType<Url | UrlString | Thing> = (
   property,
   url
 ) => {
+  internal_throwIfNotThing(thing);
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
@@ -81,6 +82,7 @@ export const setIri = setUrl;
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return setLiteralOfType(
     thing,
     property,
@@ -102,6 +104,7 @@ export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export const setDatetime: SetOfType<Date> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return setLiteralOfType(
     thing,
     property,
@@ -123,6 +126,7 @@ export const setDatetime: SetOfType<Date> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export const setDecimal: SetOfType<number> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return setLiteralOfType(
     thing,
     property,
@@ -144,6 +148,7 @@ export const setDecimal: SetOfType<number> = (thing, property, value) => {
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
 export const setInteger: SetOfType<number> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
   return setLiteralOfType(
     thing,
     property,
@@ -171,6 +176,7 @@ export function setStringWithLocale<T extends Thing>(
   value: string,
   locale: string
 ): T {
+  internal_throwIfNotThing(thing);
   const literal = DataFactory.literal(value, normalizeLocale(locale));
   return setLiteral(thing, property, literal);
 }
@@ -192,6 +198,7 @@ export const setStringNoLocale: SetOfType<string> = (
   property,
   value
 ) => {
+  internal_throwIfNotThing(thing);
   return setLiteralOfType(thing, property, value, xmlSchemaTypes.string);
 };
 
@@ -213,6 +220,7 @@ export function setNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
+  internal_throwIfNotThing(thing);
   return setTerm(thing, property, value);
 }
 
@@ -234,6 +242,7 @@ export function setLiteral<T extends Thing>(
   property: Url | UrlString,
   value: Literal
 ): T {
+  internal_throwIfNotThing(thing);
   return setTerm(thing, property, value);
 }
 
@@ -256,6 +265,7 @@ export function setTerm<T extends Thing>(
   property: Url | UrlString,
   value: Quad_Object
 ): T {
+  internal_throwIfNotThing(thing);
   const newThing = removeAll(thing, property);
 
   const predicateNode = asNamedNode(property);
