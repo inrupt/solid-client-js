@@ -32,6 +32,7 @@ import {
   asUrl,
   isThing,
   thingAsMarkdown,
+  ThingExpectedError,
 } from "./thing";
 import { internal_toNode } from "./thing.internal";
 import {
@@ -45,6 +46,7 @@ import {
   LocalNode,
   WithAcl,
   AclDataset,
+  SolidClientError,
 } from "../interfaces";
 import { createSolidDataset } from "../resource/solidDataset";
 import { mockThingFrom } from "./mock";
@@ -1462,5 +1464,25 @@ describe("throwIfNotThing", () => {
 
   it("does not throw when passed a Thing", () => {
     expect(() => internal_throwIfNotThing(createThing())).not.toThrow();
+  });
+
+  it("throws an instance of a SolidClientError", () => {
+    let error;
+    try {
+      internal_throwIfNotThing((null as unknown) as Thing);
+    } catch (e: unknown) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(SolidClientError);
+  });
+
+  it("throws an instance of a ThingExpectedError", () => {
+    let error;
+    try {
+      internal_throwIfNotThing((null as unknown) as Thing);
+    } catch (e: unknown) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(ThingExpectedError);
   });
 });

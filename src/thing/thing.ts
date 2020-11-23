@@ -41,6 +41,7 @@ import {
   WithChangeLog,
   hasChangelog,
   hasResourceInfo,
+  SolidClientError,
 } from "../interfaces";
 import { getTermAll } from "./get";
 import { getSourceUrl } from "../resource/resource";
@@ -376,6 +377,19 @@ export function isThingLocal(
     typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
       "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
   );
+}
+
+/**
+ * This error is thrown when a function expected to receive a [[Thing]] but received something else.
+ */
+export class ThingExpectedError extends SolidClientError {
+  public readonly receivedValue: unknown;
+
+  constructor(receivedValue: unknown) {
+    const message = `Expected a Thing, but received: \`${receivedValue}\`.`;
+    super(message);
+    this.receivedValue = receivedValue;
+  }
 }
 
 /**

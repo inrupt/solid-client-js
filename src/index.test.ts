@@ -148,6 +148,10 @@ import {
   mockThingFrom,
   addMockResourceAclTo,
   addMockFallbackAclTo,
+  // Error classes:
+  SolidClientError,
+  FetchError,
+  ThingExpectedError,
   // Preview API's exported for early adopters:
   acp_v1,
   // Deprecated functions still exported for backwards compatibility:
@@ -285,6 +289,12 @@ it("exports the public API from the entry file", () => {
   expect(mockThingFrom).toBeDefined();
   expect(addMockResourceAclTo).toBeDefined();
   expect(addMockFallbackAclTo).toBeDefined();
+});
+
+it("exports error classes", () => {
+  expect(SolidClientError).toBeDefined();
+  expect(FetchError).toBeDefined();
+  expect(ThingExpectedError).toBeDefined();
 });
 
 it("exports preview API's for early adopters", () => {
