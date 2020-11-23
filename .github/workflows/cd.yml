@@ -160,7 +160,7 @@ jobs:
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Archive Parcel build artifacts
-      uses: actions/upload-artifact@v2.2.0
+      uses: actions/upload-artifact@v2.2.1
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x'
       with:
         name: parcel-dist
@@ -180,7 +180,7 @@ jobs:
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Archive Webpack build artifacts
-      uses: actions/upload-artifact@v2.2.0
+      uses: actions/upload-artifact@v2.2.1
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x'
       with:
         name: webpack-dist
