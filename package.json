@@ -74,7 +74,7 @@
     "jest": "^26.5.2",
     "license-checker": "^25.0.1",
     "lint-staged": "^10.2.9",
-    "prettier": "2.1.2",
+    "prettier": "2.2.0",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.15.0",
     "rollup-plugin-typescript2": "^0.29.0",
