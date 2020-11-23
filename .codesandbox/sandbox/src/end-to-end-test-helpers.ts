@@ -28,7 +28,9 @@ export function getHelpers(podRoot: string, session: Session) {
   }
 
   async function createContainer() {
-    const sentContainer = await createContainerAt(getTestContainerUrl(), { fetch: session.fetch });
+    const sentContainer = await createContainerAt(getTestContainerUrl(), {
+      fetch: session.fetch,
+    });
     return sentContainer;
   }
   async function deleteContainer() {
@@ -54,7 +56,10 @@ export function getHelpers(podRoot: string, session: Session) {
     let selfWriteNoReadPolicy = acp.createPolicy(
       policyResourceUrl + "#policy-selfWriteNoRead"
     );
-    selfWriteNoReadPolicy = acp.addRequiredRuleUrl(selfWriteNoReadPolicy, selfRule);
+    selfWriteNoReadPolicy = acp.addRequiredRuleUrl(
+      selfWriteNoReadPolicy,
+      selfRule
+    );
     selfWriteNoReadPolicy = acp.setAllowModes(selfWriteNoReadPolicy, {
       read: false,
       append: true,
@@ -80,7 +85,9 @@ export function getHelpers(podRoot: string, session: Session) {
   async function fetchPolicyResourceUnauthenticated(baseUrl: string = podRoot) {
     // Explicitly fetching this without passing the Session's fetcher,
     // to verify whether public Read access works:
-    return getSolidDataset(getPolicyResourceUrl(baseUrl));
+    return getSolidDataset(getPolicyResourceUrl(baseUrl), {
+      fetch: window.fetch.bind(window),
+    });
   }
 
   async function fetchPolicyResourceAuthenticated() {
@@ -88,7 +95,6 @@ export function getHelpers(podRoot: string, session: Session) {
     // to verify whether public Read access works:
     return getSolidDataset(getPolicyResourceUrl(), { fetch: session.fetch });
   }
-
 
   async function setPolicyResourcePublicRead() {
     return applyPolicyToPolicyResource("policy-publicRead");

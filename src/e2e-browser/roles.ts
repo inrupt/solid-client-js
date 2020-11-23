@@ -22,7 +22,7 @@
 import { Role } from "testcafe";
 import { IndexPage } from "./pageModels";
 import { BrokerPage } from "./pageModels/broker";
-import { GluuPage } from "./pageModels/gluu";
+import { CognitoPage } from "./pageModels/cognito";
 
 export const essUser = Role("http://localhost:1234", async (t) => {
   return await essUserLogin(t);
@@ -40,12 +40,12 @@ export const essUser = Role("http://localhost:1234", async (t) => {
  */
 export const essUserLogin = async (_t: TestController) => {
   const indexPage = new IndexPage();
-  await indexPage.startLogin();
+  await indexPage.startLogin(process.env.TESTCAFE_ESS_IDP_URL);
 
-  const gluuPage = new GluuPage();
-  await gluuPage.login(
-    process.env.TESTCAFE_ESS_PROD_GLUU_USER!,
-    process.env.TESTCAFE_ESS_PROD_GLUU_PASSWORD!
+  const cognitoPage = new CognitoPage();
+  await cognitoPage.login(
+    process.env.TESTCAFE_ESS_COGNITO_USER!,
+    process.env.TESTCAFE_ESS_COGNITO_PASSWORD!
   );
 
   const authorisePage = new BrokerPage();

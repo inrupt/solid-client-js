@@ -55,7 +55,7 @@ test("Manipulating Access Control Policies to set public access", async (t: Test
   );
 
   /* Run the actual test: */
-  const essUserPod = process.env.TESTCAFE_ESS_PROD_POD;
+  const essUserPod = process.env.TESTCAFE_ESS_POD;
   await essUserLogin(t);
   // Create a Resource containing Access Policies and Rules:
   await initialisePolicyResource();
