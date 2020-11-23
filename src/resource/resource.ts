@@ -29,6 +29,7 @@ import {
   WithServerResourceInfo,
   WithResourceInfo,
   hasServerResourceInfo,
+  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
@@ -208,7 +209,7 @@ export function isPodOwner(
 /**
  * Extends the regular JavaScript error object with access to the status code and status message.
  */
-export class FetchError extends Error {
+export class FetchError extends SolidClientError {
   public readonly statusCode: number;
   public readonly statusText?: string;
 

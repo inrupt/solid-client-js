@@ -29,6 +29,7 @@ export {
   getResourceInfoWithAcl,
   getPodOwner,
   isPodOwner,
+  FetchError,
 } from "./resource/resource";
 export {
   getFile,
@@ -66,6 +67,7 @@ export {
   asUrl,
   asIri,
   thingAsMarkdown,
+  ThingExpectedError,
 } from "./thing/thing";
 export {
   getUrl,
@@ -194,6 +196,7 @@ export {
   AclRule as internal_AclRule,
   Access,
   UploadRequestInit,
+  SolidClientError,
 } from "./interfaces";
 
 /**

@@ -40,7 +40,7 @@ import {
   LocalNode,
   ThingPersisted,
 } from "../interfaces";
-import { isThingLocal, asUrl, isThing } from "./thing";
+import { isThingLocal, asUrl, isThing, ThingExpectedError } from "./thing";
 
 /** @hidden For internal use only. */
 export function internal_getReadableValue(value: Quad_Object): string {
@@ -168,6 +168,6 @@ export function internal_filterThing<T extends Thing>(
  */
 export function internal_throwIfNotThing(thing: Thing): void {
   if (!isThing(thing)) {
-    throw new Error(`Expected a Thing, but received: \`${thing}\`.`);
+    throw new ThingExpectedError(thing);
   }
 }

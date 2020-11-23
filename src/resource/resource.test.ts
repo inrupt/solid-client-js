@@ -36,6 +36,7 @@ import {
   getSourceIri,
   getPodOwner,
   isPodOwner,
+  FetchError,
 } from "./resource";
 import { internal_cloneResource, internal_fetchAcl } from "./resource.internal";
 
@@ -49,6 +50,7 @@ import {
   WithResourceInfo,
   IriString,
   WithServerResourceInfo,
+  SolidClientError,
 } from "../interfaces";
 import { dataset } from "../rdfjs";
 
@@ -774,6 +776,40 @@ describe("getResourceInfo", () => {
       statusCode: 418,
       statusText: "I'm a teapot!",
     });
+  });
+
+  it("throws an instance of SolidClientError when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toBeInstanceOf(SolidClientError);
+  });
+
+  it("throws an instance of FetchError when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toBeInstanceOf(FetchError);
   });
 });
 

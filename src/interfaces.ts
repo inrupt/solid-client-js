@@ -308,3 +308,9 @@ export function hasAccessibleAcl<ResourceExt extends WithServerResourceInfo>(
  * Please note that this function is still experimental and can change in a non-major release.
  */
 export type UploadRequestInit = Omit<RequestInit, "method">;
+
+/**
+ * Errors thrown by solid-client extend this class, and can thereby be distinguished from errors
+ * thrown in lower-level libraries.
+ */
+export class SolidClientError extends Error {}
