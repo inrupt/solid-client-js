@@ -170,6 +170,10 @@ type SaveFileOptions = GetFileOptions & {
  * Saves a file in a folder associated with the given URL. The final filename may or may
  * not be the given `slug`.
  *
+ * The Container at the given URL should already exist; if it does not, the returned Promise will
+ * be rejected. You can initialise it first using [[createContainerAt]], or directly save the file
+ * at the desired location using [[overwriteFile]].
+ *
  * @param folderUrl The URL of the folder where the new file is saved.
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
@@ -217,6 +221,11 @@ export async function saveFileInContainer<FileExt extends File>(
  * ```
  *
  * Saves a file at a given URL, replacing any previous content.
+ *
+ * The Solid server will create any intermediary Containers that do not exist yet, so they do not
+ * need to be created in advance. For example, if the target URL is
+ * https://example.pod/container/resource and https://example.pod/container/ does not exist yet,
+ * it will exist after this function resolves successfully.
  *
  * @param fileUrl The URL where the file is saved.
  * @param file The file to be written.

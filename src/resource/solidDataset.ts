@@ -224,6 +224,11 @@ async function prepareSolidDatasetCreation(
  * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.
  * To make sure you have the latest data, call [[getSolidDataset]] again after saving the data.
  *
+ * The Solid server will create any intermediary Containers that do not exist yet, so they do not
+ * need to be created in advance. For example, if the target URL is
+ * https://example.pod/container/resource and https://example.pod/container/ does not exist yet,
+ * it will exist after this function resolves successfully.
+ *
  * @param url URL to save `solidDataset` to.
  * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
@@ -317,6 +322,10 @@ export async function deleteSolidDataset(
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to, or because the Container already exists.
+ *
+ * Note that a Solid server will automatically create the necessary Containers when storing a
+ * Resource; i.e. there is no need to call this function if it is immediately followed by
+ * [[saveSolidDatasetAt]] or [[overwriteFile]].
  *
  * @param url URL of the empty Container that is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
@@ -474,6 +483,10 @@ type SaveInContainerOptions = Partial<
 /**
  * Given a SolidDataset, store it in a Solid Pod in a new Resource inside a Container.
  *
+ * The Container at the given URL should already exist; if it does not, you can initialise it first
+ * using [[createContainerAt]], or directly save the SolidDataset at the desired location using
+ * [[saveSolidDatasetAt]].
+ *
  * @param containerUrl URL of the Container in which to create a new Resource.
  * @param solidDataset The [[SolidDataset]] to save to a new Resource in the given Container.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
@@ -550,6 +563,8 @@ export async function saveSolidDatasetInContainer(
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to.
+ *
+ * The Container in which to create the new Container should itself already exist; if it does not.
  *
  * @param containerUrl URL of the Container in which the empty Container is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
