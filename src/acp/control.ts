@@ -43,7 +43,21 @@ import {
   setThing,
 } from "../thing/thing";
 import { WithAccessibleAcr } from "./acp";
-import { internal_getAcr, internal_setAcr } from "./control.internal";
+import {
+  internal_addMemberPolicyUrl,
+  internal_addPolicyUrl,
+  internal_getAcr,
+  internal_getControlAll,
+  internal_getInitialisedControl,
+  internal_getMemberPolicyUrlAll,
+  internal_getPolicyUrlAll,
+  internal_removeMemberPolicyUrl,
+  internal_removeMemberPolicyUrlAll,
+  internal_removePolicyUrl,
+  internal_removePolicyUrlAll,
+  internal_setAcr,
+  internal_setControl,
+} from "./control.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -322,4 +336,195 @@ export function removeMemberAcrPolicyUrlAll<
   const updatedAcr = setThing(acr, updatedAcrThing);
 
   return internal_setAcr(resourceWithAcr, updatedAcr);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to that Resource.
+ *
+ * @param resourceWithAcr The Resource to which the ACR Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the given Resource.
+ * @returns A new Resource equal to the given Resource, but with the given ACR Policy added to it.
+ */
+export function addPolicyUrl<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policyUrl: Url | UrlString
+): ResourceExt {
+  const control = internal_getInitialisedControl(resourceWithAcr);
+  const updatedControl = internal_addPolicyUrl(control, policyUrl);
+  const updatedResource = internal_setControl(resourceWithAcr, updatedControl);
+  return updatedResource;
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to that
+ * Resource's children.
+ *
+ * @param resourceWithAcr The Resource to which the ACR Policy should be added.
+ * @param policyUrl URL of the Policy that should apply to the given Resource's children.
+ * @returns A new Resource equal to the given Resource, but with the given Member ACR Policy added to it.
+ */
+export function addMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policyUrl: Url | UrlString
+): ResourceExt {
+  const control = internal_getInitialisedControl(resourceWithAcr);
+  const updatedControl = internal_addMemberPolicyUrl(control, policyUrl);
+  const updatedResource = internal_setControl(resourceWithAcr, updatedControl);
+  return updatedResource;
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the URLs of the Access Policies that apply to a Resource.
+ *
+ * @param resourceWithAcr The Resource with the Access Control Resource of which to get the URLs of the Policies that govern access to it.
+ * @returns URLs of the Policies that govern access to the given Resource.
+ */
+export function getPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt
+): UrlString[] {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const policyUrlsByControl = controls.map((control) =>
+    internal_getPolicyUrlAll(control)
+  );
+  const uniquePolicyUrls = new Set<UrlString>();
+  policyUrlsByControl.forEach((policyUrls) => {
+    policyUrls.forEach((url) => uniquePolicyUrls.add(url));
+  });
+  return Array.from(uniquePolicyUrls);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the URLs of the Access Policies that apply to a Resource's children.
+ *
+ * @param resourceWithAcr The Resource with the Access Control Resource of which to get the URLs of the Policies that govern access to its children.
+ * @returns URLs of the Policies that govern access to the given Resource's children.
+ */
+export function getMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt
+): UrlString[] {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const memberPolicyUrlsByControl = controls.map((control) =>
+    internal_getMemberPolicyUrlAll(control)
+  );
+  const uniquePolicyUrls = new Set<UrlString>();
+  memberPolicyUrlsByControl.forEach((policyUrls) => {
+    policyUrls.forEach((url) => uniquePolicyUrls.add(url));
+  });
+  return Array.from(uniquePolicyUrls);
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Stop the URL of a given [[Policy]] from applying to a Resource.
+ *
+ * @param resourceWithAcr The Resource, with its Access Control Resource, to which the given URL of a Policy should no longer apply.
+ * @param policyUrl The URL of the Policy that should no longer apply.
+ * @returns A new Resource equal to the given Resource, but with the given Policy removed from it.
+ */
+export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policyUrl: Url | UrlString | ThingPersisted
+): ResourceExt {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const updatedControls = controls.map((control) =>
+    internal_removePolicyUrl(control, policyUrl)
+  );
+  const updatedResource = updatedControls.reduce(
+    internal_setControl,
+    resourceWithAcr
+  );
+  return updatedResource;
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Stop the URL of a given [[Policy]] from applying to the Resource's children.
+ *
+ * @param resourceWithAcr The Resource with the Access Control Resource to whose children the given URL of a Policy should no longer apply.
+ * @param policyUrl The URL of the Policy that should no longer apply.
+ * @returns A new Resource equal to the given Resource but with the given Member Policy removed from it.
+ */
+export function removeMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policyUrl: Url | UrlString | ThingPersisted
+): ResourceExt {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const updatedControls = controls.map((control) =>
+    internal_removeMemberPolicyUrl(control, policyUrl)
+  );
+  const updatedResource = updatedControls.reduce(
+    internal_setControl,
+    resourceWithAcr
+  );
+  return updatedResource;
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Stop all URL of Access Policies from applying to a Resource.
+ *
+ * @param resourceWithAcr The Resource, with its Access Control Resource, to which no more Policies should apply.
+ * @returns A new Resource equal to the given Resource, but without any Policy applying to it.
+ */
+export function removePolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt
+): ResourceExt {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const updatedControls = controls.map((control) =>
+    internal_removePolicyUrlAll(control)
+  );
+  const updatedResource = updatedControls.reduce(
+    internal_setControl,
+    resourceWithAcr
+  );
+  return updatedResource;
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Stop all URL of Access Policies from applying to the Resource's children.
+ *
+ * @param resourceWithAcr The Resource with the Access Control Resource that should no longer apply Policies to its children.
+ * @returns A new Resource equal to the given Resource, but without any Policy applying to its children.
+ */
+export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt
+): ResourceExt {
+  const controls = internal_getControlAll(resourceWithAcr);
+  const updatedControls = controls.map((control) =>
+    internal_removeMemberPolicyUrlAll(control)
+  );
+  const updatedResource = updatedControls.reduce(
+    internal_setControl,
+    resourceWithAcr
+  );
+  return updatedResource;
 }

@@ -33,6 +33,7 @@ import {
   removeAcrPolicyUrlAll,
   removeMemberAcrPolicyUrl,
   removeMemberAcrPolicyUrlAll,
+  Control,
 } from "./control";
 import {
   internal_addMemberPolicyUrl,
@@ -78,7 +79,10 @@ const deprecatedFunctions = {
   removeMemberPolicyUrlAll: internal_removeMemberPolicyUrlAll,
 };
 
-/** @hidden */
+/**
+ * @hidden
+ * @deprecated Replaced by [[acp_v2]].
+ */
 export const acp_v1 = {
   ...acpAcp,
   ...acpPolicy,
@@ -103,7 +107,7 @@ export const acp_v1 = {
  */
 export function removeControl<ResourceExt extends acpAcp.WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
-  control: acpControl.Control
+  control: Control
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
   const updatedAcr = removeThing(acr, control);

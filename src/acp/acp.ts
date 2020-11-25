@@ -42,15 +42,11 @@ import {
   AccessControlResource,
   getAcrPolicyUrlAll,
   getMemberAcrPolicyUrlAll,
+  getMemberPolicyUrlAll,
+  getPolicyUrlAll,
   hasLinkedAcr,
 } from "./control";
-import {
-  internal_getAcr,
-  internal_getControlAll,
-  internal_setAcr,
-  internal_getMemberPolicyUrlAll,
-  internal_getPolicyUrlAll,
-} from "./control.internal";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -361,18 +357,11 @@ async function fetchAcr(
 export function getReferencedPolicyUrlAll(
   withAcr: WithAccessibleAcr
 ): UrlString[] {
-  const policyUrls: UrlString[] = [];
-
-  const controls = internal_getControlAll(withAcr);
-  controls.forEach((control) => {
-    policyUrls.push(...internal_getPolicyUrlAll(control).map(getResourceUrl));
-    policyUrls.push(
-      ...internal_getMemberPolicyUrlAll(control).map(getResourceUrl)
-    );
-  });
-
-  policyUrls.push(...getAcrPolicyUrlAll(withAcr).map(getResourceUrl));
-  policyUrls.push(...getMemberAcrPolicyUrlAll(withAcr).map(getResourceUrl));
+  const policyUrls: UrlString[] = getPolicyUrlAll(withAcr)
+    .map(getResourceUrl)
+    .concat(getMemberPolicyUrlAll(withAcr).map(getResourceUrl))
+    .concat(getAcrPolicyUrlAll(withAcr).map(getResourceUrl))
+    .concat(getMemberAcrPolicyUrlAll(withAcr).map(getResourceUrl));
 
   const uniqueUrls = Array.from(new Set(policyUrls));
   return uniqueUrls;
