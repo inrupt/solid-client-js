@@ -209,4 +209,4 @@ export {
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
  */
-export { acp_v1 } from "./acp/preview";
+export { acp_v1 } from "./acp/v1";

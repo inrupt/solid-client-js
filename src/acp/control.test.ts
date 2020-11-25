@@ -24,28 +24,29 @@ import { describe, it, expect } from "@jest/globals";
 import {
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
-  addMemberPolicyUrl,
-  addPolicyUrl,
-  createControl,
-  getControl,
-  getControlAll,
   getAcrPolicyUrlAll,
   getMemberAcrPolicyUrlAll,
-  getMemberPolicyUrlAll,
-  getPolicyUrlAll,
   hasLinkedAcr,
-  removeControl,
   removeAcrPolicyUrl,
   removeAcrPolicyUrlAll,
   removeMemberAcrPolicyUrl,
   removeMemberAcrPolicyUrlAll,
-  removeMemberPolicyUrl,
-  removeMemberPolicyUrlAll,
-  removePolicyUrl,
-  removePolicyUrlAll,
-  setControl,
   WithLinkedAcpAccessControl,
 } from "./control";
+import {
+  internal_createControl,
+  internal_getControl,
+  internal_getControlAll,
+  internal_setControl,
+  internal_addMemberPolicyUrl,
+  internal_addPolicyUrl,
+  internal_getMemberPolicyUrlAll,
+  internal_getPolicyUrlAll,
+  internal_removeMemberPolicyUrl,
+  internal_removeMemberPolicyUrlAll,
+  internal_removePolicyUrl,
+  internal_removePolicyUrlAll,
+} from "./control.internal";
 import { acp, rdf } from "../constants";
 import { WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll } from "../thing/get";
@@ -55,8 +56,9 @@ import { setIri, setUrl } from "../thing/set";
 import { DataFactory } from "n3";
 import { addIri } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { getSourceUrl } from "../resource/resource";
 import { WithAccessibleAcl } from "../acl/acl";
+import { getSourceUrl } from "../resource/resource";
+import { removeControl } from "./v1";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -103,7 +105,7 @@ describe("hasLinkedAcr", () => {
 
 describe("createControl", () => {
   it("sets the type of the new Access Control to acp:AccessControl", () => {
-    const newControl = createControl();
+    const newControl = internal_createControl();
 
     expect(getIri(newControl, rdf.type)).toBe(acp.AccessControl);
   });
@@ -127,7 +129,7 @@ describe("getControl", () => {
       accessControlResource
     );
 
-    const foundControl = getControl(resourceWithAcr, controlUrl);
+    const foundControl = internal_getControl(resourceWithAcr, controlUrl);
 
     expect(foundControl).toEqual(control);
   });
@@ -145,7 +147,7 @@ describe("getControl", () => {
       accessControlResource
     );
 
-    const foundControl = getControl(resourceWithAcr, controlUrl);
+    const foundControl = internal_getControl(resourceWithAcr, controlUrl);
 
     expect(foundControl).toBeNull();
   });
@@ -163,7 +165,7 @@ describe("getControl", () => {
       accessControlResource
     );
 
-    const foundControl = getControl(
+    const foundControl = internal_getControl(
       resourceWithAcr,
       "https://some-other.pod/access-control-resource.ttl#access-control"
     );
@@ -176,7 +178,7 @@ describe("getControl", () => {
       "https://some.pod/access-control-resource.ttl#access-control";
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
-    expect(() => getControl(withoutAcr as any, controlUrl)).toThrow(
+    expect(() => internal_getControl(withoutAcr as any, controlUrl)).toThrow(
       "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
     );
   });
@@ -194,7 +196,7 @@ describe("getControlAll", () => {
       accessControlResource
     );
 
-    const foundControls = getControlAll(resourceWithAcr);
+    const foundControls = internal_getControlAll(resourceWithAcr);
 
     expect(foundControls).toEqual([control]);
   });
@@ -214,7 +216,7 @@ describe("getControlAll", () => {
       accessControlResource
     );
 
-    const foundControls = getControlAll(resourceWithAcr);
+    const foundControls = internal_getControlAll(resourceWithAcr);
 
     expect(foundControls).toEqual([control]);
   });
@@ -226,7 +228,7 @@ describe("getControlAll", () => {
       accessControlResource
     );
 
-    const foundControl = getControlAll(resourceWithAcr);
+    const foundControl = internal_getControlAll(resourceWithAcr);
 
     expect(foundControl).toEqual([]);
   });
@@ -234,7 +236,7 @@ describe("getControlAll", () => {
   it("throws an error if the given Resource does not have an Access Control Resource", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
-    expect(() => getControlAll(withoutAcr as any)).toThrow(
+    expect(() => internal_getControlAll(withoutAcr as any)).toThrow(
       "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
     );
   });
@@ -255,7 +257,10 @@ describe("setControl", () => {
       accessControlResource
     );
 
-    const newWithAccessControlResource = setControl(resourceWithAcr, control);
+    const newWithAccessControlResource = internal_setControl(
+      resourceWithAcr,
+      control
+    );
 
     expect(
       getThing(newWithAccessControlResource.internal_acp.acr, controlUrl)
@@ -272,7 +277,7 @@ describe("setControl", () => {
     );
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
-    expect(() => setControl(withoutAcr as any, control)).toThrow(
+    expect(() => internal_setControl(withoutAcr as any, control)).toThrow(
       "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
     );
   });
@@ -1028,7 +1033,7 @@ describe("addPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    const updatedControl = addPolicyUrl(control, policyUrl);
+    const updatedControl = internal_addPolicyUrl(control, policyUrl);
 
     expect(getIriAll(updatedControl, acp.apply)).toContain(policyUrl);
   });
@@ -1038,7 +1043,7 @@ describe("addPolicyUrl", () => {
     const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = setIri(createThing(), acp.apply, existingPolicyUrl);
 
-    const updatedControl = addPolicyUrl(control, newPolicyUrl);
+    const updatedControl = internal_addPolicyUrl(control, newPolicyUrl);
 
     expect(getIriAll(updatedControl, acp.apply)).toContain(existingPolicyUrl);
   });
@@ -1047,7 +1052,7 @@ describe("addPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    const updatedControl = addPolicyUrl(
+    const updatedControl = internal_addPolicyUrl(
       control,
       DataFactory.namedNode(policyUrl)
     );
@@ -1060,7 +1065,7 @@ describe("addPolicyUrl", () => {
     const policy = createThing({ url: policyUrl });
     const control = createThing();
 
-    const updatedControl = addPolicyUrl(control, policy);
+    const updatedControl = internal_addPolicyUrl(control, policy);
 
     expect(getIriAll(updatedControl, acp.apply)).toContain(policyUrl);
   });
@@ -1069,7 +1074,7 @@ describe("addPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    addPolicyUrl(control, policyUrl);
+    internal_addPolicyUrl(control, policyUrl);
 
     expect(getIriAll(control, acp.apply)).not.toContain(policyUrl);
   });
@@ -1083,7 +1088,7 @@ describe("getPolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl1);
     control = addIri(control, acp.apply, policyUrl2);
 
-    const policyUrls = getPolicyUrlAll(control);
+    const policyUrls = internal_getPolicyUrlAll(control);
 
     expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
   });
@@ -1095,7 +1100,7 @@ describe("getPolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, memberPolicyUrl);
 
-    const policyUrls = getPolicyUrlAll(control);
+    const policyUrls = internal_getPolicyUrlAll(control);
 
     expect(policyUrls).toEqual([policyUrl]);
   });
@@ -1103,7 +1108,7 @@ describe("getPolicyUrlAll", () => {
   it("returns an empty array if no policies were added to the Control yet", () => {
     const control = createThing();
 
-    const policyUrls = getPolicyUrlAll(control);
+    const policyUrls = internal_getPolicyUrlAll(control);
 
     expect(policyUrls).toHaveLength(0);
   });
@@ -1114,7 +1119,7 @@ describe("removePolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.apply, policyUrl);
 
-    const updatedControl = removePolicyUrl(control, policyUrl);
+    const updatedControl = internal_removePolicyUrl(control, policyUrl);
 
     const foundPolicyUrl = getIri(updatedControl, acp.apply);
 
@@ -1128,7 +1133,7 @@ describe("removePolicyUrl", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.apply, otherPolicyUrl);
 
-    const updatedControl = removePolicyUrl(control, policyUrl);
+    const updatedControl = internal_removePolicyUrl(control, policyUrl);
 
     expect(getIri(updatedControl, acp.apply)).toBe(otherPolicyUrl);
   });
@@ -1139,7 +1144,7 @@ describe("removePolicyUrl", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, policyUrl);
 
-    const updatedControl = removePolicyUrl(control, policyUrl);
+    const updatedControl = internal_removePolicyUrl(control, policyUrl);
 
     expect(getIri(updatedControl, acp.applyMembers)).toBe(policyUrl);
   });
@@ -1148,7 +1153,7 @@ describe("removePolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.apply, policyUrl);
 
-    const updatedControl = removePolicyUrl(
+    const updatedControl = internal_removePolicyUrl(
       control,
       DataFactory.namedNode(policyUrl)
     );
@@ -1163,7 +1168,7 @@ describe("removePolicyUrl", () => {
     const policy = createThing({ url: policyUrl });
     const control = addIri(createThing(), acp.apply, policyUrl);
 
-    const updatedControl = removePolicyUrl(control, policy);
+    const updatedControl = internal_removePolicyUrl(control, policy);
 
     const foundPolicyUrl = getIri(updatedControl, acp.apply);
 
@@ -1174,7 +1179,7 @@ describe("removePolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.apply, policyUrl);
 
-    removePolicyUrl(control, policyUrl);
+    internal_removePolicyUrl(control, policyUrl);
 
     const foundPolicyUrl = getIri(control, acp.apply);
 
@@ -1190,7 +1195,7 @@ describe("removePolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.apply, otherPolicyUrl);
 
-    const updatedControl = removePolicyUrlAll(control);
+    const updatedControl = internal_removePolicyUrlAll(control);
 
     expect(getIriAll(updatedControl, acp.apply)).toHaveLength(0);
   });
@@ -1201,7 +1206,7 @@ describe("removePolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, policyUrl);
 
-    const updatedControl = removePolicyUrlAll(control);
+    const updatedControl = internal_removePolicyUrlAll(control);
 
     expect(getIri(updatedControl, acp.applyMembers)).toBe(policyUrl);
   });
@@ -1213,7 +1218,7 @@ describe("removePolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.apply, otherPolicyUrl);
 
-    removePolicyUrlAll(control);
+    internal_removePolicyUrlAll(control);
 
     expect(getIriAll(control, acp.apply)).toHaveLength(2);
   });
@@ -1224,7 +1229,7 @@ describe("addMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    const updatedControl = addMemberPolicyUrl(control, policyUrl);
+    const updatedControl = internal_addMemberPolicyUrl(control, policyUrl);
 
     expect(getIriAll(updatedControl, acp.applyMembers)).toContain(policyUrl);
   });
@@ -1234,7 +1239,7 @@ describe("addMemberPolicyUrl", () => {
     const newPolicyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = setIri(createThing(), acp.applyMembers, existingPolicyUrl);
 
-    const updatedControl = addMemberPolicyUrl(control, newPolicyUrl);
+    const updatedControl = internal_addMemberPolicyUrl(control, newPolicyUrl);
 
     expect(getIriAll(updatedControl, acp.applyMembers)).toContain(
       existingPolicyUrl
@@ -1245,7 +1250,7 @@ describe("addMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    const updatedControl = addMemberPolicyUrl(
+    const updatedControl = internal_addMemberPolicyUrl(
       control,
       DataFactory.namedNode(policyUrl)
     );
@@ -1258,7 +1263,7 @@ describe("addMemberPolicyUrl", () => {
     const policy = createThing({ url: policyUrl });
     const control = createThing();
 
-    const updatedControl = addMemberPolicyUrl(control, policy);
+    const updatedControl = internal_addMemberPolicyUrl(control, policy);
 
     expect(getIriAll(updatedControl, acp.applyMembers)).toContain(policyUrl);
   });
@@ -1267,7 +1272,7 @@ describe("addMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policy.ttl#some-policy";
     const control = createThing();
 
-    addMemberPolicyUrl(control, policyUrl);
+    internal_addMemberPolicyUrl(control, policyUrl);
 
     expect(getIriAll(control, acp.applyMembers)).not.toContain(policyUrl);
   });
@@ -1281,7 +1286,7 @@ describe("getMemberPolicyUrlAll", () => {
     control = addIri(control, acp.applyMembers, policyUrl1);
     control = addIri(control, acp.applyMembers, policyUrl2);
 
-    const policyUrls = getMemberPolicyUrlAll(control);
+    const policyUrls = internal_getMemberPolicyUrlAll(control);
 
     expect(policyUrls).toEqual([policyUrl1, policyUrl2]);
   });
@@ -1293,7 +1298,7 @@ describe("getMemberPolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, memberPolicyUrl);
 
-    const policyUrls = getMemberPolicyUrlAll(control);
+    const policyUrls = internal_getMemberPolicyUrlAll(control);
 
     expect(policyUrls).toEqual([memberPolicyUrl]);
   });
@@ -1301,7 +1306,7 @@ describe("getMemberPolicyUrlAll", () => {
   it("returns an empty array if no member policies were added to the Control yet", () => {
     const control = createThing();
 
-    const policyUrls = getMemberPolicyUrlAll(control);
+    const policyUrls = internal_getMemberPolicyUrlAll(control);
 
     expect(policyUrls).toHaveLength(0);
   });
@@ -1312,7 +1317,7 @@ describe("removeMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.applyMembers, policyUrl);
 
-    const updatedControl = removeMemberPolicyUrl(control, policyUrl);
+    const updatedControl = internal_removeMemberPolicyUrl(control, policyUrl);
 
     const foundPolicyUrl = getIri(updatedControl, acp.applyMembers);
 
@@ -1326,7 +1331,7 @@ describe("removeMemberPolicyUrl", () => {
     control = addIri(control, acp.applyMembers, policyUrl);
     control = addIri(control, acp.applyMembers, otherPolicyUrl);
 
-    const updatedControl = removeMemberPolicyUrl(control, policyUrl);
+    const updatedControl = internal_removeMemberPolicyUrl(control, policyUrl);
 
     expect(getIri(updatedControl, acp.applyMembers)).toBe(otherPolicyUrl);
   });
@@ -1337,7 +1342,7 @@ describe("removeMemberPolicyUrl", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, policyUrl);
 
-    const updatedControl = removeMemberPolicyUrl(control, policyUrl);
+    const updatedControl = internal_removeMemberPolicyUrl(control, policyUrl);
 
     expect(getIri(updatedControl, acp.apply)).toBe(policyUrl);
   });
@@ -1346,7 +1351,7 @@ describe("removeMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.applyMembers, policyUrl);
 
-    const updatedControl = removeMemberPolicyUrl(
+    const updatedControl = internal_removeMemberPolicyUrl(
       control,
       DataFactory.namedNode(policyUrl)
     );
@@ -1361,7 +1366,7 @@ describe("removeMemberPolicyUrl", () => {
     const policy = createThing({ url: policyUrl });
     const control = addIri(createThing(), acp.applyMembers, policyUrl);
 
-    const updatedControl = removeMemberPolicyUrl(control, policy);
+    const updatedControl = internal_removeMemberPolicyUrl(control, policy);
 
     const foundPolicyUrl = getIri(updatedControl, acp.applyMembers);
 
@@ -1372,7 +1377,7 @@ describe("removeMemberPolicyUrl", () => {
     const policyUrl = "https://some.pod/policies#policy";
     const control = addIri(createThing(), acp.applyMembers, policyUrl);
 
-    removeMemberPolicyUrl(control, policyUrl);
+    internal_removeMemberPolicyUrl(control, policyUrl);
 
     const foundPolicyUrl = getIri(control, acp.applyMembers);
 
@@ -1388,7 +1393,7 @@ describe("removeMemberPolicyUrlAll", () => {
     control = addIri(control, acp.applyMembers, policyUrl);
     control = addIri(control, acp.applyMembers, otherPolicyUrl);
 
-    const updatedControl = removeMemberPolicyUrlAll(control);
+    const updatedControl = internal_removeMemberPolicyUrlAll(control);
 
     expect(getIriAll(updatedControl, acp.applyMembers)).toHaveLength(0);
   });
@@ -1399,7 +1404,7 @@ describe("removeMemberPolicyUrlAll", () => {
     control = addIri(control, acp.apply, policyUrl);
     control = addIri(control, acp.applyMembers, policyUrl);
 
-    const updatedControl = removeMemberPolicyUrlAll(control);
+    const updatedControl = internal_removeMemberPolicyUrlAll(control);
 
     expect(getIri(updatedControl, acp.apply)).toBe(policyUrl);
   });
@@ -1411,7 +1416,7 @@ describe("removeMemberPolicyUrlAll", () => {
     control = addIri(control, acp.applyMembers, policyUrl);
     control = addIri(control, acp.applyMembers, otherPolicyUrl);
 
-    removeMemberPolicyUrlAll(control);
+    internal_removeMemberPolicyUrlAll(control);
 
     expect(getIriAll(control, acp.applyMembers)).toHaveLength(2);
   });
