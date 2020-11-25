@@ -303,3 +303,10 @@ export function internal_removeMemberPolicyUrlAll(
 ): Control {
   return removeAll(accessControl, acp.applyMembers);
 }
+
+export function internal_getInitialisedControl(
+  resourceWithAcr: WithAccessibleAcr
+): Control {
+  const allControls = internal_getControlAll(resourceWithAcr);
+  return allControls.length === 0 ? internal_createControl() : allControls[0];
+}
