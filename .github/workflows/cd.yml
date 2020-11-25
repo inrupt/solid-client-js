@@ -133,6 +133,8 @@ jobs:
     - name: Install the preview release of solid-client in the packaging test project
       run: |
         cd .github/workflows/cd-packaging-tests/node
+        echo "Giving npm some time to make the newly-published package available…"
+        sleep 60s
         npm install @inrupt/solid-client@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
@@ -149,6 +151,8 @@ jobs:
     - name: Verify that the package can be imported in a Parcel project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-parcel
+        echo "Giving npm some time to make the newly-published package available…"
+        sleep 60s
         npm install @inrupt/solid-client@$VERSION_NR
         npx parcel build index.ts
       # The Node version does not influence whether Parcel can import our modules,
@@ -168,6 +172,8 @@ jobs:
     - name: Verify that the package can be imported in a Webpack project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-webpack
+        echo "Giving npm some time to make the newly-published package available…"
+        sleep 60s
         npm install @inrupt/solid-client@$VERSION_NR
         npm install webpack@5 webpack-cli buffer
         npx webpack --devtool source-map
@@ -204,7 +210,10 @@ jobs:
     - name: Install the preview release of solid-client
       # The `--force` allows us to install it even though our own package has the same name.
       # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
-      run: npm install --force @inrupt/solid-client@$VERSION_NR
+      run: |
+        echo "Giving npm some time to make the newly-published package available…"
+        sleep 60s
+        npm install --force @inrupt/solid-client@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Make sure that the end-to-end tests run against the just-published package
