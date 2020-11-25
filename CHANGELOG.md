@@ -9,6 +9,9 @@ The following changes have been implemented but not released yet:
 ### New features
 
 - It is now possible to import solid-client as an ES module in Node.
+- A number of error messages have been improved that should make it easier for you to identify what
+  went wrong. If you encounter more unhelpful error messages, please
+  [let us know](https://github.com/inrupt/solid-client-js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 ### Bugs fixed
 

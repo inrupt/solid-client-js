@@ -20,6 +20,7 @@
  */
 
 import { dataset } from "@rdfjs/dataset";
+import { getLocalNode } from "../datatypes";
 import {
   SolidDataset,
   WithResourceInfo,
@@ -790,7 +791,7 @@ describe("getGroupResourceAccessAll", () => {
     const agentClassRuleSubjectIri = "#arbitrary-agent-rule";
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
         ),
@@ -799,14 +800,14 @@ describe("getGroupResourceAccessAll", () => {
     );
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
         DataFactory.namedNode("https://arbitrary.pod/resource")
       )
     );
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
         DataFactory.namedNode("https://some.pod/agent#webId")
       )
@@ -1095,7 +1096,7 @@ describe("getGroupDefaultAccessAll", () => {
     const agentClassRuleSubjectIri = "#arbitrary-agent-rule";
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
         ),
@@ -1104,14 +1105,14 @@ describe("getGroupDefaultAccessAll", () => {
     );
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
         DataFactory.namedNode("https://arbitrary.pod/container/")
       )
     );
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
         DataFactory.namedNode("https://some.pod/agent#webId")
       )

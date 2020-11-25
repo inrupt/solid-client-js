@@ -33,6 +33,9 @@ import {
   isThing,
   thingAsMarkdown,
   ThingExpectedError,
+  ValidThingUrlExpectedError,
+  ValidPropertyUrlExpectedError,
+  ValidValueUrlExpectedError,
 } from "./thing";
 import { internal_toNode } from "./thing.internal";
 import {
@@ -293,6 +296,23 @@ describe("getThing", () => {
     ) as Thing;
 
     expect(Array.from(thing)).toEqual([relevantQuad]);
+  });
+
+  it("throws an error when given an invalid URL", () => {
+    expect(() => getThing(dataset(), "not-a-url")).toThrow(
+      "Expected a valid URL to identify a Thing, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ThingUrlExpectedError on invalid URLs", () => {
+    let thrownError;
+    try {
+      getThing(dataset(), "not-a-url");
+    } catch (e) {
+      thrownError = e;
+    }
+
+    expect(thrownError).toBeInstanceOf(ValidThingUrlExpectedError);
   });
 });
 
@@ -1484,5 +1504,83 @@ describe("throwIfNotThing", () => {
       error = e;
     }
     expect(error).toBeInstanceOf(ThingExpectedError);
+  });
+});
+
+describe("ValidPropertyUrlExpectedError", () => {
+  it("logs the invalid property in its error message", () => {
+    const error = new ValidPropertyUrlExpectedError(null);
+
+    expect(error.message).toBe(
+      "Expected a valid URL to identify a property, but received: `null`."
+    );
+  });
+
+  it("logs the value of an invalid URL inside a Named Node in its error message", () => {
+    const error = new ValidPropertyUrlExpectedError(
+      DataFactory.namedNode("not-a-url")
+    );
+
+    expect(error.message).toBe(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("exposes the invalid property", () => {
+    const error = new ValidPropertyUrlExpectedError({ not: "a-url" });
+
+    expect(error.receivedProperty).toEqual({ not: "a-url" });
+  });
+});
+
+describe("ValidValueUrlExpectedError", () => {
+  it("logs the invalid property in its error message", () => {
+    const error = new ValidValueUrlExpectedError(null);
+
+    expect(error.message).toBe(
+      "Expected a valid URL value, but received: `null`."
+    );
+  });
+
+  it("logs the value of an invalid URL inside a Named Node in its error message", () => {
+    const error = new ValidValueUrlExpectedError(
+      DataFactory.namedNode("not-a-url")
+    );
+
+    expect(error.message).toBe(
+      "Expected a valid URL value, but received: `not-a-url`."
+    );
+  });
+
+  it("exposes the invalid property", () => {
+    const error = new ValidValueUrlExpectedError({ not: "a-url" });
+
+    expect(error.receivedValue).toEqual({ not: "a-url" });
+  });
+});
+
+describe("ValidThingUrlExpectedError", () => {
+  it("logs the invalid property in its error message", () => {
+    const error = new ValidThingUrlExpectedError(null);
+
+    expect(error.message).toBe(
+      "Expected a valid URL to identify a Thing, but received: `null`."
+    );
+  });
+
+  it("logs the value of an invalid URL inside a Named Node in its error message", () => {
+    const error = new ValidThingUrlExpectedError(
+      DataFactory.namedNode("not-a-url")
+    );
+
+    expect(error.message).toBe(
+      "Expected a valid URL to identify a Thing, but received: `not-a-url`."
+    );
+  });
+
+  it("exposes the invalid property", () => {
+    const error = new ValidThingUrlExpectedError({ not: "a-url" });
+
+    expect(error.receivedValue).toEqual({ not: "a-url" });
   });
 });

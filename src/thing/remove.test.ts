@@ -36,6 +36,11 @@ import {
   removeLiteral,
   removeNamedNode,
 } from "./remove";
+import { mockThingFrom } from "./mock";
+import {
+  ValidPropertyUrlExpectedError,
+  ValidValueUrlExpectedError,
+} from "./thing";
 
 function getMockQuadWithLiteralFor(
   predicate: IriString,
@@ -201,6 +206,31 @@ describe("removeAll", () => {
     expect(() =>
       removeAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -411,6 +441,58 @@ describe("removeIri", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "https://arbitrary.url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "https://arbitrary.url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+
+  it("throws an error when passed an invalid URL value", () => {
+    expect(() =>
+      removeUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "https://arbitrary.vocab/predicate",
+        "not-a-url"
+      )
+    ).toThrow("Expected a valid URL value, but received: `not-a-url`.");
+  });
+
+  it("throws an instance of ValidValueUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "https://arbitrary.vocab/predicate",
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidValueUrlExpectedError);
+  });
 });
 
 describe("removeBoolean", () => {
@@ -620,6 +702,33 @@ describe("removeBoolean", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeBoolean(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        true
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeBoolean(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        true
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("removeDatetime", () => {
@@ -816,6 +925,33 @@ describe("removeDatetime", () => {
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeDatetime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeDatetime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1015,6 +1151,33 @@ describe("removeDecimal", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeDecimal(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        13.37
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeDecimal(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        13.37
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("removeInteger", () => {
@@ -1201,6 +1364,33 @@ describe("removeInteger", () => {
         42
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeInteger(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        42
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeInteger(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        42
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1432,6 +1622,35 @@ describe("removeStringWithLocale", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeStringWithLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "Arbitrary string",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeStringWithLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "Arbitrary string",
+        "nl-NL"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("removeStringNoLocale", () => {
@@ -1591,6 +1810,33 @@ describe("removeStringNoLocale", () => {
         "Arbitrary string"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeStringNoLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "Arbitrary string"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeStringNoLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "Arbitrary string"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1874,6 +2120,33 @@ describe("removeLiteral", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeLiteral(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        DataFactory.literal("Arbitrary string value")
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeLiteral(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        DataFactory.literal("Arbitrary string value")
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("removeNamedNode", () => {
@@ -2001,5 +2274,32 @@ describe("removeNamedNode", () => {
         DataFactory.namedNode("https://arbitrary.vocab/object")
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeNamedNode(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeNamedNode(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        DataFactory.namedNode("https://arbitrary.vocab/object")
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });

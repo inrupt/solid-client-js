@@ -35,8 +35,14 @@ import {
   normalizeLocale,
   XmlSchemaTypeIri,
   xmlSchemaTypes,
+  internal_isValidUrl,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
+import {
+  isThing,
+  ValidPropertyUrlExpectedError,
+  ValidValueUrlExpectedError,
+} from "./thing";
 
 /**
  * Create a new Thing with a URL added for a Property.
@@ -56,8 +62,15 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
   url
 ) => {
   internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
   const newThing = internal_cloneThing(thing);
+
+  if (!isThing(url) && !internal_isValidUrl(url)) {
+    throw new ValidValueUrlExpectedError(url);
+  }
 
   newThing.add(
     DataFactory.quad(
@@ -268,6 +281,9 @@ export function addTerm<T extends Thing>(
   value: Quad_Object
 ): T {
   internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
   const newThing = internal_cloneThing(thing);
 

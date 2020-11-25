@@ -41,9 +41,11 @@ import {
   IriString,
   AclDataset,
   WithServerResourceInfo,
+  LocalNode,
 } from "../interfaces";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
+import { getLocalNode } from "../datatypes";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
@@ -810,7 +812,7 @@ describe("getAgentResourceAccessAll", () => {
     const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
         ),
@@ -819,14 +821,14 @@ describe("getAgentResourceAccessAll", () => {
     );
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
         DataFactory.namedNode("https://arbitrary.pod/resource")
       )
     );
     resourceAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
         DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
       )
@@ -1768,7 +1770,7 @@ describe("getAgentDefaultAccessAll", () => {
     const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode(
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
         ),
@@ -1777,14 +1779,14 @@ describe("getAgentDefaultAccessAll", () => {
     );
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
         DataFactory.namedNode("https://arbitrary.pod/container/")
       )
     );
     containerAcl.add(
       DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
+        getLocalNode(agentClassRuleSubjectIri),
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
         DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
       )

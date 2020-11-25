@@ -33,12 +33,18 @@ import {
   deserializeDatetime,
   deserializeDecimal,
   deserializeInteger,
+  internal_isValidUrl,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
 import {
   internal_filterThing,
   internal_throwIfNotThing,
 } from "./thing.internal";
+import {
+  isThing,
+  ValidPropertyUrlExpectedError,
+  ValidValueUrlExpectedError,
+} from "./thing";
 
 /**
  * Create a new Thing with all values removed for the given Property.
@@ -55,6 +61,9 @@ export function removeAll<T extends Thing>(
 ): T;
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
   internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const updatedThing = internal_filterThing(
@@ -80,7 +89,15 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   value
 ) => {
   internal_throwIfNotThing(thing);
+
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
+
+  if (!isThing(value) && !internal_isValidUrl(value)) {
+    throw new ValidValueUrlExpectedError(value);
+  }
   const iriNode = isNamedNode(value)
     ? value
     : typeof value === "string"
@@ -249,6 +266,9 @@ export function removeNamedNode<T extends Thing>(
   value: NamedNode
 ): T {
   internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (
@@ -273,6 +293,9 @@ export function removeLiteral<T extends Thing>(
   value: Literal
 ): T {
   internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     return (
@@ -296,6 +319,9 @@ function removeLiteralMatching<T extends Thing>(
   type: XmlSchemaTypeIri,
   matcher: (serialisedValue: string) => boolean
 ): T {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
   const updatedThing = internal_filterThing(thing, (quad) => {
     // Copy every value from the old thing into the new thing, unless it:

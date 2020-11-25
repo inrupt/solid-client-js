@@ -41,6 +41,7 @@ import {
   serializeInteger,
   deserializeInteger,
   normalizeLocale,
+  ValidUrlExpectedError,
 } from "./datatypes";
 import { LocalNode } from "./interfaces";
 
@@ -522,5 +523,27 @@ describe("resolveLocalIri", () => {
     expect(resolveLocalIri("some-name", "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
     );
+  });
+});
+
+describe("ValidUrlExpectedError", () => {
+  it("logs the invalid property in its error message", () => {
+    const error = new ValidUrlExpectedError(null);
+
+    expect(error.message).toBe("Expected a valid URL, but received: `null`.");
+  });
+
+  it("logs the value of an invalid URL inside a Named Node in its error message", () => {
+    const error = new ValidUrlExpectedError(DataFactory.namedNode("not-a-url"));
+
+    expect(error.message).toBe(
+      "Expected a valid URL, but received: `not-a-url`."
+    );
+  });
+
+  it("exposes the invalid property", () => {
+    const error = new ValidUrlExpectedError({ not: "a-url" });
+
+    expect(error.receivedValue).toEqual({ not: "a-url" });
   });
 });
