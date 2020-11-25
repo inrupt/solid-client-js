@@ -32,8 +32,10 @@ import {
   xmlSchemaTypes,
   XmlSchemaTypeIri,
   isTerm,
+  internal_isValidUrl,
 } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
+import { ValidPropertyUrlExpectedError } from "./thing";
 
 /**
  * @param thing The [[Thing]] to read a URL value from.
@@ -533,6 +535,9 @@ function findAll<Object extends Quad_Object>(
 }
 
 function getNamedNodeMatcher(property: Url | UrlString): Matcher<NamedNode> {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
@@ -544,6 +549,9 @@ function getNamedNodeMatcher(property: Url | UrlString): Matcher<NamedNode> {
 }
 
 function getLiteralMatcher(property: Url | UrlString): Matcher<Literal> {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
@@ -555,6 +563,9 @@ function getLiteralMatcher(property: Url | UrlString): Matcher<Literal> {
 }
 
 function getTermMatcher(property: Url | UrlString): Matcher<Quad_Object> {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
@@ -572,6 +583,9 @@ function getLiteralOfTypeMatcher<Datatype extends XmlSchemaTypeIri>(
   property: Url | UrlString,
   datatype: Datatype
 ): Matcher<LiteralOfType<Datatype>> {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(
@@ -594,6 +608,9 @@ function getLocaleStringMatcher(
   property: Url | UrlString,
   locale: string
 ): Matcher<LiteralLocaleString> {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
   const predicateNode = asNamedNode(property);
 
   const matcher = function matcher(

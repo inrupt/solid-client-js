@@ -29,6 +29,7 @@ import {
   getLocalNode,
   asNamedNode,
   resolveLocalIri,
+  internal_isValidUrl,
 } from "../datatypes";
 import {
   SolidDataset,
@@ -87,6 +88,9 @@ export function getThing(
   thingUrl: UrlString | Url | LocalNode,
   options: GetThingOptions = {}
 ): Thing | null {
+  if (!isLocalNode(thingUrl) && !internal_isValidUrl(thingUrl)) {
+    throw new ValidThingUrlExpectedError(thingUrl);
+  }
   const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
   const scope: NamedNode | null = options.scope
     ? asNamedNode(options.scope)
@@ -276,10 +280,8 @@ export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
     const url = (options as CreateThingPersistedOptions).url;
-    /* istanbul ignore else [URL is defined is the testing environment, so we cannot test this] */
-    if (typeof URL !== "undefined") {
-      // Throws an error if the IRI is invalid:
-      new URL(url);
+    if (!internal_isValidUrl(url)) {
+      throw new ValidThingUrlExpectedError(url);
     }
     const thing: ThingPersisted = Object.assign(dataset(), {
       internal_url: url,
@@ -389,6 +391,54 @@ export class ThingExpectedError extends SolidClientError {
     const message = `Expected a Thing, but received: \`${receivedValue}\`.`;
     super(message);
     this.receivedValue = receivedValue;
+  }
+}
+
+/**
+ * This error is thrown when a function expected to receive a valid URL to identify a property but received something else.
+ */
+export class ValidPropertyUrlExpectedError extends SolidClientError {
+  public readonly receivedProperty: unknown;
+
+  constructor(receivedValue: unknown) {
+    const value = isNamedNode(receivedValue)
+      ? receivedValue.value
+      : receivedValue;
+    const message = `Expected a valid URL to identify a property, but received: \`${value}\`.`;
+    super(message);
+    this.receivedProperty = value;
+  }
+}
+
+/**
+ * This error is thrown when a function expected to receive a valid URL value but received something else.
+ */
+export class ValidValueUrlExpectedError extends SolidClientError {
+  public readonly receivedValue: unknown;
+
+  constructor(receivedValue: unknown) {
+    const value = isNamedNode(receivedValue)
+      ? receivedValue.value
+      : receivedValue;
+    const message = `Expected a valid URL value, but received: \`${value}\`.`;
+    super(message);
+    this.receivedValue = value;
+  }
+}
+
+/**
+ * This error is thrown when a function expected to receive a valid URL to identify a [[Thing]] but received something else.
+ */
+export class ValidThingUrlExpectedError extends SolidClientError {
+  public readonly receivedValue: unknown;
+
+  constructor(receivedValue: unknown) {
+    const value = isNamedNode(receivedValue)
+      ? receivedValue.value
+      : receivedValue;
+    const message = `Expected a valid URL to identify a Thing, but received: \`${value}\`.`;
+    super(message);
+    this.receivedValue = value;
   }
 }
 

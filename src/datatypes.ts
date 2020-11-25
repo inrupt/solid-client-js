@@ -21,7 +21,8 @@
 
 import { NamedNode, Literal, Quad, Term } from "rdf-js";
 import { DataFactory } from "./rdfjs";
-import { IriString, LocalNode, Iri } from "./interfaces";
+import { IriString, LocalNode, Iri, SolidClientError } from "./interfaces";
+import { internal_toIriString } from "./interfaces.internal";
 
 /**
  * IRIs of the XML Schema data types we support
@@ -294,6 +295,30 @@ export function getLocalNode(name: string): LocalNode {
 }
 
 /**
+ * Ensure that a given value is a valid URL.
+ *
+ * @internal Library users shouldn't need to be exposed to raw URLs.
+ * @param iri The value of which to verify that it is a valid URL.
+ */
+export function internal_isValidUrl(iri: Iri | IriString): boolean {
+  const iriString = internal_toIriString(iri);
+  // If the runtime environment supports URL, instantiate one.
+  // If the given IRI is not a valid URL, it will throw an error.
+  // See: https://developer.mozilla.org/en-US/docs/Web/API/URL
+  /* istanbul ignore if [URL is available in our testing environment, so we cannot test the alternative] */
+  if (typeof URL !== "function") {
+    // If we can't validate the URL, do not throw an error:
+    return true;
+  }
+  try {
+    new URL(iriString);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Ensure that a given value is a Named Node.
  *
  * If the given parameter is a Named Node already, it will be returned as-is. If it is a string, it
@@ -304,15 +329,11 @@ export function getLocalNode(name: string): LocalNode {
  * @param iri The IRI that should be converted into a Named Node, if it isn't one yet.
  */
 export function asNamedNode(iri: Iri | IriString): NamedNode {
+  if (!internal_isValidUrl(iri)) {
+    throw new ValidUrlExpectedError(iri);
+  }
   if (isNamedNode(iri)) {
     return iri;
-  }
-  // If the runtime environment supports URL, instantiate one.
-  // If the given IRI is not a valid URL, it will throw an error.
-  // See: https://developer.mozilla.org/en-US/docs/Web/API/URL
-  /* istanbul ignore else [URL is available in our testing environment, so we cannot test the alternative] */
-  if (typeof URL !== "undefined") {
-    new URL(iri);
   }
   return DataFactory.namedNode(iri);
 }
@@ -396,7 +417,7 @@ export function resolveLocalIri(
   resourceIri: IriString
 ): IriString {
   /* istanbul ignore if [The URL interface is available in the testing environment, so we cannot test this] */
-  if (typeof URL === "undefined") {
+  if (typeof URL !== "function") {
     throw new Error(
       "The URL interface is not available, so an IRI cannot be determined."
     );
@@ -404,4 +425,20 @@ export function resolveLocalIri(
   const thingIri = new URL(resourceIri);
   thingIri.hash = name;
   return thingIri.href;
+}
+
+/**
+ * This error is thrown when a given value is not a proper URL.
+ */
+export class ValidUrlExpectedError extends SolidClientError {
+  public readonly receivedValue: unknown;
+
+  constructor(receivedValue: unknown) {
+    const value = isNamedNode(receivedValue)
+      ? receivedValue.value
+      : receivedValue;
+    const message = `Expected a valid URL, but received: \`${value}\`.`;
+    super(message);
+    this.receivedValue = value;
+  }
 }

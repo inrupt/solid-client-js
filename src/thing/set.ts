@@ -30,10 +30,16 @@ import {
   normalizeLocale,
   XmlSchemaTypeIri,
   xmlSchemaTypes,
+  internal_isValidUrl,
 } from "../datatypes";
 import { DataFactory } from "../rdfjs";
 import { internal_toNode, internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
+import {
+  isThing,
+  ValidPropertyUrlExpectedError,
+  ValidValueUrlExpectedError,
+} from "./thing";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -53,9 +59,16 @@ export const setUrl: SetOfType<Url | UrlString | Thing> = (
   url
 ) => {
   internal_throwIfNotThing(thing);
-  const newThing = removeAll(thing, property);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  if (!isThing(url) && !internal_isValidUrl(url)) {
+    throw new ValidValueUrlExpectedError(url);
+  }
 
+  const newThing = removeAll(thing, property);
   const predicateNode = asNamedNode(property);
+
   newThing.add(
     DataFactory.quad(
       internal_toNode(newThing),
@@ -266,8 +279,11 @@ export function setTerm<T extends Thing>(
   value: Quad_Object
 ): T {
   internal_throwIfNotThing(thing);
-  const newThing = removeAll(thing, property);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
 
+  const newThing = removeAll(thing, property);
   const predicateNode = asNamedNode(property);
   newThing.add(
     DataFactory.quad(internal_toNode(newThing), predicateNode, value)

@@ -46,8 +46,11 @@ import {
   getNamedNodeAll,
   getTerm,
   getTermAll,
+  getIriAll,
 } from "./get";
 import { xmlSchemaTypes } from "../datatypes";
+import { ValidPropertyUrlExpectedError } from "./thing";
+import { mockThingFrom } from "./mock";
 
 const SUBJECT = "https://arbitrary.vocab/subject";
 const PREDICATE = "https://some.vocab/predicate";
@@ -216,6 +219,28 @@ describe("getIri", () => {
       getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getUrl(mockThingFrom("https://arbitrary.pod/resource#thing"), "not-a-url")
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getIriAll", () => {
@@ -314,8 +339,33 @@ describe("getIriAll", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+      getUrlAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getUrlAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getIriAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -412,6 +462,31 @@ describe("getBoolean", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getBoolean(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getBoolean(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -511,6 +586,31 @@ describe("getBooleanAll", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getBooleanAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getBooleanAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -614,6 +714,31 @@ describe("getDatetime", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getDatetime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getDatetime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -728,6 +853,31 @@ describe("getDatetimeAll", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getDatetimeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getDatetimeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getDecimal", () => {
@@ -815,6 +965,31 @@ describe("getDecimal", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getDecimal(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getDecimal(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -906,6 +1081,31 @@ describe("getDecimalAll", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getDecimalAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getDecimalAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getInteger", () => {
@@ -989,6 +1189,31 @@ describe("getInteger", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getInteger(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getInteger(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1075,6 +1300,31 @@ describe("getIntegerAll", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getIntegerAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getIntegerAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1251,6 +1501,33 @@ describe("getStringWithLocale", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getStringWithLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getStringWithLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "nl-NL"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getStringByLocaleAll", () => {
@@ -1344,6 +1621,31 @@ describe("getStringByLocaleAll", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getStringByLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getStringByLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1550,6 +1852,33 @@ describe("getStringWithLocaleAll", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getStringWithLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "nl-NL"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getStringWithLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        "nl-NL"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getStringNoLocale", () => {
@@ -1646,6 +1975,31 @@ describe("getStringNoLocale", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getStringNoLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getStringNoLocale(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1749,6 +2103,31 @@ describe("getStringNoLocaleAll", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getStringNoLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getStringNoLocaleAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getLiteral", () => {
@@ -1825,6 +2204,31 @@ describe("getLiteral", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getLiteral(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getLiteral(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -1909,6 +2313,31 @@ describe("getLiteralAll", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getLiteralAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getLiteralAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -2038,6 +2467,31 @@ describe("getNamedNode", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getNamedNode(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getNamedNode(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getNamedNodeAll", () => {
@@ -2119,6 +2573,31 @@ describe("getNamedNodeAll", () => {
       )
     ).toThrow("Expected a Thing, but received: `null`.");
   });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getNamedNodeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getNamedNodeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
 });
 
 describe("getTerm", () => {
@@ -2184,6 +2663,31 @@ describe("getTerm", () => {
     expect(() =>
       getTerm((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getTerm(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getTerm(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
 
@@ -2299,5 +2803,30 @@ describe("getTermAll", () => {
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: `null`.");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getTermAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: `not-a-url`."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getTermAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
   });
 });
