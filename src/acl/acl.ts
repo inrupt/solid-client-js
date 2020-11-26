@@ -20,27 +20,29 @@
  */
 
 import { acl } from "../constants";
-import { saveSolidDatasetAt } from "../resource/solidDataset";
+import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   WithResourceInfo,
-  AclDataset,
-  hasAccessibleAcl,
-  WithAcl,
-  WithAccessibleAcl,
-  WithResourceAcl,
-  WithFallbackAcl,
+  File,
   WithServerResourceInfo,
+  UrlString,
+  Url,
+  SolidDataset,
+  Thing,
 } from "../interfaces";
 import { setThing } from "../thing/thing";
 import { dataset } from "../rdfjs";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 import {
+  getResourceInfo,
   getSourceUrl,
   internal_defaultFetchOptions,
 } from "../resource/resource";
+import { getFile } from "../resource/file";
 import { internal_cloneResource } from "../resource/resource.internal";
 import {
+  internal_fetchAcl,
   internal_getAclRules,
   internal_getDefaultAclRulesForResource,
 } from "./acl.internal";
@@ -88,6 +90,99 @@ export function hasResourceAcl<
     resource.internal_resourceInfo.aclUrl ===
       getSourceUrl(resource.internal_acl.resourceAcl)
   );
+}
+
+/**
+ * Experimental: fetch a SolidDataset and its associated Access Control List.
+ *
+ * This is an experimental function that fetches both a Resource, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
+ * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
+ * provide this info in a single request. Therefore, and because this function is still
+ * experimental, prefer [[getSolidDataset]] instead.
+ *
+ * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
+ * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
+ * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
+ * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
+ * authenticated user.
+ *
+ * @param url URL of the SolidDataset to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A SolidDataset and the ACLs that apply to it, if available to the authenticated user.
+ */
+export async function getSolidDatasetWithAcl(
+  url: UrlString | Url,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
+  const solidDataset = await getSolidDataset(url, options);
+  const acl = await internal_fetchAcl(solidDataset, options);
+  return Object.assign(solidDataset, { internal_acl: acl });
+}
+
+/**
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Retrieves a file, its resource ACL (Access Control List) if available,
+ * and its fallback ACL from a URL and returns them as a blob.
+ *
+ * If the user calling the function does not have access to the file's resource ACL,
+ * [[hasAccessibleAcl]] on the returned blob returns false.
+ * If the user has access to the file's resource ACL but the resource ACL does not exist,
+ * [[getResourceAcl]] on the returned blob returns null.
+ * If the fallback ACL is inaccessible by the user,
+ * [[getFallbackAcl]] on the returned blob returns null.
+ *
+ * ```{tip}
+ * To retrieve the ACLs, the function results in multiple HTTP requests rather than a single
+ * request as mandated by the Solid spec. As such, prefer [[getFile]] instead if you do not need the ACL.
+ * ```
+ *
+ * @param url The URL of the fetched file
+ * @param options Fetching options: a custom fetcher and/or headers.
+ * @returns A file and its ACLs, if available to the authenticated user, as a blob.
+ * @since 0.2.0
+ */
+export async function getFileWithAcl(
+  input: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<File & WithServerResourceInfo & WithAcl> {
+  const file = await getFile(input, options);
+  const acl = await internal_fetchAcl(file, options);
+  return Object.assign(file, { internal_acl: acl });
+}
+
+/**
+ * Experimental: fetch a Resource's metadata and its associated Access Control List.
+ *
+ * This is an experimental function that fetches both a Resource's metadata, the linked ACL Resource (if
+ * available), and the ACL that applies to it if the linked ACL Resource is not available (if accessible). This can
+ * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
+ * provide this info in a single request.
+ *
+ * If the Resource's linked ACL Resource could not be fetched (because it does not exist, or because
+ * the authenticated user does not have access to it), `acl.resourceAcl` will be `null`. If the
+ * applicable Container's ACL is not accessible to the authenticated user, `acl.fallbackAcl` will be
+ * `null`.
+ *
+ * @param url URL of the SolidDataset to fetch.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
+ */
+export async function getResourceInfoWithAcl(
+  url: UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<WithServerResourceInfo & WithAcl> {
+  const resourceInfo = await getResourceInfo(url, options);
+  const acl = await internal_fetchAcl(resourceInfo, options);
+  return Object.assign(resourceInfo, { internal_acl: acl });
 }
 
 /**
@@ -320,4 +415,114 @@ export async function deleteAclFor<
   });
 
   return storedResource;
+}
+
+/**
+ * A [[SolidDataset]] containing Access Control rules for another SolidDataset.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ */
+export type AclDataset = SolidDataset &
+  WithResourceInfo & { internal_accessTo: UrlString };
+
+/**
+ * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
+ */
+export type AclRule = Thing;
+
+/**
+ * An object with the boolean properties `read`, `append`, `write` and `control`, representing the
+ * respective Access Modes defined by the Web Access Control specification.
+ *
+ * Since that specification is not finalised yet, this interface is still experimental.
+ */
+export type Access =
+  // If someone has write permissions, they also have append permissions:
+  {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+    control: boolean;
+  };
+
+/**
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @hidden Developers should use [[getResourceAcl]] and [[getFallbackAcl]] to access these.
+ */
+export type WithAcl = {
+  internal_acl:
+    | {
+        resourceAcl: AclDataset;
+        fallbackAcl: null;
+      }
+    | {
+        resourceAcl: null;
+        fallbackAcl: AclDataset | null;
+      };
+};
+
+/**
+ * If this type applies to a Resource, an Access Control List that applies to it exists and is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ */
+export type WithResourceAcl<
+  ResourceExt extends WithAcl = WithAcl
+> = ResourceExt & {
+  internal_acl: {
+    resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
+  };
+};
+
+/**
+ * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ */
+export type WithFallbackAcl<
+  ResourceExt extends WithAcl = WithAcl
+> = ResourceExt & {
+  internal_acl: {
+    fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
+  };
+};
+
+/**
+ * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ */
+export type WithAccessibleAcl<
+  ResourceExt extends WithServerResourceInfo = WithServerResourceInfo
+> = ResourceExt & {
+  internal_resourceInfo: {
+    aclUrl: Exclude<
+      WithServerResourceInfo["internal_resourceInfo"]["aclUrl"],
+      undefined
+    >;
+  };
+};
+
+/**
+ * Given a [[SolidDataset]], verify whether its Access Control List is accessible to the current user.
+ *
+ * This should generally only be true for SolidDatasets fetched by
+ * [[getSolidDatasetWithAcl]].
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param dataset A [[SolidDataset]].
+ * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
+ */
+export function hasAccessibleAcl<ResourceExt extends WithServerResourceInfo>(
+  dataset: ResourceExt
+): dataset is WithAccessibleAcl<ResourceExt> {
+  return typeof dataset.internal_resourceInfo.aclUrl === "string";
 }

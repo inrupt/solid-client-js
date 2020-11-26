@@ -20,16 +20,7 @@
  */
 
 import { getSolidDataset } from "../resource/solidDataset";
-import {
-  Access,
-  AclDataset,
-  AclRule,
-  hasAccessibleAcl,
-  IriString,
-  Thing,
-  WithAccessibleAcl,
-  WithServerResourceInfo,
-} from "../interfaces";
+import { IriString, Thing, WithServerResourceInfo } from "../interfaces";
 import {
   getSourceUrl,
   internal_defaultFetchOptions,
@@ -42,6 +33,47 @@ import { createThing, getThingAll, removeThing } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
+import {
+  Access,
+  AclDataset,
+  AclRule,
+  hasAccessibleAcl,
+  WithAccessibleAcl,
+  WithAcl,
+} from "./acl";
+
+/**
+ * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
+ * attached to a resource.
+ *
+ * @internal
+ * @param resourceInfo The Resource info with the ACL URL
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
+ */
+export async function internal_fetchAcl(
+  resourceInfo: WithServerResourceInfo,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<WithAcl["internal_acl"]> {
+  if (!hasAccessibleAcl(resourceInfo)) {
+    return {
+      resourceAcl: null,
+      fallbackAcl: null,
+    };
+  }
+  const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
+
+  const acl =
+    resourceAcl === null
+      ? {
+          resourceAcl: null,
+          fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
+        }
+      : { resourceAcl: resourceAcl, fallbackAcl: null };
+
+  return acl;
+}
 
 /** @internal */
 export async function internal_fetchResourceAcl(

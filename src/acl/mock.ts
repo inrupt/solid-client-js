@@ -19,16 +19,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  WithServerResourceInfo,
-  WithResourceAcl,
-  WithAccessibleAcl,
-  WithFallbackAcl,
-  UrlString,
-} from "../interfaces";
+import { WithServerResourceInfo, UrlString } from "../interfaces";
 import { getSourceIri } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
-import { createAcl } from "./acl";
+import {
+  createAcl,
+  WithAccessibleAcl,
+  WithFallbackAcl,
+  WithResourceAcl,
+} from "./acl";
 import { internal_getContainerPath } from "./acl.internal";
 import { mockContainerFrom } from "../resource/mock";
 

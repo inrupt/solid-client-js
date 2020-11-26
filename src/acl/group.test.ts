@@ -25,9 +25,6 @@ import {
   SolidDataset,
   WithResourceInfo,
   IriString,
-  Access,
-  AclDataset,
-  WithAcl,
   WithServerResourceInfo,
 } from "../interfaces";
 import { DataFactory } from "../rdfjs";
@@ -39,6 +36,7 @@ import {
   getGroupAccess,
   getGroupAccessAll,
 } from "./group";
+import { Access, AclDataset, WithAcl } from "./acl";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,

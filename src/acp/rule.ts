@@ -19,9 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acl, acp, rdf } from "../constants";
+import { acp, rdf } from "../constants";
 import {
-  AclRule,
   SolidDataset,
   Thing,
   ThingPersisted,

@@ -47,16 +47,16 @@ import {
   WithLinkedAcpAccessControl,
 } from "./control";
 import { acp, rdf } from "../constants";
-import { WithAccessibleAcl, WithServerResourceInfo } from "../interfaces";
+import { WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { DataFactory } from "n3";
 import { addIri } from "../thing/add";
-import { createSolidDataset } from "../resource/solidDataset";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { getSourceUrl } from "../resource/resource";
+import { WithAccessibleAcl } from "../acl/acl";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
