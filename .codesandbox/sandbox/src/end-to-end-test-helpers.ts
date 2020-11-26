@@ -1,5 +1,5 @@
 import {
-  acp_v1 as acp,
+  acp_v2 as acp,
   createSolidDataset,
   getSolidDataset,
   saveSolidDatasetAt,
@@ -118,14 +118,9 @@ export function getHelpers(podRoot: string, session: Session) {
         )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
       );
     }
-    let inputControl = acp.createControl();
-    inputControl = acp.addPolicyUrl(
-      inputControl,
-      policyResourceUrl + "#" + policyFragmentIdentifier
-    );
-    const changedResourceWithAcr = acp.setControl(
+    const changedResourceWithAcr = acp.addPolicyUrl(
       resourceWithAcr,
-      inputControl
+      policyResourceUrl + "#" + policyFragmentIdentifier
     );
     return acp.saveAcrFor(changedResourceWithAcr, {
       fetch: session.fetch,
