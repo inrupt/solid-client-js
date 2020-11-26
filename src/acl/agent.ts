@@ -22,20 +22,20 @@
 import {
   WithServerResourceInfo,
   WithChangeLog,
-  WithAcl,
-  AclDataset,
-  Access,
-  AclRule,
   IriString,
   WebId,
 } from "../interfaces";
 import { getIri, getIriAll } from "../thing/get";
 import { acl } from "../constants";
 import {
+  AclDataset,
+  Access,
+  AclRule,
   hasResourceAcl,
   getResourceAcl,
   hasFallbackAcl,
   getFallbackAcl,
+  WithAcl,
 } from "./acl";
 import {
   internal_duplicateAclRule,

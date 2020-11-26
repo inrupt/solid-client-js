@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { Quad } from "rdf-js";
-import { dataset, namedNode, literal } from "@rdfjs/dataset";
+import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
   getAgentResourceAccess,
@@ -35,17 +35,14 @@ import {
 } from "./agent";
 import {
   SolidDataset,
-  Access,
-  WithAcl,
   WithResourceInfo,
   IriString,
-  AclDataset,
   WithServerResourceInfo,
-  LocalNode,
 } from "../interfaces";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { getLocalNode } from "../datatypes";
+import { Access, AclDataset, WithAcl } from "./acl";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,

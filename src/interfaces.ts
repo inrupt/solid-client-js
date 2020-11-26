@@ -20,6 +20,7 @@
  */
 
 import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
+import { Access } from "./acl/acl";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
@@ -78,40 +79,6 @@ export type ThingLocal = Thing & { internal_localSubject: LocalNode };
 export type LocalNode = BlankNode & { internal_name: string };
 
 /**
- * A [[SolidDataset]] containing Access Control rules for another SolidDataset.
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- */
-export type AclDataset = SolidDataset &
-  WithResourceInfo & { internal_accessTo: UrlString };
-
-/**
- * @hidden Developers shouldn't need to directly access ACL rules. Instead, we provide our own functions that verify what access someone has.
- */
-export type AclRule = Thing;
-
-/**
- * An object with the boolean properties `read`, `append`, `write` and `control`, representing the
- * respective Access Modes defined by the Web Access Control specification.
- *
- * Since that specification is not finalised yet, this interface is still experimental.
- */
-export type Access =
-  // If someone has write permissions, they also have append permissions:
-  {
-    read: boolean;
-    append: boolean;
-    write: boolean;
-    control: boolean;
-  };
-
-type internal_WacAllow = {
-  user: Access;
-  public: Access;
-};
-
-/**
  * Data that was sent to a Pod includes this metadata describing its relation to the Pod Resource it was sent to.
  *
  * **Do not read these properties directly**; their internal representation may change at any time.
@@ -124,6 +91,11 @@ export type WithResourceInfo = {
     isRawData: boolean;
     contentType?: string;
   };
+};
+
+type internal_WacAllow = {
+  user: Access;
+  public: Access;
 };
 
 /**
@@ -174,52 +146,6 @@ export type WithChangeLog = SolidDataset & {
 };
 
 /**
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- *
- * @hidden Developers should use [[getResourceAcl]] and [[getFallbackAcl]] to access these.
- */
-export type WithAcl = {
-  internal_acl:
-    | {
-        resourceAcl: AclDataset;
-        fallbackAcl: null;
-      }
-    | {
-        resourceAcl: null;
-        fallbackAcl: AclDataset | null;
-      };
-};
-
-/**
- * If this type applies to a Resource, an Access Control List that applies to it exists and is accessible to the currently authenticated user.
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- */
-export type WithResourceAcl<
-  ResourceExt extends WithAcl = WithAcl
-> = ResourceExt & {
-  internal_acl: {
-    resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
-  };
-};
-
-/**
- * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- */
-export type WithFallbackAcl<
-  ResourceExt extends WithAcl = WithAcl
-> = ResourceExt & {
-  internal_acl: {
-    fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
-  };
-};
-
-/**
  * Verify whether a given SolidDataset includes metadata about where it was sent to.
  *
  * @param dataset A [[SolidDataset]] that may have metadata attached about the Resource it was retrieved from.
@@ -265,41 +191,6 @@ export function hasChangelog<T extends SolidDataset>(
     Array.isArray(potentialChangeLog.internal_changeLog.additions) &&
     Array.isArray(potentialChangeLog.internal_changeLog.deletions)
   );
-}
-
-/**
- * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- */
-export type WithAccessibleAcl<
-  ResourceExt extends WithServerResourceInfo = WithServerResourceInfo
-> = ResourceExt & {
-  internal_resourceInfo: {
-    aclUrl: Exclude<
-      WithServerResourceInfo["internal_resourceInfo"]["aclUrl"],
-      undefined
-    >;
-  };
-};
-
-/**
- * Given a [[SolidDataset]], verify whether its Access Control List is accessible to the current user.
- *
- * This should generally only be true for SolidDatasets fetched by
- * [[getSolidDatasetWithAcl]].
- *
- * Please note that the Web Access Control specification is not yet finalised, and hence, this
- * function is still experimental and can change in a non-major release.
- *
- * @param dataset A [[SolidDataset]].
- * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
- */
-export function hasAccessibleAcl<ResourceExt extends WithServerResourceInfo>(
-  dataset: ResourceExt
-): dataset is WithAccessibleAcl<ResourceExt> {
-  return typeof dataset.internal_resourceInfo.aclUrl === "string";
 }
 
 /**

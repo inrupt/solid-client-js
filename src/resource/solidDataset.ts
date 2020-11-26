@@ -36,7 +36,6 @@ import {
   WithResourceInfo,
   hasResourceInfo,
   LocalNode,
-  WithAcl,
   Url,
   IriString,
   Thing,
@@ -52,7 +51,6 @@ import {
 } from "./resource";
 import {
   internal_cloneResource,
-  internal_fetchAcl,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
@@ -114,36 +112,6 @@ export async function getSolidDataset(
   });
 
   return resourceWithResourceInfo;
-}
-
-/**
- * Experimental: fetch a SolidDataset and its associated Access Control List.
- *
- * This is an experimental function that fetches both a Resource, the linked ACL Resource (if
- * available), and the ACL that applies to it if the linked ACL Resource is not available. This can
- * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
- * provide this info in a single request. Therefore, and because this function is still
- * experimental, prefer [[getSolidDataset]] instead.
- *
- * If the Resource does not advertise the ACL Resource (because the authenticated user does not have
- * access to it), the `acl` property in the returned value will be null. `acl.resourceAcl` will be
- * undefined if the Resource's linked ACL Resource could not be fetched (because it does not exist),
- * and `acl.fallbackAcl` will be null if the applicable Container's ACL is not accessible to the
- * authenticated user.
- *
- * @param url URL of the SolidDataset to fetch.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A SolidDataset and the ACLs that apply to it, if available to the authenticated user.
- */
-export async function getSolidDatasetWithAcl(
-  url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
-  const solidDataset = await getSolidDataset(url, options);
-  const acl = await internal_fetchAcl(solidDataset, options);
-  return Object.assign(solidDataset, { internal_acl: acl });
 }
 
 type UpdateableDataset = SolidDataset &
