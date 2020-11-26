@@ -19,20 +19,16 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { WithServerResourceInfo, IriString, UrlString } from "../interfaces";
 import {
   AclDataset,
   Access,
   AclRule,
-  WithAcl,
-  WithServerResourceInfo,
-  IriString,
-  UrlString,
-} from "../interfaces";
-import {
   hasResourceAcl,
   hasFallbackAcl,
   getResourceAcl,
   getFallbackAcl,
+  WithAcl,
 } from "./acl";
 import {
   internal_getAclRules,

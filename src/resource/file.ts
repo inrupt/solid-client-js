@@ -24,7 +24,6 @@ import {
   File,
   UploadRequestInit,
   WithResourceInfo,
-  WithAcl,
   Url,
   UrlString,
   hasResourceInfo,
@@ -34,7 +33,6 @@ import { internal_toIriString } from "../interfaces.internal";
 import { getSourceIri, FetchError } from "./resource";
 import {
   internal_cloneResource,
-  internal_fetchAcl,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
@@ -93,39 +91,6 @@ export async function getFile(
   );
 
   return fileWithResourceInfo;
-}
-
-/**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Retrieves a file, its resource ACL (Access Control List) if available,
- * and its fallback ACL from a URL and returns them as a blob.
- *
- * If the user calling the function does not have access to the file's resource ACL,
- * [[hasAccessibleAcl]] on the returned blob returns false.
- * If the user has access to the file's resource ACL but the resource ACL does not exist,
- * [[getResourceAcl]] on the returned blob returns null.
- * If the fallback ACL is inaccessible by the user,
- * [[getFallbackAcl]] on the returned blob returns null.
- *
- * ```{tip}
- * To retrieve the ACLs, the function results in multiple HTTP requests rather than a single
- * request as mandated by the Solid spec. As such, prefer [[getFile]] instead if you do not need the ACL.
- * ```
- *
- * @param url The URL of the fetched file
- * @param options Fetching options: a custom fetcher and/or headers.
- * @returns A file and its ACLs, if available to the authenticated user, as a blob.
- * @since 0.2.0
- */
-export async function getFileWithAcl(
-  input: Url | UrlString,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<File & WithServerResourceInfo & WithAcl> {
-  const file = await getFile(input, options);
-  const acl = await internal_fetchAcl(file, options);
-  return Object.assign(file, { internal_acl: acl });
 }
 
 /**

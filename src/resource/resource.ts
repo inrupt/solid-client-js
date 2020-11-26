@@ -21,7 +21,6 @@
 
 import {
   UrlString,
-  WithAcl,
   hasResourceInfo,
   Url,
   WebId,
@@ -34,7 +33,6 @@ import {
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
 import {
-  internal_fetchAcl,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
@@ -75,34 +73,6 @@ export async function getResourceInfo(
   const resourceInfo = internal_parseResourceInfo(response);
 
   return { internal_resourceInfo: resourceInfo };
-}
-
-/**
- * Experimental: fetch a Resource's metadata and its associated Access Control List.
- *
- * This is an experimental function that fetches both a Resource's metadata, the linked ACL Resource (if
- * available), and the ACL that applies to it if the linked ACL Resource is not available (if accessible). This can
- * result in many HTTP requests being executed, in lieu of the Solid spec mandating servers to
- * provide this info in a single request.
- *
- * If the Resource's linked ACL Resource could not be fetched (because it does not exist, or because
- * the authenticated user does not have access to it), `acl.resourceAcl` will be `null`. If the
- * applicable Container's ACL is not accessible to the authenticated user, `acl.fallbackAcl` will be
- * `null`.
- *
- * @param url URL of the SolidDataset to fetch.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A Resource's metadata and the ACLs that apply to the Resource, if available to the authenticated user.
- */
-export async function getResourceInfoWithAcl(
-  url: UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): Promise<WithServerResourceInfo & WithAcl> {
-  const resourceInfo = await getResourceInfo(url, options);
-  const acl = await internal_fetchAcl(resourceInfo, options);
-  return Object.assign(resourceInfo, { internal_acl: acl });
 }
 
 /**

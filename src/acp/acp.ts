@@ -26,8 +26,6 @@ import {
   Url,
   UrlString,
   WithServerResourceInfo,
-  WithAcl,
-  hasAccessibleAcl,
   WithResourceInfo,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
@@ -37,7 +35,6 @@ import {
   getSourceUrl,
   internal_defaultFetchOptions,
 } from "../resource/resource";
-import { internal_fetchAcl } from "../resource/resource.internal";
 import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
@@ -49,6 +46,8 @@ import {
   hasLinkedAcr,
 } from "./control";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
+import { hasAccessibleAcl, WithAcl } from "../acl/acl";
+import { internal_fetchAcl } from "../acl/acl.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this

@@ -47,8 +47,6 @@ import {
   WithResourceInfo,
   WithChangeLog,
   LocalNode,
-  WithAcl,
-  AclDataset,
   SolidClientError,
 } from "../interfaces";
 import { createSolidDataset } from "../resource/solidDataset";
@@ -63,6 +61,7 @@ import {
   addDecimal,
 } from "./add";
 import { internal_throwIfNotThing } from "./thing.internal";
+import { AclDataset, WithAcl } from "../acl/acl";
 
 function getMockQuad(
   terms: Partial<{

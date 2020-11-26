@@ -22,15 +22,18 @@
 import {
   IriString,
   WithServerResourceInfo,
-  WithAcl,
-  Access,
-  AclDataset,
-  AclRule,
   WithChangeLog,
 } from "../interfaces";
 import { acl, foaf } from "../constants";
 import { getIriAll } from "../thing/get";
-import { hasResourceAcl, hasFallbackAcl } from "./acl";
+import {
+  hasResourceAcl,
+  hasFallbackAcl,
+  Access,
+  AclDataset,
+  AclRule,
+  WithAcl,
+} from "./acl";
 import {
   internal_getAclRules,
   internal_getResourceAclRulesForResource,

@@ -33,15 +33,13 @@ import {
   SolidDataset,
   WithResourceInfo,
   IriString,
-  Access,
-  AclDataset,
-  WithAcl,
   WithServerResourceInfo,
 } from "../interfaces";
 import { Quad } from "rdf-js";
 import { foaf } from "../constants";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
+import { Access, AclDataset, WithAcl } from "./acl";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
