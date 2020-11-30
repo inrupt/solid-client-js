@@ -154,6 +154,7 @@ import {
   ThingExpectedError,
   // Preview API's exported for early adopters:
   acp_v1,
+  acp_v2,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -299,6 +300,7 @@ it("exports error classes", () => {
 
 it("exports preview API's for early adopters", () => {
   expect(acp_v1).toBeDefined();
+  expect(acp_v2).toBeDefined();
 });
 
 // eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:

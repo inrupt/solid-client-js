@@ -208,5 +208,18 @@ export {
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
+ * @deprecated
  */
-export { acp_v1 } from "./acp/preview";
+export { acp_v1 } from "./acp/v1";
+
+/**
+ * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
+ * To enable early experimentation, solid-client exposes a low-level API. However, this API can and
+ * will include breaking changes in non-major releases. Additionally, for most applications, a
+ * higher-level API that is planned will be more applicable.
+ * Thus, the following export is *only* intended for experimentation by early adopters, and is not
+ * recommended for production applications. Because of this, all ACP-related API's are exported on a
+ * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
+ * them will be included in your bundle.
+ */
+export { acp_v2 } from "./acp/v2";
