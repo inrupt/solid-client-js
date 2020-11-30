@@ -1,0 +1,1 @@
+developer-tools/api/javascript/solid-client/modules/_resource_nonrdfdata_.html  ->  developer-tools/api/javascript/solid-client/modules/_resource_file_.html
