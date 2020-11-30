@@ -199,3 +199,14 @@ p.topic-title {
 .topic {
   background-color: #fff;
 }
+
+.navbar-light .navbar-nav .nav-link {
+  color: #222222;
+}
+
+@media (min-width: 992px) {
+  .navbar-expand-lg .navbar-nav .nav-link {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
