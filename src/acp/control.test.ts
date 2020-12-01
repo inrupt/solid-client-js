@@ -22,6 +22,7 @@
 import { describe, it, expect } from "@jest/globals";
 
 import {
+  acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
   addMemberPolicyUrl,
@@ -1884,6 +1885,62 @@ describe("removeMemberPolicyUrlAll", () => {
     expect(oldAcrQuads[1].predicate.value).toBe(acp.applyMembers);
     expect(oldAcrQuads[1].object.value).toBe(
       "https://some.pod/policy-resource#policy"
+    );
+  });
+});
+
+describe("acrAsMarkdown", () => {
+  it("shows when an ACR is empty", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      accessControlResource
+    );
+
+    expect(acrAsMarkdown(resourceWithAcr)).toBe(
+      "# Access control for https://some.pod/resource\n" +
+        "\n" +
+        "<no policies specified yet>\n"
+    );
+  });
+
+  it("can list all policies that apply to a resource or its ACR", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    let resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      accessControlResource
+    );
+    resourceWithAcr = addPolicyUrl(
+      resourceWithAcr,
+      "https://some.pod/policyResource#policy"
+    );
+    resourceWithAcr = addMemberPolicyUrl(
+      resourceWithAcr,
+      "https://some.pod/policyResource#memberPolicy"
+    );
+    resourceWithAcr = addAcrPolicyUrl(
+      resourceWithAcr,
+      "https://some.pod/policyResource#acrPolicy"
+    );
+    resourceWithAcr = addMemberAcrPolicyUrl(
+      resourceWithAcr,
+      "https://some.pod/policyResource#memberAcrPolicy"
+    );
+
+    expect(acrAsMarkdown(resourceWithAcr)).toBe(
+      "# Access control for https://some.pod/resource\n" +
+        "\n" +
+        "The following policies apply to this resource:\n" +
+        "- https://some.pod/policyResource#policy\n" +
+        "\n" +
+        "The following policies apply to the access control resource for this resource:\n" +
+        "- https://some.pod/policyResource#acrPolicy\n" +
+        "\n" +
+        "The following policies apply to the children of this resource:\n" +
+        "- https://some.pod/policyResource#memberPolicy\n" +
+        "\n" +
+        "The following policies apply to the access control resources for children of this resource:\n" +
+        "- https://some.pod/policyResource#memberAcrPolicy\n"
     );
   });
 });

@@ -528,3 +528,52 @@ export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   );
   return updatedResource;
 }
+
+/**
+ * Gets a human-readable representation of the given [[Control]] to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param control The Control to get a human-readable representation of.
+ */
+export function acrAsMarkdown(
+  resourceWithAcr: WithResourceInfo & WithAccessibleAcr
+): string {
+  let markdown = `# Access control for ${getSourceUrl(resourceWithAcr)}\n`;
+
+  const policyUrls = getPolicyUrlAll(resourceWithAcr);
+  const memberPolicyUrls = getMemberPolicyUrlAll(resourceWithAcr);
+  const acrPolicyUrls = getAcrPolicyUrlAll(resourceWithAcr);
+  const memberAcrPolicyUrls = getMemberAcrPolicyUrlAll(resourceWithAcr);
+
+  if (
+    policyUrls.length === 0 &&
+    memberPolicyUrls.length === 0 &&
+    acrPolicyUrls.length === 0 &&
+    memberAcrPolicyUrls.length === 0
+  ) {
+    markdown += "\n<no policies specified yet>\n";
+  }
+  if (policyUrls.length > 0) {
+    markdown += "\nThe following policies apply to this resource:\n- ";
+    markdown += policyUrls.join("\n- ") + "\n";
+  }
+  if (acrPolicyUrls.length > 0) {
+    markdown +=
+      "\nThe following policies apply to the access control resource for this resource:\n- ";
+    markdown += acrPolicyUrls.join("\n- ") + "\n";
+  }
+  if (memberPolicyUrls.length > 0) {
+    markdown +=
+      "\nThe following policies apply to the children of this resource:\n- ";
+    markdown += memberPolicyUrls.join("\n- ") + "\n";
+  }
+  if (memberAcrPolicyUrls.length > 0) {
+    markdown +=
+      "\nThe following policies apply to the access control resources for children of this resource:\n- ";
+    markdown += memberAcrPolicyUrls.join("\n- ") + "\n";
+  }
+
+  return markdown;
+}
