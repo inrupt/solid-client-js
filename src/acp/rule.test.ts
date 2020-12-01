@@ -59,6 +59,7 @@ import {
   setRule,
   hasCreator,
   setCreator,
+  ruleAsMarkdown,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
@@ -1265,5 +1266,39 @@ describe("setCreator", () => {
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
+  });
+});
+
+describe("ruleAsMarkdown", () => {
+  it("shows when a rule is empty", () => {
+    const rule = createRule("https://some.pod/policyResource#rule");
+
+    expect(ruleAsMarkdown(rule)).toBe(
+      "## Rule: https://some.pod/policyResource#rule\n" + "\n" + "<empty>\n"
+    );
+  });
+
+  it("can show everything to which the rule applies", () => {
+    let rule = createRule("https://some.pod/policyResource#rule");
+    rule = setCreator(rule, true);
+    rule = setAuthenticated(rule, true);
+    rule = setPublic(rule, true);
+    rule = addAgent(rule, "https://some.pod/profile#agent");
+    rule = addAgent(rule, "https://some-other.pod/profile#agent");
+    rule = addGroup(rule, "https://some.pod/groups#family");
+
+    expect(ruleAsMarkdown(rule)).toBe(
+      "## Rule: https://some.pod/policyResource#rule\n" +
+        "\n" +
+        "This rule applies to:\n" +
+        "- Everyone\n" +
+        "- All authenticated agents\n" +
+        "- The creator of this resource\n" +
+        "- The following agents:\n" +
+        "  - https://some.pod/profile#agent\n" +
+        "  - https://some-other.pod/profile#agent\n" +
+        "- Members of the following groups:\n" +
+        "  - https://some.pod/groups#family\n"
+    );
   });
 });
