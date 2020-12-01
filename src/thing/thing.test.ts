@@ -37,7 +37,7 @@ import {
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
-import { internal_toNode } from "./thing.internal";
+import { internal_throwIfNotThing, internal_toNode } from "./thing.internal";
 import {
   IriString,
   Thing,
@@ -60,7 +60,6 @@ import {
   addDatetime,
   addDecimal,
 } from "./add";
-import { internal_throwIfNotThing } from "./thing.internal";
 import { AclDataset, WithAcl } from "../acl/acl";
 
 function getMockQuad(
