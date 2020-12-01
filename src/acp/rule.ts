@@ -33,7 +33,13 @@ import { addIri } from "../thing/add";
 import { getIriAll, getUrl } from "../thing/get";
 import { removeIri } from "../thing/remove";
 import { setIri, setUrl } from "../thing/set";
-import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
+import {
+  asUrl,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { Policy } from "./policy";
 
 export type Rule = ThingPersisted;
@@ -584,4 +590,44 @@ export function setCreator(rule: Rule, creator: boolean): Rule {
   return creator
     ? addIri(rule, acp.agent, acp.CreatorAgent)
     : removeIri(rule, acp.agent, acp.CreatorAgent);
+}
+
+/**
+ * Gets a human-readable representation of the given [[Rule]] to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param rule The Rule to get a human-readable representation of.
+ */
+export function ruleAsMarkdown(rule: Rule): string {
+  let markdown = `## Rule: ${asUrl(rule)}\n\n`;
+
+  let targetEnumeration = "";
+  if (hasPublic(rule)) {
+    targetEnumeration += "- Everyone\n";
+  }
+  if (hasAuthenticated(rule)) {
+    targetEnumeration += "- All authenticated agents\n";
+  }
+  if (hasCreator(rule)) {
+    targetEnumeration += "- The creator of this resource\n";
+  }
+  const targetAgents = getAgentAll(rule);
+  if (targetAgents.length > 0) {
+    targetEnumeration += "- The following agents:\n  - ";
+    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+  }
+  const targetGroups = getGroupAll(rule);
+  if (targetGroups.length > 0) {
+    targetEnumeration += "- Members of the following groups:\n  - ";
+    targetEnumeration += targetGroups.join("\n  - ") + "\n";
+  }
+
+  markdown +=
+    targetEnumeration.length > 0
+      ? "This rule applies to:\n" + targetEnumeration
+      : "<empty>\n";
+
+  return markdown;
 }
