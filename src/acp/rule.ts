@@ -354,7 +354,9 @@ export function setRule(ruleResource: SolidDataset, rule: Rule): SolidDataset {
 export function getAgentAll(rule: Rule): WebId[] {
   return getIriAll(rule, acp.agent).filter(
     (agent: WebId) =>
-      agent !== acp.PublicAgent && agent !== acp.AuthenticatedAgent
+      agent !== acp.PublicAgent &&
+      agent !== acp.AuthenticatedAgent &&
+      agent !== acp.CreatorAgent
   );
 }
 
