@@ -37,10 +37,11 @@ import {
   getPodOwner,
   isPodOwner,
   FetchError,
+  isContainer,
+  isRawData,
+  getContentType,
 } from "./resource";
 import { internal_cloneResource } from "./resource.internal";
-
-import { isContainer, isRawData, getContentType } from "./resource";
 import {
   WithResourceInfo,
   IriString,
