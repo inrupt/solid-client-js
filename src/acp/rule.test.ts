@@ -790,16 +790,18 @@ describe("getAgentAll", () => {
     expect(agents).toContainEqual(MOCK_WEBID_YOU.value);
   });
 
-  it("does not return the groups/public/authenticated a rule applies to", () => {
+  it("does not return the groups/public/authenticated/creator a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI],
       public: true,
       authenticated: true,
+      creator: true,
     });
     const agents = getAgentAll(rule);
     expect(agents).not.toContainEqual(MOCK_GROUP_IRI.value);
-    expect(agents).not.toContainEqual(ACP_AUTHENTICATED);
-    expect(agents).not.toContainEqual(ACP_PUBLIC);
+    expect(agents).not.toContainEqual(ACP_CREATOR.value);
+    expect(agents).not.toContainEqual(ACP_AUTHENTICATED.value);
+    expect(agents).not.toContainEqual(ACP_PUBLIC.value);
   });
 });
 
