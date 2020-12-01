@@ -45,11 +45,17 @@ import {
   getDenyModes,
   getPolicy,
   getPolicyAll,
+  policyAsMarkdown,
   removePolicy,
   setAllowModes,
   setDenyModes,
   setPolicy,
 } from "./policy";
+import {
+  addForbiddenRuleUrl,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+} from "./rule";
 
 const policyUrl = "https://some.pod/policy-resource";
 
@@ -327,5 +333,75 @@ describe("getDenyModes", () => {
     const allowedModes = getDenyModes(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
+  });
+});
+
+describe("policyAsMarkdown", () => {
+  it("lists which access modes are allowed, denied or unspecified", () => {
+    let policy = createPolicy("https://some.pod/policyResource#policy");
+    policy = setAllowModes(policy, { read: true, append: false, write: false });
+    policy = setDenyModes(policy, { read: false, append: false, write: true });
+
+    expect(policyAsMarkdown(policy)).toBe(
+      "## Policy: https://some.pod/policyResource#policy\n" +
+        "\n" +
+        "- Read: allowed\n" +
+        "- Append: unspecified\n" +
+        "- Write: denied\n" +
+        "\n" +
+        "<no rules specified yet>\n"
+    );
+  });
+
+  it("can list individual rules without adding unused types of rules", () => {
+    let policy = createPolicy("https://some.pod/policyResource#policy");
+    policy = addRequiredRuleUrl(
+      policy,
+      "https://some.pod/policyResource#requiredRule"
+    );
+
+    expect(policyAsMarkdown(policy)).toBe(
+      "## Policy: https://some.pod/policyResource#policy\n" +
+        "\n" +
+        "- Read: unspecified\n" +
+        "- Append: unspecified\n" +
+        "- Write: unspecified\n" +
+        "\n" +
+        "All of these rules should match:\n" +
+        "- https://some.pod/policyResource#requiredRule\n"
+    );
+  });
+
+  it("can list all applicable rules", () => {
+    let policy = createPolicy("https://some.pod/policyResource#policy");
+    policy = addRequiredRuleUrl(
+      policy,
+      "https://some.pod/policyResource#requiredRule"
+    );
+    policy = addOptionalRuleUrl(
+      policy,
+      "https://some.pod/policyResource#optionalRule"
+    );
+    policy = addForbiddenRuleUrl(
+      policy,
+      "https://some.pod/policyResource#forbiddenRule"
+    );
+
+    expect(policyAsMarkdown(policy)).toBe(
+      "## Policy: https://some.pod/policyResource#policy\n" +
+        "\n" +
+        "- Read: unspecified\n" +
+        "- Append: unspecified\n" +
+        "- Write: unspecified\n" +
+        "\n" +
+        "All of these rules should match:\n" +
+        "- https://some.pod/policyResource#requiredRule\n" +
+        "\n" +
+        "At least one of these rules should match:\n" +
+        "- https://some.pod/policyResource#optionalRule\n" +
+        "\n" +
+        "None of these rules should match:\n" +
+        "- https://some.pod/policyResource#forbiddenRule\n"
+    );
   });
 });

@@ -27,6 +27,7 @@ import { getIriAll, getUrl, getUrlAll } from "../thing/get";
 import { removeAll } from "../thing/remove";
 import { setUrl } from "../thing/set";
 import {
+  asUrl,
   createThing,
   getThing,
   getThingAll,
@@ -34,6 +35,11 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
+import {
+  getForbiddenRuleurlAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+} from "./rule";
 
 export type Policy = ThingPersisted;
 export type AccessModes = {
@@ -220,4 +226,56 @@ export function getDenyModes(policy: Policy): AccessModes {
     append: deniedModes.includes(acp.Append),
     write: deniedModes.includes(acp.Write),
   };
+}
+
+/**
+ * Gets a human-readable representation of the given [[Policy]] to aid debugging.
+ *
+ * Note that changes to the exact format of the return value are not considered a breaking change;
+ * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
+ *
+ * @param policy The Policy to get a human-readable representation of.
+ */
+export function policyAsMarkdown(policy: Policy): string {
+  function getStatus(allow: boolean, deny: boolean): string {
+    if (deny) {
+      return "denied";
+    }
+    if (allow) {
+      return "allowed";
+    }
+    return "unspecified";
+  }
+  const allowModes = getAllowModes(policy);
+  const denyModes = getDenyModes(policy);
+  let markdown = `## Policy: ${asUrl(policy)}\n\n`;
+  markdown += `- Read: ${getStatus(allowModes.read, denyModes.read)}\n`;
+  markdown += `- Append: ${getStatus(allowModes.append, denyModes.append)}\n`;
+  markdown += `- Write: ${getStatus(allowModes.write, denyModes.write)}\n`;
+
+  const requiredRules = getRequiredRuleUrlAll(policy);
+  const optionalRules = getOptionalRuleUrlAll(policy);
+  const forbiddenRules = getForbiddenRuleurlAll(policy);
+
+  if (
+    requiredRules.length === 0 &&
+    optionalRules.length === 0 &&
+    forbiddenRules.length === 0
+  ) {
+    markdown += "\n<no rules specified yet>\n";
+  }
+  if (requiredRules.length > 0) {
+    markdown += "\nAll of these rules should match:\n";
+    markdown += "- " + requiredRules.join("\n- ") + "\n";
+  }
+  if (optionalRules.length > 0) {
+    markdown += "\nAt least one of these rules should match:\n";
+    markdown += "- " + optionalRules.join("\n- ") + "\n";
+  }
+  if (forbiddenRules.length > 0) {
+    markdown += "\nNone of these rules should match:\n";
+    markdown += "- " + forbiddenRules.join("\n- ") + "\n";
+  }
+
+  return markdown;
 }
