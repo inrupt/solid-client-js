@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.2.0] - 2020-12-02
+
 ### New features
 
 - It is now possible to import solid-client as an ES module in Node.
@@ -17,8 +21,6 @@ The following changes have been implemented but not released yet:
 
 - While the documentation mentioned `hasAcl()`, solid-client did not actually export that function.
 - Dates in between the years 0 and 100 AD were not parsed properly.
-
-The following sections document changes that have been released already:
 
 ## [1.1.0] - 2020-11-16
 

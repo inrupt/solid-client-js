@@ -203,5 +203,6 @@ export type UploadRequestInit = Omit<RequestInit, "method">;
 /**
  * Errors thrown by solid-client extend this class, and can thereby be distinguished from errors
  * thrown in lower-level libraries.
+ * @since 1.2.0
  */
 export class SolidClientError extends Error {}
