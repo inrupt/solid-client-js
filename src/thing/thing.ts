@@ -383,6 +383,7 @@ export function isThingLocal(
 
 /**
  * This error is thrown when a function expected to receive a [[Thing]] but received something else.
+ * @since 1.2.0
  */
 export class ThingExpectedError extends SolidClientError {
   public readonly receivedValue: unknown;

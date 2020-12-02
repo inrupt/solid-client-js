@@ -178,6 +178,7 @@ export function isPodOwner(
 
 /**
  * Extends the regular JavaScript error object with access to the status code and status message.
+ * @since 1.2.0
  */
 export class FetchError extends SolidClientError {
   public readonly statusCode: number;
