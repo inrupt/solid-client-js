@@ -388,7 +388,7 @@ export class ThingExpectedError extends SolidClientError {
   public readonly receivedValue: unknown;
 
   constructor(receivedValue: unknown) {
-    const message = `Expected a Thing, but received: \`${receivedValue}\`.`;
+    const message = `Expected a Thing, but received: [${receivedValue}].`;
     super(message);
     this.receivedValue = receivedValue;
   }
@@ -404,7 +404,7 @@ export class ValidPropertyUrlExpectedError extends SolidClientError {
     const value = isNamedNode(receivedValue)
       ? receivedValue.value
       : receivedValue;
-    const message = `Expected a valid URL to identify a property, but received: \`${value}\`.`;
+    const message = `Expected a valid URL to identify a property, but received: [${value}].`;
     super(message);
     this.receivedProperty = value;
   }
@@ -420,7 +420,7 @@ export class ValidValueUrlExpectedError extends SolidClientError {
     const value = isNamedNode(receivedValue)
       ? receivedValue.value
       : receivedValue;
-    const message = `Expected a valid URL value, but received: \`${value}\`.`;
+    const message = `Expected a valid URL value, but received: [${value}].`;
     super(message);
     this.receivedValue = value;
   }
@@ -436,7 +436,7 @@ export class ValidThingUrlExpectedError extends SolidClientError {
     const value = isNamedNode(receivedValue)
       ? receivedValue.value
       : receivedValue;
-    const message = `Expected a valid URL to identify a Thing, but received: \`${value}\`.`;
+    const message = `Expected a valid URL to identify a Thing, but received: [${value}].`;
     super(message);
     this.receivedValue = value;
   }

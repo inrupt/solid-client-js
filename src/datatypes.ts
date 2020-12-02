@@ -437,7 +437,7 @@ export class ValidUrlExpectedError extends SolidClientError {
     const value = isNamedNode(receivedValue)
       ? receivedValue.value
       : receivedValue;
-    const message = `Expected a valid URL, but received: \`${value}\`.`;
+    const message = `Expected a valid URL, but received: [${value}].`;
     super(message);
     this.receivedValue = value;
   }

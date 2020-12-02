@@ -530,14 +530,14 @@ describe("ValidUrlExpectedError", () => {
   it("logs the invalid property in its error message", () => {
     const error = new ValidUrlExpectedError(null);
 
-    expect(error.message).toBe("Expected a valid URL, but received: `null`.");
+    expect(error.message).toBe("Expected a valid URL, but received: [null].");
   });
 
   it("logs the value of an invalid URL inside a Named Node in its error message", () => {
     const error = new ValidUrlExpectedError(DataFactory.namedNode("not-a-url"));
 
     expect(error.message).toBe(
-      "Expected a valid URL, but received: `not-a-url`."
+      "Expected a valid URL, but received: [not-a-url]."
     );
   });
 

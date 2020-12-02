@@ -78,7 +78,7 @@ describe.each([
 
     if (existingThing === null) {
       throw new Error(
-        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing1\` exists.`
+        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing1] exists.`
       );
     }
 
@@ -124,7 +124,7 @@ describe.each([
 
     if (existingThing === null) {
       throw new Error(
-        `The test data did not look like we expected it to. Check whether \`${rootContainer}lit-pod-test.ttl#thing2\` exists.`
+        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing2] exists.`
       );
     }
 

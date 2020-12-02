@@ -217,14 +217,14 @@ describe("getIri", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
     expect(() =>
       getUrl(mockThingFrom("https://arbitrary.pod/resource#thing"), "not-a-url")
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -340,7 +340,7 @@ describe("getIriAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getUrlAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -350,7 +350,7 @@ describe("getIriAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -461,7 +461,7 @@ describe("getBoolean", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -471,7 +471,7 @@ describe("getBoolean", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -585,7 +585,7 @@ describe("getBooleanAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -595,7 +595,7 @@ describe("getBooleanAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -713,7 +713,7 @@ describe("getDatetime", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -723,7 +723,7 @@ describe("getDatetime", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -851,7 +851,7 @@ describe("getDatetimeAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -861,7 +861,7 @@ describe("getDatetimeAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -964,7 +964,7 @@ describe("getDecimal", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -974,7 +974,7 @@ describe("getDecimal", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1079,7 +1079,7 @@ describe("getDecimalAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1089,7 +1089,7 @@ describe("getDecimalAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1188,7 +1188,7 @@ describe("getInteger", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1198,7 +1198,7 @@ describe("getInteger", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1299,7 +1299,7 @@ describe("getIntegerAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1309,7 +1309,7 @@ describe("getIntegerAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1499,7 +1499,7 @@ describe("getStringWithLocale", () => {
         "https://arbitrary.vocab/predicate",
         "nl-NL"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1510,7 +1510,7 @@ describe("getStringWithLocale", () => {
         "nl-NL"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1620,7 +1620,7 @@ describe("getStringByLocaleAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1630,7 +1630,7 @@ describe("getStringByLocaleAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1850,7 +1850,7 @@ describe("getStringWithLocaleAll", () => {
         "https://arbitrary.vocab/predicate",
         "nl-NL"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1861,7 +1861,7 @@ describe("getStringWithLocaleAll", () => {
         "nl-NL"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1974,7 +1974,7 @@ describe("getStringNoLocale", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1984,7 +1984,7 @@ describe("getStringNoLocale", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2101,7 +2101,7 @@ describe("getStringNoLocaleAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2111,7 +2111,7 @@ describe("getStringNoLocaleAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2203,7 +2203,7 @@ describe("getLiteral", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2213,7 +2213,7 @@ describe("getLiteral", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2312,7 +2312,7 @@ describe("getLiteralAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2322,7 +2322,7 @@ describe("getLiteralAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2465,7 +2465,7 @@ describe("getNamedNode", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2475,7 +2475,7 @@ describe("getNamedNode", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2571,7 +2571,7 @@ describe("getNamedNodeAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2581,7 +2581,7 @@ describe("getNamedNodeAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2662,7 +2662,7 @@ describe("getTerm", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getTerm((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2672,7 +2672,7 @@ describe("getTerm", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2802,7 +2802,7 @@ describe("getTermAll", () => {
         (null as unknown) as Thing,
         "https://arbitrary.vocab/predicate"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2812,7 +2812,7 @@ describe("getTermAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 

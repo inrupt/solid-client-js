@@ -298,7 +298,7 @@ describe("getThing", () => {
 
   it("throws an error when given an invalid URL", () => {
     expect(() => getThing(dataset(), "not-a-url")).toThrow(
-      "Expected a valid URL to identify a Thing, but received: `not-a-url`."
+      "Expected a valid URL to identify a Thing, but received: [not-a-url]."
     );
   });
 
@@ -1476,7 +1476,7 @@ describe("thingAsMarkdown", () => {
 describe("throwIfNotThing", () => {
   it("throws when passed null", () => {
     expect(() => internal_throwIfNotThing((null as unknown) as Thing)).toThrow(
-      "Expected a Thing, but received: `null`."
+      "Expected a Thing, but received: [null]."
     );
   });
 
@@ -1510,7 +1510,7 @@ describe("ValidPropertyUrlExpectedError", () => {
     const error = new ValidPropertyUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a property, but received: `null`."
+      "Expected a valid URL to identify a property, but received: [null]."
     );
   });
 
@@ -1520,7 +1520,7 @@ describe("ValidPropertyUrlExpectedError", () => {
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1536,7 +1536,7 @@ describe("ValidValueUrlExpectedError", () => {
     const error = new ValidValueUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL value, but received: `null`."
+      "Expected a valid URL value, but received: [null]."
     );
   });
 
@@ -1546,7 +1546,7 @@ describe("ValidValueUrlExpectedError", () => {
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL value, but received: `not-a-url`."
+      "Expected a valid URL value, but received: [not-a-url]."
     );
   });
 
@@ -1562,7 +1562,7 @@ describe("ValidThingUrlExpectedError", () => {
     const error = new ValidThingUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a Thing, but received: `null`."
+      "Expected a valid URL to identify a Thing, but received: [null]."
     );
   });
 
@@ -1572,7 +1572,7 @@ describe("ValidThingUrlExpectedError", () => {
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a Thing, but received: `not-a-url`."
+      "Expected a valid URL to identify a Thing, but received: [not-a-url]."
     );
   });
 

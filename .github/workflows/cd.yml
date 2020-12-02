@@ -55,7 +55,7 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        description: "Publishing to npm tag `${{ needs.prepare-deployment.outputs.tag-slug }}`…"
+        description: "Publishing to npm tag [${{ needs.prepare-deployment.outputs.tag-slug }}]…"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         state: in_progress
         mediaType: '{"previews": ["flash", "ant-man"]}'
