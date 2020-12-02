@@ -314,7 +314,7 @@ describe("getSolidDataset", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
+        "Fetching the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
@@ -332,7 +332,7 @@ describe("getSolidDataset", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
+        "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
       )
     );
   });
@@ -528,7 +528,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: `403` `Forbidden`.\n\n" +
+        "Storing the Resource at [https://some.pod/resource] failed: [403] [Forbidden].\n\n" +
           "The SolidDataset that was sent to the Pod is listed below.\n\n"
       );
     });
@@ -549,7 +549,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: `404` `Not Found`.\n\n" +
+        "Storing the Resource at [https://some.pod/resource] failed: [404] [Not Found].\n\n" +
           "The SolidDataset that was sent to the Pod is listed below.\n\n"
       );
     });
@@ -895,7 +895,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: `403` `Forbidden`.\n\n" +
+        "Storing the Resource at [https://some.pod/resource] failed: [403] [Forbidden].\n\n" +
           "The changes that were sent to the Pod are listed below.\n\n"
       );
     });
@@ -938,7 +938,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at `https://some.pod/resource` failed: `404` `Not Found`.\n\n" +
+        "Storing the Resource at [https://some.pod/resource] failed: [404] [Not Found].\n\n" +
           "The changes that were sent to the Pod are listed below.\n\n"
       );
     });
@@ -1061,7 +1061,7 @@ describe("deleteSolidDataset", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the SolidDataset at `https://some.url` failed: `400` `Bad request`"
+      "Deleting the SolidDataset at [https://some.url] failed: [400] [Bad request]"
     );
   });
 
@@ -1340,7 +1340,7 @@ describe("createContainerAt", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating the empty Container at `https://some.pod/container/` failed: `403` `Forbidden`."
+        "Creating the empty Container at [https://some.pod/container/] failed: [403] [Forbidden]."
       )
     );
   });
@@ -1439,7 +1439,7 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "Creating the empty Container at `https://arbitrary.pod/container/` failed: `409` `Conflict`."
+          "Creating the empty Container at [https://arbitrary.pod/container/] failed: [409] [Conflict]."
         )
       );
       expect(mockFetch.mock.calls).toHaveLength(1);
@@ -1521,7 +1521,7 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "The Container at `https://arbitrary.pod/container/` already exists, and therefore cannot be created again."
+          "The Container at [https://arbitrary.pod/container/] already exists, and therefore cannot be created again."
         )
       );
     });
@@ -1557,7 +1557,7 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "Fetching the metadata of the Resource at `https://arbitrary.pod/container/` failed: `401` `Unauthorized`."
+          "Fetching the metadata of the Resource at [https://arbitrary.pod/container/] failed: [401] [Unauthorized]."
         )
       );
     });
@@ -1589,7 +1589,7 @@ describe("createContainerAt", () => {
 
       await expect(fetchPromise).rejects.toThrow(
         new Error(
-          "Creating the empty Container at `https://some.pod/container/` failed: `403` `Forbidden`."
+          "Creating the empty Container at [https://some.pod/container/] failed: [403] [Forbidden]."
         )
       );
     });
@@ -1695,7 +1695,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at `https://some.pod/container/` failed: `403` `Forbidden`."
+      "Storing the Resource in the Container at [https://some.pod/container/] failed: [403] [Forbidden]."
     );
   });
 
@@ -1713,7 +1713,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at `https://some.pod/container/` failed: `404` `Not Found`."
+      "Storing the Resource in the Container at [https://some.pod/container/] failed: [404] [Not Found]."
     );
   });
 
@@ -1991,7 +1991,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: `403` `Forbidden`."
+        "Creating an empty Container in the Container at [https://some.pod/parent-container/] failed: [403] [Forbidden]."
       )
     );
   });
@@ -2011,7 +2011,7 @@ describe("createContainerInContainer", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Creating an empty Container in the Container at `https://some.pod/parent-container/` failed: `404` `Not Found`."
+        "Creating an empty Container in the Container at [https://some.pod/parent-container/] failed: [404] [Not Found]."
       )
     );
   });
@@ -2223,7 +2223,7 @@ describe("deleteContainer", () => {
     const deletionPromise = deleteContainer(mockSolidDataset);
 
     await expect(deletionPromise).rejects.toThrow(
-      "You're trying to delete the Container at `https://some.pod/resource`, but Container URLs should end in a `/`. Are you sure this is a Container?"
+      "You're trying to delete the Container at [https://some.pod/resource], but Container URLs should end in a `/`. Are you sure this is a Container?"
     );
   });
 
@@ -2240,7 +2240,7 @@ describe("deleteContainer", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the Container at `https://some.pod/container/` failed: `400` `Bad request`"
+      "Deleting the Container at [https://some.pod/container/] failed: [400] [Bad request]"
     );
   });
 
@@ -2271,7 +2271,7 @@ describe("solidDatasetAsMarkdown", () => {
     const emptyDataset = createSolidDataset();
 
     expect(solidDatasetAsMarkdown(emptyDataset)).toBe(
-      `# SolidDataset (no URL yet)\n\n<empty>\n`
+      "# SolidDataset (no URL yet)\n\n<empty>\n"
     );
   });
 
@@ -2281,7 +2281,7 @@ describe("solidDatasetAsMarkdown", () => {
     );
 
     expect(solidDatasetAsMarkdown(datasetWithSourceUrl)).toBe(
-      `# SolidDataset: https://some.pod/resource\n\n<empty>\n`
+      "# SolidDataset: https://some.pod/resource\n\n<empty>\n"
     );
   });
 

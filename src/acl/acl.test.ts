@@ -690,7 +690,7 @@ describe("getSolidDatasetWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
+        "Fetching the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
@@ -708,7 +708,7 @@ describe("getSolidDatasetWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
+        "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
       )
     );
   });
@@ -901,7 +901,7 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the File failed: `403` `Forbidden`.")
+      new Error("Fetching the File failed: [403] [Forbidden].")
     );
   });
 
@@ -917,7 +917,7 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error("Fetching the File failed: `404` `Not Found`.")
+      new Error("Fetching the File failed: [404] [Not Found].")
     );
   });
 
@@ -980,7 +980,7 @@ describe("getFileWithAcl", () => {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: `400` `Bad request`"
+      "Fetching the File failed: [400] [Bad request]"
     );
   });
 });
@@ -1120,7 +1120,7 @@ describe("getResourceInfoWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: `403` `Forbidden`."
+        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
@@ -1141,7 +1141,7 @@ describe("getResourceInfoWithAcl", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at `https://arbitrary.pod/resource` failed: `404` `Not Found`."
+        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [404] [Not Found]."
       )
     );
   });
@@ -2619,7 +2619,7 @@ describe("saveAclFor", () => {
     const fetchPromise = saveAclFor(withResourceInfo, aclResource);
 
     await expect(fetchPromise).rejects.toThrow(
-      "Could not determine the location of the ACL for the Resource at `https://arbitrary.pod/resource`; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
+      "Could not determine the location of the ACL for the Resource at [https://arbitrary.pod/resource]; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
     );
   });
 
@@ -2653,7 +2653,7 @@ describe("saveAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource at `https://arbitrary.pod/resource.acl` failed: `403` `Forbidden`."
+      "Storing the Resource at [https://arbitrary.pod/resource.acl] failed: [403] [Forbidden]."
     );
   });
 
@@ -2862,7 +2862,7 @@ describe("deleteAclFor", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: `403` `Forbidden`."
+        "Deleting the ACL of the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
@@ -2891,7 +2891,7 @@ describe("deleteAclFor", () => {
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Deleting the ACL of the Resource at `https://some.pod/resource` failed: `404` `Not Found`."
+        "Deleting the ACL of the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
       )
     );
   });

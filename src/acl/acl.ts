@@ -350,9 +350,9 @@ export async function saveAclFor(
 ): Promise<AclDataset & WithResourceInfo> {
   if (!hasAccessibleAcl(resource)) {
     throw new Error(
-      `Could not determine the location of the ACL for the Resource at \`${getSourceUrl(
+      `Could not determine the location of the ACL for the Resource at [${getSourceUrl(
         resource
-      )}\`; possibly the current user does not have Control access to that Resource. Try calling \`hasAccessibleAcl()\` before calling \`saveAclFor()\`.`
+      )}]; possibly the current user does not have Control access to that Resource. Try calling \`hasAccessibleAcl()\` before calling \`saveAclFor()\`.`
     );
   }
   const savedDataset = await saveSolidDatasetAt(
@@ -402,9 +402,9 @@ export async function deleteAclFor<
 
   if (!response.ok) {
     throw new Error(
-      `Deleting the ACL of the Resource at \`${getSourceUrl(
+      `Deleting the ACL of the Resource at [${getSourceUrl(
         resource
-      )}\` failed: \`${response.status}\` \`${response.statusText}\`.`
+      )}] failed: [${response.status}] [${response.statusText}].`
     );
   }
 

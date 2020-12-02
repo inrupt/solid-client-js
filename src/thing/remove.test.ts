@@ -205,7 +205,7 @@ describe("removeAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -215,7 +215,7 @@ describe("removeAll", () => {
         "not-a-url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -439,7 +439,7 @@ describe("removeIri", () => {
         "https://arbitrary.vocab/predicate",
         "https://arbitrary.url"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -450,7 +450,7 @@ describe("removeIri", () => {
         "https://arbitrary.url"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -476,7 +476,7 @@ describe("removeIri", () => {
         "https://arbitrary.vocab/predicate",
         "not-a-url"
       )
-    ).toThrow("Expected a valid URL value, but received: `not-a-url`.");
+    ).toThrow("Expected a valid URL value, but received: [not-a-url].");
   });
 
   it("throws an instance of ValidValueUrlExpectedError when passed an invalid property URL", () => {
@@ -700,7 +700,7 @@ describe("removeBoolean", () => {
         "https://arbitrary.vocab/predicate",
         true
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -711,7 +711,7 @@ describe("removeBoolean", () => {
         true
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -924,7 +924,7 @@ describe("removeDatetime", () => {
         "https://arbitrary.vocab/predicate",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -935,7 +935,7 @@ describe("removeDatetime", () => {
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1149,7 +1149,7 @@ describe("removeDecimal", () => {
         "https://arbitrary.vocab/predicate",
         13.37
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1160,7 +1160,7 @@ describe("removeDecimal", () => {
         13.37
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1363,7 +1363,7 @@ describe("removeInteger", () => {
         "https://arbitrary.vocab/predicate",
         42
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1374,7 +1374,7 @@ describe("removeInteger", () => {
         42
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1620,7 +1620,7 @@ describe("removeStringWithLocale", () => {
         "Arbitrary string",
         "nl-NL"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1632,7 +1632,7 @@ describe("removeStringWithLocale", () => {
         "nl-NL"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -1809,7 +1809,7 @@ describe("removeStringNoLocale", () => {
         "https://arbitrary.vocab/predicate",
         "Arbitrary string"
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -1820,7 +1820,7 @@ describe("removeStringNoLocale", () => {
         "Arbitrary string"
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2118,7 +2118,7 @@ describe("removeLiteral", () => {
           DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
         )
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2129,7 +2129,7 @@ describe("removeLiteral", () => {
         DataFactory.literal("Arbitrary string value")
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 
@@ -2273,7 +2273,7 @@ describe("removeNamedNode", () => {
         "https://arbitrary.vocab/predicate",
         DataFactory.namedNode("https://arbitrary.vocab/object")
       )
-    ).toThrow("Expected a Thing, but received: `null`.");
+    ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
@@ -2284,7 +2284,7 @@ describe("removeNamedNode", () => {
         DataFactory.namedNode("https://arbitrary.vocab/object")
       )
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: `not-a-url`."
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
     );
   });
 

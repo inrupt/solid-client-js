@@ -191,7 +191,7 @@ describe("getFile", () => {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: `400` `Bad request`"
+      "Fetching the File failed: [400] [Bad request]"
     );
   });
 
@@ -338,7 +338,7 @@ describe("Non-RDF data deletion", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the file at `https://some.url` failed: `400` `Bad request`"
+      "Deleting the file at [https://some.url] failed: [400] [Bad request]"
     );
   });
   it("includes the status code and status message when a request failed", async () => {
@@ -517,7 +517,7 @@ describe("Write non-RDF data into a folder", () => {
         fetch: mockFetch,
       })
     ).rejects.toThrow(
-      "Saving the file in `https://some.url` failed: `403` `Forbidden`."
+      "Saving the file in [https://some.url] failed: [403] [Forbidden]."
     );
   });
 
@@ -672,7 +672,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         fetch: mockFetch,
       })
     ).rejects.toThrow(
-      "Overwriting the file at `https://some.url` failed: `403` `Forbidden`."
+      "Overwriting the file at [https://some.url] failed: [403] [Forbidden]."
     );
   });
 

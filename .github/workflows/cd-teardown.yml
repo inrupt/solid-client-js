@@ -26,4 +26,4 @@ jobs:
         if [ -n $NODE_AUTH_TOKEN ]; then npm dist-tag rm @inrupt/solid-client $TAG_SLUG; fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    - run: echo "Package tag \`$TAG_SLUG\` unpublished."
+    - run: echo "Package tag [$TAG_SLUG] unpublished."
