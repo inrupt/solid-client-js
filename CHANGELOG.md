@@ -6,6 +6,18 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- If you know the content type of a file to upload via `overwriteFile` or `saveFileInContainer`,
+  you can now manually set it using the `contentType` property in their `options` parameters.
+
+### Bugs fixed
+
+- Files sent to a Pod via `overwriteFile` or `saveFileInContainer` without a known content type
+  were rejected by Inrupt's Enterprise Solid Server were rejected with a 400 Bad Request, as
+  the Solid specification says it should do. To avoid this, solid-client now sets the content type
+  to `application/octet-stream` by default if no content type is known for the given file.
+
 The following sections document changes that have been released already:
 
 ## [1.2.0] - 2020-12-02

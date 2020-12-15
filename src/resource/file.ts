@@ -124,7 +124,7 @@ export async function deleteFile(
   }
 }
 
-type SaveFileOptions = GetFileOptions & {
+type SaveFileOptions = WriteFileOptions & {
   slug?: string;
 };
 
@@ -174,12 +174,16 @@ export async function saveFileInContainer<FileExt extends File>(
     internal_resourceInfo: {
       isRawData: true,
       sourceIri: fileIri,
-      contentType: file.type.length > 0 ? file.type : undefined,
+      contentType: getContentType(file, options.contentType),
     },
   };
 
   return Object.assign(blobClone, resourceInfo);
 }
+
+export type WriteFileOptions = GetFileOptions & {
+  contentType: string;
+};
 
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.
@@ -199,7 +203,7 @@ export async function saveFileInContainer<FileExt extends File>(
 export async function overwriteFile(
   fileUrl: Url | UrlString,
   file: File,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
+  options: Partial<WriteFileOptions> = defaultGetFileOptions
 ): Promise<File & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
@@ -305,7 +309,7 @@ async function writeFile(
   if (config.slug !== undefined) {
     headers["Slug"] = config.slug;
   }
-  headers["Content-Type"] = file.type;
+  headers["Content-Type"] = getContentType(file, options.contentType);
 
   const targetUrlString = internal_toIriString(targetUrl);
 
@@ -315,4 +319,22 @@ async function writeFile(
     method,
     body: file,
   });
+}
+
+function getContentType(
+  file: File | Buffer,
+  contentTypeOverride?: string
+): string {
+  if (typeof contentTypeOverride === "string") {
+    return contentTypeOverride;
+  }
+  const fileType =
+    typeof file === "object" &&
+    file !== null &&
+    typeof (file as Blob).type === "string" &&
+    (file as Blob).type.length > 0
+      ? (file as Blob).type
+      : undefined;
+
+  return fileType ?? "application/octet-stream";
 }

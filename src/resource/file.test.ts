@@ -474,7 +474,27 @@ describe("Write non-RDF data into a folder", () => {
     expect(savedFile!.internal_resourceInfo.contentType).toBe("text/plain");
   });
 
-  it("does not set a Content Type if none is known", async () => {
+  it("sets the given Content Type on the returned file, if any was given", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: MockFetch;
+    };
+
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
+
+    const mockTextBlob = new Blob(["mock blob data"], { type: "text/plain" });
+    const savedFile = await saveFileInContainer(
+      "https://some.url",
+      mockTextBlob,
+      {
+        contentType: "text/csv",
+      }
+    );
+
+    expect(savedFile).toBeInstanceOf(Blob);
+    expect(savedFile!.internal_resourceInfo.contentType).toBe("text/csv");
+  });
+
+  it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: MockFetch;
     };
@@ -488,7 +508,9 @@ describe("Write non-RDF data into a folder", () => {
     );
 
     expect(savedFile).toBeInstanceOf(Blob);
-    expect(savedFile!.internal_resourceInfo.contentType).toBeUndefined();
+    expect(savedFile!.internal_resourceInfo.contentType).toBe(
+      "application/octet-stream"
+    );
   });
 
   it("throws when a reserved header is passed", async () => {
