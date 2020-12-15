@@ -61,10 +61,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (Windows)
       run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless
       # The Node version does not influence how well our tests run in the browser,
@@ -74,10 +74,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (MacOS)
       # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
       # enabled, which results in TestCafe needing screen recording permission, which it cannot
@@ -103,10 +103,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - run: npx prettier --check "src/**"
     - run: npx package-check
     - run: npm run check-licenses
