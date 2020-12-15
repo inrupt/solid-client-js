@@ -39,6 +39,11 @@ jobs:
         E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
         E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
         E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
+        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
+        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}
     # Ideally, we'd autodetect installed browsers and run them headlessly.
     # See https://github.com/DevExpress/testcafe/issues/5641
     - name: Prepare browser-based end-to-end tests
