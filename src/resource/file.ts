@@ -144,7 +144,7 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File>(
+export async function saveFileInContainer<FileExt extends File | Buffer>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
@@ -200,11 +200,11 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
  */
-export async function overwriteFile(
+export async function overwriteFile<FileExt extends File | Buffer>(
   fileUrl: Url | UrlString,
-  file: File,
+  file: FileExt,
   options: Partial<WriteFileOptions> = defaultGetFileOptions
-): Promise<File & WithResourceInfo> {
+): Promise<FileExt & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
@@ -288,7 +288,7 @@ export function flattenHeaders(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: File,
+  file: File | Buffer,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
