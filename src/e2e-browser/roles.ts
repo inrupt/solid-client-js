@@ -40,12 +40,12 @@ export const essUser = Role("http://localhost:1234", async (t) => {
  */
 export const essUserLogin = async (_t: TestController) => {
   const indexPage = new IndexPage();
-  await indexPage.startLogin(process.env.TESTCAFE_ESS_IDP_URL);
+  await indexPage.startLogin(process.env.E2E_TEST_ESS_IDP_URL);
 
   const cognitoPage = new CognitoPage();
   await cognitoPage.login(
-    process.env.TESTCAFE_ESS_COGNITO_USER!,
-    process.env.TESTCAFE_ESS_COGNITO_PASSWORD!
+    process.env.E2E_TEST_ESS_COGNITO_USER!,
+    process.env.E2E_TEST_ESS_COGNITO_PASSWORD!
   );
 
   const authorisePage = new BrokerPage();
