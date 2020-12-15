@@ -227,3 +227,9 @@ jobs:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
+      env:
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
