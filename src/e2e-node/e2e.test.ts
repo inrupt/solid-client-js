@@ -328,6 +328,10 @@ const serversUnderTest: AuthDetails[] = [
     process.env.E2E_TEST_ESS_COMPAT_CLIENT_SECRET!,
     process.env.E2E_TEST_ESS_COMPAT_REFRESH_TOKEN!,
   ],
+  // inrupt.net
+  // Unfortunately we cannot authenticate against Node Solid Server yet, due to this issue:
+  // https://github.com/solid/node-solid-server/issues/1533
+  // Once that is fixed, credentials can be added here, and the other `describe()` can be removed.
 ];
 
 describe.each(serversUnderTest)(
