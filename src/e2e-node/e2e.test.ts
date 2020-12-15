@@ -24,6 +24,8 @@
  */
 
 import { foaf, schema } from "rdf-namespaces";
+import { Session } from "@inrupt/solid-client-authn-node";
+import { config } from "dotenv-flow";
 import {
   getSolidDataset,
   setThing,
@@ -32,6 +34,7 @@ import {
   setDatetime,
   setStringNoLocale,
   saveSolidDatasetAt,
+  overwriteFile,
   isRawData,
   getContentType,
   getResourceInfoWithAcl,
@@ -56,8 +59,13 @@ import {
   createContainerInContainer,
   getBoolean,
   setBoolean,
+  createThing,
+  createSolidDataset,
+  deleteSolidDataset,
 } from "../index";
 
+// This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
+// and the other `describe` block has credentials for an NSS server:
 describe.each([
   ["https://lit-e2e-test.inrupt.net/public/"],
   // Since ESS switched to ACPs we no longer have a convenient way to prepare the tests data
@@ -66,7 +74,7 @@ describe.each([
   // We can re-enable them once we have a Node library with which we can authenticate,
   // after which we can set the relevant permissions in the tests themselves:
   // ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
-])("End-to-end tests against %s", (rootContainer) => {
+])("End-to-end tests with pre-existing data against %s", (rootContainer) => {
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = "Random nick " + Math.random();
 
@@ -291,3 +299,138 @@ describe.each([
     expect(data).toEqual({ arbitrary: "json data" });
   });
 });
+
+// Load environment variables from .env.local if available:
+config({ path: __dirname });
+
+type OidcIssuer = string;
+type ClientId = string;
+type ClientSecret = string;
+type RefreshToken = string;
+type Pod = string;
+type AuthDetails = [Pod, OidcIssuer, ClientId, ClientSecret, RefreshToken];
+// Instructions for obtaining these credentials can be found here:
+// https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
+const serversUnderTest: AuthDetails[] = [
+  [
+    process.env.E2E_TEST_ESS_POD!,
+    process.env.E2E_TEST_ESS_IDP_URL!,
+    process.env.E2E_TEST_ESS_CLIENT_ID!,
+    process.env.E2E_TEST_ESS_CLIENT_SECRET!,
+    process.env.E2E_TEST_ESS_REFRESH_TOKEN!,
+  ],
+];
+
+describe.each(serversUnderTest)(
+  "Authenticated end-to-end tests against %s",
+  (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
+    async function getSession() {
+      const session = new Session();
+      await session.login({
+        oidcIssuer: oidcIssuer,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        refreshToken: refreshToken,
+      });
+      return session;
+    }
+
+    it("can create, read, update and delete data", async () => {
+      const session = await getSession();
+      const arbitraryPredicate = "https://arbitrary.vocab/predicate";
+
+      let newThing = createThing({ name: "e2e-test-thing" });
+      newThing = setBoolean(newThing, arbitraryPredicate, true);
+      let newDataset = createSolidDataset();
+      newDataset = setThing(newDataset, newThing);
+
+      const datasetUrl = `${rootContainer}solid-client-tests/node/crud-dataset-${session.info.sessionId}.ttl`;
+      await saveSolidDatasetAt(datasetUrl, newDataset, {
+        fetch: session.fetch,
+      });
+
+      const firstSavedDataset = await getSolidDataset(datasetUrl, {
+        fetch: session.fetch,
+      });
+      const firstSavedThing = getThing(
+        firstSavedDataset,
+        datasetUrl + "#e2e-test-thing"
+      )!;
+      expect(firstSavedThing).not.toBeNull();
+      expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
+
+      const updatedThing = setBoolean(
+        firstSavedThing,
+        arbitraryPredicate,
+        false
+      );
+      const updatedDataset = setThing(firstSavedDataset, updatedThing);
+      await saveSolidDatasetAt(datasetUrl, updatedDataset, {
+        fetch: session.fetch,
+      });
+
+      const secondSavedDataset = await getSolidDataset(datasetUrl, {
+        fetch: session.fetch,
+      });
+      const secondSavedThing = getThing(
+        secondSavedDataset,
+        datasetUrl + "#e2e-test-thing"
+      )!;
+      expect(secondSavedThing).not.toBeNull();
+      expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
+
+      await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+      await expect(() =>
+        getSolidDataset(datasetUrl, { fetch: session.fetch })
+      ).rejects.toEqual(
+        expect.objectContaining({
+          statusCode: 404,
+        })
+      );
+    });
+
+    it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
+      const session = await getSession();
+      const datasetUrl = `${rootContainer}solid-client-tests/node/dataset-${session.info.sessionId}.ttl`;
+      const fileUrl = `${rootContainer}solid-client-tests/node/file-${session.info.sessionId}.txt`;
+
+      const sentFile = await overwriteFile(fileUrl, Buffer.from("test"), {
+        fetch: session.fetch,
+      });
+      const sentDataset = await saveSolidDatasetAt(
+        datasetUrl,
+        createSolidDataset(),
+        { fetch: session.fetch }
+      );
+
+      expect(isRawData(sentDataset)).toBe(false);
+      expect(isRawData(sentFile)).toBe(true);
+
+      await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+      await deleteFile(fileUrl, { fetch: session.fetch });
+    });
+
+    it("can create and remove Containers", async () => {
+      const session = await getSession();
+      const containerUrl = `${rootContainer}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
+      const containerContainerUrl = `${rootContainer}solid-client-tests/node/container-test/`;
+      const containerName = `container2-${session.info.sessionId}`;
+      const newContainer1 = await createContainerAt(containerUrl, {
+        fetch: session.fetch,
+      });
+      const newContainer2 = await createContainerInContainer(
+        containerContainerUrl,
+        { slugSuggestion: containerName, fetch: session.fetch }
+      );
+
+      expect(getSourceUrl(newContainer1)).toBe(containerUrl);
+      expect(getSourceUrl(newContainer2)).toBe(
+        `${containerContainerUrl}${containerName}/`
+      );
+
+      await deleteFile(containerUrl, { fetch: session.fetch });
+      await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
+      await deleteFile(containerContainerUrl, { fetch: session.fetch });
+    });
+  }
+);

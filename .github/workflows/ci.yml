@@ -33,6 +33,12 @@ jobs:
       # and because behaviour on different OS's is already tested by unit tests,
       # end-to-end tests only need to run on one OS:
       if: runner.os == 'Linux' && matrix.node-version == '14.x'
+      env:
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
     # Ideally, we'd autodetect installed browsers and run them headlessly.
     # See https://github.com/DevExpress/testcafe/issues/5641
     - name: Prepare browser-based end-to-end tests
