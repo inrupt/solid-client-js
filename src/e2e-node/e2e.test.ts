@@ -312,12 +312,21 @@ type AuthDetails = [Pod, OidcIssuer, ClientId, ClientSecret, RefreshToken];
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
+  // pod.inrupt.com:
   [
     process.env.E2E_TEST_ESS_POD!,
     process.env.E2E_TEST_ESS_IDP_URL!,
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
     process.env.E2E_TEST_ESS_REFRESH_TOKEN!,
+  ],
+  // pod-compat.inrupt.com:
+  [
+    process.env.E2E_TEST_ESS_COMPAT_POD!,
+    process.env.E2E_TEST_ESS_COMPAT_IDP_URL!,
+    process.env.E2E_TEST_ESS_COMPAT_CLIENT_ID!,
+    process.env.E2E_TEST_ESS_COMPAT_CLIENT_SECRET!,
+    process.env.E2E_TEST_ESS_COMPAT_REFRESH_TOKEN!,
   ],
 ];
 
@@ -333,6 +342,12 @@ describe.each(serversUnderTest)(
         refreshToken: refreshToken,
       });
       return session;
+    }
+
+    if (rootContainer.includes("pod-compat.inrupt.com")) {
+      // pod-compat.inrupt.com seems to be experiencing some slowdowns processing POST requests,
+      // so temporarily set the test timeout to 30s for it:
+      jest.setTimeout(30000);
     }
 
     it("can create, read, update and delete data", async () => {
@@ -431,6 +446,91 @@ describe.each(serversUnderTest)(
       await deleteFile(containerUrl, { fetch: session.fetch });
       await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
       await deleteFile(containerContainerUrl, { fetch: session.fetch });
+    });
+
+    it("can read and update ACLs", async () => {
+      if (rootContainer.includes("pod.inrupt.com")) {
+        // pod.inrupt.com does not support WAC, so skip this test there.
+        return;
+      }
+      const session = await getSession();
+      const fakeWebId =
+        "https://example.com/fake-webid#" + session.info.sessionId;
+      // solid-client-authn-node does not, at the time of writing, return the WebID after a login
+      // using the refresh token, but it will be updated to do so.
+      // Hence, the appending of "profile/card#me" is a hack that will become redundant in time.
+      const ownWebId = session.info.webId ?? rootContainer + "profile/card#me";
+      const datasetWithoutAclUrl = `${rootContainer}solid-client-tests/node/acl-test-${session.info.sessionId}.ttl`;
+      await saveSolidDatasetAt(datasetWithoutAclUrl, createSolidDataset(), {
+        fetch: session.fetch,
+      });
+
+      const datasetWithAcl = await getSolidDatasetWithAcl(rootContainer, {
+        fetch: session.fetch,
+      });
+      const datasetWithoutAcl = await getSolidDatasetWithAcl(
+        datasetWithoutAclUrl,
+        { fetch: session.fetch }
+      );
+
+      expect(hasResourceAcl(datasetWithAcl)).toBe(true);
+      expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
+
+      expect(getPublicAccess(datasetWithAcl)).toEqual({
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      });
+      expect(getAgentAccess(datasetWithAcl, session.info.webId!)).toEqual({
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      });
+      expect(getAgentAccess(datasetWithoutAcl, session.info.webId!)).toEqual({
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      });
+      const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
+      expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
+        rootContainer
+      );
+
+      if (!hasResourceAcl(datasetWithAcl)) {
+        throw new Error(
+          `The Resource at [${rootContainer}] does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+        );
+      }
+      const acl = getResourceAcl(datasetWithAcl);
+      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+      const sentAcl = await saveAclFor(datasetWithAcl, updatedAcl, {
+        fetch: session.fetch,
+      });
+      const fakeWebIdAccess = getAgentResourceAccess(sentAcl, fakeWebId);
+      expect(fakeWebIdAccess).toEqual({
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+
+      // Cleanup
+      const cleanedAcl = setAgentResourceAccess(sentAcl, fakeWebId, {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      });
+      await saveAclFor(datasetWithAcl, cleanedAcl, { fetch: session.fetch });
+      await deleteSolidDataset(datasetWithoutAclUrl, { fetch: session.fetch });
     });
   }
 );
