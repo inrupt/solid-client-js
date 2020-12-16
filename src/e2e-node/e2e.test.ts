@@ -62,6 +62,8 @@ import {
   createThing,
   createSolidDataset,
   deleteSolidDataset,
+  UrlString,
+  acp_v2 as acp,
 } from "../index";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
@@ -535,6 +537,160 @@ describe.each(serversUnderTest)(
       });
       await saveAclFor(datasetWithAcl, cleanedAcl, { fetch: session.fetch });
       await deleteSolidDataset(datasetWithoutAclUrl, { fetch: session.fetch });
+    });
+
+    describe("Access Control Policies", () => {
+      if (
+        rootContainer.includes("inrupt.net") ||
+        rootContainer.includes("pod-compat.inrupt.com")
+      ) {
+        // These servers do not support Access Control Policies,
+        // so ACP tests can be skipped for them:
+        return;
+      }
+
+      async function initialisePolicyResource(
+        policyResourceUrl: UrlString,
+        session: Session
+      ) {
+        let publicRule = acp.createRule(policyResourceUrl + "#rule-public");
+        publicRule = acp.setPublic(publicRule, true);
+
+        let publicReadPolicy = acp.createPolicy(
+          policyResourceUrl + "#policy-publicRead"
+        );
+        publicReadPolicy = acp.addRequiredRuleUrl(publicReadPolicy, publicRule);
+        publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
+          read: true,
+          append: false,
+          write: false,
+        });
+
+        let selfRule = acp.createRule(policyResourceUrl + "#rule-self");
+        selfRule = acp.addAgent(selfRule, session.info.webId!);
+        // This policy denies write access to the current user,
+        // but allows write access so the Resource can still be removed afterwards:
+        let selfWriteNoReadPolicy = acp.createPolicy(
+          policyResourceUrl + "#policy-selfWriteNoRead"
+        );
+        selfWriteNoReadPolicy = acp.addRequiredRuleUrl(
+          selfWriteNoReadPolicy,
+          selfRule
+        );
+        selfWriteNoReadPolicy = acp.setAllowModes(selfWriteNoReadPolicy, {
+          read: false,
+          append: true,
+          write: true,
+        });
+        selfWriteNoReadPolicy = acp.setDenyModes(selfWriteNoReadPolicy, {
+          read: true,
+          append: false,
+          write: false,
+        });
+
+        let policyResource = createSolidDataset();
+        policyResource = setThing(policyResource, publicRule);
+        policyResource = setThing(policyResource, publicReadPolicy);
+        policyResource = setThing(policyResource, selfRule);
+        policyResource = setThing(policyResource, selfWriteNoReadPolicy);
+
+        return saveSolidDatasetAt(policyResourceUrl, policyResource, {
+          fetch: session.fetch,
+        });
+      }
+
+      async function applyPolicyToPolicyResource(
+        resourceUrl: UrlString,
+        policyUrl: UrlString,
+        session: Session
+      ) {
+        const resourceWithAcr = await acp.getSolidDatasetWithAcr(resourceUrl, {
+          fetch: session.fetch,
+        });
+        if (!acp.hasAccessibleAcr(resourceWithAcr)) {
+          throw new Error(
+            `The test Resource at [${getSourceUrl(
+              resourceWithAcr
+            )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
+          );
+        }
+        const changedResourceWithAcr = acp.addPolicyUrl(
+          resourceWithAcr,
+          policyUrl
+        );
+        return acp.saveAcrFor(changedResourceWithAcr, {
+          fetch: session.fetch,
+        });
+      }
+
+      it("can deny Read access", async () => {
+        const session = await getSession();
+        const policyResourceUrl =
+          rootContainer +
+          `solid-client-tests/node/acp/policy-deny-agent-read-${session.info.sessionId}.ttl`;
+
+        // Create a Resource containing Access Policies and Rules:
+        await initialisePolicyResource(policyResourceUrl, session);
+
+        // Verify that we can fetch the Resource before Denying Read access:
+        await expect(
+          getSolidDataset(policyResourceUrl, { fetch: session.fetch })
+        ).resolves.not.toBeNull();
+
+        // In the Resource's Access Control Resource, apply the Policy
+        // that just so happens to be defined in the Resource itself,
+        // and that denies Read access to the current user:
+        await applyPolicyToPolicyResource(
+          policyResourceUrl,
+          policyResourceUrl + "#policy-selfWriteNoRead",
+          session
+        );
+
+        // Verify that indeed, the current user can no longer read it:
+        await expect(
+          getSolidDataset(policyResourceUrl, { fetch: session.fetch })
+        ).rejects.toThrow(
+          // Forbidden:
+          expect.objectContaining({ statusCode: 403 })
+        );
+
+        // Clean up:
+        await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
+      });
+
+      it("can allow public Read access", async () => {
+        const session = await getSession();
+        const policyResourceUrl =
+          rootContainer +
+          `solid-client-tests/node/acp/policy-allow-public-read-${session.info.sessionId}.ttl`;
+
+        // Create a Resource containing Access Policies and Rules:
+        await initialisePolicyResource(policyResourceUrl, session);
+
+        // Verify that we cannot fetch the Resource before adding public Read access
+        // when not logged in (i.e. not passing the session's fetch):
+        await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
+          // Unauthorised:
+          expect.objectContaining({ statusCode: 401 })
+        );
+
+        // In the Resource's Access Control Resource, apply the Policy
+        // that just so happens to be defined in the Resource itself,
+        // and provides Read access to the public:
+        await applyPolicyToPolicyResource(
+          policyResourceUrl,
+          policyResourceUrl + "#policy-publicRead",
+          session
+        );
+
+        // Verify that indeed, an unauthenticated user can now read it:
+        await expect(
+          getSolidDataset(policyResourceUrl)
+        ).resolves.not.toBeNull();
+
+        // Clean up:
+        await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
+      });
     });
   }
 );
