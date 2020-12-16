@@ -1,13 +1,8 @@
 import * as SolidClient from "@inrupt/solid-client";
-import {
-  Session,
-  getClientAuthenticationWithDependencies,
-} from "@inrupt/solid-client-authn-browser";
+import { Session } from "@inrupt/solid-client-authn-browser";
 import { getHelpers } from "./end-to-end-test-helpers";
 
-const session = new Session({
-  clientAuthentication: getClientAuthenticationWithDependencies({}),
-});
+const session = new Session();
 
 const loginButton = document.getElementsByTagName("button")[0];
 
