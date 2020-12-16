@@ -8,7 +8,7 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
-    "@inrupt/solid-client": "../../",
+    "@inrupt/solid-client": "file:../../",
     "@inrupt/solid-client-authn-browser": "0.2.2 - 1.x",
     "rdf-namespaces": "1.8.0"
   },
