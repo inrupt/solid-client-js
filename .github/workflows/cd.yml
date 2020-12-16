@@ -70,8 +70,12 @@ jobs:
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+        # Unfortunately re-running a job does not change its run ID nor run number.
+        # To prevent re-releasing the same version when re-running the CD job,
+        # we incorporate a timestamp in the prerelease version:
+        TIMESTAMP=$(date --utc +%s)
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
-        VERSION_NR=$(npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER)
+        VERSION_NR=$(npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-$TIMESTAMP)
         echo "::set-output name=version-nr::$VERSION_NR"
       env:
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
