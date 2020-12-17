@@ -560,7 +560,10 @@ describe.each(serversUnderTest)(
         let publicReadPolicy = acp.createPolicy(
           policyResourceUrl + "#policy-publicRead"
         );
-        publicReadPolicy = acp.addRequiredRuleUrl(publicReadPolicy, publicRule);
+        // Note: we should think of a better name for "optional", as this isn't really optional.
+        //       At least one "optional" rule should apply, and since this is the only rule for this
+        //       policy, it will in practice be required.
+        publicReadPolicy = acp.addOptionalRuleUrl(publicReadPolicy, publicRule);
         publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
           read: true,
           append: false,
