@@ -453,7 +453,6 @@ describe.each(serversUnderTest)(
 
       await deleteFile(containerUrl, { fetch: session.fetch });
       await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
-      await deleteFile(containerContainerUrl, { fetch: session.fetch });
     });
 
     it("can read and update ACLs", async () => {
