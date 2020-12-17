@@ -61,7 +61,7 @@ jobs:
         mediaType: '{"previews": ["flash", "ant-man"]}'
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
@@ -135,7 +135,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -161,7 +161,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -183,7 +183,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -211,7 +211,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -231,3 +231,14 @@ jobs:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
+      env:
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
+        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
+        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}

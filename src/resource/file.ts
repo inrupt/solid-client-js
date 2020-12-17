@@ -124,7 +124,7 @@ export async function deleteFile(
   }
 }
 
-type SaveFileOptions = GetFileOptions & {
+type SaveFileOptions = WriteFileOptions & {
   slug?: string;
 };
 
@@ -144,7 +144,7 @@ type SaveFileOptions = GetFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File>(
+export async function saveFileInContainer<FileExt extends File | Buffer>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
@@ -174,12 +174,16 @@ export async function saveFileInContainer<FileExt extends File>(
     internal_resourceInfo: {
       isRawData: true,
       sourceIri: fileIri,
-      contentType: file.type.length > 0 ? file.type : undefined,
+      contentType: getContentType(file, options.contentType),
     },
   };
 
   return Object.assign(blobClone, resourceInfo);
 }
+
+export type WriteFileOptions = GetFileOptions & {
+  contentType: string;
+};
 
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.
@@ -196,11 +200,11 @@ export async function saveFileInContainer<FileExt extends File>(
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
  */
-export async function overwriteFile(
+export async function overwriteFile<FileExt extends File | Buffer>(
   fileUrl: Url | UrlString,
-  file: File,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
-): Promise<File & WithResourceInfo> {
+  file: FileExt,
+  options: Partial<WriteFileOptions> = defaultGetFileOptions
+): Promise<FileExt & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
@@ -284,7 +288,7 @@ export function flattenHeaders(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: File,
+  file: File | Buffer,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
@@ -305,7 +309,7 @@ async function writeFile(
   if (config.slug !== undefined) {
     headers["Slug"] = config.slug;
   }
-  headers["Content-Type"] = file.type;
+  headers["Content-Type"] = getContentType(file, options.contentType);
 
   const targetUrlString = internal_toIriString(targetUrl);
 
@@ -315,4 +319,22 @@ async function writeFile(
     method,
     body: file,
   });
+}
+
+function getContentType(
+  file: File | Buffer,
+  contentTypeOverride?: string
+): string {
+  if (typeof contentTypeOverride === "string") {
+    return contentTypeOverride;
+  }
+  const fileType =
+    typeof file === "object" &&
+    file !== null &&
+    typeof (file as Blob).type === "string" &&
+    (file as Blob).type.length > 0
+      ? (file as Blob).type
+      : undefined;
+
+  return fileType ?? "application/octet-stream";
 }

@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2.1.3
+      uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
     - name: Cache node modules
@@ -33,6 +33,17 @@ jobs:
       # and because behaviour on different OS's is already tested by unit tests,
       # end-to-end tests only need to run on one OS:
       if: runner.os == 'Linux' && matrix.node-version == '14.x'
+      env:
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
+        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
+        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}
     # Ideally, we'd autodetect installed browsers and run them headlessly.
     # See https://github.com/DevExpress/testcafe/issues/5641
     - name: Prepare browser-based end-to-end tests
@@ -50,10 +61,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (Windows)
       run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless
       # The Node version does not influence how well our tests run in the browser,
@@ -63,10 +74,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (MacOS)
       # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
       # enabled, which results in TestCafe needing screen recording permission, which it cannot
@@ -92,10 +103,10 @@ jobs:
       # does not cause end-to-end tests to stop running.)
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS'
       env:
-        TESTCAFE_ESS_IDP_URL: ${{ secrets.TESTCAFE_ESS_PROD_IDP_URL }}
-        TESTCAFE_ESS_POD: ${{ secrets.TESTCAFE_ESS_PROD_POD }}
-        TESTCAFE_ESS_COGNITO_USER: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_USER }}
-        TESTCAFE_ESS_COGNITO_PASSWORD: ${{ secrets.TESTCAFE_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - run: npx prettier --check "src/**"
     - run: npx package-check
     - run: npm run check-licenses

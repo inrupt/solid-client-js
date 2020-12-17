@@ -10,7 +10,7 @@ jobs:
     if: github.event.ref_type == 'branch'
     steps:
     - name: Prepare for unpublication from npm
-      uses: actions/setup-node@v2.1.3
+      uses: actions/setup-node@v2.1.4
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
