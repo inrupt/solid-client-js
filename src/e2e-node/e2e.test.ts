@@ -65,6 +65,7 @@ import {
   UrlString,
   acp_v2 as acp,
 } from "../index";
+import openidClient from "openid-client";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the other `describe` block has credentials for an NSS server:
@@ -352,8 +353,9 @@ describe.each(serversUnderTest)(
 
     if (rootContainer.includes("pod-compat.inrupt.com")) {
       // pod-compat.inrupt.com seems to be experiencing some slowdowns processing POST requests,
-      // so temporarily set the test timeout to 30s for it:
+      // so temporarily increase the timeouts for it:
       jest.setTimeout(30000);
+      openidClient.custom.setHttpOptionsDefaults({ timeout: 5000 });
     }
 
     it("can create, read, update and delete data", async () => {
