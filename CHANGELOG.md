@@ -12,6 +12,7 @@ The following changes have been implemented but not released yet:
   you can now manually set it using the `contentType` property in their `options` parameters.
 - 'getContainedResourceUrlAll': a function that returns the URLs for each resource contained in
   the given Container.
+- FetchError now contains the server response (`error.response`).
 
 ### Bugs fixed
 
