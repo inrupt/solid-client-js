@@ -21,6 +21,9 @@
 
 import { describe, it, expect } from "@jest/globals";
 
+import * as crossFetch from "cross-fetch";
+const { Response } = crossFetch;
+
 import {
   mockSolidDatasetFrom,
   mockFileFrom,
@@ -112,6 +115,8 @@ describe("mockFetchError", () => {
     );
     expect(error.statusCode).toBe(404);
     expect(error.statusText).toBe("Not Found");
+    expect(error.response).toBeInstanceOf(Response);
+    expect(error.response.status).toBe(error.statusCode);
   });
 
   it("can represent different error statuses", () => {
@@ -123,6 +128,7 @@ describe("mockFetchError", () => {
     );
     expect(error.statusCode).toBe(418);
     expect(error.statusText).toBe("I'm a Teapot");
+    expect(error.response.status).toBe(error.statusCode);
   });
 
   it("can represent unknown status codes", () => {
@@ -134,5 +140,6 @@ describe("mockFetchError", () => {
       "Fetching the Resource at [https://some.pod/resource] failed: [1337] [undefined]."
     );
     expect(error.statusCode).toBe(1337);
+    expect(error.response.status).toBe(error.statusCode);
   });
 });
