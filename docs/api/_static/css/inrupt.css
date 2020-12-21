@@ -205,8 +205,8 @@ p.topic-title {
 }
 
 .social-icon {
-  padding-left: 0.12rem;
-  padding-right: 0.12rem;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
 }
 
 @media (min-width: 992px) {
