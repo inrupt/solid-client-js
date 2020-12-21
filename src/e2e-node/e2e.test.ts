@@ -304,7 +304,12 @@ describe.each([
 });
 
 // Load environment variables from .env.local if available:
-config({ path: __dirname });
+config({
+  path: __dirname,
+  // In CI, actual environment variables will overwrite values from .env files.
+  // We don't need warning messages in the logs for that:
+  silent: process.env.CI === "true",
+});
 
 type OidcIssuer = string;
 type ClientId = string;

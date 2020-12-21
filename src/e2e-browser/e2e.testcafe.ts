@@ -31,7 +31,13 @@ import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-
 // Hence, we just declare this variable to be of the same type here.
 const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
-config({ path: __dirname });
+// Load environment variables from .env.local if available:
+config({
+  path: __dirname,
+  // In CI, actual environment variables will overwrite values from .env files.
+  // We don't need warning messages in the logs for that:
+  silent: process.env.CI === "true",
+});
 
 fixture("End-to-end tests").page("http://localhost:1234");
 
