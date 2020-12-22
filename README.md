@@ -37,7 +37,7 @@ for describing the things search engines are typically interested in, intended
 to be used by webmasters to mark up their pages in ways that those search
 engines can then understand.
 
-As a convenience for JavaScript developers, Inrupt publishes various NPM modules
+As a convenience for JavaScript developers, Inrupt publishes various npm modules
 that provide JavaScript classes containing constants representing the individual
 terms described in many of these vocabularies today, including modules
 specifically for Solid-related vocabularies, and for Inrupt-specific
