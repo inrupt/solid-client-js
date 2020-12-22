@@ -64,7 +64,7 @@ This module bundles together JavaScript classes representing all the RDF
 vocabularies created and maintained by Inrupt (e.g. an Inrupt test vocabulary,
 Inrupt glossaries, Inrupt product vocabularies, etc.): [@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
 
-**NOTE:** All the above NPM modules are currently generated and published
+**Note:** All the above npm modules are currently generated and published
 to NPM automatically by a closed-source Inrupt tool. We plan to open-source that
 tool in the future, but currently we have no planned release date.
 
