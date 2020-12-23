@@ -139,6 +139,16 @@ type SaveFileOptions = WriteFileOptions & {
  * be rejected. You can initialise it first using [[createContainerAt]], or directly save the file
  * at the desired location using [[overwriteFile]].
  *
+ * This function is primarily useful if the current user does not have access to change existing files in
+ * a Container, but is allowed to add new files; in other words, they have Append, but not Write
+ * access to a Container. This is useful in situations where someone wants to allow others to,
+ * for example, send notifications to their Pod, but not to view or delete existing notifications.
+ * You can pass a suggestion for the new Resource's name, but the server may decide to give it
+ * another name — for example, if a Resource with that name already exists inside the given
+ * Container.
+ * If the user does have access to write directly to a given location, [[overwriteFile]]
+ * will do the job just fine, and does not require the parent Container to exist in advance.
+ *
  * @param folderUrl The URL of the folder where the new file is saved.
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g. a slug).
