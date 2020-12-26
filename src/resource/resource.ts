@@ -29,6 +29,7 @@ import {
   WithResourceInfo,
   hasServerResourceInfo,
   SolidClientError,
+  SolidDataset,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
@@ -36,6 +37,9 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
+import { getThing } from "../thing/thing";
+import { getIriAll } from "../thing/get";
+import { ldp } from "rdf-namespaces";
 
 /** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
@@ -174,6 +178,26 @@ export function isPodOwner(
   }
 
   return podOwner === webId;
+}
+
+/**
+ *  Given an solidDataset, fetch the urls of all contained resources.
+ *  If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
+ *
+ * @param solidDataset The container from which to fetch all contained resource urls
+ * @since 1.2.0
+ */
+export function getContainedResourceUrlAll(solidDataset: SolidDataset) {
+  if (hasResourceInfo(solidDataset)) {
+    const container = getThing(solidDataset, getSourceIri(solidDataset));
+    if (container) {
+      return getIriAll(container, ldp.contains);
+    } else {
+      throw new Error("Dataset provided is not a container");
+    }
+  } else {
+    throw new Error("Dataset provided is missing resource info");
+  }
 }
 
 /**
