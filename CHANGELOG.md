@@ -10,6 +10,8 @@ The following changes have been implemented but not released yet:
 
 - If you know the content type of a file to upload via `overwriteFile` or `saveFileInContainer`,
   you can now manually set it using the `contentType` property in their `options` parameters.
+- 'getContainedResourceUrlAll': a function that returns the URLs for each resource contained in
+  the given Container.
 
 ### Bugs fixed
 

@@ -45,6 +45,7 @@ export {
   saveSolidDatasetInContainer,
   createContainerInContainer,
   deleteContainer,
+  getContainedResourceUrlAll,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
 } from "./resource/solidDataset";
