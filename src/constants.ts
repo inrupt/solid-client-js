@@ -41,6 +41,14 @@ export const rdf = {
 } as const;
 
 /** @hidden */
+export const ldp = {
+  BasicContainer: "http://www.w3.org/ns/ldp#BasicContainer",
+  Container: "http://www.w3.org/ns/ldp#Container",
+  Resource: "http://www.w3.org/ns/ldp#Resource",
+  contains: "http://www.w3.org/ns/ldp#contains",
+} as const;
+
+/** @hidden */
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
 } as const;
