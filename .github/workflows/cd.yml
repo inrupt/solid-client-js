@@ -125,7 +125,7 @@ jobs:
       run: |
         echo "Giving npm some time to make the newly-published package available…"
         sleep 5m
-        echo "Done — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
+        echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
     runs-on: ubuntu-20.04
