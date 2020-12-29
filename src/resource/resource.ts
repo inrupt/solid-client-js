@@ -185,18 +185,20 @@ export function isPodOwner(
  *  If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
  *
  * @param solidDataset The container from which to fetch all contained resource urls
+ * @returns A list of urls, each of which points to a contained resource of the given solidDataset
  * @since 1.2.0
  */
-export function getContainedResourceUrlAll(solidDataset: SolidDataset) {
-  if (hasResourceInfo(solidDataset)) {
-    const container = getThing(solidDataset, getSourceIri(solidDataset));
-    if (container) {
-      return getIriAll(container, ldp.contains);
-    } else {
-      throw new Error("Dataset provided is not a container");
-    }
+
+export function getContainedResourceUrlAll(
+  solidDataset: SolidDataset & WithResourceInfo
+): UrlString[] {
+  const container = getThing(solidDataset, getSourceIri(solidDataset));
+  if (container) {
+    return getIriAll(container, ldp.contains);
   } else {
-    throw new Error("Dataset provided is missing resource info");
+    // I'm making the assumption here that a dataset is a container if and only if it has a thing at
+    // its root with metadata about the resources contained - this might not be accurate
+    throw new Error("Dataset provided is not a container");
   }
 }
 
