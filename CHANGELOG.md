@@ -6,6 +6,9 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+- 'getContainedResourceUrlAll': a function that returns the urls for each resource contained in
+  the given container
+
 The following sections document changes that have been released already:
 
 ## [1.2.0] - 2020-12-02
