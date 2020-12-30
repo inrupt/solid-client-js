@@ -64,8 +64,27 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "typedocOptions": {
-    "mode": "modules",
-    "out": "website/docs/api",
+    "out": "docs/api/source/api",
+    "entryPoints": [
+      // The source files of everything listed under `exports` in our package.json
+      // (i.e. public API's that should be documented) should be listed here:
+      "src/interfaces.ts",
+      "src/resource/resource.ts",
+      "src/resource/solidDataset.ts",
+      "src/resource/file.ts",
+      "src/resource/mock.ts",
+      "src/thing/thing.ts",
+      "src/thing/get.ts",
+      "src/thing/set.ts",
+      "src/thing/add.ts",
+      "src/thing/remove.ts",
+      "src/thing/mock.ts",
+      "src/acl/acl.ts",
+      "src/acl/agent.ts",
+      "src/acl/group.ts",
+      "src/acl/class.ts",
+      "src/acl/mock.ts",
+    ],
     "exclude": [
       "node_modules/**",
       ".codesandbox/**",
@@ -90,7 +109,6 @@
       // which we do not want to expose to developers yet:
       "src/acp/**",
     ],
-    "excludeNotExported": true,
     "stripInternal": true,
     "theme": "markdown",
     "readme": "none",
