@@ -12,7 +12,7 @@
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
     "lint": "eslint --config .eslintrc.js --fix",
-    "build-api-docs": "npx typedoc --out docs/api/source/api",
+    "build-api-docs": "typedoc",
     "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;"
   },
   "keywords": [
@@ -41,6 +41,7 @@
     "./thing/add": "./dist/thing/add.mjs",
     "./thing/set": "./dist/thing/set.mjs",
     "./thing/remove": "./dist/thing/remove.mjs",
+    "./thing/mock": "./dist/thing/mock.mjs",
     "./acl/acl": "./dist/acl/acl.mjs",
     "./acl/agent": "./dist/acl/agent.mjs",
     "./acl/group": "./dist/acl/group.mjs",
@@ -58,6 +59,7 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
+    "@inrupt/solid-client-authn-node": "^1.2.2",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.2.3",
     "@types/dotenv-flow": "^3.1.0",
@@ -80,7 +82,7 @@
     "rollup-plugin-typescript2": "^0.29.0",
     "testcafe": "^1.9.4",
     "ts-jest": "^26.1.0",
-    "typedoc": "^0.19.0",
+    "typedoc": "^0.20.4",
     "typedoc-plugin-markdown": "^3.0.2",
     "typescript": "^4.0.2"
   },

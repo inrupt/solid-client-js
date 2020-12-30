@@ -192,9 +192,10 @@ export function isPodOwner(
 export function getContainedResourceUrlAll(
   solidDataset: SolidDataset & WithResourceInfo
 ): UrlString[] {
+  const contains = "http://www.w3.org/ns/ldp#contains";
   const container = getThing(solidDataset, getSourceIri(solidDataset));
   if (container) {
-    return getIriAll(container, ldp.contains);
+    return getIriAll(container, contains);
   } else {
     // I'm making the assumption here that a dataset is a container if and only if it has a thing at
     // its root with metadata about the resources contained - this might not be accurate

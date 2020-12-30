@@ -21,8 +21,7 @@
 
 import { ClientFunction } from "testcafe";
 import { config } from "dotenv-flow";
-import { resolve } from "path";
-import { essUser, essUserLogin } from "./roles";
+import { essUserLogin } from "./roles";
 import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
 
 // E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
@@ -32,87 +31,15 @@ import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-
 // Hence, we just declare this variable to be of the same type here.
 const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
-config({ path: __dirname });
+// Load environment variables from .env.local if available:
+config({
+  path: __dirname,
+  // In CI, actual environment variables will overwrite values from .env files.
+  // We don't need warning messages in the logs for that:
+  silent: process.env.CI === "true",
+});
 
 fixture("End-to-end tests").page("http://localhost:1234");
-
-/* eslint-disable jest/expect-expect, jest/no-done-callback -- We're not using Jest for these tests */
-
-test("Manipulating Access Control Policies to set public access", async (t: TestController) => {
-  /* Initialise client helpers: */
-  const getSessionInfo = ClientFunction(() => E2eHelpers.getSessionInfo());
-  const initialisePolicyResource = ClientFunction(() =>
-    E2eHelpers.initialisePolicyResource()
-  );
-  const fetchPolicyResourceUnauthenticated = ClientFunction(
-    (podRoot?: string) => E2eHelpers.fetchPolicyResourceUnauthenticated(podRoot)
-  );
-  const setAcrPublicRead = ClientFunction(() =>
-    E2eHelpers.setPolicyResourcePublicRead()
-  );
-  const deletePolicyResource = ClientFunction(() =>
-    E2eHelpers.deletePolicyResource()
-  );
-
-  /* Run the actual test: */
-  const essUserPod = process.env.TESTCAFE_ESS_POD;
-  await essUserLogin(t);
-  // Create a Resource containing Access Policies and Rules:
-  await initialisePolicyResource();
-  // Verify that we cannot fetch that Resource yet with a user that is not logged in:
-  await t
-    .expect(
-      (await returnErrors(() => fetchPolicyResourceUnauthenticated(essUserPod)))
-        .errMsg
-    )
-    .match(/\[401\] \[Unauthorized\]/);
-  // In the Resource's Access Control Resource, apply the Policy
-  // that just so happens to be defined in the Resource itself,
-  // and that allows anyone to read it:
-  await setAcrPublicRead();
-  // Verify that indeed, someone who is not logged in can now read it:
-  await t
-    .expect(fetchPolicyResourceUnauthenticated(essUserPod))
-    .typeOf("object");
-  // Now delete the Resource, so that we can recreate it the next time we run this test:
-  await deletePolicyResource();
-});
-
-test("Manipulating Access Control Policies to deny Read access", async (t: TestController) => {
-  /* Initialise client helpers: */
-  const initialisePolicyResource = ClientFunction(() =>
-    E2eHelpers.initialisePolicyResource()
-  );
-  const fetchPolicyResourceAuthenticated = ClientFunction(() =>
-    E2eHelpers.fetchPolicyResourceAuthenticated()
-  );
-  const setAcrSelfWriteNoRead = ClientFunction(() =>
-    E2eHelpers.setPolicyResourceSelfWriteNoRead()
-  );
-  const deletePolicyResource = ClientFunction(() =>
-    E2eHelpers.deletePolicyResource()
-  );
-
-  /* Run the actual test: */
-  const essUserPod = process.env.TESTCAFE_ESS_PROD_POD;
-  await essUserLogin(t);
-  // Create a Resource containing Access Policies and Rules:
-  await initialisePolicyResource();
-  // Verify that we can fetch the Resource before Denying Read access:
-  await t.expect(fetchPolicyResourceAuthenticated()).typeOf("object");
-  // In the Resource's Access Control Resource, apply the Policy
-  // that just so happens to be defined in the Resource itself,
-  // and that denies Read access to the current user:
-  await setAcrSelfWriteNoRead();
-  // Verify that indeed, someone who is not logged in can now read it:
-  await t
-    .expect(
-      (await returnErrors(() => fetchPolicyResourceAuthenticated())).errMsg
-    )
-    .match(/\[403\] \[Forbidden\]/);
-  // Now delete the Resource, so that we can recreate it the next time we run this test:
-  await deletePolicyResource();
-});
 
 // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
 test("Creating and removing empty Containers", async (t: TestController) => {
@@ -124,19 +51,3 @@ test("Creating and removing empty Containers", async (t: TestController) => {
   await t.expect(createdContainer).notTypeOf("null");
   await deleteContainer();
 });
-
-/* eslint-enable jest/expect-expect, jest/no-done-callback */
-
-/**
- * TestCafe doesn't provide an assertion to verify that calling a function throws an error,
- * so this function transforms thrown errors into a return value that can be asserted against.
- */
-async function returnErrors(
-  f: Function
-): Promise<{ errMsg: string; isTestCafeError: true; code: string }> {
-  try {
-    return (await f()) as never;
-  } catch (e) {
-    return e;
-  }
-}

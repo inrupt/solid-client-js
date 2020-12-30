@@ -455,6 +455,16 @@ type SaveInContainerOptions = Partial<
  * using [[createContainerAt]], or directly save the SolidDataset at the desired location using
  * [[saveSolidDatasetAt]].
  *
+ * This function is primarily useful if the current user does not have access to change existing files in
+ * a Container, but is allowed to add new files; in other words, they have Append, but not Write
+ * access to a Container. This is useful in situations where someone wants to allow others to,
+ * for example, send notifications to their Pod, but not to view or delete existing notifications.
+ * You can pass a suggestion for the new Resource's name, but the server may decide to give it
+ * another name — for example, if a Resource with that name already exists inside the given
+ * Container.
+ * If the user does have access to write directly to a given location, [[saveSolidDatasetAt]]
+ * will do the job just fine, and does not require the parent Container to exist in advance.
+ *
  * @param containerUrl URL of the Container in which to create a new Resource.
  * @param solidDataset The [[SolidDataset]] to save to a new Resource in the given Container.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
@@ -532,7 +542,17 @@ export async function saveSolidDatasetInContainer(
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to.
  *
- * The Container in which to create the new Container should itself already exist; if it does not.
+ * The Container in which to create the new Container should itself already exist.
+ *
+ * This function is primarily useful if the current user does not have access to change existing files in
+ * a Container, but is allowed to add new files; in other words, they have Append, but not Write
+ * access to a Container. This is useful in situations where someone wants to allow others to,
+ * for example, send notifications to their Pod, but not to view or delete existing notifications.
+ * You can pass a suggestion for the new Resource's name, but the server may decide to give it
+ * another name — for example, if a Resource with that name already exists inside the given
+ * Container.
+ * If the user does have access to write directly to a given location, [[createContainerAt]]
+ * will do the job just fine, and does not require the parent Container to exist in advance.
  *
  * @param containerUrl URL of the Container in which the empty Container is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).

@@ -61,7 +61,7 @@ jobs:
         mediaType: '{"previews": ["flash", "ant-man"]}'
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
@@ -70,8 +70,12 @@ jobs:
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+        # Unfortunately re-running a job does not change its run ID nor run number.
+        # To prevent re-releasing the same version when re-running the CD job,
+        # we incorporate a timestamp in the prerelease version:
+        TIMESTAMP=$(date --utc +%s)
         # Make sure the prerelease is tagged with the branch name, and that they are sorted by build:
-        VERSION_NR=$(npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER)
+        VERSION_NR=$(npm version prerelease --preid=$TAG_SLUG-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-$TIMESTAMP)
         echo "::set-output name=version-nr::$VERSION_NR"
       env:
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
@@ -131,7 +135,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -157,7 +161,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -179,7 +183,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -207,7 +211,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.1.3
+    - uses: actions/setup-node@v2.1.4
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -227,3 +231,14 @@ jobs:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
+      env:
+        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
+        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
+        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
+        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
+        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}
