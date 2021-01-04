@@ -109,7 +109,6 @@
       // which we do not want to expose to developers yet:
       "src/acp/**",
     ],
-    "stripInternal": true,
     "theme": "markdown",
     "readme": "none",
   },
