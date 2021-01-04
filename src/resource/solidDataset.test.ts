@@ -46,6 +46,7 @@ import {
   changeLogAsMarkdown,
   deleteSolidDataset,
   deleteContainer,
+  getContainedResourceUrlAll,
   internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
 } from "./solidDataset";
 import {
@@ -54,12 +55,14 @@ import {
   IriString,
   SolidDataset,
   LocalNode,
+  UrlString,
 } from "../interfaces";
-import { mockSolidDatasetFrom } from "./mock";
+import { mockContainerFrom, mockSolidDatasetFrom } from "./mock";
 import { createThing, setThing } from "../thing/thing";
 import { mockThingFrom } from "../thing/mock";
-import { addStringNoLocale } from "../thing/add";
+import { addStringNoLocale, addUrl } from "../thing/add";
 import { removeStringNoLocale } from "../thing/remove";
+import { ldp, rdf } from "../constants";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -2263,6 +2266,59 @@ describe("deleteContainer", () => {
       statusCode: 418,
       statusText: "I'm a teapot!",
     });
+  });
+});
+
+describe("getContainedResourceUrlAll", () => {
+  const mockContainer = (
+    containerUrl: string,
+    containedResourceNames: UrlString[]
+  ) => {
+    let childrenIndex = createThing({ url: containerUrl });
+    let mockedContainer = mockContainerFrom(containerUrl);
+
+    containedResourceNames.forEach((resourceName) => {
+      let childListing = createThing({
+        url: containerUrl + resourceName + ".ttl",
+      });
+      childListing = addUrl(childListing, rdf.type, ldp.Resource);
+
+      childrenIndex = addUrl(childrenIndex, ldp.contains, childListing);
+      mockedContainer = setThing(mockedContainer, childListing);
+    });
+
+    mockedContainer = setThing(mockedContainer, childrenIndex);
+    childrenIndex = addUrl(childrenIndex, rdf.type, ldp.Container);
+
+    return mockedContainer;
+  };
+
+  it("gets all URLs for contained Resources from a Container", () => {
+    const containerUrl = "https://arbitrary.pod/container/";
+    const containedThings = ["resource1", "resource2", "resource3"];
+    const container = mockContainer(containerUrl, containedThings);
+    const expectedReturnUrls = containedThings.map(
+      (thingName) => `${containerUrl}${thingName}.ttl`
+    );
+
+    expect(getContainedResourceUrlAll(container)).toStrictEqual(
+      expectedReturnUrls
+    );
+  });
+
+  it("returns an empty array if the Container contains no Resources", () => {
+    const containerUrl = "https://arbitrary.pod/container/";
+    const containedThings: UrlString[] = [];
+    const container = mockContainer(containerUrl, containedThings);
+
+    expect(getContainedResourceUrlAll(container)).toStrictEqual(
+      containedThings
+    );
+  });
+
+  it("returns an empty array if the Container contains no index of contained Resources", () => {
+    const dataset = mockSolidDatasetFrom("https://arbitrary.pod/dataset");
+    expect(getContainedResourceUrlAll(dataset)).toStrictEqual([]);
   });
 });
 

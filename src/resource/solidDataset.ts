@@ -21,6 +21,7 @@
 
 import { Quad, NamedNode, Quad_Object } from "rdf-js";
 import { dataset, DataFactory } from "../rdfjs";
+import { ldp } from "../constants";
 import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
 import {
   isLocalNode,
@@ -54,11 +55,12 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
-import { thingAsMarkdown, getThingAll } from "../thing/thing";
+import { thingAsMarkdown, getThingAll, getThing } from "../thing/thing";
 import {
   internal_getReadableValue,
   internal_toNode,
 } from "../thing/thing.internal";
+import { getIriAll } from "../thing/get";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -174,7 +176,7 @@ async function prepareSolidDatasetCreation(
     headers: {
       "Content-Type": "text/turtle",
       "If-None-Match": "*",
-      Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
+      Link: `<${ldp.Resource}>; rel="type"`,
     },
   };
 }
@@ -320,7 +322,7 @@ export async function createContainerAt(
       "If-None-Match": "*",
       // This header should not be required to create a Container,
       // but ESS currently expects it:
-      Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+      Link: `<${ldp.BasicContainer}>; rel="type"`,
     },
   });
 
@@ -486,7 +488,7 @@ export async function saveSolidDatasetInContainer(
   );
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
-    Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
+    Link: `<${ldp.Resource}>; rel="type"`,
   };
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
@@ -570,7 +572,7 @@ export async function createContainerInContainer(
 
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
-    Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+    Link: `<${ldp.BasicContainer}>; rel="type"`,
   };
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
@@ -642,6 +644,26 @@ export async function deleteContainer(
       response
     );
   }
+}
+
+/**
+ * Given a [[SolidDataset]] representing a Container (see [[isContainer]]), fetch the URLs of all
+ * contained resources.
+ * If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
+ *
+ * @param solidDataset The container from which to fetch all contained Resource URLs.
+ * @returns A list of URLs, each of which points to a contained Resource of the given SolidDataset.
+ * @since Not released yet.
+ */
+
+export function getContainedResourceUrlAll(
+  solidDataset: SolidDataset & WithResourceInfo
+): UrlString[] {
+  const container = getThing(solidDataset, getSourceUrl(solidDataset));
+  // See https://www.w3.org/TR/2015/REC-ldp-20150226/#h-ldpc-http_post:
+  // > a containment triple MUST be added to the state of the LDPC whose subject is the LDPC URI,
+  // > whose predicate is ldp:contains and whose object is the URI for the newly created document
+  return container !== null ? getIriAll(container, ldp.contains) : [];
 }
 
 /**
