@@ -4,6 +4,11 @@ developer-tools/api/javascript/solid-client/classes/_thing_thing_.thingexpectede
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validthingurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validthingurlexpectederror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validvalueurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validvalueurlexpectederror.html
+developer-tools/api/javascript/solid-client/classes/resource_resource.fetcherror.html -> developer-tools/api/javascript/solid-client/classes/resource/resource.fetcherror.html
+developer-tools/api/javascript/solid-client/classes/thing_thing.thingexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.thingexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validpropertyurlexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing_thing.validthingurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validthingurlexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing_thing.validvalueurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validvalueurlexpectederror.html
 developer-tools/api/javascript/solid-client/modules/_acl_acl_.html -> developer-tools/api/javascript/solid-client/modules/acl_acl.html
 developer-tools/api/javascript/solid-client/modules/_acl_agent_.html -> developer-tools/api/javascript/solid-client/modules/acl_agent.html
 developer-tools/api/javascript/solid-client/modules/_acl_class_.html -> developer-tools/api/javascript/solid-client/modules/acl_class.html
@@ -14,6 +19,7 @@ developer-tools/api/javascript/solid-client/modules/_resource_file_.html -> deve
 developer-tools/api/javascript/solid-client/modules/_resource_mock_.html -> developer-tools/api/javascript/solid-client/modules/resource_mock.html
 developer-tools/api/javascript/solid-client/modules/_resource_resource_.html -> developer-tools/api/javascript/solid-client/modules/resource_resource.html
 developer-tools/api/javascript/solid-client/modules/_resource_soliddataset_.html -> developer-tools/api/javascript/solid-client/modules/resource_soliddataset.html
+developer-tools/api/javascript/solid-client/modules/_resource_nonrdfdata_.html -> developer-tools/api/javascript/solid-client/modules/resource_file.html
 developer-tools/api/javascript/solid-client/modules/_thing_add_.html -> developer-tools/api/javascript/solid-client/modules/thing_add.html
 developer-tools/api/javascript/solid-client/modules/_thing_get_.html -> developer-tools/api/javascript/solid-client/modules/thing_get.html
 developer-tools/api/javascript/solid-client/modules/_thing_mock_.html -> developer-tools/api/javascript/solid-client/modules/thing_mock.html
