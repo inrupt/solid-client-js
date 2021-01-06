@@ -10,6 +10,6 @@ solid-client API
    :titlesonly:
 
    *
-   /modules/*
-   /classes/*
+   /modules/**
+   /classes/**
 
