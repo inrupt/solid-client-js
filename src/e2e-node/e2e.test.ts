@@ -121,12 +121,7 @@ describe.each([
     expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
   });
 
-  // FIXME: An NSS bug prevents it from understand our changing of booleans,
-  // and thus causes this test to fail.
-  // Once the bug is fixed, it can be enabled for NSS again.
-  // See https://github.com/solid/node-solid-server/issues/1468.
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip("can read and write booleans", async () => {
+  it("can read and write booleans", async () => {
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
