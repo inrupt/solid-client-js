@@ -38,7 +38,7 @@ migrate: clean
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/api/modules/ $(SOURCECOPYDIR)/modules/
 	cp -R $(SOURCEDIR)/api/classes/ $(SOURCECOPYDIR)/classes/
-	cp -R $(SOURCEDIR)/api/README.md $(SOURCECOPYDIR)/
+	cp -R $(SOURCEDIR)/api/index.md $(SOURCECOPYDIR)/
 	
 html: Makefile migrate
 

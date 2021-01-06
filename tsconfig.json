@@ -111,6 +111,7 @@
     ],
     "theme": "markdown",
     "readme": "none",
+    "entryDocument": "index.md",
   },
   "include": ["src/**/*.ts", ".eslintrc.js"],
   "exclude": [
