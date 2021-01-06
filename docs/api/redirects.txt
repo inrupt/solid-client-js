@@ -1,4 +1,4 @@
-developer-tools/api/javascript/solid-client/modules/_resource_nonrdfdata_.html  ->  developer-tools/api/javascript/solid-client/modules/_resource_file_.html
+developer-tools/api/javascript/solid-client/README.html ->  developer-tools/api/javascript/solid-client/index.html
 developer-tools/api/javascript/solid-client/classes/_resource_resource_.fetcherror.html -> developer-tools/api/javascript/solid-client/classes/resource_resource.fetcherror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.thingexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.thingexpectederror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html
