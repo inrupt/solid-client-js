@@ -653,7 +653,7 @@ export async function deleteContainer(
  *
  * @param solidDataset The container from which to fetch all contained Resource URLs.
  * @returns A list of URLs, each of which points to a contained Resource of the given SolidDataset.
- * @since Not released yet.
+ * @since 1.3.0
  */
 
 export function getContainedResourceUrlAll(
