@@ -14,7 +14,7 @@ The following sections document changes that have been released already:
 
 - If you know the content type of a file to upload via `overwriteFile` or `saveFileInContainer`,
   you can now manually set it using the `contentType` property in their `options` parameters.
-- 'getContainedResourceUrlAll': a function that returns the URLs for each resource contained in
+- `getContainedResourceUrlAll`: a function that returns the URLs for each resource contained in
   the given Container.
 - FetchError now contains the server response (`error.response`).
 
