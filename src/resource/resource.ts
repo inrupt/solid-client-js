@@ -181,6 +181,7 @@ export function isPodOwner(
  * @since 1.2.0
  */
 export class FetchError extends SolidClientError {
+  /** @since 1.3.0 */
   public readonly response: Response & { ok: false };
 
   get statusCode(): number {
