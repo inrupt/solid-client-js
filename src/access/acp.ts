@@ -21,17 +21,25 @@
 
 import { WithAccessibleAcr } from "../acp/acp";
 import { getPolicyUrlAll } from "../acp/control";
+import { internal_getAcr } from "../acp/control.internal";
+import { getRuleAll } from "../acp/rule";
 import { WithResourceInfo } from "../interfaces";
 import { getSourceIri } from "../resource/resource";
+import { asUrl } from "../thing/thing";
 
 export function internal_hasInaccessiblePolicies(
   resource: WithAccessibleAcr & WithResourceInfo
 ): boolean {
   const sourceIri = getSourceIri(resource);
   const policyUrls = getPolicyUrlAll(resource);
+  const ruleUrls = getRuleAll(internal_getAcr(resource)).map((rule) =>
+    asUrl(rule)
+  );
+  // If either a policy or a rule are not defined in the ACR, return false
   return (
-    policyUrls.findIndex(
-      (url) => url.substring(0, sourceIri.length) !== sourceIri
-    ) === -1
+    policyUrls
+      .concat(ruleUrls)
+      .findIndex((url) => url.substring(0, sourceIri.length) !== sourceIri) !==
+    -1
   );
 }
