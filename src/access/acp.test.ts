@@ -154,6 +154,20 @@ describe("hasInaccessiblePolicies", () => {
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
   });
 
+  it("returns true if the ACR references an active ACR Policy in a different Resource", () => {
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(
+      plainResource,
+      mockAcr("https://some.pod/resource", {
+        policies: [],
+        memberAcrPolicies: [],
+        acrPolicies: ["https://some.pod/anoter-resource?ext=acr#policy"],
+        memberPolicies: [],
+      })
+    );
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+  });
+
   it("returns false if the ACR references an inactive Policy in a different Resource", () => {
     const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
     const resourceWithAcr = addMockAcrTo(
@@ -209,9 +223,9 @@ describe("hasInaccessiblePolicies", () => {
       mockAcr(
         "https://some.pod/resource",
         {
-          policies: ["https://some.pod/resource?ext=acr#policy"],
+          policies: [],
           memberAcrPolicies: [],
-          acrPolicies: [],
+          acrPolicies: ["https://some.pod/resource?ext=acr#policy"],
           memberPolicies: [],
         },
         {

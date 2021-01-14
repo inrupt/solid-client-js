@@ -20,7 +20,7 @@
  */
 
 import { WithAccessibleAcr } from "../acp/acp";
-import { getPolicyUrlAll } from "../acp/control";
+import { getAcrPolicyUrlAll, getPolicyUrlAll } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
 import { getPolicyAll } from "../acp/policy";
 import { getRuleAll } from "../acp/rule";
@@ -35,10 +35,16 @@ export function internal_hasInaccessiblePolicies(
   resource: WithAccessibleAcr & WithResourceInfo
 ): boolean {
   const sourceIri = getSourceIri(resource);
-  const policyUrls = getPolicyUrlAll(resource);
+
+  // Collect all policies that apply to the resource or its ACR (aka active)
+  const activePolicyUrls = getPolicyUrlAll(resource);
+  getAcrPolicyUrlAll(resource).forEach((policyUrl) => {
+    activePolicyUrls.push(policyUrl);
+  });
+
+  // Collect all the rules referenced by the active policies.
   const ruleUrls: string[] = [];
-  policyUrls.forEach((policyUrl) => {
-    // Collect all the rules referenced by the active policies.
+  activePolicyUrls.forEach((policyUrl) => {
     const acr = internal_getAcr(resource);
     const policyThing = getThing(acr, policyUrl);
     if (policyThing !== null) {
@@ -53,9 +59,9 @@ export function internal_hasInaccessiblePolicies(
       );
     }
   });
-  // If either a policy or a rule are not defined in the ACR, return false
+  // If either an active policy or rule are not defined in the ACR, return false
   return (
-    policyUrls
+    activePolicyUrls
       .concat(ruleUrls)
       .findIndex((url) => url.substring(0, sourceIri.length) !== sourceIri) !==
     -1
