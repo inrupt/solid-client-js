@@ -22,19 +22,37 @@
 import { WithAccessibleAcr } from "../acp/acp";
 import { getPolicyUrlAll } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
+import { getPolicyAll } from "../acp/policy";
 import { getRuleAll } from "../acp/rule";
+import { acp } from "../constants";
 import { WithResourceInfo } from "../interfaces";
 import { getSourceIri } from "../resource/resource";
-import { asUrl } from "../thing/thing";
+import { getSolidDataset } from "../resource/solidDataset";
+import { getUrlAll } from "../thing/get";
+import { asUrl, getThing } from "../thing/thing";
 
 export function internal_hasInaccessiblePolicies(
   resource: WithAccessibleAcr & WithResourceInfo
 ): boolean {
   const sourceIri = getSourceIri(resource);
   const policyUrls = getPolicyUrlAll(resource);
-  const ruleUrls = getRuleAll(internal_getAcr(resource)).map((rule) =>
-    asUrl(rule)
-  );
+  const ruleUrls: string[] = [];
+  policyUrls.forEach((policyUrl) => {
+    // Collect all the rules referenced by the active policies.
+    const acr = internal_getAcr(resource);
+    const policyThing = getThing(acr, policyUrl);
+    if (policyThing !== null) {
+      getUrlAll(policyThing, acp.anyOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+      getUrlAll(policyThing, acp.allOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+      getUrlAll(policyThing, acp.noneOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+    }
+  });
   // If either a policy or a rule are not defined in the ACR, return false
   return (
     policyUrls
