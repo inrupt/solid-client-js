@@ -123,7 +123,7 @@ describe("hasInaccessiblePolicies", () => {
         memberPolicies: [],
       })
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns false if the ACR only contains references to Policies within the ACR", () => {
@@ -137,7 +137,7 @@ describe("hasInaccessiblePolicies", () => {
         memberPolicies: [],
       })
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns true if the ACR references an active Policy in a different Resource", () => {
@@ -151,7 +151,7 @@ describe("hasInaccessiblePolicies", () => {
         memberPolicies: [],
       })
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns true if the ACR references an active ACR Policy in a different Resource", () => {
@@ -165,7 +165,7 @@ describe("hasInaccessiblePolicies", () => {
         memberPolicies: [],
       })
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns false if the ACR references an inactive Policy in a different Resource", () => {
@@ -189,7 +189,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns false if the ACR only contains reference to active Rules in the same Resource", () => {
@@ -213,7 +213,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns true if the ACR references an active allOf Rule in a different Resource", () => {
@@ -237,7 +237,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns true if the ACR references an active anyOf Rule in a different Resource", () => {
@@ -261,7 +261,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns true if the ACR references an active noneOf Rule in a different Resource", () => {
@@ -285,7 +285,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(true);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns false if the ACR references an inactive allOf Rule in a different Resource", () => {
@@ -311,7 +311,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns false if the ACR references an inactive anyOf Rule in a different Resource", () => {
@@ -337,7 +337,7 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns false if the ACR references an inactive noneOf Rule in a different Resource", () => {
@@ -363,6 +363,6 @@ describe("hasInaccessiblePolicies", () => {
         }
       )
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toEqual(false);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 });
