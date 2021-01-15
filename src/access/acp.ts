@@ -37,10 +37,9 @@ export function internal_hasInaccessiblePolicies(
   const sourceIri = getSourceIri(resource);
 
   // Collect all policies that apply to the resource or its ACR (aka active)
-  const activePolicyUrls = getPolicyUrlAll(resource);
-  getAcrPolicyUrlAll(resource).forEach((policyUrl) => {
-    activePolicyUrls.push(policyUrl);
-  });
+  const activePolicyUrls = getPolicyUrlAll(resource).concat(
+    getAcrPolicyUrlAll(resource)
+  );
 
   // Collect all the rules referenced by the active policies.
   const ruleUrls: string[] = [];
