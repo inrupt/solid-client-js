@@ -42,18 +42,22 @@ export function internal_hasInaccessiblePolicies(
   );
 
   // Collect all the rules referenced by the active policies.
-  const ruleUrls: string[] = activePolicyUrls
-    .map((policyUrl) => {
-      const acr = internal_getAcr(resource);
-      const policyThing = getThing(acr, policyUrl);
-      if (policyThing === null) {
-        return [];
-      }
-      return getUrlAll(policyThing, acp.anyOf)
-        .concat(getUrlAll(policyThing, acp.allOf))
-        .concat(getUrlAll(policyThing, acp.noneOf));
-    })
-    .flat();
+  const ruleUrls: string[] = [];
+  activePolicyUrls.forEach((policyUrl) => {
+    const acr = internal_getAcr(resource);
+    const policyThing = getThing(acr, policyUrl);
+    if (policyThing !== null) {
+      getUrlAll(policyThing, acp.anyOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+      getUrlAll(policyThing, acp.allOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+      getUrlAll(policyThing, acp.noneOf).forEach((activeRuleUrl) =>
+        ruleUrls.push(activeRuleUrl)
+      );
+    }
+  });
   // If either an active policy or rule are not defined in the ACR, return false
   return (
     activePolicyUrls
