@@ -145,7 +145,7 @@ describe("hasInaccessiblePolicies", () => {
     const resourceWithAcr = addMockAcrTo(
       plainResource,
       mockAcr("https://some.pod/resource", {
-        policies: ["https://some.pod/anoter-resource?ext=acr#policy"],
+        policies: ["https://some.pod/another-resource?ext=acr#policy"],
         memberAcrPolicies: [],
         acrPolicies: [],
         memberPolicies: [],
@@ -161,7 +161,7 @@ describe("hasInaccessiblePolicies", () => {
       mockAcr("https://some.pod/resource", {
         policies: [],
         memberAcrPolicies: [],
-        acrPolicies: ["https://some.pod/anoter-resource?ext=acr#policy"],
+        acrPolicies: ["https://some.pod/another-resource?ext=acr#policy"],
         memberPolicies: [],
       })
     );
