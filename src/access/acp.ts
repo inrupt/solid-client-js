@@ -325,3 +325,15 @@ function ruleAppliesTo(
 ): boolean {
   return rule !== null && getIriAll(rule, actorRelation).includes(actor);
 }
+
+export async function getAgentAccessAll(
+  resource: WithResourceInfo
+): Promise<Record<string, Access>> {
+  throw new Error("Unimplemented");
+}
+
+export async function getGroupAccessAll(
+  resource: WithResourceInfo
+): Promise<Record<string, Access>> {
+  throw new Error("Unimplemented");
+}

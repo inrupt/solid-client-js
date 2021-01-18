@@ -3088,3 +3088,38 @@ describe("getActorAccess", () => {
     });
   });
 });
+
+describe("getAgentAccessAll", () => {
+  // it("returns an empty list if no individual agent is given access", async () => {
+  //   const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+  //   const resourceWithAcr = addMockAcrTo(
+  //     plainResource,
+  //     mockAcr("https://some.pod/resource")
+  //   );
+  //   expect(getAgentAccessAll(resourceWithAcr)).toBe({});
+  // });
+
+  // it("returns access for all the agents that are individually given access", () => {
+  //   const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+  //   const resourceWithAcr = addMockAcrTo(
+  //     plainResource,
+  //     mockAcr("https://some.pod/resource", {
+  //       policies: ["https://some.pod/resource.acr#policy"],
+  //       acrPolicies: [],
+  //       memberAcrPolicies: [],
+  //       memberPolicies: []
+  //     })
+  //   );
+  //   expect(getAgentAccessAll(resourceWithAcr)).toBe({});
+  // });
+
+  it.todo("does not return access given to groups");
+  it.todo("does not return access given to the general public");
+});
+
+describe("getGroupAccessAll", () => {
+  it.todo("returns an empty list if no group is given access");
+  it.todo("returns access for all the groups that are given access");
+  it.todo("does not return access given to individual agents");
+  it.todo("does not return access given to the general public");
+});
