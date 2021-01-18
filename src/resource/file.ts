@@ -37,8 +37,18 @@ import {
   internal_parseResourceInfo,
 } from "./resource.internal";
 
-type GetFileOptions = {
+/**
+ * Options when fetching a file from a Pod.
+ *
+ * Available options:
+ * - `fetch`: A custom `fetch` function with the same signature as
+ *   [`window.fetch`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
+ *   This will be used to execute the actual requests. This option can be used to, for example,
+ *   attach credentials to requests that need authentication.
+ */
+export type GetFileOptions = {
   fetch: typeof window.fetch;
+  /** @internal */
   init: UploadRequestInit;
 };
 
@@ -124,7 +134,20 @@ export async function deleteFile(
   }
 }
 
+/**
+ * ```{note} This type is still experimental and subject to change, even in a
+ * non-major release.
+ * ```
+ * Options available when saving a file (extends the options available when
+ * writing a file: [[WriteFileOptions]]).
+ *
+ */
 type SaveFileOptions = WriteFileOptions & {
+  /**
+   * This option can be used as a hint to the server in how to name a new file.
+   * Note: the server is still free to choose a completely different, unrelated
+   * name if it chooses.
+   */
   slug?: string;
 };
 
@@ -134,6 +157,14 @@ type SaveFileOptions = WriteFileOptions & {
  *
  * Saves a file in a folder associated with the given URL. The final filename may or may
  * not be the given `slug`.
+ *
+ * If you know the [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)
+ * of the file you are attempting to save, then you should provide this in the
+ * `options` parameter. For example, if you know your file is a JPEG image,
+ * then you should provide the media type `image/jpeg`. If you don't know, or
+ * don't provide a media type, a default type of `application/octet-stream` will
+ * be applied (which indicates that the file should be regarded as pure binary
+ * data).
  *
  * The Container at the given URL should already exist; if it does not, the returned Promise will
  * be rejected. You can initialise it first using [[createContainerAt]], or directly save the file
@@ -191,7 +222,22 @@ export async function saveFileInContainer<FileExt extends File | Buffer>(
   return Object.assign(blobClone, resourceInfo);
 }
 
+/**
+ * ```{note} This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Options available when writing a file.
+ */
 export type WriteFileOptions = GetFileOptions & {
+  /**
+   * Allows a file's content type to be provided explicitly, if known. Value is
+   * expected to be a valid
+   * [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type).
+   * For example, if you know your file is a JPEG image, then you should provide
+   * the media type `image/jpeg`. If you don't know, or don't provide a media
+   * type, a default type of `application/octet-stream` will be applied (which
+   * indicates that the file should be regarded as pure binary data).
+   */
   contentType: string;
 };
 
@@ -206,9 +252,17 @@ export type WriteFileOptions = GetFileOptions & {
  * https://example.pod/container/resource and https://example.pod/container/ does not exist yet,
  * it will exist after this function resolves successfully.
  *
+ * If you know the [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)
+ * of the file you are attempting to write, then you should provide this in the
+ * `options` parameter. For example, if you know your file is a JPEG image,
+ * then you should provide the media type `image/jpeg`. If you don't know, or
+ * don't provide a media type, a default type of `application/octet-stream` will
+ * be applied (which indicates that the file should be regarded as pure binary
+ * data).
+ *
  * @param fileUrl The URL where the file is saved.
  * @param file The file to be written.
- * @param options Additional parameters for file creation (e.g. a slug).
+ * @param options Additional parameters for file creation (e.g. a slug, or media type).
  */
 export async function overwriteFile<FileExt extends File | Buffer>(
   fileUrl: Url | UrlString,
@@ -294,7 +348,7 @@ export function flattenHeaders(
  * @param fileUrl The URL where the file is saved
  * @param file The file to be written
  * @param method The HTTP method
- * @param options Additional parameters for file creation (e.g. a slug)
+ * @param options Additional parameters for file creation (e.g. a slug, or media type)
  */
 async function writeFile(
   targetUrl: UrlString,
