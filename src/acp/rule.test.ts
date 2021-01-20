@@ -24,6 +24,7 @@ import {
   asIri,
   createThing,
   getThing,
+  getThingAll,
   isThing,
   setThing,
 } from "../thing/thing";
@@ -60,6 +61,7 @@ import {
   hasCreator,
   setCreator,
   ruleAsMarkdown,
+  removeRule,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
@@ -765,6 +767,16 @@ describe("getRuleAll", () => {
     const newDataset = setThing(dataset, anotherRule);
     result = getRuleAll(newDataset);
     expect(result).toHaveLength(2);
+  });
+});
+
+describe("removeRule", () => {
+  it("removes the Rule from the given empty Dataset", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const dataset = setThing(createSolidDataset(), rule);
+
+    const updatedDataset = removeRule(dataset, MOCKED_RULE_IRI);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 });
 

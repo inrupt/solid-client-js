@@ -38,6 +38,7 @@ import {
   createThing,
   getThing,
   getThingAll,
+  removeThing,
   setThing,
 } from "../thing/thing";
 import { Policy } from "./policy";
@@ -327,6 +328,23 @@ export function getRule(
 export function getRuleAll(ruleResource: SolidDataset): Rule[] {
   const things = getThingAll(ruleResource);
   return things.filter(isRule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Removes the given [[Rule]] from the given [[SolidDataset]].
+ *
+ * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @returns A new RuleDataset equal to the given Rule Resource, but without the given Rule.
+ */
+export function removeRule<Dataset extends SolidDataset>(
+  ruleResource: Dataset,
+  rule: Url | UrlString | Rule
+): Dataset {
+  return removeThing(ruleResource, rule);
 }
 
 /**
