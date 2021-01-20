@@ -20,349 +20,388 @@
  */
 
 import { describe, it } from "@jest/globals";
+import { WithAccessibleAcr } from "../acp/acp";
 import { AccessControlResource } from "../acp/control";
-import { addMockAcrTo, mockAcrFor } from "../acp/mock";
-import { createPolicy, setPolicy } from "../acp/policy";
-import { acp, rdf } from "../constants";
-import { UrlString, WithServerResourceInfo } from "../interfaces";
+import { internal_createControl } from "../acp/control.internal";
+import { addMockAcrTo } from "../acp/mock";
+import { createPolicy, removePolicy, setPolicy } from "../acp/policy";
+import {
+  addForbiddenRuleUrl,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+  createRule,
+  Rule,
+} from "../acp/rule";
+import { acp } from "../constants";
+import {
+  IriString,
+  UrlString,
+  WithResourceInfo,
+  WithServerResourceInfo,
+} from "../interfaces";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { createSolidDataset } from "../resource/solidDataset";
-import { addIri } from "../thing/add";
-import { createThing, setThing } from "../thing/thing";
+import { addIri, addUrl } from "../thing/add";
+import { setThing } from "../thing/thing";
 import { internal_hasInaccessiblePolicies } from "./acp";
 
-type Policy = {
-  policies: string[];
-  memberPolicies: string[];
-  acrPolicies: string[];
-  memberAcrPolicies: string[];
+// Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
+type MockRule = Partial<
+  Record<typeof acp.agent | typeof acp.group, UrlString[]>
+>;
+
+type MockPolicy = {
+  allOf: Record<UrlString, MockRule>;
+  anyOf: Record<UrlString, MockRule>;
+  noneOf: Record<UrlString, MockRule>;
 };
 
-type Rule = {
-  allOf: string[];
-  anyOf: string[];
-  noneOf: string[];
+type MockPolicies = {
+  policies: Record<UrlString, Partial<MockPolicy>>;
+  memberPolicies: Record<UrlString, Partial<MockPolicy>>;
+  acrPolicies: Record<UrlString, Partial<MockPolicy>>;
+  memberAcrPolicies: Record<UrlString, Partial<MockPolicy>>;
 };
 
-const defaultMockPolicies: Policy = {
-  policies: ["https://some.pod/policies#policy"],
-  memberPolicies: ["https://some.pod/policies#memberPolicy"],
-  acrPolicies: [] as string[],
-  memberAcrPolicies: [] as string[],
+const defaultAcrUrl = "https://some.pod/policies";
+const defaultMockPolicy: MockPolicy = {
+  allOf: {},
+  anyOf: {},
+  noneOf: {},
+};
+const defaultMockPolicies: MockPolicies = {
+  policies: { [`${defaultAcrUrl}"#policy`]: defaultMockPolicy },
+  memberPolicies: {},
+  acrPolicies: {},
+  memberAcrPolicies: {},
 };
 
 function mockAcr(
   accessTo: UrlString,
-  policies: Policy = defaultMockPolicies,
-  rules?: Record<string, Rule>
+  mockAcrUrl = defaultAcrUrl,
+  mockPolicies: Partial<MockPolicies> = {}
 ): AccessControlResource {
-  let control = createThing({ name: "access-control" });
-  control = addIri(control, rdf.type, acp.AccessControl);
-  policies.policies.forEach((policyUrl) => {
-    control = addIri(control, acp.apply, policyUrl);
-  });
-  policies.memberPolicies.forEach((policyUrl) => {
-    control = addIri(control, acp.applyMembers, policyUrl);
-  });
-
-  const acrUrl = accessTo + "?ext=acr";
-  let acrThing = createThing({ url: acrUrl });
-  policies.acrPolicies.forEach((policyUrl) => {
-    acrThing = addIri(acrThing, acp.access, policyUrl);
-  });
-  policies.memberAcrPolicies.forEach((policyUrl) => {
-    acrThing = addIri(acrThing, acp.accessMembers, policyUrl);
-  });
+  const allMockPolicies = {
+    ...defaultMockPolicies,
+    ...mockPolicies,
+  };
 
   let acr: AccessControlResource & WithServerResourceInfo = Object.assign(
-    mockSolidDatasetFrom(acrUrl),
+    mockSolidDatasetFrom(mockAcrUrl),
     {
       accessTo: accessTo,
     }
   );
-  acr = setThing(acr, control);
-  acr = setThing(acr, acrThing);
+  let control = internal_createControl({ url: mockAcrUrl });
 
-  if (rules !== undefined) {
-    Object.keys(rules).forEach((policyUrl) => {
-      let policyThing = createThing({ url: policyUrl });
-      rules[policyUrl].allOf.forEach((allOfUrl) => {
-        policyThing = addIri(policyThing, acp.allOf, allOfUrl);
-        let ruleThing = createThing({ url: allOfUrl });
-        ruleThing = addIri(ruleThing, rdf.type, acp.Rule);
-        acr = setThing(acr, ruleThing);
+  function getRule(mockRuleUrl: UrlString, mockRule: MockRule): Rule {
+    let rule = createRule(mockRuleUrl);
+    Object.entries(mockRule).forEach(([mockActorRelation, mockActors]) => {
+      mockActors?.forEach((mockActor) => {
+        rule = addIri(rule, mockActorRelation, mockActor);
       });
-      rules[policyUrl].anyOf.forEach((anyOfUrl) => {
-        policyThing = addIri(policyThing, acp.anyOf, anyOfUrl);
-        let ruleThing = createThing({ url: anyOfUrl });
-        ruleThing = addIri(ruleThing, rdf.type, acp.Rule);
-        acr = setThing(acr, ruleThing);
-      });
-      rules[policyUrl].noneOf.forEach((noneOfUrl) => {
-        policyThing = addIri(policyThing, acp.noneOf, noneOfUrl);
-        let ruleThing = createThing({ url: noneOfUrl });
-        ruleThing = addIri(ruleThing, rdf.type, acp.Rule);
-        acr = setThing(acr, ruleThing);
-      });
-      acr = setThing(acr, policyThing);
     });
+    return rule;
+  }
+  function addPolicy(
+    policyType: IriString,
+    policyUrl: UrlString,
+    mockPolicy: Partial<MockPolicy>
+  ) {
+    let policy = createPolicy(policyUrl);
+    const allOfRules = mockPolicy.allOf
+      ? Object.entries(mockPolicy.allOf).map(([mockRuleUrl, mockRule]) =>
+          getRule(mockRuleUrl, mockRule)
+        )
+      : [];
+    const anyOfRules = mockPolicy.anyOf
+      ? Object.entries(mockPolicy.anyOf).map(([mockRuleUrl, mockRule]) =>
+          getRule(mockRuleUrl, mockRule)
+        )
+      : [];
+    const noneOfRules = mockPolicy.noneOf
+      ? Object.entries(mockPolicy.noneOf).map(([mockRuleUrl, mockRule]) =>
+          getRule(mockRuleUrl, mockRule)
+        )
+      : [];
+    acr = allOfRules.reduce(setThing, acr);
+    acr = anyOfRules.reduce(setThing, acr);
+    acr = noneOfRules.reduce(setThing, acr);
+
+    policy = allOfRules.reduce(
+      (policy, rule) => addIri(policy, acp.allOf, rule),
+      policy
+    );
+    policy = anyOfRules.reduce(
+      (policy, rule) => addIri(policy, acp.anyOf, rule),
+      policy
+    );
+    policy = noneOfRules.reduce(
+      (policy, rule) => addIri(policy, acp.noneOf, rule),
+      policy
+    );
+    acr = setThing(acr, policy);
+    control = addUrl(control, policyType, policy);
   }
 
+  Object.entries(allMockPolicies.policies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      addPolicy(acp.apply, policyUrl, mockPolicy);
+    }
+  );
+  Object.entries(allMockPolicies.memberPolicies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      addPolicy(acp.applyMembers, policyUrl, mockPolicy);
+    }
+  );
+  Object.entries(allMockPolicies.acrPolicies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      addPolicy(acp.access, policyUrl, mockPolicy);
+    }
+  );
+  Object.entries(allMockPolicies.memberAcrPolicies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      addPolicy(acp.accessMembers, policyUrl, mockPolicy);
+    }
+  );
+
+  acr = setThing(acr, control);
+
   return acr;
+}
+function mockResourceWithAcr(
+  accessTo: UrlString,
+  mockAcrUrl = defaultAcrUrl,
+  mockPolicies: Partial<MockPolicies> = {}
+): WithResourceInfo & WithAccessibleAcr {
+  const acr = mockAcr(accessTo, mockAcrUrl, mockPolicies);
+
+  const plainResource = mockSolidDatasetFrom(accessTo);
+  return addMockAcrTo(plainResource, acr);
 }
 
 describe("hasInaccessiblePolicies", () => {
   it("returns false if the ACR contains no reference to either Policies or Rules", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr("https://some.pod/resource", {
-        policies: [],
-        memberAcrPolicies: [],
-        acrPolicies: [],
-        memberPolicies: [],
-      })
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/policies",
+      {
+        policies: {},
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
   it("returns false if the ACR only contains references to Policies within the ACR", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr("https://some.pod/resource", {
-        policies: ["https://some.pod/resource?ext=acr#policy"],
-        memberAcrPolicies: [],
-        acrPolicies: [],
-        memberPolicies: [],
-      })
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: { "https://some.pod/resource?ext=acr#policy": {} },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
-  it("returns true if the ACR references an active Policy in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr("https://some.pod/resource", {
-        policies: ["https://some.pod/another-resource?ext=acr#policy"],
-        memberAcrPolicies: [],
-        acrPolicies: [],
-        memberPolicies: [],
-      })
+  it("returns true if the ACR references a Policy in a different Resource", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: { "https://some.pod/another-resource?ext=acr#policy": {} },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
-  it("returns true if the ACR references an active ACR Policy in a different Resource", () => {
+  it("returns true if the ACR references a Policy in a different Resource, and the Policy is not defined in the ACR itself too", () => {
     const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr("https://some.pod/resource", {
-        policies: [],
-        memberAcrPolicies: [],
-        acrPolicies: ["https://some.pod/another-resource?ext=acr#policy"],
-        memberPolicies: [],
-      })
+    let mockedAcr = mockAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: { "https://some.pod/another-resource?ext=acr#policy": {} },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
+    );
+    mockedAcr = removePolicy(
+      mockedAcr,
+      "https://some.pod/another-resource?ext=acr#policy"
+    );
+    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
+  });
+
+  it("returns true if the ACR references an ACR Policy in a different Resource", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {},
+        memberAcrPolicies: {},
+        acrPolicies: { "https://some.pod/another-resource?ext=acr#policy": {} },
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
-  it("returns false if the ACR references an inactive Policy in a different Resource", () => {
+  it("returns false if the ACR includes an unreferenced Policy with a different Resource's URL", () => {
     const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: [],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
-          "https://some.pod/some-other-resource?ext=acr#inactive-policy": {
-            allOf: [],
-            anyOf: [],
-            noneOf: [],
+    const policyInOtherResource = createPolicy(
+      "https://some.pod/some-other-resource?ext=acr#inactive-policy"
+    );
+    let mockedAcr = mockAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      { policies: {} }
+    );
+    mockedAcr = setPolicy(mockedAcr, policyInOtherResource);
+    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
+  });
+
+  it("returns false if the ACR only references Rules in the same Resource", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {},
+            },
           },
-        }
-      )
+        },
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
-  it("returns false if the ACR only contains reference to active Rules in the same Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: ["https://some.pod/resource?ext=acr#policy"],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
+  it("returns true if the ACR references an allOf Rule in a different Resource", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {},
+        memberAcrPolicies: {},
+        acrPolicies: {
           "https://some.pod/resource?ext=acr#policy": {
-            allOf: ["https://some.pod/resource?ext=acr#rule"],
-            anyOf: [],
-            noneOf: [],
+            allOf: {
+              "https://some.pod/other-rule-resource#rule": {},
+            },
           },
-        }
-      )
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-
-  it("returns true if the ACR references an active allOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: [],
-          memberAcrPolicies: [],
-          acrPolicies: ["https://some.pod/resource?ext=acr#policy"],
-          memberPolicies: [],
         },
-        {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: ["https://some.pod/other-rule-resource#rule"],
-            anyOf: [],
-            noneOf: [],
-          },
-        }
-      )
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
-  it("returns true if the ACR references an active anyOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: ["https://some.pod/resource?ext=acr#policy"],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
+  it("returns true if the ACR references an anyOf Rule in a different Resource", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {},
+        memberAcrPolicies: {},
+        acrPolicies: {
           "https://some.pod/resource?ext=acr#policy": {
-            allOf: [],
-            anyOf: ["https://some.pod/other-rule-resource#rule"],
-            noneOf: [],
+            anyOf: {
+              "https://some.pod/other-rule-resource#rule": {},
+            },
           },
-        }
-      )
+        },
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
   it("returns true if the ACR references an active noneOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: ["https://some.pod/resource?ext=acr#policy"],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {},
+        memberAcrPolicies: {},
+        acrPolicies: {
           "https://some.pod/resource?ext=acr#policy": {
-            allOf: [],
-            anyOf: [],
-            noneOf: ["https://some.pod/other-rule-resource#rule"],
+            noneOf: {
+              "https://some.pod/other-rule-resource#rule": {},
+            },
           },
-        }
-      )
+        },
+        memberPolicies: {},
+      }
     );
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
   });
 
-  it("returns false if the ACR references an inactive allOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: [],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
-          "https://some.pod/some-other-resource?ext=acr#inactive-policy": {
-            allOf: [
-              "https://some.pod/some-other-resource?ext=acr#inactive-rule",
-            ],
-            anyOf: [],
-            noneOf: [],
-          },
-        }
-      )
+  it("returns false if the ACR includes an unreferenced Policy that references an allOf Rule in a different Resource", () => {
+    let policyReferencingRuleInDifferentResource = createPolicy(
+      "https://some.pod/resource?ext=acr#policy"
     );
+    policyReferencingRuleInDifferentResource = addRequiredRuleUrl(
+      policyReferencingRuleInDifferentResource,
+      "https://some.pod/other-resource#rule"
+    );
+    const mockedAcr = setPolicy(
+      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
+        policies: {},
+      }),
+      policyReferencingRuleInDifferentResource
+    );
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
-  it("returns false if the ACR references an inactive anyOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: [],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
-          "https://some.pod/some-other-resource?ext=acr#inactive-policy": {
-            allOf: [],
-            anyOf: [
-              "https://some.pod/some-other-resource?ext=acr#inactive-rule",
-            ],
-            noneOf: [],
-          },
-        }
-      )
+  it("returns false if the ACR includes an unreferenced Policy that references an anyOf Rule in a different Resource", () => {
+    let policyReferencingRuleInDifferentResource = createPolicy(
+      "https://some.pod/resource?ext=acr#policy"
     );
+    policyReferencingRuleInDifferentResource = addOptionalRuleUrl(
+      policyReferencingRuleInDifferentResource,
+      "https://some.pod/other-resource#rule"
+    );
+    const mockedAcr = setPolicy(
+      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
+        policies: {},
+      }),
+      policyReferencingRuleInDifferentResource
+    );
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 
-  it("returns false if the ACR references an inactive noneOf Rule in a different Resource", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr(
-        "https://some.pod/resource",
-        {
-          policies: [],
-          memberAcrPolicies: [],
-          acrPolicies: [],
-          memberPolicies: [],
-        },
-        {
-          "https://some.pod/some-other-resource?ext=acr#inactive-policy": {
-            allOf: [],
-            anyOf: [],
-            noneOf: [
-              "https://some.pod/some-other-resource?ext=acr#inactive-rule",
-            ],
-          },
-        }
-      )
+  it("returns false if the ACR includes an unreferenced Policy that references a noneOf Rule in a different Resource", () => {
+    let policyReferencingRuleInDifferentResource = createPolicy(
+      "https://some.pod/resource?ext=acr#policy"
     );
+    policyReferencingRuleInDifferentResource = addForbiddenRuleUrl(
+      policyReferencingRuleInDifferentResource,
+      "https://some.pod/other-resource#rule"
+    );
+    const mockedAcr = setPolicy(
+      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
+        policies: {},
+      }),
+      policyReferencingRuleInDifferentResource
+    );
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
     expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
   });
 });
