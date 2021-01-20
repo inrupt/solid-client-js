@@ -340,7 +340,10 @@ export function getRuleAll(ruleResource: SolidDataset): Rule[] {
  * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
  * @returns A new RuleDataset equal to the given Rule Resource, but with the given Rule.
  */
-export function setRule(ruleResource: SolidDataset, rule: Rule): SolidDataset {
+export function setRule<Dataset extends SolidDataset>(
+  ruleResource: Dataset,
+  rule: Rule
+): Dataset {
   return setThing(ruleResource, rule);
 }
 
