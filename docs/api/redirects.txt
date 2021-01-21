@@ -4,11 +4,6 @@ developer-tools/api/javascript/solid-client/classes/_thing_thing_.thingexpectede
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validthingurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validthingurlexpectederror.html
 developer-tools/api/javascript/solid-client/classes/_thing_thing_.validvalueurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validvalueurlexpectederror.html
-developer-tools/api/javascript/solid-client/classes/resource_resource.fetcherror.html -> developer-tools/api/javascript/solid-client/classes/resource/resource.fetcherror.html
-developer-tools/api/javascript/solid-client/classes/thing_thing.thingexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.thingexpectederror.html
-developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validpropertyurlexpectederror.html
-developer-tools/api/javascript/solid-client/classes/thing_thing.validthingurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validthingurlexpectederror.html
-developer-tools/api/javascript/solid-client/classes/thing_thing.validvalueurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing/thing.validvalueurlexpectederror.html
 developer-tools/api/javascript/solid-client/modules/_acl_acl_.html -> developer-tools/api/javascript/solid-client/modules/acl_acl.html
 developer-tools/api/javascript/solid-client/modules/_acl_agent_.html -> developer-tools/api/javascript/solid-client/modules/acl_agent.html
 developer-tools/api/javascript/solid-client/modules/_acl_class_.html -> developer-tools/api/javascript/solid-client/modules/acl_class.html
@@ -26,3 +21,8 @@ developer-tools/api/javascript/solid-client/modules/_thing_mock_.html -> develop
 developer-tools/api/javascript/solid-client/modules/_thing_remove_.html -> developer-tools/api/javascript/solid-client/modules/thing_remove.html
 developer-tools/api/javascript/solid-client/modules/_thing_set_.html -> developer-tools/api/javascript/solid-client/modules/thing_set.html
 developer-tools/api/javascript/solid-client/modules/_thing_thing_.html -> developer-tools/api/javascript/solid-client/modules/thing_thing.html
+developer-tools/api/javascript/solid-client/classes/resource/resource.fetcherror.html -> developer-tools/api/javascript/solid-client/classes/resource_resource.fetcherror.html
+developer-tools/api/javascript/solid-client/classes/thing/thing.thingexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.thingexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing/thing.validpropertyurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validpropertyurlexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing/thing.validthingurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validthingurlexpectederror.html
+developer-tools/api/javascript/solid-client/classes/thing/thing.validvalueurlexpectederror.html -> developer-tools/api/javascript/solid-client/classes/thing_thing.validvalueurlexpectederror.html
