@@ -51,6 +51,7 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addIri, addUrl } from "../thing/add";
 import { setThing } from "../thing/thing";
 import {
+  internal_getActorAccessAll,
   internal_getActorAccess,
   internal_getAgentAccess,
   internal_getAuthenticatedAccess,
@@ -98,11 +99,6 @@ const defaultMockPolicies: MockPolicies = {
   memberPolicies: {},
   acrPolicies: {},
   memberAcrPolicies: {},
-};
-
-type Rule = {
-  agent?: string[];
-  group?: string[];
 };
 
 function mockAcr(
@@ -3095,63 +3091,62 @@ describe("getActorAccess", () => {
 });
 
 describe("getAgentAccessAll", () => {
-  it("returns an empty map if no individual agent is given access", async () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      plainResource,
-      mockAcr("https://some.pod/resource")
-    );
-    expect(getAgentAccessAll(resourceWithAcr)).toBe({});
-  });
-
-  it("returns access for all the agents that are individually given access", async () => {
-    let acr = mockAcr(
+  it("returns an empty map if no individual agent is given access", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
       {
-        policies: [
-          "https://some.pod/resource.acr#policy-a",
-          "https://some.pod/resource.acr#policy-b",
-        ],
-      },
-      {
-        "https://some.pod/resource.acr#policy-a": {
-          anyOf: ["https://some.pod/resource.acr#rule-a"],
-        },
-        "https://some.pod/resource.acr#policy-b": {
-          anyOf: ["https://some.pod/resource.acr#rule-b"],
-        },
-      },
-      {
-        "https://some.pod/resource.acr#rule-a": {
-          agent: ["https://some.pod/profile#agent-a"],
-        },
-        "https://some.pod/resource.acr#rule-b": {
-          agent: ["https://some.pod/profile#agent-b"],
-        },
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policyA = getThing(acr, "https://some.pod/resource.acr#policy-a");
-    policyA = setAllowModes(policyA!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policyA);
-    let policyB = getThing(acr, "https://some.pod/resource.acr#policy-b");
-    policyB = setAllowModes(policyB!, {
-      read: true,
-      append: true,
-      write: true,
-    });
-    acr = setThing(acr, policyB);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({});
+  });
 
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({
+  it("returns access for all the agents that are individually given access", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy-a": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule-a": {
+                [acp.agent]: ["https://some.pod/profile#agent-a"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource.acr#policy-b": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule-b": {
+                [acp.agent]: ["https://some.pod/profile#agent-b"],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+              append: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({
       "https://some.pod/profile#agent-a": {
         read: true,
-        append: false,
-        write: false,
       },
       "https://some.pod/profile#agent-b": {
         read: true,
@@ -3161,154 +3156,149 @@ describe("getAgentAccessAll", () => {
     });
   });
 
-  it("does not return access given to groups", async () => {
-    let acr = mockAcr(
+  it("does not return access given to groups", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.group]: ["https://some.pod/profile#group"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          group: ["https://some.pod/profile#group"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
-
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({});
-  });
-  it("does not return access given to the general public", async () => {
-    let acr = mockAcr(
-      "https://some.pod/resource",
-      {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
-        },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: [acp.PublicAgent],
-        },
-      }
-    );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
-
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({});
   });
 
-  it("does not return access given to the Creator agent", async () => {
-    let acr = mockAcr(
+  it("does not return access given to the general public", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: [acp.CreatorAgent],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({});
   });
 
-  it("does not include agents part of a noneOf rule", async () => {
-    let acr = mockAcr(
+  it("does not return access given to the Creator agent", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          noneOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.CreatorAgent],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: ["https://some.pod/profile#agent"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({});
   });
 
-  it("returns false for access being denied to the agent", async () => {
-    let acr = mockAcr(
+  it("does not include agents part of a noneOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            noneOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: ["https://some.pod/profile#agent"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setDenyModes(policy!, { read: true, append: false, write: true });
-    policy = setAllowModes(policy!, {
-      read: false,
-      append: true,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({
+      "https://some.pod/profile#agent": {},
+    });
+  });
+
+  it("returns false for access being denied to the agent", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+            deny: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({
       "https://some.pod/profile#agent": {
         read: false,
         append: true,
@@ -3317,305 +3307,388 @@ describe("getAgentAccessAll", () => {
     });
   });
 
-  it("does not include agents missing from an allOf rule", async () => {
-    let acr = mockAcr(
+  it("does not include agents missing from an allOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          allOf: [
-            "https://some.pod/resource.acr#rule-a",
-            "https://some.pod/resource.acr#rule-b",
-          ],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            allOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+              "https://some.pod/resource.acr#another-rule": {
+                [acp.agent]: ["https://some.pod/profile#another-agent"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule-a": {
-          agent: ["https://some.pod/profile#agent"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: false,
-      append: true,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getAgentAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({
+      "https://some.pod/profile#agent": {},
+      "https://some.pod/profile#another-agent": {},
+    });
   });
 
-  // Note: it's unclear whether the next test is actually a desired behaviour.
-  // It will not be implemented until the matter is clarified.
-  it.todo(
-    "includes agents in an anyOf rule even if they are missing from an allOf rule"
-  );
+  it("does not include agents in an anyOf rule if they are missing from an allOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            allOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [
+                  "https://some.pod/profile#agent",
+                  "https://some.pod/profile#a-third-agent",
+                ],
+              },
+              "https://some.pod/resource.acr#another-rule": {
+                [acp.agent]: [
+                  "https://some.pod/profile#another-agent",
+                  "https://some.pod/profile#a-third-agent",
+                ],
+              },
+            },
+            anyOf: {
+              "https://some.pod/resource.acr#a-rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+              "https://some.pod/resource.acr#a-third-rule": {
+                [acp.agent]: ["https://some.pod/profile#a-third-agent"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({
+      "https://some.pod/profile#agent": {},
+      "https://some.pod/profile#another-agent": {},
+      "https://some.pod/profile#a-third-agent": {
+        read: true,
+      },
+    });
+  });
 });
 
 describe("getGroupAccessAll", () => {
-  it("returns an empty map if no individual group is given access", async () => {
+  it("returns an empty map if no individual group is given access", () => {
     const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
     const resourceWithAcr = addMockAcrTo(
       plainResource,
       mockAcr("https://some.pod/resource")
     );
-    expect(getGroupAccessAll(resourceWithAcr)).toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({});
   });
 
-  it("returns access for all the groups that are individually given access", async () => {
-    let acr = mockAcr(
+  it.todo("returns access for all the groups allowed by multiple rules");
+
+  it("returns access for all the groups that are individually given access", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: [
-          "https://some.pod/resource.acr#policy-a",
-          "https://some.pod/resource.acr#policy-b",
-        ],
-      },
-      {
-        "https://some.pod/resource.acr#policy-a": {
-          anyOf: ["https://some.pod/resource.acr#rule-a"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.group]: [
+                  "https://some.pod/groups#group-a",
+                  "https://some.pod/groups#group-b",
+                ],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-        "https://some.pod/resource.acr#policy-b": {
-          anyOf: ["https://some.pod/resource.acr#rule-b"],
-        },
-      },
-      {
-        "https://some.pod/resource.acr#rule-a": {
-          group: ["https://some.pod/groups#group-a"],
-        },
-        "https://some.pod/resource.acr#rule-b": {
-          group: ["https://some.pod/groups#group-b"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policyA = getThing(acr, "https://some.pod/resource.acr#policy-a");
-    policyA = setAllowModes(policyA!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policyA);
-    let policyB = getThing(acr, "https://some.pod/resource.acr#policy-b");
-    policyB = setAllowModes(policyB!, {
-      read: true,
-      append: true,
-      write: true,
-    });
-    acr = setThing(acr, policyB);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({
       "https://some.pod/groups#group-a": {
-        read: true,
-        append: false,
-        write: false,
+        append: true,
       },
       "https://some.pod/groups#group-b": {
-        read: true,
         append: true,
-        write: true,
       },
     });
   });
 
-  it("does not return access given to individual agents", async () => {
-    let acr = mockAcr(
+  it("does not return access given to individual agents", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: ["https://some.pod/profile#agent"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({});
-  });
-  it("does not return access given to the general public", async () => {
-    let acr = mockAcr(
-      "https://some.pod/resource",
-      {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
-        },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: [acp.PublicAgent],
-        },
-      }
-    );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
-
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({});
   });
 
-  it("does not return access given to the Creator agent", async () => {
-    let acr = mockAcr(
+  it("does not return access given to the general public", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          agent: [acp.CreatorAgent],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({});
   });
 
-  it("does not include groups part of a noneOf rule", async () => {
-    let acr = mockAcr(
+  it("does not return access given to the Creator agent", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          noneOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          group: ["https://some.pod/groups#group"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({});
   });
 
-  it("returns false for access being denied to the group", async () => {
-    let acr = mockAcr(
+  it("does not include groups part of a noneOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: ["https://some.pod/resource.acr#rule"],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule-a": {
+                [acp.group]: [
+                  "https://some.pod/groups#authorized-group",
+                  "https://some.pod/groups#unauthorized-group",
+                ],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource.acr#rule-b": {
+                [acp.group]: ["https://some.pod/groups#unauthorized-group"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule": {
-          group: ["https://some.pod/groups#group"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setDenyModes(policy!, { read: true, append: false, write: true });
-    policy = setAllowModes(policy!, {
-      read: false,
-      append: true,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({
+      "https://some.pod/groups#authorized-group": {
+        append: true,
+      },
+      "https://some.pod/groups#unauthorized-group": {},
+    });
+  });
+
+  it("returns false for access being denied to the group", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+            deny: {
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({
       "https://some.pod/groups#group": {
-        read: false,
         append: true,
         write: false,
       },
     });
   });
 
-  it("does not include groups missing from an allOf rule", async () => {
-    let acr = mockAcr(
+  it("does not include groups missing from an allOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
+      "https://some.pod/resource.acr",
       {
-        policies: ["https://some.pod/resource.acr#policy"],
-      },
-      {
-        "https://some.pod/resource.acr#policy": {
-          allOf: [
-            "https://some.pod/resource.acr#rule-a",
-            "https://some.pod/resource.acr#rule-b",
-          ],
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            allOf: {
+              "https://some.pod/resource.acr#rule-a": {
+                [acp.group]: [
+                  "https://some.pod/groups#group",
+                  "https://some.pod/groups#another-group",
+                ],
+              },
+              "https://some.pod/resource.acr#rule-b": {
+                [acp.group]: ["https://some.pod/groups#another-group"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
         },
-      },
-      {
-        "https://some.pod/resource.acr#rule-a": {
-          group: ["https://some.pod/groups#group"],
-        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
       }
     );
-    let policy = getThing(acr, "https://some.pod/resource.acr#policy");
-    policy = setAllowModes(policy!, {
-      read: false,
-      append: true,
-      write: false,
-    });
-    acr = setThing(acr, policy);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, acr);
 
-    await expect(getGroupAccessAll(resourceWithAcr)).resolves.toBe({});
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({
+      "https://some.pod/groups#another-group": {
+        append: true,
+      },
+      "https://some.pod/groups#group": {},
+    });
   });
 
-  // Note: it's unclear whether the next test is actually a desired behaviour.
-  // It will not be implemented until the matter is clarified.
-  it.todo(
-    "includes groups in an anyOf rule even if they are missing from an allOf rule"
-  );
+  it("does not include groups in an anyOf rule if they are missing from an allOf rule", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            allOf: {
+              "https://some.pod/resource.acr#rule-a": {
+                [acp.group]: [
+                  "https://some.pod/groups#group",
+                  "https://some.pod/groups#another-group",
+                ],
+              },
+              "https://some.pod/resource.acr#rule-b": {
+                [acp.group]: ["https://some.pod/groups#another-group"],
+              },
+            },
+            anyOf: {
+              "https://some.pod/resource.acr#rule-c": {
+                [acp.group]: [
+                  "https://some.pod/groups#group",
+                  "https://some.pod/groups#another-group",
+                ],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({
+      "https://some.pod/groups#another-group": {
+        append: true,
+      },
+      "https://some.pod/groups#group": {},
+    });
+  });
 });

@@ -29,12 +29,19 @@ import {
   getPolicyUrlAll,
 } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
-import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
+import {
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  Policy,
+} from "../acp/policy";
 import {
   getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
   getRule,
+  getRuleAll,
   Rule,
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
@@ -326,14 +333,53 @@ function ruleAppliesTo(
   return rule !== null && getIriAll(rule, actorRelation).includes(actor);
 }
 
-export async function getAgentAccessAll(
-  resource: WithResourceInfo
-): Promise<Record<string, Access>> {
-  throw new Error("Unimplemented");
+/**
+ * Get the list of all actors mentionned in an ACR, uniquely mentionned
+ * @param acr
+ */
+function internal_findActorAll(
+  acr: AccessControlResource,
+  actorRelation: typeof acp.agent | typeof acp.group
+): Set<WebId> {
+  const actors: Set<WebId> = new Set();
+  // This code could be prettier using flat(), which isn't supported by nodeJS 10.
+  // If you read this comment after April 2021, feel free to refactor.
+  const rules = getRuleAll(acr);
+  rules.forEach((rule) => {
+    getIriAll(rule, actorRelation)
+      .filter(
+        (iri) =>
+          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri)
+      )
+      .forEach((iri) => actors.add(iri));
+  });
+  return actors;
 }
 
-export async function getGroupAccessAll(
-  resource: WithResourceInfo
-): Promise<Record<string, Access>> {
-  throw new Error("Unimplemented");
+export function internal_getActorAccessAll(
+  resource: WithResourceInfo & WithAcp,
+  actorRelation: typeof acp.agent | typeof acp.group
+): Record<string, Access> {
+  if (
+    !hasAccessibleAcr(resource) ||
+    internal_hasInaccessiblePolicies(resource)
+  ) {
+    return {};
+  }
+  const result: Record<string, Access> = {};
+  const actors = internal_findActorAll(
+    internal_getAcr(resource),
+    actorRelation
+  );
+  actors.forEach((iri) => {
+    // The type assertion holds, because if internal_getActorAccess were null,
+    // we would have returned {} already.
+    const access = internal_getActorAccess(
+      resource,
+      actorRelation,
+      iri
+    ) as Access;
+    result[iri] = access;
+  });
+  return result;
 }
