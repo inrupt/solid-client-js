@@ -273,7 +273,7 @@ export function setForbiddenRuleUrl(
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getForbiddenRuleurlAll(policy: Policy): UrlString[] {
+export function getForbiddenRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
 

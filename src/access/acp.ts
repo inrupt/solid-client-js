@@ -31,7 +31,7 @@ import {
 import { internal_getAcr } from "../acp/control.internal";
 import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
 import {
-  getForbiddenRuleurlAll,
+  getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
   getRule,
@@ -214,7 +214,7 @@ function policyAppliesTo(
   const anyOfRules = getOptionalRuleUrlAll(policy).map((ruleUrl) =>
     getRule(acr, ruleUrl)
   );
-  const noneOfRules = getForbiddenRuleurlAll(policy).map((ruleUrl) =>
+  const noneOfRules = getForbiddenRuleUrlAll(policy).map((ruleUrl) =>
     getRule(acr, ruleUrl)
   );
 

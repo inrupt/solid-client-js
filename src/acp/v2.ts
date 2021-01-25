@@ -32,4 +32,6 @@ export const acp_v2 = {
   ...acpPolicy,
   ...acpRule,
   ...acpMock,
+  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
+  getForbiddenRuleurlAll: acpRule.getForbiddenRuleUrlAll,
 };
