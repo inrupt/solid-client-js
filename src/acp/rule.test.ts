@@ -36,7 +36,7 @@ import {
   addRequiredRuleUrl,
   createRule,
   getAgentAll,
-  getForbiddenRuleurlAll,
+  getForbiddenRuleUrlAll,
   getGroupAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
@@ -565,7 +565,7 @@ describe("getForbiddenRuleurlAll", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
     expect(forbiddenRules).toContainEqual(MOCKED_RULE_IRI.value);
     expect(forbiddenRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
   });
@@ -576,7 +576,7 @@ describe("getForbiddenRuleurlAll", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
     expect(forbiddenRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
     expect(forbiddenRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
   });
