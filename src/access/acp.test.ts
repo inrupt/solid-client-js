@@ -3137,6 +3137,7 @@ describe("internal_getActorAccessAll", () => {
       internal_getActorAccessAll(resourceWithAcr, acp.group)
     ).toStrictEqual({});
   });
+
   it("does not return access given to groups for agents", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
@@ -3220,6 +3221,36 @@ describe("internal_getActorAccessAll", () => {
         }
       );
 
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
+        {}
+      );
+    }
+  );
+
+  it.each([acp.agent, acp.group])(
+    "returns an empty object if an external policy is present",
+    (actor) => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource.acr",
+        {
+          policies: {
+            "https://some.pod/another-resource.acr#policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [actor]: ["https://some.pod/some-actor"],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
       expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
         {}
       );
