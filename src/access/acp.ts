@@ -37,7 +37,7 @@ import {
   getRule,
   Rule,
 } from "../acp/rule";
-import { IriString, WithResourceInfo } from "../interfaces";
+import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
 import { getIriAll } from "../thing/get";
 
 export function internal_hasInaccessiblePolicies(
@@ -200,6 +200,95 @@ export function internal_getActorAccess(
   }, withAcrDeniedAccess);
 
   return withDeniedAccess;
+}
+
+/**
+ * Get an overview of what access is defined for a given Agent in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to this Agent.
+ *
+ * Additionally, this only considers access given _explicitly_ to the given Agent, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAgentAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param webId WebID of the Agent you want to get the access for.
+ */
+export function internal_getAgentAccess(
+  resource: WithResourceInfo & WithAcp,
+  webId: WebId
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, webId);
+}
+
+/**
+ * Get an overview of what access is defined for a given Group in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to this Group.
+ *
+ * Additionally, this only considers access given _explicitly_ to the given Group, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setGroupAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param groupUrl URL of the Group you want to get the access for.
+ */
+export function internal_getGroupAccess(
+  resource: WithResourceInfo & WithAcp,
+  groupUrl: UrlString
+): Access | null {
+  return internal_getActorAccess(resource, acp.group, groupUrl);
+}
+
+/**
+ * Get an overview of what access is defined for everybody in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to everybody.
+ *
+ * Additionally, this only considers access given _explicitly_ to everybody, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setPublicAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
+export function internal_getPublicAccess(
+  resource: WithResourceInfo & WithAcp
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, acp.PublicAgent);
+}
+
+/**
+ * Get an overview of what access is defined for all authenticated Agents in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to authenticated
+ * Agents.
+ *
+ * Additionally, this only considers access given _explicitly_ to authenticated Agents, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAuthenticatedAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
+export function internal_getAuthenticatedAccess(
+  resource: WithResourceInfo & WithAcp
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, acp.AuthenticatedAgent);
 }
 
 function policyAppliesTo(
