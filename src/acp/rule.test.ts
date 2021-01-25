@@ -24,6 +24,7 @@ import {
   asIri,
   createThing,
   getThing,
+  getThingAll,
   isThing,
   setThing,
 } from "../thing/thing";
@@ -35,7 +36,7 @@ import {
   addRequiredRuleUrl,
   createRule,
   getAgentAll,
-  getForbiddenRuleurlAll,
+  getForbiddenRuleUrlAll,
   getGroupAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
@@ -60,6 +61,7 @@ import {
   hasCreator,
   setCreator,
   ruleAsMarkdown,
+  removeRule,
 } from "./rule";
 
 import { DataFactory, NamedNode } from "n3";
@@ -563,7 +565,7 @@ describe("getForbiddenRuleurlAll", () => {
     const mockedPolicy = mockPolicy(MOCKED_POLICY_IRI, {
       forbidden: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
     expect(forbiddenRules).toContainEqual(MOCKED_RULE_IRI.value);
     expect(forbiddenRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
   });
@@ -574,7 +576,7 @@ describe("getForbiddenRuleurlAll", () => {
       optional: [mockRule(OPTIONAL_RULE_IRI)],
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
-    const forbiddenRules = getForbiddenRuleurlAll(mockedPolicy);
+    const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
     expect(forbiddenRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
     expect(forbiddenRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
   });
@@ -765,6 +767,16 @@ describe("getRuleAll", () => {
     const newDataset = setThing(dataset, anotherRule);
     result = getRuleAll(newDataset);
     expect(result).toHaveLength(2);
+  });
+});
+
+describe("removeRule", () => {
+  it("removes the Rule from the given empty Dataset", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const dataset = setThing(createSolidDataset(), rule);
+
+    const updatedDataset = removeRule(dataset, MOCKED_RULE_IRI);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 });
 

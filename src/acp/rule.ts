@@ -38,6 +38,7 @@ import {
   createThing,
   getThing,
   getThingAll,
+  removeThing,
   setThing,
 } from "../thing/thing";
 import { Policy } from "./policy";
@@ -272,7 +273,7 @@ export function setForbiddenRuleUrl(
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getForbiddenRuleurlAll(policy: Policy): UrlString[] {
+export function getForbiddenRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
 
@@ -334,13 +335,33 @@ export function getRuleAll(ruleResource: SolidDataset): Rule[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Removes the given [[Rule]] from the given [[SolidDataset]].
+ *
+ * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @returns A new RuleDataset equal to the given Rule Resource, but without the given Rule.
+ */
+export function removeRule<Dataset extends SolidDataset>(
+  ruleResource: Dataset,
+  rule: Url | UrlString | Rule
+): Dataset {
+  return removeThing(ruleResource, rule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Insert the given [[Rule]] into the given [[SolidDataset]], replacing previous
  * instances of that Rule.
  *
  * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
  * @returns A new RuleDataset equal to the given Rule Resource, but with the given Rule.
  */
-export function setRule(ruleResource: SolidDataset, rule: Rule): SolidDataset {
+export function setRule<Dataset extends SolidDataset>(
+  ruleResource: Dataset,
+  rule: Rule
+): Dataset {
   return setThing(ruleResource, rule);
 }
 

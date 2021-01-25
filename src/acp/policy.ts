@@ -36,7 +36,7 @@ import {
   setThing,
 } from "../thing/thing";
 import {
-  getForbiddenRuleurlAll,
+  getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
 } from "./rule";
@@ -116,10 +116,10 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
  * @param policyResource The Resource that contains Access Policies.
  * @param policy The Policy to remove from the resource.
  */
-export function removePolicy(
-  policyResource: SolidDataset,
+export function removePolicy<Dataset extends SolidDataset>(
+  policyResource: Dataset,
   policy: Url | UrlString | Policy
-): SolidDataset {
+): Dataset {
   return removeThing(policyResource, policy);
 }
 
@@ -134,10 +134,10 @@ export function removePolicy(
  * @param policy The Policy to insert into the Resource.
  * @returns A new dataset equal to the given resource, but with the given Policy.
  */
-export function setPolicy(
-  policyResource: SolidDataset,
+export function setPolicy<Dataset extends SolidDataset>(
+  policyResource: Dataset,
   policy: Policy
-): SolidDataset {
+): Dataset {
   return setThing(policyResource, policy);
 }
 
@@ -255,7 +255,7 @@ export function policyAsMarkdown(policy: Policy): string {
 
   const requiredRules = getRequiredRuleUrlAll(policy);
   const optionalRules = getOptionalRuleUrlAll(policy);
-  const forbiddenRules = getForbiddenRuleurlAll(policy);
+  const forbiddenRules = getForbiddenRuleUrlAll(policy);
 
   if (
     requiredRules.length === 0 &&
