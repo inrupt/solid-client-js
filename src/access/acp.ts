@@ -349,7 +349,7 @@ function internal_findActorAll(
     getIriAll(rule, actorRelation)
       .filter(
         (iri) =>
-          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri)
+          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri) || actorRelation != acp.agent
       )
       .forEach((iri) => actors.add(iri));
   });
@@ -366,7 +366,7 @@ export function internal_getActorAccessAll(
   ) {
     return {};
   }
-  const result: Record<string, Access> = {};
+  const result: Record<UrlString, Access> = {};
   const actors = internal_findActorAll(
     internal_getAcr(resource),
     actorRelation
