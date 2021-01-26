@@ -1007,14 +1007,14 @@ describe("getActorAccess", () => {
     expect(access).toStrictEqual({});
   });
 
-  it("does not apply a Policy that does not specify any Rules at all", () => {
+  it("applies a Policy that does not specify any Rules at all", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
       {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
-            allow: { write: true },
+            allow: { read: true },
           },
         },
         memberPolicies: {},
@@ -1025,7 +1025,9 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: true,
+    });
   });
 
   it("returns null if some access is defined in separate Resources", () => {
