@@ -3104,9 +3104,7 @@ describe("internal_getActorAccessAll", () => {
           memberAcrPolicies: {},
         }
       );
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toBeNull();
     }
   );
 
@@ -3228,7 +3226,7 @@ describe("internal_getActorAccessAll", () => {
   );
 
   it.each([acp.agent, acp.group])(
-    "returns an empty object if an external policy is present",
+    "returns null if an external policy is present",
     (actor) => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",

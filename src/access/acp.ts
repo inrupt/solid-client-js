@@ -379,15 +379,22 @@ function internal_findActorAll(
   return actors;
 }
 
+/**
+ * Iterate through all the actors active for an ACR, and list all of their access.
+ * @param resource The resource for which we want to list the access
+ * @param actorRelation The type of actor we want to list access for
+ * @returns A map with each actor access indexed by their WebID, or null if some
+ * external policies are referenced.
+ */
 export function internal_getActorAccessAll(
   resource: WithResourceInfo & WithAcp,
   actorRelation: typeof acp.agent | typeof acp.group
-): Record<string, Access> {
+): Record<string, Access> | null {
   if (
     !hasAccessibleAcr(resource) ||
     internal_hasInaccessiblePolicies(resource)
   ) {
-    return {};
+    return null;
   }
   const result: Record<UrlString, Access> = {};
   const actors = internal_findActorAll(resource, actorRelation);
