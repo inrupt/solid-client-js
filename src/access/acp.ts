@@ -45,11 +45,7 @@ import {
   Rule,
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
-<<<<<<< HEAD
 import { getIriAll } from "../thing/get";
-=======
-import { getIriAll, getUrlAll } from "../thing/get";
->>>>>>> Only return access for actors in active rules
 
 function getActiveRuleAll(
   resource: WithAccessibleAcr & WithResourceInfo,

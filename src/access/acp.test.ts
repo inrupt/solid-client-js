@@ -3104,7 +3104,9 @@ describe("internal_getActorAccessAll", () => {
           memberAcrPolicies: {},
         }
       );
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toBeNull();
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
+        {}
+      );
     }
   );
 
@@ -3249,9 +3251,7 @@ describe("internal_getActorAccessAll", () => {
           memberAcrPolicies: {},
         }
       );
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toBeNull();
     }
   );
 
