@@ -372,7 +372,8 @@ function internal_findActorAll(
     getIriAll(ruleThing, actorRelation)
       .filter(
         (iri) =>
-          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri) || actorRelation != acp.agent
+          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri) ||
+          actorRelation != acp.agent
       )
       .forEach((iri) => actors.add(iri));
   });
