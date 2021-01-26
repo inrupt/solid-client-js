@@ -90,6 +90,8 @@ export const acp_v1 = {
   ...acpMock,
   ...v1ControlFunctions,
   ...deprecatedFunctions,
+  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
+  getForbiddenRuleurlAll: acpRule.getForbiddenRuleUrlAll,
 };
 
 /**

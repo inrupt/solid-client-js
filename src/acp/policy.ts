@@ -36,7 +36,7 @@ import {
   setThing,
 } from "../thing/thing";
 import {
-  getForbiddenRuleurlAll,
+  getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
 } from "./rule";
@@ -255,7 +255,7 @@ export function policyAsMarkdown(policy: Policy): string {
 
   const requiredRules = getRequiredRuleUrlAll(policy);
   const optionalRules = getOptionalRuleUrlAll(policy);
-  const forbiddenRules = getForbiddenRuleurlAll(policy);
+  const forbiddenRules = getForbiddenRuleUrlAll(policy);
 
   if (
     requiredRules.length === 0 &&
