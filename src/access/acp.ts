@@ -68,12 +68,9 @@ export function internal_hasInaccessiblePolicies(
     }
   });
   // If either an active policy or rule are not defined in the ACR, return false
-  return (
-    activePolicyUrls
-      .concat(ruleUrls)
-      .findIndex((url) => url.substring(0, sourceIri.length) !== sourceIri) !==
-    -1
-  );
+  return activePolicyUrls
+    .concat(ruleUrls)
+    .some((url) => url.substring(0, sourceIri.length) !== sourceIri);
 }
 
 /**
@@ -219,12 +216,9 @@ function policyAppliesTo(
   );
 
   return (
-    allOfRules.length + anyOfRules.length + noneOfRules.length > 0 &&
     allOfRules.every((rule) => ruleAppliesTo(rule, actorRelation, actor)) &&
     (anyOfRules.length === 0 ||
-      anyOfRules.findIndex((rule) =>
-        ruleAppliesTo(rule, actorRelation, actor)
-      ) !== -1) &&
+      anyOfRules.some((rule) => ruleAppliesTo(rule, actorRelation, actor))) &&
     noneOfRules.every((rule) => !ruleAppliesTo(rule, actorRelation, actor))
   );
 }
