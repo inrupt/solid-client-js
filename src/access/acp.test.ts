@@ -51,6 +51,7 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addIri, addUrl } from "../thing/add";
 import { setThing } from "../thing/thing";
 import {
+  internal_getActorAccessAll,
   internal_getActorAccess,
   internal_getAgentAccess,
   internal_getAuthenticatedAccess,
@@ -3086,5 +3087,569 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({});
     });
+  });
+});
+
+describe("internal_getActorAccessAll", () => {
+  it.each([acp.agent, acp.group])(
+    "returns an empty map if no individual %s is given access",
+    (actor) => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
+        {}
+      );
+    }
+  );
+
+  it("does not return access given to individual agents for groups", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: ["https://some.pod/profile#agent"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.group)
+    ).toStrictEqual({});
+  });
+
+  it("does not return access given to groups for agents", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acr",
+      {
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.group]: ["https://some.pod/profile#group"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+    expect(
+      internal_getActorAccessAll(resourceWithAcr, acp.agent)
+    ).toStrictEqual({});
+  });
+
+  it.each([acp.agent, acp.group])(
+    "does not return access given to the general public for %s",
+    (actor) => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource.acr",
+        {
+          policies: {
+            "https://some.pod/resource.acr#policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [acp.agent]: [acp.PublicAgent],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
+        {}
+      );
+    }
+  );
+
+  it.each([acp.agent, acp.group])(
+    "does not return access given to the Creator agent for %s",
+    (actor) => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource.acr",
+        {
+          policies: {
+            "https://some.pod/resource.acr#policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [acp.agent]: [acp.CreatorAgent],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
+        {}
+      );
+    }
+  );
+
+  it.each([acp.agent, acp.group])(
+    "returns null if an external policy is present",
+    (actor) => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource.acr",
+        {
+          policies: {
+            "https://some.pod/another-resource.acr#policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [actor]: ["https://some.pod/some-actor"],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toBeNull();
+    }
+  );
+
+  describe("One or several Policies that apply to multiple agents", () => {
+    it.each([acp.agent, acp.group])(
+      "returns access for all the %s that are individually given access across multiple policies",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource?ext=acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#policy-a": {
+                anyOf: {
+                  "https://some.pod/resource.acr#rule-a": {
+                    [actor]: ["https://some.pod/profile#actor-a"],
+                  },
+                },
+                allow: {
+                  read: true,
+                },
+              },
+              "https://some.pod/resource.acr#policy-b": {
+                anyOf: {
+                  "https://some.pod/resource.acr#rule-b": {
+                    [actor]: ["https://some.pod/profile#actor-b"],
+                  },
+                },
+                allow: {
+                  read: true,
+                  write: true,
+                  append: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#actor-a": {
+            read: true,
+          },
+          "https://some.pod/profile#actor-b": {
+            read: true,
+            append: true,
+            write: true,
+          },
+        });
+      }
+    );
+
+    it.each([acp.agent, acp.group])(
+      "returns access for all the %s that are individually given access for a single policy",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource?ext=acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#policy-a": {
+                anyOf: {
+                  "https://some.pod/resource.acr#rule-a": {
+                    [actor]: [
+                      "https://some.pod/profile#actor-a",
+                      "https://some.pod/profile#actor-b",
+                    ],
+                  },
+                },
+                allow: {
+                  read: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#actor-a": {
+            read: true,
+          },
+          "https://some.pod/profile#actor-b": {
+            read: true,
+          },
+        });
+      }
+    );
+  });
+
+  describe("One or several policies applying to one agent and not to another", () => {
+    it.each([acp.agent, acp.group])(
+      "returns no access for %s part of a noneOf rule",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#policy": {
+                allOf: {
+                  "https://some.pod/resource.acr#allof-rule": {
+                    [actor]: ["https://some.pod/profile#included-actor"],
+                  },
+                },
+                noneOf: {
+                  "https://some.pod/resource.acr#noneof-rule": {
+                    [actor]: ["https://some.pod/profile#excluded-actor"],
+                  },
+                },
+                allow: {
+                  read: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#excluded-actor": {},
+          "https://some.pod/profile#included-actor": {
+            read: true,
+          },
+        });
+      }
+    );
+
+    it.each([acp.agent, acp.group])(
+      "returns no access for %s missing from an allOf rule",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#policy": {
+                allOf: {
+                  "https://some.pod/resource.acr#rule": {
+                    [actor]: ["https://some.pod/profile#included-actor"],
+                  },
+                  "https://some.pod/resource.acr#another-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#excluded-actor",
+                      "https://some.pod/profile#included-actor",
+                    ],
+                  },
+                },
+                allow: {
+                  append: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#included-actor": {
+            append: true,
+          },
+          "https://some.pod/profile#excluded-actor": {},
+        });
+      }
+    );
+
+    it.each([acp.agent, acp.group])(
+      "returns no access for %s in an anyOf rule if they are missing from an allOf rule",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#policy": {
+                allOf: {
+                  "https://some.pod/resource.acr#rule": {
+                    [actor]: [
+                      "https://some.pod/profile#actor",
+                      "https://some.pod/profile#a-third-actor",
+                    ],
+                  },
+                  "https://some.pod/resource.acr#another-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#another-actor",
+                      "https://some.pod/profile#a-third-actor",
+                    ],
+                  },
+                },
+                anyOf: {
+                  "https://some.pod/resource.acr#a-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#actor",
+                      "https://some.pod/profile#a-third-actor",
+                    ],
+                  },
+                },
+                allow: {
+                  read: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#actor": {},
+          "https://some.pod/profile#another-actor": {},
+          "https://some.pod/profile#a-third-actor": {
+            read: true,
+          },
+        });
+      }
+    );
+  });
+
+  describe("One or several policies, some giving access and some denying access to agents", () => {
+    it.each([acp.agent, acp.group])(
+      "returns false for access being denied to the %s",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#deny-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#deny-rule": {
+                    [actor]: ["https://some.pod/profile#denied-actor"],
+                  },
+                },
+                deny: {
+                  read: true,
+                  write: true,
+                },
+              },
+              "https://some.pod/resource.acr#allow-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#allow-rule": {
+                    [actor]: ["https://some.pod/profile#allowed-actor"],
+                  },
+                },
+                allow: {
+                  read: true,
+                  write: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#denied-actor": {
+            read: false,
+            write: false,
+          },
+          "https://some.pod/profile#allowed-actor": {
+            read: true,
+            write: true,
+          },
+        });
+      }
+    );
+
+    it.each([acp.agent, acp.group])(
+      "combines allowed and denied modes when multiple policies apply to the %s",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#deny-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#deny-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#an-actor",
+                      "https://some.pod/profile#another-actor",
+                    ],
+                  },
+                },
+                deny: {
+                  read: true,
+                  write: true,
+                },
+              },
+              "https://some.pod/resource.acr#allow-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#allow-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#an-actor",
+                      "https://some.pod/profile#another-actor",
+                    ],
+                  },
+                },
+                allow: {
+                  append: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#an-actor": {
+            read: false,
+            append: true,
+            write: false,
+          },
+          "https://some.pod/profile#another-actor": {
+            read: false,
+            append: true,
+            write: false,
+          },
+        });
+      }
+    );
+
+    it.each([acp.agent, acp.group])(
+      "overrides allowed modes when %s is denied in another policy",
+      (actor) => {
+        const resourceWithAcr = mockResourceWithAcr(
+          "https://some.pod/resource",
+          "https://some.pod/resource.acr",
+          {
+            policies: {
+              "https://some.pod/resource.acr#deny-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#deny-rule": {
+                    [actor]: ["https://some.pod/profile#denied-actor"],
+                  },
+                },
+                deny: {
+                  append: true,
+                },
+              },
+              "https://some.pod/resource.acr#allow-policy": {
+                anyOf: {
+                  "https://some.pod/resource.acr#allow-rule": {
+                    [actor]: [
+                      "https://some.pod/profile#denied-actor",
+                      "https://some.pod/profile#allowed-actor",
+                    ],
+                  },
+                },
+                allow: {
+                  append: true,
+                },
+              },
+            },
+            memberPolicies: {},
+            acrPolicies: {},
+            memberAcrPolicies: {},
+          }
+        );
+
+        expect(
+          internal_getActorAccessAll(resourceWithAcr, actor)
+        ).toStrictEqual({
+          "https://some.pod/profile#denied-actor": {
+            append: false,
+          },
+          "https://some.pod/profile#allowed-actor": {
+            append: true,
+          },
+        });
+      }
+    );
   });
 });
