@@ -45,21 +45,19 @@ import {
   Rule,
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
+<<<<<<< HEAD
 import { getIriAll } from "../thing/get";
+=======
+import { getIriAll, getUrlAll } from "../thing/get";
+>>>>>>> Only return access for actors in active rules
 
-export function internal_hasInaccessiblePolicies(
-  resource: WithAccessibleAcr & WithResourceInfo
-): boolean {
-  const sourceIri = getSourceIri(resource);
-
-  // Collect all policies that apply to the resource or its ACR (aka active)
-  const activePolicyUrls = getPolicyUrlAll(resource).concat(
-    getAcrPolicyUrlAll(resource)
-  );
-
+function getActiveRuleAll(
+  resource: WithAccessibleAcr & WithResourceInfo,
+  policyUrlAll: UrlString[]
+): UrlString[] {
   // Collect all the rules referenced by the active policies.
   const ruleUrls: string[] = [];
-  activePolicyUrls.forEach((policyUrl) => {
+  policyUrlAll.forEach((policyUrl) => {
     const acr = internal_getAcr(resource);
     const policyThing = getThing(acr, policyUrl);
     if (policyThing !== null) {
@@ -74,6 +72,20 @@ export function internal_hasInaccessiblePolicies(
       );
     }
   });
+  return ruleUrls;
+}
+
+export function internal_hasInaccessiblePolicies(
+  resource: WithAccessibleAcr & WithResourceInfo
+): boolean {
+  const sourceIri = getSourceIri(resource);
+
+  // Collect all policies that apply to the resource or its ACR (aka active)
+  const activePolicyUrls = getPolicyUrlAll(resource).concat(
+    getAcrPolicyUrlAll(resource)
+  );
+  const ruleUrls: string[] = getActiveRuleAll(resource, activePolicyUrls);
+
   // If either an active policy or rule are not defined in the ACR, return false
   return (
     activePolicyUrls
@@ -334,19 +346,30 @@ function ruleAppliesTo(
 }
 
 /**
- * Get the list of all actors mentionned in an ACR, uniquely mentionned
- * @param acr
+ * Get a set of all actors mentionned in an ACR by active Rules (i.e. that are
+ * references by Policies referenced by the ACR Control, and therefore that
+ * effectively apply).
+ *
+ * @param resource The resource with the ACR we want to inspect
+ * @param actorRelation
  */
 function internal_findActorAll(
-  acr: AccessControlResource,
+  resource: WithAccessibleAcr & WithResourceInfo,
   actorRelation: typeof acp.agent | typeof acp.group
 ): Set<WebId> {
   const actors: Set<WebId> = new Set();
+  // Collect all policies that apply to the resource or its ACR (aka active)
+  const activePolicyUrls = getPolicyUrlAll(resource).concat(
+    getAcrPolicyUrlAll(resource)
+  );
+  const rules = getActiveRuleAll(resource, activePolicyUrls);
   // This code could be prettier using flat(), which isn't supported by nodeJS 10.
   // If you read this comment after April 2021, feel free to refactor.
-  const rules = getRuleAll(acr);
-  rules.forEach((rule) => {
-    getIriAll(rule, actorRelation)
+  rules.forEach((ruleUrl) => {
+    // The rules URL being extracted from the dataset, it is safe to assume
+    // that getThing cannot return undefined.
+    const ruleThing = getThing(internal_getAcr(resource), ruleUrl)!;
+    getIriAll(ruleThing, actorRelation)
       .filter(
         (iri) =>
           !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri) || actorRelation != acp.agent
@@ -367,10 +390,7 @@ export function internal_getActorAccessAll(
     return {};
   }
   const result: Record<UrlString, Access> = {};
-  const actors = internal_findActorAll(
-    internal_getAcr(resource),
-    actorRelation
-  );
+  const actors = internal_findActorAll(resource, actorRelation);
   actors.forEach((iri) => {
     // The type assertion holds, because if internal_getActorAccess were null,
     // we would have returned {} already.
