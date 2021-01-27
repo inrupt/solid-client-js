@@ -8,9 +8,9 @@ The following changes have been implemented but not released yet:
 
 - Added documentation about the `contentType` option for file writing/saving functions.
 
-### Bugfix
+### Bugs fixed
 
-- Saving back a dataset you just fetched no longer ends with "412: Conflict".
+- Saving back a SolidDataset you just fetched used to result in a "412: Conflict" error.
 
 The following sections document changes that have been released already:
 
