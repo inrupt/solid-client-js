@@ -3715,9 +3715,7 @@ describe("getGroupAccessAll", () => {
       }
     );
 
-    const access = internal_getGroupAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({
+    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({
       [groupAUrl]: {
         read: true,
       },
@@ -3750,9 +3748,7 @@ describe("getGroupAccessAll", () => {
       }
     );
 
-    const access = internal_getGroupAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 
   it("does not include access set for everyone", () => {
@@ -3778,9 +3774,7 @@ describe("getGroupAccessAll", () => {
       }
     );
 
-    const access = internal_getGroupAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 
   it("does not return access set for any authenticated Agent", () => {
@@ -3806,9 +3800,7 @@ describe("getGroupAccessAll", () => {
       }
     );
 
-    const access = internal_getGroupAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 });
 
@@ -3839,9 +3831,7 @@ describe("getAgentAccessAll", () => {
       }
     );
 
-    const access = internal_getAgentAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({
+    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({
       [agentAUrl]: {
         read: true,
       },
@@ -3874,9 +3864,7 @@ describe("getAgentAccessAll", () => {
       }
     );
 
-    const access = internal_getAgentAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 
   it("does not include access set for everyone", () => {
@@ -3902,9 +3890,7 @@ describe("getAgentAccessAll", () => {
       }
     );
 
-    const access = internal_getAgentAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 
   it("does not return access set for any authenticated Agent", () => {
@@ -3930,8 +3916,6 @@ describe("getAgentAccessAll", () => {
       }
     );
 
-    const access = internal_getAgentAccessAll(resourceWithAcr);
-
-    expect(access).toStrictEqual({});
+    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
   });
 });
