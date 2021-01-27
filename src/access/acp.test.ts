@@ -3802,6 +3802,32 @@ describe("getGroupAccessAll", () => {
 
     expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
   });
+
+  it("does not return access set for the Creator Agent", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.CreatorAgent],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
+  });
 });
 
 describe("getAgentAccessAll", () => {
@@ -3903,6 +3929,32 @@ describe("getAgentAccessAll", () => {
             allOf: {
               "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
                 [acp.agent]: [acp.AuthenticatedAgent],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
+  });
+
+  it("does not return access set for the Creator Agent", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.CreatorAgent],
               },
             },
             allow: {
