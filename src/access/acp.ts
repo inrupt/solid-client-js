@@ -405,12 +405,44 @@ export function internal_getActorAccessAll(
   return result;
 }
 
+/**
+ * Get an overview of what access are defined for all Groups in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to the mentionned
+ * Groups.
+ *
+ * Additionally, this only considers access given _explicitly_ to individual Groups, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAgentAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
 export function internal_getGroupAccessAll(
   resource: WithResourceInfo & WithAcp
 ): Record<UrlString, Access> | null {
   return internal_getActorAccessAll(resource, acp.group);
 }
 
+/**
+ * Get an overview of what access are defined for all Agents in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to the mentionned
+ * Agents.
+ *
+ * Additionally, this only considers access given _explicitly_ to individual Agents, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAgentAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
 export function internal_getAgentAccessAll(
   resource: WithResourceInfo & WithAcp
 ): Record<WebId, Access> | null {
