@@ -228,7 +228,7 @@ export function removeThing<Dataset extends SolidDataset>(
   return newSolidDataset;
 }
 
-function withChangeLog<Dataset extends SolidDataset>(
+export function withChangeLog<Dataset extends SolidDataset>(
   solidDataset: Dataset
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)

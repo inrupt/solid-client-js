@@ -860,6 +860,30 @@ describe("saveSolidDatasetAt", () => {
       });
     });
 
+    it("does not try to create a new Resource if the change log contains no change", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(Promise.resolve(new Response()));
+
+      const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+      };
+      // Note that the dataset has been fetched from a given IRI, but has no changelog.
+      const mockDataset = Object.assign(dataset(), {
+        internal_resourceInfo: resourceInfo,
+      });
+
+      await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][1]?.method as string).toStrictEqual(
+        "PATCH"
+      );
+    });
+
     it("returns a meaningful error when the server returns a 403", async () => {
       const mockFetch = jest
         .fn(window.fetch)

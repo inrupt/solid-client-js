@@ -55,7 +55,12 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
-import { thingAsMarkdown, getThingAll, getThing } from "../thing/thing";
+import {
+  thingAsMarkdown,
+  getThingAll,
+  getThing,
+  withChangeLog,
+} from "../thing/thing";
 import {
   internal_getReadableValue,
   internal_toNode,
@@ -217,18 +222,21 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     ...options,
   };
 
-  const requestInit = isUpdate(solidDataset, url)
-    ? await prepareSolidDatasetUpdate(solidDataset)
-    : await prepareSolidDatasetCreation(solidDataset);
+  // const datasetWithChangelog = withChangeLog(solidDataset);
+  const datasetWithChangelog = withChangeLog(solidDataset);
+
+  const requestInit = isUpdate(datasetWithChangelog, url)
+    ? await prepareSolidDatasetUpdate(datasetWithChangelog)
+    : await prepareSolidDatasetCreation(datasetWithChangelog);
 
   const response = await config.fetch(url, requestInit);
 
   if (internal_isUnsuccessfulResponse(response)) {
-    const diagnostics = isUpdate(solidDataset, url)
+    const diagnostics = isUpdate(datasetWithChangelog, url)
       ? "The changes that were sent to the Pod are listed below.\n\n" +
-        changeLogAsMarkdown(solidDataset)
+        changeLogAsMarkdown(datasetWithChangelog)
       : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(solidDataset);
+        solidDatasetAsMarkdown(datasetWithChangelog);
     throw new FetchError(
       `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n` +
         diagnostics,
@@ -244,7 +252,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   const storedDataset: Dataset &
     WithChangeLog &
     WithServerResourceInfo = Object.assign(
-    internal_cloneResource(solidDataset),
+    internal_cloneResource(datasetWithChangelog),
     {
       internal_changeLog: { additions: [], deletions: [] },
       internal_resourceInfo: resourceInfo,
