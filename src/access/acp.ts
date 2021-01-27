@@ -407,12 +407,12 @@ export function internal_getActorAccessAll(
 
 export function internal_getGroupAccessAll(
   resource: WithResourceInfo & WithAcp
-): Record<string, Access> | null {
+): Record<UrlString, Access> | null {
   return internal_getActorAccessAll(resource, acp.group);
 }
 
 export function internal_getAgentAccessAll(
   resource: WithResourceInfo & WithAcp
-): Record<string, Access> | null {
+): Record<WebId, Access> | null {
   return internal_getActorAccessAll(resource, acp.agent);
 }

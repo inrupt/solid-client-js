@@ -3755,7 +3755,7 @@ describe("getGroupAccessAll", () => {
     expect(access).toStrictEqual({});
   });
 
-  it("does not include access set for the public agent", () => {
+  it("does not include access set for everyone", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -3879,7 +3879,7 @@ describe("getAgentAccessAll", () => {
     expect(access).toStrictEqual({});
   });
 
-  it("does not include access set for the public agent", () => {
+  it("does not include access set for everyone", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
