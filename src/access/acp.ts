@@ -29,30 +29,31 @@ import {
   getPolicyUrlAll,
 } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
-import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
+import {
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  Policy,
+} from "../acp/policy";
 import {
   getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
   getRule,
+  getRuleAll,
   Rule,
 } from "../acp/rule";
-import { IriString, WithResourceInfo } from "../interfaces";
+import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
 import { getIriAll } from "../thing/get";
 
-export function internal_hasInaccessiblePolicies(
-  resource: WithAccessibleAcr & WithResourceInfo
-): boolean {
-  const sourceIri = getSourceIri(resource);
-
-  // Collect all policies that apply to the resource or its ACR (aka active)
-  const activePolicyUrls = getPolicyUrlAll(resource).concat(
-    getAcrPolicyUrlAll(resource)
-  );
-
+function getActiveRuleAll(
+  resource: WithAccessibleAcr & WithResourceInfo,
+  policyUrlAll: UrlString[]
+): UrlString[] {
   // Collect all the rules referenced by the active policies.
   const ruleUrls: string[] = [];
-  activePolicyUrls.forEach((policyUrl) => {
+  policyUrlAll.forEach((policyUrl) => {
     const acr = internal_getAcr(resource);
     const policyThing = getThing(acr, policyUrl);
     if (policyThing !== null) {
@@ -67,6 +68,20 @@ export function internal_hasInaccessiblePolicies(
       );
     }
   });
+  return ruleUrls;
+}
+
+export function internal_hasInaccessiblePolicies(
+  resource: WithAccessibleAcr & WithResourceInfo
+): boolean {
+  const sourceIri = getSourceIri(resource);
+
+  // Collect all policies that apply to the resource or its ACR (aka active)
+  const activePolicyUrls = getPolicyUrlAll(resource).concat(
+    getAcrPolicyUrlAll(resource)
+  );
+  const ruleUrls: string[] = getActiveRuleAll(resource, activePolicyUrls);
+
   // If either an active policy or rule are not defined in the ACR, return false
   return activePolicyUrls
     .concat(ruleUrls)
@@ -199,6 +214,95 @@ export function internal_getActorAccess(
   return withDeniedAccess;
 }
 
+/**
+ * Get an overview of what access is defined for a given Agent in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to this Agent.
+ *
+ * Additionally, this only considers access given _explicitly_ to the given Agent, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAgentAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param webId WebID of the Agent you want to get the access for.
+ */
+export function internal_getAgentAccess(
+  resource: WithResourceInfo & WithAcp,
+  webId: WebId
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, webId);
+}
+
+/**
+ * Get an overview of what access is defined for a given Group in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to this Group.
+ *
+ * Additionally, this only considers access given _explicitly_ to the given Group, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setGroupAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param groupUrl URL of the Group you want to get the access for.
+ */
+export function internal_getGroupAccess(
+  resource: WithResourceInfo & WithAcp,
+  groupUrl: UrlString
+): Access | null {
+  return internal_getActorAccess(resource, acp.group, groupUrl);
+}
+
+/**
+ * Get an overview of what access is defined for everybody in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to everybody.
+ *
+ * Additionally, this only considers access given _explicitly_ to everybody, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setPublicAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
+export function internal_getPublicAccess(
+  resource: WithResourceInfo & WithAcp
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, acp.PublicAgent);
+}
+
+/**
+ * Get an overview of what access is defined for all authenticated Agents in a Resource's Access Control Resource.
+ *
+ * This will only return a value if all relevant access is defined in just the Resource's Access
+ * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
+ * other Resources, this function will not be able to determine the access relevant to authenticated
+ * Agents.
+ *
+ * Additionally, this only considers access given _explicitly_ to authenticated Agents, i.e. without
+ * additional conditions.
+ *
+ * In other words, this function will generally understand and return the access as set by
+ * [[internal_setAuthenticatedAccess]], but not understand more convoluted Policies.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ */
+export function internal_getAuthenticatedAccess(
+  resource: WithResourceInfo & WithAcp
+): Access | null {
+  return internal_getActorAccess(resource, acp.agent, acp.AuthenticatedAgent);
+}
+
 function policyAppliesTo(
   policy: Policy,
   actorRelation: IriString,
@@ -229,4 +333,71 @@ function ruleAppliesTo(
   actor: IriString
 ): boolean {
   return rule !== null && getIriAll(rule, actorRelation).includes(actor);
+}
+
+/**
+ * Get a set of all actors mentionned in an ACR by active Rules (i.e. that are
+ * references by Policies referenced by the ACR Control, and therefore that
+ * effectively apply).
+ *
+ * @param resource The resource with the ACR we want to inspect
+ * @param actorRelation
+ */
+function internal_findActorAll(
+  resource: WithAccessibleAcr & WithResourceInfo,
+  actorRelation: typeof acp.agent | typeof acp.group
+): Set<WebId> {
+  const actors: Set<WebId> = new Set();
+  // Collect all policies that apply to the resource or its ACR (aka active)
+  const activePolicyUrls = getPolicyUrlAll(resource).concat(
+    getAcrPolicyUrlAll(resource)
+  );
+  const rules = getActiveRuleAll(resource, activePolicyUrls);
+  // This code could be prettier using flat(), which isn't supported by nodeJS 10.
+  // If you read this comment after April 2021, feel free to refactor.
+  rules.forEach((ruleUrl) => {
+    // The rules URL being extracted from the dataset, it is safe to assume
+    // that getThing cannot return undefined.
+    const ruleThing = getThing(internal_getAcr(resource), ruleUrl)!;
+    getIriAll(ruleThing, actorRelation)
+      .filter(
+        (iri) =>
+          !([acp.PublicAgent, acp.CreatorAgent] as string[]).includes(iri) ||
+          actorRelation != acp.agent
+      )
+      .forEach((iri) => actors.add(iri));
+  });
+  return actors;
+}
+
+/**
+ * Iterate through all the actors active for an ACR, and list all of their access.
+ * @param resource The resource for which we want to list the access
+ * @param actorRelation The type of actor we want to list access for
+ * @returns A map with each actor access indexed by their WebID, or null if some
+ * external policies are referenced.
+ */
+export function internal_getActorAccessAll(
+  resource: WithResourceInfo & WithAcp,
+  actorRelation: typeof acp.agent | typeof acp.group
+): Record<string, Access> | null {
+  if (
+    !hasAccessibleAcr(resource) ||
+    internal_hasInaccessiblePolicies(resource)
+  ) {
+    return null;
+  }
+  const result: Record<UrlString, Access> = {};
+  const actors = internal_findActorAll(resource, actorRelation);
+  actors.forEach((iri) => {
+    // The type assertion holds, because if internal_getActorAccess were null,
+    // we would have returned {} already.
+    const access = internal_getActorAccess(
+      resource,
+      actorRelation,
+      iri
+    ) as Access;
+    result[iri] = access;
+  });
+  return result;
 }
