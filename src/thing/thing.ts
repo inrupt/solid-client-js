@@ -198,7 +198,9 @@ export function removeThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
   thing: UrlString | Url | LocalNode | Thing
 ): Dataset & WithChangeLog {
-  const newSolidDataset = withChangeLog(internal_cloneResource(solidDataset));
+  const newSolidDataset = internal_withChangeLog(
+    internal_cloneResource(solidDataset)
+  );
   newSolidDataset.internal_changeLog = {
     additions: [...newSolidDataset.internal_changeLog.additions],
     deletions: [...newSolidDataset.internal_changeLog.deletions],
@@ -228,7 +230,7 @@ export function removeThing<Dataset extends SolidDataset>(
   return newSolidDataset;
 }
 
-export function withChangeLog<Dataset extends SolidDataset>(
+export function internal_withChangeLog<Dataset extends SolidDataset>(
   solidDataset: Dataset
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)

@@ -59,7 +59,7 @@ import {
   thingAsMarkdown,
   getThingAll,
   getThing,
-  withChangeLog,
+  internal_withChangeLog,
 } from "../thing/thing";
 import {
   internal_getReadableValue,
@@ -222,8 +222,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     ...options,
   };
 
-  // const datasetWithChangelog = withChangeLog(solidDataset);
-  const datasetWithChangelog = withChangeLog(solidDataset);
+  const datasetWithChangelog = internal_withChangeLog(solidDataset);
 
   const requestInit = isUpdate(datasetWithChangelog, url)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
