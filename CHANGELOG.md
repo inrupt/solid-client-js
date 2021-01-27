@@ -6,7 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-- Added documentation about the `contentType` option for file writing/saving functions.
+### Bugs fixed
+
+- Saving a SolidDataset with a Thing obtained from a different SolidDataset would fail if that Thing
+  contained an RDF Blank Node.
 
 ### Bugs fixed
 
