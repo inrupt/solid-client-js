@@ -8,6 +8,10 @@ The following changes have been implemented but not released yet:
 
 - Added documentation about the `contentType` option for file writing/saving functions.
 
+### Bugfix
+
+- Saving back a dataset you just fetched no longer ends with "412: Conflict".
+
 The following sections document changes that have been released already:
 
 ## [1.3.0] - 2021-01-07
