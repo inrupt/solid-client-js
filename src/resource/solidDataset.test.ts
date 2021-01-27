@@ -579,6 +579,23 @@ describe("saveSolidDatasetAt", () => {
         statusText: "I'm a teapot!",
       });
     });
+
+    it("tries to create the given SolidDataset on the Pod, even if it has an empty changelog", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(Promise.resolve(new Response()));
+
+      const mockDataset = Object.assign(dataset(), {
+        internal_changeLog: { additions: [], deletions: [] },
+      });
+
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+    });
   });
 
   describe("when updating an existing resource", () => {
