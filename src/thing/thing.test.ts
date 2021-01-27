@@ -562,6 +562,37 @@ describe("setThing", () => {
     expect(updatedDataset.internal_changeLog.deletions).toEqual([oldThingQuad]);
   });
 
+  it("does not add Quads with Blank Node objects to the ChangeLog", () => {
+    const blankNodeThingQuad = DataFactory.quad(
+      DataFactory.namedNode("https://some.vocab/subject"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.blankNode()
+    );
+    const datasetWithBlankNodeThing = dataset();
+    datasetWithBlankNodeThing.add(blankNodeThingQuad);
+
+    const equivalentBlankNodeThingQuad = DataFactory.quad(
+      DataFactory.namedNode("https://some.vocab/subject"),
+      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+      DataFactory.blankNode()
+    );
+    const newThingQuad = getMockQuad({
+      subject: "https://some.vocab/subject",
+      object: "https://some.vocab/new-object",
+    });
+    const newThing: Thing = Object.assign(dataset(), {
+      internal_url: "https://some.vocab/subject",
+    });
+    newThing.add(equivalentBlankNodeThingQuad);
+    newThing.add(newThingQuad);
+
+    const updatedDataset = setThing(datasetWithBlankNodeThing, newThing);
+
+    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
+    // Specifically: deletions does not include blankNodeThingQuad:
+    expect(updatedDataset.internal_changeLog.deletions).toEqual([]);
+  });
+
   it("preserves existing change logs", () => {
     const oldThingQuad = getMockQuad({
       subject: "https://some.vocab/subject",

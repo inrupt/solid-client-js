@@ -33,6 +33,7 @@ import {
   getStringNoLocale,
   setDatetime,
   setStringNoLocale,
+  setTerm,
   saveSolidDatasetAt,
   overwriteFile,
   isRawData,
@@ -66,6 +67,7 @@ import {
   acp_v2 as acp,
 } from "../index";
 import openidClient from "openid-client";
+import { blankNode } from "@rdfjs/dataset";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the other `describe` block has credentials for an NSS server:
@@ -538,6 +540,56 @@ describe.each(serversUnderTest)(
       });
       await saveAclFor(datasetWithAcl, cleanedAcl, { fetch: session.fetch });
       await deleteSolidDataset(datasetWithoutAclUrl, { fetch: session.fetch });
+    });
+
+    it("can update Things containing Blank Nodes in different instances of the same SolidDataset", async () => {
+      const session = await getSession();
+      const regularPredicate = "https://arbitrary.vocab/regular-predicate";
+      const blankNodePredicate = "https://arbitrary.vocab/blank-node-predicate";
+
+      // Prepare the Resource on the Pod
+      let newThing = createThing({ name: "e2e-test-thing-with-blank-node" });
+      newThing = setBoolean(newThing, regularPredicate, true);
+      newThing = setTerm(newThing, blankNodePredicate, blankNode());
+      let newDataset = createSolidDataset();
+      newDataset = setThing(newDataset, newThing);
+
+      const datasetUrl = `${rootContainer}solid-client-tests/node/blank-node-updates-${session.info.sessionId}`;
+      try {
+        await saveSolidDatasetAt(datasetUrl, newDataset, {
+          fetch: session.fetch,
+        });
+
+        // Fetch the initialised SolidDataset for the first time,
+        // and change the non-blank node value:
+        const initialisedDataset = await getSolidDataset(datasetUrl, {
+          fetch: session.fetch,
+        });
+        const initialisedThing = getThing(
+          initialisedDataset,
+          datasetUrl + "#e2e-test-thing-with-blank-node"
+        )!;
+
+        const updatedThing = setBoolean(
+          initialisedThing,
+          regularPredicate,
+          false
+        );
+
+        // Now fetch the Resource again, and try to insert the updated Thing into it:
+        const refetchedDataset = await getSolidDataset(datasetUrl, {
+          fetch: session.fetch,
+        });
+        const updatedDataset = setThing(refetchedDataset, updatedThing);
+        await expect(
+          saveSolidDatasetAt(datasetUrl, updatedDataset, {
+            fetch: session.fetch,
+          })
+        ).resolves.not.toThrow();
+      } finally {
+        // Clean up after ourselves
+        await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+      }
     });
 
     describe("Access Control Policies", () => {
