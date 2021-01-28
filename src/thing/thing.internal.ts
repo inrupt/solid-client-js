@@ -39,8 +39,12 @@ import {
   ThingLocal,
   LocalNode,
   ThingPersisted,
+  SolidDataset,
+  WithChangeLog,
+  hasChangelog,
 } from "../interfaces";
 import { isThingLocal, asUrl, isThing, ThingExpectedError } from "./thing";
+import { internal_cloneResource } from "../resource/resource.internal";
 
 /** @hidden For internal use only. */
 export function internal_getReadableValue(value: Quad_Object): string {
@@ -170,4 +174,21 @@ export function internal_throwIfNotThing(thing: Thing): void {
   if (!isThing(thing)) {
     throw new ThingExpectedError(thing);
   }
+}
+
+/**
+ * Enforces the presence of a Changelog for a given dataset. If a changelog is
+ * already present, it is unchanged. Otherwise, an empty changelog is created.
+ * @hidden
+ * @param solidDataset
+ */
+export function internal_withChangeLog<Dataset extends SolidDataset>(
+  solidDataset: Dataset
+): Dataset & WithChangeLog {
+  const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
+    ? solidDataset
+    : Object.assign(internal_cloneResource(solidDataset), {
+        internal_changeLog: { additions: [], deletions: [] },
+      });
+  return newSolidDataset;
 }
