@@ -55,15 +55,11 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
-import {
-  thingAsMarkdown,
-  getThingAll,
-  getThing,
-  internal_withChangeLog,
-} from "../thing/thing";
+import { thingAsMarkdown, getThingAll, getThing } from "../thing/thing";
 import {
   internal_getReadableValue,
   internal_toNode,
+  internal_withChangeLog,
 } from "../thing/thing.internal";
 import { getIriAll } from "../thing/get";
 

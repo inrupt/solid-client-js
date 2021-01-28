@@ -47,7 +47,11 @@ import {
 import { getTermAll } from "./get";
 import { getSourceUrl } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
-import { internal_toNode, internal_getReadableValue } from "./thing.internal";
+import {
+  internal_toNode,
+  internal_getReadableValue,
+  internal_withChangeLog,
+} from "./thing.internal";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -227,17 +231,6 @@ export function removeThing<Dataset extends SolidDataset>(
       }
     }
   });
-  return newSolidDataset;
-}
-
-export function internal_withChangeLog<Dataset extends SolidDataset>(
-  solidDataset: Dataset
-): Dataset & WithChangeLog {
-  const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
-    ? solidDataset
-    : Object.assign(internal_cloneResource(solidDataset), {
-        internal_changeLog: { additions: [], deletions: [] },
-      });
   return newSolidDataset;
 }
 
