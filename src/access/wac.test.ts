@@ -27,6 +27,7 @@ import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
 import { mock_addAclRuleQuads } from "../acl/mock.internal";
 import { acl, foaf } from "../constants";
+import { setMockAclUrl } from "../acl/mock";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -38,18 +39,19 @@ jest.mock("../fetcher.ts", () => ({
   ),
 }));
 
+import { setAgentResourceAccess } from "../acl/agent";
+import { AclDataset } from "../acl/acl";
+import { mockSolidDatasetFrom } from "../resource/mock";
+
 function getMockDataset(
   sourceIri: IriString,
   aclIri?: IriString
 ): SolidDataset & WithServerResourceInfo {
-  return Object.assign(dataset(), {
-    internal_resourceInfo: {
-      sourceIri: sourceIri,
-      isRawData: false,
-      linkedResources: {},
-      aclUrl: aclIri,
-    },
-  });
+  const result = mockSolidDatasetFrom(sourceIri);
+  if (aclIri === undefined) {
+    return result;
+  }
+  return setMockAclUrl(result, aclIri);
 }
 
 function mockResponse(

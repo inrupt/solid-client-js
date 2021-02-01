@@ -104,7 +104,7 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   return resourceWithFallbackAcl;
 }
 
-function setMockAclUrl<T extends WithServerResourceInfo>(
+export function setMockAclUrl<T extends WithServerResourceInfo>(
   resource: T,
   aclUrl: UrlString
 ): T & WithAccessibleAcl {
