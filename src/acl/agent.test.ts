@@ -43,93 +43,7 @@ import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { getLocalNode } from "../datatypes";
 import { Access, AclDataset, WithAcl } from "./acl";
-
-function addAclRuleQuads(
-  aclDataset: SolidDataset & WithResourceInfo,
-  agent: IriString,
-  resource: IriString,
-  access: Access,
-  type: "resource" | "default" | "legacyDefault",
-  ruleIri?: IriString,
-  targetType:
-    | "http://www.w3.org/ns/auth/acl#agent"
-    | "http://www.w3.org/ns/auth/acl#agentGroup"
-    | "http://www.w3.org/ns/auth/acl#agentClass"
-    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent"
-): AclDataset {
-  const subjectIri =
-    ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-    )
-  );
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(
-        ((_type: typeof type) => {
-          switch (_type) {
-            case "resource":
-              return "http://www.w3.org/ns/auth/acl#accessTo";
-            case "default":
-              return "http://www.w3.org/ns/auth/acl#default";
-            case "legacyDefault":
-              return "http://www.w3.org/ns/auth/acl#defaultForNew";
-          }
-        })(type)
-      ),
-      DataFactory.namedNode(resource)
-    )
-  );
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(targetType),
-      DataFactory.namedNode(agent)
-    )
-  );
-  if (access.read) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
-    );
-  }
-  if (access.append) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
-    );
-  }
-  if (access.write) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
-    );
-  }
-  if (access.control) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
-    );
-  }
-
-  return Object.assign(aclDataset, { internal_accessTo: resource });
-}
+import { mock_addAclRuleQuads } from "./mock.internal";
 
 function addAclDatasetToSolidDataset(
   solidDataset: SolidDataset & WithServerResourceInfo,
@@ -167,7 +81,7 @@ function getMockDataset(
 describe("getGroupAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
@@ -195,7 +109,7 @@ describe("getGroupAccess", () => {
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -241,14 +155,14 @@ describe("getGroupAccess", () => {
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -281,14 +195,14 @@ describe("getGroupAccess", () => {
 
   it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
     const solidDataset = getMockDataset("https://some.pod/container/");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const resourceAclWithDefaultRules = addAclRuleQuads(
+    const resourceAclWithDefaultRules = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -316,14 +230,14 @@ describe("getGroupAccess", () => {
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const fallbackAclWithDefaultRules = addAclRuleQuads(
+    const fallbackAclWithDefaultRules = mock_addAclRuleQuads(
       fallbackAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -353,7 +267,7 @@ describe("getGroupAccess", () => {
 describe("getAgentAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Agent", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
@@ -380,7 +294,7 @@ describe("getAgentAccessAll", () => {
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -420,14 +334,14 @@ describe("getAgentAccessAll", () => {
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -459,14 +373,14 @@ describe("getAgentAccessAll", () => {
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -500,14 +414,14 @@ describe("getAgentAccessAll", () => {
 
   it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
     const solidDataset = getMockDataset("https://some.pod/container/");
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const resourceAclWithDefaultRules = addAclRuleQuads(
+    const resourceAclWithDefaultRules = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -534,14 +448,14 @@ describe("getAgentAccessAll", () => {
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const fallbackAcl = addAclRuleQuads(
+    const fallbackAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const fallbackAclWithDefaultRules = addAclRuleQuads(
+    const fallbackAclWithDefaultRules = mock_addAclRuleQuads(
       fallbackAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -569,7 +483,7 @@ describe("getAgentAccessAll", () => {
 
 describe("getAgentResourceAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -591,14 +505,14 @@ describe("getAgentResourceAccess", () => {
   });
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -620,7 +534,7 @@ describe("getAgentResourceAccess", () => {
   });
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -642,14 +556,14 @@ describe("getAgentResourceAccess", () => {
   });
 
   it("ignores ACL rules that apply to a different Agent", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -671,14 +585,14 @@ describe("getAgentResourceAccess", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://arbitrary.pod/profileDoc#webId",
       "https://some.pod/resource",
@@ -702,14 +616,14 @@ describe("getAgentResourceAccess", () => {
 
 describe("getAgentResourceAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -736,14 +650,14 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -764,7 +678,7 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -799,7 +713,7 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const resourceAcl = addAclRuleQuads(
+    const resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -844,14 +758,14 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    let resourceAcl = addAclRuleQuads(
+    let resourceAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    resourceAcl = addAclRuleQuads(
+    resourceAcl = mock_addAclRuleQuads(
       resourceAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/resource",
@@ -929,7 +843,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not copy over access for an unrelated Agent", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -937,7 +851,7 @@ describe("setAgentResourceAccess", () => {
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -977,7 +891,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or Origin", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource",
@@ -986,7 +900,7 @@ describe("setAgentResourceAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "http://xmlns.com/foaf/0.1/Agent",
       "https://arbitrary.pod/resource",
@@ -995,7 +909,7 @@ describe("setAgentResourceAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1005,7 +919,7 @@ describe("setAgentResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agent"
     );
 
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.app.origin/",
       "https://arbitrary.pod/resource",
@@ -1157,7 +1071,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1203,7 +1117,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1227,7 +1141,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as default rules", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1283,7 +1197,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not remove ACL rules that apply to the Agent but also apply to a different Resource", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1339,7 +1253,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1393,7 +1307,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1447,7 +1361,7 @@ describe("setAgentResourceAccess", () => {
   });
 
   it("does not change ACL rules that also apply to other Agents", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1527,7 +1441,7 @@ describe("setAgentResourceAccess", () => {
 
 describe("getAgentDefaultAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
-    const containerAcl = addAclRuleQuads(
+    const containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1549,14 +1463,14 @@ describe("getAgentDefaultAccess", () => {
   });
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1578,7 +1492,7 @@ describe("getAgentDefaultAccess", () => {
   });
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
-    const containerAcl = addAclRuleQuads(
+    const containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1600,14 +1514,14 @@ describe("getAgentDefaultAccess", () => {
   });
 
   it("ignores ACL rules that apply to a different Agent", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1629,14 +1543,14 @@ describe("getAgentDefaultAccess", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://arbitrary.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -1660,14 +1574,14 @@ describe("getAgentDefaultAccess", () => {
 
 describe("getAgentDefaultAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1694,14 +1608,14 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1722,7 +1636,7 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const containerAcl = addAclRuleQuads(
+    const containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acln"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1757,7 +1671,7 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const containerAcl = addAclRuleQuads(
+    const containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -1802,14 +1716,14 @@ describe("getAgentDefaultAccessAll", () => {
   });
 
   it("ignores ACL rules that apply to a different Resource", () => {
-    let containerAcl = addAclRuleQuads(
+    let containerAcl = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    containerAcl = addAclRuleQuads(
+    containerAcl = mock_addAclRuleQuads(
       containerAcl,
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
@@ -1889,7 +1803,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1897,7 +1811,7 @@ describe("setAgentDefaultAccess", () => {
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1937,7 +1851,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource",
@@ -1946,7 +1860,7 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "http://xmlns.com/foaf/0.1/Agent",
       "https://arbitrary.pod/resource",
@@ -1955,7 +1869,7 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -1964,7 +1878,7 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#agent"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -2116,7 +2030,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2164,7 +2078,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2188,7 +2102,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as resource rules", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2244,7 +2158,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not remove ACL rules that apply to the Agent but also apply to a different Container", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2300,7 +2214,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2356,7 +2270,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2412,7 +2326,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not change ACL rules that also apply to other Agents", () => {
-    const sourceDataset = addAclRuleQuads(
+    const sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
@@ -2494,7 +2408,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not forget to clean up the legacy defaultForNew predicate when setting default access", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -2502,7 +2416,7 @@ describe("setAgentDefaultAccess", () => {
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -2547,7 +2461,7 @@ describe("setAgentDefaultAccess", () => {
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
-    let sourceDataset = addAclRuleQuads(
+    let sourceDataset = mock_addAclRuleQuads(
       getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
@@ -2555,7 +2469,7 @@ describe("setAgentDefaultAccess", () => {
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-    sourceDataset = addAclRuleQuads(
+    sourceDataset = mock_addAclRuleQuads(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
