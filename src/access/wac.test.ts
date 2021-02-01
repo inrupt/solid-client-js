@@ -88,8 +88,8 @@ describe("getAgentAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -98,8 +98,8 @@ describe("getAgentAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 404,
@@ -160,6 +160,10 @@ describe("getAgentAccess", () => {
 
     await expect(result).resolves.toStrictEqual({
       read: true,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
     });
   });
 
@@ -180,8 +184,8 @@ describe("getAgentAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -190,8 +194,8 @@ describe("getAgentAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(aclResource)), {
           status: 200,
@@ -208,6 +212,10 @@ describe("getAgentAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
     });
   });
 
@@ -216,7 +224,7 @@ describe("getAgentAccess", () => {
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/",
-      { read: true, append: false, write: false, control: false },
+      { read: false, append: true, write: false, control: false },
       "default"
     );
 
@@ -224,7 +232,7 @@ describe("getAgentAccess", () => {
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
-      { read: false, append: true, write: false, control: false },
+      { read: true, append: false, write: false, control: false },
       "resource"
     );
 
@@ -236,8 +244,8 @@ describe("getAgentAccess", () => {
           status: 200,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -246,8 +254,8 @@ describe("getAgentAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
           status: 200,
@@ -263,11 +271,114 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
     await expect(result).resolves.toStrictEqual({
-      append: true,
+      append: undefined,
+      read: true,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
     });
   });
 
-  it("returns an empty object if the actor isn't present", async () => {
+  it("returns true for both controlRead and controlWrite if the Agent has control access", async () => {
+    const aclResource = mock_addAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: true },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: undefined,
+      write: undefined,
+      controlRead: true,
+      controlWrite: true,
+    });
+  });
+
+  it("correctly reads the Agent append access", async () => {
+    const aclResource = mock_addAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: true, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: true,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
+  });
+
+  it("correctly reads the Agent write access, which implies append", async () => {
+    const aclResource = mock_addAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: true, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: true,
+      write: true,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
+  });
+
+  it("returns undefined for all modes the Agent isn't present", async () => {
     const aclResource = mock_addAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#another-agent",
@@ -291,7 +402,13 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
 
-    await expect(result).resolves.toStrictEqual({});
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
   });
 
   it("does not return access for groups", async () => {
@@ -320,7 +437,13 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
 
-    await expect(result).resolves.toStrictEqual({});
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
   });
 
   it("does not return access for everyone", async () => {
@@ -349,7 +472,13 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
 
-    await expect(result).resolves.toStrictEqual({});
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
   });
 
   it("does not return access for authenticated agents", async () => {
@@ -378,6 +507,12 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
 
-    await expect(result).resolves.toStrictEqual({});
+    await expect(result).resolves.toStrictEqual({
+      read: undefined,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
   });
 });

@@ -26,25 +26,31 @@ import { internal_defaultFetchOptions } from "../resource/resource";
 import { Access } from "./universal";
 import { Access as AclAccess } from "../acl/acl";
 
-function getDefaultAccess(): Access {
-  return {} as Access;
-}
+// Setting WacAccess = Required<Access> enforces that any change on Access will
+// reflect on WacAccess, but WacAccess has additional restrictions.
+type WacAccess = Required<Access> &
+  (
+    | { controlRead: true; controlWrite: true }
+    | ({ controlRead: undefined; controlWrite: undefined } & {
+        read: true | undefined;
+        append: true | undefined;
+        write: true | undefined;
+      })
+  );
 
-function aclAccessToUniversal(access: AclAccess): Access {
-  const universalAccess = getDefaultAccess();
+function aclAccessToUniversal(access: AclAccess): WacAccess {
   // In ACL, denying access to an actor is a notion that doesn't exist, so an
   // access is either granted or not for a given mode.
   // This creates a misalignment with the ACP notion of an access being granted,
   // denied, or simply not mentioned. Here, we convert the boolean vision of
   // ACL into the boolean or undefined vision of ACP.
-  for (const [mode, accessMode] of Object.entries(access)) {
-    if (accessMode) {
-      // There is no convenient way to type `mode` as the keys to the Access interface
-      // @ts-ignore
-      universalAccess[mode] = accessMode;
-    }
-  }
-  return universalAccess;
+  return {
+    read: access.read ? true : undefined,
+    append: access.append ? true : undefined,
+    write: access.write ? true : undefined,
+    controlRead: access.control ? true : undefined,
+    controlWrite: access.control ? true : undefined,
+  } as WacAccess;
 }
 
 /**
