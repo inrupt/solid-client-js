@@ -83,7 +83,7 @@ html_theme_options = {
     'github_editable': False,
     'github_org': 'inrupt',
     'github_repo': repo_name,
-    'github_branch': 'master',
+    'github_branch': 'main',
     'ess_docs': 'https://docs.inrupt.com/ess/',
     'clientlibjs_docs': 'https://docs.inrupt.com/developer-tools/javascript/client-libraries/',
     'reactsdk_docs': 'https://docs.inrupt.com/developer-tools/javascript/react-sdk',
