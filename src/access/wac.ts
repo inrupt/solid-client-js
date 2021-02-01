@@ -24,9 +24,27 @@ import { getAgentAccess as getAgentAccessWac } from "../acl/agent";
 import { WebId, WithServerResourceInfo } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
 import { Access } from "./universal";
+import { Access as AclAccess } from "../acl/acl";
 
 function getDefaultAccess(): Access {
   return {} as Access;
+}
+
+function aclAccessToUniversal(access: AclAccess): Access {
+  const universalAccess = getDefaultAccess();
+  // In ACL, denying access to an actor is a notion that doesn't exist, so an
+  // access is either granted or not for a given mode.
+  // This creates a misalignment with the ACP notion of an access being granted,
+  // denied, or simply not mentionned. Here, we convert the boolean vision of
+  // ACL into the boolean or undefined vision of ACP.
+  for (const [mode, accessMode] of Object.entries(access)) {
+    if (accessMode) {
+      // There is no convenient way to type `mode` as the keys to the Access interface
+      // @ts-ignore
+      universalAccess[mode] = accessMode;
+    }
+  }
+  return universalAccess;
 }
 
 /**
@@ -59,18 +77,5 @@ export async function getAgentAccess(
   if (wacAccess === null) {
     return null;
   }
-  const universalAccess = getDefaultAccess();
-  // In ACL, denying access to an actor is a notion that doesn't exist, so an
-  // access is either granted or not for a given mode.
-  // This creates a misalignment with the ACP notion of an access being granted,
-  // denied, or simply not mentionned. Here, we convert the boolean vision of
-  // ACL into the boolean or undefined vision of ACP.
-  for (const [mode, accessMode] of Object.entries(wacAccess)) {
-    if (accessMode) {
-      // There is no convenient way to type `mode` as the keys to the Access interface
-      // @ts-ignore
-      universalAccess[mode] = accessMode;
-    }
-  }
-  return universalAccess;
+  return aclAccessToUniversal(wacAccess);
 }
