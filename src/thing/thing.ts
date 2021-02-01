@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode } from "rdf-js";
+import { NamedNode, Quad } from "rdf-js";
 import { dataset } from "../rdfjs";
 import { internal_isDatasetCore } from "../rdfjs.internal";
 import {
@@ -179,9 +179,12 @@ export function setThing<Dataset extends SolidDataset>(
 
   for (const quad of thing) {
     newDataset.add(quad);
-    if (newDataset.internal_changeLog.deletions.includes(quad)) {
+    const alreadyDeletedQuad = newDataset.internal_changeLog.deletions.find(
+      (deletedQuad) => equalsExcludingBlankNodes(quad, deletedQuad)
+    );
+    if (typeof alreadyDeletedQuad !== "undefined") {
       newDataset.internal_changeLog.deletions = newDataset.internal_changeLog.deletions.filter(
-        (deletion) => deletion !== quad
+        (deletion) => deletion !== alreadyDeletedQuad
       );
     } else {
       newDataset.internal_changeLog.additions.push(quad);
@@ -189,6 +192,37 @@ export function setThing<Dataset extends SolidDataset>(
   }
 
   return newDataset;
+}
+
+/**
+ * Compare two Quads but, if both Quads have objects that are Blank Nodes and are otherwise equal, treat them as equal.
+ *
+ * The reason we do this is because you cannot write Blank Nodes as Quad
+ * Subjects using solid-client, so they wouldn't be used in an Object position
+ * either. Thus, if a SolidDataset has a ChangeLog in which a given Quad with a
+ * Blank node as object is listed as deleted, and then an otherwise equivalent
+ * Quad but with a different instance of a Blank Node is added, we can assume
+ * that they are the same, and that rather than adding the new Quad, we can just
+ * prevent the old Quad from being removed.
+ * This occurs in situations in which, for example, you extract a Thing from a
+ * SolidDataset, change that Thing, then re-fetch that same SolidDataset (to
+ * make sure you are working with up-to-date data) and add the Thing to _that_.
+ * When the server returns the data in a serialisation that does not assign a
+ * consistent value to Blank Nodes (e.g. Turtle), our client-side parser will
+ * have to instantiate unique instances on every parse. Therefore, the Blank
+ * Nodes in the refetched SolidDataset will now be different instances from the
+ * ones in the original SolidDataset, even though they're equivalent.
+ */
+function equalsExcludingBlankNodes(a: Quad, b: Quad): boolean {
+  // Potential future improvement: compare the actual values of the nodes.
+  // For example, currently a decimal serialised as "1.0" is considered different from a decimal
+  // serialised as "1.00".
+  return (
+    a.subject.equals(b.subject) &&
+    b.predicate.equals(b.predicate) &&
+    (a.object.equals(b.object) ||
+      (a.object.termType === "BlankNode" && b.object.termType === "BlankNode"))
+  );
 }
 
 /**
