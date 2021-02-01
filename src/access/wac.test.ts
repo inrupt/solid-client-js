@@ -21,7 +21,6 @@
 
 import { jest, describe, it } from "@jest/globals";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
-import { dataset } from "../rdfjs";
 import { getAgentAccess } from "./wac";
 import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
@@ -39,8 +38,6 @@ jest.mock("../fetcher.ts", () => ({
   ),
 }));
 
-import { setAgentResourceAccess } from "../acl/agent";
-import { AclDataset } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
 
 function getMockDataset(

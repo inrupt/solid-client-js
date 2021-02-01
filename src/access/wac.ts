@@ -65,8 +65,7 @@ function aclAccessToUniversal(access: AclAccess): WacAccess {
  * @param resource The URL of the Resource for which we want to list Access
  * @param agent The Agent for which the Access is granted
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns True for Access modes granted to the Agent, False for Access modes
- * denied to the Agent, and undefined otherwise.
+ * @returns True for Access modes granted to the Agent, and undefined otherwise.
  */
 export async function getAgentAccess(
   resource: WithServerResourceInfo,
