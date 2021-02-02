@@ -592,7 +592,7 @@ describe("getGroupAccess", () => {
   });
 
   it("fetches the resource ACL if available", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/groups#group",
       "https://some.pod/resource",
@@ -627,7 +627,7 @@ describe("getGroupAccess", () => {
   });
 
   it("fetches the fallback ACL if no resource ACL is available", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/groups#group",
       "https://some.pod/",
@@ -681,7 +681,7 @@ describe("getGroupAccess", () => {
   });
 
   it("ignores the fallback ACL if the resource ACL is available", async () => {
-    const fallbackAclResource = mock_addAclRuleQuads(
+    const fallbackAclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/groups#group",
       "https://some.pod/",
@@ -691,7 +691,7 @@ describe("getGroupAccess", () => {
       acl.agentGroup
     );
 
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/groups#group",
       "https://some.pod/resource",
@@ -745,7 +745,7 @@ describe("getGroupAccess", () => {
   });
 
   it("returns an empty object if the group isn't present", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/groups#another-group",
       "https://some.pod/resource",
@@ -780,7 +780,7 @@ describe("getGroupAccess", () => {
   });
 
   it("does not return access for agents", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/groups#group",
       "https://some.pod/resource",
@@ -815,7 +815,7 @@ describe("getGroupAccess", () => {
   });
 
   it("does not return access for everyone", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       foaf.Agent,
       "https://some.pod/resource",
@@ -850,7 +850,7 @@ describe("getGroupAccess", () => {
   });
 
   it("does not return access for authenticated agents", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       acl.AuthenticatedAgent,
       "https://some.pod/resource",
