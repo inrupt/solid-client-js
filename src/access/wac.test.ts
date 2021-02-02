@@ -24,9 +24,9 @@ import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
 import { getAgentAccess } from "./wac";
 import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
-import { mock_addAclRuleQuads } from "../acl/mock.internal";
+import { addMockAclRuleQuads } from "../acl/mock.internal";
 import { acl, foaf } from "../constants";
-import { setMockAclUrl } from "../acl/mock";
+import { setMockAclUrl } from "../acl/mock.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -134,7 +134,7 @@ describe("getAgentAccess", () => {
   });
 
   it("fetches the resource ACL if available", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -167,7 +167,7 @@ describe("getAgentAccess", () => {
   });
 
   it("fetches the fallback ACL if no resource ACL is available", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/",
@@ -219,7 +219,7 @@ describe("getAgentAccess", () => {
   });
 
   it("ignores the fallback ACL if the resource ACL is available", async () => {
-    const fallbackAclResource = mock_addAclRuleQuads(
+    const fallbackAclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/",
@@ -227,7 +227,7 @@ describe("getAgentAccess", () => {
       "default"
     );
 
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -279,7 +279,7 @@ describe("getAgentAccess", () => {
   });
 
   it("returns true for both controlRead and controlWrite if the Agent has control access", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -312,7 +312,7 @@ describe("getAgentAccess", () => {
   });
 
   it("correctly reads the Agent append access", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -345,7 +345,7 @@ describe("getAgentAccess", () => {
   });
 
   it("correctly reads the Agent write access, which implies append", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -378,7 +378,7 @@ describe("getAgentAccess", () => {
   });
 
   it("returns undefined for all modes the Agent isn't present", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#another-agent",
       "https://some.pod/resource",
@@ -411,7 +411,7 @@ describe("getAgentAccess", () => {
   });
 
   it("does not return access for groups", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
@@ -446,7 +446,7 @@ describe("getAgentAccess", () => {
   });
 
   it("does not return access for everyone", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       foaf.Agent,
       "https://some.pod/resource",
@@ -481,7 +481,7 @@ describe("getAgentAccess", () => {
   });
 
   it("does not return access for authenticated agents", async () => {
-    const aclResource = mock_addAclRuleQuads(
+    const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       acl.AuthenticatedAgent,
       "https://some.pod/resource",

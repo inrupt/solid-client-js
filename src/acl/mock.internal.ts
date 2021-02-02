@@ -19,11 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { IriString, SolidDataset, WithResourceInfo } from "../interfaces";
+import {
+  IriString,
+  SolidDataset,
+  UrlString,
+  WithResourceInfo,
+  WithServerResourceInfo,
+} from "../interfaces";
 import { DataFactory } from "../rdfjs";
-import { Access, AclDataset } from "./acl";
+import { internal_cloneResource } from "../resource/resource.internal";
+import { Access, AclDataset, WithAccessibleAcl } from "./acl";
 
-export function mock_addAclRuleQuads(
+export function addMockAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
   agent: IriString,
   resource: IriString,
@@ -108,4 +115,21 @@ export function mock_addAclRuleQuads(
   }
 
   return Object.assign(aclDataset, { internal_accessTo: resource });
+}
+
+export function setMockAclUrl<T extends WithServerResourceInfo>(
+  resource: T,
+  aclUrl: UrlString
+): T & WithAccessibleAcl {
+  const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
+    internal_cloneResource(resource),
+    {
+      internal_resourceInfo: {
+        ...resource.internal_resourceInfo,
+        aclUrl: aclUrl,
+      },
+    }
+  );
+
+  return resourceWithAclUrl;
 }
