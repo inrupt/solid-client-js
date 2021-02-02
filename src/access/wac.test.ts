@@ -645,8 +645,8 @@ describe("getGroupAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -655,8 +655,8 @@ describe("getGroupAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(aclResource)), {
           status: 200,
@@ -709,8 +709,8 @@ describe("getGroupAccess", () => {
           status: 200,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -719,8 +719,8 @@ describe("getGroupAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
           status: 200,
@@ -914,8 +914,8 @@ describe("getPublicAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -924,8 +924,8 @@ describe("getPublicAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 404,
@@ -1014,8 +1014,8 @@ describe("getPublicAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -1024,8 +1024,8 @@ describe("getPublicAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(aclResource)), {
           status: 200,
@@ -1078,8 +1078,8 @@ describe("getPublicAccess", () => {
           status: 200,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -1088,8 +1088,8 @@ describe("getPublicAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
           status: 200,
