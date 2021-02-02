@@ -143,15 +143,13 @@ export async function getGroupAccess(
 
 /**
  * For a given Resource, look up its metadata, and read the Access permissions
- * granted to the given Group.
+ * granted to everyone.
  *
- * Note that this only lists permissions granted to the given Group individually,
- * and will not exhaustively list modes the given Group may have access to because
- * they apply to everyone, or because they apply to the Group through another
- * Group that may contain it for instance.
+ * Note that this only lists permissions explicitly granted to everyone as a whole,
+ * and will not exhaustively list modes any individual Agent or Group may have
+ * access to because they specifically apply to them only.
  *
- * @param resource The URL of the Resource for which we want to list Access
- * @param group The Group for which the Access is granted
+ * @param resource The URL of the Resource for which we want to list public Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns True for Access modes granted to the Agent, False for Access modes
  * denied to the Agent, and undefined otherwise.
