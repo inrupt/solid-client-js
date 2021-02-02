@@ -46,6 +46,7 @@ import {
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
 import { getIriAll } from "../thing/get";
+import { Access } from "./universal";
 
 function getActiveRuleAll(
   resource: WithAccessibleAcr & WithResourceInfo,
@@ -86,20 +87,6 @@ export function internal_hasInaccessiblePolicies(
   return activePolicyUrls
     .concat(ruleUrls)
     .some((url) => url.substring(0, sourceIri.length) !== sourceIri);
-}
-
-/**
- * Each of the following access modes is in one of three states:
- * - true: this access mode is granted, or
- * - false: this access mode is denied, or
- * - undefined: this access mode is not set yet.
- */
-interface Access {
-  read: boolean | undefined;
-  append: boolean | undefined;
-  write: boolean | undefined;
-  controlRead: boolean | undefined;
-  controlWrite: boolean | undefined;
 }
 
 /**
