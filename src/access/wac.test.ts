@@ -545,8 +545,8 @@ describe("getGroupAccess", () => {
           status: 404,
           url: "https://some.pod/resource.acl",
         })
-        // Link to the fallback ACL...
       )
+      // Link to the fallback ACL...
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 200,
@@ -555,8 +555,8 @@ describe("getGroupAccess", () => {
             Link: '<.acl>; rel="acl"',
           },
         })
-        // Get the fallback ACL
       )
+      // Get the fallback ACL
       .mockResolvedValueOnce(
         mockResponse("", {
           status: 404,
