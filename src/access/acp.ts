@@ -29,13 +29,7 @@ import {
   getPolicyUrlAll,
 } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
-import {
-  getAllowModes,
-  getDenyModes,
-  getPolicy,
-  getPolicyAll,
-  Policy,
-} from "../acp/policy";
+import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
 import {
   getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,

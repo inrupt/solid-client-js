@@ -22,6 +22,7 @@
 import { internal_fetchAcl } from "../acl/acl.internal";
 import { getAgentAccess as getAgentAccessWac } from "../acl/agent";
 import { getGroupAccess as getGroupAccessWac } from "../acl/group";
+import { getPublicAccess as getPublicAccessWac } from "../acl/class";
 import {
   IriString,
   Url,
@@ -76,6 +77,21 @@ async function getActorAccess(
   return aclAccessToUniversal(wacAccess);
 }
 
+async function getActorClassAccess(
+  resource: WithServerResourceInfo,
+  accessEvaluationCallback: typeof getPublicAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<Access | null> {
+  const resourceAcl = await internal_fetchAcl(resource, options);
+  const wacAccess = accessEvaluationCallback(
+    Object.assign(resource, { internal_acl: resourceAcl })
+  );
+  if (wacAccess === null) {
+    return null;
+  }
+  return aclAccessToUniversal(wacAccess);
+}
+
 /**
  * For a given Resource, look up its metadata, and read the Access permissions
  * granted to the given Agent.
@@ -123,4 +139,26 @@ export async function getGroupAccess(
   > = internal_defaultFetchOptions
 ): Promise<Access | null> {
   return getActorAccess(resource, group, getGroupAccessWac, options);
+}
+
+/**
+ * For a given Resource, look up its metadata, and read the Access permissions
+ * granted to everyone.
+ *
+ * Note that this only lists permissions explicitly granted to everyone as a whole,
+ * and will not exhaustively list modes any individual Agent or Group may have
+ * access to because they specifically apply to them only.
+ *
+ * @param resource The URL of the Resource for which we want to list public Access
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns True for Access modes granted to the Agent, False for Access modes
+ * denied to the Agent, and undefined otherwise.
+ */
+export async function getPublicAccess(
+  resource: WithServerResourceInfo,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<Access | null> {
+  return getActorClassAccess(resource, getPublicAccessWac, options);
 }
