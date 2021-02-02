@@ -21,7 +21,14 @@
 
 import { internal_fetchAcl } from "../acl/acl.internal";
 import { getAgentAccess as getAgentAccessWac } from "../acl/agent";
-import { WebId, WithServerResourceInfo } from "../interfaces";
+import { getGroupAccess as getGroupAccessWac } from "../acl/group";
+import {
+  IriString,
+  Url,
+  UrlString,
+  WebId,
+  WithServerResourceInfo,
+} from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
 import { Access } from "./universal";
 import { Access as AclAccess } from "../acl/acl";
@@ -52,6 +59,23 @@ function aclAccessToUniversal(access: AclAccess): WacAccess {
   } as WacAccess;
 }
 
+async function getActorAccess(
+  resource: WithServerResourceInfo,
+  actor: IriString,
+  accessEvaluationCallback: typeof getAgentAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<Access | null> {
+  const resourceAcl = await internal_fetchAcl(resource, options);
+  const wacAccess = accessEvaluationCallback(
+    Object.assign(resource, { internal_acl: resourceAcl }),
+    actor
+  );
+  if (wacAccess === null) {
+    return null;
+  }
+  return aclAccessToUniversal(wacAccess);
+}
+
 /**
  * For a given Resource, look up its metadata, and read the Access permissions
  * granted to the given Agent.
@@ -73,13 +97,30 @@ export async function getAgentAccess(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<Access | null> {
-  const resourceAcl = await internal_fetchAcl(resource, options);
-  const wacAccess = getAgentAccessWac(
-    Object.assign(resource, { internal_acl: resourceAcl }),
-    agent
-  );
-  if (wacAccess === null) {
-    return null;
-  }
-  return aclAccessToUniversal(wacAccess);
+  return getActorAccess(resource, agent, getAgentAccessWac, options);
+}
+
+/**
+ * For a given Resource, look up its metadata, and read the Access permissions
+ * granted to the given Group.
+ *
+ * Note that this only lists permissions granted to the given Group individually,
+ * and will not exhaustively list modes the given Group may have access to because
+ * they apply to everyone, or because they apply to the Group through another
+ * Group that may contain it for instance.
+ *
+ * @param resource The URL of the Resource for which we want to list Access
+ * @param group The Group for which the Access is granted
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns True for Access modes granted to the Agent, False for Access modes
+ * denied to the Agent, and undefined otherwise.
+ */
+export async function getGroupAccess(
+  resource: WithServerResourceInfo,
+  group: UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<Access | null> {
+  return getActorAccess(resource, group, getGroupAccessWac, options);
 }
