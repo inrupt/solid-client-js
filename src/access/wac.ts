@@ -28,15 +28,14 @@ import { Access as AclAccess } from "../acl/acl";
 
 // Setting WacAccess = Required<Access> enforces that any change on Access will
 // reflect on WacAccess, but WacAccess has additional restrictions.
-type WacAccess = Required<Access> &
-  (
-    | { controlRead: true; controlWrite: true }
-    | ({ controlRead: undefined; controlWrite: undefined } & {
-        read: true | undefined;
-        append: true | undefined;
-        write: true | undefined;
-      })
-  );
+type WacAccess = (
+  | { controlRead: true; controlWrite: true }
+  | { controlRead: undefined; controlWrite: undefined }
+) & {
+  read: true | undefined;
+  append: true | undefined;
+  write: true | undefined;
+};
 
 function aclAccessToUniversal(access: AclAccess): WacAccess {
   // In ACL, denying access to an actor is a notion that doesn't exist, so an
