@@ -300,11 +300,21 @@ function policyAppliesTo(
     getRule(acr, ruleUrl)
   );
 
+  // We assume that this Policy applies if this specific actor is mentioned
+  // and no further restrictions are in place.
+  // (In other words, the Policy may apply to others *in addition to* this
+  // actor, but if it applies to this actor *unless* some other condition holds,
+  // we cannot be sure whether it will apply to this actor.)
+  // This means that:
   return (
+    // Every allOf Rule explicitly applies explicitly to this given actor:
     allOfRules.every((rule) => ruleAppliesTo(rule, actorRelation, actor)) &&
+    // If there are anyOf Rules, at least one applies explicitly to this actor:
     (anyOfRules.length === 0 ||
       anyOfRules.some((rule) => ruleAppliesTo(rule, actorRelation, actor))) &&
-    noneOfRules.every((rule) => !ruleAppliesTo(rule, actorRelation, actor))
+    // No further restrictions are in place that make this sometimes not apply
+    // to the given actor:
+    noneOfRules.length === 0
   );
 }
 
