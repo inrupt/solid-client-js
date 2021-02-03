@@ -28,7 +28,10 @@ import {
   WithFallbackAcl,
   WithResourceAcl,
 } from "./acl";
-import { internal_getContainerPath } from "./acl.internal";
+import {
+  internal_getContainerPath,
+  internal_setResourceAcl,
+} from "./acl.internal";
 import { mockContainerFrom } from "../resource/mock";
 import { setMockAclUrl } from "./mock.internal";
 
@@ -61,12 +64,9 @@ export function addMockResourceAclTo<T extends WithServerResourceInfo>(
   );
   const aclDataset = createAcl(resourceWithAclUrl);
 
-  const resourceWithResourceAcl: typeof resourceWithAclUrl &
-    WithResourceAcl = Object.assign(resourceWithAclUrl, {
-    internal_acl: {
-      resourceAcl: aclDataset,
-      fallbackAcl: null,
-    },
+  const resourceWithResourceAcl = internal_setResourceAcl(resourceWithAclUrl, {
+    resourceAcl: aclDataset,
+    fallbackAcl: null,
   });
 
   return resourceWithResourceAcl;
@@ -94,13 +94,13 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   const mockContainer = setMockAclUrl(mockContainerFrom(containerUrl), aclUrl);
   const aclDataset = createAcl(mockContainer);
 
-  const resourceWithFallbackAcl: typeof resource &
-    WithFallbackAcl = Object.assign(internal_cloneResource(resource), {
-    internal_acl: {
+  const resourceWithFallbackAcl = internal_setResourceAcl(
+    internal_cloneResource(resource),
+    {
       resourceAcl: null,
       fallbackAcl: aclDataset,
-    },
-  });
+    }
+  );
 
   return resourceWithFallbackAcl;
 }

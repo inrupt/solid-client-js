@@ -40,6 +40,7 @@ import { foaf } from "../constants";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { Access, AclDataset, WithAcl } from "./acl";
+import { internal_setResourceAcl } from "./acl.internal";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
@@ -149,7 +150,7 @@ function addAclDatasetToSolidDataset(
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
   }
-  return Object.assign(solidDataset, { internal_acl: acl });
+  return internal_setResourceAcl(solidDataset, acl);
 }
 
 function getMockDataset(
@@ -217,12 +218,9 @@ describe("getPublicAccess", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const inaccessibleAcl: WithAcl = {
-      internal_acl: { fallbackAcl: null, resourceAcl: null },
-    };
-    const solidDatasetWithInaccessibleAcl = Object.assign(
+    const solidDatasetWithInaccessibleAcl = internal_setResourceAcl(
       solidDataset,
-      inaccessibleAcl
+      { fallbackAcl: null, resourceAcl: null }
     );
 
     expect(getPublicAccess(solidDatasetWithInaccessibleAcl)).toBeNull();

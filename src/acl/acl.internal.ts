@@ -40,6 +40,8 @@ import {
   hasAccessibleAcl,
   WithAccessibleAcl,
   WithAcl,
+  WithFallbackAcl,
+  WithResourceAcl,
 } from "./acl";
 
 /**
@@ -462,4 +464,25 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
   targetRule = copyIris(sourceRule, targetRule, acl.mode);
 
   return targetRule;
+}
+
+export function internal_setResourceAcl<
+  ResourceExt extends WithServerResourceInfo
+>(
+  resource: ResourceExt,
+  acl: WithResourceAcl["internal_acl"]
+): ResourceExt & WithResourceAcl;
+export function internal_setResourceAcl<
+  ResourceExt extends WithServerResourceInfo
+>(
+  resource: ResourceExt,
+  acl: WithFallbackAcl["internal_acl"]
+): ResourceExt & WithFallbackAcl;
+export function internal_setResourceAcl<
+  ResourceExt extends WithServerResourceInfo
+>(resource: ResourceExt, acl: WithAcl["internal_acl"]): ResourceExt & WithAcl;
+export function internal_setResourceAcl<
+  ResourceExt extends WithServerResourceInfo
+>(resource: ResourceExt, acl: WithAcl["internal_acl"]): ResourceExt & WithAcl {
+  return Object.assign(resource, { internal_acl: acl });
 }

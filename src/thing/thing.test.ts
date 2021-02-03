@@ -61,6 +61,8 @@ import {
   addDecimal,
 } from "./add";
 import { AclDataset, WithAcl } from "../acl/acl";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { internal_setResourceAcl } from "../acl/acl.internal";
 
 function getMockQuad(
   terms: Partial<{
@@ -987,13 +989,12 @@ describe("removeThing", () => {
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
     });
-    const datasetWithFetchedAcls: SolidDataset & WithAcl = Object.assign(
-      dataset(),
+    const datasetWithFetchedAcls: SolidDataset &
+      WithAcl = internal_setResourceAcl(
+      mockSolidDatasetFrom("https://some.vocab/"),
       {
-        internal_acl: {
-          resourceAcl: null,
-          fallbackAcl: null,
-        },
+        resourceAcl: null,
+        fallbackAcl: null,
       }
     );
     datasetWithFetchedAcls.add(thingQuad);
