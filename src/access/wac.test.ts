@@ -25,6 +25,7 @@ import {
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
+  getGroupAccessAll,
   getPublicAccess,
 } from "./wac";
 import { Response } from "cross-fetch";
@@ -1452,6 +1453,214 @@ describe("getAgentAccessAll", () => {
 
     await expect(result).resolves.toStrictEqual({
       "https://some.pod/profile#agent": {
+        read: undefined,
+        append: undefined,
+        write: undefined,
+        controlRead: true,
+        controlWrite: true,
+      },
+    });
+  });
+});
+
+describe("getGroupAccessAll", () => {
+  it("uses the default fetcher if none is provided", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await getGroupAccessAll(resource);
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("returns null if the advertized ACL isn't accessible", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      // No resource ACL available...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 404,
+          url: "https://some.pod/resource.acl",
+        })
+      )
+      // Link to the fallback ACL...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 200,
+          url: "https://some.pod/",
+          headers: {
+            Link: '<.acl>; rel="acl"',
+          },
+        })
+      )
+      // Get the fallback ACL
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 404,
+          url: "https://some.pod/.acl",
+        })
+      );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = getGroupAccessAll(resource, {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toBeNull();
+  });
+
+  it("returns null if no ACL is advertised by the resource", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("ACL not found", {
+        status: 404,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset("https://some.pod/resource");
+    const result = getGroupAccessAll(resource, {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toBeNull();
+  });
+
+  it("calls the underlying getGroupAccessAll", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const wacModule = jest.requireActual("../acl/group") as {
+      getGroupAccessAll: () => Promise<AgentAccess>;
+    };
+    const getGroupAccessAllWac = jest.spyOn(wacModule, "getGroupAccessAll");
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await getGroupAccessAll(resource, {
+      fetch: mockFetch,
+    });
+
+    expect(getGroupAccessAllWac).toHaveBeenCalled();
+  });
+
+  it("returns an empty list if the ACL defines no access", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await expect(
+      getGroupAccessAll(resource, {
+        fetch: mockFetch,
+      })
+    ).resolves.toStrictEqual({});
+  });
+
+  it("returns the access set for all the actors present", async () => {
+    let aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/groups#group-a",
+      "https://some.pod/resource",
+      { read: false, append: false, write: true, control: false },
+      "resource",
+      "https://some.pod/resource.acl#rule-a",
+      acl.agentGroup
+    );
+    aclResource = addMockAclRuleQuads(
+      aclResource,
+      "https://some.pod/groups#group-b",
+      "https://some.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource",
+      "https://some.pod/resource.acl#rule-b",
+      acl.agentGroup
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await expect(
+      getGroupAccessAll(resource, {
+        fetch: mockFetch,
+      })
+    ).resolves.toStrictEqual({
+      "https://some.pod/groups#group-a": {
+        read: undefined,
+        append: true,
+        write: true,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      "https://some.pod/groups#group-b": {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+    });
+  });
+
+  it("returns true for both controlRead and controlWrite if a Group has control access", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/groups#group",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: true },
+      "resource",
+      "https://some.pod/resource.acl#rule",
+      acl.agentGroup
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = getGroupAccessAll(resource, {
+      fetch: mockFetch,
+    });
+
+    await expect(result).resolves.toStrictEqual({
+      "https://some.pod/groups#group": {
         read: undefined,
         append: undefined,
         write: undefined,
