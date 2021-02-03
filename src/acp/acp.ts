@@ -294,7 +294,9 @@ export function hasAccessibleAcr(
 ): resource is WithAccessibleAcr {
   return (
     typeof resource.internal_acp === "object" &&
-    typeof resource.internal_acp.acr === "object"
+    resource.internal_acp !== null &&
+    typeof resource.internal_acp.acr === "object" &&
+    resource.internal_acp.acr !== null
   );
 }
 
