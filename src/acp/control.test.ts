@@ -22,6 +22,7 @@
 import { describe, it, expect } from "@jest/globals";
 
 import {
+  AccessControlResource,
   acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
@@ -244,6 +245,17 @@ describe("getControlAll", () => {
 
   it("throws an error if the given Resource does not have an Access Control Resource", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
+
+    expect(() => internal_getControlAll(withoutAcr as any)).toThrow(
+      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+    );
+  });
+
+  it("throws an error if the given Resource's ACR could not be fetched", () => {
+    const withoutAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      (null as unknown) as AccessControlResource
+    );
 
     expect(() => internal_getControlAll(withoutAcr as any)).toThrow(
       "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
