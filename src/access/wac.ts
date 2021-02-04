@@ -131,7 +131,7 @@ async function getActorAccessAll(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns True for Access modes granted to the Agent, and undefined otherwise.
  */
-export async function getAgentAccess(
+export function getAgentAccess(
   resource: WithServerResourceInfo,
   agent: WebId,
   options: Partial<
@@ -156,7 +156,7 @@ export async function getAgentAccess(
  * @returns True for Access modes granted to the Agent, False for Access modes
  * denied to the Agent, and undefined otherwise.
  */
-export async function getGroupAccess(
+export function getGroupAccess(
   resource: WithServerResourceInfo,
   group: UrlString,
   options: Partial<
@@ -179,7 +179,7 @@ export async function getGroupAccess(
  * @returns True for Access modes granted to the Agent, False for Access modes
  * denied to the Agent, and undefined otherwise.
  */
-export async function getPublicAccess(
+export function getPublicAccess(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
@@ -200,9 +200,9 @@ export async function getPublicAccess(
  * @param resource The URL of the Resource for which we want to list Agents Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A map of Agents WebIDs associated to a list of modes: True for Access modes
- * granted to the Agent, False for Access modes denied to the Agent, and undefined otherwise.
+ * granted to the Agent, and undefined otherwise.
  */
-export async function getAgentAccessAll(
+export function getAgentAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
