@@ -21,25 +21,46 @@
 
 import { acp } from "../constants";
 import { getSourceIri } from "../resource/resource";
-import { getThing } from "../thing/thing";
+import { asIri, getThing, setThing } from "../thing/thing";
 import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "../acp/acp";
 import {
   AccessControlResource,
+  addAcrPolicyUrl,
+  addPolicyUrl,
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
+  removeAcrPolicyUrl,
+  removePolicyUrl,
 } from "../acp/control";
-import { internal_getAcr } from "../acp/control.internal";
-import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
+import { internal_getAcr, internal_setAcr } from "../acp/control.internal";
 import {
+  createPolicy,
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  Policy,
+  setAllowModes,
+  setDenyModes,
+} from "../acp/policy";
+import {
+  createRule,
   getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
   getRule,
   Rule,
 } from "../acp/rule";
-import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
+import {
+  IriString,
+  SolidDataset,
+  UrlString,
+  WebId,
+  WithResourceInfo,
+} from "../interfaces";
 import { Access } from "./universal";
 import { getIri, getIriAll } from "../thing/get";
+import { addIri } from "../thing/add";
+import { setIri } from "../thing/set";
 
 function getActiveRuleAll(
   resource: WithAccessibleAcr & WithResourceInfo,
@@ -462,6 +483,394 @@ export function internal_getAgentAccessAll(
   resource: WithResourceInfo & WithAcp
 ): Record<WebId, Access> | null {
   return internal_getActorAccessAll(resource, acp.agent);
+}
+
+/**
+ * Set access for a specific actor to a Resource.
+ *
+ * This function adds the relevant Access Control Policies and Rules to a
+ * Resource's Access Control Resource to define the given access for the given
+ * actor specifically. In other words, it can, for example, add Policies that
+ * give a particular Group Read access to the Resource. However, if other
+ * Policies specify that everyone in that Group is *denied* Read access *except*
+ * for a particular Agent, then that will be left intact.
+ * This means that, unless *only* this function is used to manipulate access to
+ * this Resource, the set access might not be equal to the effective access for
+ * an agent matching the given actor.
+ *
+ * There are a number of preconditions that have to be fulfilled for this
+ * function to work:
+ * - Access to the Resource is determined via an Access Control Resource.
+ * - The Resource's Access Control Resource does not refer to (Policies or Rules
+ *   in) other Resources.
+ * - The current user has access to the Resource's Access Control Resource.
+ *
+ * If those conditions do not hold, this function will return `null`.
+ *
+ * Additionally, take note that the given access will only be applied to the
+ * given Resource; if that Resource is a Container, access will have to be set
+ * for its children independently.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to get the access for.
+ * @param actor Which instance of the given actor type you want to get the access for.
+ * @param access What access (read, append, write, controlRead, controlWrite) to set for the given actor. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
+ * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
+ */
+export function internal_setActorAccess<
+  ResourceExt extends WithResourceInfo & WithAcp
+>(
+  resource: ResourceExt,
+  actorRelation: ActorRelation,
+  actor: UrlString,
+  access: Access
+): ResourceExt | null {
+  if (
+    !hasAccessibleAcr(resource) ||
+    internal_hasInaccessiblePolicies(resource)
+  ) {
+    return null;
+  }
+
+  // Get the access that currently applies to the given actor
+  const existingAccess = internal_getActorAccess(
+    resource,
+    actorRelation,
+    actor
+  );
+
+  /* istanbul ignore if: It returns null if the ACR has inaccessible Policies, which should happen since we already check for that above. */
+  if (existingAccess === null) {
+    return null;
+  }
+
+  // Get all Policies that apply specifically to the given actor
+  const acr = internal_getAcr(resource);
+
+  const acrPolicyUrls = getAcrPolicyUrlAll(resource);
+  const acrPolicies = acrPolicyUrls
+    .map((policyUrl) => getPolicy(acr, policyUrl))
+    .filter((policy) => policy !== null) as Policy[];
+  const applicableAcrPolicies = acrPolicies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acr)
+  );
+
+  const policyUrls = getPolicyUrlAll(resource);
+  const policies = policyUrls
+    .map((policyUrl) => getPolicy(acr, policyUrl))
+    .filter((policy) => policy !== null) as Policy[];
+  const applicablePolicies = policies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acr)
+  );
+
+  // For every Policy that applies specifically to the given Actor, but _also_
+  // to another actor (i.e. that applies using an anyOf Rule, or a Rule that
+  // mentions both the given and another actor)...
+  const otherActorAcrPolicies = applicableAcrPolicies.filter((acrPolicy) =>
+    policyHasOtherActors(acrPolicy, actorRelation, actor, acr)
+  );
+  const otherActorPolicies = applicablePolicies.filter((policy) =>
+    policyHasOtherActors(policy, actorRelation, actor, acr)
+  );
+
+  // ...add copies of those Policies and their Rules, but excluding the given actor...
+  let updatedAcr = acr;
+  const newAcrPolicyUrls: IriString[] = [];
+  otherActorAcrPolicies.forEach((acrPolicy) => {
+    const [policyCopy, ruleCopies] = copyPolicyExcludingActor(
+      acrPolicy,
+      acr,
+      actorRelation,
+      actor
+    );
+    updatedAcr = setThing(updatedAcr, policyCopy);
+    updatedAcr = ruleCopies.reduce(setThing, updatedAcr);
+    newAcrPolicyUrls.push(asIri(policyCopy));
+  });
+  const newPolicyUrls: IriString[] = [];
+  otherActorPolicies.forEach((policy) => {
+    const [policyCopy, ruleCopies] = copyPolicyExcludingActor(
+      policy,
+      acr,
+      actorRelation,
+      actor
+    );
+    updatedAcr = setThing(updatedAcr, policyCopy);
+    updatedAcr = ruleCopies.reduce(setThing, updatedAcr);
+    newPolicyUrls.push(asIri(policyCopy));
+  });
+
+  // ...add a new Policy that applies the given access,
+  // and the previously applying access for access modes that were undefined...
+  const newRuleIri =
+    getSourceIri(acr) + `#rule_${encodeURIComponent(actorRelation)}_${actor}`;
+  let newRule = createRule(newRuleIri);
+  newRule = setIri(newRule, actorRelation, actor);
+
+  const newControlReadAccess = access.controlRead ?? existingAccess.controlRead;
+  const newControlWriteAccess =
+    access.controlWrite ?? existingAccess.controlWrite;
+  let acrPoliciesToUnapply = otherActorAcrPolicies;
+  if (
+    (typeof newControlReadAccess !== "undefined" ||
+      typeof newControlWriteAccess !== "undefined") &&
+    (newControlReadAccess !== existingAccess.controlRead ||
+      newControlWriteAccess !== existingAccess.controlWrite)
+  ) {
+    const newAcrPolicyIri =
+      getSourceIri(acr) +
+      `#acr_policy` +
+      `_${encodeURIComponent(actorRelation)}_${actor}` +
+      `_${Date.now()}_${Math.random()}`;
+    let newAcrPolicy = createPolicy(newAcrPolicyIri);
+    newAcrPolicy = setAllowModes(newAcrPolicy, {
+      read: newControlReadAccess === true,
+      append: false,
+      write: newControlWriteAccess === true,
+    });
+    newAcrPolicy = setDenyModes(newAcrPolicy, {
+      read: newControlReadAccess === false,
+      append: false,
+      write: newControlWriteAccess === false,
+    });
+    newAcrPolicy = addIri(newAcrPolicy, acp.allOf, newRule);
+    updatedAcr = setThing(updatedAcr, newAcrPolicy);
+    updatedAcr = setThing(updatedAcr, newRule);
+    newAcrPolicyUrls.push(newAcrPolicyIri);
+    // If we don't have to set new access, we only need to unapply the
+    // ACR Policies that applied to both the given actor and other actors
+    // (because they have been replaced by clones not mentioning the given
+    // actor). Hence `policiesToUnApply` is initialied to `otherActorPolicies`.
+    // However, if we're in this if branch, that means we also had to replace
+    // Policies that defined access for just this actor, so we'll have to remove
+    // all Policies mentioning this actor:
+    acrPoliciesToUnapply = applicableAcrPolicies;
+  }
+
+  const newReadAccess = access.read ?? existingAccess.read;
+  const newAppendAccess = access.append ?? existingAccess.append;
+  const newWriteAccess = access.write ?? existingAccess.write;
+  let policiesToUnapply = otherActorPolicies;
+  if (
+    (typeof newReadAccess !== "undefined" ||
+      typeof newAppendAccess !== "undefined" ||
+      typeof newWriteAccess !== "undefined") &&
+    (newReadAccess !== existingAccess.read ||
+      newAppendAccess !== existingAccess.append ||
+      newWriteAccess !== existingAccess.write)
+  ) {
+    const newPolicyIri =
+      getSourceIri(acr) +
+      `#policy` +
+      `_${encodeURIComponent(actorRelation)}_${encodeURIComponent(actor)}` +
+      `_${Date.now()}_${Math.random()}`;
+    let newPolicy = createPolicy(newPolicyIri);
+    newPolicy = setAllowModes(newPolicy, {
+      read: newReadAccess === true,
+      append: newAppendAccess === true,
+      write: newWriteAccess === true,
+    });
+    newPolicy = setDenyModes(newPolicy, {
+      read: newReadAccess === false,
+      append: newAppendAccess === false,
+      write: newWriteAccess === false,
+    });
+    newPolicy = addIri(newPolicy, acp.allOf, newRule);
+    updatedAcr = setThing(updatedAcr, newPolicy);
+    updatedAcr = setThing(updatedAcr, newRule);
+    newPolicyUrls.push(newPolicyIri);
+    // If we don't have to set new access, we only need to unapply the
+    // Policies that applied to both the given actor and other actors (because
+    // they have been replaced by clones not mentioning the given actor). Hence
+    // `policiesToUnApply` is initialied to `otherActorPolicies`.
+    // However, if we're in this if branch, that means we also had to replace
+    // Policies that defined access for just this actor, so we'll have to remove
+    // all Policies mentioning this actor:
+    policiesToUnapply = applicablePolicies;
+  }
+
+  // ...then remove existing Policy URLs that mentioned both the given actor
+  // and other actors from the given Resource and apply the new ones (but do not
+  // remove the actual old Policies - they might still apply to other Resources!).
+  let updatedResource = internal_setAcr(resource, updatedAcr);
+  acrPoliciesToUnapply.forEach((previouslyApplicableAcrPolicy) => {
+    updatedResource = removeAcrPolicyUrl(
+      updatedResource,
+      asIri(previouslyApplicableAcrPolicy)
+    );
+  });
+  newAcrPolicyUrls.forEach((newAcrPolicyUrl) => {
+    updatedResource = addAcrPolicyUrl(updatedResource, newAcrPolicyUrl);
+  });
+  policiesToUnapply.forEach((previouslyApplicablePolicy) => {
+    updatedResource = removePolicyUrl(
+      updatedResource,
+      asIri(previouslyApplicablePolicy)
+    );
+  });
+  newPolicyUrls.forEach((newPolicyUrl) => {
+    updatedResource = addPolicyUrl(updatedResource, newPolicyUrl);
+  });
+
+  return updatedResource;
+}
+
+function policyHasOtherActors(
+  policy: Policy,
+  actorRelation: ActorRelation,
+  actor: IriString,
+  policyAndRuleResource: SolidDataset
+): boolean {
+  const allOfRulesHaveOtherActors = getIriAll(policy, acp.allOf).some(
+    (ruleUrl) => {
+      const rule = getRule(policyAndRuleResource, ruleUrl);
+      /* istanbul ignore if This function only gets called after policyAppliesTo, which already filters out non-existent Rules. */
+      if (rule === null) {
+        return false;
+      }
+      return ruleHasOtherActors(rule, actorRelation, actor);
+    }
+  );
+  const anyOfRulesHaveOtherActors = getIriAll(policy, acp.anyOf).some(
+    (ruleUrl) => {
+      const rule = getRule(policyAndRuleResource, ruleUrl);
+      /* istanbul ignore if This function only gets called after policyAppliesTo, which already filters out non-existent Rules. */
+      if (rule === null) {
+        return false;
+      }
+      return ruleHasOtherActors(rule, actorRelation, actor);
+    }
+  );
+  /* istanbul ignore next This function only gets called after policyAppliesTo, which already filters out all noneOf Rules */
+  const noneOfRulesHaveOtherActors = getIriAll(policy, acp.noneOf).some(
+    (ruleUrl) => {
+      const rule = getRule(policyAndRuleResource, ruleUrl);
+      if (rule === null) {
+        return false;
+      }
+      return ruleHasOtherActors(rule, actorRelation, actor);
+    }
+  );
+
+  return (
+    allOfRulesHaveOtherActors ||
+    anyOfRulesHaveOtherActors ||
+    noneOfRulesHaveOtherActors
+  );
+}
+
+function ruleHasOtherActors(
+  rule: Rule,
+  actorRelation: ActorRelation,
+  actor: IriString
+): boolean {
+  const otherActors: IriString[] = [];
+  knownActorRelations.forEach((knownActorRelation) => {
+    const otherActorsWithThisRelation = getIriAll(
+      rule,
+      knownActorRelation
+    ).filter(
+      (applicableActor) =>
+        applicableActor !== actor || knownActorRelation !== actorRelation
+    );
+    // Unfortunately Node 10 does not support `.flat()` yet, hence the use of `push`:
+    otherActors.push(...otherActorsWithThisRelation);
+  });
+
+  return otherActors.length > 0;
+}
+
+function copyPolicyExcludingActor(
+  inputPolicy: Policy,
+  policyAndRuleDataset: SolidDataset,
+  actorRelationToExclude: ActorRelation,
+  actorToExclude: IriString
+): [Policy, Rule[]] {
+  const newIriSuffix =
+    "_copy_wihout" +
+    `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
+    `_${Date.now()}_${Math.random()}`;
+
+  // Create new Rules for the Policy, excluding the given Actor
+  const newAllOfRules = copyRulesExcludingActor(
+    getIriAll(inputPolicy, acp.allOf),
+    policyAndRuleDataset,
+    newIriSuffix,
+    actorRelationToExclude,
+    actorToExclude
+  );
+  const newAnyOfRules = copyRulesExcludingActor(
+    getIriAll(inputPolicy, acp.anyOf),
+    policyAndRuleDataset,
+    newIriSuffix,
+    actorRelationToExclude,
+    actorToExclude
+  );
+  const newNoneOfRules = copyRulesExcludingActor(
+    getIriAll(inputPolicy, acp.noneOf),
+    policyAndRuleDataset,
+    newIriSuffix,
+    actorRelationToExclude,
+    actorToExclude
+  );
+
+  // Create a new Policy with the new Rules
+  let newPolicy = createPolicy(asIri(inputPolicy) + newIriSuffix);
+  getIriAll(inputPolicy, acp.allow).forEach((allowMode) => {
+    newPolicy = addIri(newPolicy, acp.allow, allowMode);
+  });
+  getIriAll(inputPolicy, acp.deny).forEach((denyMode) => {
+    newPolicy = addIri(newPolicy, acp.deny, denyMode);
+  });
+  newAllOfRules.forEach((newRule) => {
+    newPolicy = addIri(newPolicy, acp.allOf, newRule);
+  });
+  newAnyOfRules.forEach((newRule) => {
+    newPolicy = addIri(newPolicy, acp.anyOf, newRule);
+  });
+  /* istanbul ignore next Policies listing noneOf Rules are left alone (because they do not unambiguously apply to the given actor always), so there will usually not be any noneOf Rules to copy. */
+  newNoneOfRules.forEach((newRule) => {
+    newPolicy = addIri(newPolicy, acp.noneOf, newRule);
+  });
+
+  return [
+    newPolicy,
+    newAllOfRules.concat(newAnyOfRules).concat(newNoneOfRules),
+  ];
+}
+
+/** Creates clones of all the Rules identified by `ruleIris` in `ruleDataset`, excluding the given Actor */
+function copyRulesExcludingActor(
+  ruleIris: IriString[],
+  ruleDataset: SolidDataset,
+  iriSuffix: IriString,
+  actorRelationToExclude: ActorRelation,
+  actorToExclude: IriString
+): Rule[] {
+  return ruleIris
+    .map((ruleIri) => {
+      const rule = getRule(ruleDataset, ruleIri);
+      if (rule === null) {
+        return null;
+      }
+
+      let newRule = createRule(asIri(rule) + iriSuffix);
+      let listsOtherActors = false;
+      knownActorRelations.forEach((knownActorRelation) => {
+        getIriAll(rule, knownActorRelation).forEach((targetActor) => {
+          if (
+            knownActorRelation === actorRelationToExclude &&
+            targetActor === actorToExclude
+          ) {
+            return;
+          }
+          listsOtherActors = true;
+          newRule = addIri(newRule, knownActorRelation, targetActor);
+        });
+      });
+      return listsOtherActors ? newRule : null;
+    })
+    .filter(isNotNull);
 }
 
 function isNotNull<T>(value: T | null): value is T {
