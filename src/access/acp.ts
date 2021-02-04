@@ -83,6 +83,19 @@ export function internal_hasInaccessiblePolicies(
     .some((url) => url.substring(0, sourceIri.length) !== sourceIri);
 }
 
+const knownActorRelations = [acp.agent, acp.group];
+/**
+ * Union type of all relations defined in `knownActorRelations`.
+ *
+ * When the ACP spec evolves to support additional relations of Rules to Actors,
+ * adding those relations to `knownActorRelations` will cause TypeScript to warn
+ * us everywhere to update everywhere the ActorRelation type is used and that
+ * needs additional work to handle it.
+ */
+type ActorRelation = typeof knownActorRelations extends Array<infer E>
+  ? E
+  : never;
+
 /**
  * Get an overview of what access is defined for a given actor in a Resource's Access Control Resource.
  *
@@ -102,7 +115,7 @@ export function internal_hasInaccessiblePolicies(
  */
 export function internal_getActorAccess(
   resource: WithResourceInfo & WithAcp,
-  actorRelation: IriString,
+  actorRelation: ActorRelation,
   actor: IriString
 ): Access | null {
   if (
@@ -286,7 +299,7 @@ export function internal_getAuthenticatedAccess(
 
 function policyAppliesTo(
   policy: Policy,
-  actorRelation: IriString,
+  actorRelation: ActorRelation,
   actor: IriString,
   acr: AccessControlResource
 ) {
@@ -320,15 +333,15 @@ function policyAppliesTo(
 
 function ruleAppliesTo(
   rule: Rule | null,
-  actorRelation: IriString,
+  actorRelation: ActorRelation,
   actor: IriString
 ): boolean {
   return rule !== null && getIriAll(rule, actorRelation).includes(actor);
 }
 
 /**
- * Get a set of all actors mentionned in an ACR by active Rules (i.e. that are
- * references by Policies referenced by the ACR Control, and therefore that
+ * Get a set of all actors mentioned in an ACR by active Rules (i.e. that are
+ * referenced by Policies referenced by the ACR Control, and therefore that
  * effectively apply).
  *
  * @param resource The resource with the ACR we want to inspect
@@ -336,7 +349,7 @@ function ruleAppliesTo(
  */
 function internal_findActorAll(
   resource: WithAccessibleAcr & WithResourceInfo,
-  actorRelation: typeof acp.agent | typeof acp.group
+  actorRelation: ActorRelation
 ): Set<WebId> {
   const actors: Set<WebId> = new Set();
   // Collect all policies that apply to the resource or its ACR (aka active)
@@ -373,7 +386,7 @@ function internal_findActorAll(
  */
 export function internal_getActorAccessAll(
   resource: WithResourceInfo & WithAcp,
-  actorRelation: typeof acp.agent | typeof acp.group
+  actorRelation: ActorRelation
 ): Record<string, Access> | null {
   if (
     !hasAccessibleAcr(resource) ||
