@@ -225,9 +225,9 @@ export function getAgentAccessAll(
  * @param resource The URL of the Resource for which we want to list Agents Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A map of Groups URLs associated to a list of modes: True for Access modes
- * granted to the Agent, False for Access modes denied to the Agent, and undefined otherwise.
+ * granted to the Agent, and undefined otherwise.
  */
-export async function getGroupAccessAll(
+export function getGroupAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
