@@ -21,13 +21,12 @@
 
 import { describe, it } from "@jest/globals";
 import { WithAccessibleAcr } from "../acp/acp";
-import { AccessControlResource } from "../acp/control";
+import { AccessControlResource, addPolicyUrl } from "../acp/control";
 import { internal_createControl } from "../acp/control.internal";
 import { addMockAcrTo } from "../acp/mock";
 import {
   createPolicy,
-  getAllowModes,
-  getDenyModes,
+  getPolicy,
   removePolicy,
   setAllowModes,
   setDenyModes,
@@ -1009,6 +1008,31 @@ describe("getActorAccess", () => {
     expect(access).toStrictEqual({});
   });
 
+  it("does not apply a Policy that does not specify any access modes", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+
+    expect(access).toStrictEqual({});
+  });
+
   it("applies a Policy that does not specify any Rules at all", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
@@ -1023,6 +1047,73 @@ describe("getActorAccess", () => {
         acrPolicies: {},
         memberAcrPolicies: {},
       }
+    );
+
+    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: true,
+    });
+  });
+
+  it("applies a Policy that also specifies empty Rules", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#emptyRule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+
+    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: true,
+    });
+  });
+
+  it("applies a Policy that only specifies non-existent Rules", () => {
+    let mockedAcr = mockAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#emptyRule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      }
+    );
+    let policyReferencingNonExistentRules = getPolicy(
+      mockedAcr,
+      "https://some.pod/resource?ext=acr#policy"
+    )!;
+    policyReferencingNonExistentRules = addIri(
+      policyReferencingNonExistentRules,
+      acp.allOf,
+      "https://some.pod/resource?ext=acr#emptyRule"
+    );
+    mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentRules);
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const resourceWithAcr = addPolicyUrl(
+      addMockAcrTo(plainResource, mockedAcr),
+      "https://some.pod/resource?ext=acr#policy"
     );
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);

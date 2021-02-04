@@ -35,12 +35,11 @@ import {
   getOptionalRuleUrlAll,
   getRequiredRuleUrlAll,
   getRule,
-  getRuleAll,
   Rule,
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
-import { getIriAll } from "../thing/get";
 import { Access } from "./universal";
+import { getIri, getIriAll } from "../thing/get";
 
 function getActiveRuleAll(
   resource: WithAccessibleAcr & WithResourceInfo,
@@ -303,15 +302,22 @@ function policyAppliesTo(
   actor: IriString,
   acr: AccessControlResource
 ) {
-  const allOfRules = getRequiredRuleUrlAll(policy).map((ruleUrl) =>
-    getRule(acr, ruleUrl)
-  );
-  const anyOfRules = getOptionalRuleUrlAll(policy).map((ruleUrl) =>
-    getRule(acr, ruleUrl)
-  );
-  const noneOfRules = getForbiddenRuleUrlAll(policy).map((ruleUrl) =>
-    getRule(acr, ruleUrl)
-  );
+  const allowModes = getIriAll(policy, acp.allow);
+  const denyModes = getIriAll(policy, acp.deny);
+  if (allowModes.length + denyModes.length === 0) {
+    // A Policy that does not specify access modes does not do anything:
+    return false;
+  }
+
+  const allOfRules = getRequiredRuleUrlAll(policy)
+    .map((ruleUrl) => getRule(acr, ruleUrl))
+    .filter(isNotNull);
+  const anyOfRules = getOptionalRuleUrlAll(policy)
+    .map((ruleUrl) => getRule(acr, ruleUrl))
+    .filter(isNotNull);
+  const noneOfRules = getForbiddenRuleUrlAll(policy)
+    .map((ruleUrl) => getRule(acr, ruleUrl))
+    .filter(isNotNull);
 
   // We assume that this Policy applies if this specific actor is mentioned
   // and no further restrictions are in place.
@@ -320,7 +326,7 @@ function policyAppliesTo(
   // we cannot be sure whether it will apply to this actor.)
   // This means that:
   return (
-    // Every allOf Rule explicitly applies explicitly to this given actor:
+    // Every existing allOf Rule explicitly applies explicitly to this given actor:
     allOfRules.every((rule) => ruleAppliesTo(rule, actorRelation, actor)) &&
     // If there are anyOf Rules, at least one applies explicitly to this actor:
     (anyOfRules.length === 0 ||
@@ -332,11 +338,16 @@ function policyAppliesTo(
 }
 
 function ruleAppliesTo(
-  rule: Rule | null,
+  rule: Rule,
   actorRelation: ActorRelation,
   actor: IriString
 ): boolean {
-  return rule !== null && getIriAll(rule, actorRelation).includes(actor);
+  // A Rule that does not list *any* actor matches for everyone:
+  let isEmpty = true;
+  knownActorRelations.forEach((knownActorRelation) => {
+    isEmpty &&= getIri(rule, knownActorRelation) === null;
+  });
+  return isEmpty || getIriAll(rule, actorRelation).includes(actor);
 }
 
 /**
@@ -451,4 +462,8 @@ export function internal_getAgentAccessAll(
   resource: WithResourceInfo & WithAcp
 ): Record<WebId, Access> | null {
   return internal_getActorAccessAll(resource, acp.agent);
+}
+
+function isNotNull<T>(value: T | null): value is T {
+  return value !== null;
 }
