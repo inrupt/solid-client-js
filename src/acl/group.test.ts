@@ -37,7 +37,7 @@ import {
   getGroupAccessAll,
 } from "./group";
 import { Access, AclDataset, WithAcl } from "./acl";
-import { internal_setResourceAcl } from "./acl.internal";
+import { internal_setAcl } from "./acl.internal";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
@@ -130,7 +130,7 @@ function addAclDatasetToSolidDataset(
   } else if (type === "fallback") {
     acl.fallbackAcl = aclDataset;
   }
-  return internal_setResourceAcl(solidDataset, acl);
+  return internal_setAcl(solidDataset, acl);
 }
 
 function getMockDataset(
@@ -204,10 +204,10 @@ describe("getGroupAccess", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const solidDatasetWithInaccessibleAcl = internal_setResourceAcl(
-      solidDataset,
-      { fallbackAcl: null, resourceAcl: null }
-    );
+    const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
+      fallbackAcl: null,
+      resourceAcl: null,
+    });
 
     expect(
       getGroupAccess(
@@ -385,10 +385,10 @@ describe("getGroupAccessAll", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = getMockDataset("https://some.pod/container/resource");
-    const solidDatasetWithInaccessibleAcl = internal_setResourceAcl(
-      solidDataset,
-      { fallbackAcl: null, resourceAcl: null }
-    );
+    const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
+      fallbackAcl: null,
+      resourceAcl: null,
+    });
 
     expect(getGroupAccessAll(solidDatasetWithInaccessibleAcl)).toBeNull();
   });

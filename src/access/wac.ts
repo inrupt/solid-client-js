@@ -19,10 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  internal_fetchAcl,
-  internal_setResourceAcl,
-} from "../acl/acl.internal";
+import { internal_fetchAcl, internal_setAcl } from "../acl/acl.internal";
 import { getAgentAccess as getAgentAccessWac } from "../acl/agent";
 import { getGroupAccess as getGroupAccessWac } from "../acl/group";
 import { getPublicAccess as getPublicAccessWac } from "../acl/class";
@@ -71,7 +68,7 @@ async function getActorAccess(
 ): Promise<Access | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAccess = accessEvaluationCallback(
-    internal_setResourceAcl(resource, resourceAcl),
+    internal_setAcl(resource, resourceAcl),
     actor
   );
   if (wacAccess === null) {
@@ -87,7 +84,7 @@ async function getActorClassAccess(
 ): Promise<Access | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAccess = accessEvaluationCallback(
-    internal_setResourceAcl(resource, resourceAcl)
+    internal_setAcl(resource, resourceAcl)
   );
   if (wacAccess === null) {
     return null;

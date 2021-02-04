@@ -63,7 +63,7 @@ import {
   internal_fetchFallbackAcl,
   internal_getContainerPath,
   internal_fetchAcl,
-  internal_setResourceAcl,
+  internal_setAcl,
 } from "./acl.internal";
 import { WithServerResourceInfo, ThingPersisted } from "../interfaces";
 import { getFile } from "../resource/file";
@@ -1201,13 +1201,10 @@ describe("getResourceAcl", () => {
       },
     });
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: aclDataset,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/resource",
@@ -1232,13 +1229,10 @@ describe("getResourceAcl", () => {
       },
     });
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: aclDataset,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/resource",
@@ -1263,13 +1257,10 @@ describe("getResourceAcl", () => {
       },
     });
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: aclDataset,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/resource",
@@ -1286,13 +1277,10 @@ describe("getResourceAcl", () => {
 
   it("returns null if the given SolidDataset does not have a Resource ACL attached", () => {
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/resource",
@@ -1316,13 +1304,10 @@ describe("getFallbackAcl", () => {
       },
     });
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: aclDataset,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
       {}
     );
     expect(getFallbackAcl(solidDataset)).toEqual(aclDataset);
@@ -1330,13 +1315,10 @@ describe("getFallbackAcl", () => {
 
   it("returns null if the given SolidDataset does not have a Fallback ACL attached", () => {
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
       {}
     );
     expect(getFallbackAcl(solidDataset)).toBeNull();
@@ -1346,13 +1328,10 @@ describe("getFallbackAcl", () => {
 describe("createAcl", () => {
   it("creates a new empty ACL", () => {
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: null,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/container/resource",
@@ -1420,13 +1399,10 @@ describe("createAclFromFallbackAcl", () => {
       )
     );
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: aclDataset,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/container/resource",
@@ -1504,13 +1480,10 @@ describe("createAclFromFallbackAcl", () => {
       )
     );
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: aclDataset,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/container/resource",
@@ -1588,13 +1561,10 @@ describe("createAclFromFallbackAcl", () => {
       )
     );
     const solidDataset = Object.assign(
-      internal_setResourceAcl(
-        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-        {
-          resourceAcl: null,
-          fallbackAcl: aclDataset,
-        }
-      ),
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
       {
         internal_resourceInfo: {
           sourceIri: "https://arbitrary.pod/container/resource",

@@ -62,7 +62,7 @@ import {
 } from "./add";
 import { AclDataset, WithAcl } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { internal_setResourceAcl } from "../acl/acl.internal";
+import { internal_setAcl } from "../acl/acl.internal";
 
 function getMockQuad(
   terms: Partial<{
@@ -989,8 +989,7 @@ describe("removeThing", () => {
       subject: "https://some.vocab/subject",
       object: "https://some.vocab/new-object",
     });
-    const datasetWithFetchedAcls: SolidDataset &
-      WithAcl = internal_setResourceAcl(
+    const datasetWithFetchedAcls: SolidDataset & WithAcl = internal_setAcl(
       mockSolidDatasetFrom("https://some.vocab/"),
       {
         resourceAcl: null,
