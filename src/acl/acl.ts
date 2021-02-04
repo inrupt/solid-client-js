@@ -45,6 +45,7 @@ import {
   internal_fetchAcl,
   internal_getAclRules,
   internal_getDefaultAclRulesForResource,
+  internal_setAcl,
 } from "./acl.internal";
 
 /**
@@ -119,7 +120,7 @@ export async function getSolidDatasetWithAcl(
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
-  return Object.assign(solidDataset, { internal_acl: acl });
+  return internal_setAcl(solidDataset, acl);
 }
 
 /**
@@ -154,7 +155,7 @@ export async function getFileWithAcl(
 ): Promise<File & WithServerResourceInfo & WithAcl> {
   const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
-  return Object.assign(file, { internal_acl: acl });
+  return internal_setAcl(file, acl);
 }
 
 /**
@@ -182,7 +183,7 @@ export async function getResourceInfoWithAcl(
 ): Promise<WithServerResourceInfo & WithAcl> {
   const resourceInfo = await getResourceInfo(url, options);
   const acl = await internal_fetchAcl(resourceInfo, options);
-  return Object.assign(resourceInfo, { internal_acl: acl });
+  return internal_setAcl(resourceInfo, acl);
 }
 
 /**
