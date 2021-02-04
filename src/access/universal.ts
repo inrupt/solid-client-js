@@ -26,9 +26,9 @@
  * - undefined: this access mode is not set yet.
  */
 export interface Access {
-  read: boolean | undefined;
-  append: boolean | undefined;
-  write: boolean | undefined;
-  controlRead: boolean | undefined;
-  controlWrite: boolean | undefined;
+  read?: boolean;
+  append?: boolean;
+  write?: boolean;
+  controlRead?: boolean;
+  controlWrite?: boolean;
 }
