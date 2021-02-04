@@ -29,13 +29,7 @@ import {
   getPolicyUrlAll,
 } from "../acp/control";
 import { internal_getAcr } from "../acp/control.internal";
-import {
-  getAllowModes,
-  getDenyModes,
-  getPolicy,
-  getPolicyAll,
-  Policy,
-} from "../acp/policy";
+import { getAllowModes, getDenyModes, getPolicy, Policy } from "../acp/policy";
 import {
   getForbiddenRuleUrlAll,
   getOptionalRuleUrlAll,
@@ -46,6 +40,7 @@ import {
 } from "../acp/rule";
 import { IriString, UrlString, WebId, WithResourceInfo } from "../interfaces";
 import { getIriAll } from "../thing/get";
+import { Access } from "./universal";
 
 function getActiveRuleAll(
   resource: WithAccessibleAcr & WithResourceInfo,
@@ -86,20 +81,6 @@ export function internal_hasInaccessiblePolicies(
   return activePolicyUrls
     .concat(ruleUrls)
     .some((url) => url.substring(0, sourceIri.length) !== sourceIri);
-}
-
-/**
- * Each of the following access modes is in one of three states:
- * - true: this access mode is granted, or
- * - false: this access mode is denied, or
- * - undefined: this access mode is not set yet.
- */
-interface Access {
-  read: boolean | undefined;
-  append: boolean | undefined;
-  write: boolean | undefined;
-  controlRead: boolean | undefined;
-  controlWrite: boolean | undefined;
 }
 
 /**
@@ -319,11 +300,21 @@ function policyAppliesTo(
     getRule(acr, ruleUrl)
   );
 
+  // We assume that this Policy applies if this specific actor is mentioned
+  // and no further restrictions are in place.
+  // (In other words, the Policy may apply to others *in addition to* this
+  // actor, but if it applies to this actor *unless* some other condition holds,
+  // we cannot be sure whether it will apply to this actor.)
+  // This means that:
   return (
+    // Every allOf Rule explicitly applies explicitly to this given actor:
     allOfRules.every((rule) => ruleAppliesTo(rule, actorRelation, actor)) &&
+    // If there are anyOf Rules, at least one applies explicitly to this actor:
     (anyOfRules.length === 0 ||
       anyOfRules.some((rule) => ruleAppliesTo(rule, actorRelation, actor))) &&
-    noneOfRules.every((rule) => !ruleAppliesTo(rule, actorRelation, actor))
+    // No further restrictions are in place that make this sometimes not apply
+    // to the given actor:
+    noneOfRules.length === 0
   );
 }
 

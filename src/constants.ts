@@ -25,6 +25,7 @@
 /** @hidden */
 export const acl = {
   Authorization: "http://www.w3.org/ns/auth/acl#Authorization",
+  AuthenticatedAgent: "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
   accessTo: "http://www.w3.org/ns/auth/acl#accessTo",
   agent: "http://www.w3.org/ns/auth/acl#agent",
   agentGroup: "http://www.w3.org/ns/auth/acl#agentGroup",

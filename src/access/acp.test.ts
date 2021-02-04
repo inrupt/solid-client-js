@@ -1274,7 +1274,7 @@ describe("getActorAccess", () => {
       expect(access).toStrictEqual({});
     });
 
-    it("does apply for a noneOf Rule", () => {
+    it("does not apply for a noneOf Rule", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -1297,9 +1297,7 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({
-        read: true,
-      });
+      expect(access).toStrictEqual({});
     });
   });
 
@@ -1652,7 +1650,7 @@ describe("getActorAccess", () => {
       expect(access).toStrictEqual({});
     });
 
-    it("does apply for an allOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for an allOf Rule with the given actor and a noneOf Rule without", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -1680,12 +1678,10 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({
-        read: true,
-      });
+      expect(access).toStrictEqual({});
     });
 
-    it("does apply for an anyOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for an anyOf Rule with the given actor and a noneOf Rule without", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -1713,9 +1709,7 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({
-        read: true,
-      });
+      expect(access).toStrictEqual({});
     });
 
     it("does not apply for an allOf Rule with the given actor and an anyOf and a noneOf Rule without", () => {
@@ -1919,7 +1913,7 @@ describe("getActorAccess", () => {
       expect(access).toStrictEqual({});
     });
 
-    it("does apply for an allOf and an anyOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for an allOf and an anyOf Rule with the given actor and a noneOf Rule without", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -1952,9 +1946,7 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({
-        read: true,
-      });
+      expect(access).toStrictEqual({});
     });
 
     it("does not apply for an allOf and a noneOf Rule with the given actor and an anyOf Rule without", () => {
@@ -3387,7 +3379,7 @@ describe("internal_getActorAccessAll", () => {
 
   describe("One or several policies applying to one agent and not to another", () => {
     it.each([acp.agent, acp.group])(
-      "returns no access for %s part of a noneOf rule",
+      "returns no access for Policies with a noneOf rule",
       (actor) => {
         const resourceWithAcr = mockResourceWithAcr(
           "https://some.pod/resource",
@@ -3420,9 +3412,7 @@ describe("internal_getActorAccessAll", () => {
           internal_getActorAccessAll(resourceWithAcr, actor)
         ).toStrictEqual({
           "https://some.pod/profile#excluded-actor": {},
-          "https://some.pod/profile#included-actor": {
-            read: true,
-          },
+          "https://some.pod/profile#included-actor": {},
         });
       }
     );

@@ -30,6 +30,7 @@ import {
 } from "./acl";
 import { internal_getContainerPath } from "./acl.internal";
 import { mockContainerFrom } from "../resource/mock";
+import { setMockAclUrl } from "./mock.internal";
 
 /**
  * ```{warning}
@@ -102,21 +103,4 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   });
 
   return resourceWithFallbackAcl;
-}
-
-function setMockAclUrl<T extends WithServerResourceInfo>(
-  resource: T,
-  aclUrl: UrlString
-): T & WithAccessibleAcl {
-  const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
-    internal_cloneResource(resource),
-    {
-      internal_resourceInfo: {
-        ...resource.internal_resourceInfo,
-        aclUrl: aclUrl,
-      },
-    }
-  );
-
-  return resourceWithAclUrl;
 }
