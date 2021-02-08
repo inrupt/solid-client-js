@@ -21,12 +21,14 @@
 
 import { jest, describe, it } from "@jest/globals";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
+import { getAgentResourceAccess } from "../acl/agent";
 import {
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
   getGroupAccessAll,
   getPublicAccess,
+  setAgentResourceAccess,
 } from "./wac";
 import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
@@ -46,6 +48,8 @@ jest.mock("../fetcher.ts", () => ({
 
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { AgentAccess } from "../acl/agent";
+import { internal_getResourceAcl } from "../acl/acl.internal";
+import { Access } from "../acl/acl";
 
 function getMockDataset(
   sourceIri: IriString,
@@ -1668,5 +1672,490 @@ describe("getGroupAccessAll", () => {
         controlWrite: true,
       },
     });
+  });
+});
+
+describe("setAgentAccess", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setAgentResourceAccess(resource, "https://some.pod/profile#agent", {
+      read: true,
+      append: undefined,
+      write: undefined,
+      controlRead: undefined,
+      controlWrite: undefined,
+    });
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("returns null if no ACL is accessible", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      // No resource ACL available...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 404,
+          url: "https://some.pod/resource.acl",
+        })
+      )
+      // Link to the fallback ACL...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 200,
+          url: "https://some.pod/",
+          headers: {
+            Link: '<.acl>; rel="acl"',
+          },
+        })
+      )
+      // Get the fallback ACL
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 404,
+          url: "https://some.pod/.acl",
+        })
+      );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(result).resolves.toBeNull();
+  });
+
+  it("returns null if no ACL is advertised by the target resource", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("ACL not found", {
+        status: 404,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset("https://some.pod/resource");
+    const result = setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    await expect(result).resolves.toBeNull();
+  });
+
+  it("sets read access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("sets append access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: true,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("sets write access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: undefined,
+        write: true,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: true,
+      control: false,
+    });
+  });
+
+  it("sets control access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: true, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: undefined,
+        write: undefined,
+        controlRead: true,
+        controlWrite: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: true,
+    });
+  });
+
+  it("copies the fallback ACL if no resource ACL is available, and sets intended access in the newly created copy", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/",
+      { read: true, append: false, write: false, control: false },
+      "default"
+    );
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      // No resource ACL available...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 404,
+          url: "https://some.pod/resource.acl",
+        })
+      )
+      // Link to the fallback ACL...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 200,
+          url: "https://some.pod/",
+          headers: {
+            Link: '<.acl>; rel="acl"',
+          },
+        })
+      )
+      // Get the fallback ACL
+      .mockResolvedValueOnce(
+        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+          status: 200,
+          url: "https://some.pod/.acl",
+        })
+      );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: true,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("ignores the fallback ACL if the resource ACL is available", async () => {
+    const fallbackAclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/.acl"),
+      "https://some.pod/profile#another-agent",
+      "https://some.pod/",
+      { read: true, append: false, write: false, control: false },
+      "default"
+    );
+
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: true, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      // The resource ACL is available...
+      .mockResolvedValueOnce(
+        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+          status: 200,
+          url: "https://some.pod/resource.acl",
+        })
+      )
+      // Link to the fallback ACL...
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 200,
+          url: "https://some.pod/",
+          headers: {
+            Link: '<.acl>; rel="acl"',
+          },
+        })
+      )
+      // Get the fallback ACL
+      .mockResolvedValueOnce(
+        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+          status: 200,
+          url: "https://some.pod/.acl",
+        })
+      );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: true,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    // Here, we check that the agent set in the fallback ACL isn't present in
+    // the resource ACL
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#another-agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("calls the underlying setAgentAccess function", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const wacModule = jest.requireActual("../acl/agent") as {
+      setAgentResourceAccess: () => Promise<AgentAccess>;
+    };
+    const setAgentResourceAccessWac = jest.spyOn(
+      wacModule,
+      "setAgentResourceAccess"
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: undefined,
+        append: true,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(setAgentResourceAccessWac).toHaveBeenCalled();
   });
 });

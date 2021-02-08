@@ -22,8 +22,9 @@
 import { getSolidDataset } from "../resource/solidDataset";
 import {
   IriString,
-  Thing,
   WithChangeLog,
+  SolidDataset,
+  Thing,
   WithServerResourceInfo,
 } from "../interfaces";
 import {
@@ -641,7 +642,21 @@ export function internal_setActorAccess(
   const updatedAcl = setThing(filteredAcl, newRule);
 
   // Remove any remaining Rules that do not contain any meaningful statements:
-  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
+  return internal_removeEmptyAclRules(updatedAcl);
+}
 
-  return cleanedAcl;
+export function internal_setResourceAcl<
+  T extends WithServerResourceInfo & WithAcl
+>(resource: T, acl: AclDataset): T & WithResourceAcl {
+  const newAcl: WithResourceAcl["internal_acl"] = {
+    resourceAcl: acl,
+    fallbackAcl: null,
+  };
+  return internal_setAcl(resource, newAcl);
+}
+
+export function internal_getResourceAcl(
+  resource: WithServerResourceInfo & WithResourceAcl
+): AclDataset {
+  return resource.internal_acl.resourceAcl;
 }
