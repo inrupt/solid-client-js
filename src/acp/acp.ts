@@ -36,7 +36,7 @@ import {
   internal_defaultFetchOptions,
 } from "../resource/resource";
 import { hasAccessibleAcl, WithAcl } from "../acl/acl";
-import { internal_fetchAcl } from "../acl/acl.internal";
+import { internal_fetchAcl, internal_setAcl } from "../acl/acl.internal";
 import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
 import {
   AccessControlResource,
@@ -164,7 +164,7 @@ export async function getSolidDatasetWithAccessDatasets(
   const solidDataset = await getSolidDataset(urlString, config);
   if (hasAccessibleAcl(solidDataset)) {
     const acl = await internal_fetchAcl(solidDataset, config);
-    return Object.assign(solidDataset, { internal_acl: acl });
+    return internal_setAcl(solidDataset, acl);
   } else {
     const acr = await fetchAcr(solidDataset, config);
     return Object.assign(solidDataset, acr);
@@ -202,7 +202,7 @@ export async function getFileWithAccessDatasets(
   const file = await getFile(urlString, config);
   if (hasAccessibleAcl(file)) {
     const acl = await internal_fetchAcl(file, config);
-    return Object.assign(file, { internal_acl: acl });
+    return internal_setAcl(file, acl);
   } else {
     const acr = await fetchAcr(file, config);
     return Object.assign(file, acr);
@@ -240,7 +240,7 @@ export async function getResourceInfoWithAccessDatasets(
   const resourceInfo = await getResourceInfo(urlString, config);
   if (hasAccessibleAcl(resourceInfo)) {
     const acl = await internal_fetchAcl(resourceInfo, config);
-    return Object.assign(resourceInfo, { internal_acl: acl });
+    return internal_setAcl(resourceInfo, acl);
   } else {
     const acr = await fetchAcr(resourceInfo, config);
     return Object.assign(resourceInfo, acr);

@@ -63,9 +63,11 @@ import {
   internal_fetchFallbackAcl,
   internal_getContainerPath,
   internal_fetchAcl,
+  internal_setAcl,
 } from "./acl.internal";
 import { WithServerResourceInfo, ThingPersisted } from "../interfaces";
 import { getFile } from "../resource/file";
+import { mockSolidDatasetFrom } from "../resource/mock";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -1198,17 +1200,22 @@ describe("getResourceAcl", () => {
         linkedResources: {},
       },
     });
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/resource.acl"],
+          },
         },
-      },
-    });
+      }
+    );
     expect(getResourceAcl(solidDataset)).toEqual(aclDataset);
   });
 
@@ -1221,17 +1228,22 @@ describe("getResourceAcl", () => {
         linkedResources: {},
       },
     });
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/other-resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/other-resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/other-resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/other-resource.acl"],
+          },
         },
-      },
-    });
+      }
+    );
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
@@ -1244,29 +1256,39 @@ describe("getResourceAcl", () => {
         linkedResources: {},
       },
     });
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { resourceAcl: aclDataset, fallbackAcl: null },
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: aclDataset,
+        fallbackAcl: null,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/resource.acl"],
+          },
         },
-      },
-    });
+      }
+    );
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
   it("returns null if the given SolidDataset does not have a Resource ACL attached", () => {
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { fallbackAcl: null, resourceAcl: null },
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource",
-        isRawData: false,
-        linkedResources: {},
-      },
-    });
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/resource",
+          isRawData: false,
+          linkedResources: {},
+        },
+      }
+    );
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 });
@@ -1281,33 +1303,46 @@ describe("getFallbackAcl", () => {
         linkedResources: {},
       },
     });
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
-    });
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
+      {}
+    );
     expect(getFallbackAcl(solidDataset)).toEqual(aclDataset);
   });
 
   it("returns null if the given SolidDataset does not have a Fallback ACL attached", () => {
-    const solidDataset = Object.assign(dataset(), {
-      internal_acl: { fallbackAcl: null, resourceAcl: null },
-    });
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
+      {}
+    );
     expect(getFallbackAcl(solidDataset)).toBeNull();
   });
 });
 
 describe("createAcl", () => {
   it("creates a new empty ACL", () => {
-    const solidDataset = Object.assign(dataset(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/container/resource",
-        isRawData: false,
-        aclUrl: "https://some.pod/container/resource.acl",
-        linkedResources: {
-          acl: ["https://some.pod/container/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: null,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/container/resource",
+          isRawData: false,
+          aclUrl: "https://some.pod/container/resource.acl",
+          linkedResources: {
+            acl: ["https://some.pod/container/resource.acl"],
+          },
         },
-      },
-      internal_acl: { fallbackAcl: null, resourceAcl: null },
-    });
+      }
+    );
 
     const resourceAcl = createAcl(solidDataset);
 
@@ -1363,17 +1398,22 @@ describe("createAclFromFallbackAcl", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
       )
     );
-    const solidDataset = Object.assign(dataset(), {
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/container/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/container/resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/container/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/container/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/container/resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/container/resource.acl"],
+          },
         },
-      },
-      internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
-    });
+      }
+    );
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
@@ -1439,17 +1479,22 @@ describe("createAclFromFallbackAcl", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
       )
     );
-    const solidDataset = Object.assign(dataset(), {
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/container/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/container/resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/container/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/container/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/container/resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/container/resource.acl"],
+          },
         },
-      },
-      internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
-    });
+      }
+    );
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
@@ -1515,17 +1560,22 @@ describe("createAclFromFallbackAcl", () => {
         DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
       )
     );
-    const solidDataset = Object.assign(dataset(), {
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/container/resource",
-        isRawData: false,
-        aclUrl: "https://arbitrary.pod/container/resource.acl",
-        linkedResources: {
-          acl: ["https://arbitrary.pod/container/resource.acl"],
+    const solidDataset = Object.assign(
+      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+        resourceAcl: null,
+        fallbackAcl: aclDataset,
+      }),
+      {
+        internal_resourceInfo: {
+          sourceIri: "https://arbitrary.pod/container/resource",
+          isRawData: false,
+          aclUrl: "https://arbitrary.pod/container/resource.acl",
+          linkedResources: {
+            acl: ["https://arbitrary.pod/container/resource.acl"],
+          },
         },
-      },
-      internal_acl: { fallbackAcl: aclDataset, resourceAcl: null },
-    });
+      }
+    );
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 

@@ -40,6 +40,8 @@ import {
   hasAccessibleAcl,
   WithAccessibleAcl,
   WithAcl,
+  WithFallbackAcl,
+  WithResourceAcl,
 } from "./acl";
 
 /**
@@ -462,4 +464,30 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
   targetRule = copyIris(sourceRule, targetRule, acl.mode);
 
   return targetRule;
+}
+
+/**
+ * Attach an ACL dataset to a Resource.
+ *
+ * @hidden This is an internal utility function that should not be used directly by downstreams.
+ * @param resource The Resource to which an ACL is being attached
+ * @param acl The ACL being attached to the Resource
+ */
+export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
+  resource: ResourceExt,
+  acl: WithResourceAcl["internal_acl"]
+): ResourceExt & WithResourceAcl;
+export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
+  resource: ResourceExt,
+  acl: WithFallbackAcl["internal_acl"]
+): ResourceExt & WithFallbackAcl;
+export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
+  resource: ResourceExt,
+  acl: WithAcl["internal_acl"]
+): ResourceExt & WithAcl;
+export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
+  resource: ResourceExt,
+  acl: WithAcl["internal_acl"]
+): ResourceExt & WithAcl {
+  return Object.assign(resource, { internal_acl: acl });
 }

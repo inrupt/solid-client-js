@@ -7,15 +7,21 @@ compatible with the RDF/JS specification. You can use solid-client in Node.js
 using either CommonJS or ES modules, and in the browser with a bundler like
 Webpack, Rollup, or Parcel.
 
-@inrupt/solid-client is part of a family open source JavaScript libraries designed to support developers building Solid applications.
+@inrupt/solid-client is part of a family open source JavaScript libraries
+designed to support developers building Solid applications.
 
 # Inrupt Solid JavaScript Client Libraries
 
 ## Data access and permissions management - solid-client
 
-[@inrupt/solid-client](https://docs.inrupt.com/developer-tools/javascript/client-libraries/) allows developers to access data and manage permissions on data stored in Solid Pods.
+[@inrupt/solid-client](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
+allows developers to access data and manage permissions on data stored in Solid
+Pods.
 
-[@inrupt/solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser) allows apps running in a browser to authenticate against a Solid server. This is only necessary if you wish to access private resources in a Pod (to access public resources you could simply use standard `window.fetch()`).
+[@inrupt/solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser)
+allows apps running in a browser to authenticate against a Solid server. This is
+only necessary if you wish to access private resources in a Pod (to access
+public resources you could simply use standard `window.fetch()`).
 
 ## Vocabularies and interoperability
 
@@ -51,18 +57,21 @@ module.
 
 This module bundles together JavaScript classes representing many of the most
 common RDF vocabularies published on the web today (e.g. FOAF, Schema.org,
-vCard, SKOS, etc.): [@inrupt/vocab-common-rdf](https://www.npmjs.com/package/@inrupt/vocab-common-rdf)
+vCard, SKOS, etc.):
+[@inrupt/vocab-common-rdf](https://www.npmjs.com/package/@inrupt/vocab-common-rdf)
 
 ### Solid-specific RDF vocabularies
 
 This module bundles together JavaScript classes representing all the RDF
-vocabularies related to Solid (e.g. Solid terms, WebACL, ACP, etc.): [@inrupt/vocab-solid-common](https://www.npmjs.com/package/@inrupt/vocab-solid-common)
+vocabularies related to Solid (e.g. Solid terms, WebACL, ACP, etc.):
+[@inrupt/vocab-solid-common](https://www.npmjs.com/package/@inrupt/vocab-solid-common)
 
 ### Inrupt-specific RDF vocabularies
 
 This module bundles together JavaScript classes representing all the RDF
 vocabularies created and maintained by Inrupt (e.g. an Inrupt test vocabulary,
-Inrupt glossaries, Inrupt product vocabularies, etc.): [@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
+Inrupt glossaries, Inrupt product vocabularies, etc.):
+[@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
 
 **Note:** All the above npm modules are currently generated and published
 to npm automatically by a closed-source Inrupt tool. We plan to open-source that
@@ -74,10 +83,11 @@ Our JavaScript Client Libraries use relatively modern JavaScript features that
 will work in all commonly-used browsers, except Internet Explorer. If you need
 support for Internet Explorer, it is recommended to pass them through a tool
 like [Babel](https://babeljs.io), and to add polyfills for e.g. `Map`, `Set`,
-`Promise`, `Headers`, `Array.prototype.includes`
-and `String.prototype.endsWith`.
+`Promise`, `Headers`, `Array.prototype.includes`, `Object.entries` and
+`String.prototype.endsWith`.
 
-Additionally, when using this package in an environment other than Node.js, you will need [a polyfill for Node's `buffer` module](https://www.npmjs.com/package/buffer).
+Additionally, when using this package in an environment other than Node.js, you
+will need [a polyfill for Node's `buffer` module](https://www.npmjs.com/package/buffer).
 
 # Installation
 
