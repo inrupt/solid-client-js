@@ -486,7 +486,7 @@ export function internal_getAgentAccessAll(
 }
 
 /**
- * Set access for a specific actor to a Resource.
+ * Set access to a Resource for a specific actor.
  *
  * This function adds the relevant Access Control Policies and Rules to a
  * Resource's Access Control Resource to define the given access for the given
@@ -494,9 +494,9 @@ export function internal_getAgentAccessAll(
  * give a particular Group Read access to the Resource. However, if other
  * Policies specify that everyone in that Group is *denied* Read access *except*
  * for a particular Agent, then that will be left intact.
- * This means that, unless *only* this function is used to manipulate access to
- * this Resource, the set access might not be equal to the effective access for
- * an agent matching the given actor.
+ * This means that, unless *only* this module's functions are used to manipulate
+ * access to this Resource, the set access might not be equal to the effective
+ * access for an agent matching the given actor.
  *
  * There are a number of preconditions that have to be fulfilled for this
  * function to work:
@@ -509,11 +509,11 @@ export function internal_getAgentAccessAll(
  *
  * Additionally, take note that the given access will only be applied to the
  * given Resource; if that Resource is a Container, access will have to be set
- * for its children independently.
+ * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
- * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to get the access for.
- * @param actor Which instance of the given actor type you want to get the access for.
+ * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to set the access for.
+ * @param actor Which instance of the given actor type you want to set the access for.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for the given actor. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
  */
@@ -713,6 +713,157 @@ export function internal_setActorAccess<
   });
 
   return updatedResource;
+}
+
+/**
+ * Set access to a Resource for a specific Agent.
+ *
+ * This function adds the relevant Access Control Policies and Rules to a
+ * Resource's Access Control Resource to define the given access for the given
+ * Agent specifically. In other words, it can, for example, add Policies that
+ * give a particular Agent Read access to the Resource. However, if other
+ * Policies specify that that Agent is *denied* Read access *except* if they're
+ * in a particular Group, then that will be left intact.
+ * This means that, unless *only* this function is used to manipulate access to
+ * this Resource, the set access might not be equal to the effective access for
+ * the given Agent.
+ *
+ * There are a number of preconditions that have to be fulfilled for this
+ * function to work:
+ * - Access to the Resource is determined via an Access Control Resource.
+ * - The Resource's Access Control Resource does not refer to (Policies or Rules
+ *   in) other Resources.
+ * - The current user has access to the Resource's Access Control Resource.
+ *
+ * If those conditions do not hold, this function will return `null`.
+ *
+ * Additionally, take note that the given access will only be applied to the
+ * given Resource; if that Resource is a Container, access will have to be set
+ * for its contained Resources independently.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param webId Which Agent you want to set the access for.
+ * @param access What access (read, append, write, controlRead, controlWrite) to set for the given Agent. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
+ * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
+ */
+export function internal_setAgentAccess<
+  ResourceExt extends WithResourceInfo & WithAcp
+>(resource: ResourceExt, webId: WebId, access: Access): ResourceExt | null {
+  return internal_setActorAccess(resource, acp.agent, webId, access);
+}
+
+/**
+ * Set access to a Resource for a specific Group.
+ *
+ * This function adds the relevant Access Control Policies and Rules to a
+ * Resource's Access Control Resource to define the given access for the given
+ * Group specifically. In other words, it can, for example, add Policies that
+ * give a particular Group Read access to the Resource. However, if other
+ * Policies specify that it is *denied* Read access *except* if they're a
+ * particular Agent, then that will be left intact.
+ * This means that, unless *only* this module's functions are used to manipulate
+ * access to this Resource, the set access might not be equal to the effective
+ * access for Agents in the given Group.
+ *
+ * There are a number of preconditions that have to be fulfilled for this
+ * function to work:
+ * - Access to the Resource is determined via an Access Control Resource.
+ * - The Resource's Access Control Resource does not refer to (Policies or Rules
+ *   in) other Resources.
+ * - The current user has access to the Resource's Access Control Resource.
+ *
+ * If those conditions do not hold, this function will return `null`.
+ *
+ * Additionally, take note that the given access will only be applied to the
+ * given Resource; if that Resource is a Container, access will have to be set
+ * for its contained Resources independently.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param groupUrl Which Group you want to set the access for.
+ * @param access What access (read, append, write, controlRead, controlWrite) to set for the given Group. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
+ * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
+ */
+export function internal_setGroupAccess<
+  ResourceExt extends WithResourceInfo & WithAcp
+>(resource: ResourceExt, groupUrl: WebId, access: Access): ResourceExt | null {
+  return internal_setActorAccess(resource, acp.group, groupUrl, access);
+}
+
+/**
+ * Set access to a Resource for everybody.
+ *
+ * This function adds the relevant Access Control Policies and Rules to a
+ * Resource's Access Control Resource to define the given access for everybody
+ * specifically. In other words, it can, for example, add Policies that
+ * give everybody Read access to the Resource. However, if other
+ * Policies specify that everybody is *denied* Read access *except* if they're
+ * in a particular Group, then that will be left intact.
+ * This means that, unless *only* this module's functions are used to manipulate
+ * access to this Resource, the set access might not be equal to the effective
+ * access for a particular Agent.
+ *
+ * There are a number of preconditions that have to be fulfilled for this
+ * function to work:
+ * - Access to the Resource is determined via an Access Control Resource.
+ * - The Resource's Access Control Resource does not refer to (Policies or Rules
+ *   in) other Resources.
+ * - The current user has access to the Resource's Access Control Resource.
+ *
+ * If those conditions do not hold, this function will return `null`.
+ *
+ * Additionally, take note that the given access will only be applied to the
+ * given Resource; if that Resource is a Container, access will have to be set
+ * for its contained Resources independently.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param access What access (read, append, write, controlRead, controlWrite) to set for everybody. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
+ * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
+ */
+export function internal_setPublicAccess<
+  ResourceExt extends WithResourceInfo & WithAcp
+>(resource: ResourceExt, access: Access): ResourceExt | null {
+  return internal_setActorAccess(resource, acp.agent, acp.PublicAgent, access);
+}
+
+/**
+ * Set access to a Resource for authenticated Agents.
+ *
+ * This function adds the relevant Access Control Policies and Rules to a
+ * Resource's Access Control Resource to define the given access for
+ * authenticated Agents specifically. In other words, it can, for example, add
+ * Policies that give authenticated Agents Read access to the Resource. However,
+ * if other Policies specify that authenaticated Agents are *denied* Read access
+ * *except* if they're in a particular Group, then that will be left intact.
+ * This means that, unless *only* this module's functions are used to manipulate
+ * access to this Resource, the set access might not be equal to the effective
+ * access for a particular Agent.
+ *
+ * There are a number of preconditions that have to be fulfilled for this
+ * function to work:
+ * - Access to the Resource is determined via an Access Control Resource.
+ * - The Resource's Access Control Resource does not refer to (Policies or Rules
+ *   in) other Resources.
+ * - The current user has access to the Resource's Access Control Resource.
+ *
+ * If those conditions do not hold, this function will return `null`.
+ *
+ * Additionally, take note that the given access will only be applied to the
+ * given Resource; if that Resource is a Container, access will have to be set
+ * for its contained Resources independently.
+ *
+ * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param access What access (read, append, write, controlRead, controlWrite) to set for authenticated Agents. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
+ * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
+ */
+export function internal_setAuthenticatedAccess<
+  ResourceExt extends WithResourceInfo & WithAcp
+>(resource: ResourceExt, access: Access): ResourceExt | null {
+  return internal_setActorAccess(
+    resource,
+    acp.agent,
+    acp.AuthenticatedAgent,
+    access
+  );
 }
 
 function policyHasOtherActors(
