@@ -138,6 +138,11 @@ const NO_ACCESS: AclAccess = {
 };
 
 function aclAccessToUniversal(access: AclAccess): WacAccess {
+  // In ACL, denying access to an actor is a notion that doesn't exist, so an
+  // access is either granted or not for a given mode.
+  // This creates a misalignment with the ACP notion of an access being granted,
+  // denied, or simply not mentioned. Here, we convert the boolean vision of
+  // ACL into the boolean or undefined vision of ACP.
   return {
     read: access.read === true ? true : undefined,
     write: access.write === true ? true : undefined,
