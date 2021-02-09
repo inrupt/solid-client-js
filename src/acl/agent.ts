@@ -48,6 +48,7 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_removeEmptyAclRules,
   internal_getResourceAclRulesForResource,
+  internal_setActorAccess,
 } from "./acl.internal";
 import { getThingAll, setThing } from "../thing/thing";
 import { removeIri, removeAll } from "../thing/remove";
@@ -197,35 +198,13 @@ export function setAgentResourceAccess(
   agent: WebId,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
-  // give the Agent access to the Resource:
-  let filteredAcl = aclDataset;
-  getThingAll(aclDataset).forEach((aclRule) => {
-    // Obtain both the Rule that no longer includes the given Agent,
-    // and a new Rule that includes all ACL Quads
-    // that do not pertain to the given Agent-Resource combination.
-    // Note that usually, the latter will no longer include any meaningful statements;
-    // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removeAgentFromRule(
-      aclRule,
-      agent,
-      aclDataset.internal_accessTo,
-      "resource"
-    );
-    filteredAcl = setThing(filteredAcl, filteredRule);
-    filteredAcl = setThing(filteredAcl, remainingRule);
-  });
-
-  // Create a new Rule that only grants the given Agent the given Access Modes:
-  let newRule = internal_initialiseAclRule(access);
-  newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
-  newRule = setIri(newRule, acl.agent, agent);
-  const updatedAcl = setThing(filteredAcl, newRule);
-
-  // Remove any remaining Rules that do not contain any meaningful statements:
-  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
-
-  return cleanedAcl;
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agent,
+    "resource",
+    agent
+  );
 }
 
 /**
@@ -311,35 +290,13 @@ export function setAgentDefaultAccess(
   agent: WebId,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
-  // give the Agent default access to the Resource:
-  let filteredAcl = aclDataset;
-  getThingAll(aclDataset).forEach((aclRule) => {
-    // Obtain both the Rule that no longer includes the given Agent,
-    // and a new Rule that includes all ACL Quads
-    // that do not pertain to the given Agent-Resource default combination.
-    // Note that usually, the latter will no longer include any meaningful statements;
-    // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removeAgentFromRule(
-      aclRule,
-      agent,
-      aclDataset.internal_accessTo,
-      "default"
-    );
-    filteredAcl = setThing(filteredAcl, filteredRule);
-    filteredAcl = setThing(filteredAcl, remainingRule);
-  });
-
-  // Create a new Rule that only grants the given Agent the given default Access Modes:
-  let newRule = internal_initialiseAclRule(access);
-  newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
-  newRule = setIri(newRule, acl.agent, agent);
-  const updatedAcl = setThing(filteredAcl, newRule);
-
-  // Remove any remaining Rules that do not contain any meaningful statements:
-  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
-
-  return cleanedAcl;
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agent,
+    "default",
+    agent
+  );
 }
 
 function getAgentAclRulesForAgent(
@@ -355,60 +312,6 @@ function getAgentAclRules(aclRules: AclRule[]): AclRule[] {
 
 function isAgentAclRule(aclRule: AclRule): boolean {
   return getIri(aclRule, acl.agent) !== null;
-}
-
-/**
- * Given an ACL Rule, returns two new ACL Rules that cover all the input Rule's use cases,
- * except for giving the given Agent access to the given Resource.
- *
- * @param rule The ACL Rule that should no longer apply for a given Agent to a given Resource.
- * @param agent The Agent that should be removed from the Rule for the given Resource.
- * @param resourceIri The Resource to which the Rule should no longer apply for the given Agent.
- * @returns A tuple with the original ACL Rule without the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
- */
-function removeAgentFromRule(
-  rule: AclRule,
-  agent: WebId,
-  resourceIri: IriString,
-  ruleType: "resource" | "default"
-): [AclRule, AclRule] {
-  // If the existing Rule does not apply to the given Agent, we don't need to split up.
-  // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
-  // that would give it access it does not currently have:
-  if (!getIriAll(rule, acl.agent).includes(agent)) {
-    const emptyRule = internal_initialiseAclRule({
-      read: false,
-      append: false,
-      write: false,
-      control: false,
-    });
-    return [rule, emptyRule];
-  }
-  // The existing rule will keep applying to Agents other than the given one:
-  const ruleWithoutAgent = removeIri(rule, acl.agent, agent);
-  // The agent might have been given other access in the existing rule, so duplicate it...
-  let ruleForOtherTargets = internal_duplicateAclRule(rule);
-  // ...but remove access to the original Resource...
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    ruleType === "resource" ? acl.accessTo : acl.default,
-    resourceIri
-  );
-  // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
-  if (ruleType === "default") {
-    ruleForOtherTargets = removeIri(
-      ruleForOtherTargets,
-      acl.defaultForNew,
-      resourceIri
-    );
-  }
-  // ...and only apply the new Rule to the given Agent (because the existing Rule covers the others):
-  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agent, agent);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentClass);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.origin);
-
-  return [ruleWithoutAgent, ruleForOtherTargets];
 }
 
 function getAccessByAgent(aclRules: AclRule[]): AgentAccess {
