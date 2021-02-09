@@ -189,7 +189,7 @@ describe("getControl", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
     expect(() => internal_getControl(withoutAcr as any, controlUrl)).toThrow(
-      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources."
     );
   });
 });
@@ -247,7 +247,7 @@ describe("getControlAll", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
     expect(() => internal_getControlAll(withoutAcr as any)).toThrow(
-      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources."
     );
   });
 
@@ -258,7 +258,7 @@ describe("getControlAll", () => {
     );
 
     expect(() => internal_getControlAll(withoutAcr as any)).toThrow(
-      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources."
     );
   });
 });
@@ -299,7 +299,7 @@ describe("setControl", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
     expect(() => internal_setControl(withoutAcr as any, control)).toThrow(
-      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources."
     );
   });
 });
@@ -343,7 +343,7 @@ describe("removeControl", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
     expect(() => removeControl(withoutAcr as any, control)).toThrow(
-      "Cannot work with Access Controls on a Resource (https://some.pod/resource) that does not have an Access Control Resource."
+      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources."
     );
   });
 });
