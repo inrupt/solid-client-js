@@ -142,6 +142,8 @@ import {
   getGroupResourceAccessAll,
   getGroupDefaultAccess,
   getGroupDefaultAccessAll,
+  setGroupDefaultAccess,
+  setGroupResourceAccess,
   mockSolidDatasetFrom,
   mockContainerFrom,
   mockFileFrom,
@@ -285,6 +287,8 @@ it("exports the public API from the entry file", () => {
   expect(getGroupResourceAccessAll).toBeDefined();
   expect(getGroupDefaultAccess).toBeDefined();
   expect(getGroupDefaultAccessAll).toBeDefined();
+  expect(setGroupDefaultAccess).toBeDefined();
+  expect(setGroupResourceAccess).toBeDefined();
   expect(mockSolidDatasetFrom).toBeDefined();
   expect(mockContainerFrom).toBeDefined();
   expect(mockFileFrom).toBeDefined();
