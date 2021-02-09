@@ -37,9 +37,9 @@ export function internal_getAcr(
 ): AccessControlResource {
   if (!hasAccessibleAcr(resource)) {
     throw new Error(
-      `Cannot work with Access Controls on a Resource (${getSourceUrl(
+      `An Access Control Resource for [${getSourceUrl(
         resource
-      )}) that does not have an Access Control Resource.`
+      )}] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources.`
     );
   }
   return resource.internal_acp.acr;
