@@ -71,6 +71,10 @@ import {
   internal_getGroupAccessAll,
   internal_getAgentAccessAll,
   internal_setActorAccess,
+  internal_setAgentAccess,
+  internal_setGroupAccess,
+  internal_setPublicAccess,
+  internal_setAuthenticatedAccess,
 } from "./acp";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
@@ -6290,6 +6294,689 @@ describe("setActorAccess", () => {
       expect(getIri(acrPolicy, acp.anyOf)).toBe(
         "https://some.pod/resource?ext=acr#anyOf_acrRule"
       );
+    });
+  });
+
+  describe("setAgentAccess", () => {
+    it("sets access for the given Agent", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getAgentAccess(updatedResource!, webId)).toStrictEqual({
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+    });
+
+    it("denies access for the given Agent", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+
+      expect(internal_getAgentAccess(updatedResource!, webId)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/other-resource?ext=acr#policy": {},
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+      });
+
+      expect(updatedResource).toBeNull();
+    });
+
+    it("does not set access for a different Agent", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              allOf: {
+                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                  [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(
+        internal_getAgentAccess(
+          updatedResource!,
+          "https://arbitrary.pod/other-profile#me"
+        )
+      ).toStrictEqual({
+        read: true,
+      });
+    });
+
+    it("does not set access for a Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getGroupAccess(updatedResource!, webId)).toStrictEqual(
+        {}
+      );
+    });
+
+    it("does not set access for everybody", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
+    });
+
+    it("does not set access for 'all authenticated Agents'", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
+        {}
+      );
+    });
+  });
+
+  describe("setGroupAccess", () => {
+    const groupIri = "https://some.pod/groups#group";
+    it("sets access for the given Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+
+      expect(internal_getGroupAccess(updatedResource!, groupIri)).toStrictEqual(
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+    });
+
+    it("denies access for the given Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
+        }
+      );
+
+      expect(internal_getGroupAccess(updatedResource!, groupIri)).toStrictEqual(
+        {
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
+        }
+      );
+    });
+
+    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/other-resource?ext=acr#policy": {},
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+        }
+      );
+
+      expect(updatedResource).toBeNull();
+    });
+
+    it("does not set access for a different Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              allOf: {
+                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                  [acp.group]: ["https://arbitrary.pod/groups#other-group"],
+                },
+              },
+              allow: {
+                read: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+
+      expect(
+        internal_getGroupAccess(
+          updatedResource!,
+          "https://arbitrary.pod/groups#other-group"
+        )
+      ).toStrictEqual({
+        read: true,
+      });
+    });
+
+    it("does not set access for an Agent", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+
+      expect(internal_getAgentAccess(updatedResource!, groupIri)).toStrictEqual(
+        {}
+      );
+    });
+
+    it("does not set access for everybody", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
+    });
+
+    it("does not set access for 'all authenticated Agents'", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setGroupAccess(
+        resourceWithAcr,
+        groupIri,
+        {
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        }
+      );
+
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
+        {}
+      );
+    });
+  });
+
+  describe("setPublicAccess", () => {
+    it("sets access for everybody", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+    });
+
+    it("denies access for everybody", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/other-resource?ext=acr#policy": {},
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
+        read: true,
+      });
+
+      expect(updatedResource).toBeNull();
+    });
+
+    it("does not set access for a Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(
+        internal_getGroupAccess(updatedResource!, acp.PublicAgent)
+      ).toStrictEqual({});
+    });
+
+    it("does not set access for 'all authenticated Agents'", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
+        {}
+      );
+    });
+  });
+
+  describe("setAuthenticatedAccess", () => {
+    it("sets access for authenticated Agents", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+    });
+
+    it("denies access for authenticated Agents", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {
+            "https://some.pod/other-resource?ext=acr#policy": {},
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
+        read: true,
+      });
+
+      expect(updatedResource).toBeNull();
+    });
+
+    it("does not set access for a Group", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(
+        internal_getGroupAccess(updatedResource!, acp.AuthenticatedAgent)
+      ).toStrictEqual({});
+    });
+
+    it("does not set access for everybody", () => {
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        {
+          policies: {},
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        }
+      );
+
+      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
+
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
     });
   });
 });
