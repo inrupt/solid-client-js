@@ -50,7 +50,7 @@ jest.mock("../fetcher.ts", () => ({
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { AgentAccess } from "../acl/agent";
 import { internal_getResourceAcl } from "../acl/acl.internal";
-import { Access } from "../acl/acl";
+import { Access, AclDataset } from "../acl/acl";
 
 function getMockDataset(
   sourceIri: IriString,
@@ -2009,6 +2009,13 @@ describe("setAgentAccess", () => {
           status: 200,
           url: "https://some.pod/.acl",
         })
+      )
+      // Save the ACL
+      .mockResolvedValueOnce(
+        mockResponse("", {
+          status: 201,
+          url: "https://some.pod/.acl",
+        })
       );
 
     const resource = getMockDataset(
@@ -2137,7 +2144,55 @@ describe("setAgentAccess", () => {
     );
   });
 
-  it("calls the underlying setAgentAccess function", async () => {
+  it("returns null if the ACL cannot be written back", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest
+      .fn(window.fetch)
+      // The resource ACL is available...
+      .mockResolvedValueOnce(
+        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+          status: 200,
+          url: "https://some.pod/resource.acl",
+        })
+      )
+      // Cannot save the ACL
+      .mockResolvedValueOnce(
+        mockResponse("Not authorized", {
+          status: 403,
+          url: "https://some.pod/.acl",
+        })
+      );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(result).toBeNull();
+  });
+
+  it("calls the underlying WAC API functions", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
       mockResponse("", {
         status: 200,
@@ -2147,6 +2202,7 @@ describe("setAgentAccess", () => {
 
     const wacModule = jest.requireActual("../acl/agent") as {
       setAgentResourceAccess: () => Promise<AgentAccess>;
+      saveAclFor: () => Promise<AclDataset>;
     };
     const setAgentResourceAccessWac = jest.spyOn(
       wacModule,
@@ -2171,7 +2227,6 @@ describe("setAgentAccess", () => {
         fetch: mockFetch,
       }
     );
-
     expect(setAgentResourceAccessWac).toHaveBeenCalled();
   });
 });

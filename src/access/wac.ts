@@ -51,13 +51,17 @@ import {
   hasAccessibleAcl,
   hasFallbackAcl,
   hasResourceAcl,
+  saveAclFor,
   WithAcl,
   WithResourceAcl,
 } from "../acl/acl";
 
 // Setting WacAccess = Required<Access> enforces that any change on Access will
 // reflect on WacAccess, but WacAccess has additional restrictions.
-export type WacAccess = ({ controlRead: true; controlWrite: true } | {}) & {
+export type WacAccess = (
+  | { controlRead: true; controlWrite: true }
+  | { controlRead?: undefined; controlWrite?: undefined }
+) & {
   read?: true;
   append?: true;
   write?: true;
@@ -80,7 +84,7 @@ function aclAccessToUniversal(access: AclAccess): WacAccess {
   } as WacAccess;
 }
 
-function universalAccessToAcl(access: Partial<WacAccess>): AclAccess {
+function universalAccessToAcl(access: WacAccess): AclAccess {
   // Universal access is aligned on ACP, which means there is a distinction between
   // controlRead and controlWrite. This split doesn't exist in WAC, which is why
   // the type for the input variable of this function is a restriction on the
@@ -318,5 +322,11 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     agent,
     wacAccess
   );
-  return internal_setResourceAcl(resourceWithAcl, updatedResourceAcl);
+  let savedAcl: AclDataset | null = null;
+  try {
+    savedAcl = await saveAclFor(resourceWithAcl, updatedResourceAcl, options);
+    return internal_setResourceAcl(resourceWithAcl, savedAcl);
+  } catch (e) {
+    return null;
+  }
 }
