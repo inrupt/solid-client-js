@@ -29,6 +29,7 @@ import {
   getGroupAccessAll,
   getPublicAccess,
   setAgentResourceAccess,
+  WacAccess,
 } from "./wac";
 import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
@@ -2119,6 +2120,21 @@ describe("setAgentAccess", () => {
       write: false,
       control: false,
     });
+  });
+
+  it("throws if the access being set can't be expressed in WAC", async () => {
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await expect(
+      setAgentResourceAccess(resource, "https://some.pod/profile#agent", ({
+        controlRead: true,
+        controlWrite: undefined,
+      } as unknown) as WacAccess)
+    ).rejects.toThrow(
+      "For WAC resources, controlRead and controlWrite must be equal."
+    );
   });
 
   it("calls the underlying setAgentAccess function", async () => {

@@ -57,18 +57,15 @@ import {
 
 // Setting WacAccess = Required<Access> enforces that any change on Access will
 // reflect on WacAccess, but WacAccess has additional restrictions.
-type WacAccess = (
-  | { controlRead: true; controlWrite: true }
-  | { controlRead: undefined; controlWrite: undefined }
-) & {
-  read: true | undefined;
-  append: true | undefined;
-  write: true | undefined;
+export type WacAccess = ({ controlRead: true; controlWrite: true } | {}) & {
+  read?: true;
+  append?: true;
+  write?: true;
 };
 
-type AgentWacAccess = Record<WebId, WacAccess>;
+export type AgentWacAccess = Record<WebId, WacAccess>;
 
-function aclAccessToUniversal(access: Partial<AclAccess>): WacAccess {
+function aclAccessToUniversal(access: AclAccess): WacAccess {
   // In ACL, denying access to an actor is a notion that doesn't exist, so an
   // access is either granted or not for a given mode.
   // This creates a misalignment with the ACP notion of an access being granted,
@@ -89,6 +86,11 @@ function universalAccessToAcl(access: Partial<WacAccess>): AclAccess {
   // the type for the input variable of this function is a restriction on the
   // universal Access type. Also, in WAC, an undefined and false Access modes are
   // equivalent.
+  if (access.controlRead !== access.controlWrite) {
+    throw new Error(
+      "For WAC resources, controlRead and controlWrite must be equal."
+    );
+  }
   return {
     read: access.read ? true : false,
     append: access.append ? true : false,
@@ -291,6 +293,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
   if (!hasAccessibleAcl(resource)) {
     return null;
   }
+  const wacAccess = universalAccessToAcl(access);
   const acl = await internal_fetchAcl(resource, options);
   const resourceWithAcl = internal_setAcl(resource, acl);
   let resourceAcl: AclDataset;
@@ -309,7 +312,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
   const updatedResourceAcl = setAgentResourceAccessWac(
     resourceAcl,
     agent,
-    universalAccessToAcl(access)
+    wacAccess
   );
   return internal_setResourceAcl(resourceWithAcl, updatedResourceAcl);
 }
