@@ -275,6 +275,10 @@ export function getGroupAccessAll(
  * a new Resource ACL. This has the side effect that the next time the Fallback
  * ACL is updated, the changes _will not impact_ the target resource.
  *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
  * @param resource The Resource for which Access is being set
  * @param agent The Agent for whom Access is being set
  * @param access The Access being set
