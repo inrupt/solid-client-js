@@ -2202,11 +2202,17 @@ describe("setAgentAccess", () => {
 
     const wacModule = jest.requireActual("../acl/agent") as {
       setAgentResourceAccess: () => Promise<AgentAccess>;
+    };
+    const aclModule = jest.requireActual("../acl/acl") as {
       saveAclFor: () => Promise<AclDataset>;
     };
     const setAgentResourceAccessWac = jest.spyOn(
       wacModule,
       "setAgentResourceAccess"
+    );
+    const saveAclForWac = jest.spyOn(
+      aclModule,
+      "saveAclFor"
     );
 
     const resource = getMockDataset(
@@ -2228,5 +2234,6 @@ describe("setAgentAccess", () => {
       }
     );
     expect(setAgentResourceAccessWac).toHaveBeenCalled();
+    expect(saveAclForWac).toHaveBeenCalled();
   });
 });
