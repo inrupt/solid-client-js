@@ -273,7 +273,7 @@ export function getGroupAccessAll(
  * Important note: if the target resource did not have a Resource ACL, and its
  * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
  * a new Resource ACL. This has the side effect that the next time the Fallback
- * ACL is updated, the changes WILL NOT IMPACT the target resource.
+ * ACL is updated, the changes _will not impact_ the target resource.
  *
  * @param resource The Resource for which Access is being set
  * @param agent The Agent for whom Access is being set
