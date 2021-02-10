@@ -2210,10 +2210,7 @@ describe("setAgentAccess", () => {
       wacModule,
       "setAgentResourceAccess"
     );
-    const saveAclForWac = jest.spyOn(
-      aclModule,
-      "saveAclFor"
-    );
+    const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
     const resource = getMockDataset(
       "https://some.pod/resource",
