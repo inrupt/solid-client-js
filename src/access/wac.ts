@@ -60,47 +60,90 @@ import {
 // reflect on WacAccess, but WacAccess has additional restrictions.
 export type WacAccess = (
   | { controlRead: true; controlWrite: true }
+  | { controlRead: false; controlWrite: false }
   | { controlRead?: undefined; controlWrite?: undefined }
 ) & {
-  read?: true;
-  append?: true;
-  write?: true;
+  read?: boolean;
+  append?: boolean;
+  write?: boolean;
+};
+
+type NoUndefinedWacAccess = (
+  | { controlRead: true; controlWrite: true }
+  | { controlRead: false; controlWrite: false }
+) & {
+  read: boolean;
+  append: boolean;
+  write: boolean;
 };
 
 export type AgentWacAccess = Record<WebId, WacAccess>;
 
-function aclAccessToUniversal(access: AclAccess): WacAccess {
-  // In ACL, denying access to an actor is a notion that doesn't exist, so an
-  // access is either granted or not for a given mode.
-  // This creates a misalignment with the ACP notion of an access being granted,
-  // denied, or simply not mentioned. Here, we convert the boolean vision of
-  // ACL into the boolean or undefined vision of ACP.
-  return {
-    read: access.read ? true : undefined,
-    append: access.append ? true : undefined,
-    write: access.write ? true : undefined,
-    controlRead: access.control ? true : undefined,
-    controlWrite: access.control ? true : undefined,
-  } as WacAccess;
+function hasNoUndefinedAccessModes(
+  access: WacAccess
+): access is WacAccess & NoUndefinedWacAccess {
+  return !(
+    access.read === undefined ||
+    access.append === undefined ||
+    access.write === undefined ||
+    access.controlRead === undefined ||
+    access.controlWrite === undefined
+  );
 }
 
-function universalAccessToAcl(access: WacAccess): AclAccess {
+function universalAccessToAcl(
+  newAccess: WacAccess,
+  previousAccess: AclAccess
+): AclAccess;
+function universalAccessToAcl(
+  newAccess: NoUndefinedWacAccess,
+  previousAccess: undefined
+): AclAccess;
+function universalAccessToAcl(
+  newAccess: WacAccess,
+  previousAccess?: AclAccess
+): AclAccess {
   // Universal access is aligned on ACP, which means there is a distinction between
   // controlRead and controlWrite. This split doesn't exist in WAC, which is why
   // the type for the input variable of this function is a restriction on the
   // universal Access type. Also, in WAC, an undefined and false Access modes are
   // equivalent.
-  if (access.controlRead !== access.controlWrite) {
+  if (newAccess.controlRead !== newAccess.controlWrite) {
     throw new Error(
       "For WAC resources, controlRead and controlWrite must be equal."
     );
   }
+  return hasNoUndefinedAccessModes(newAccess)
+    ? {
+        read: newAccess.read,
+        append: newAccess.append,
+        write: newAccess.write,
+        control: newAccess.controlRead,
+      }
+    : {
+        // The type signature enforces that previousAccess is defined here.
+        read: newAccess.read ?? previousAccess!.read,
+        append: newAccess.append ?? previousAccess!.append,
+        write: newAccess.write ?? previousAccess!.write,
+        control: newAccess.controlRead ?? previousAccess!.control,
+      };
+}
+
+const NO_ACCESS: AclAccess = {
+  read: false,
+  write: false,
+  append: false,
+  control: false,
+};
+
+function aclAccessToUniversal(access: AclAccess): WacAccess {
   return {
-    read: access.read ? true : false,
-    append: access.append ? true : false,
-    write: access.write ? true : false,
-    control: access.controlRead ? true : false,
-  };
+    read: access.read === true ? true : undefined,
+    write: access.write === true ? true : undefined,
+    append: access.append === true ? true : undefined,
+    controlRead: access.control === true ? true : undefined,
+    controlWrite: access.control === true ? true : undefined,
+  } as WacAccess;
 }
 
 async function getActorAccess(
@@ -301,7 +344,6 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
   if (!hasAccessibleAcl(resource)) {
     return null;
   }
-  const wacAccess = universalAccessToAcl(access);
   const acl = await internal_fetchAcl(resource, options);
   const resourceWithAcl = internal_setAcl(resource, acl);
   let resourceAcl: AclDataset;
@@ -313,15 +355,34 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     // In this case, the Resource ACL needs to be created first, and then updated.
     resourceAcl = createAclFromFallbackAcl(resourceWithAcl);
   } else {
-    // This probably isn't possible, because otherwise hasAccessibleAcl is false
-    // and the function already returned, so probably exclude from coverage.
     return null;
   }
+
+  const resourceWithOldAcl = internal_setResourceAcl(
+    resourceWithAcl,
+    resourceAcl
+  );
+  let wacAccess: AclAccess | undefined = undefined;
+  if (hasNoUndefinedAccessModes(access)) {
+    // If all the access modes in `access` are set, no need for the previous access.
+    wacAccess = universalAccessToAcl(access, undefined);
+  } else {
+    // If some modes in `access` are undefined, they should be left unchanged.
+    // The type assumption is okay because we just set a Resource ACL for the
+    // Resource, or returned already.
+    const currentAccess = getAgentAccessWac(
+      resourceWithOldAcl,
+      agent
+    ) as AclAccess;
+    wacAccess = universalAccessToAcl(access, currentAccess);
+  }
+
   const updatedResourceAcl = setAgentResourceAccessWac(
     resourceAcl,
     agent,
     wacAccess
   );
+
   let savedAcl: AclDataset | null = null;
   try {
     savedAcl = await saveAclFor(resourceWithAcl, updatedResourceAcl, options);

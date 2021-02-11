@@ -1805,10 +1805,6 @@ describe("setAgentAccess", () => {
       "https://some.pod/profile#agent",
       {
         read: true,
-        append: undefined,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
       },
       {
         fetch: mockFetch,
@@ -1833,7 +1829,7 @@ describe("setAgentAccess", () => {
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
-      { read: true, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
       "resource"
     );
 
@@ -1853,11 +1849,7 @@ describe("setAgentAccess", () => {
       resource,
       "https://some.pod/profile#agent",
       {
-        read: undefined,
         append: true,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
       },
       {
         fetch: mockFetch,
@@ -1882,7 +1874,7 @@ describe("setAgentAccess", () => {
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
-      { read: true, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
       "resource"
     );
 
@@ -1902,11 +1894,7 @@ describe("setAgentAccess", () => {
       resource,
       "https://some.pod/profile#agent",
       {
-        read: undefined,
-        append: undefined,
         write: true,
-        controlRead: undefined,
-        controlWrite: undefined,
       },
       {
         fetch: mockFetch,
@@ -1931,7 +1919,7 @@ describe("setAgentAccess", () => {
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/resource",
-      { read: true, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
       "resource"
     );
 
@@ -1951,9 +1939,6 @@ describe("setAgentAccess", () => {
       resource,
       "https://some.pod/profile#agent",
       {
-        read: undefined,
-        append: undefined,
-        write: undefined,
         controlRead: true,
         controlWrite: true,
       },
@@ -1975,12 +1960,153 @@ describe("setAgentAccess", () => {
     });
   });
 
+  it("preserves previously existing access for the resource if undefined in the access being set", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      // Note that append access is set
+      { read: false, append: true, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: true,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("removes access previoulsy granted if the new access is set to false", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: true, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        append: false,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("overwrites all previously existing access for the resource if no mode is left undefined in the access being set", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      // Note that append access is set
+      { read: false, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentResourceAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentResourceAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: true,
+      write: true,
+      control: true,
+    });
+  });
+
   it("copies the fallback ACL if no resource ACL is available, and sets intended access in the newly created copy", async () => {
     const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/.acl"),
       "https://some.pod/profile#agent",
       "https://some.pod/",
-      { read: true, append: false, write: false, control: false },
+      { read: false, append: false, write: false, control: false },
       "default"
     );
 
@@ -2027,11 +2153,7 @@ describe("setAgentAccess", () => {
       resource,
       "https://some.pod/profile#agent",
       {
-        read: undefined,
         append: true,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
       },
       {
         fetch: mockFetch,
@@ -2103,11 +2225,7 @@ describe("setAgentAccess", () => {
       resource,
       "https://some.pod/profile#agent",
       {
-        read: undefined,
         append: true,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
       },
       {
         fetch: mockFetch,
@@ -2130,15 +2248,38 @@ describe("setAgentAccess", () => {
   });
 
   it("throws if the access being set can't be expressed in WAC", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
     const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl"
     );
+
     await expect(
-      setAgentResourceAccess(resource, "https://some.pod/profile#agent", ({
-        controlRead: true,
-        controlWrite: undefined,
-      } as unknown) as WacAccess)
+      setAgentResourceAccess(
+        resource,
+        "https://some.pod/profile#agent",
+        ({
+          controlRead: true,
+          controlWrite: undefined,
+        } as unknown) as WacAccess,
+        {
+          fetch: mockFetch,
+        }
+      )
     ).rejects.toThrow(
       "For WAC resources, controlRead and controlWrite must be equal."
     );
