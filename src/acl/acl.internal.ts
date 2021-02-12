@@ -526,12 +526,12 @@ type SupportedActorPredicate = typeof supportedActorPredicates extends Array<
 
 /**
  * Given an ACL Rule, returns two new ACL Rules that cover all the input Rule's use cases,
- * except for giving the given Agent access to the given Resource.
+ * except for giving the given Actor access to the given Resource.
  *
- * @param rule The ACL Rule that should no longer apply for a given Agent to a given Resource.
- * @param agent The Agent that should be removed from the Rule for the given Resource.
- * @param resourceIri The Resource to which the Rule should no longer apply for the given Agent.
- * @returns A tuple with the original ACL Rule without the given Agent, and a new ACL Rule for the given Agent for the remaining Resources, respectively.
+ * @param rule The ACL Rule that should no longer apply for a given Actor to a given Resource.
+ * @param actor The Actor that should be removed from the Rule for the given Resource.
+ * @param resourceIri The Resource to which the Rule should no longer apply for the given Actor.
+ * @returns A tuple with the original ACL Rule without the given Actor, and a new ACL Rule for the given Actor for the remaining Resources, respectively.
  */
 function internal_removeActorFromRule(
   rule: AclRule,
@@ -540,8 +540,8 @@ function internal_removeActorFromRule(
   resourceIri: IriString,
   ruleType: "resource" | "default"
 ): [AclRule, AclRule] {
-  // If the existing Rule does not apply to the given Agent, we don't need to split up.
-  // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
+  // If the existing Rule does not apply to the given Actor, we don't need to split up.
+  // Without this check, we'd be creating a new rule for the given Actor (ruleForOtherTargets)
   // that would give it access it does not currently have:
   if (!getIriAll(rule, actorPredicate).includes(actor)) {
     const emptyRule = internal_initialiseAclRule({
@@ -552,9 +552,9 @@ function internal_removeActorFromRule(
     });
     return [rule, emptyRule];
   }
-  // The existing rule will keep applying to Agents other than the given one:
-  const ruleWithoutAgent = removeIri(rule, actorPredicate, actor);
-  // The agent might have been given other access in the existing rule, so duplicate it...
+  // The existing rule will keep applying to Actors other than the given one:
+  const ruleWithoutActor = removeIri(rule, actorPredicate, actor);
+  // The actor might have been given other access in the existing rule, so duplicate it...
   let ruleForOtherTargets = internal_duplicateAclRule(rule);
   // ...but remove access to the original Resource...
   ruleForOtherTargets = removeIri(
@@ -578,7 +578,7 @@ function internal_removeActorFromRule(
       ruleForOtherTargets = removeAll(ruleForOtherTargets, predicate);
     });
 
-  return [ruleWithoutAgent, ruleForOtherTargets];
+  return [ruleWithoutActor, ruleForOtherTargets];
 }
 
 /**
@@ -587,20 +587,20 @@ function internal_removeActorFromRule(
  * ```
  * Modifies the resource ACL (Access Control List) to set the Access Modes for the given Agent.
  * Specifically, the function returns a new resource ACL initialised with the given ACL and
- * new rules for the Agent's access.
+ * new rules for the Actor's access.
  *
- * If rules for Agent's access already exist in the given ACL, in the returned ACL,
+ * If rules for Actor's access already exist in the given ACL, in the returned ACL,
  * they are replaced by the new rules.
  *
  * This function does not modify:
  *
- * - Access Modes granted indirectly to Agents through other ACL rules, e.g., public or group-specific permissions.
- * - Access Modes granted to Agents for the child Resources if the associated Resource is a Container.
+ * - Access Modes granted indirectly to Actors through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to Actors for the child Resources if the associated Resource is a Container.
  * - The original ACL.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
- * @param agent The Agent to grant specific Access Modes.
- * @param access The Access Modes to grant to the Agent for the Resource.
+ * @param actor The Actor to grant specific Access Modes.
+ * @param access The Access Modes to grant to the Actor for the Resource.
  * @returns A new resource ACL initialised with the given `aclDataset` and `access` for the `agent`.
  */
 export function internal_setActorAccess(
@@ -614,9 +614,9 @@ export function internal_setActorAccess(
   // give the Agent access to the Resource:
   let filteredAcl = aclDataset;
   getThingAll(aclDataset).forEach((aclRule) => {
-    // Obtain both the Rule that no longer includes the given Agent,
+    // Obtain both the Rule that no longer includes the given Actor,
     // and a new Rule that includes all ACL Quads
-    // that do not pertain to the given Agent-Resource combination.
+    // that do not pertain to the given Actor-Resource combination.
     // Note that usually, the latter will no longer include any meaningful statements;
     // we'll clean them up afterwards.
     const [filteredRule, remainingRule] = internal_removeActorFromRule(
@@ -630,7 +630,7 @@ export function internal_setActorAccess(
     filteredAcl = setThing(filteredAcl, remainingRule);
   });
 
-  // Create a new Rule that only grants the given Agent the given Access Modes:
+  // Create a new Rule that only grants the given Actor the given Access Modes:
   let newRule = internal_initialiseAclRule(access);
   newRule = setIri(
     newRule,
