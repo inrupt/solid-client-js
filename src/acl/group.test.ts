@@ -807,8 +807,8 @@ describe("getGroupResourceAccessAll", () => {
     resourceAcl.add(
       DataFactory.quad(
         getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentGroup"),
-        DataFactory.namedNode("https://some.pod/groups#group")
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://some.pod/profile#agent")
       )
     );
 
@@ -1112,8 +1112,8 @@ describe("getGroupDefaultAccessAll", () => {
     containerAcl.add(
       DataFactory.quad(
         getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentGroup"),
-        DataFactory.namedNode("https://some.pod/groups#group")
+        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
+        DataFactory.namedNode("https://some.pod/agent#profile")
       )
     );
 
