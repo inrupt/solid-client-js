@@ -172,6 +172,8 @@ export {
   getGroupResourceAccessAll,
   getGroupDefaultAccess,
   getGroupDefaultAccessAll,
+  setGroupDefaultAccess,
+  setGroupResourceAccess,
 } from "./acl/group";
 export {
   getPublicAccess,

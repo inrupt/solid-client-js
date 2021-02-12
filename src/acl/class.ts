@@ -43,6 +43,7 @@ import {
   internal_removeEmptyAclRules,
   internal_initialiseAclRule,
   internal_duplicateAclRule,
+  internal_setActorAccess,
 } from "./acl.internal";
 import { removeIri, removeAll } from "../thing/remove";
 import { getThingAll, setThing } from "../thing/thing";
@@ -156,32 +157,13 @@ export function setPublicResourceAccess(
   aclDataset: AclDataset,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
-  // give the public access to the Resource:
-  let filteredAcl = aclDataset;
-  getThingAll(aclDataset).forEach((aclRule) => {
-    // Obtain both the Rule that no longer includes the public,
-    // and a new Rule that includes all ACL Quads
-    // that do not pertain to the given Public-Resource combination.
-    // Note that usually, the latter will no longer include any meaningful statements;
-    // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removePublicFromRule(
-      aclRule,
-      aclDataset.internal_accessTo,
-      "resource"
-    );
-    filteredAcl = setThing(filteredAcl, filteredRule);
-    filteredAcl = setThing(filteredAcl, remainingRule);
-  });
-
-  // Create a new Rule that only grants the public the given Access Modes:
-  let newRule = internal_initialiseAclRule(access);
-  newRule = setIri(newRule, acl.accessTo, aclDataset.internal_accessTo);
-  newRule = setIri(newRule, acl.agentClass, foaf.Agent);
-  const updatedAcl = setThing(filteredAcl, newRule);
-
-  // Remove any remaining Rules that do not contain any meaningful statements:
-  return internal_removeEmptyAclRules(updatedAcl);
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agentClass,
+    "resource",
+    foaf.Agent
+  );
 }
 
 /**
@@ -209,86 +191,13 @@ export function setPublicDefaultAccess(
   aclDataset: AclDataset,
   access: Access
 ): AclDataset & WithChangeLog {
-  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
-  // give the public default access to the Resource:
-  let filteredAcl = aclDataset;
-  getThingAll(aclDataset).forEach((aclRule) => {
-    // Obtain both the Rule that no longer includes the public,
-    // and a new Rule that includes all ACL Quads
-    // that do not pertain to the given Public-Resource default combination.
-    // Note that usually, the latter will no longer include any meaningful statements;
-    // we'll clean them up afterwards.
-    const [filteredRule, remainingRule] = removePublicFromRule(
-      aclRule,
-      aclDataset.internal_accessTo,
-      "default"
-    );
-    filteredAcl = setThing(filteredAcl, filteredRule);
-    filteredAcl = setThing(filteredAcl, remainingRule);
-  });
-
-  // Create a new Rule that only grants the public the given default Access Modes:
-  let newRule = internal_initialiseAclRule(access);
-  newRule = setIri(newRule, acl.default, aclDataset.internal_accessTo);
-  newRule = setIri(newRule, acl.agentClass, foaf.Agent);
-  const updatedAcl = setThing(filteredAcl, newRule);
-
-  // Remove any remaining Rules that do not contain any meaningful statements:
-  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
-
-  return cleanedAcl;
-}
-
-/**
- * Given an ACL Rule, return two new ACL Rules that cover all the input Rule's use cases,
- * except for giving the public access to the given Resource.
- *
- * @param rule The ACL Rule that should no longer apply for the public to a given Resource.
- * @param resourceIri The Resource to which the Rule should no longer apply for the public.
- * @returns A tuple with the original ACL Rule sans the public, and a new ACL Rule for the public for the remaining Resources, respectively.
- */
-function removePublicFromRule(
-  rule: AclRule,
-  resourceIri: IriString,
-  ruleType: "resource" | "default"
-): [AclRule, AclRule] {
-  // If the existing Rule does not apply to the given Agent, we don't need to split up.
-  // Without this check, we'd be creating a new rule for the given Agent (ruleForOtherTargets)
-  // that would give it access it does not currently have:
-  if (!getIriAll(rule, acl.agentClass).includes(foaf.Agent)) {
-    const emptyRule = internal_initialiseAclRule({
-      read: false,
-      append: false,
-      write: false,
-      control: false,
-    });
-    return [rule, emptyRule];
-  }
-  // The existing rule will keep applying to other Agent Classes:
-  const ruleWithoutPublic = removeIri(rule, acl.agentClass, foaf.Agent);
-  // The public might have been given other access in the existing rule, so duplicate it...
-  let ruleForOtherTargets = internal_duplicateAclRule(rule);
-  // ...but remove access to the original Resource...
-  ruleForOtherTargets = removeIri(
-    ruleForOtherTargets,
-    ruleType === "resource" ? acl.accessTo : acl.default,
-    resourceIri
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agentClass,
+    "default",
+    foaf.Agent
   );
-  // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
-  if (ruleType === "default") {
-    ruleForOtherTargets = removeIri(
-      ruleForOtherTargets,
-      acl.defaultForNew,
-      resourceIri
-    );
-  }
-  // ...and only apply the new Rule to the Public (because the existing Rule covers other Agents):
-  ruleForOtherTargets = setIri(ruleForOtherTargets, acl.agentClass, foaf.Agent);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agent);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.agentGroup);
-  ruleForOtherTargets = removeAll(ruleForOtherTargets, acl.origin);
-
-  return [ruleWithoutPublic, ruleForOtherTargets];
 }
 
 function getClassAclRulesForClass(
