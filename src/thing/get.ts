@@ -38,9 +38,13 @@ import { internal_throwIfNotThing } from "./thing.internal";
 import { ValidPropertyUrlExpectedError } from "./thing";
 
 /**
+ * Returns the URL value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type URL, returns null.
+ * If the Property has multiple URL values, returns one of its URL values.
+ *
  * @param thing The [[Thing]] to read a URL value from.
- * @param property The given Property for which you want the URL value.
- * @returns A URL value for the given Property, if present, or null otherwise.
+ * @param property The Property whose URL value to return.
+ * @returns A URL value for the given Property if present, or null if the Property is not present or the value is not of type URL.
  */
 export function getUrl(
   thing: Thing,
@@ -61,9 +65,13 @@ export function getUrl(
 export const getIri = getUrl;
 
 /**
+ * Returns the URL values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type URL, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the URL values from.
- * @param property The given Property for which you want the URL values.
- * @returns The URL values for the given Property.
+ * @param property The Property whose URL values to return.
+ * @returns An array of URL values for the given Property.
  */
 export function getUrlAll(
   thing: Thing,
@@ -80,9 +88,13 @@ export function getUrlAll(
 export const getIriAll = getUrlAll;
 
 /**
+ * Returns the boolean value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type boolean, returns null.
+ * If the Property has multiple boolean values, returns one of its values.
+ *
  * @param thing The [[Thing]] to read a boolean value from.
- * @param property The given Property for which you want the boolean value.
- * @returns A boolean value for the given Property, if present, or null otherwise.
+ * @param property The Property whose boolean value to return.
+ * @returns A boolean value for the given Property if present, or null if the Property is not present or the value is not of type boolean.
  */
 export function getBoolean(
   thing: Thing,
@@ -103,9 +115,13 @@ export function getBoolean(
 }
 
 /**
+ * Returns the boolean values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type boolean, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the boolean values from.
- * @param property The given Property for which you want the boolean values.
- * @returns The boolean values for the given Property.
+ * @param property The Property whose boolean values to return.
+ * @returns An array of boolean values for the given Property.
  */
 export function getBooleanAll(
   thing: Thing,
@@ -124,9 +140,13 @@ export function getBooleanAll(
 }
 
 /**
+ * Returns the datetime value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type datetime, returns null.
+ * If the Property has multiple datetime values, returns one of its values.
+ *
  * @param thing The [[Thing]] to read a datetime value from.
- * @param property The given Property for which you want the datetime value.
- * @returns A datetime value for the given Property, if present, or null otherwise.
+ * @param property The Property whose datetime value to return.
+ * @returns A datetime value for the given Property if present, or null if the Property is not present or the value is not of type datetime.
  */
 export function getDatetime(
   thing: Thing,
@@ -147,9 +167,13 @@ export function getDatetime(
 }
 
 /**
+ * Returns the datetime values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type datetime, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the datetime values from.
- * @param property The given Property for which you want the datetime values.
- * @returns The datetime values for the given Property.
+ * @param property The Property whose datetime values to return.
+ * @returns An array of datetime values for the given Property.
  */
 export function getDatetimeAll(
   thing: Thing,
@@ -168,9 +192,13 @@ export function getDatetimeAll(
 }
 
 /**
+ * Returns the decimal value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type decimal, returns null.
+ * If the Property has multiple decimal values, returns one of its values.
+ *
  * @param thing The [[Thing]] to read a decimal value from.
- * @param property The given Property for which you want the decimal value.
- * @returns A decimal value for the given Property, if present, or null otherwise.
+ * @param property The Property whose decimal value to return.
+ * @returns A decimal value for the given Property if present, or null if the Property is not present or the value is not of type decimal.
  */
 export function getDecimal(
   thing: Thing,
@@ -191,9 +219,13 @@ export function getDecimal(
 }
 
 /**
+ * Returns the decimal values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type decimal, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the decimal values from.
- * @param property The given Property for which you want the decimal values.
- * @returns The decimal values for the given Property.
+ * @param property The Property whose decimal values to return.
+ * @returns An array of decimal values for the given Property.
  */
 export function getDecimalAll(
   thing: Thing,
@@ -212,9 +244,13 @@ export function getDecimalAll(
 }
 
 /**
+ * Returns the integer value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type integer, returns null.
+ * If the Property has multiple integer values, returns one of its values.
+ *
  * @param thing The [[Thing]] to read an integer value from.
- * @param property The given Property for which you want the integer value.
- * @returns An integer value for the given Property, if present, or null otherwise.
+ * @param property The Property whose integer value to return.
+ * @returns A integer value for the given Property if present, or null if the Property is not present or the value is not of type datetime.
  */
 export function getInteger(
   thing: Thing,
@@ -235,9 +271,13 @@ export function getInteger(
 }
 
 /**
+ * Returns the integer values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type integer, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the integer values from.
- * @param property The given Property for which you want the integer values.
- * @returns The integer values for the given Property.
+ * @param property The Property whose integer values to return.
+ * @returns An array of integer values for the given Property.
  */
 export function getIntegerAll(
   thing: Thing,
@@ -256,10 +296,14 @@ export function getIntegerAll(
 }
 
 /**
+ * Returns the localized string value of the specified Property from a [[Thing]].
+ * If the Property is not present as a string in the specified locale, returns null.
+ * If the Property has multiple string values for the specified locale, returns one of its values.
+ *
  * @param thing The [[Thing]] to read a localised string value from.
- * @param property The given Property for which you want the localised string value.
+ * @param property The Property whose localised string value to return.
  * @param locale The desired locale for the string value.
- * @returns A localised string value for the given Property, if present in `locale`, or null otherwise.
+ * @returns A localised string value for the given Property if present in the specified `locale`, or null otherwise.
  */
 export function getStringWithLocale(
   thing: Thing,
@@ -279,10 +323,14 @@ export function getStringWithLocale(
 }
 
 /**
+ * Returns the localized string values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not a string of the specified locale, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the localised string values from.
- * @param property The given Property for which you want the localised string values.
+ * @param property The Property whose localised string values to return.
  * @param locale The desired locale for the string values.
- * @returns The localised string values for the given Property.
+ * @returns An array of localised string values for the given Property.
  */
 export function getStringWithLocaleAll(
   thing: Thing,
@@ -298,11 +346,11 @@ export function getStringWithLocaleAll(
 }
 
 /**
- * Retrieves all language string literals for the specified property from the
+ * Returns all localized string values mapped by the locales for the specified property from the
  * specified [[Thing]] (explicitly filters out non-language string literals).
  *
  * @param thing The [[Thing]] to read the localised string values from.
- * @param property The given Property for which you want the localised string values.
+ * @param property The Property whose localised string values to return.
  * @returns A Map of objects, keyed on locale with the value an array of string values (for that locale).
  */
 export function getStringByLocaleAll(
@@ -329,9 +377,13 @@ export function getStringByLocaleAll(
 }
 
 /**
+ * Returns the string value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type string, returns null.
+ * If the Property has multiple string values, returns one of its values.
+ *
  * @param thing The [[Thing]] to read a string value from.
- * @param property The given Property for which you want the string value.
- * @returns A string value for the given Property, if present, or null otherwise.
+ * @param property The Property whose string value to return.
+ * @returns A string value for the given Property if present, or null if the Property is not present or the value is not of type string.
  */
 export function getStringNoLocale(
   thing: Thing,
@@ -348,9 +400,13 @@ export function getStringNoLocale(
 }
 
 /**
+ * Returns the string values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type string, omits that value in the array.
+ *
  * @param thing The [[Thing]] to read the string values from.
- * @param property The given Property for which you want the string values.
- * @returns The string values for the given Property.
+ * @param property The Property whose string values to return.
+ * @returns An array of string values for the given Property.
  */
 export function getStringNoLocaleAll(
   thing: Thing,
