@@ -164,9 +164,11 @@ function copyNonClassProperties(source: object): object {
       copy[key] = value;
       return;
     }
-    if (value.constructor.name !== "Object") {
+
+    if (value.constructor?.name !== "Object") {
       return;
     }
+
     copy[key] = value;
   });
 

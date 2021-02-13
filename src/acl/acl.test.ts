@@ -31,7 +31,8 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { dataset } from "@rdfjs/dataset";
+const dataset = require("rdf-dataset-indexed");
+
 import { DataFactory } from "n3";
 import {
   getResourceAcl,
@@ -2126,7 +2127,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("does not modify the input SolidDataset", () => {
@@ -2205,7 +2206,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("removes rules that do not have target Resources to which they apply", () => {
@@ -2244,7 +2245,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("removes rules that specify an acl:origin but not in combination with an Agent, Agent Group or Agent Class", () => {
@@ -2290,7 +2291,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("does not remove Rules that are also something other than an ACL Rule", () => {

@@ -19,10 +19,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// TODO: Further tidy up to be done here - i.e., we should really only be
+//  working with types here, and not implementations at all (the implementation
+//  should be up to the user of this library).
 import { DatasetCore, Quad } from "rdf-js";
-import rdfjsDataset from "@rdfjs/dataset";
-export const dataset = rdfjsDataset.dataset;
-const { quad, literal, namedNode, blankNode } = rdfjsDataset;
+
+export const dataset = require("rdf-dataset-indexed");
+import { DataFactory as RdfDataFactory } from "n3";
+const { quad, literal, namedNode, blankNode } = RdfDataFactory;
 
 /**
  * @internal

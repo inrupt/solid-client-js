@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { dataset } from "@rdfjs/dataset";
+const dataset = require("rdf-dataset-indexed");
 import { getLocalNode } from "../datatypes";
 import {
   SolidDataset,

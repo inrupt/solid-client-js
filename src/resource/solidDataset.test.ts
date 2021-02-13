@@ -34,7 +34,7 @@ jest.mock("../fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
+const dataset = require("rdf-dataset-indexed");
 import {
   getSolidDataset,
   saveSolidDatasetAt,
@@ -479,12 +479,13 @@ describe("saveSolidDatasetAt", () => {
         }
       );
 
-      expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
-        "https://some.pod/resource#some-subject-name"
-      );
-      expect(Array.from(storedSolidDataset)[0].object.value).toBe(
-        "https://some.pod/resource#some-object-name"
-      );
+      expect(
+        storedSolidDataset.match(
+          DataFactory.namedNode("https://some.pod/resource#some-subject-name"),
+          null,
+          DataFactory.namedNode("https://some.pod/resource#some-object-name")
+        ).size
+      ).toBe(1);
     });
 
     it("makes sure the returned SolidDataset has an empty change log", async () => {
@@ -2435,6 +2436,8 @@ describe("solidDatasetAsMarkdown", () => {
       "Some other string"
     );
     const changedDataset = setThing(datasetWithSavedThing, changedThing);
+
+    const x = solidDatasetAsMarkdown(changedDataset);
 
     expect(solidDatasetAsMarkdown(changedDataset)).toBe(
       "# SolidDataset: https://some.pod/resource\n\n" +

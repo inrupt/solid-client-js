@@ -72,7 +72,7 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../access/universal";
 import openidClient from "openid-client";
-import { blankNode } from "@rdfjs/dataset";
+import { DataFactory } from "../rdfjs";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the other `describe` block has credentials for an NSS server:
@@ -562,7 +562,7 @@ describe.each(serversUnderTest)(
       // Prepare the Resource on the Pod
       let newThing = createThing({ name: "e2e-test-thing-with-blank-node" });
       newThing = setBoolean(newThing, regularPredicate, true);
-      newThing = setTerm(newThing, blankNodePredicate, blankNode());
+      newThing = setTerm(newThing, blankNodePredicate, DataFactory.blankNode());
       let newDataset = createSolidDataset();
       newDataset = setThing(newDataset, newThing);
 
