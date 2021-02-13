@@ -55,7 +55,6 @@ import {
   WithResourceAcl,
 } from "./acl";
 import { removeAll, removeIri } from "../thing/remove";
-import { predicate } from "rdf-namespaces/dist/rdf";
 
 /**
  * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]

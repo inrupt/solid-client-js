@@ -20,8 +20,9 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+
+import { Quad } from "rdf-js";
 import { dataset } from "@rdfjs/dataset";
-import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
 import {
@@ -41,6 +42,7 @@ import {
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
+import { getMatchingQuads } from "../rdfjs.test";
 
 function getMockQuad(
   subject: IriString,
@@ -68,28 +70,6 @@ function literalOfType(
   );
 }
 
-function quadHas(
-  quad: Quad,
-  values: { subject?: IriString; predicate?: IriString; object?: Term }
-): boolean {
-  if (
-    values.subject &&
-    !DataFactory.namedNode(values.subject).equals(quad.subject)
-  ) {
-    return false;
-  }
-  if (
-    values.predicate &&
-    !DataFactory.namedNode(values.predicate).equals(quad.predicate)
-  ) {
-    return false;
-  }
-  if (values.object && !values.object.equals(quad.object)) {
-    return false;
-  }
-  return true;
-}
-
 describe("setIri", () => {
   it("replaces existing values with the given IRI for the given Predicate", () => {
     const existingQuad1 = getMockQuad(
@@ -111,15 +91,14 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts values as Named Nodes", () => {
@@ -136,14 +115,14 @@ describe("setIri", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts values as ThingPersisteds", () => {
@@ -163,14 +142,14 @@ describe("setIri", () => {
       targetThing
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts values as ThingLocals", () => {
@@ -194,15 +173,13 @@ describe("setIri", () => {
       thingLocal
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
-    expect(updatedQuads[0].subject.value).toBe(
-      "https://some.pod/resource#subject"
-    );
-    expect(updatedQuads[0].predicate.value).toBe(
-      "https://some.vocab/predicate"
-    );
-    expect((updatedQuads[0].object as LocalNode).internal_name).toBe(
+    expect(updatedThing.size).toBe(1);
+    const matchedQuads = getMatchingQuads(updatedThing, {
+      subject: "https://some.pod/resource#subject",
+      predicate: "https://some.vocab/predicate",
+    });
+
+    expect((matchedQuads[0].object as LocalNode).internal_name).toBe(
       "localObject"
     );
   });
@@ -221,14 +198,14 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -263,16 +240,13 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
-    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+    expect(updatedThing.size).toBe(1);
+    const matchingQuads = getMatchingQuads(updatedThing, {
+      predicate: "https://some.vocab/predicate",
+      object: "https://some.pod/other-resource#object",
+    });
+    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
       "localSubject"
-    );
-    expect(updatedQuads[0].predicate.value).toBe(
-      "https://some.vocab/predicate"
-    );
-    expect(updatedQuads[0].object.value).toBe(
-      "https://some.pod/other-resource#object"
     );
   });
 
@@ -290,21 +264,21 @@ describe("setIri", () => {
       "https://some.pod/resource#object"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -391,15 +365,14 @@ describe("setBoolean", () => {
       true
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("boolean", "true"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -416,14 +389,14 @@ describe("setBoolean", () => {
       false
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("boolean", "false"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -466,13 +439,13 @@ describe("setBoolean", () => {
       true
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: literalOfType("boolean", "true"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -492,21 +465,21 @@ describe("setBoolean", () => {
       true
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: literalOfType("boolean", "true"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -568,15 +541,14 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -593,14 +565,14 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -643,13 +615,13 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -669,21 +641,21 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -745,15 +717,14 @@ describe("setDecimal", () => {
       13.37
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -770,14 +741,14 @@ describe("setDecimal", () => {
       13.37
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -820,13 +791,13 @@ describe("setDecimal", () => {
       13.37
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -846,21 +817,21 @@ describe("setDecimal", () => {
       13.37
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: literalOfType("decimal", "13.37"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -918,15 +889,14 @@ describe("setInteger", () => {
 
     const updatedThing = setInteger(thing, "https://some.vocab/predicate", 42);
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -943,14 +913,14 @@ describe("setInteger", () => {
       42
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -993,13 +963,13 @@ describe("setInteger", () => {
       42
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -1019,21 +989,21 @@ describe("setInteger", () => {
       42
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: literalOfType("integer", "42"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1096,15 +1066,14 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value", "en-gb"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1122,14 +1091,14 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value", "en-gb"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -1174,13 +1143,13 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value", "en-gb"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -1201,21 +1170,21 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: DataFactory.literal("Some string value", "en-gb"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1280,15 +1249,14 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1305,14 +1273,14 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -1355,13 +1323,13 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -1381,21 +1349,21 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: literalOfType("string", "Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1457,15 +1425,14 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1482,14 +1449,14 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -1525,16 +1492,13 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
-    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+    expect(updatedThing.size).toBe(1);
+    const matchingQuads = getMatchingQuads(updatedThing, {
+      predicate: "https://some.vocab/predicate",
+      object: "https://some.pod/other-resource#object",
+    });
+    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
       "localSubject"
-    );
-    expect(updatedQuads[0].predicate.value).toBe(
-      "https://some.vocab/predicate"
-    );
-    expect(updatedQuads[0].object.value).toBe(
-      "https://some.pod/other-resource#object"
     );
   });
 
@@ -1552,21 +1516,21 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1628,15 +1592,14 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1652,14 +1615,15 @@ describe("setLiteral", () => {
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.literal("Some string value")
     );
-    const updatedQuads = Array.from(updatedThing);
+
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -1702,13 +1666,13 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         predicate: "https://some.vocab/predicate",
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(updatedThing.internal_localSubject.internal_name).toBe(
       "localSubject"
     );
@@ -1728,21 +1692,21 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
         object: DataFactory.literal("Some string value"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1804,15 +1768,14 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("replaces existing values with the given Term for the given Predicate", () => {
@@ -1838,18 +1801,14 @@ describe("setTerm", () => {
       )
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal(
-          "Some string",
-          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
-        ),
+        object: DataFactory.literal("Some string"),
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1866,14 +1825,14 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(1);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/other-resource#object"),
+        object: "https://some.pod/other-resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("does not modify the input Thing", () => {
@@ -1909,16 +1868,13 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
-    expect(updatedQuads).toHaveLength(1);
-    expect((updatedQuads[0].subject as LocalNode).internal_name).toBe(
+    expect(updatedThing.size).toBe(1);
+    const matchingQuads = getMatchingQuads(updatedThing, {
+      predicate: "https://some.vocab/predicate",
+      object: "https://some.pod/other-resource#object",
+    });
+    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
       "localSubject"
-    );
-    expect(updatedQuads[0].predicate.value).toBe(
-      "https://some.vocab/predicate"
-    );
-    expect(updatedQuads[0].object.value).toBe(
-      "https://some.pod/other-resource#object"
     );
   });
 
@@ -1936,21 +1892,21 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/resource#object")
     );
 
-    const updatedQuads = Array.from(updatedThing);
+    expect(updatedThing.size).toBe(2);
     expect(
-      quadHas(updatedQuads[0], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
     expect(
-      quadHas(updatedQuads[1], {
+      getMatchingQuads(updatedThing, {
         subject: "https://some.pod/resource#subject",
         predicate: "https://some.vocab/other-predicate",
-        object: DataFactory.namedNode("https://some.pod/resource#object"),
+        object: "https://some.pod/resource#object",
       })
-    ).toBe(true);
+    ).toHaveLength(1);
   });
 
   it("throws an error when passed something other than a Thing", () => {

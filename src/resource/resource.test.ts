@@ -700,4 +700,15 @@ describe("cloneResource", () => {
     expect(clonedObject).toEqual(sourceObject);
     expect(clonedObject).not.toBe(sourceObject);
   });
+
+  it("clones an object containing an object with no 'constructor' at all", () => {
+    // This object creation approach creates an object with no 'constructor'
+    // field at all.
+    const sourceObject = { noCtor: Object.create(null) };
+
+    const clonedObject = internal_cloneResource(sourceObject);
+
+    expect(clonedObject).toEqual(sourceObject);
+    expect(clonedObject).not.toBe(sourceObject);
+  });
 });

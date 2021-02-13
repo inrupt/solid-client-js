@@ -57,4 +57,5 @@ export default {
       },
     }),
   ],
+  external: ["cross-fetch", "http-link-header", "@rdfjs/dataset", "n3"],
 };

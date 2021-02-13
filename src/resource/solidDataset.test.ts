@@ -75,7 +75,7 @@ describe("createSolidDataset", () => {
   it("should initialise a new empty SolidDataset", () => {
     const solidDataset = createSolidDataset();
 
-    expect(Array.from(solidDataset)).toEqual([]);
+    expect(solidDataset.size).toBe(0);
   });
 });
 
@@ -479,12 +479,13 @@ describe("saveSolidDatasetAt", () => {
         }
       );
 
-      expect(Array.from(storedSolidDataset)[0].subject.value).toBe(
-        "https://some.pod/resource#some-subject-name"
-      );
-      expect(Array.from(storedSolidDataset)[0].object.value).toBe(
-        "https://some.pod/resource#some-object-name"
-      );
+      expect(
+        storedSolidDataset.match(
+          DataFactory.namedNode("https://some.pod/resource#some-subject-name"),
+          null,
+          DataFactory.namedNode("https://some.pod/resource#some-object-name")
+        ).size
+      ).toBe(1);
     });
 
     it("makes sure the returned SolidDataset has an empty change log", async () => {

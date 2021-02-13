@@ -20,9 +20,10 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
+
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { DataFactory } from "n3";
+import { dataset } from "@rdfjs/dataset";
 import {
   getThing,
   getThingAll,
@@ -37,7 +38,11 @@ import {
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
-import { internal_throwIfNotThing, internal_toNode } from "./thing.internal";
+import {
+  internal_getReadableValue,
+  internal_throwIfNotThing,
+  internal_toNode,
+} from "./thing.internal";
 import {
   IriString,
   Thing,
@@ -224,7 +229,7 @@ describe("getThing", () => {
       "https://some.vocab/subject"
     ) as Thing;
 
-    expect(thing.size).toEqual(2);
+    expect(thing.size).toBe(2);
     expect(Array.from(thing)).toContain(quadInDefaultGraph);
     expect(Array.from(thing)).toContain(quadInArbitraryGraph);
   });
@@ -1145,7 +1150,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
     expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 
@@ -1173,7 +1178,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("can reconcile given NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
@@ -1206,7 +1211,7 @@ describe("removeThing", () => {
       DataFactory.namedNode("https://some.pod/resource#subject")
     );
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("only removes LocalNodes if the SolidDataset has no known IRI", () => {
@@ -1238,7 +1243,7 @@ describe("removeThing", () => {
 
 describe("asIri", () => {
   it("returns the IRI of a persisted Thing", () => {
-    const persistedThing: Thing = Object.assign(dataset(), {
+    const persistedThing: ThingPersisted = Object.assign(dataset(), {
       internal_url: "https://some.pod/resource#thing",
     });
 
@@ -1422,6 +1427,7 @@ describe("thingAsMarkdown", () => {
         someLiteral
       )
     );
+
     thingWithRdfValues.add(
       DataFactory.quad(
         thingWithRdfValues.internal_localSubject,

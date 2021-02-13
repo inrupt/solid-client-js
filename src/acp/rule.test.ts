@@ -20,6 +20,9 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+import { NamedNode } from "rdf-js";
+import { DataFactory } from "n3";
+
 import {
   asIri,
   createThing,
@@ -63,8 +66,6 @@ import {
   ruleAsMarkdown,
   removeRule,
 } from "./rule";
-
-import { DataFactory, NamedNode } from "n3";
 
 import { Policy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";
@@ -276,7 +277,7 @@ describe("addForbiddenRuleUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const mypolicySize = myPolicy.size;
     addForbiddenRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(mypolicySize);
+    expect(myPolicy.size).toBe(mypolicySize);
   });
 });
 
@@ -332,7 +333,7 @@ describe("addOptionalRuleUrl", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     addOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toBe(0);
   });
 });
 
@@ -388,7 +389,7 @@ describe("addRequiredRule", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     addOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toBe(0);
   });
 });
 
@@ -444,7 +445,7 @@ describe("setForbiddenRuleUrl", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     setForbiddenRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toBe(0);
   });
 });
 
@@ -500,7 +501,7 @@ describe("setOptionalRuleUrl", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     setOptionalRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toBe(0);
   });
 });
 
@@ -556,7 +557,7 @@ describe("setRequiredRuleUrl", () => {
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     setRequiredRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toEqual(0);
+    expect(myPolicy.size).toBe(0);
   });
 });
 
@@ -720,7 +721,7 @@ describe("createRule", () => {
   it("returns an **empty** rule", () => {
     const myRule = createRule("https://my.pod/rule-resource#rule");
     // The rule should only contain a type triple.
-    expect(myRule.size).toEqual(1);
+    expect(myRule.size).toBe(1);
   });
 });
 

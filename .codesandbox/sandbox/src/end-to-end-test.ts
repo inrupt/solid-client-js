@@ -9,6 +9,7 @@ const loginButton = document.getElementsByTagName("button")[0];
 loginButton.addEventListener("click", async (e) => {
   const idp = (document.getElementById("idp") as HTMLInputElement).value;
   await session.login({
+    clientName: "End-2-End Test Client App - browser",
     oidcIssuer: idp,
     redirectUrl: document.location.href,
   });
