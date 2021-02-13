@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
+const dataset = require("rdf-dataset-indexed");
 import {
   getPublicResourceAccess,
   getPublicDefaultAccess,
