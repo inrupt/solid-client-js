@@ -19,6 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { expect } from "@jest/globals";
+
 const dataset = require("rdf-dataset-indexed");
 import { getLocalNode } from "../datatypes";
 import {
@@ -44,6 +46,7 @@ import { Quad } from "rdf-js";
 import { addMockAclRuleQuads } from "./mock.internal";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
+import { expectMatch } from "../test-support/test-support";
 
 function addAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,
@@ -1176,42 +1179,43 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(6);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(6);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Write"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Control"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[4].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[5].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
@@ -1258,8 +1262,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(13);
+    expect(updatedDataset).toHaveLength(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -1328,8 +1331,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(14);
+    expect(updatedDataset).toHaveLength(14);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1345,7 +1347,7 @@ describe("setGroupDefaultAccess", () => {
       control: false,
     });
 
-    expect(Array.from(sourceDataset)).toEqual([]);
+    expect(sourceDataset).toHaveLength(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -1411,30 +1413,31 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
@@ -1459,30 +1462,31 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
@@ -1507,8 +1511,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toEqual([]);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not remove ACL rules that apply to the Group but also act as resource rules", () => {
@@ -1541,30 +1544,31 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("does not remove ACL rules that apply to the Group but also apply to a different Container", () => {
@@ -1597,30 +1601,31 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/other-container/"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("does not remove ACL rules that no longer apply to the given Group, but still apply to others", () => {
@@ -1653,30 +1658,29 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
       "https://some-other.pod/groups#group"
     );
   });
@@ -1711,30 +1715,29 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
       "https://arbitrary.pod/container/"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentClass"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentClass",
       "http://xmlns.com/foaf/0.1/Agent"
     );
   });
@@ -1769,56 +1772,48 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(8);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedDataset).toHaveLength(8);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization",
+      2
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/",
+      2
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(updatedQuads[1].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    const matchedQuad1 = expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
       "https://some-other.pod/groups#group"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[4].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[5].object.value).toBe(
+    const matchedQuad2 = expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[6].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[6].object.value).toBe(
-      "https://arbitrary.pod/container/"
-    );
-    expect(updatedQuads[7].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[7].object.value).toBe("https://some.pod/groups#group");
-    // Make sure the default Access Modes granted in 2 and 5 are in separate ACL Rules:
-    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toBe(false);
+
+    // Make sure the default Access Modes granted are in separate ACL Rules:
+    expect(matchedQuad1?.subject.equals(matchedQuad2?.subject)).toBe(false);
   });
 
   it("does not forget to clean up the legacy defaultForNew predicate when setting default access", async () => {
@@ -1872,8 +1867,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(0);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
@@ -1927,8 +1921,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
+    expect(updatedDataset).toHaveLength(4);
   });
 });
 
@@ -1950,40 +1943,43 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(6);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(6);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Write"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Control"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[4].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[5].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
@@ -2030,8 +2026,7 @@ describe("setGroupResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(13);
+    expect(updatedDataset).toHaveLength(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -2102,8 +2097,7 @@ describe("setGroupResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(18);
+    expect(updatedDataset).toHaveLength(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -2119,7 +2113,7 @@ describe("setGroupResourceAccess", () => {
       control: false,
     });
 
-    expect(Array.from(sourceDataset)).toEqual([]);
+    expect(sourceDataset).toHaveLength(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -2185,28 +2179,31 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
@@ -2231,28 +2228,31 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
@@ -2277,8 +2277,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toEqual([]);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not remove ACL rules that apply to the Group but also act as default rules", () => {
@@ -2311,28 +2310,31 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("does not remove ACL rules that apply to the Group but also apply to a different Resource", () => {
@@ -2365,30 +2367,31 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
       "https://arbitrary.pod/other-resource"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
 
   it("does not remove ACL rules that no longer apply to the given Group, but still apply to others", () => {
@@ -2421,28 +2424,29 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
       "https://some-other.pod/groups#group"
     );
   });
@@ -2477,28 +2481,29 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(4);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentClass"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentClass",
       "http://xmlns.com/foaf/0.1/Agent"
     );
   });
@@ -2533,51 +2538,47 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(8);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    expect(updatedDataset).toHaveLength(8);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization",
+      2
     );
-    expect(updatedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource",
+      2
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(updatedQuads[1].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    const matchedQuad1 = expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
       "https://some-other.pod/groups#group"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[4].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
-    );
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[5].object.value).toBe(
+    const matchedQuad2 = expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Append"
     );
-    expect(updatedQuads[6].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://some.pod/groups#group"
     );
-    expect(updatedQuads[6].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[7].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
-    );
-    expect(updatedQuads[7].object.value).toBe("https://some.pod/groups#group");
-    // Make sure the default Access Modes granted in 2 and 5 are in separate ACL Rules:
-    expect(updatedQuads[2].subject.equals(updatedQuads[5].subject)).toBe(false);
+
+    // Make sure the default Access Modes granted are in separate ACL Rules:
+    expect(matchedQuad1?.subject.equals(matchedQuad2?.subject)).toBe(false);
   });
 });

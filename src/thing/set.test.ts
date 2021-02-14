@@ -112,7 +112,7 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -135,7 +135,7 @@ describe("setIri", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -161,7 +161,7 @@ describe("setIri", () => {
       targetThing
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -191,7 +191,7 @@ describe("setIri", () => {
       thingLocal
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -217,7 +217,7 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -258,7 +258,7 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -284,7 +284,7 @@ describe("setIri", () => {
       "https://some.pod/resource#object"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -383,7 +383,7 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -406,7 +406,7 @@ describe("setBoolean", () => {
       false
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -455,7 +455,7 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -481,7 +481,7 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -555,7 +555,7 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -578,7 +578,7 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -627,7 +627,7 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -653,7 +653,7 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -727,7 +727,7 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -750,7 +750,7 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -799,7 +799,7 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -825,7 +825,7 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -895,7 +895,7 @@ describe("setInteger", () => {
 
     const updatedThing = setInteger(thing, "https://some.vocab/predicate", 42);
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -918,7 +918,7 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -967,7 +967,7 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -993,7 +993,7 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1068,7 +1068,7 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1092,7 +1092,7 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1143,7 +1143,7 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -1170,7 +1170,7 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1247,7 +1247,7 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1270,7 +1270,7 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1319,7 +1319,7 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -1345,7 +1345,7 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1419,7 +1419,7 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1442,7 +1442,7 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1484,7 +1484,7 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -1510,7 +1510,7 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1584,7 +1584,7 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1607,7 +1607,7 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1656,7 +1656,7 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       null,
@@ -1682,7 +1682,7 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1756,7 +1756,7 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1788,7 +1788,7 @@ describe("setTerm", () => {
       )
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1811,7 +1811,7 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1853,7 +1853,7 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -1879,7 +1879,7 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",

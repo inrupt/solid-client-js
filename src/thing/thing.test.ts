@@ -1150,7 +1150,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(updatedDataset).toHaveLength(0);
     expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
   });
 
@@ -1178,7 +1178,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("can reconcile given NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
@@ -1211,7 +1211,7 @@ describe("removeThing", () => {
       DataFactory.namedNode("https://some.pod/resource#subject")
     );
 
-    expect(updatedDataset.size).toBe(0);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("only removes LocalNodes if the SolidDataset has no known IRI", () => {

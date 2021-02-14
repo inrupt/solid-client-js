@@ -800,40 +800,41 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(6);
-    expect(updatedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    );
-    expect(updatedQuads[0].object.value).toBe(
+    expect(updatedDataset).toHaveLength(6);
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    expect(updatedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[1].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Read"
     );
-    expect(updatedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[2].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Write"
     );
-    expect(updatedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
-    );
-    expect(updatedQuads[3].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#mode",
       "http://www.w3.org/ns/auth/acl#Control"
     );
-    expect(updatedQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    expect(updatedQuads[4].object.value).toBe("https://arbitrary.pod/resource");
-    expect(updatedQuads[5].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agent"
-    );
-    expect(updatedQuads[5].object.value).toBe(
+    expectMatch(
+      updatedDataset,
+      null,
+      "http://www.w3.org/ns/auth/acl#agent",
       "https://some.pod/profileDoc#webId"
     );
   });
@@ -882,8 +883,7 @@ describe("setAgentResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(13);
+    expect(updatedDataset).toHaveLength(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or Origin", async () => {
@@ -955,8 +955,7 @@ describe("setAgentResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(18);
+    expect(updatedDataset).toHaveLength(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -972,7 +971,7 @@ describe("setAgentResourceAccess", () => {
       control: false,
     });
 
-    expect(Array.from(sourceDataset)).toEqual([]);
+    expect(sourceDataset).toHaveLength(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -1132,8 +1131,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toEqual([]);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as default rules", () => {
@@ -1276,7 +1274,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    expect(updatedDataset).toHaveLength(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1385,7 +1383,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(8);
+    expect(updatedDataset).toHaveLength(8);
     expectMatch(
       updatedDataset,
       null,
@@ -1837,8 +1835,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(13);
+    expect(updatedDataset).toHaveLength(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -1907,8 +1904,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(18);
+    expect(updatedDataset).toHaveLength(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1924,7 +1920,7 @@ describe("setAgentDefaultAccess", () => {
       control: false,
     });
 
-    expect(Array.from(sourceDataset)).toEqual([]);
+    expect(sourceDataset).toHaveLength(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -2088,8 +2084,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toEqual([]);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as resource rules", () => {
@@ -2232,7 +2227,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    expect(updatedDataset).toHaveLength(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2343,7 +2338,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(8);
+    expect(updatedDataset).toHaveLength(8);
     expectMatch(
       updatedDataset,
       null,
@@ -2436,8 +2431,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(0);
+    expect(updatedDataset).toHaveLength(0);
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
@@ -2489,7 +2483,6 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    const updatedQuads: Quad[] = Array.from(updatedDataset);
-    expect(updatedQuads).toHaveLength(4);
+    expect(updatedDataset).toHaveLength(4);
   });
 });

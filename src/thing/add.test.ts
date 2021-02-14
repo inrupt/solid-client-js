@@ -89,7 +89,7 @@ describe("addIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -107,7 +107,7 @@ describe("addIri", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -128,7 +128,7 @@ describe("addIri", () => {
       targetThing
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -154,7 +154,7 @@ describe("addIri", () => {
       thingLocal
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -175,7 +175,7 @@ describe("addIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -193,8 +193,8 @@ describe("addIri", () => {
       "https://arbitrary.pod/other-resource#object"
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -213,7 +213,7 @@ describe("addIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -241,7 +241,7 @@ describe("addIri", () => {
       "https://some.pod/yet-another-resource#object"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -272,7 +272,7 @@ describe("addIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -360,7 +360,7 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -378,7 +378,7 @@ describe("addBoolean", () => {
       false
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -396,8 +396,8 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -416,7 +416,7 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -444,7 +444,7 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -475,7 +475,7 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -538,7 +538,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -556,7 +556,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -574,8 +574,8 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -594,7 +594,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchingQuad = expectMatch(
       updatedThing,
       null,
@@ -622,7 +622,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -653,7 +653,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -716,7 +716,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -734,7 +734,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -752,8 +752,8 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -772,7 +772,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -800,7 +800,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -831,7 +831,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -890,7 +890,7 @@ describe("addInteger", () => {
 
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -908,7 +908,7 @@ describe("addInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -926,8 +926,8 @@ describe("addInteger", () => {
       42
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -946,7 +946,7 @@ describe("addInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -970,7 +970,7 @@ describe("addInteger", () => {
 
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       null,
@@ -997,7 +997,7 @@ describe("addInteger", () => {
 
     const updatedThing = addInteger(thing, "https://some.vocab/predicate", 42);
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1061,7 +1061,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1080,7 +1080,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1099,8 +1099,8 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1120,7 +1120,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -1149,7 +1149,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1181,7 +1181,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1247,7 +1247,7 @@ describe("addStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1265,7 +1265,7 @@ describe("addStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1283,8 +1283,8 @@ describe("addStringNoLocale", () => {
       "Arbitrary string value"
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1303,7 +1303,7 @@ describe("addStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -1331,7 +1331,7 @@ describe("addStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1362,7 +1362,7 @@ describe("addStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1425,7 +1425,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1443,7 +1443,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1461,8 +1461,8 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1481,7 +1481,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -1509,7 +1509,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://some.pod/yet-another-resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1540,7 +1540,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1603,7 +1603,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1621,7 +1621,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1639,8 +1639,8 @@ describe("addLiteral", () => {
       DataFactory.literal("Arbitrary string value")
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1659,7 +1659,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -1687,7 +1687,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1718,7 +1718,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1781,7 +1781,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1802,7 +1802,7 @@ describe("addTerm", () => {
       )
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1823,7 +1823,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1841,8 +1841,8 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
     );
 
-    expect(thing.size).toBe(0);
-    expect(updatedThing.size).toBe(1);
+    expect(thing).toHaveLength(0);
+    expect(updatedThing).toHaveLength(1);
   });
 
   it("also works on ThingLocals", () => {
@@ -1861,7 +1861,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
+    expect(updatedThing).toHaveLength(1);
     const matchedQuad = expectMatch(
       updatedThing,
       null,
@@ -1889,7 +1889,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://some.pod/yet-another-resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
@@ -1920,7 +1920,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
+    expect(updatedThing).toHaveLength(2);
     expectMatch(
       updatedThing,
       "https://some.pod/resource#subject",
