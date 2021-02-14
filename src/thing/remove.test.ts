@@ -555,10 +555,10 @@ describe("removeBoolean", () => {
       false
     );
 
-    expect(Array.from(updatedThingWithoutSerialised1)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSerialised0)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSerialisedTrue)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSerialisedFalse)).toEqual([]);
+    expect(updatedThingWithoutSerialised1).toHaveLength(0);
+    expect(updatedThingWithoutSerialised0).toHaveLength(0);
+    expect(updatedThingWithoutSerialisedTrue).toHaveLength(0);
+    expect(updatedThingWithoutSerialisedFalse).toHaveLength(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -771,8 +771,8 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(Array.from(updatedThingWithoutRoundedDatetime)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSpecificDatetime)).toEqual([]);
+    expect(updatedThingWithoutRoundedDatetime).toHaveLength(0);
+    expect(updatedThingWithoutSpecificDatetime).toHaveLength(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -804,7 +804,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(Array.from(thingWithDatetime)).toHaveLength(1);
+    expect(thingWithDatetime).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -1005,9 +1005,9 @@ describe("removeDecimal", () => {
       1337
     );
 
-    expect(Array.from(updatedThingWithoutPlainDecimal)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSignedDecimal)).toEqual([]);
-    expect(Array.from(updatedThingWithoutZeroedDecimal)).toEqual([]);
+    expect(updatedThingWithoutPlainDecimal).toHaveLength(0);
+    expect(updatedThingWithoutSignedDecimal).toHaveLength(0);
+    expect(updatedThingWithoutZeroedDecimal).toHaveLength(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1039,7 +1039,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(Array.from(thingWithDecimal)).toHaveLength(1);
+    expect(thingWithDecimal).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -1220,8 +1220,8 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(Array.from(updatedThingWithoutUnsignedInteger)).toEqual([]);
-    expect(Array.from(updatedThingWithoutSignedInteger)).toEqual([]);
+    expect(updatedThingWithoutUnsignedInteger).toHaveLength(0);
+    expect(updatedThingWithoutSignedInteger).toHaveLength(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1253,7 +1253,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(Array.from(thingWithInteger)).toHaveLength(1);
+    expect(thingWithInteger).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -1472,7 +1472,7 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
 
-    expect(Array.from(thingWithStringWithLocale)).toHaveLength(1);
+    expect(thingWithStringWithLocale).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -1699,7 +1699,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(Array.from(thingWithStringNoLocale)).toHaveLength(1);
+    expect(thingWithStringNoLocale).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -1993,7 +1993,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(Array.from(thingWithInteger)).toHaveLength(1);
+    expect(thingWithInteger).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
@@ -2192,7 +2192,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(Array.from(thingWithNamedNode)).toHaveLength(1);
+    expect(thingWithNamedNode).toHaveLength(1);
     expect(updatedThing).toHaveLength(0);
   });
 
