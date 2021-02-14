@@ -75,7 +75,7 @@ describe("createSolidDataset", () => {
   it("should initialise a new empty SolidDataset", () => {
     const solidDataset = createSolidDataset();
 
-    expect(Array.from(solidDataset)).toEqual([]);
+    expect(solidDataset).toHaveLength(0);
   });
 });
 
@@ -300,7 +300,7 @@ describe("getSolidDataset", () => {
       }
     );
 
-    expect(solidDataset.size).toBe(5);
+    expect(solidDataset).toHaveLength(5);
     expect(solidDataset).toMatchSnapshot();
   });
 
@@ -1369,7 +1369,7 @@ describe("createContainerAt", () => {
       }
     );
 
-    expect(solidDataset.size).toBe(0);
+    expect(solidDataset).toHaveLength(0);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
