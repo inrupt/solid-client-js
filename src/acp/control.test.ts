@@ -409,8 +409,7 @@ describe("addAcrPolicyUrl", () => {
 
     addAcrPolicyUrl(resourceWithAcr, "https://some.pod/policy-resource#policy");
 
-    const oldAcrQuads = Array.from(accessControlResource);
-    expect(oldAcrQuads).toEqual([]);
+    expect(accessControlResource).toHaveLength(0);
   });
 });
 
@@ -478,8 +477,7 @@ describe("addMemberAcrPolicyUrl", () => {
       "https://some.pod/policy-resource#policy"
     );
 
-    const oldAcrQuads = Array.from(accessControlResource);
-    expect(oldAcrQuads).toEqual([]);
+    expect(accessControlResource).toHaveLength(0);
   });
 });
 

@@ -229,7 +229,7 @@ describe("getThing", () => {
       "https://some.vocab/subject"
     ) as Thing;
 
-    expect(thing.size).toEqual(2);
+    expect(thing).toHaveLength(2);
     expect(Array.from(thing)).toContain(quadInDefaultGraph);
     expect(Array.from(thing)).toContain(quadInArbitraryGraph);
   });
