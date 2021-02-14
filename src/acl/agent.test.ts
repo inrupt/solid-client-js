@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { Quad, NamedNode, BlankNode, Quad_Subject } from "rdf-js";
-const dataset = require("rdf-dataset-indexed");
+import dataset from "rdf-dataset-indexed";
 import { DataFactory } from "n3";
 import {
   getAgentResourceAccess,
