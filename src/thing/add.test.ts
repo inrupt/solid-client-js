@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-const dataset = require("rdf-dataset-indexed");
+import dataset from "rdf-dataset-indexed";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";

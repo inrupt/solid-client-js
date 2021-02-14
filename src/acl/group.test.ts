@@ -21,7 +21,7 @@
 
 import { expect } from "@jest/globals";
 
-const dataset = require("rdf-dataset-indexed");
+import dataset from "rdf-dataset-indexed";
 import { getLocalNode } from "../datatypes";
 import {
   SolidDataset,

@@ -23,8 +23,9 @@
 //  working with types here, and not implementations at all (the implementation
 //  should be up to the user of this library).
 import { DatasetCore, Quad } from "rdf-js";
+import dataset from "rdf-dataset-indexed";
+export { dataset };
 
-export const dataset = require("rdf-dataset-indexed");
 import { DataFactory as RdfDataFactory } from "n3";
 const { quad, literal, namedNode, blankNode } = RdfDataFactory;
 
