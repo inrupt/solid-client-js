@@ -80,26 +80,9 @@ type NoUndefinedWacAccess = (
 
 export type AgentWacAccess = Record<WebId, WacAccess>;
 
-function hasNoUndefinedAccessModes(
-  access: WacAccess
-): access is WacAccess & NoUndefinedWacAccess {
-  return !(
-    access.read === undefined ||
-    access.append === undefined ||
-    access.write === undefined ||
-    access.controlRead === undefined ||
-    access.controlWrite === undefined
-  );
-}
-
 function universalAccessToAcl(
   newAccess: WacAccess,
   previousAccess: AclAccess
-): AclAccess;
-function universalAccessToAcl(newAccess: NoUndefinedWacAccess): AclAccess;
-function universalAccessToAcl(
-  newAccess: WacAccess,
-  previousAccess?: AclAccess
 ): AclAccess {
   // Universal access is aligned on ACP, which means there is a distinction between
   // controlRead and controlWrite. This split doesn't exist in WAC, which is why
@@ -110,20 +93,12 @@ function universalAccessToAcl(
       "For Pods using Web Access Control, controlRead and controlWrite must be equal."
     );
   }
-  return hasNoUndefinedAccessModes(newAccess)
-    ? {
-        read: newAccess.read,
-        append: newAccess.append,
-        write: newAccess.write,
-        control: newAccess.controlRead,
-      }
-    : {
-        // The type signature enforces that previousAccess is defined here.
-        read: newAccess.read ?? previousAccess!.read,
-        append: newAccess.append ?? previousAccess!.append,
-        write: newAccess.write ?? previousAccess!.write,
-        control: newAccess.controlRead ?? previousAccess!.control,
-      };
+  return {
+    read: newAccess.read ?? previousAccess.read,
+    append: newAccess.append ?? previousAccess.append,
+    write: newAccess.write ?? previousAccess.write,
+    control: newAccess.controlRead ?? previousAccess.control,
+  };
 }
 
 function aclAccessToUniversal(access: AclAccess): WacAccess {
@@ -338,17 +313,8 @@ async function setActorAccess<T extends WithServerResourceInfo>(
     resourceWithAcl,
     resourceAcl
   );
-  let wacAccess: AclAccess | undefined = undefined;
-  if (hasNoUndefinedAccessModes(access)) {
-    // If all the access modes in `access` are set, no need for the previous access.
-    wacAccess = universalAccessToAcl(access, undefined);
-  } else {
-    // If some modes in `access` are undefined, they should be left unchanged.
-    // The type assumption is okay because we just set a Resource ACL for the
-    // Resource, or returned already.
-    const currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
-    wacAccess = universalAccessToAcl(access, currentAccess);
-  }
+  const currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
+  const wacAccess = universalAccessToAcl(access, currentAccess);
 
   const updatedResourceAcl = writeAccess(resourceAcl, actor, wacAccess);
 
