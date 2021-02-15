@@ -21,15 +21,18 @@
 
 import { jest, describe, it } from "@jest/globals";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
-import { getAgentResourceAccess } from "../acl/agent";
+import { getAgentDefaultAccess, getAgentResourceAccess } from "../acl/agent";
 import {
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
   getGroupAccessAll,
   getPublicAccess,
+  setAgentDefaultAccess,
   setAgentResourceAccess,
+  setGroupDefaultAccess,
   setGroupResourceAccess,
+  setPublicDefaultAccess,
   setPublicResourceAccess,
   WacAccess,
 } from "./wac";
@@ -53,8 +56,8 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { AgentAccess } from "../acl/agent";
 import { internal_getResourceAcl } from "../acl/acl.internal";
 import { AclDataset } from "../acl/acl";
-import { getGroupResourceAccess } from "../acl/group";
-import { getPublicResourceAccess } from "../acl/class";
+import { getGroupDefaultAccess, getGroupResourceAccess } from "../acl/group";
+import { getPublicDefaultAccess, getPublicResourceAccess } from "../acl/class";
 
 function getMockDataset(
   sourceIri: IriString,
@@ -3708,6 +3711,323 @@ describe("setPublicResourceAccess", () => {
       }
     );
     expect(setPublicResourceAccessWac).toHaveBeenCalled();
+    expect(saveAclForWac).toHaveBeenCalled();
+  });
+});
+
+describe("setAgentDefaultAccess", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setAgentDefaultAccess(resource, "https://some.pod/groups#group", {
+      read: true,
+    });
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("sets default read access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/profile#agent",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource"
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setAgentDefaultAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getAgentDefaultAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/profile#agent"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("calls the underlying WAC API default functions", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const wacModule = jest.requireActual("../acl/agent") as {
+      setAgentDefaultAccess: () => Promise<AgentAccess>;
+    };
+    const aclModule = jest.requireActual("../acl/acl") as {
+      saveAclFor: () => Promise<AclDataset>;
+    };
+    const setAgentDefaultAccessWac = jest.spyOn(
+      wacModule,
+      "setAgentDefaultAccess"
+    );
+    const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setAgentDefaultAccess(
+      resource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(setAgentDefaultAccessWac).toHaveBeenCalled();
+    expect(saveAclForWac).toHaveBeenCalled();
+  });
+});
+
+describe("setGroupDefaultAccess", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setGroupDefaultAccess(resource, "https://some.pod/groups#group", {
+      read: true,
+    });
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("sets default read access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      "https://some.pod/groups#group",
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource",
+      "https://some.pod/resource.acl",
+      acl.agentGroup
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setGroupDefaultAccess(
+      resource,
+      "https://some.pod/groups#group",
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getGroupDefaultAccess(
+      internal_getResourceAcl(result!),
+      "https://some.pod/groups#group"
+    );
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("calls the underlying WAC API default functions", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const wacModule = jest.requireActual("../acl/group") as {
+      setGroupDefaultAccess: () => Promise<AgentAccess>;
+    };
+    const aclModule = jest.requireActual("../acl/acl") as {
+      saveAclFor: () => Promise<AclDataset>;
+    };
+    const setGroupDefaultAccessWac = jest.spyOn(
+      wacModule,
+      "setGroupDefaultAccess"
+    );
+    const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setGroupDefaultAccess(
+      resource,
+      "https://some.pod/groups#group",
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(setGroupDefaultAccessWac).toHaveBeenCalled();
+    expect(saveAclForWac).toHaveBeenCalled();
+  });
+});
+
+describe("setPublicDefaultAccess", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setPublicDefaultAccess(resource, {
+      read: true,
+    });
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource.acl"
+    );
+  });
+
+  it("sets default read access in the resource ACL if available", async () => {
+    const aclResource = addMockAclRuleQuads(
+      getMockDataset("https://some.pod/resource.acl"),
+      foaf.Agent,
+      "https://some.pod/resource",
+      { read: false, append: false, write: false, control: false },
+      "resource",
+      "https://some.pod/resource.acl",
+      acl.agentClass
+    );
+
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+
+    const result = await setPublicDefaultAccess(
+      resource,
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    const newAccess = getPublicDefaultAccess(internal_getResourceAcl(result!));
+
+    expect(newAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      control: false,
+    });
+  });
+
+  it("calls the underlying WAC API default functions", async () => {
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+      mockResponse("", {
+        status: 200,
+        url: "https://some.pod/resource.acl",
+      })
+    );
+
+    const wacModule = jest.requireActual("../acl/class") as {
+      setPublicDefaultAccess: () => Promise<AgentAccess>;
+    };
+    const aclModule = jest.requireActual("../acl/acl") as {
+      saveAclFor: () => Promise<AclDataset>;
+    };
+    const setPublicDefaultAccessWac = jest.spyOn(
+      wacModule,
+      "setPublicDefaultAccess"
+    );
+    const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
+
+    const resource = getMockDataset(
+      "https://some.pod/resource",
+      "https://some.pod/resource.acl"
+    );
+    await setPublicDefaultAccess(
+      resource,
+      {
+        read: true,
+      },
+      {
+        fetch: mockFetch,
+      }
+    );
+    expect(setPublicDefaultAccessWac).toHaveBeenCalled();
     expect(saveAclForWac).toHaveBeenCalled();
   });
 });

@@ -29,15 +29,18 @@ import {
   getAgentAccess as getAgentAccessWac,
   getAgentAccessAll as getAgentAccessAllWac,
   setAgentResourceAccess as setAgentResourceAccessWac,
+  setAgentDefaultAccess as setAgentDefaultAccessWac,
 } from "../acl/agent";
 import {
   getGroupAccess as getGroupAccessWac,
   getGroupAccessAll as getGroupAccessAllWac,
   setGroupResourceAccess as setGroupResourceAccessWac,
+  setGroupDefaultAccess as setGroupDefaultAccessWac,
 } from "../acl/group";
 import {
   getPublicAccess as getPublicAccessWac,
   setPublicResourceAccess as setPublicResourceAccessWac,
+  setPublicDefaultAccess as setPublicDefaultAccessWac,
 } from "../acl/class";
 import {
   IriString,
@@ -413,6 +416,44 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
 }
 
 /**
+ * Set the Access modes for a given Agent to the children of a given Resource, if they
+ * do not have their own individual Resource ACL.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param agent The Agent for whom Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setAgentDefaultAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  agent: WebId,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorAccess(
+    resource,
+    agent,
+    access,
+    getAgentAccessWac,
+    setAgentDefaultAccessWac,
+    options
+  );
+}
+
+/**
  * Set the Access modes for a given Group to a given Resource.
  *
  * Important note: if the target resource did not have a Resource ACL, and its
@@ -450,6 +491,44 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
 }
 
 /**
+ * Set the Access modes for a given Group to the children of a given Resource, if they
+ * do not have their own individual Resource ACL.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param agent The Agent for whom Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setGroupDefaultAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  agent: WebId,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorAccess(
+    resource,
+    agent,
+    access,
+    getGroupAccessWac,
+    setGroupDefaultAccessWac,
+    options
+  );
+}
+
+/**
  * Set the Access modes for everyone to a given Resource.
  *
  * Important note: if the target resource did not have a Resource ACL, and its
@@ -479,6 +558,41 @@ export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
     access,
     getPublicAccessWac,
     setPublicResourceAccessWac,
+    options
+  );
+}
+
+/**
+ *  Set the Access modes for everyone to the children of a given Resource, if they
+ * do not have their own individual Resource ACL.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setPublicDefaultAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorClassAccess(
+    resource,
+    access,
+    getPublicAccessWac,
+    setPublicDefaultAccessWac,
     options
   );
 }
