@@ -337,8 +337,8 @@ async function setActorAccess<T extends WithServerResourceInfo>(
     resourceWithAcl,
     resourceAcl
   );
-  
-  let currentAccess : AclAccess;
+
+  let currentAccess: AclAccess;
   let updatedResourceAcl: (AclDataset & WithChangeLog) | undefined = undefined;
   let wacAccess: AclAccess | undefined = undefined;
 
