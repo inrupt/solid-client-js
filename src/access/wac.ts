@@ -96,9 +96,7 @@ function universalAccessToAcl(
   newAccess: WacAccess,
   previousAccess: AclAccess
 ): AclAccess;
-function universalAccessToAcl(
-  newAccess: NoUndefinedWacAccess,
-): AclAccess;
+function universalAccessToAcl(newAccess: NoUndefinedWacAccess): AclAccess;
 function universalAccessToAcl(
   newAccess: WacAccess,
   previousAccess?: AclAccess
@@ -106,8 +104,7 @@ function universalAccessToAcl(
   // Universal access is aligned on ACP, which means there is a distinction between
   // controlRead and controlWrite. This split doesn't exist in WAC, which is why
   // the type for the input variable of this function is a restriction on the
-  // universal Access type. Also, in WAC, an undefined and false Access modes are
-  // equivalent.
+  // universal Access type.
   if (newAccess.controlRead !== newAccess.controlWrite) {
     throw new Error(
       "For Pods using Web Access Control, controlRead and controlWrite must be equal."
