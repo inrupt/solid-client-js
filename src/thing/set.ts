@@ -304,7 +304,7 @@ function setLiteralOfType(
   value: string,
   type: XmlSchemaTypeIri
 ): Thing {
-  const literal = DataFactory.literal(value, type);
+  const literal = DataFactory.literal(value, DataFactory.namedNode(type));
   return setLiteral(thing, property, literal);
 }
 

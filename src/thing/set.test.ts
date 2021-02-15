@@ -65,7 +65,7 @@ function literalOfType(
 ) {
   return DataFactory.literal(
     literalValue,
-    "http://www.w3.org/2001/XMLSchema#" + literalType
+    DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
   );
 }
 
