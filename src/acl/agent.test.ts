@@ -20,7 +20,6 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { Quad, NamedNode, BlankNode, Quad_Subject } from "rdf-js";
 import dataset from "rdf-dataset-indexed";
 import { DataFactory } from "n3";
 import {
@@ -33,16 +32,11 @@ import {
   getAgentAccessAll,
   setAgentDefaultAccess,
 } from "./agent";
-import {
-  SolidDataset,
-  WithResourceInfo,
-  IriString,
-  WithServerResourceInfo,
-} from "../interfaces";
+import { SolidDataset, IriString, WithServerResourceInfo } from "../interfaces";
 import { getThingAll } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { getLocalNode } from "../datatypes";
-import { Access, AclDataset, WithAcl } from "./acl";
+import { AclDataset, WithAcl } from "./acl";
 import { addMockAclRuleQuads } from "./mock.internal";
 import { internal_setAcl } from "./acl.internal";
 import { expectMatch } from "../test-support/test-support";
