@@ -20,16 +20,26 @@
  */
 
 import { getSolidDataset } from "../resource/solidDataset";
-import { IriString, Thing, WithServerResourceInfo } from "../interfaces";
+import {
+  IriString,
+  Thing,
+  WithChangeLog,
+  WithServerResourceInfo,
+} from "../interfaces";
 import {
   getSourceUrl,
   internal_defaultFetchOptions,
   getResourceInfo,
 } from "../resource/resource";
-import { acl, rdf } from "../constants";
+import { acl, foaf, rdf } from "../constants";
 import { Quad } from "rdf-js";
 import { DataFactory } from "../rdfjs";
-import { createThing, getThingAll, removeThing } from "../thing/thing";
+import {
+  createThing,
+  getThingAll,
+  removeThing,
+  setThing,
+} from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
@@ -43,6 +53,8 @@ import {
   WithFallbackAcl,
   WithResourceAcl,
 } from "./acl";
+import { removeAll, removeIri } from "../thing/remove";
+import { predicate } from "rdf-namespaces/dist/rdf";
 
 /**
  * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
@@ -490,4 +502,146 @@ export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   acl: WithAcl["internal_acl"]
 ): ResourceExt & WithAcl {
   return Object.assign(resource, { internal_acl: acl });
+}
+
+const supportedActorPredicates = [
+  acl.agent,
+  acl.agentClass,
+  acl.agentGroup,
+  acl.origin,
+];
+/**
+ * Union type of all relations defined in `knownActorRelations`.
+ *
+ * When the ACP spec evolves to support additional relations of Rules to Actors,
+ * adding those relations to `knownActorRelations` will cause TypeScript to warn
+ * us everywhere to update everywhere the ActorRelation type is used and that
+ * needs additional work to handle it.
+ */
+type SupportedActorPredicate = typeof supportedActorPredicates extends Array<
+  infer E
+>
+  ? E
+  : never;
+
+/**
+ * Given an ACL Rule, returns two new ACL Rules that cover all the input Rule's use cases,
+ * except for giving the given Actor access to the given Resource.
+ *
+ * @param rule The ACL Rule that should no longer apply for a given Actor to a given Resource.
+ * @param actor The Actor that should be removed from the Rule for the given Resource.
+ * @param resourceIri The Resource to which the Rule should no longer apply for the given Actor.
+ * @returns A tuple with the original ACL Rule without the given Actor, and a new ACL Rule for the given Actor for the remaining Resources, respectively.
+ */
+function internal_removeActorFromRule(
+  rule: AclRule,
+  actor: IriString,
+  actorPredicate: SupportedActorPredicate,
+  resourceIri: IriString,
+  ruleType: "resource" | "default"
+): [AclRule, AclRule] {
+  // If the existing Rule does not apply to the given Actor, we don't need to split up.
+  // Without this check, we'd be creating a new rule for the given Actor (ruleForOtherTargets)
+  // that would give it access it does not currently have:
+  if (!getIriAll(rule, actorPredicate).includes(actor)) {
+    const emptyRule = internal_initialiseAclRule({
+      read: false,
+      append: false,
+      write: false,
+      control: false,
+    });
+    return [rule, emptyRule];
+  }
+  // The existing rule will keep applying to Actors other than the given one:
+  const ruleWithoutActor = removeIri(rule, actorPredicate, actor);
+  // The actor might have been given other access in the existing rule, so duplicate it...
+  let ruleForOtherTargets = internal_duplicateAclRule(rule);
+  // ...but remove access to the original Resource...
+  ruleForOtherTargets = removeIri(
+    ruleForOtherTargets,
+    ruleType === "resource" ? acl.accessTo : acl.default,
+    resourceIri
+  );
+  // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
+  if (ruleType === "default") {
+    ruleForOtherTargets = removeIri(
+      ruleForOtherTargets,
+      acl.defaultForNew,
+      resourceIri
+    );
+  }
+  // ...and only apply the new Rule to the given Actor (because the existing Rule covers the others):
+  ruleForOtherTargets = setIri(ruleForOtherTargets, actorPredicate, actor);
+  supportedActorPredicates
+    .filter((predicate) => predicate !== actorPredicate)
+    .forEach((predicate) => {
+      ruleForOtherTargets = removeAll(ruleForOtherTargets, predicate);
+    });
+
+  return [ruleWithoutActor, ruleForOtherTargets];
+}
+
+/**
+ * ```{note}
+ * This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ * Modifies the resource ACL (Access Control List) to set the Access Modes for the given Agent.
+ * Specifically, the function returns a new resource ACL initialised with the given ACL and
+ * new rules for the Actor's access.
+ *
+ * If rules for Actor's access already exist in the given ACL, in the returned ACL,
+ * they are replaced by the new rules.
+ *
+ * This function does not modify:
+ *
+ * - Access Modes granted indirectly to Actors through other ACL rules, e.g., public or group-specific permissions.
+ * - Access Modes granted to Actors for the child Resources if the associated Resource is a Container.
+ * - The original ACL.
+ *
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param actor The Actor to grant specific Access Modes.
+ * @param access The Access Modes to grant to the Actor for the Resource.
+ * @returns A new resource ACL initialised with the given `aclDataset` and `access` for the `agent`.
+ */
+export function internal_setActorAccess(
+  aclDataset: AclDataset,
+  access: Access,
+  actorPredicate: SupportedActorPredicate,
+  accessType: "default" | "resource",
+  actor: IriString
+): AclDataset & WithChangeLog {
+  // First make sure that none of the pre-existing rules in the given ACL SolidDataset
+  // give the Agent access to the Resource:
+  let filteredAcl = aclDataset;
+  getThingAll(aclDataset).forEach((aclRule) => {
+    // Obtain both the Rule that no longer includes the given Actor,
+    // and a new Rule that includes all ACL Quads
+    // that do not pertain to the given Actor-Resource combination.
+    // Note that usually, the latter will no longer include any meaningful statements;
+    // we'll clean them up afterwards.
+    const [filteredRule, remainingRule] = internal_removeActorFromRule(
+      aclRule,
+      actor,
+      actorPredicate,
+      aclDataset.internal_accessTo,
+      accessType
+    );
+    filteredAcl = setThing(filteredAcl, filteredRule);
+    filteredAcl = setThing(filteredAcl, remainingRule);
+  });
+
+  // Create a new Rule that only grants the given Actor the given Access Modes:
+  let newRule = internal_initialiseAclRule(access);
+  newRule = setIri(
+    newRule,
+    accessType === "resource" ? acl.accessTo : acl.default,
+    aclDataset.internal_accessTo
+  );
+  newRule = setIri(newRule, actorPredicate, actor);
+  const updatedAcl = setThing(filteredAcl, newRule);
+
+  // Remove any remaining Rules that do not contain any meaningful statements:
+  const cleanedAcl = internal_removeEmptyAclRules(updatedAcl);
+
+  return cleanedAcl;
 }

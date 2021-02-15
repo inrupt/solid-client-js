@@ -10,10 +10,14 @@ The following changes have been implemented but not released yet:
 
 - Saving a SolidDataset with a Thing obtained from a different SolidDataset would fail if that Thing
   contained an RDF Blank Node.
-
-### Bugs fixed
-
 - Saving back a SolidDataset you just fetched used to result in a "412: Conflict" error.
+
+### New features
+
+- `setGroupDefaultAccess`: A function to set a Group's access modes for all the child Resources of a Container, in the
+  case this Container is controlled using WAC.
+- `setGroupResourceAccess`: A function to set a Group's access modes for a given Resource, in the case this Resource is
+  controlled using WAC.
 
 The following sections document changes that have been released already:
 

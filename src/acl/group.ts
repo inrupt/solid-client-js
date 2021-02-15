@@ -19,7 +19,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { WithServerResourceInfo, IriString, UrlString } from "../interfaces";
+import {
+  WithServerResourceInfo,
+  IriString,
+  UrlString,
+  WithChangeLog,
+} from "../interfaces";
 import {
   AclDataset,
   Access,
@@ -38,9 +43,11 @@ import {
   internal_getResourceAclRulesForResource,
   internal_getAclRulesForIri,
   internal_getAccessByIri,
+  internal_setActorAccess,
 } from "./acl.internal";
 
 import { acl } from "../constants";
+import { getThingAll } from "../thing/thing";
 
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.
@@ -211,4 +218,75 @@ function getGroupAclRuleForGroup(
 
 function getAccessByGroup(aclRules: AclRule[]): Record<IriString, Access> {
   return internal_getAccessByIri(aclRules, acl.agentGroup);
+}
+
+/**
+ * ```{note}
+ * This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ * Modifies the resource ACL (Access Control List) to set the Access Modes for the given Group.
+ * Specifically, the function returns a new resource ACL initialised with the given ACL and
+ * new rules for the Group's access.
+ *
+ * If rules for Groups's access already exist in the given ACL, in the returned ACL,
+ * they are replaced by the new rules.
+ *
+ * This function does not modify:
+ *
+ * - Access Modes granted indirectly to Groups through other ACL rules, e.g., public or Agent-specific permissions.
+ * - Access Modes granted to Groups for the child Resources if the associated Resource is a Container.
+ * - The original ACL.
+ *
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param group The Group to grant specific Access Modes.
+ * @param access The Access Modes to grant to the Group for the Resource.
+ * @returns A new resource ACL initialised with the given `aclDataset` and `access` for the `group`.
+ */
+export function setGroupResourceAccess(
+  aclDataset: AclDataset,
+  group: UrlString,
+  access: Access
+): AclDataset & WithChangeLog {
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agentGroup,
+    "resource",
+    group
+  );
+}
+
+/**
+ * ```{note}
+ * This function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Modifies the default ACL (Access Control List) to set a Group's Access Modes for the Container's children.
+ * Specifically, the function returns a new default ACL initialised with the given ACL and
+ * new rules for the Group's access.
+ *
+ * If rules already exist for the Group in the given ACL, in the returned ACL, they are replaced by the new rules.
+ *
+ * This function does not modify:
+ * - Access Modes granted indirectly to the Group through other ACL rules, e.g., public or Agent-specific permissions.
+ * - Access Modes granted to the Group for the Container Resource itself.
+ * - The original ACL.
+ *
+ * @param aclDataset The SolidDataset that contains Access-Control List rules.
+ * @param group The Group to grant specific Access Modes.
+ * @param access The Access Modes to grant to the Group.
+ * @returns A new default ACL initialised with the given `aclDataset` and `access` for the `group`.
+ */
+export function setGroupDefaultAccess(
+  aclDataset: AclDataset,
+  group: UrlString,
+  access: Access
+): AclDataset & WithChangeLog {
+  return internal_setActorAccess(
+    aclDataset,
+    access,
+    acl.agentGroup,
+    "default",
+    group
+  );
 }
