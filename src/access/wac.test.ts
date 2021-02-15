@@ -2992,7 +2992,7 @@ describe("setGroupResourceAccess", () => {
         }
       )
     ).rejects.toThrow(
-      "For WAC resources, controlRead and controlWrite must be equal."
+      "For Pods using Web Access Control, controlRead and controlWrite must be equal."
     );
   });
 

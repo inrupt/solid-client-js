@@ -392,7 +392,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorResourceAccess(
+  return await setActorAccess(
     resource,
     group,
     access,
