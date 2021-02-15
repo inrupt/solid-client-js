@@ -724,6 +724,7 @@ describe.each(serversUnderTest)(
           getSolidDataset(policyResourceUrl, { fetch: session.fetch })
         ).rejects.toThrow(
           // Forbidden:
+          // @ts-ignore
           expect.objectContaining({ statusCode: 403 })
         );
 
@@ -744,6 +745,7 @@ describe.each(serversUnderTest)(
         // when not logged in (i.e. not passing the session's fetch):
         await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
           // Unauthorised:
+          // @ts-ignore
           expect.objectContaining({ statusCode: 401 })
         );
 
