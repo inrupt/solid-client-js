@@ -34,6 +34,7 @@ import {
 import {
   getGroupAccess as getGroupAccessWac,
   getGroupAccessAll as getGroupAccessAllWac,
+  setGroupResourceAccess as setGroupResourceAccessWac,
 } from "../acl/group";
 import { getPublicAccess as getPublicAccessWac } from "../acl/class";
 import {
@@ -360,6 +361,43 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     access,
     getAgentAccessWac,
     setAgentResourceAccessWac,
+    options
+  );
+}
+
+/**
+ * Set the Access modes for a given Group to a given Resource.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param agent The Group for whom Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  group: UrlString,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorAccess(
+    resource,
+    group,
+    access,
+    getGroupAccessWac,
+    setGroupResourceAccessWac,
     options
   );
 }
