@@ -71,8 +71,10 @@ in this directory - see .env.defaults for an example.
 To run the tests:
 
 1. At the root, run `npm install`, followed by `npm run build`.
-2. In the directory `.codesandbox/sandbox`, run `npm install`, followed by
-   `npm run build`, followed by `npm start`.
+2. In the directory `.codesandbox/sandbox`, run `npm install` (it's not
+   necessary to run `npm run build` or `npm start` here, as these will be run
+   as part of the next step (in fact, if you _do_ run `npm start` manually here
+   the next step will fail due to a conflict on the HTTP port!)).
 3. You can now run `npm run e2e-test-browser` from the root.
 
 If you want to actually see the interactive parts, remove `:headless` in
