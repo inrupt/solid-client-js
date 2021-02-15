@@ -306,7 +306,7 @@ export function createAcl(
  * @returns A resource ACL initialised with the rules/entries from the Resource's fallback ACL.
  */
 export function createAclFromFallbackAcl(
-  resource: WithFallbackAcl & WithResourceInfo & WithAccessibleAcl
+  resource: WithFallbackAcl & WithServerResourceInfo & WithAccessibleAcl
 ): AclDataset {
   const emptyResourceAcl: AclDataset = createAcl(resource);
 

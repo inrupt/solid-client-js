@@ -19,10 +19,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { internal_fetchAcl, internal_setAcl } from "../acl/acl.internal";
+import {
+  internal_fetchAcl,
+  internal_getResourceAcl,
+  internal_setAcl,
+  internal_setResourceAcl,
+} from "../acl/acl.internal";
 import {
   getAgentAccess as getAgentAccessWac,
   getAgentAccessAll as getAgentAccessAllWac,
+  getAgentResourceAccess,
+  setAgentResourceAccess as setAgentResourceAccessWac,
 } from "../acl/agent";
 import {
   getGroupAccess as getGroupAccessWac,
@@ -38,20 +45,61 @@ import {
 } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
 import { Access } from "./universal";
-import { Access as AclAccess } from "../acl/acl";
+import {
+  Access as AclAccess,
+  AclDataset,
+  createAclFromFallbackAcl,
+  hasAccessibleAcl,
+  hasFallbackAcl,
+  hasResourceAcl,
+  saveAclFor,
+  WithAcl,
+  WithResourceAcl,
+} from "../acl/acl";
 
 // Setting WacAccess = Required<Access> enforces that any change on Access will
 // reflect on WacAccess, but WacAccess has additional restrictions.
-type WacAccess = (
+export type WacAccess = (
   | { controlRead: true; controlWrite: true }
-  | { controlRead: undefined; controlWrite: undefined }
+  | { controlRead: false; controlWrite: false }
+  | { controlRead?: undefined; controlWrite?: undefined }
 ) & {
-  read: true | undefined;
-  append: true | undefined;
-  write: true | undefined;
+  read?: boolean;
+  append?: boolean;
+  write?: boolean;
 };
 
-type AgentWacAccess = Record<WebId, WacAccess>;
+type NoUndefinedWacAccess = (
+  | { controlRead: true; controlWrite: true }
+  | { controlRead: false; controlWrite: false }
+) & {
+  read: boolean;
+  append: boolean;
+  write: boolean;
+};
+
+export type AgentWacAccess = Record<WebId, WacAccess>;
+
+function universalAccessToAcl(
+  newAccess: WacAccess,
+  previousAccess: AclAccess
+): AclAccess {
+  // Universal access is aligned on ACP, which means there is a distinction between
+  // controlRead and controlWrite. This split doesn't exist in WAC, which is why
+  // the type for the input variable of this function is a restriction on the
+  // universal Access type.
+  if (newAccess.controlRead !== newAccess.controlWrite) {
+    throw new Error(
+      "For Pods using Web Access Control, controlRead and controlWrite must be equal."
+    );
+  }
+  return {
+    read: newAccess.read ?? previousAccess.read,
+    append: newAccess.append ?? previousAccess.append,
+    write: newAccess.write ?? previousAccess.write,
+    control: newAccess.controlRead ?? previousAccess.control,
+  };
+}
 
 function aclAccessToUniversal(access: AclAccess): WacAccess {
   // In ACL, denying access to an actor is a notion that doesn't exist, so an
@@ -60,11 +108,11 @@ function aclAccessToUniversal(access: AclAccess): WacAccess {
   // denied, or simply not mentioned. Here, we convert the boolean vision of
   // ACL into the boolean or undefined vision of ACP.
   return {
-    read: access.read ? true : undefined,
-    append: access.append ? true : undefined,
-    write: access.write ? true : undefined,
-    controlRead: access.control ? true : undefined,
-    controlWrite: access.control ? true : undefined,
+    read: access.read === true ? true : undefined,
+    write: access.write === true ? true : undefined,
+    append: access.append === true ? true : undefined,
+    controlRead: access.control === true ? true : undefined,
+    controlWrite: access.control === true ? true : undefined,
   } as WacAccess;
 }
 
@@ -234,4 +282,84 @@ export function getGroupAccessAll(
   > = internal_defaultFetchOptions
 ): Promise<AgentWacAccess | null> {
   return getActorAccessAll(resource, getGroupAccessAllWac, options);
+}
+
+async function setActorAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  actor: UrlString,
+  access: WacAccess,
+  readAccess: typeof getAgentAccessWac,
+  writeAccess: typeof setAgentResourceAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<(T & WithResourceAcl) | null> {
+  if (!hasAccessibleAcl(resource)) {
+    return null;
+  }
+  const acl = await internal_fetchAcl(resource, options);
+  const resourceWithAcl = internal_setAcl(resource, acl);
+  let resourceAcl: AclDataset;
+  if (hasResourceAcl(resourceWithAcl)) {
+    // This is the simple case, where the Resource ACL we need to update already
+    // exists.
+    resourceAcl = internal_getResourceAcl(resourceWithAcl);
+  } else if (hasFallbackAcl(resourceWithAcl)) {
+    // In this case, the Resource ACL needs to be created first, and then updated.
+    resourceAcl = createAclFromFallbackAcl(resourceWithAcl);
+  } else {
+    return null;
+  }
+
+  const resourceWithOldAcl = internal_setResourceAcl(
+    resourceWithAcl,
+    resourceAcl
+  );
+  const currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
+  const wacAccess = universalAccessToAcl(access, currentAccess);
+
+  const updatedResourceAcl = writeAccess(resourceAcl, actor, wacAccess);
+
+  let savedAcl: AclDataset | null = null;
+  try {
+    savedAcl = await saveAclFor(resourceWithAcl, updatedResourceAcl, options);
+    return internal_setResourceAcl(resourceWithAcl, savedAcl);
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Set the Access modes for a given Agent to a given Resource.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param agent The Agent for whom Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  agent: WebId,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorAccess(
+    resource,
+    agent,
+    access,
+    getAgentAccessWac,
+    setAgentResourceAccessWac,
+    options
+  );
 }
