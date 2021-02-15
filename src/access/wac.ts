@@ -28,7 +28,6 @@ import {
 import {
   getAgentAccess as getAgentAccessWac,
   getAgentAccessAll as getAgentAccessAllWac,
-  getAgentResourceAccess,
   setAgentResourceAccess as setAgentResourceAccessWac,
 } from "../acl/agent";
 import {
@@ -36,12 +35,18 @@ import {
   getGroupAccessAll as getGroupAccessAllWac,
   setGroupResourceAccess as setGroupResourceAccessWac,
 } from "../acl/group";
-import { getPublicAccess as getPublicAccessWac } from "../acl/class";
+import {
+  getPublicAccess as getPublicAccessWac,
+  setPublicResourceAccess as setPublicResourceAccessWac,
+} from "../acl/class";
 import {
   IriString,
+  SolidDataset,
   Url,
   UrlString,
   WebId,
+  WithChangeLog,
+  WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
@@ -292,6 +297,24 @@ async function setActorAccess<T extends WithServerResourceInfo>(
   readAccess: typeof getAgentAccessWac,
   writeAccess: typeof setAgentResourceAccessWac,
   options: Partial<typeof internal_defaultFetchOptions>
+): Promise<(T & WithResourceAcl) | null>;
+async function setActorAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  actor: undefined,
+  access: WacAccess,
+  readAccess: typeof getPublicAccessWac,
+  writeAccess: typeof setPublicResourceAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<(T & WithResourceAcl) | null>;
+async function setActorAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  actor: UrlString | undefined,
+  access: WacAccess,
+  readAccess: typeof getAgentAccessWac | typeof getPublicAccessWac,
+  writeAccess:
+    | typeof setAgentResourceAccessWac
+    | typeof setPublicResourceAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<(T & WithResourceAcl) | null> {
   if (!hasAccessibleAcl(resource)) {
     return null;
@@ -314,10 +337,26 @@ async function setActorAccess<T extends WithServerResourceInfo>(
     resourceWithAcl,
     resourceAcl
   );
-  const currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
-  const wacAccess = universalAccessToAcl(access, currentAccess);
+  
+  let currentAccess : AclAccess;
+  let updatedResourceAcl: (AclDataset & WithChangeLog) | undefined = undefined;
+  let wacAccess: AclAccess | undefined = undefined;
 
-  const updatedResourceAcl = writeAccess(resourceAcl, actor, wacAccess);
+  if (actor !== undefined) {
+    currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
+    wacAccess = universalAccessToAcl(access, currentAccess);
+    // @ts-ignore
+    updatedResourceAcl = writeAccess(resourceAcl, actor, wacAccess);
+  } else {
+    // In this case, no actor means we're using the Agent Class read/write Access,
+    // but TS still expects the Agent/Group read/write, with a slightly different
+    // signature.
+    // @ts-ignore
+    currentAccess = readAccess(resourceWithOldAcl) as AclAccess;
+    wacAccess = universalAccessToAcl(access, currentAccess);
+    // @ts-ignore
+    updatedResourceAcl = writeAccess(resourceAcl, wacAccess);
+  }
 
   let savedAcl: AclDataset | null = null;
   try {
@@ -378,7 +417,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
  * fallback ACL if it does not have a Resource ACL, then `null` is returned.
  *
  * @param resource The Resource for which Access is being set
- * @param agent The Group for whom Access is being set
+ * @param agent The Group for which Access is being set
  * @param access The Access being set
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns The Resource, with its ACL updated, or null if the new Access could not
@@ -398,6 +437,41 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
     access,
     getGroupAccessWac,
     setGroupResourceAccessWac,
+    options
+  );
+}
+
+/**
+ * Set the Access modes for everyone to a given Resource.
+ *
+ * Important note: if the target resource did not have a Resource ACL, and its
+ * Access was regulated by its Fallback ACL, said Fallback ACL is copied to create
+ * a new Resource ACL. This has the side effect that the next time the Fallback
+ * ACL is updated, the changes _will not impact_ the target resource.
+ *
+ * If the target Resource's Access mode cannot be determined, e.g. the user does
+ * not have Read and Write access to the target Resource's ACL, or to its
+ * fallback ACL if it does not have a Resource ACL, then `null` is returned.
+ *
+ * @param resource The Resource for which Access is being set
+ * @param access The Access being set
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns The Resource, with its ACL updated, or null if the new Access could not
+ * be set.
+ */
+export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  access: WacAccess,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<(T & WithResourceAcl) | null> {
+  return await setActorAccess(
+    resource,
+    undefined,
+    access,
+    getPublicAccessWac,
+    setPublicResourceAccessWac,
     options
   );
 }
