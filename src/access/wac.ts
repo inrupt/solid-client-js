@@ -98,7 +98,6 @@ function universalAccessToAcl(
 ): AclAccess;
 function universalAccessToAcl(
   newAccess: NoUndefinedWacAccess,
-  previousAccess: undefined
 ): AclAccess;
 function universalAccessToAcl(
   newAccess: WacAccess,
@@ -111,7 +110,7 @@ function universalAccessToAcl(
   // equivalent.
   if (newAccess.controlRead !== newAccess.controlWrite) {
     throw new Error(
-      "For WAC resources, controlRead and controlWrite must be equal."
+      "For Pods using Web Access Control, controlRead and controlWrite must be equal."
     );
   }
   return hasNoUndefinedAccessModes(newAccess)
@@ -129,13 +128,6 @@ function universalAccessToAcl(
         control: newAccess.controlRead ?? previousAccess!.control,
       };
 }
-
-const NO_ACCESS: AclAccess = {
-  read: false,
-  write: false,
-  append: false,
-  control: false,
-};
 
 function aclAccessToUniversal(access: AclAccess): WacAccess {
   // In ACL, denying access to an actor is a notion that doesn't exist, so an

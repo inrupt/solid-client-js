@@ -2006,7 +2006,7 @@ describe("setAgentAccess", () => {
     });
   });
 
-  it("removes access previoulsy granted if the new access is set to false", async () => {
+  it("removes access previously granted if the new access is set to false", async () => {
     const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#agent",
