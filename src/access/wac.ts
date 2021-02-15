@@ -309,7 +309,7 @@ export function getGroupAccessAll(
   return getActorAccessAll(resource, getGroupAccessAllWac, options);
 }
 
-async function setActorResourceAccess<T extends WithServerResourceInfo>(
+async function setActorAccess<T extends WithServerResourceInfo>(
   resource: T,
   actor: UrlString,
   access: WacAccess,
@@ -388,7 +388,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorResourceAccess(
+  return await setActorAccess(
     resource,
     agent,
     access,
