@@ -77,15 +77,6 @@ export type WacAccess = (
   write?: boolean;
 };
 
-type NoUndefinedWacAccess = (
-  | { controlRead: true; controlWrite: true }
-  | { controlRead: false; controlWrite: false }
-) & {
-  read: boolean;
-  append: boolean;
-  write: boolean;
-};
-
 export type AgentWacAccess = Record<WebId, WacAccess>;
 
 function universalAccessToAcl(
