@@ -724,6 +724,10 @@ describe.each(serversUnderTest)(
           getSolidDataset(policyResourceUrl, { fetch: session.fetch })
         ).rejects.toThrow(
           // Forbidden:
+          // TODO: Don't know why this ts-ignore is required here, but seems to
+          //  have been introduced by using 'injectGlobals: false' in the
+          //  'jest.e2e.config.js'.
+          //  Only occurs on .toThrow() calls, not .toEquals().
           // @ts-ignore
           expect.objectContaining({ statusCode: 403 })
         );
@@ -745,6 +749,10 @@ describe.each(serversUnderTest)(
         // when not logged in (i.e. not passing the session's fetch):
         await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
           // Unauthorised:
+          // TODO: Don't know why this ts-ignore is required here, but seems to
+          //  have been introduced by using 'injectGlobals: false' in the
+          //  'jest.e2e.config.js'.
+          //  Only occurs on .toThrow() calls, not .toEquals().
           // @ts-ignore
           expect.objectContaining({ statusCode: 401 })
         );
