@@ -305,7 +305,7 @@ describe.each([
   });
 });
 
-// Load environment variables from .env.local if available:
+// Load environment variables from .env.test.local if available:
 config({
   path: __dirname,
   // In CI, actual environment variables will overwrite values from .env files.

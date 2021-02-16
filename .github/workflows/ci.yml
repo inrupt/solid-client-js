@@ -50,6 +50,7 @@ jobs:
       run: |
         cd .codesandbox/sandbox
         npm install
+        # Run the end-to-end tests against the code in this branch specifically:
         npm install ../../
         cd ../..
     - name: Run browser-based end-to-end tests (Linux)
