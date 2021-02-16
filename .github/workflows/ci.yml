@@ -61,7 +61,10 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux'
+      #
+      # TODO: Temporary change to try E2E Browser tests on Node 12, not Node 14!
+      #
+      if: matrix.node-version != '10.x' && matrix.node-version != '14.x' && runner.os == 'Linux'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
