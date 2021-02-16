@@ -55,10 +55,12 @@ import {
   Access as AclAccess,
   AclDataset,
   createAclFromFallbackAcl,
+  getResourceAcl,
   hasAccessibleAcl,
   hasFallbackAcl,
   hasResourceAcl,
   saveAclFor,
+  WithAccessibleAcl,
   WithAcl,
   WithResourceAcl,
 } from "../acl/acl";
@@ -290,32 +292,10 @@ export function getGroupAccessAll(
   return getActorAccessAll(resource, getGroupAccessAllWac, options);
 }
 
-async function setActorAccess<T extends WithServerResourceInfo>(
+async function prepareResourceAcl<T extends WithServerResourceInfo>(
   resource: T,
-  actor: UrlString,
-  access: WacAccess,
-  readAccess: typeof getAgentAccessWac,
-  writeAccess: typeof setAgentResourceAccessWac,
   options: Partial<typeof internal_defaultFetchOptions>
-): Promise<(T & WithResourceAcl) | null>;
-async function setActorAccess<T extends WithServerResourceInfo>(
-  resource: T,
-  actor: undefined,
-  access: WacAccess,
-  readAccess: typeof getPublicAccessWac,
-  writeAccess: typeof setPublicResourceAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
-): Promise<(T & WithResourceAcl) | null>;
-async function setActorAccess<T extends WithServerResourceInfo>(
-  resource: T,
-  actor: UrlString | undefined,
-  access: WacAccess,
-  readAccess: typeof getAgentAccessWac | typeof getPublicAccessWac,
-  writeAccess:
-    | typeof setAgentResourceAccessWac
-    | typeof setPublicResourceAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
-): Promise<(T & WithResourceAcl) | null> {
+): Promise<(T & WithResourceAcl & WithAccessibleAcl) | null> {
   if (!hasAccessibleAcl(resource)) {
     return null;
   }
@@ -333,38 +313,66 @@ async function setActorAccess<T extends WithServerResourceInfo>(
     return null;
   }
 
-  const resourceWithOldAcl = internal_setResourceAcl(
-    resourceWithAcl,
-    resourceAcl
-  );
+  return internal_setResourceAcl(resourceWithAcl, resourceAcl);
+}
 
-  let currentAccess: AclAccess;
-  let updatedResourceAcl: (AclDataset & WithChangeLog) | undefined = undefined;
-  let wacAccess: AclAccess | undefined = undefined;
-
-  if (actor !== undefined) {
-    currentAccess = readAccess(resourceWithOldAcl, actor) as AclAccess;
-    wacAccess = universalAccessToAcl(access, currentAccess);
-    // @ts-ignore
-    updatedResourceAcl = writeAccess(resourceAcl, actor, wacAccess);
-  } else {
-    // In this case, no actor means we're using the Agent Class read/write Access,
-    // but TS still expects the Agent/Group read/write, with a slightly different
-    // signature.
-    // @ts-ignore
-    currentAccess = readAccess(resourceWithOldAcl) as AclAccess;
-    wacAccess = universalAccessToAcl(access, currentAccess);
-    // @ts-ignore
-    updatedResourceAcl = writeAccess(resourceAcl, wacAccess);
-  }
-
+async function saveUpdatedAcl<
+  T extends WithServerResourceInfo & WithAccessibleAcl & WithResourceAcl
+>(
+  resource: T,
+  acl: AclDataset,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<T | null> {
   let savedAcl: AclDataset | null = null;
   try {
-    savedAcl = await saveAclFor(resourceWithAcl, updatedResourceAcl, options);
-    return internal_setResourceAcl(resourceWithAcl, savedAcl);
+    savedAcl = await saveAclFor(resource, acl, options);
+    return internal_setResourceAcl(resource, savedAcl);
   } catch (e) {
     return null;
   }
+}
+
+async function setActorClassAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  access: WacAccess,
+  getAccess: typeof getPublicAccessWac,
+  setAccess: typeof setPublicResourceAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<(T & WithResourceAcl) | null> {
+  const resourceWithOldAcl = await prepareResourceAcl(resource, options);
+
+  if (resourceWithOldAcl === null) {
+    return null;
+  }
+
+  const resourceAcl = getResourceAcl(resourceWithOldAcl);
+  const currentAccess = getAccess(resourceWithOldAcl) as AclAccess;
+  const wacAccess = universalAccessToAcl(access, currentAccess);
+  const updatedResourceAcl = setAccess(resourceAcl, wacAccess);
+
+  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
+}
+
+async function setActorAccess<T extends WithServerResourceInfo>(
+  resource: T,
+  actor: UrlString,
+  access: WacAccess,
+  getAccess: typeof getAgentAccessWac,
+  setAccess: typeof setAgentResourceAccessWac,
+  options: Partial<typeof internal_defaultFetchOptions>
+): Promise<(T & WithResourceAcl) | null> {
+  const resourceWithOldAcl = await prepareResourceAcl(resource, options);
+
+  if (resourceWithOldAcl === null) {
+    return null;
+  }
+
+  const currentAccess = getAccess(resourceWithOldAcl, actor) as AclAccess;
+  const resourceAcl = getResourceAcl(resourceWithOldAcl);
+  const wacAccess = universalAccessToAcl(access, currentAccess);
+  const updatedResourceAcl = setAccess(resourceAcl, actor, wacAccess);
+
+  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
 }
 
 /**
@@ -466,9 +474,8 @@ export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorAccess(
+  return await setActorClassAccess(
     resource,
-    undefined,
     access,
     getPublicAccessWac,
     setPublicResourceAccessWac,
