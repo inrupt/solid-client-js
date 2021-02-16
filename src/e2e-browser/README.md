@@ -61,7 +61,7 @@ an example.
 ## Running the tests
 
 To run the tests, run `npm install` followed by `npm run build` at the root, then `npm install`
-in `.codesandbox/sandbox`. You can now run `npm run e2e-tests-browser` at the root.
+in `.codesandbox/sandbox`. You can now run `npm run e2e-test-browser` at the root.
 
 If you want to actually see the interactive parts, remove `:headless` in `.testcaferc.json`. That
 said, most of the tests involve running code without a UI component.
