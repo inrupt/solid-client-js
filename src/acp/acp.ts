@@ -64,7 +64,7 @@ export async function getSolidDatasetWithAcr(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset & WithAcp> {
+): Promise<SolidDataset & WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
