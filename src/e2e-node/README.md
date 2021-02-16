@@ -8,8 +8,8 @@ To run the tests:
 
 1. At the root, run `npm install`, followed by `npm run build`.
 2. Run `npx @inrupt/generate-oidc-token`.
-3. Copy `.env.defaults` to `.env.local` and update the values you generated from
-   step 2.
+3. Copy `.env.default` to `.env.test.local` and update the values you generated
+   from step 2.
 4. You can now run `npm run e2e-test-node` from the root.
 
 ## Running these tests from an IDE

@@ -19,9 +19,26 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// TODO: Further tidy up to be done here - i.e., we should really only be
-//  working with types here, and not implementations at all (the implementation
-//  should be up to the user of this library).
+//
+// Note: Different RDF/JS implementations can, of course, behave differently.
+// Some important differences identified so far:
+//   1. RDF String Literals:
+//      The DataFactory signature for creating an RDF literal is:
+//         literal(value: string | number, languageOrDatatype?: string | RDF.NamedNode): Literal
+//
+//       The @rdfjs/data-model implementation checks if the 2nd param is a
+//      string, and if so it looks for a ':' character in that string. If
+//      present it considers the value a Datatype IRI, and so wraps the string
+//      in a call to DataFactory.namedNode().
+//
+//       The N3 implementation checks if the 2nd param is a string, and if so
+//      considers a value a language tag. If and only if the 2nd param is
+//      explicitly passed in as a NamedNode will it be treated as a Datatype
+//      IRI.
+//       Therefore, for consistency across RDF/JS Implementations, our library
+//      needs to be explicit, and to always call 'DataFactory.literal()' with
+//      NamedNode instances for the 2nd param when we know we want a Datatype.
+
 import { DatasetCore, Quad } from "rdf-js";
 import dataset from "rdf-dataset-indexed";
 export { dataset };
