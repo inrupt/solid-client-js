@@ -31,8 +31,9 @@ import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-
 // Hence, we just declare this variable to be of the same type here.
 const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
-// Load environment variables from .env.local if available:
+// Load environment variables from .env.test.local if available:
 config({
+  default_node_env: "test",
   path: __dirname,
   // In CI, actual environment variables will overwrite values from .env files.
   // We don't need warning messages in the logs for that:

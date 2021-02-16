@@ -55,13 +55,24 @@ That means that code inside `ClientFunction` can access globals available on the
 that test code, and just tell TypeScript that it contains the test helpers.
 
 Note that the tests need the URL of a Pod and the credentials to log in to it. These can be set via
-environment variables, or by creating a file `.env.local` in this directory - see .env.defaults for
-an example.
+environment variables, or by creating a file `.env.test.local` in this directory - see .env.example
+for an example.
 
 ## Running the tests
 
-To run the tests, run `npm install` followed by `npm run build` at the root, then `npm install`
-in `.codesandbox/sandbox`. You can now run `npm run e2e-test-browser` at the root.
+To run the tests, run:
+
+1. `npm install` at the root to install the test runner.
+2. `npm install` in `.codesandbox/sandbox` to install the dependencies of the
+   application under test.
+
+You can then run the tests using `npm run e2e-test-browser` at the root.
+
+Note: if you want to run the end-to-end tests against your local code, then
+before running the above command, run:
+
+1. `npm run build` at the root.
+2. `npm install ../../` in `.codesandbox/sandbox`.
 
 If you want to actually see the interactive parts, remove `:headless` in `.testcaferc.json`. That
 said, most of the tests involve running code without a UI component.
