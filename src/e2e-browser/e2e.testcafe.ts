@@ -22,6 +22,10 @@
 import { ClientFunction } from "testcafe";
 import { config } from "dotenv-flow";
 import { essUserLogin } from "./roles";
+
+// We re-use the test helpers from elsewhere, but we need to ignore the
+// TypeScript error that complains about not all files under the one 'rootDir'.
+// @ts-ignore
 import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
 
 // E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
@@ -33,7 +37,7 @@ const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
 // Load environment variables from .env.test.local if available:
 config({
-  default_node_env: "test",
+  node_env: process.env.NODE_ENV || "test",
   path: __dirname,
   // In CI, actual environment variables will overwrite values from .env files.
   // We don't need warning messages in the logs for that:
