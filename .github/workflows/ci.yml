@@ -49,8 +49,7 @@ jobs:
     - name: Prepare browser-based end-to-end tests
       run: |
         cd .codesandbox/sandbox
-        npm install
-        npm install ../../
+        npm ci
         cd ../..
     - name: Run browser-based end-to-end tests (Linux)
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
