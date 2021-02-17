@@ -29,4 +29,5 @@ module.exports = {
   // tests should be given a little longer to complete:
   testTimeout: 10000,
   testRegex: "e2e-node/.*.test.ts",
+  injectGlobals: false,
 };
