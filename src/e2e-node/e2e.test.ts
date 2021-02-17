@@ -19,10 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
- * @jest-environment node
- */
-
+import { jest, describe, it } from "@jest/globals";
 import { foaf, schema } from "rdf-namespaces";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
