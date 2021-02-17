@@ -63,6 +63,14 @@ import {
   UrlString,
   acp_v2 as acp,
 } from "../index";
+// Functions from this module have to be imported from the module directly,
+// because their names overlap with access system-specific versions,
+// and therefore aren't exported from the package root:
+import {
+  getAgentAccess as getAgentAccessUniversal,
+  getPublicAccess as getPublicAccessUniversal,
+  setPublicAccess as setPublicAccessUniversal,
+} from "../access/universal";
 import openidClient from "openid-client";
 import { blankNode } from "@rdfjs/dataset";
 
@@ -339,6 +347,17 @@ const serversUnderTest: AuthDetails[] = [
 describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against %s",
   (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
+    function supportsWac() {
+      return (
+        rootContainer.includes("pod-compat.inrupt.com") ||
+        rootContainer.includes("inrupt.net") ||
+        rootContainer.includes("solidcommunity.net")
+      );
+    }
+    function supportsAcps() {
+      return rootContainer.includes("pod.inrupt.com");
+    }
+
     async function getSession() {
       const session = new Session();
       await session.login({
@@ -455,17 +474,13 @@ describe.each(serversUnderTest)(
     });
 
     it("can read and update ACLs", async () => {
-      if (rootContainer.includes("pod.inrupt.com")) {
+      if (!supportsWac()) {
         // pod.inrupt.com does not support WAC, so skip this test there.
         return;
       }
       const session = await getSession();
       const fakeWebId =
         "https://example.com/fake-webid#" + session.info.sessionId;
-      // solid-client-authn-node does not, at the time of writing, return the WebID after a login
-      // using the refresh token, but it will be updated to do so.
-      // Hence, the appending of "profile/card#me" is a hack that will become redundant in time.
-      const ownWebId = session.info.webId ?? rootContainer + "profile/card#me";
       const datasetWithoutAclUrl = `${rootContainer}solid-client-tests/node/acl-test-${session.info.sessionId}.ttl`;
       await saveSolidDatasetAt(datasetWithoutAclUrl, createSolidDataset(), {
         fetch: session.fetch,
@@ -743,6 +758,113 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
+      });
+    });
+
+    describe("Wrapper Access API's", () => {
+      it("can read the user's access to their profile with WAC", async () => {
+        if (!supportsWac()) {
+          return;
+        }
+        const session = await getSession();
+        const webId = session.info.webId!;
+        const agentAccess = await getAgentAccessUniversal(webId, webId, {
+          fetch: session.fetch,
+        });
+        expect(agentAccess).toStrictEqual({
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
+        });
+      });
+
+      it("can read and change access", async () => {
+        if (!supportsWac()) {
+          // At the time of writing, Inrupt's Enterprise Solid Server includes a
+          // reference to a Policy outside of the ACR in every ACR by default,
+          // which causes our high-level ACP implementation to bail out.
+          // Thus, we cannot test it yet.
+          return false;
+        }
+
+        const session = await getSession();
+        const datasetUrl = `${rootContainer}solid-client-tests/node/access-wrapper/access-test-${session.info.sessionId}.ttl`;
+        await saveSolidDatasetAt(datasetUrl, createSolidDataset(), {
+          fetch: session.fetch,
+        });
+
+        // Fetching it unauthenticated (i.e. without passing session.fetch):
+        await expect(getSolidDataset(datasetUrl)).rejects.toThrow();
+
+        await expect(
+          getPublicAccessUniversal(datasetUrl, { fetch: session.fetch })
+        ).resolves.toStrictEqual({
+          read: undefined,
+          append: undefined,
+          write: undefined,
+          controlRead: undefined,
+          controlWrite: undefined,
+        });
+
+        const publicAccess = await setPublicAccessUniversal(
+          datasetUrl,
+          { read: true },
+          { fetch: session.fetch }
+        );
+        expect(publicAccess).toStrictEqual({
+          read: true,
+          append: undefined,
+          write: undefined,
+          controlRead: undefined,
+          controlWrite: undefined,
+        });
+
+        // Fetching it unauthenticated again (i.e. without passing session.fetch):
+        const publicDataset = await getSolidDataset(datasetUrl);
+        expect(publicDataset).not.toBeNull();
+
+        await expect(
+          getPublicAccessUniversal(datasetUrl, { fetch: session.fetch })
+        ).resolves.toStrictEqual({
+          read: true,
+          append: undefined,
+          write: undefined,
+          controlRead: undefined,
+          controlWrite: undefined,
+        });
+
+        await deleteSolidDataset(datasetUrl, {
+          fetch: session.fetch,
+        });
+      });
+
+      it("throws an error when trying to set different values for controlRead and controlWrite on a WAC-powered Pod", async () => {
+        if (!supportsWac()) {
+          return false;
+        }
+
+        const session = await getSession();
+        const datasetUrl = `${rootContainer}solid-client-tests/node/access-wrapper/different-control-values-${session.info.sessionId}.ttl`;
+        await saveSolidDatasetAt(datasetUrl, createSolidDataset(), {
+          fetch: session.fetch,
+        });
+
+        await expect(
+          setPublicAccessUniversal(
+            datasetUrl,
+            { controlRead: true, controlWrite: false },
+            { fetch: session.fetch }
+          )
+        ).rejects.toThrow(
+          `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${datasetUrl}]), ` +
+            "`controlRead` and `controlWrite` should have the same value."
+        );
+
+        await deleteSolidDataset(datasetUrl, {
+          fetch: session.fetch,
+        });
       });
     });
   }

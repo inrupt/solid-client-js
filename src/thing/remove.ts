@@ -20,7 +20,6 @@
  */
 
 import { Literal, NamedNode } from "rdf-js";
-import { asIri } from "../index";
 import { Thing, Url, UrlString, ThingPersisted } from "../interfaces";
 import {
   asNamedNode,
@@ -41,6 +40,7 @@ import {
   internal_throwIfNotThing,
 } from "./thing.internal";
 import {
+  asIri,
   isThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
