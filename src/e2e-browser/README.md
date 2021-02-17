@@ -64,7 +64,7 @@ TypeScript that it contains the test helpers.
 
 Note that the tests need the URL of a Pod and the credentials to log in to it.
 These can be set via environment variables, or by creating a file
-`.env.test.local` in this directory - see `.env.default` for an example.
+`.env.test.local` in this directory - see `.env.example` for an example.
 
 ## Running the tests
 
