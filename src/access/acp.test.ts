@@ -20,6 +20,7 @@
  */
 
 import { describe, it } from "@jest/globals";
+import * as fc from "fast-check";
 import { WithAccessibleAcr } from "../acp/acp";
 import {
   AccessControlResource,
@@ -4610,6 +4611,273 @@ describe("setActorAccess", () => {
     );
 
     expect(updatedResourceWithAcr).toBeNull();
+  });
+
+  describe("edge cases", () => {
+    // The bugs found by fast-check aren't fixed yet, so it is likely to keep running into them:
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip("does not inadvertently cause privilege escalation", () => {
+      // TODO Only use a high number of runs in CI:
+      // const runs = process.env.CI ? 1000 : 1;
+      const runs = 1000;
+      expect.assertions(runs + 2);
+
+      const setAccessArbitrary = fc.record({
+        read: fc.boolean(),
+        append: fc.boolean(),
+        write: fc.boolean(),
+        controlRead: fc.boolean(),
+        controlWrite: fc.boolean(),
+      });
+      const mockAccessArbitrary = fc.dictionary(
+        fc.oneof(
+          fc.constant("read"),
+          fc.constant("append"),
+          fc.constant("write")
+        ),
+        fc.boolean()
+      );
+      const policyUrlArbitrary = fc.oneof(
+        fc.constant("https://some.pod/resource?ext=acl#policy1"),
+        fc.constant("https://some.pod/resource?ext=acl#policy2"),
+        fc.constant("https://some.pod/resource?ext=acl#policy3")
+      );
+      const ruleUrlArbitrary = fc.oneof(
+        fc.constant("https://some.pod/resource?ext=acl#rule1"),
+        fc.constant("https://some.pod/resource?ext=acl#rule2"),
+        fc.constant("https://some.pod/resource?ext=acl#rule3")
+      );
+      const agentUrlArbitrary = fc.oneof(
+        fc.constant("https://some.pod/profiles#agent1"),
+        fc.constant("https://some.pod/profiles#agent2"),
+        fc.constant("https://some.pod/profiles#agent3"),
+        fc.constant(acp.PublicAgent),
+        fc.constant(acp.AuthenticatedAgent),
+        fc.constant(acp.CreatorAgent)
+      );
+      const groupUrlArbitrary = fc.oneof(
+        fc.constant("https://some.pod/groups#group1"),
+        fc.constant("https://some.pod/groups#group2"),
+        fc.constant("https://some.pod/groups#group3")
+      );
+      const ruleArbitrary = fc.record({
+        [acp.agent]: fc.option(fc.array(agentUrlArbitrary, { maxLength: 6 }), {
+          nil: undefined,
+        }),
+        [acp.group]: fc.option(fc.array(groupUrlArbitrary, { maxLength: 3 }), {
+          nil: undefined,
+        }),
+      });
+      const policyAccessArbitrary = fc.dictionary(
+        fc.oneof(fc.constant("allow"), fc.constant("deny")),
+        mockAccessArbitrary
+      );
+      const policyRulesArbitrary = fc.dictionary(
+        fc.oneof(
+          fc.constant("allOf"),
+          fc.constant("anyOf"),
+          fc.constant("noneOf")
+        ),
+        fc.dictionary(ruleUrlArbitrary, ruleArbitrary)
+      );
+      const policyArbitrary = fc
+        .tuple(policyAccessArbitrary, policyRulesArbitrary)
+        .map(([access, rules]) => ({ ...access, ...rules }));
+      const acrArbitrary = fc.record({
+        policies: fc.oneof(
+          fc.constant({}),
+          fc.dictionary(policyUrlArbitrary, policyArbitrary)
+        ),
+        memberPolicies: fc.constant({}),
+        acrPolicies: fc.oneof(
+          fc.constant({}),
+          fc.dictionary(policyUrlArbitrary, policyArbitrary)
+        ),
+        memberAcrPolicies: fc.constant({}),
+      });
+      const actorRelationArbitrary = fc.oneof(
+        fc.constant(acp.agent),
+        fc.constant(acp.group)
+      );
+      const fcInput = fc.tuple(
+        acrArbitrary,
+        setAccessArbitrary,
+        actorRelationArbitrary,
+        agentUrlArbitrary
+      );
+      const fcResult = fc.check(
+        fc.property(
+          fcInput,
+          ([acrConfig, accessToSet, actorRelation, actorUrl]) => {
+            const resourceWithAcr = mockResourceWithAcr(
+              "https://some.pod/resource",
+              "https://some.pod/resource?ext=acr",
+              acrConfig as any
+            );
+            const updatedResource = internal_setActorAccess(
+              resourceWithAcr,
+              actorRelation,
+              actorUrl,
+              accessToSet
+            );
+            expect(
+              internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+            ).toStrictEqual(accessToSet);
+          }
+        ),
+        { numRuns: runs }
+      );
+
+      expect(fcResult.counterexample).toBeNull();
+      expect(fcResult.failed).toBe(false);
+    });
+
+    /* The following tests reproduce counter-examples found by fast-check in the past. */
+    // Skipped tests will be fixed later.
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip("Counterexample 1 (source of bug yet to be determined)", () => {
+      const acrConfig = {
+        acrPolicies: {
+          "https://some.pod/resource?ext=acl#policy3": {
+            allow: { append: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acl#rule2": {
+                "http://www.w3.org/ns/solid/acp#group": [
+                  "https://some.pod/groups#group2",
+                ],
+              },
+              "https://some.pod/resource?ext=acl#rule3": {},
+            },
+          },
+        },
+        memberAcrPolicies: {},
+        memberPolicies: {},
+        policies: {
+          "https://some.pod/resource?ext=acl#policy3": {},
+        },
+      };
+      const accessToSet = {
+        append: true,
+        controlRead: false,
+        controlWrite: false,
+        read: false,
+        write: false,
+      };
+      const actorRelation = "http://www.w3.org/ns/solid/acp#agent";
+      const actorUrl = "http://www.w3.org/ns/solid/acp#CreatorAgent";
+
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        acrConfig
+      );
+      const updatedResource = internal_setActorAccess(
+        resourceWithAcr,
+        actorRelation,
+        actorUrl,
+        accessToSet
+      );
+      expect(
+        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+      ).toStrictEqual(accessToSet);
+    });
+
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip("Counterexample 2 (source of bug yet to be determined)", () => {
+      const acrConfig = {
+        acrPolicies: {
+          "https://some.pod/resource?ext=acl#policy1": {
+            allow: { read: true },
+          },
+          "https://some.pod/resource?ext=acl#policy2": {
+            allow: { write: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acl#rule2": {
+                "http://www.w3.org/ns/solid/acp#agent": [
+                  "https://some.pod/profiles#agent2",
+                ],
+                "http://www.w3.org/ns/solid/acp#group": [
+                  "https://some.pod/groups#group3",
+                ],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+        memberPolicies: {},
+        policies: {},
+      };
+      const accessToSet = {
+        append: false,
+        controlRead: true,
+        controlWrite: true,
+        read: false,
+        write: false,
+      };
+      const actorRelation = "http://www.w3.org/ns/solid/acp#agent";
+      const actorUrl = "https://some.pod/profiles#agent2";
+
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        acrConfig
+      );
+      const updatedResource = internal_setActorAccess(
+        resourceWithAcr,
+        actorRelation,
+        actorUrl,
+        accessToSet
+      );
+      expect(
+        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+      ).toStrictEqual(accessToSet);
+    });
+
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip("Counterexample 3 (source of bug yet to be determined)", () => {
+      const acrConfig = {
+        acrPolicies: {
+          "https://some.pod/resource?ext=acl#policy2": {
+            allow: { read: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acl#rule1": {},
+              "https://some.pod/resource?ext=acl#rule3": {
+                "http://www.w3.org/ns/solid/acp#agent": [
+                  "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
+                ],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+        memberPolicies: {},
+        policies: {},
+      };
+      const accessToSet = {
+        append: false,
+        controlRead: true,
+        controlWrite: false,
+        read: false,
+        write: false,
+      };
+      const actorRelation = "http://www.w3.org/ns/solid/acp#agent";
+      const actorUrl = "https://some.pod/profiles#agent2";
+
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        acrConfig
+      );
+      const updatedResource = internal_setActorAccess(
+        resourceWithAcr,
+        actorRelation,
+        actorUrl,
+        accessToSet
+      );
+      expect(
+        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+      ).toStrictEqual(accessToSet);
+    });
   });
 
   describe("giving an Actor access", () => {
