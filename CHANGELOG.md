@@ -6,14 +6,6 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-### Dependency change
-
-- Changed underlying RDF/JS implementation to use the very much faster
-  [rdf-dataset-indexed](https://github.com/rdfjs-base/dataset-indexed). This
-  implementation is **_significantly_** faster (_at least_ 10x faster in some of
-  our tests), but one very minor issue to note is that this new implementation
-  doesn't (currently) support the new RDF\* types.
-
 ### Bugs fixed
 
 - Saving a SolidDataset with a Thing obtained from a different SolidDataset would fail if that Thing

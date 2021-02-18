@@ -20,8 +20,8 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import dataset from "rdf-dataset-indexed";
-import { Quad, Term } from "rdf-js";
+import { dataset } from "@rdfjs/dataset";
+import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
 import {

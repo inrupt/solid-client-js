@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import {
   getPublicResourceAccess,
   getPublicDefaultAccess,
@@ -701,7 +701,7 @@ describe("setPublicResourceAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -1026,7 +1026,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {

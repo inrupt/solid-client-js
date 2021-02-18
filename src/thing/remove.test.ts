@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import { Quad } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, Thing, ThingLocal, ThingPersisted } from "../interfaces";
@@ -143,7 +143,7 @@ describe("removeAll", () => {
       DataFactory.namedNode("https://some.vocab/predicate")
     );
 
-    expect(thingWithString).toHaveLength(1);
+    expect(thingWithString.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -311,7 +311,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(thingWithIri).toHaveLength(1);
+    expect(thingWithIri.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -590,7 +590,7 @@ describe("removeBoolean", () => {
       true
     );
 
-    expect(thingWithBoolean).toHaveLength(1);
+    expect(thingWithBoolean.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -804,7 +804,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(thingWithDatetime).toHaveLength(1);
+    expect(thingWithDatetime.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -1039,7 +1039,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(thingWithDecimal).toHaveLength(1);
+    expect(thingWithDecimal.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -1253,7 +1253,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(thingWithInteger).toHaveLength(1);
+    expect(thingWithInteger.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -1472,7 +1472,7 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
 
-    expect(thingWithStringWithLocale).toHaveLength(1);
+    expect(thingWithStringWithLocale.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -1699,7 +1699,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(thingWithStringNoLocale).toHaveLength(1);
+    expect(thingWithStringNoLocale.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -1993,7 +1993,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(thingWithInteger).toHaveLength(1);
+    expect(thingWithInteger.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 
@@ -2192,7 +2192,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(thingWithNamedNode).toHaveLength(1);
+    expect(thingWithNamedNode.size).toEqual(1);
     expect(updatedThing.size).toEqual(0);
   });
 

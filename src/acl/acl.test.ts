@@ -31,7 +31,7 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 
 import { DataFactory } from "n3";
 import {

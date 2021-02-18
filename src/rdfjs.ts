@@ -40,17 +40,10 @@
 //      NamedNode instances for the 2nd param when we know we want a Datatype.
 
 import { DatasetCore, Quad } from "rdf-js";
+import rdfjsDataset from "@rdfjs/dataset";
 
-// To use 'rdf-dataset-indexed', simply 'npm i rdf-dataset-indexed', and then:
-import dataset from "rdf-dataset-indexed";
-export { dataset };
-
-// To use '@rdfjs/dataset', simply 'npm i @rdfjs/dataset', and then:
-// import rdfjsDataset from "@rdfjs/dataset";
-// export const dataset = rdfjsDataset.dataset;
-
-import { DataFactory as RdfDataFactory } from "n3";
-const { quad, literal, namedNode, blankNode } = RdfDataFactory;
+export const dataset = rdfjsDataset.dataset;
+const { quad, literal, namedNode, blankNode } = rdfjsDataset;
 
 /**
  * @internal

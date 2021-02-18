@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import {
   getAgentResourceAccess,
@@ -965,7 +965,7 @@ describe("setAgentResourceAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -1914,7 +1914,7 @@ describe("setAgentDefaultAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {

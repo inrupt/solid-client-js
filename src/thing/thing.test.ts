@@ -20,8 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { DataFactory } from "n3";
 import {
@@ -229,7 +228,7 @@ describe("getThing", () => {
       "https://some.vocab/subject"
     ) as Thing;
 
-    expect(thing).toHaveLength(2);
+    expect(thing.size).toEqual(2);
     expect(Array.from(thing)).toContain(quadInDefaultGraph);
     expect(Array.from(thing)).toContain(quadInArbitraryGraph);
   });

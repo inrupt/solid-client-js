@@ -21,9 +21,10 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { BlankNode, Literal, NamedNode, Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
-import dataset from "rdf-dataset-indexed";
+
+import rdfjsDataset from "@rdfjs/dataset";
+const dataset = rdfjsDataset.dataset;
 
 import { expectMatch } from "./test-support";
 

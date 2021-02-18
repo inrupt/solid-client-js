@@ -1,120 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`getSolidDataset returns a SolidDataset representing the fetched Turtle 1`] = `
-Dataset {
-  "_blankNodeIndex": 0,
-  "_entities": Object {
-    "1": "https://arbitrary.pod/resource",
-    "2": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-    "3": "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
-    "4": "http://xmlns.com/foaf/0.1/maker",
-    "5": "https://arbitrary.pod/resource#me",
-    "6": "http://xmlns.com/foaf/0.1/primaryTopic",
-    "7": "http://xmlns.com/foaf/0.1/Person",
-    "8": "http://www.w3.org/2006/vcard/ns#fn",
-    "9": "\\"Vincent\\"",
+DatasetCore {
+  "internal_resourceInfo": Object {
+    "contentType": "text/plain;charset=UTF-8",
+    "isRawData": true,
+    "linkedResources": Object {},
+    "sourceIri": "https://arbitrary.pod/resource",
   },
-  "_factory": Object {
-    "blankNode": [Function],
-    "dataset": [Function],
-    "defaultGraph": [Function],
-    "defaultGraphInstance": DefaultGraph {
-      "value": "",
-    },
-    "literal": [Function],
-    "namedNode": [Function],
-    "quad": [Function],
-    "triple": [Function],
-    "variable": [Function],
-  },
-  "_graphs": Object {
-    "": Object {
-      "objects": Object {
-        "3": Object {
-          "1": Object {
-            "2": null,
-          },
-        },
-        "5": Object {
-          "1": Object {
-            "4": null,
-            "6": null,
-          },
-        },
-        "7": Object {
-          "5": Object {
-            "2": null,
-          },
-        },
-        "9": Object {
-          "5": Object {
-            "8": null,
-          },
-        },
-      },
-      "predicates": Object {
-        "2": Object {
-          "3": Object {
-            "1": null,
-          },
-          "7": Object {
-            "5": null,
-          },
-        },
-        "4": Object {
-          "5": Object {
-            "1": null,
-          },
-        },
-        "6": Object {
-          "5": Object {
-            "1": null,
-          },
-        },
-        "8": Object {
-          "9": Object {
-            "5": null,
-          },
-        },
-      },
-      "subjects": Object {
-        "1": Object {
-          "2": Object {
-            "3": null,
-          },
-          "4": Object {
-            "5": null,
-          },
-          "6": Object {
-            "5": null,
-          },
-        },
-        "5": Object {
-          "2": Object {
-            "7": null,
-          },
-          "8": Object {
-            "9": null,
-          },
-        },
-      },
-    },
-  },
-  "_id": 9,
-  "_ids": Object {
-    "\\"Vincent\\"": 9,
-    "><": 0,
-    "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": 2,
-    "http://www.w3.org/2006/vcard/ns#fn": 8,
-    "http://xmlns.com/foaf/0.1/Person": 7,
-    "http://xmlns.com/foaf/0.1/PersonalProfileDocument": 3,
-    "http://xmlns.com/foaf/0.1/maker": 4,
-    "http://xmlns.com/foaf/0.1/primaryTopic": 6,
-    "https://arbitrary.pod/resource": 1,
-    "https://arbitrary.pod/resource#me": 5,
-  },
-  "_quads": Map {
-    ":::1::2::3" => Object {
+  "quads": Set {
+    Object {
       "graph": Object {
         "termType": "DefaultGraph",
         "value": "",
@@ -133,7 +28,7 @@ Dataset {
       },
       "termType": "Quad",
     },
-    ":::1::4::5" => Object {
+    Object {
       "graph": Object {
         "termType": "DefaultGraph",
         "value": "",
@@ -152,7 +47,7 @@ Dataset {
       },
       "termType": "Quad",
     },
-    ":::1::6::5" => Object {
+    Object {
       "graph": Object {
         "termType": "DefaultGraph",
         "value": "",
@@ -171,7 +66,7 @@ Dataset {
       },
       "termType": "Quad",
     },
-    ":::5::2::7" => Object {
+    Object {
       "graph": Object {
         "termType": "DefaultGraph",
         "value": "",
@@ -190,7 +85,7 @@ Dataset {
       },
       "termType": "Quad",
     },
-    ":::5::8::9" => Object {
+    Object {
       "graph": Object {
         "termType": "DefaultGraph",
         "value": "",
@@ -214,12 +109,6 @@ Dataset {
       },
       "termType": "Quad",
     },
-  },
-  "internal_resourceInfo": Object {
-    "contentType": "text/plain;charset=UTF-8",
-    "isRawData": true,
-    "linkedResources": Object {},
-    "sourceIri": "https://arbitrary.pod/resource",
   },
 }
 `;

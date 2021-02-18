@@ -21,7 +21,7 @@
 
 import { expect } from "@jest/globals";
 
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import { getLocalNode } from "../datatypes";
 import {
   SolidDataset,
@@ -1347,7 +1347,7 @@ describe("setGroupDefaultAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
@@ -2113,7 +2113,7 @@ describe("setGroupResourceAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset).toHaveLength(0);
+    expect(sourceDataset.size).toEqual(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {

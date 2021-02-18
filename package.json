@@ -90,14 +90,13 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
+    "@rdfjs/dataset": "^1.0.1",
     "@types/n3": "^1.1.6",
-    "@types/rdf-dataset-indexed": "^0.4.5",
     "@types/rdf-js": "^4.0.0",
     "@types/rdfjs__dataset": "^1.0.2",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
-    "n3": "^1.4.0",
-    "rdf-dataset-indexed": "^0.4.0"
+    "n3": "^1.4.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",

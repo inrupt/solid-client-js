@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import dataset from "rdf-dataset-indexed";
+import { dataset } from "@rdfjs/dataset";
 import { Quad, Term } from "rdf-js";
 import { DataFactory } from "n3";
 import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
@@ -193,7 +193,7 @@ describe("addIri", () => {
       "https://arbitrary.pod/other-resource#object"
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -396,7 +396,7 @@ describe("addBoolean", () => {
       true
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -574,7 +574,7 @@ describe("addDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -752,7 +752,7 @@ describe("addDecimal", () => {
       13.37
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -926,7 +926,7 @@ describe("addInteger", () => {
       42
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -1099,7 +1099,7 @@ describe("addStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -1283,7 +1283,7 @@ describe("addStringNoLocale", () => {
       "Arbitrary string value"
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -1461,7 +1461,7 @@ describe("addNamedNode", () => {
       DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -1639,7 +1639,7 @@ describe("addLiteral", () => {
       DataFactory.literal("Arbitrary string value")
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
@@ -1841,7 +1841,7 @@ describe("addTerm", () => {
       DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
     );
 
-    expect(thing).toHaveLength(0);
+    expect(thing.size).toEqual(0);
     expect(updatedThing.size).toEqual(1);
   });
 
