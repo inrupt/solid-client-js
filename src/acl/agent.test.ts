@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
+import { dataset } from "../rdfjs";
 import { DataFactory } from "n3";
 import {
   getAgentResourceAccess,

@@ -21,7 +21,7 @@
 
 import { expect } from "@jest/globals";
 
-import { dataset } from "@rdfjs/dataset";
+import { dataset } from "../rdfjs";
 import { getLocalNode } from "../datatypes";
 import {
   SolidDataset,

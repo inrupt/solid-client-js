@@ -23,8 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 
 import { DataFactory } from "n3";
 
-import rdfjsDataset from "@rdfjs/dataset";
-const dataset = rdfjsDataset.dataset;
+import { dataset } from "../rdfjs";
 
 import { expectMatch } from "./test-support";
 
