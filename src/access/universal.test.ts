@@ -184,9 +184,13 @@ describe("setAgentAccess", () => {
     jest
       .spyOn(acpLowLevel, "saveAcrFor")
       .mockResolvedValueOnce(undefined as any);
-    jest
-      .spyOn(acpModule, "internal_getAgentAccess")
-      .mockReturnValueOnce({ append: true });
+    jest.spyOn(acpModule, "internal_getAgentAccess").mockReturnValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setAgentAccess(
       "https://arbitrary.pod/resource",
@@ -194,7 +198,13 @@ describe("setAgentAccess", () => {
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("calls out to the well-tested WAC API for Resources with an ACL", async () => {
@@ -231,9 +241,13 @@ describe("setAgentAccess", () => {
     getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
     const wacSetAgentAccess = jest.spyOn(wacModule, "setAgentResourceAccess");
     wacSetAgentAccess.mockResolvedValue(null);
-    jest
-      .spyOn(wacModule, "getAgentAccess")
-      .mockResolvedValueOnce({ append: true });
+    jest.spyOn(wacModule, "getAgentAccess").mockResolvedValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setAgentAccess(
       "https://arbitrary.pod/resource",
@@ -241,7 +255,13 @@ describe("setAgentAccess", () => {
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("throws an error when setting differing controlRead and controlWrite for a WAC-controlled Resource", async () => {
@@ -529,9 +549,13 @@ describe("setGroupAccess", () => {
     jest
       .spyOn(acpLowLevel, "saveAcrFor")
       .mockResolvedValueOnce(undefined as any);
-    jest
-      .spyOn(acpModule, "internal_getGroupAccess")
-      .mockReturnValueOnce({ append: true });
+    jest.spyOn(acpModule, "internal_getGroupAccess").mockReturnValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setGroupAccess(
       "https://arbitrary.pod/resource",
@@ -539,7 +563,13 @@ describe("setGroupAccess", () => {
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("calls out to the well-tested WAC API for Resources with an ACL", async () => {
@@ -576,9 +606,13 @@ describe("setGroupAccess", () => {
     getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
     const wacSetGroupAccess = jest.spyOn(wacModule, "setGroupResourceAccess");
     wacSetGroupAccess.mockResolvedValue(null);
-    jest
-      .spyOn(wacModule, "getGroupAccess")
-      .mockResolvedValueOnce({ append: true });
+    jest.spyOn(wacModule, "getGroupAccess").mockResolvedValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setGroupAccess(
       "https://arbitrary.pod/resource",
@@ -586,7 +620,13 @@ describe("setGroupAccess", () => {
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
   it("throws an error when setting differing controlRead and controlWrite for a WAC-controlled Resource", async () => {
     const getResourceInfoWithAcr = jest.spyOn(
@@ -848,16 +888,26 @@ describe("setPublicAccess", () => {
     jest
       .spyOn(acpLowLevel, "saveAcrFor")
       .mockResolvedValueOnce(undefined as any);
-    jest
-      .spyOn(acpModule, "internal_getPublicAccess")
-      .mockReturnValueOnce({ append: true });
+    jest.spyOn(acpModule, "internal_getPublicAccess").mockReturnValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setPublicAccess(
       "https://arbitrary.pod/resource",
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("calls out to the well-tested WAC API for Resources with an ACL", async () => {
@@ -890,16 +940,26 @@ describe("setPublicAccess", () => {
     getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
     const wacSetPublicAccess = jest.spyOn(wacModule, "setPublicResourceAccess");
     wacSetPublicAccess.mockResolvedValue(null);
-    jest
-      .spyOn(wacModule, "getPublicAccess")
-      .mockResolvedValueOnce({ append: true });
+    jest.spyOn(wacModule, "getPublicAccess").mockResolvedValueOnce({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
 
     const returnedAccess = await setPublicAccess(
       "https://arbitrary.pod/resource",
       { read: true }
     );
 
-    expect(returnedAccess).toStrictEqual({ append: true });
+    expect(returnedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
   it("throws an error when setting differing controlRead and controlWrite for a WAC-controlled Resource", async () => {
     const getResourceInfoWithAcr = jest.spyOn(

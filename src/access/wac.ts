@@ -41,12 +41,8 @@ import {
 } from "../acl/class";
 import {
   IriString,
-  SolidDataset,
-  Url,
   UrlString,
   WebId,
-  WithChangeLog,
-  WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
@@ -61,26 +57,20 @@ import {
   hasResourceAcl,
   saveAclFor,
   WithAccessibleAcl,
-  WithAcl,
   WithResourceAcl,
 } from "../acl/acl";
 
-// Setting WacAccess = Required<Access> enforces that any change on Access will
-// reflect on WacAccess, but WacAccess has additional restrictions.
 export type WacAccess = (
   | { controlRead: true; controlWrite: true }
   | { controlRead: false; controlWrite: false }
-  | { controlRead?: undefined; controlWrite?: undefined }
 ) & {
-  read?: boolean;
-  append?: boolean;
-  write?: boolean;
+  read: boolean;
+  append: boolean;
+  write: boolean;
 };
 
-export type AgentWacAccess = Record<WebId, WacAccess>;
-
 function universalAccessToAcl(
-  newAccess: WacAccess,
+  newAccess: Partial<WacAccess>,
   previousAccess: AclAccess
 ): AclAccess {
   // Universal access is aligned on ACP, which means there is a distinction between
@@ -107,11 +97,11 @@ function aclAccessToUniversal(access: AclAccess): WacAccess {
   // denied, or simply not mentioned. Here, we convert the boolean vision of
   // ACL into the boolean or undefined vision of ACP.
   return {
-    read: access.read === true ? true : undefined,
-    write: access.write === true ? true : undefined,
-    append: access.append === true ? true : undefined,
-    controlRead: access.control === true ? true : undefined,
-    controlWrite: access.control === true ? true : undefined,
+    read: access.read,
+    write: access.write,
+    append: access.append,
+    controlRead: access.control,
+    controlWrite: access.control,
   } as WacAccess;
 }
 
@@ -151,7 +141,7 @@ async function getActorAccessAll(
   resource: WithServerResourceInfo,
   accessEvaluationCallback: typeof getAgentAccessAllWac,
   options: Partial<typeof internal_defaultFetchOptions>
-): Promise<AgentWacAccess | null> {
+): Promise<Record<WebId, WacAccess> | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAgentAccess = accessEvaluationCallback(
     internal_setAcl(resource, resourceAcl)
@@ -159,7 +149,7 @@ async function getActorAccessAll(
   if (wacAgentAccess === null) {
     return null;
   }
-  const result: AgentWacAccess = {};
+  const result: Record<WebId, WacAccess> = {};
   for (const [webId, wacAccess] of Object.entries(wacAgentAccess)) {
     result[webId] = aclAccessToUniversal(wacAccess);
   }
@@ -178,7 +168,7 @@ async function getActorAccessAll(
  * @param resource The URL of the Resource for which we want to list Access
  * @param agent The Agent for which the Access is granted
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns True for Access modes granted to the Agent, and undefined otherwise.
+ * @returns What Access modes are granted to the given Agent explicitly, or null if it could not be determined.
  */
 export function getAgentAccess(
   resource: WithServerResourceInfo,
@@ -202,8 +192,7 @@ export function getAgentAccess(
  * @param resource The URL of the Resource for which we want to list Access
  * @param group The Group for which the Access is granted
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns True for Access modes granted to the Agent, False for Access modes
- * denied to the Agent, and undefined otherwise.
+ * @returns What Access modes are granted to the given Group explicitly, or null if it could not be determined.
  */
 export function getGroupAccess(
   resource: WithServerResourceInfo,
@@ -225,8 +214,7 @@ export function getGroupAccess(
  *
  * @param resource The URL of the Resource for which we want to list public Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns True for Access modes granted to the Agent, False for Access modes
- * denied to the Agent, and undefined otherwise.
+ * @returns What Access modes are granted to the everyone explicitly, or null if it could not be determined.
  */
 export function getPublicAccess(
   resource: WithServerResourceInfo,
@@ -248,15 +236,14 @@ export function getPublicAccess(
  *
  * @param resource The URL of the Resource for which we want to list Agents Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A map of Agents WebIDs associated to a list of modes: True for Access modes
- * granted to the Agent, and undefined otherwise.
+ * @returns A map of Agent WebIDs and the access granted to them, or null if it could not be determined.
  */
 export function getAgentAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<AgentWacAccess | null> {
+): Promise<Record<WebId, WacAccess> | null> {
   return getActorAccessAll(resource, getAgentAccessAllWac, options);
 }
 
@@ -271,15 +258,14 @@ export function getAgentAccessAll(
  *
  * @param resource The URL of the Resource for which we want to list Agents Access
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns A map of Group URLs associated with a list of modes: True for Access modes
- * granted to the Agent, and undefined otherwise.
+ * @returns A map of Group URLs and the access granted to them, or null if it could not be determined.
  */
 export function getGroupAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<AgentWacAccess | null> {
+): Promise<Record<WebId, WacAccess> | null> {
   return getActorAccessAll(resource, getGroupAccessAllWac, options);
 }
 
@@ -325,7 +311,7 @@ async function saveUpdatedAcl<
 
 async function setActorClassAccess<T extends WithServerResourceInfo>(
   resource: T,
-  access: WacAccess,
+  access: Partial<WacAccess>,
   getAccess: typeof getPublicAccessWac,
   setAccess: typeof setPublicResourceAccessWac,
   options: Partial<typeof internal_defaultFetchOptions>
@@ -347,7 +333,7 @@ async function setActorClassAccess<T extends WithServerResourceInfo>(
 async function setActorAccess<T extends WithServerResourceInfo>(
   resource: T,
   actor: UrlString,
-  access: WacAccess,
+  access: Partial<WacAccess>,
   getAccess: typeof getAgentAccessWac,
   setAccess: typeof setAgentResourceAccessWac,
   options: Partial<typeof internal_defaultFetchOptions>
@@ -388,7 +374,7 @@ async function setActorAccess<T extends WithServerResourceInfo>(
 export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
   resource: T,
   agent: WebId,
-  access: WacAccess,
+  access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -425,7 +411,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
 export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
   resource: T,
   group: UrlString,
-  access: WacAccess,
+  access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
@@ -460,7 +446,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
  */
 export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
   resource: T,
-  access: WacAccess,
+  access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions

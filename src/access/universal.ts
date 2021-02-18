@@ -49,17 +49,16 @@ import {
 } from "./wac";
 
 /**
- * Each of the following access modes is in one of three states:
+ * Each of the following access modes is in one of two states:
  * - true: this access mode is granted, or
- * - false: this access mode is denied, or
- * - undefined: this access mode is not set yet.
+ * - false: this access mode is not granted.
  */
 export interface Access {
-  read?: boolean;
-  append?: boolean;
-  write?: boolean;
-  controlRead?: boolean;
-  controlWrite?: boolean;
+  read: boolean;
+  append: boolean;
+  write: boolean;
+  controlRead: boolean;
+  controlWrite: boolean;
 }
 
 /**
@@ -127,17 +126,16 @@ export async function getAgentAccess(
  * - Setting different values for `controlRead` and `controlWrite` is not
  *   supported, and **will throw an error**. If you expect (some of) your users
  *   to have Pods implementing WAC, be sure to pass the same value for both.
- * - Denying access is not technically possible in WAC. Rather, what this does
- *   is removing "allow" access.
  *
  * @param resourceUrl URL of the Resource you want to change the Agent's access to.
  * @param webId WebID of the Agent you want to set access for.
- * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to deny, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @returns What access has been set for the given Agent explicitly.
  */
 export async function setAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
-  access: Access,
+  access: Partial<Access>,
   options = internal_defaultFetchOptions
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
@@ -233,17 +231,16 @@ export async function getGroupAccess(
  * - Setting different values for `controlRead` and `controlWrite` is not
  *   supported, and **will throw an error**. If you expect (some of) your users
  *   to have Pods implementing WAC, be sure to pass the same value for both.
- * - Denying access is not technically possible in WAC. Rather, what this does
- *   is removing "allow" access.
  *
  * @param resourceUrl URL of the Resource you want to change the Group's access to.
  * @param groupUrl URL of the Group you want to set access for.
- * @param access What access permissions you want to set for the given Group to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to deny, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @param access What access permissions you want to set for the given Group to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @returns What access has been set for the given Group explicitly.
  */
 export async function setGroupAccess(
   resourceUrl: UrlString,
   groupUrl: UrlString,
-  access: Access,
+  access: Partial<Access>,
   options = internal_defaultFetchOptions
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
@@ -337,15 +334,14 @@ export async function getPublicAccess(
  * - Setting different values for `controlRead` and `controlWrite` is not
  *   supported, and **will throw an error**. If you expect (some of) your users
  *   to have Pods implementing WAC, be sure to pass the same value for both.
- * - Denying access is not technically possible in WAC. Rather, what this does
- *   is removing "allow" access.
  *
  * @param resourceUrl URL of the Resource you want to change public access to.
- * @param access What access permissions you want to set for everybody to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to deny, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @param access What access permissions you want to set for everybody to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @returns What access has been set for everybody explicitly.
  */
 export async function setPublicAccess(
   resourceUrl: UrlString,
-  access: Access,
+  access: Partial<Access>,
   options = internal_defaultFetchOptions
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);

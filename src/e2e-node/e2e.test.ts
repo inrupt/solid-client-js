@@ -801,11 +801,11 @@ describe.each(serversUnderTest)(
         await expect(
           getPublicAccessUniversal(datasetUrl, { fetch: session.fetch })
         ).resolves.toStrictEqual({
-          read: undefined,
-          append: undefined,
-          write: undefined,
-          controlRead: undefined,
-          controlWrite: undefined,
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         });
 
         const publicAccess = await setPublicAccessUniversal(
@@ -815,10 +815,10 @@ describe.each(serversUnderTest)(
         );
         expect(publicAccess).toStrictEqual({
           read: true,
-          append: undefined,
-          write: undefined,
-          controlRead: undefined,
-          controlWrite: undefined,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         });
 
         // Fetching it unauthenticated again (i.e. without passing session.fetch):
@@ -829,10 +829,10 @@ describe.each(serversUnderTest)(
           getPublicAccessUniversal(datasetUrl, { fetch: session.fetch })
         ).resolves.toStrictEqual({
           read: true,
-          append: undefined,
-          write: undefined,
-          controlRead: undefined,
-          controlWrite: undefined,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         });
 
         await deleteSolidDataset(datasetUrl, {
