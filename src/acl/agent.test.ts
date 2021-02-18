@@ -794,7 +794,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -877,7 +877,7 @@ describe("setAgentResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(13);
+    expect(updatedDataset.size).toEqual(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or Origin", async () => {
@@ -949,7 +949,7 @@ describe("setAgentResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(18);
+    expect(updatedDataset.size).toEqual(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1033,7 +1033,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1080,7 +1080,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1127,7 +1127,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as default rules", () => {
@@ -1158,7 +1158,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1213,7 +1213,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1268,7 +1268,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1323,7 +1323,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1378,7 +1378,7 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(8);
+    expect(updatedDataset.size).toEqual(8);
     expectMatch(
       updatedDataset,
       null,
@@ -1746,7 +1746,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -1829,7 +1829,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(13);
+    expect(updatedDataset.size).toEqual(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -1898,7 +1898,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(18);
+    expect(updatedDataset.size).toEqual(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1982,7 +1982,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2029,7 +2029,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2076,7 +2076,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as resource rules", () => {
@@ -2107,7 +2107,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2162,7 +2162,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2217,7 +2217,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2272,7 +2272,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2327,7 +2327,7 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(8);
+    expect(updatedDataset.size).toEqual(8);
     expectMatch(
       updatedDataset,
       null,
@@ -2420,7 +2420,7 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
@@ -2472,6 +2472,6 @@ describe("setAgentDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
   });
 });

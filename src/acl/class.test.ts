@@ -579,7 +579,7 @@ describe("setPublicResourceAccess", () => {
       control: true,
     });
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -685,7 +685,7 @@ describe("setPublicResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(15);
+    expect(updatedDataset.size).toEqual(15);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -759,7 +759,7 @@ describe("setPublicResourceAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -802,7 +802,7 @@ describe("setPublicResourceAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -845,7 +845,7 @@ describe("setPublicResourceAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not copy over access for an unrelated Agent Class", async () => {
@@ -888,7 +888,7 @@ describe("setPublicResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(13);
+    expect(updatedDataset.size).toEqual(13);
   });
 });
 
@@ -906,7 +906,7 @@ describe("setPublicDefaultAccess", () => {
       control: true,
     });
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -1010,7 +1010,7 @@ describe("setPublicDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(15);
+    expect(updatedDataset.size).toEqual(15);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1084,7 +1084,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1127,7 +1127,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1170,7 +1170,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove ACL rules that apply to the public but also act as resource rules", () => {
@@ -1197,7 +1197,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1248,7 +1248,7 @@ describe("setPublicDefaultAccess", () => {
       control: false,
     });
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1320,7 +1320,7 @@ describe("setPublicDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
@@ -1368,6 +1368,6 @@ describe("setPublicDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
   });
 });

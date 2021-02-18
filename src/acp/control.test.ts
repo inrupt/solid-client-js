@@ -409,7 +409,7 @@ describe("addAcrPolicyUrl", () => {
 
     addAcrPolicyUrl(resourceWithAcr, "https://some.pod/policy-resource#policy");
 
-    expect(accessControlResource).toHaveLength(0);
+    expect(accessControlResource.size).toEqual(0);
   });
 });
 
@@ -477,7 +477,7 @@ describe("addMemberAcrPolicyUrl", () => {
       "https://some.pod/policy-resource#policy"
     );
 
-    expect(accessControlResource).toHaveLength(0);
+    expect(accessControlResource.size).toEqual(0);
   });
 });
 
