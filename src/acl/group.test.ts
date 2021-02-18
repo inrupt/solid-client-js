@@ -1179,7 +1179,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -1262,7 +1262,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(13);
+    expect(updatedDataset.size).toEqual(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -1331,7 +1331,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(14);
+    expect(updatedDataset.size).toEqual(14);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -1413,7 +1413,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1462,7 +1462,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1511,7 +1511,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove ACL rules that apply to the Group but also act as resource rules", () => {
@@ -1544,7 +1544,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1601,7 +1601,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1658,7 +1658,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1715,7 +1715,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -1772,7 +1772,7 @@ describe("setGroupDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(8);
+    expect(updatedDataset.size).toEqual(8);
     expectMatch(
       updatedDataset,
       null,
@@ -1867,7 +1867,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
@@ -1921,7 +1921,7 @@ describe("setGroupDefaultAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
   });
 });
 
@@ -1943,7 +1943,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(6);
+    expect(updatedDataset.size).toEqual(6);
     expectMatch(
       updatedDataset,
       null,
@@ -2026,7 +2026,7 @@ describe("setGroupResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(13);
+    expect(updatedDataset.size).toEqual(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
@@ -2097,7 +2097,7 @@ describe("setGroupResourceAccess", () => {
     });
 
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset).toHaveLength(18);
+    expect(updatedDataset.size).toEqual(18);
   });
 
   it("does not alter the input SolidDataset", () => {
@@ -2179,7 +2179,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2228,7 +2228,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2277,7 +2277,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove ACL rules that apply to the Group but also act as default rules", () => {
@@ -2310,7 +2310,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2367,7 +2367,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2424,7 +2424,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2481,7 +2481,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(4);
+    expect(updatedDataset.size).toEqual(4);
     expectMatch(
       updatedDataset,
       null,
@@ -2538,7 +2538,7 @@ describe("setGroupResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset).toHaveLength(8);
+    expect(updatedDataset.size).toEqual(8);
     expectMatch(
       updatedDataset,
       null,

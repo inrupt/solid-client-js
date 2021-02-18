@@ -113,7 +113,7 @@ describe("removeAll", () => {
       "https://some.vocab/predicate"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -128,7 +128,7 @@ describe("removeAll", () => {
       DataFactory.namedNode("https://some.vocab/predicate")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -144,7 +144,7 @@ describe("removeAll", () => {
     );
 
     expect(thingWithString).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -165,7 +165,7 @@ describe("removeAll", () => {
 
     const updatedThing = removeAll(thingLocal, "https://some.vocab/predicate");
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same value for the same Predicate", () => {
@@ -180,7 +180,7 @@ describe("removeAll", () => {
       "https://some.vocab/predicate"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates", () => {
@@ -266,7 +266,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -281,7 +281,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts IRI's as Named Nodes", () => {
@@ -296,7 +296,7 @@ describe("removeIri", () => {
       DataFactory.namedNode("https://some.pod/resource#name")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -312,7 +312,7 @@ describe("removeIri", () => {
     );
 
     expect(thingWithIri).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -337,7 +337,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same IRI for the same Predicate", () => {
@@ -353,7 +353,7 @@ describe("removeIri", () => {
       "https://some.pod/resource#name"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -429,7 +429,7 @@ describe("removeIri", () => {
       thingPersisted
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -509,7 +509,7 @@ describe("removeBoolean", () => {
       true
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes equivalent booleans with different serialisations", () => {
@@ -555,10 +555,10 @@ describe("removeBoolean", () => {
       false
     );
 
-    expect(updatedThingWithoutSerialised1).toHaveLength(0);
-    expect(updatedThingWithoutSerialised0).toHaveLength(0);
-    expect(updatedThingWithoutSerialisedTrue).toHaveLength(0);
-    expect(updatedThingWithoutSerialisedFalse).toHaveLength(0);
+    expect(updatedThingWithoutSerialised1.size).toEqual(0);
+    expect(updatedThingWithoutSerialised0.size).toEqual(0);
+    expect(updatedThingWithoutSerialisedTrue.size).toEqual(0);
+    expect(updatedThingWithoutSerialisedFalse.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -574,7 +574,7 @@ describe("removeBoolean", () => {
       false
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -591,7 +591,7 @@ describe("removeBoolean", () => {
     );
 
     expect(thingWithBoolean).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -619,7 +619,7 @@ describe("removeBoolean", () => {
       true
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same boolean for the same Predicate", () => {
@@ -636,7 +636,7 @@ describe("removeBoolean", () => {
       true
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -745,7 +745,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes equivalent Datetimes with different serialisations", () => {
@@ -771,8 +771,8 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThingWithoutRoundedDatetime).toHaveLength(0);
-    expect(updatedThingWithoutSpecificDatetime).toHaveLength(0);
+    expect(updatedThingWithoutRoundedDatetime.size).toEqual(0);
+    expect(updatedThingWithoutSpecificDatetime.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -788,7 +788,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -805,7 +805,7 @@ describe("removeDatetime", () => {
     );
 
     expect(thingWithDatetime).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -833,7 +833,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same datetime for the same Predicate", () => {
@@ -850,7 +850,7 @@ describe("removeDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -969,7 +969,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes equivalent Decimals with different serialisations", () => {
@@ -1005,9 +1005,9 @@ describe("removeDecimal", () => {
       1337
     );
 
-    expect(updatedThingWithoutPlainDecimal).toHaveLength(0);
-    expect(updatedThingWithoutSignedDecimal).toHaveLength(0);
-    expect(updatedThingWithoutZeroedDecimal).toHaveLength(0);
+    expect(updatedThingWithoutPlainDecimal.size).toEqual(0);
+    expect(updatedThingWithoutSignedDecimal.size).toEqual(0);
+    expect(updatedThingWithoutZeroedDecimal.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1023,7 +1023,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -1040,7 +1040,7 @@ describe("removeDecimal", () => {
     );
 
     expect(thingWithDecimal).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1068,7 +1068,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same decimal for the same Predicate", () => {
@@ -1085,7 +1085,7 @@ describe("removeDecimal", () => {
       13.37
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -1194,7 +1194,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes equivalent integers with different serialisations", () => {
@@ -1220,8 +1220,8 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(updatedThingWithoutUnsignedInteger).toHaveLength(0);
-    expect(updatedThingWithoutSignedInteger).toHaveLength(0);
+    expect(updatedThingWithoutUnsignedInteger.size).toEqual(0);
+    expect(updatedThingWithoutSignedInteger.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1237,7 +1237,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -1254,7 +1254,7 @@ describe("removeInteger", () => {
     );
 
     expect(thingWithInteger).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1282,7 +1282,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same integer for the same Predicate", () => {
@@ -1299,7 +1299,7 @@ describe("removeInteger", () => {
       42
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -1438,7 +1438,7 @@ describe("removeStringWithLocale", () => {
       "fr-fr"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1455,7 +1455,7 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -1473,7 +1473,7 @@ describe("removeStringWithLocale", () => {
     );
 
     expect(thingWithStringWithLocale).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1499,7 +1499,7 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same localised string for the same Predicate", () => {
@@ -1519,7 +1519,7 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -1586,7 +1586,7 @@ describe("removeStringWithLocale", () => {
       "en-US"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with non-string Objects", () => {
@@ -1667,7 +1667,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1683,7 +1683,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -1700,7 +1700,7 @@ describe("removeStringNoLocale", () => {
     );
 
     expect(thingWithStringNoLocale).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -1728,7 +1728,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same string for the same Predicate", () => {
@@ -1745,7 +1745,7 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string"
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -1857,7 +1857,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts localised strings as Literal", () => {
@@ -1879,7 +1879,7 @@ describe("removeLiteral", () => {
       DataFactory.literal("Some arbitrary string", "en-US")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts integers as Literal", () => {
@@ -1898,7 +1898,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts decimal as Literal", () => {
@@ -1917,7 +1917,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts boolean as Literal", () => {
@@ -1936,7 +1936,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts datetime as Literal", () => {
@@ -1955,7 +1955,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -1974,7 +1974,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -1994,7 +1994,7 @@ describe("removeLiteral", () => {
     );
 
     expect(thingWithInteger).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -2025,7 +2025,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same Literal for the same Predicate", () => {
@@ -2045,7 +2045,7 @@ describe("removeLiteral", () => {
       )
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {
@@ -2162,7 +2162,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("accepts Properties as Named Nodes", () => {
@@ -2177,7 +2177,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not modify the input Thing", () => {
@@ -2193,7 +2193,7 @@ describe("removeNamedNode", () => {
     );
 
     expect(thingWithNamedNode).toHaveLength(1);
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("also works on ThingLocals", () => {
@@ -2218,7 +2218,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("removes multiple instances of the same NamedNode for the same Predicate", () => {
@@ -2234,7 +2234,7 @@ describe("removeNamedNode", () => {
       DataFactory.namedNode("https://some.vocab/object")
     );
 
-    expect(updatedThing).toHaveLength(0);
+    expect(updatedThing.size).toEqual(0);
   });
 
   it("does not remove Quads with different Predicates or Objects", () => {

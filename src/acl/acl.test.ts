@@ -1348,7 +1348,7 @@ describe("createAcl", () => {
 
     const resourceAcl = createAcl(solidDataset);
 
-    expect(resourceAcl).toHaveLength(0);
+    expect(resourceAcl.size).toEqual(0);
     expect(resourceAcl.internal_accessTo).toBe(
       "https://some.pod/container/resource"
     );
@@ -1418,7 +1418,7 @@ describe("createAclFromFallbackAcl", () => {
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    expect(resourceAcl).toHaveLength(5);
+    expect(resourceAcl.size).toEqual(5);
     expectMatch(
       resourceAcl,
       null,
@@ -1499,7 +1499,7 @@ describe("createAclFromFallbackAcl", () => {
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    expect(resourceAcl).toHaveLength(5);
+    expect(resourceAcl.size).toEqual(5);
     expectMatch(
       resourceAcl,
       null,
@@ -1579,7 +1579,7 @@ describe("createAclFromFallbackAcl", () => {
     );
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
-    expect(resourceAcl).toHaveLength(0);
+    expect(resourceAcl.size).toEqual(0);
   });
 });
 
@@ -2125,7 +2125,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not modify the input SolidDataset", () => {
@@ -2164,8 +2164,8 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset).toHaveLength(0);
-    expect(aclDataset).toHaveLength(3);
+    expect(updatedDataset.size).toEqual(0);
+    expect(aclDataset.size).toEqual(3);
   });
 
   it("removes rules that do not set any Access Modes", () => {
@@ -2204,7 +2204,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("removes rules that do not have target Resources to which they apply", () => {
@@ -2243,7 +2243,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("removes rules that specify an acl:origin but not in combination with an Agent, Agent Group or Agent Class", () => {
@@ -2289,7 +2289,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset).toHaveLength(0);
+    expect(updatedDataset.size).toEqual(0);
   });
 
   it("does not remove Rules that are also something other than an ACL Rule", () => {
