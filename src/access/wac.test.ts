@@ -175,10 +175,10 @@ describe("getAgentAccess", () => {
 
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -227,10 +227,10 @@ describe("getAgentAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -286,11 +286,11 @@ describe("getAgentAccess", () => {
       fetch: mockFetch,
     });
     await expect(result).resolves.toStrictEqual({
-      append: undefined,
+      append: false,
       read: true,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -319,9 +319,9 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
+      read: false,
+      append: false,
+      write: false,
       controlRead: true,
       controlWrite: true,
     });
@@ -352,11 +352,11 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
+      read: false,
       append: true,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -385,15 +385,15 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
+      read: false,
       append: true,
       write: true,
-      controlRead: undefined,
-      controlWrite: undefined,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
-  it("returns undefined for all modes the Agent isn't present", async () => {
+  it("returns false for all modes the Agent isn't present", async () => {
     const aclResource = addMockAclRuleQuads(
       getMockDataset("https://some.pod/resource.acl"),
       "https://some.pod/profile#another-agent",
@@ -418,11 +418,11 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -453,11 +453,11 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -488,11 +488,11 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -523,11 +523,11 @@ describe("getAgentAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 });
@@ -635,10 +635,10 @@ describe("getGroupAccess", () => {
 
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -689,10 +689,10 @@ describe("getGroupAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -753,10 +753,10 @@ describe("getGroupAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       append: true,
-      read: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -787,11 +787,11 @@ describe("getGroupAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -822,11 +822,11 @@ describe("getGroupAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -857,11 +857,11 @@ describe("getGroupAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -892,11 +892,11 @@ describe("getGroupAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 });
@@ -1004,10 +1004,10 @@ describe("getPublicAccess", () => {
 
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1058,10 +1058,10 @@ describe("getPublicAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1122,10 +1122,10 @@ describe("getPublicAccess", () => {
     });
     await expect(result).resolves.toStrictEqual({
       append: true,
-      read: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1156,11 +1156,11 @@ describe("getPublicAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1191,11 +1191,11 @@ describe("getPublicAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1226,11 +1226,11 @@ describe("getPublicAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1261,11 +1261,11 @@ describe("getPublicAccess", () => {
     });
 
     await expect(result).resolves.toStrictEqual({
-      read: undefined,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 });
@@ -1420,18 +1420,18 @@ describe("getAgentAccessAll", () => {
       })
     ).resolves.toStrictEqual({
       "https://some.pod/profile#agent-a": {
-        read: undefined,
+        read: false,
         append: true,
         write: true,
-        controlRead: undefined,
-        controlWrite: undefined,
+        controlRead: false,
+        controlWrite: false,
       },
       "https://some.pod/profile#agent-b": {
         read: true,
-        append: undefined,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
     });
   });
@@ -1462,9 +1462,9 @@ describe("getAgentAccessAll", () => {
 
     await expect(result).resolves.toStrictEqual({
       "https://some.pod/profile#agent": {
-        read: undefined,
-        append: undefined,
-        write: undefined,
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
         controlWrite: true,
       },
@@ -1626,18 +1626,18 @@ describe("getGroupAccessAll", () => {
       })
     ).resolves.toStrictEqual({
       "https://some.pod/groups#group-a": {
-        read: undefined,
+        read: false,
         append: true,
         write: true,
-        controlRead: undefined,
-        controlWrite: undefined,
+        controlRead: false,
+        controlWrite: false,
       },
       "https://some.pod/groups#group-b": {
         read: true,
-        append: undefined,
-        write: undefined,
-        controlRead: undefined,
-        controlWrite: undefined,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
     });
   });
@@ -1670,9 +1670,9 @@ describe("getGroupAccessAll", () => {
 
     await expect(result).resolves.toStrictEqual({
       "https://some.pod/groups#group": {
-        read: undefined,
-        append: undefined,
-        write: undefined,
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
         controlWrite: true,
       },

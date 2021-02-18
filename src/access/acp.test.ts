@@ -467,7 +467,7 @@ describe("hasInaccessiblePolicies", () => {
 describe("getActorAccess", () => {
   const webId = "https://some.pod/profile#me";
 
-  it("returns undefined for all access if no access was granted to the given actor", () => {
+  it("returns false for all access if no access was granted to the given actor", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://arbitrary.pod/resource",
       "https://arbitrary.pod/resource?ext=acr",
@@ -481,7 +481,13 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("returns true for Read access if that was granted to the given actor", () => {
@@ -509,6 +515,10 @@ describe("getActorAccess", () => {
 
     expect(access).toStrictEqual({
       read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -536,7 +546,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
       append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -564,7 +578,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
       write: true,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -592,7 +610,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
       controlRead: true,
+      controlWrite: false,
     });
   });
 
@@ -620,6 +642,10 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
       controlWrite: true,
     });
   });
@@ -649,6 +675,10 @@ describe("getActorAccess", () => {
 
     expect(access).toStrictEqual({
       read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -676,7 +706,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
       append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -704,7 +738,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
       write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -732,7 +770,11 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
       controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -760,11 +802,15 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
     expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
       controlWrite: false,
     });
   });
 
-  it("returns undefined for Read access if that was granted to the given actor for child Resources only", () => {
+  it("returns false for Read access if that was granted to the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -787,10 +833,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for Append access if that was granted to the given actor for child Resources only", () => {
+  it("returns false for Append access if that was granted to the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -813,10 +865,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for Write access if that was granted to the given actor for child Resources only", () => {
+  it("returns false for Write access if that was granted to the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -839,10 +897,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for ControlRead access if that was granted to the given actor for child Resources only", () => {
+  it("returns false for ControlRead access if that was granted to the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -865,10 +929,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for ControlWrite access if that was granted to the given actor for child Resources only", () => {
+  it("returns false for ControlWrite access if that was granted to the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -891,10 +961,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for Read access if that was denied for the given actor for child Resources only", () => {
+  it("returns false for Read access if that was denied for the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -917,10 +993,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for Append access if that was denied for the given actor for child Resources only", () => {
+  it("returns false for Append access if that was denied for the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -943,10 +1025,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for Write access if that was denied for the given actor for child Resources only", () => {
+  it("returns false for Write access if that was denied for the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -969,10 +1057,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for ControlRead access if that was denied for the given actor for child Resources only", () => {
+  it("returns false for ControlRead access if that was denied for the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -995,10 +1089,16 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
-  it("returns undefined for ControlWrite access if that was denied for the given actor for child Resources only", () => {
+  it("returns false for ControlWrite access if that was denied for the given actor for child Resources only", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
@@ -1021,7 +1121,13 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("does not apply a Policy that does not specify any access modes", () => {
@@ -1046,7 +1152,13 @@ describe("getActorAccess", () => {
 
     const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-    expect(access).toStrictEqual({});
+    expect(access).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("applies a Policy that does not specify any Rules at all", () => {
@@ -1069,6 +1181,10 @@ describe("getActorAccess", () => {
 
     expect(access).toStrictEqual({
       read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1095,6 +1211,10 @@ describe("getActorAccess", () => {
 
     expect(access).toStrictEqual({
       read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1136,6 +1256,10 @@ describe("getActorAccess", () => {
 
     expect(access).toStrictEqual({
       read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
     });
   });
 
@@ -1186,6 +1310,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1213,7 +1341,11 @@ describe("getActorAccess", () => {
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
       expect(access).toStrictEqual({
+        read: false,
         append: true,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1240,7 +1372,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1270,6 +1408,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1298,6 +1440,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1324,7 +1470,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1352,7 +1504,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf Rule", () => {
@@ -1378,7 +1536,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for a noneOf Rule", () => {
@@ -1404,7 +1568,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1435,7 +1605,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does apply for anyOf Rules", () => {
@@ -1466,6 +1642,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1495,7 +1675,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1528,6 +1714,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1559,6 +1749,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1588,7 +1782,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1623,6 +1823,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -1654,7 +1858,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf and a noneOf Rule", () => {
@@ -1685,7 +1895,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an allOf, an anyOf and a noneOf Rule", () => {
@@ -1721,7 +1937,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -1754,7 +1976,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an allOf Rule with the given actor and a noneOf Rule without", () => {
@@ -1785,7 +2013,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf Rule with the given actor and a noneOf Rule without", () => {
@@ -1816,7 +2050,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an allOf Rule with the given actor and an anyOf and a noneOf Rule without", () => {
@@ -1852,7 +2092,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf Rule with the given actor and an allOf and a noneOf Rule without", () => {
@@ -1888,7 +2134,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for a noneOf Rule with the given actor and an allOf and an anyOf Rule without", () => {
@@ -1924,7 +2176,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf Rule with the given actor and an allOf Rule without", () => {
@@ -1955,7 +2213,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an noneOf Rule with the given actor and an allOf Rule without", () => {
@@ -1986,7 +2250,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an noneOf Rule with the given actor and an anyOf Rule without", () => {
@@ -2017,7 +2287,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an allOf and an anyOf Rule with the given actor and a noneOf Rule without", () => {
@@ -2053,7 +2329,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an allOf and a noneOf Rule with the given actor and an anyOf Rule without", () => {
@@ -2089,7 +2371,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not apply for an anyOf and a noneOf Rule with the given actor and an allOf Rule without", () => {
@@ -2125,7 +2413,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -2201,7 +2495,7 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("keeps undefined access modes as `undefined`", () => {
+    it("marks undefined access modes as `false`", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -2259,7 +2553,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
 
@@ -2321,7 +2618,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
   });
@@ -2393,7 +2693,7 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("keeps undefined access modes as `undefined`", () => {
+    it("marks undefined access modes as `false`", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -2452,7 +2752,9 @@ describe("getActorAccess", () => {
       expect(access).toStrictEqual({
         read: true,
         append: true,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
 
@@ -2515,7 +2817,9 @@ describe("getActorAccess", () => {
       expect(access).toStrictEqual({
         read: true,
         append: true,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
   });
@@ -2663,7 +2967,7 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("leaves undefined access modes as undefined", () => {
+    it("marks undefined access modes as false", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -2721,7 +3025,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
     });
   });
@@ -2754,6 +3061,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -2782,7 +3093,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAgentAccess(resourceWithAcr, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for a group", () => {
@@ -2810,7 +3127,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAgentAccess(resourceWithAcr, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
@@ -2838,7 +3161,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAgentAccess(resourceWithAcr, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for just 'all authenticated Agents' (we have getAuthenticatedAccess for that)", () => {
@@ -2866,7 +3195,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAgentAccess(resourceWithAcr, webId);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -2900,6 +3235,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -2928,7 +3267,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getGroupAccess(resourceWithAcr, groupUrl);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for an agent", () => {
@@ -2956,7 +3301,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getGroupAccess(resourceWithAcr, groupUrl);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -2988,6 +3339,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -3016,7 +3371,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getPublicAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for a group", () => {
@@ -3044,7 +3405,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getPublicAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for just 'all authenticated Agents' (we have getAuthenticatedAccess for that)", () => {
@@ -3072,7 +3439,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getPublicAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -3104,6 +3477,10 @@ describe("getActorAccess", () => {
 
       expect(access).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -3132,7 +3509,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAuthenticatedAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for a group", () => {
@@ -3160,7 +3543,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAuthenticatedAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
@@ -3188,7 +3577,13 @@ describe("getActorAccess", () => {
 
       const access = internal_getAuthenticatedAccess(resourceWithAcr);
 
-      expect(access).toStrictEqual({});
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 });
@@ -3432,11 +3827,17 @@ describe("getActorAccessAll", () => {
         ).toStrictEqual({
           "https://some.pod/profile#actor-a": {
             read: true,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
           "https://some.pod/profile#actor-b": {
             read: true,
             append: true,
             write: true,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3475,9 +3876,17 @@ describe("getActorAccessAll", () => {
         ).toStrictEqual({
           "https://some.pod/profile#actor-a": {
             read: true,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
           "https://some.pod/profile#actor-b": {
             read: true,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3518,8 +3927,20 @@ describe("getActorAccessAll", () => {
         expect(
           internal_getActorAccessAll(resourceWithAcr, actor)
         ).toStrictEqual({
-          "https://some.pod/profile#excluded-actor": {},
-          "https://some.pod/profile#included-actor": {},
+          "https://some.pod/profile#excluded-actor": {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          },
+          "https://some.pod/profile#included-actor": {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          },
         });
       }
     );
@@ -3559,9 +3980,19 @@ describe("getActorAccessAll", () => {
           internal_getActorAccessAll(resourceWithAcr, actor)
         ).toStrictEqual({
           "https://some.pod/profile#included-actor": {
+            read: false,
             append: true,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
-          "https://some.pod/profile#excluded-actor": {},
+          "https://some.pod/profile#excluded-actor": {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          },
         });
       }
     );
@@ -3611,10 +4042,26 @@ describe("getActorAccessAll", () => {
         expect(
           internal_getActorAccessAll(resourceWithAcr, actor)
         ).toStrictEqual({
-          "https://some.pod/profile#actor": {},
-          "https://some.pod/profile#another-actor": {},
+          "https://some.pod/profile#actor": {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          },
+          "https://some.pod/profile#another-actor": {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          },
           "https://some.pod/profile#a-third-actor": {
             read: true,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3664,11 +4111,17 @@ describe("getActorAccessAll", () => {
         ).toStrictEqual({
           "https://some.pod/profile#denied-actor": {
             read: false,
+            append: false,
             write: false,
+            controlRead: false,
+            controlWrite: false,
           },
           "https://some.pod/profile#allowed-actor": {
             read: true,
+            append: false,
             write: true,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3723,11 +4176,15 @@ describe("getActorAccessAll", () => {
             read: false,
             append: true,
             write: false,
+            controlRead: false,
+            controlWrite: false,
           },
           "https://some.pod/profile#another-actor": {
             read: false,
             append: true,
             write: false,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3775,10 +4232,18 @@ describe("getActorAccessAll", () => {
           internal_getActorAccessAll(resourceWithAcr, actor)
         ).toStrictEqual({
           "https://some.pod/profile#denied-actor": {
+            read: false,
             append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
           "https://some.pod/profile#allowed-actor": {
+            read: false,
             append: true,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
           },
         });
       }
@@ -3815,9 +4280,17 @@ describe("getGroupAccessAll", () => {
     expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({
       [groupAUrl]: {
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
       [groupBUrl]: {
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
     });
   });
@@ -3957,9 +4430,17 @@ describe("getAgentAccessAll", () => {
     expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({
       [agentAUrl]: {
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
       [agentBUrl]: {
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       },
     });
   });
@@ -4234,6 +4715,9 @@ describe("setActorAccess", () => {
       ).toStrictEqual({
         read: true,
         append: true,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -4567,12 +5051,20 @@ describe("setActorAccess", () => {
           "https://some-other.pod/other-profile#me"
         )
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
 
@@ -4619,12 +5111,18 @@ describe("setActorAccess", () => {
       ).toStrictEqual({
         read: false,
         append: true,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: true,
         append: true,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -4733,12 +5231,20 @@ describe("setActorAccess", () => {
           "https://some-other.pod/other-profile#me"
         )
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
     });
 
@@ -4783,11 +5289,19 @@ describe("setActorAccess", () => {
         )
       ).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -4828,7 +5342,11 @@ describe("setActorAccess", () => {
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -4889,6 +5407,10 @@ describe("setActorAccess", () => {
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -4950,7 +5472,11 @@ describe("setActorAccess", () => {
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -5015,6 +5541,10 @@ describe("setActorAccess", () => {
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -5076,6 +5606,10 @@ describe("setActorAccess", () => {
         internal_getAgentAccess(updatedResourceWithAcr!, otherWebId)
       ).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5142,7 +5676,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
-      ).toStrictEqual({ read: true });
+      ).toStrictEqual({
+        read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
       expect(getPolicyUrlAll(updatedResourceWithAcr!)).toContain(
         "https://some.pod/resource?ext=acr#policy"
       );
@@ -5192,7 +5732,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
-      ).toStrictEqual({ read: true });
+      ).toStrictEqual({
+        read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
@@ -5214,8 +5760,8 @@ describe("setActorAccess", () => {
     });
   });
 
-  describe("denying an Actor access", () => {
-    it("adds the relevant ACP data when no access has been defined yet", () => {
+  describe("removing access for an Actor", () => {
+    it("adds no data when no access has been defined yet", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -5246,41 +5792,11 @@ describe("setActorAccess", () => {
 
       const acrPolicyUrls = getUrlAll(control!, acp.access);
       const policyUrls = getUrlAll(control!, acp.apply);
-      expect(acrPolicyUrls).toHaveLength(1);
-      expect(policyUrls).toHaveLength(1);
-
-      const acrPolicy = getThing(updatedAcr, acrPolicyUrls[0]);
-      const policy = getThing(updatedAcr, policyUrls[0]);
-
-      expect(acrPolicy).not.toBeNull();
-      expect(policy).not.toBeNull();
-
-      const acrDenied = getUrlAll(acrPolicy!, acp.deny);
-      const denied = getUrlAll(policy!, acp.deny);
-      expect(acrDenied).toHaveLength(2);
-      expect(acrDenied).toContain(acp.Read);
-      expect(acrDenied).toContain(acp.Write);
-      expect(denied).toHaveLength(3);
-      expect(denied).toContain(acp.Read);
-      expect(denied).toContain(acp.Append);
-      expect(denied).toContain(acp.Write);
-
-      const acrRuleUrls = getUrlAll(acrPolicy!, acp.allOf).concat(
-        getUrlAll(acrPolicy!, acp.anyOf)
-      );
-      const ruleUrls = getUrlAll(policy!, acp.allOf).concat(
-        getUrlAll(policy!, acp.anyOf)
-      );
-      expect(ruleUrls).toHaveLength(1);
-      expect(ruleUrls).toStrictEqual(acrRuleUrls);
-
-      const rule = getThing(updatedAcr, ruleUrls[0]);
-      expect(rule).not.toBeNull();
-
-      expect(getUrl(rule!, acp.agent)).toBe(webId);
+      expect(acrPolicyUrls).toHaveLength(0);
+      expect(policyUrls).toHaveLength(0);
     });
 
-    it("adds the relevant ACP data when unrelated access has already been defined", () => {
+    it("removes the relevant ACP data when unrelated access has already been defined", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
@@ -5317,6 +5833,9 @@ describe("setActorAccess", () => {
       ).toStrictEqual({
         read: true,
         append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5650,12 +6169,20 @@ describe("setActorAccess", () => {
           "https://some-other.pod/other-profile#me"
         )
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5702,12 +6229,18 @@ describe("setActorAccess", () => {
       ).toStrictEqual({
         read: true,
         append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: false,
         append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5816,12 +6349,20 @@ describe("setActorAccess", () => {
           "https://some-other.pod/other-profile#me"
         )
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: true,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5866,11 +6407,19 @@ describe("setActorAccess", () => {
         )
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -5911,7 +6460,11 @@ describe("setActorAccess", () => {
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -5972,6 +6525,10 @@ describe("setActorAccess", () => {
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -6033,7 +6590,11 @@ describe("setActorAccess", () => {
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
         controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -6098,6 +6659,10 @@ describe("setActorAccess", () => {
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
       ).toStrictEqual({
         read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
 
       // But also the access defined for the the combination of the Agent and
@@ -6159,6 +6724,10 @@ describe("setActorAccess", () => {
         internal_getAgentAccess(updatedResourceWithAcr!, otherWebId)
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -6225,7 +6794,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
-      ).toStrictEqual({ read: false });
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
       expect(getPolicyUrlAll(updatedResourceWithAcr!)).toContain(
         "https://some.pod/resource?ext=acr#policy"
       );
@@ -6275,7 +6850,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
-      ).toStrictEqual({ read: false });
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
@@ -6327,14 +6908,39 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("denies access for the given Agent", () => {
+    it("removes access for the given Agent", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
         {
-          policies: {},
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [webId],
+                },
+              },
+              allow: {
+                read: true,
+                append: true,
+                write: true,
+              },
+            },
+          },
           memberPolicies: {},
-          acrPolicies: {},
+          acrPolicies: {
+            "https://some.pod/resource?ext=acr#acrPolicy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [webId],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+              },
+            },
+          },
           memberAcrPolicies: {},
         }
       );
@@ -6415,6 +7021,10 @@ describe("setActorAccess", () => {
         )
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -6438,9 +7048,13 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
 
-      expect(internal_getGroupAccess(updatedResource!, webId)).toStrictEqual(
-        {}
-      );
+      expect(internal_getGroupAccess(updatedResource!, webId)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for everybody", () => {
@@ -6463,7 +7077,13 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
 
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
@@ -6486,9 +7106,13 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
 
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
-        {}
-      );
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -6529,14 +7153,39 @@ describe("setActorAccess", () => {
       );
     });
 
-    it("denies access for the given Group", () => {
+    it("removes access for the given Group", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
         {
-          policies: {},
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.group]: [groupIri],
+                },
+              },
+              allow: {
+                read: true,
+                append: true,
+                write: true,
+              },
+            },
+          },
           memberPolicies: {},
-          acrPolicies: {},
+          acrPolicies: {
+            "https://some.pod/resource?ext=acr#acrPolicy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.group]: [groupIri],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+              },
+            },
+          },
           memberAcrPolicies: {},
         }
       );
@@ -6631,6 +7280,10 @@ describe("setActorAccess", () => {
         )
       ).toStrictEqual({
         read: true,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
       });
     });
 
@@ -6659,7 +7312,13 @@ describe("setActorAccess", () => {
       );
 
       expect(internal_getAgentAccess(updatedResource!, groupIri)).toStrictEqual(
-        {}
+        {
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
+        }
       );
     });
 
@@ -6687,7 +7346,13 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
@@ -6714,9 +7379,13 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
-        {}
-      );
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -6750,14 +7419,39 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("denies access for everybody", () => {
+    it("removes access for everybody", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
         {
-          policies: {},
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [acp.PublicAgent],
+                },
+              },
+              allow: {
+                read: true,
+                append: true,
+                write: true,
+              },
+            },
+          },
           memberPolicies: {},
-          acrPolicies: {},
+          acrPolicies: {
+            "https://some.pod/resource?ext=acr#acrPolicy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [acp.PublicAgent],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+              },
+            },
+          },
           memberAcrPolicies: {},
         }
       );
@@ -6822,7 +7516,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getGroupAccess(updatedResource!, acp.PublicAgent)
-      ).toStrictEqual({});
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
@@ -6845,9 +7545,13 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
 
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual(
-        {}
-      );
+      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 
@@ -6881,14 +7585,39 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("denies access for authenticated Agents", () => {
+    it("removes access for authenticated Agents", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
         {
-          policies: {},
+          policies: {
+            "https://some.pod/resource?ext=acr#policy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [acp.AuthenticatedAgent],
+                },
+              },
+              allow: {
+                read: true,
+                append: true,
+                write: true,
+              },
+            },
+          },
           memberPolicies: {},
-          acrPolicies: {},
+          acrPolicies: {
+            "https://some.pod/resource?ext=acr#acrPolicy": {
+              anyOf: {
+                "https://some.pod/resource?ext=acr#rule": {
+                  [acp.agent]: [acp.AuthenticatedAgent],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+              },
+            },
+          },
           memberAcrPolicies: {},
         }
       );
@@ -6953,7 +7682,13 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getGroupAccess(updatedResource!, acp.AuthenticatedAgent)
-      ).toStrictEqual({});
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for everybody", () => {
@@ -6976,7 +7711,13 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
 
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({});
+      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
   });
 });

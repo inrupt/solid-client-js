@@ -40,7 +40,6 @@ import {
   getPolicy,
   Policy,
   setAllowModes,
-  setDenyModes,
 } from "../acp/policy";
 import {
   createRule,
@@ -132,6 +131,7 @@ type ActorRelation = typeof knownActorRelations extends Array<infer E>
  * @param resource Resource that was fetched together with its linked Access Control Resource.
  * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to get the access for.
  * @param actor Which instance of the given actor type you want to get the access for.
+ * @returns What Access modes are granted to the given actor explicitly, or null if it could not be determined.
  */
 export function internal_getActorAccess(
   resource: WithResourceInfo & WithAcp,
@@ -163,6 +163,13 @@ export function internal_getActorAccess(
     policyAppliesTo(policy, actorRelation, actor, acr)
   );
 
+  const initialAccess: Access = {
+    read: false,
+    append: false,
+    write: false,
+    controlRead: false,
+    controlWrite: false,
+  };
   // All allowed reading and writing defined in ACR policies
   // determines whether the `controlRead` and `controlWrite` statuses are `true`.
   const allowedAcrAccess = applicableAcrPolicies.reduce((acc, policy) => {
@@ -175,7 +182,7 @@ export function internal_getActorAccess(
       allAllowedAccess.controlWrite = true;
     }
     return allAllowedAccess;
-  }, {} as Access);
+  }, initialAccess);
   // Then allowed reading, appending and writing in regular policies
   // determines whether the respective status is `true`.
   const withAllowedAccess = applicablePolicies.reduce((acc, policy) => {
@@ -193,8 +200,8 @@ export function internal_getActorAccess(
     return allAllowedAccess;
   }, allowedAcrAccess);
 
-  // At this point, everything that is not explicitly allowed is still undefined.
-  // However, we still need to set the access that is explicitly denied to `false`.
+  // At this point, everything that has been explicitly allowed is true.
+  // However, it could still be overridden by access that is explicitly denied.
   // Starting with `controlRead` and `controlWrite`,
   // by inspecting denied reading and writing defined in the ACR policies.
   const withAcrDeniedAccess = applicableAcrPolicies.reduce((acc, policy) => {
@@ -243,6 +250,7 @@ export function internal_getActorAccess(
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
  * @param webId WebID of the Agent you want to get the access for.
+ * @returns What Access modes are granted to the given Agent explicitly, or null if it could not be determined.
  */
 export function internal_getAgentAccess(
   resource: WithResourceInfo & WithAcp,
@@ -266,6 +274,7 @@ export function internal_getAgentAccess(
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
  * @param groupUrl URL of the Group you want to get the access for.
+ * @returns What Access modes are granted to the given Group explicitly, or null if it could not be determined.
  */
 export function internal_getGroupAccess(
   resource: WithResourceInfo & WithAcp,
@@ -288,6 +297,7 @@ export function internal_getGroupAccess(
  * [[internal_setPublicAccess]], but not understand more convoluted Policies.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @returns What Access modes are granted to everyone explicitly, or null if it could not be determined.
  */
 export function internal_getPublicAccess(
   resource: WithResourceInfo & WithAcp
@@ -310,6 +320,7 @@ export function internal_getPublicAccess(
  * [[internal_setAuthenticatedAccess]], but not understand more convoluted Policies.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @returns What Access modes are granted to authenticated users explicitly, or null if it could not be determined.
  */
 export function internal_getAuthenticatedAccess(
   resource: WithResourceInfo & WithAcp
@@ -413,7 +424,7 @@ function internal_findActorAll(
  * Iterate through all the actors active for an ACR, and list all of their access.
  * @param resource The resource for which we want to list the access
  * @param actorRelation The type of actor we want to list access for
- * @returns A map with each actor access indexed by their WebID, or null if some
+ * @returns A map with each actor access indexed by their URL, or null if some
  * external policies are referenced.
  */
 export function internal_getActorAccessAll(
@@ -456,6 +467,8 @@ export function internal_getActorAccessAll(
  * [[internal_setAgentAccess]], but not understand more convoluted Policies.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @returns A map with each Group's access indexed by their URL, or null if some
+ * external policies are referenced.
  */
 export function internal_getGroupAccessAll(
   resource: WithResourceInfo & WithAcp
@@ -478,6 +491,8 @@ export function internal_getGroupAccessAll(
  * [[internal_setAgentAccess]], but not understand more convoluted Policies.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @returns A map with each Agent's access indexed by their WebID, or null if some
+ * external policies are referenced.
  */
 export function internal_getAgentAccessAll(
   resource: WithResourceInfo & WithAcp
@@ -523,7 +538,7 @@ export function internal_setActorAccess<
   resource: ResourceExt,
   actorRelation: ActorRelation,
   actor: UrlString,
-  access: Access
+  access: Partial<Access>
 ): ResourceExt | null {
   if (
     !hasAccessibleAcr(resource) ||
@@ -611,11 +626,10 @@ export function internal_setActorAccess<
   const newControlWriteAccess =
     access.controlWrite ?? existingAccess.controlWrite;
   let acrPoliciesToUnapply = otherActorAcrPolicies;
+  // Only replace existing Policies if the defined access actually changes:
   if (
-    (typeof newControlReadAccess !== "undefined" ||
-      typeof newControlWriteAccess !== "undefined") &&
-    (newControlReadAccess !== existingAccess.controlRead ||
-      newControlWriteAccess !== existingAccess.controlWrite)
+    newControlReadAccess !== existingAccess.controlRead ||
+    newControlWriteAccess !== existingAccess.controlWrite
   ) {
     const newAcrPolicyIri =
       getSourceIri(acr) +
@@ -627,11 +641,6 @@ export function internal_setActorAccess<
       read: newControlReadAccess === true,
       append: false,
       write: newControlWriteAccess === true,
-    });
-    newAcrPolicy = setDenyModes(newAcrPolicy, {
-      read: newControlReadAccess === false,
-      append: false,
-      write: newControlWriteAccess === false,
     });
     newAcrPolicy = addIri(newAcrPolicy, acp.allOf, newRule);
     updatedAcr = setThing(updatedAcr, newAcrPolicy);
@@ -651,13 +660,11 @@ export function internal_setActorAccess<
   const newAppendAccess = access.append ?? existingAccess.append;
   const newWriteAccess = access.write ?? existingAccess.write;
   let policiesToUnapply = otherActorPolicies;
+  // Only replace existing Policies if the defined access actually changes:
   if (
-    (typeof newReadAccess !== "undefined" ||
-      typeof newAppendAccess !== "undefined" ||
-      typeof newWriteAccess !== "undefined") &&
-    (newReadAccess !== existingAccess.read ||
-      newAppendAccess !== existingAccess.append ||
-      newWriteAccess !== existingAccess.write)
+    newReadAccess !== existingAccess.read ||
+    newAppendAccess !== existingAccess.append ||
+    newWriteAccess !== existingAccess.write
   ) {
     const newPolicyIri =
       getSourceIri(acr) +
@@ -669,11 +676,6 @@ export function internal_setActorAccess<
       read: newReadAccess === true,
       append: newAppendAccess === true,
       write: newWriteAccess === true,
-    });
-    newPolicy = setDenyModes(newPolicy, {
-      read: newReadAccess === false,
-      append: newAppendAccess === false,
-      write: newWriteAccess === false,
     });
     newPolicy = addIri(newPolicy, acp.allOf, newRule);
     updatedAcr = setThing(updatedAcr, newPolicy);
@@ -748,7 +750,11 @@ export function internal_setActorAccess<
  */
 export function internal_setAgentAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, webId: WebId, access: Access): ResourceExt | null {
+>(
+  resource: ResourceExt,
+  webId: WebId,
+  access: Partial<Access>
+): ResourceExt | null {
   return internal_setActorAccess(resource, acp.agent, webId, access);
 }
 
@@ -785,7 +791,11 @@ export function internal_setAgentAccess<
  */
 export function internal_setGroupAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, groupUrl: WebId, access: Access): ResourceExt | null {
+>(
+  resource: ResourceExt,
+  groupUrl: WebId,
+  access: Partial<Access>
+): ResourceExt | null {
   return internal_setActorAccess(resource, acp.group, groupUrl, access);
 }
 
@@ -821,7 +831,7 @@ export function internal_setGroupAccess<
  */
 export function internal_setPublicAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, access: Access): ResourceExt | null {
+>(resource: ResourceExt, access: Partial<Access>): ResourceExt | null {
   return internal_setActorAccess(resource, acp.agent, acp.PublicAgent, access);
 }
 
@@ -857,7 +867,7 @@ export function internal_setPublicAccess<
  */
 export function internal_setAuthenticatedAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, access: Access): ResourceExt | null {
+>(resource: ResourceExt, access: Partial<Access>): ResourceExt | null {
   return internal_setActorAccess(
     resource,
     acp.agent,
