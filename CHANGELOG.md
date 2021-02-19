@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.4.0] - 2021-02-19
+
 ### Bugs fixed
 
 - Saving a SolidDataset with a Thing obtained from a different SolidDataset would fail if that Thing
@@ -18,8 +22,6 @@ The following changes have been implemented but not released yet:
   case this Container is controlled using WAC.
 - `setGroupResourceAccess`: A function to set a Group's access modes for a given Resource, in the case this Resource is
   controlled using WAC.
-
-The following sections document changes that have been released already:
 
 ## [1.3.0] - 2021-01-07
 

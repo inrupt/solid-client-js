@@ -241,6 +241,7 @@ function getAccessByGroup(aclRules: AclRule[]): Record<IriString, Access> {
  * @param group The Group to grant specific Access Modes.
  * @param access The Access Modes to grant to the Group for the Resource.
  * @returns A new resource ACL initialised with the given `aclDataset` and `access` for the `group`.
+ * @since 1.4.0
  */
 export function setGroupResourceAccess(
   aclDataset: AclDataset,
@@ -276,6 +277,7 @@ export function setGroupResourceAccess(
  * @param group The Group to grant specific Access Modes.
  * @param access The Access Modes to grant to the Group.
  * @returns A new default ACL initialised with the given `aclDataset` and `access` for the `group`.
+ * @since 1.4.0
  */
 export function setGroupDefaultAccess(
   aclDataset: AclDataset,
