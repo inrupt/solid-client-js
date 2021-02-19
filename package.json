@@ -82,7 +82,7 @@
     "prettier": "2.2.1",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.15.0",
-    "rollup-plugin-typescript2": "^0.29.0",
+    "rollup-plugin-typescript2": "^0.30.0",
     "testcafe": "^1.9.4",
     "ts-jest": "^26.1.0",
     "typedoc": "^0.20.4",
