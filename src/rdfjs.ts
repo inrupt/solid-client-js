@@ -32,7 +32,7 @@
 //      in a call to DataFactory.namedNode().
 //
 //       The N3 implementation checks if the 2nd param is a string, and if so
-//      considers a value a language tag. If and only if the 2nd param is
+//      considers the value a language tag. If and only if the 2nd param is
 //      explicitly passed in as a NamedNode will it be treated as a Datatype
 //      IRI.
 //       Therefore, for consistency across RDF/JS Implementations, our library
@@ -40,15 +40,39 @@
 //      NamedNode instances for the 2nd param when we know we want a Datatype.
 
 import { DatasetCore, Quad } from "rdf-js";
+
 import rdfjsDataset from "@rdfjs/dataset";
-
 export const dataset = rdfjsDataset.dataset;
-const { quad, literal, namedNode, blankNode } = rdfjsDataset;
 
+// TODO: Our code should be able to deal with switching the DataFactory
+//  implementation to that provided by '@rdfjs/dataset' (which is currently
+//  @rdfjs/data-model) - but currently it seems that implementation:
+//    - Doesn't treat capitalization of language tags correctly (i.e., according
+//      to the RDF specs, they should be case-insensitive).
+//    - Doesn't treat a string literal with an empty language tag of "" as an
+//      xsd:langString, instead treating it as a xsd:string.
+//      A fix for this would be here:
+//      https://github.com/rdfjs-base/data-model/blob/ed59e75132ee4d8a3a2f58443ff6a4f792a97033/lib/literal.js#L8
+//      ...changing this line to be:
+//          if (language || language == "") {
+//      But according to (https://w3c.github.io/rdf-dir-literal/langString.html)
+//      it seems the language tag should be non-empty.
+//  Our tests include specific checks for these behaviours (which is great), so
+//  until '@rdfjs/dataset' (or our tests!) are fixed, we need to avoid it's
+//  DataFactory.
+//  Currently (Feb 2021), only 4 tests fail now for the reasons above.
+// const { quad, literal, namedNode, blankNode, variable } = rdfjsDataset;
+// /**
+//  * @internal
+//  */
+// export const DataFactory = { quad, literal, namedNode, blankNode, variable };
+
+// TODO: For the moment, our code is still dependent on the DataFactory of N3.
+import { DataFactory } from "n3";
 /**
  * @internal
  */
-export const DataFactory = { quad, literal, namedNode, blankNode };
+export { DataFactory };
 
 /**
  * Clone a Dataset.

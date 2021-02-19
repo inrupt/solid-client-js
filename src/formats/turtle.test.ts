@@ -20,7 +20,7 @@
  */
 
 import { foaf, rdf } from "rdf-namespaces";
-import { DataFactory } from "n3";
+import { DataFactory } from "../rdfjs";
 import { triplesToTurtle, turtleToTriples } from "./turtle";
 
 describe("turtleToTriples", () => {
@@ -47,7 +47,16 @@ describe("turtleToTriples", () => {
       DataFactory.literal("Some name"),
       undefined
     );
-    expect(parsed).toEqual([expectedTriple1, expectedTriple2]);
+
+    // Our RDF parser will use a very specific implementation, which may use a
+    // different RDF/JS implementation than our main code. This is no problem,
+    // but we just need to make sure we use the RDF/JS 'quad equals' method
+    // instead of the generic Jest `.toEqual()`, since it's RDF-quad-equality
+    // we're checking, and not quad-implementation-equality.
+    // TODO: I don't like that we're still reliant on the order of the parsed
+    //  triples - I guess we need a simple quad-array-contains helper...
+    expect(parsed[0].equals(expectedTriple1)).toBe(true);
+    expect(parsed[1].equals(expectedTriple2)).toBe(true);
   });
 
   it("should reject if the Turtle is invalid", async () => {

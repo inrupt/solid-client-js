@@ -20,7 +20,7 @@
  */
 
 import { BlankNode, Literal, NamedNode, Quad, Term } from "rdf-js";
-import { DataFactory } from "n3";
+import { DataFactory } from "../rdfjs";
 import { SolidDataset } from "../interfaces";
 
 /**

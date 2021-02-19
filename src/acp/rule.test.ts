@@ -64,7 +64,8 @@ import {
   removeRule,
 } from "./rule";
 
-import { DataFactory, NamedNode } from "n3";
+import { NamedNode } from "rdf-js";
+import { DataFactory } from "../rdfjs";
 
 import { Policy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";

@@ -20,9 +20,9 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { dataset } from "../rdfjs";
+
 import { Quad } from "rdf-js";
-import { DataFactory } from "n3";
+import { DataFactory, dataset } from "../rdfjs";
 import { IriString, Thing, ThingLocal, ThingPersisted } from "../interfaces";
 import {
   removeAll,
@@ -1609,7 +1609,7 @@ describe("removeStringWithLocale", () => {
       "en-US"
     );
 
-    expect(Array.from(updatedThing)).toEqual([mockQuadWithInteger]);
+    expect(updatedThing.has(mockQuadWithInteger)).toBe(true);
   });
 
   it("throws an error when passed something other than a Thing", () => {

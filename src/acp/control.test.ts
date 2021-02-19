@@ -63,7 +63,7 @@ import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
-import { DataFactory } from "n3";
+import { DataFactory } from "../rdfjs";
 import { addIri } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { WithAccessibleAcl } from "../acl/acl";
