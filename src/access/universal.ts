@@ -171,7 +171,7 @@ export async function setAgentAccess(
 }
 
 /**
- * Get an overview of what access are defined for all Agents with respect to a given
+ * Get an overview of what access is defined for all Agents with respect to a given
  * Resource.
  *
  * This function works with Solid Pods that implement either the Web Access
@@ -181,8 +181,8 @@ export async function setAgentAccess(
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably reading access, in which case it will
  *   resolve to `null`.
- * - It will only return access specified explicitly for the given Agent. If
- *   additional restrictions are set up to apply to the given Agent in a
+ * - It will only return access specified explicitly for the returned Agents. If
+ *   additional restrictions are set up to apply to the listed Agents in a
  *   particular situation, those will not be reflected in the return value of
  *   this function.
  * - It will only return access specified explicitly for the given Resource.
@@ -247,7 +247,7 @@ export async function getGroupAccess(
 }
 
 /**
- * Get an overview of what access are defined for all Groups with respect to a given
+ * Get an overview of what access is defined for all Groups with respect to a given
  * Resource.
  *
  * This function works with Solid Pods that implement either the Web Access
@@ -257,8 +257,8 @@ export async function getGroupAccess(
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably reading access, in which case it will
  *   resolve to `null`.
- * - It will only return access specified explicitly for the given Agent. If
- *   additional restrictions are set up to apply to the given Agent in a
+ * - It will only return access specified explicitly for the returned Groups. If
+ *   additional restrictions are set up to apply to the listed Groups in a
  *   particular situation, those will not be reflected in the return value of
  *   this function.
  * - It will only return access specified explicitly for the given Resource.
