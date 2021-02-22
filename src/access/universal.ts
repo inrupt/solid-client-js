@@ -32,16 +32,20 @@ import {
 } from "../resource/resource";
 import {
   internal_getAgentAccess as getAgentAccessAcp,
+  internal_getAgentAccessAll as getAgentAccessAllAcp,
   internal_setAgentAccess as setAgentAccessAcp,
   internal_getGroupAccess as getGroupAccessAcp,
+  internal_getGroupAccessAll as getGroupAccessAllAcp,
   internal_setGroupAccess as setGroupAccessAcp,
   internal_getPublicAccess as getPublicAccessAcp,
   internal_setPublicAccess as setPublicAccessAcp,
 } from "./acp";
 import {
   getAgentAccess as getAgentAccessWac,
+  getAgentAccessAll as getAgentAccessAllWac,
   setAgentResourceAccess as setAgentAccessWac,
   getGroupAccess as getGroupAccessWac,
+  getGroupAccessAll as getGroupAccessAllWac,
   setGroupResourceAccess as setGroupAccessWac,
   getPublicAccess as getPublicAccessWac,
   setPublicResourceAccess as setPublicAccessWac,
@@ -167,6 +171,44 @@ export async function setAgentAccess(
 }
 
 /**
+ * Get an overview of what access are defined for all Agents with respect to a given
+ * Resource.
+ *
+ * This function works with Solid Pods that implement either the Web Access
+ * Control spec or the Access Control Policies proposal, with some caveats:
+ *
+ * - If access to the given Resource has been set using anything other than the
+ *   functions in this module, it is possible that it has been set in a way that
+ *   prevents this function from reliably reading access, in which case it will
+ *   resolve to `null`.
+ * - It will only return access specified explicitly for the given Agent. If
+ *   additional restrictions are set up to apply to the given Agent in a
+ *   particular situation, those will not be reflected in the return value of
+ *   this function.
+ * - It will only return access specified explicitly for the given Resource.
+ *   In other words, if the Resource is a Container, the returned Access may not
+ *   apply to contained Resources.
+ * - If the current user does not have permission to view access for the given
+ *   Resource, this function will resolve to `null`.
+ *
+ * @param resourceUrl URL of the Resource you want to read the access for.
+ * @returns The access information to the Resource, grouped by Agent.
+ */
+export async function getAgentAccessAll(
+  resourceUrl: UrlString,
+  options = internal_defaultFetchOptions
+): Promise<Record<WebId, Access> | null> {
+  const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
+  if (hasAccessibleAcr(resourceInfo)) {
+    return getAgentAccessAllAcp(resourceInfo);
+  }
+  if (hasAccessibleAcl(resourceInfo)) {
+    return await getAgentAccessAllWac(resourceInfo, options);
+  }
+  return null;
+}
+
+/**
  * Get an overview of what access is defined for a given Group.
  *
  * This function works with Solid Pods that implement either the Web Access
@@ -200,6 +242,44 @@ export async function getGroupAccess(
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getGroupAccessWac(resourceInfo, webId, options);
+  }
+  return null;
+}
+
+/**
+ * Get an overview of what access are defined for all Groups with respect to a given
+ * Resource.
+ *
+ * This function works with Solid Pods that implement either the Web Access
+ * Control spec or the Access Control Policies proposal, with some caveats:
+ *
+ * - If access to the given Resource has been set using anything other than the
+ *   functions in this module, it is possible that it has been set in a way that
+ *   prevents this function from reliably reading access, in which case it will
+ *   resolve to `null`.
+ * - It will only return access specified explicitly for the given Agent. If
+ *   additional restrictions are set up to apply to the given Agent in a
+ *   particular situation, those will not be reflected in the return value of
+ *   this function.
+ * - It will only return access specified explicitly for the given Resource.
+ *   In other words, if the Resource is a Container, the returned Access may not
+ *   apply to contained Resources.
+ * - If the current user does not have permission to view access for the given
+ *   Resource, this function will resolve to `null`.
+ *
+ * @param resourceUrl URL of the Resource you want to read the access for.
+ * @returns The access information to the Resource, sorted by Group.
+ */
+export async function getGroupAccessAll(
+  resourceUrl: UrlString,
+  options = internal_defaultFetchOptions
+): Promise<Record<UrlString, Access> | null> {
+  const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
+  if (hasAccessibleAcr(resourceInfo)) {
+    return getGroupAccessAllAcp(resourceInfo);
+  }
+  if (hasAccessibleAcl(resourceInfo)) {
+    return await getGroupAccessAllWac(resourceInfo, options);
   }
   return null;
 }
