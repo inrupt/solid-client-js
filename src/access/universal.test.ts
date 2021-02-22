@@ -24,7 +24,9 @@ import { addMockAcrTo, mockAcrFor } from "../acp/mock";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import {
   getAgentAccess,
+  getAgentAccessAll,
   getGroupAccess,
+  getGroupAccessAll,
   getPublicAccess,
   setAgentAccess,
   setGroupAccess,
@@ -1080,6 +1082,188 @@ describe("setPublicAccess", () => {
     const access = await setPublicAccess("https://arbitrary.pod/resource", {
       read: true,
     });
+
+    expect(access).toBeNull();
+  });
+});
+
+describe("getAgentAccessAll", () => {
+  it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
+    jest.spyOn(acpModule, "internal_getAgentAccessAll");
+
+    await getAgentAccessAll("https://arbitrary.pod/resource");
+
+    expect(acpModule.internal_getAgentAccessAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls out to the well-tested WAC API for Resources with an ACL", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedResourceWithAcl = addMockResourceAclTo(mockedResource);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
+    const wacGetAgentAccessAll = jest.spyOn(wacModule, "getAgentAccessAll");
+    wacGetAgentAccessAll.mockResolvedValue(null);
+
+    await getAgentAccessAll("https://arbitrary.pod/resource");
+
+    expect(wacGetAgentAccessAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the provided fetch function", () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const options = { fetch: () => new Promise(jest.fn()) as any };
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getAgentAccessAll("https://some.pod/resource", options);
+
+    expect(getResourceInfoWithAcr).toHaveBeenCalledWith(
+      "https://some.pod/resource",
+      options
+    );
+  });
+
+  it("passes the provided fetch function to the WAC module", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedResourceWithAcl = addMockResourceAclTo(mockedResource);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
+    const wacGetAgentAccessAll = jest.spyOn(wacModule, "getAgentAccessAll");
+    wacGetAgentAccessAll.mockResolvedValue(null);
+    const options = { fetch: () => new Promise(jest.fn()) as any };
+
+    await getAgentAccessAll("https://arbitrary.pod/resource", options);
+
+    expect(wacGetAgentAccessAll).toHaveBeenCalledWith(
+      expect.anything(),
+      options
+    );
+  });
+
+  it("returns null if the Resource has neither an ACR nor an ACL", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResource as any);
+
+    const access = await getAgentAccessAll("https://arbitrary.pod/resource");
+
+    expect(access).toBeNull();
+  });
+});
+
+describe("getGroupAccessAll", () => {
+  it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
+    jest.spyOn(acpModule, "internal_getGroupAccessAll");
+
+    await getGroupAccessAll("https://arbitrary.pod/resource");
+
+    expect(acpModule.internal_getGroupAccessAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls out to the well-tested WAC API for Resources with an ACL", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedResourceWithAcl = addMockResourceAclTo(mockedResource);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
+    const wacGetGroupAccessAll = jest.spyOn(wacModule, "getGroupAccessAll");
+    wacGetGroupAccessAll.mockResolvedValue(null);
+
+    await getGroupAccessAll("https://arbitrary.pod/resource");
+
+    expect(wacGetGroupAccessAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the provided fetch function", () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const options = { fetch: () => new Promise(jest.fn()) as any };
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getGroupAccessAll("https://some.pod/resource", options);
+
+    expect(getResourceInfoWithAcr).toHaveBeenCalledWith(
+      "https://some.pod/resource",
+      options
+    );
+  });
+
+  it("passes the provided fetch function to the WAC module", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const mockedResourceWithAcl = addMockResourceAclTo(mockedResource);
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcl as any);
+    const wacGetGroupAccessAll = jest.spyOn(wacModule, "getGroupAccessAll");
+    wacGetGroupAccessAll.mockResolvedValue(null);
+    const options = { fetch: () => new Promise(jest.fn()) as any };
+
+    await getGroupAccessAll("https://arbitrary.pod/resource", options);
+
+    expect(wacGetGroupAccessAll).toHaveBeenCalledWith(
+      expect.anything(),
+      options
+    );
+  });
+
+  it("returns null if the Resource has neither an ACR nor an ACL", async () => {
+    const getResourceInfoWithAcr = jest.spyOn(
+      acpLowLevel,
+      "getResourceInfoWithAcr"
+    );
+    const mockedResource = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResource as any);
+
+    const access = await getGroupAccessAll("https://arbitrary.pod/resource");
 
     expect(access).toBeNull();
   });
