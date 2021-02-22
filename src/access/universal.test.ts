@@ -23,6 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { addMockAcrTo, mockAcrFor } from "../acp/mock";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import {
+  Access,
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
@@ -36,6 +37,7 @@ import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
 import * as wacModule from "./wac";
 import { addMockResourceAclTo } from "../acl/mock";
+import { getAccessFor } from "./accessFor";
 
 describe("getAgentAccess", () => {
   it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
@@ -1266,5 +1268,98 @@ describe("getGroupAccessAll", () => {
     const access = await getGroupAccessAll("https://arbitrary.pod/resource");
 
     expect(access).toBeNull();
+  });
+});
+
+describe("getAccessFor", () => {
+  it("calls to getAgentAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getAgentAccess: () => Promise<Access | null>;
+    };
+    universalModule.getAgentAccess = jest.fn();
+    const options = {
+      fetch: jest.fn().mockResolvedValue({
+        ok: false,
+      } as never) as typeof fetch,
+    };
+    await getAccessFor(
+      "https://some.resource",
+      "agent",
+      "https://some.pod/profile#webid",
+      options
+    );
+    expect(universalModule.getAgentAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/profile#webid",
+      options
+    );
+  });
+
+  it("throws if the agent has been ommited", async () => {
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await expect(
+      getAccessFor("https://some.resource", "agent", undefined, options)
+    ).rejects.toThrow(
+      "When reading Agent-specific access, the given agent cannot be left undefined."
+    );
+  });
+
+  it("calls to getGroupAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getGroupAccess: () => Promise<Access | null>;
+    };
+    universalModule.getGroupAccess = jest.fn();
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessFor(
+      "https://some.resource",
+      "group",
+      "https://some.pod/groups#group",
+      options
+    );
+    expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/groups#group",
+      options
+    );
+  });
+
+  it("throws if the group has been ommited", async () => {
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await expect(
+      getAccessFor("https://some.resource", "group", undefined, options)
+    ).rejects.toThrow(
+      "When reading Group-specific access, the given group cannot be left undefined."
+    );
+  });
+
+  it("calls to getPublicAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getPublicAccess: () => Promise<Access | null>;
+    };
+    universalModule.getPublicAccess = jest.fn();
+
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessFor("https://some.resource", "public", undefined, options);
+    expect(universalModule.getPublicAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      options
+    );
+  });
+
+  it("returns null if an unknown actor type is given", async () => {
+    await expect(
+      getAccessFor(
+        "https://some.resource",
+        ("unknown-actor" as unknown) as "agent"
+      )
+    ).resolves.toBeNull();
   });
 });
