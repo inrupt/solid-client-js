@@ -1282,16 +1282,14 @@ describe("getAccessFor", () => {
         ok: false,
       } as never) as typeof fetch,
     };
-    await getAccessFor(
-      "https://some.resource",
-      "agent",
-      "https://some.pod/profile#webid",
-      options
-    );
+    await getAccessFor("https://some.resource", "agent", {
+      actor: "https://some.pod/profile#webid",
+      ...options,
+    });
     expect(universalModule.getAgentAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/profile#webid",
-      options
+      expect.objectContaining(options)
     );
   });
 
@@ -1300,7 +1298,11 @@ describe("getAccessFor", () => {
       fetch: jest.fn() as typeof fetch,
     };
     await expect(
-      getAccessFor("https://some.resource", "agent", undefined, options)
+      getAccessFor(
+        "https://some.resource",
+        ("agent" as unknown) as "public",
+        options
+      )
     ).rejects.toThrow(
       "When reading Agent-specific access, the given agent cannot be left undefined."
     );
@@ -1314,16 +1316,14 @@ describe("getAccessFor", () => {
     const options = {
       fetch: jest.fn() as typeof fetch,
     };
-    await getAccessFor(
-      "https://some.resource",
-      "group",
-      "https://some.pod/groups#group",
-      options
-    );
+    await getAccessFor("https://some.resource", "group", {
+      actor: "https://some.pod/groups#group",
+      ...options,
+    });
     expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/groups#group",
-      options
+      expect.objectContaining(options)
     );
   });
 
@@ -1332,7 +1332,11 @@ describe("getAccessFor", () => {
       fetch: jest.fn() as typeof fetch,
     };
     await expect(
-      getAccessFor("https://some.resource", "group", undefined, options)
+      getAccessFor(
+        "https://some.resource",
+        ("group" as unknown) as "public",
+        options
+      )
     ).rejects.toThrow(
       "When reading Group-specific access, the given group cannot be left undefined."
     );
@@ -1347,7 +1351,7 @@ describe("getAccessFor", () => {
     const options = {
       fetch: jest.fn() as typeof fetch,
     };
-    await getAccessFor("https://some.resource", "public", undefined, options);
+    await getAccessFor("https://some.resource", "public", options);
     expect(universalModule.getPublicAccess).toHaveBeenCalledWith(
       "https://some.resource",
       options
@@ -1358,7 +1362,7 @@ describe("getAccessFor", () => {
     await expect(
       getAccessFor(
         "https://some.resource",
-        ("unknown-actor" as unknown) as "agent"
+        ("unknown-actor" as unknown) as "public"
       )
     ).resolves.toBeNull();
   });
