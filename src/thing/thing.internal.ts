@@ -31,6 +31,7 @@ import {
   deserializeDatetime,
   deserializeDecimal,
   deserializeInteger,
+  internal_getLocalNodeName,
 } from "../datatypes";
 import {
   UrlString,
@@ -48,8 +49,11 @@ import { internal_cloneResource } from "../resource/resource.internal";
 
 /** @hidden For internal use only. */
 export function internal_getReadableValue(value: Quad_Object): string {
+  if (isLocalNode(value)) {
+    return `<#${internal_getLocalNodeName(value)}> (URL)`;
+  }
   if (isNamedNode(value)) {
-    return `<${value.value}> (URL)`;
+    return `<${(value as NamedNode).value}> (URL)`;
   }
   if (isLiteral(value)) {
     if (!isNamedNode(value.datatype)) {
@@ -84,9 +88,6 @@ export function internal_getReadableValue(value: Quad_Object): string {
       default:
         return `[${value.value}] (RDF/JS Literal of type: \`${value.datatype.value}\`)`;
     }
-  }
-  if (isLocalNode(value)) {
-    return `<#${value.internal_name}> (URL)`;
   }
   if (value.termType === "BlankNode") {
     return `[${value.value}] (RDF/JS BlankNode)`;

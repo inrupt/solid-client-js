@@ -30,6 +30,7 @@ import {
   asNamedNode,
   resolveLocalIri,
   internal_isValidUrl,
+  internal_getLocalNodeName,
 } from "../datatypes";
 import {
   SolidDataset,
@@ -109,11 +110,10 @@ export function getThing(
     const thing: ThingLocal = Object.assign(thingDataset, {
       internal_localSubject: subject,
     });
-
     return thing;
   } else {
     const thing: Thing = Object.assign(thingDataset, {
-      internal_url: subject.value,
+      internal_url: (subject as NamedNode).value,
     });
 
     return thing;
@@ -354,7 +354,10 @@ export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
         "The URL of a Thing that has not been persisted cannot be determined without a base URL."
       );
     }
-    return resolveLocalIri(thing.internal_localSubject.internal_name, baseUrl);
+    return resolveLocalIri(
+      internal_getLocalNodeName(thing.internal_localSubject),
+      baseUrl
+    );
   }
 
   return thing.internal_url;
@@ -375,7 +378,9 @@ export function thingAsMarkdown(thing: Thing): string {
   let thingAsMarkdown: string = "";
 
   if (isThingLocal(thing)) {
-    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${thing.internal_localSubject.internal_name}\`)\n`;
+    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${internal_getLocalNodeName(
+      thing.internal_localSubject
+    )}\`)\n`;
   } else {
     thingAsMarkdown += `## Thing: ${thing.internal_url}\n`;
   }
@@ -405,9 +410,14 @@ export function isThingLocal(
   thing: ThingPersisted | ThingLocal
 ): thing is ThingLocal {
   return (
-    typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
-      "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
+    isLocalNode((thing as ThingLocal).internal_localSubject) &&
+    typeof (thing as ThingPersisted).internal_url === "undefined"
   );
+  //
+  // return (
+  //   typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
+  //     "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
+  // );
 }
 
 /**

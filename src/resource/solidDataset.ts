@@ -24,6 +24,7 @@ import { dataset, DataFactory } from "../rdfjs";
 import { ldp } from "../constants";
 import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
 import {
+  internal_getLocalNodeName,
   isLocalNode,
   isNamedNode,
   resolveIriForLocalNode,
@@ -854,7 +855,7 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
 }
 
 function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
-  return DataFactory.namedNode("#" + localNode.internal_name);
+  return DataFactory.namedNode("#" + internal_getLocalNodeName(localNode));
 }
 
 function resolveLocalIrisInSolidDataset<

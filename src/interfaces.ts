@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
+import { DatasetCore, Quad, NamedNode } from "rdf-js";
 import { Access } from "./acl/acl";
 
 /**
@@ -69,14 +69,18 @@ export type ThingPersisted = Thing & { internal_url: UrlString };
  */
 export type ThingLocal = Thing & { internal_localSubject: LocalNode };
 /**
- * Represents the BlankNode that will be initialised to a NamedNode when persisted.
+ * Represents a node that will be initialised to a different NamedNode when
+ * persisted.
  *
- * This is a Blank Node with a `name` property attached, which will be used to construct this
- * Node's full URL once it is persisted, where it will transform into a Named Node.
+ * This is a NamedNode with an internal library-specific naming convention that
+ * conforms to being a skolem, but which allows us to detect it's
+ * local-node-ness while also encoding the 'local name to use' at the end of the
+ * IRI itself. This allows us to transform this Node's full URL once it is
+ * persisted into a different (presumably non-skolem) Named Node.
  *
  * @hidden Utility type; library users should not need to interact with LocalNodes directly.
  */
-export type LocalNode = BlankNode & { internal_name: string };
+export type LocalNode = NamedNode;
 
 /**
  * Data that was sent to a Pod includes this metadata describing its relation to the Pod Resource it was sent to.

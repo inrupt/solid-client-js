@@ -22,12 +22,12 @@
 import { DatasetCore, Quad } from "rdf-js";
 import rdfjsDataset from "@rdfjs/dataset";
 export const dataset = rdfjsDataset.dataset;
-const { quad, literal, namedNode, blankNode } = rdfjsDataset;
+const { quad, literal, namedNode, blankNode, variable } = rdfjsDataset;
 
 /**
  * @internal
  */
-export const DataFactory = { quad, literal, namedNode, blankNode };
+export const DataFactory = { quad, literal, namedNode, blankNode, variable };
 
 /**
  * Clone a Dataset.

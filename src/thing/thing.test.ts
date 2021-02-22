@@ -63,6 +63,7 @@ import {
 import { AclDataset, WithAcl } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_setAcl } from "../acl/acl.internal";
+import { getLocalNode, internal_getLocalNodeName } from "../datatypes";
 
 function getMockQuad(
   terms: Partial<{
@@ -92,19 +93,23 @@ describe("createThing", () => {
     const thing1: ThingLocal = createThing();
     const thing2: ThingLocal = createThing();
 
-    expect(typeof thing1.internal_localSubject.internal_name).toBe("string");
-    expect(thing1.internal_localSubject.internal_name.length).toBeGreaterThan(
-      0
+    expect(typeof internal_getLocalNodeName(thing1.internal_localSubject)).toBe(
+      "string"
     );
-    expect(thing1.internal_localSubject.internal_name).not.toEqual(
-      thing2.internal_localSubject.internal_name
+    expect(
+      internal_getLocalNodeName(thing1.internal_localSubject).length
+    ).toBeGreaterThan(0);
+    expect(internal_getLocalNodeName(thing1.internal_localSubject)).not.toEqual(
+      internal_getLocalNodeName(thing2.internal_localSubject)
     );
   });
 
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.internal_localSubject.internal_name).toBe("some-name");
+    expect(internal_getLocalNodeName(thing.internal_localSubject)).toBe(
+      "some-name"
+    );
   });
 
   it("uses the given IRI, if any", () => {
@@ -180,10 +185,7 @@ describe("getThing", () => {
 
   it("accepts a LocalNode as the Subject identifier", () => {
     const quadWithLocalSubject = getMockQuad();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     quadWithLocalSubject.subject = localSubject;
     const datasetWithThingLocal = dataset();
     datasetWithThingLocal.add(quadWithLocalSubject);
@@ -446,10 +448,7 @@ describe("getThingAll", () => {
       "Arbitrary blank node"
     );
     const quadWithLocalSubject = getMockQuad();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     quadWithLocalSubject.subject = localSubject;
     const datasetWithMultipleThings = dataset();
     datasetWithMultipleThings.add(quadWithNamedSubject);
@@ -706,10 +705,7 @@ describe("setThing", () => {
   });
 
   it("can recognise LocalNodes", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -753,10 +749,7 @@ describe("setThing", () => {
     );
     datasetWithNamedNode.add(oldThingQuad);
 
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
+    const localSubject = getLocalNode("subject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -776,10 +769,7 @@ describe("setThing", () => {
   });
 
   it("can reconcile new NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
+    const localSubject = getLocalNode("subject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -813,10 +803,7 @@ describe("setThing", () => {
   });
 
   it("only updates LocalNodes if the SolidDataset has no known IRI", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -1128,10 +1115,7 @@ describe("removeThing", () => {
   });
 
   it("can recognise LocalNodes", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -1166,21 +1150,14 @@ describe("removeThing", () => {
     );
     datasetWithNamedNode.add(oldThingQuad);
 
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
-
+    const localSubject = getLocalNode("subject");
     const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
 
     expect(Array.from(updatedDataset)).toEqual([]);
   });
 
   it("can reconcile given NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
+    const localSubject = getLocalNode("subject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -1210,10 +1187,7 @@ describe("removeThing", () => {
   });
 
   it("only removes LocalNodes if the SolidDataset has no known IRI", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     const mockPredicate = DataFactory.namedNode(
       "https://arbitrary.vocab/predicate"
     );
@@ -1246,9 +1220,7 @@ describe("asIri", () => {
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-name",
-    });
+    const localSubject = getLocalNode("some-name");
     const localThing = Object.assign(dataset(), {
       internal_localSubject: localSubject,
     });
@@ -1269,9 +1241,7 @@ describe("asIri", () => {
   });
 
   it("throws an error when a local Thing was given without a base IRI", () => {
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-name",
-    });
+    const localSubject = getLocalNode("some-name");
     const localThing = Object.assign(dataset(), {
       internal_localSubject: localSubject,
     });
@@ -1284,10 +1254,7 @@ describe("asIri", () => {
 
 describe("toNode", () => {
   it("should result in equal LocalNodes for the same ThingLocal", () => {
-    const localSubject: LocalNode = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
-    );
+    const localSubject = getLocalNode("localSubject");
     const thing: ThingLocal = Object.assign(dataset(), {
       internal_localSubject: localSubject,
     });

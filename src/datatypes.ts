@@ -24,6 +24,8 @@ import { DataFactory } from "./rdfjs";
 import { IriString, LocalNode, Iri, SolidClientError } from "./interfaces";
 import { internal_toIriString } from "./interfaces.internal";
 
+import { v4 } from "uuid";
+
 /**
  * IRIs of the XML Schema data types we support
  * @internal
@@ -38,6 +40,16 @@ export const xmlSchemaTypes = {
 } as const;
 /** @internal */
 export type XmlSchemaTypeIri = typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
+
+// We use a library-specific skolem IRI to denote Local Nodes.
+// We append a developer-provided 'local name' to the end of the IRI, after our
+// delimiter (which we need to ensure doesn't appear as a character in the
+// skolem prefix itself (as we use string.indexOf() to scan forward when
+// extracting that local name again, e.g., when resolving the local node to an
+// absolute IRI).
+export const localNodeSkolemPrefix =
+  "https://inrupt.com/.well-known/sdk-local-node/";
+export const localNodeSkolemNameDelimiter = "#";
 
 /**
  * @internal
@@ -275,23 +287,36 @@ export function isTerm<T>(value: T | Term): value is Term {
 export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
   return (
     isTerm(value) &&
-    value.termType === "BlankNode" &&
-    typeof (value as LocalNode).internal_name === "string"
+    value.termType === "NamedNode" &&
+    value.value.startsWith(localNodeSkolemPrefix)
   );
 }
 
 /**
  * Construct a new LocalNode.
+ * We implement a local node as a standard NamedNode, but whose IRI starts with
+ * an internally defined, library specific prefix. We guarantee uniqueness by
+ * also making this IRI a skolem, and we append the 'local name' to the end of
+ * this IRI using a delimiter
  *
  * @internal Library users shouldn't need to be exposed to LocalNodes.
  * @param name Name to identify this node by.
  * @returns A LocalNode whose name will be resolved when it is persisted to a Pod.
  */
 export function getLocalNode(name: string): LocalNode {
-  const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-    internal_name: name,
-  });
-  return localNode;
+  return DataFactory.namedNode(
+    `${localNodeSkolemPrefix}${v4()}${localNodeSkolemNameDelimiter}${name}`
+  );
+}
+
+export function internal_getLocalNodeName(localNode: LocalNode): string {
+  const nameDelimiterPos = localNode.value.indexOf(
+    localNodeSkolemNameDelimiter
+  );
+  if (nameDelimiterPos === -1) {
+    throw new ValidUrlExpectedError(localNode);
+  }
+  return localNode.value.substring(nameDelimiterPos + 1);
 }
 
 /**
@@ -351,23 +376,25 @@ export function isEqual(
   node2: NamedNode | LocalNode,
   options: IsEqualOptions = {}
 ): boolean {
-  if (isNamedNode(node1) && isNamedNode(node2)) {
-    return node1.equals(node2);
-  }
   if (isLocalNode(node1) && isLocalNode(node2)) {
-    return node1.internal_name === node2.internal_name;
+    return (
+      internal_getLocalNodeName(node1) === internal_getLocalNodeName(node2)
+    );
+  }
+  if (!isLocalNode(node1) && !isLocalNode(node2)) {
+    return (node1 as NamedNode).equals(node2);
   }
   if (typeof options.resourceIri === "undefined") {
     // If we don't know what IRI to resolve the LocalNode to,
     // we cannot conclude that it is equal to the NamedNode's full IRI:
     return false;
   }
-  const namedNode1 = isNamedNode(node1)
-    ? node1
-    : resolveIriForLocalNode(node1, options.resourceIri);
-  const namedNode2 = isNamedNode(node2)
-    ? node2
-    : resolveIriForLocalNode(node2, options.resourceIri);
+  const namedNode1 = isLocalNode(node1)
+    ? resolveIriForLocalNode(node1, options.resourceIri)
+    : node1;
+  const namedNode2 = isLocalNode(node2)
+    ? resolveIriForLocalNode(node2, options.resourceIri)
+    : node2;
   return namedNode1.equals(namedNode2);
 }
 
@@ -403,7 +430,7 @@ export function resolveIriForLocalNode(
   resourceIri: IriString
 ): NamedNode {
   return DataFactory.namedNode(
-    resolveLocalIri(localNode.internal_name, resourceIri)
+    resolveLocalIri(internal_getLocalNodeName(localNode), resourceIri)
   );
 }
 
