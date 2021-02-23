@@ -27,7 +27,7 @@ import {
   getGroupAccess,
   getPublicAccess,
 } from "./universal";
-import { fetch } from "../fetcher";
+import { fetch as defaultFetch } from "../fetcher";
 
 export type Actor = "agent" | "group" | "public";
 
@@ -86,7 +86,7 @@ export async function getAccessFor(
       );
     }
     return await getAgentAccess(resourceUrl, options.actor, {
-      fetch: options.fetch ?? fetch,
+      fetch: options.fetch ?? defaultFetch,
     });
   }
   if (actorType === "group") {
@@ -96,12 +96,17 @@ export async function getAccessFor(
       );
     }
     return await getGroupAccess(resourceUrl, options.actor, {
-      fetch: options.fetch ?? fetch,
+      fetch: options.fetch ?? defaultFetch,
     });
   }
   if (actorType === "public") {
+    if (options.actor !== undefined) {
+      throw new Error(
+        `When reading public access, no actor type should be specified (here [${options.actor}]).`
+      );
+    }
     return await getPublicAccess(resourceUrl, {
-      fetch: options.fetch ?? fetch,
+      fetch: options.fetch ?? defaultFetch,
     });
   }
   return null;

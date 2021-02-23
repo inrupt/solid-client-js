@@ -39,6 +39,8 @@ import * as wacModule from "./wac";
 import { addMockResourceAclTo } from "../acl/mock";
 import { getAccessFor } from "./accessFor";
 
+jest.mock("../fetcher");
+
 describe("getAgentAccess", () => {
   it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
     const getResourceInfoWithAcr = jest.spyOn(
@@ -1328,17 +1330,20 @@ describe("getAccessFor", () => {
   });
 
   it("throws if the group has been omited", async () => {
-    const options = {
-      fetch: jest.fn() as typeof fetch,
-    };
     await expect(
-      getAccessFor(
-        "https://some.resource",
-        ("group" as unknown) as "public",
-        options
-      )
+      getAccessFor("https://some.resource", ("group" as unknown) as "public")
     ).rejects.toThrow(
       "When reading Group-specific access, the given group cannot be left undefined."
+    );
+  });
+
+  it("throws if an actor is specified for public", async () => {
+    await expect(
+      getAccessFor("https://some.resource", "public", ({
+        actor: "some actor",
+      } as unknown) as { fetch: typeof fetch })
+    ).rejects.toThrow(
+      "When reading public access, no actor type should be specified (here [some actor])."
     );
   });
 
@@ -1356,6 +1361,69 @@ describe("getAccessFor", () => {
       "https://some.resource",
       options
     );
+  });
+
+  it("defaults to the included fetcher for agents", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getAgentAccess: () => Promise<Access | null>;
+    };
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: typeof fetch;
+    };
+    // Make it so that we can check the mocked fetcher has been passed
+    fetcher.fetch = ("mock" as unknown) as typeof fetch;
+    universalModule.getAgentAccess = jest.fn();
+    await getAccessFor("https://some.resource", "agent", {
+      actor: "https://some.pod/profile#agent",
+    });
+    expect(
+      universalModule.getAgentAccess
+    ).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/profile#agent",
+      { fetch: "mock" }
+    );
+  });
+
+  it("defaults to the included fetcher for groups", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getGroupAccess: () => Promise<Access | null>;
+    };
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: typeof fetch;
+    };
+    // Make it so that we can check the mocked fetcher has been passed
+    fetcher.fetch = ("mock" as unknown) as typeof fetch;
+    universalModule.getGroupAccess = jest.fn();
+    await getAccessFor("https://some.resource", "group", {
+      actor: "https://some.pod/groups#group",
+    });
+    expect(
+      universalModule.getGroupAccess
+    ).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/groups#group",
+      { fetch: "mock" }
+    );
+  });
+
+  it("defaults to the included fetcher for public", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getPublicAccess: () => Promise<Access | null>;
+    };
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: typeof fetch;
+    };
+    // Make it so that we can check the mocked fetcher has been passed
+    fetcher.fetch = ("mock" as unknown) as typeof fetch;
+    universalModule.getPublicAccess = jest.fn();
+    // This is an edge case that should not happen "in the wild"
+    await getAccessFor("https://some.resource", "public", ({
+      actor: undefined,
+    } as unknown) as { fetch: typeof fetch });
+    expect(
+      universalModule.getPublicAccess
+    ).toHaveBeenCalledWith("https://some.resource", { fetch: "mock" });
   });
 
   it("returns null if an unknown actor type is given", async () => {
