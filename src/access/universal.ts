@@ -451,3 +451,5 @@ export async function setPublicAccess(
   }
   return null;
 }
+
+export { getAccessFor } from "./accessFor";

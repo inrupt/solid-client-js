@@ -32,6 +32,7 @@ import {
   setAgentAccess,
   setGroupAccess,
   setPublicAccess,
+  getAccessFor as reexport_getAccessFor,
 } from "./universal";
 import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
@@ -1433,5 +1434,9 @@ describe("getAccessFor", () => {
         ("unknown-actor" as unknown) as "public"
       )
     ).resolves.toBeNull();
+  });
+
+  it("re-exports getAccessFrom", () => {
+    expect(reexport_getAccessFor).toBeDefined();
   });
 });
