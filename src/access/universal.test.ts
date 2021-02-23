@@ -1293,7 +1293,7 @@ describe("getAccessFor", () => {
     );
   });
 
-  it("throws if the agent has been ommited", async () => {
+  it("throws if the agent has been omited", async () => {
     const options = {
       fetch: jest.fn() as typeof fetch,
     };
@@ -1327,7 +1327,7 @@ describe("getAccessFor", () => {
     );
   });
 
-  it("throws if the group has been ommited", async () => {
+  it("throws if the group has been omited", async () => {
     const options = {
       fetch: jest.fn() as typeof fetch,
     };
