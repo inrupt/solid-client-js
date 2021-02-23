@@ -48,7 +48,7 @@ describe("getAccessFor", () => {
     );
   });
 
-  it("throws if the agent has been omited", async () => {
+  it("throws if the agent has been omitted", async () => {
     const options = {
       fetch: jest.fn() as typeof fetch,
     };
@@ -83,7 +83,7 @@ describe("getAccessFor", () => {
     );
   });
 
-  it("throws if the group has been omited", async () => {
+  it("throws if the group has been omitted", async () => {
     await expect(
       getAccessFor("https://some.resource", ("group" as unknown) as "public")
     ).rejects.toThrow(

@@ -162,7 +162,7 @@ export async function getAccessFor(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param actorType type of actor whose access is being read.
- * @returns What access are set for the given resource, grouped by resp. Agent or Group.
+ * @returns What access is set for the given resource, grouped by resp. Agent or Group.
  */
 export async function getAccessForAll(
   resourceUrl: UrlString,
