@@ -27,12 +27,15 @@ import {
   getGroupAccess,
   getPublicAccess,
 } from "./universal";
+import { fetch } from "../fetcher";
 
 export type Actor = "agent" | "group" | "public";
 
-export type GetAccessForOptions = typeof internal_defaultFetchOptions & {
-  actor?: UrlString | WebId;
-};
+export type GetAccessForOptions = Partial<
+  typeof internal_defaultFetchOptions & {
+    actor: UrlString | WebId;
+  }
+>;
 
 /**
  * Get an overview of what access is defined for a given actor (Agent, Group or everyone).
@@ -62,7 +65,7 @@ export type GetAccessForOptions = typeof internal_defaultFetchOptions & {
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "agent" | "group",
-  options: typeof internal_defaultFetchOptions & {
+  options: Partial<typeof internal_defaultFetchOptions> & {
     actor: UrlString | WebId;
   }
 ): Promise<Access | null>;
@@ -82,7 +85,9 @@ export async function getAccessFor(
         "When reading Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await getAgentAccess(resourceUrl, options.actor, options);
+    return await getAgentAccess(resourceUrl, options.actor, {
+      fetch: options.fetch ?? fetch,
+    });
   }
   if (actorType === "group") {
     if (options.actor === undefined) {
@@ -90,10 +95,14 @@ export async function getAccessFor(
         "When reading Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await getGroupAccess(resourceUrl, options.actor, options);
+    return await getGroupAccess(resourceUrl, options.actor, {
+      fetch: options.fetch ?? fetch,
+    });
   }
   if (actorType === "public") {
-    return await getPublicAccess(resourceUrl, options);
+    return await getPublicAccess(resourceUrl, {
+      fetch: options.fetch ?? fetch,
+    });
   }
   return null;
 }
