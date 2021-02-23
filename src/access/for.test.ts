@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { Access } from "./universal";
-import { getAccessFor, getAccessForAll } from "./for";
+import { getAccessFor, getAccessForAll, setAccessFor } from "./for";
 
 jest.mock("./universal");
 
@@ -31,9 +31,7 @@ describe("getAccessFor", () => {
       getAgentAccess: () => Promise<Access | null>;
     };
     const options = {
-      fetch: jest.fn().mockResolvedValue({
-        ok: false,
-      } as never) as typeof fetch,
+      fetch: jest.fn() as typeof fetch,
     };
     await getAccessFor(
       "https://some.resource",
@@ -162,6 +160,132 @@ describe("getAccessForAll", () => {
       getAccessForAll(
         "https://some.resource",
         ("some actor" as unknown) as "agent"
+      )
+    ).resolves.toBeNull();
+  });
+});
+
+describe("setAccessFor", () => {
+  it("calls to setAgentAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireMock("./universal") as {
+      setAgentAccess: () => Promise<Access | null>;
+    };
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await setAccessFor(
+      "https://some.resource",
+      "agent",
+      {
+        read: true,
+      },
+      "https://some.pod/profile#webid",
+      options
+    );
+    expect(universalModule.setAgentAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/profile#webid",
+      {
+        read: true,
+      },
+      options
+    );
+  });
+
+  it("throws if the agent is missing", async () => {
+    await expect(
+      setAccessFor("https://some.resource", ("agent" as unknown) as "public", {
+        read: true,
+      })
+    ).rejects.toThrow(
+      "When reading Agent-specific access, the given agent cannot be left undefined."
+    );
+  });
+
+  it("calls to getGroupAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireMock("./universal") as {
+      setGroupAccess: () => Promise<Access | null>;
+    };
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await setAccessFor(
+      "https://some.resource",
+      "group",
+      {
+        read: true,
+      },
+      "https://some.pod/groups#group",
+      options
+    );
+    expect(universalModule.setGroupAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/groups#group",
+      {
+        read: true,
+      },
+      options
+    );
+  });
+
+  it("throws if the group is missing", async () => {
+    await expect(
+      setAccessFor("https://some.resource", ("group" as unknown) as "public", {
+        read: true,
+      })
+    ).rejects.toThrow(
+      "When reading Group-specific access, the given group cannot be left undefined."
+    );
+  });
+
+  it("throws if an actor is specified for public", async () => {
+    await expect(
+      setAccessFor(
+        "https://some.resource",
+        "public",
+        {
+          read: true,
+        },
+        ("some actor" as unknown) as { fetch: typeof fetch }
+      )
+    ).rejects.toThrow(
+      "When reading public access, no actor type should be specified (here [some actor])."
+    );
+  });
+
+  it("calls to getPublicAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireMock("./universal") as {
+      setPublicAccess: () => Promise<Access | null>;
+    };
+
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await setAccessFor(
+      "https://some.resource",
+      "public",
+      {
+        read: true,
+      },
+      options
+    );
+    expect(universalModule.setPublicAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      {
+        read: true,
+      },
+      options
+    );
+  });
+
+  it("returns null if an unknown actor type is given", async () => {
+    await expect(
+      setAccessFor(
+        "https://some.resource",
+        ("unknown-actor" as unknown) as "public",
+        {
+          read: true,
+        }
       )
     ).resolves.toBeNull();
   });

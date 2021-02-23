@@ -28,6 +28,9 @@ import {
   getGroupAccess,
   getGroupAccessAll,
   getPublicAccess,
+  setAgentAccess,
+  setGroupAccess,
+  setPublicAccess,
 } from "./universal";
 
 // Note: The module's name is "for", because it exports "*AccessFor" methods, and
@@ -174,6 +177,134 @@ export async function getAccessForAll(
   }
   if (actorType === "group") {
     return await getGroupAccessAll(resourceUrl, options);
+  }
+  return null as never;
+}
+
+/**
+ * Set access to a Resource for a specific Actor (Agent or Group).
+ *
+ * This function works with Solid Pods that implement either the Web Access
+ * Control spec or the Access Control Policies proposal, with some caveats:
+ *
+ * - If access to the given Resource has been set using anything other than the
+ *   functions in this module, it is possible that it has been set in a way that
+ *   prevents this function from reliably setting access, in which case it will
+ *   resolve to `null`.
+ * - It will only set access explicitly for the given Actor (Agent or Group).
+ *   In other words, additional restrictions could be present that further
+ *   restrict or loosen what access the given Actor has in particular
+ *   circumstances.
+ * - The provided access will only apply to the given Resource. In other words,
+ *   if the Resource is a Container, the configured Access may not apply to
+ *   contained Resources.
+ * - If the current user does not have permission to view or change access for
+ *   the given Resource, this function will resolve to `null`.
+ *
+ * Additionally, two caveats apply to users with a Pod server that uses WAC:
+ * - If the Resource did not have an ACL yet, a new one will be initialised.
+ *   This means that changes to the ACL of a parent Container can no longer
+ *   affect access people have to this Resource, although existing access will
+ *   be preserved.
+ * - Setting different values for `controlRead` and `controlWrite` is not
+ *   supported, and **will throw an error**. If you expect (some of) your users
+ *   to have Pods implementing WAC, be sure to pass the same value for both.
+ *
+ * @param resourceUrl URL of the Resource you want to change the Agent's access to.
+ * @param actorType type of actor whose access is being read.
+ * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @param actor Actor (Agent or Group) you want to set access for.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns What access has been set for the given Agent explicitly.
+ */
+export async function setAccessFor(
+  resourceUrl: UrlString,
+  actorType: "agent" | "group",
+  access: Partial<Access>,
+  actor: UrlString | WebId,
+  options?: typeof internal_defaultFetchOptions
+): Promise<Access | null>;
+/**
+ * Set access to a Resource for everyone.
+ *
+ * This function works with Solid Pods that implement either the Web Access
+ * Control spec or the Access Control Policies proposal, with some caveats:
+ *
+ * - If access to the given Resource has been set using anything other than the
+ *   functions in this module, it is possible that it has been set in a way that
+ *   prevents this function from reliably setting access, in which case it will
+ *   resolve to `null`.
+ * - It will only set access explicitly for the general public.
+ *   In other words, additional restrictions could be present that further
+ *   restrict or loosen what access everyone has in particular
+ *   circumstances.
+ * - The provided access will only apply to the given Resource. In other words,
+ *   if the Resource is a Container, the configured Access may not apply to
+ *   contained Resources.
+ * - If the current user does not have permission to view or change access for
+ *   the given Resource, this function will resolve to `null`.
+ *
+ * Additionally, two caveats apply to users with a Pod server that uses WAC:
+ * - If the Resource did not have an ACL yet, a new one will be initialised.
+ *   This means that changes to the ACL of a parent Container can no longer
+ *   affect access people have to this Resource, although existing access will
+ *   be preserved.
+ * - Setting different values for `controlRead` and `controlWrite` is not
+ *   supported, and **will throw an error**. If you expect (some of) your users
+ *   to have Pods implementing WAC, be sure to pass the same value for both.
+ *
+ * @param resourceUrl URL of the Resource you want to change the Agent's access to.
+ * @param actorType type of actor whose access is being read.
+ * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns What access has been set for the given Agent explicitly.
+ */
+export async function setAccessFor(
+  resourceUrl: UrlString,
+  actorType: "public",
+  access: Partial<Access>,
+  options?: typeof internal_defaultFetchOptions
+): Promise<Access | null>;
+export async function setAccessFor(
+  resourceUrl: UrlString,
+  actorType: Actor,
+  access: Partial<Access>,
+  actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
+  options?: typeof internal_defaultFetchOptions
+): Promise<Access | null>;
+export async function setAccessFor(
+  resourceUrl: UrlString,
+  actorType: Actor,
+  access: Partial<Access>,
+  actor:
+    | WebId
+    | UrlString
+    | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
+  options = internal_defaultFetchOptions
+): Promise<Access | null> {
+  if (actorType === "agent") {
+    if (typeof actor !== "string") {
+      throw new Error(
+        "When reading Agent-specific access, the given agent cannot be left undefined."
+      );
+    }
+    return await setAgentAccess(resourceUrl, actor, access, options);
+  }
+  if (actorType === "group") {
+    if (typeof actor !== "string") {
+      throw new Error(
+        "When reading Group-specific access, the given group cannot be left undefined."
+      );
+    }
+    return await setGroupAccess(resourceUrl, actor, access, options);
+  }
+  if (actorType === "public") {
+    if (typeof actor === "string") {
+      throw new Error(
+        `When reading public access, no actor type should be specified (here [${actor}]).`
+      );
+    }
+    return await setPublicAccess(resourceUrl, access, actor);
   }
   return null as never;
 }
