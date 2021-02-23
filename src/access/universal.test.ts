@@ -23,6 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { addMockAcrTo, mockAcrFor } from "../acp/mock";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import {
+  Access,
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
@@ -31,11 +32,13 @@ import {
   setAgentAccess,
   setGroupAccess,
   setPublicAccess,
+  getAccessFor as reexport_getAccessFor,
 } from "./universal";
 import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
 import * as wacModule from "./wac";
 import { addMockResourceAclTo } from "../acl/mock";
+import { getAccessFor } from "./for";
 
 describe("getAgentAccess", () => {
   it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
@@ -1266,5 +1269,115 @@ describe("getGroupAccessAll", () => {
     const access = await getGroupAccessAll("https://arbitrary.pod/resource");
 
     expect(access).toBeNull();
+  });
+});
+
+describe("getAccessFor", () => {
+  it("calls to getAgentAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getAgentAccess: () => Promise<Access | null>;
+    };
+    universalModule.getAgentAccess = jest.fn();
+    const options = {
+      fetch: jest.fn().mockResolvedValue({
+        ok: false,
+      } as never) as typeof fetch,
+    };
+    await getAccessFor(
+      "https://some.resource",
+      "agent",
+      "https://some.pod/profile#webid",
+      options
+    );
+    expect(universalModule.getAgentAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/profile#webid",
+      options
+    );
+  });
+
+  it("throws if the agent has been omitted", async () => {
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await expect(
+      getAccessFor(
+        "https://some.resource",
+        ("agent" as unknown) as "public",
+        options
+      )
+    ).rejects.toThrow(
+      "When reading Agent-specific access, the given agent cannot be left undefined."
+    );
+  });
+
+  it("calls to getGroupAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getGroupAccess: () => Promise<Access | null>;
+    };
+    universalModule.getGroupAccess = jest.fn();
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessFor(
+      "https://some.resource",
+      "group",
+      "https://some.pod/groups#group",
+      options
+    );
+    expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      "https://some.pod/groups#group",
+      options
+    );
+  });
+
+  it("throws if the group has been omitted", async () => {
+    await expect(
+      getAccessFor("https://some.resource", ("group" as unknown) as "public")
+    ).rejects.toThrow(
+      "When reading Group-specific access, the given group cannot be left undefined."
+    );
+  });
+
+  it("throws if an actor is specified for public", async () => {
+    await expect(
+      getAccessFor(
+        "https://some.resource",
+        "public",
+        ("some actor" as unknown) as { fetch: typeof fetch }
+      )
+    ).rejects.toThrow(
+      "When reading public access, no actor type should be specified (here [some actor])."
+    );
+  });
+
+  it("calls to getPublicAccess with the appropriate parameters", async () => {
+    const universalModule = jest.requireActual("./universal") as {
+      getPublicAccess: () => Promise<Access | null>;
+    };
+    universalModule.getPublicAccess = jest.fn();
+
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessFor("https://some.resource", "public", options);
+    expect(universalModule.getPublicAccess).toHaveBeenCalledWith(
+      "https://some.resource",
+      options
+    );
+  });
+
+  it("returns null if an unknown actor type is given", async () => {
+    await expect(
+      getAccessFor(
+        "https://some.resource",
+        ("unknown-actor" as unknown) as "public"
+      )
+    ).resolves.toBeNull();
+  });
+
+  it("re-exports getAccessFrom", () => {
+    expect(reexport_getAccessFor).toBeDefined();
   });
 });
