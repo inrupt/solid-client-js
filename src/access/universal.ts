@@ -452,4 +452,4 @@ export async function setPublicAccess(
   return null;
 }
 
-export { getAccessFor } from "./for";
+export { getAccessFor, getAccessForAll } from "./for";
