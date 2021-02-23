@@ -7989,3 +7989,101 @@ describe("setActorAccess", () => {
     });
   });
 });
+
+describe("Workaround for ESS's default Policies", () => {
+  // Inrupt's Enterprise Solid Server currently includes a reference to an
+  // external Policy in ACRs by default. This Policy represents permissions that
+  // always apply, and thus are not needed and in fact, removing them does not
+  // actually remove the access they apply. Therefore, they will be removing
+  // them from the ACR in the future.
+  // Until then, however, we can't inspect the contents of those Policies since
+  // they're in a different Resource than the ACR. We therefore explicitly
+  // ignore them to pretend they have been removed already.
+  it("does not consider ESS's default Policies as external to the ACR", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://pod.inrupt.com/example/resource",
+      "https://pod.inrupt.com/example/resource?ext=acr",
+      {
+        policies: {
+          "https://pod.inrupt.com/example/policies/#Owner": {},
+        },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
+    );
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
+  });
+
+  it("does consider ESS's default Policies from different Pods as external to the ACR", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://pod.inrupt.com/example/resource",
+      "https://pod.inrupt.com/example/resource?ext=acr",
+      {
+        policies: {
+          "https://pod.inrupt.com/other-example/policies/#Owner": {},
+        },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
+    );
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
+  });
+
+  it("does not get confused by similarly-named non-default Policy references", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://pod.inrupt.com/example/resource",
+      "https://pod.inrupt.com/example/resource?ext=acr",
+      {
+        policies: {
+          "https://pod.inrupt.com/example/policies/#OwnerNotDefault": {},
+        },
+        memberAcrPolicies: {},
+        acrPolicies: {},
+        memberPolicies: {},
+      }
+    );
+    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
+  });
+
+  it("can set access in an ACR that contains references to ESS's default non-local Policies", () => {
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://pod.inrupt.com/example/resource",
+      "https://pod.inrupt.com/example/resource?ext=acr",
+      {
+        policies: {
+          "https://pod.inrupt.com/example/policies/#Owner": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://pod.inrupt.com/example/policies/#Owner": {},
+        },
+        memberAcrPolicies: {},
+      }
+    );
+
+    const updatedResourceWithAcr = internal_setActorAccess(
+      resourceWithAcr,
+      acp.agent,
+      "https://some.pod/profile#me",
+      {
+        read: true,
+      }
+    );
+
+    expect(updatedResourceWithAcr).not.toBeNull();
+    const updatedAccess = internal_getActorAccess(
+      updatedResourceWithAcr!,
+      acp.agent,
+      "https://some.pod/profile#me"
+    );
+    expect(updatedAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+});
