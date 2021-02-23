@@ -136,7 +136,7 @@ export async function getAccessFor(
     }
     return await getPublicAccess(resourceUrl, actor);
   }
-  return null;
+  return null as never;
 }
 
 /**
@@ -175,5 +175,5 @@ export async function getAccessForAll(
   if (actorType === "group") {
     return await getGroupAccessAll(resourceUrl, options);
   }
-  return null;
+  return null as never;
 }
