@@ -150,10 +150,10 @@ export async function getAccessFor(
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably reading access, in which case it will
  *   resolve to `null`.
- * - It will only return access specified explicitly for the given Agent. If
- *   additional restrictions are set up to apply to the given Agent in a
- *   particular situation, those will not be reflected in the return value of
- *   this function.
+ * - It will only return access specified explicitly for the given actor (Agent
+ *   or Group). If additional restrictions are set up to apply to the given Agent
+ *   in a particular situation, those will not be reflected in the return value
+ *   of this function.
  * - It will only return access specified explicitly for the given Resource.
  *   In other words, if the Resource is a Container, the returned Access may not
  *   apply to contained Resources.

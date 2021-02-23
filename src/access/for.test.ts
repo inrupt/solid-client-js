@@ -44,7 +44,7 @@ describe("getAccessFor", () => {
     expect(universalModule.getAgentAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/profile#webid",
-      expect.objectContaining(options)
+      options
     );
   });
 
@@ -79,7 +79,7 @@ describe("getAccessFor", () => {
     expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/groups#group",
-      expect.objectContaining(options)
+      options
     );
   });
 
