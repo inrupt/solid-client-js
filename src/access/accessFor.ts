@@ -27,15 +27,8 @@ import {
   getGroupAccess,
   getPublicAccess,
 } from "./universal";
-import { fetch as defaultFetch } from "../fetcher";
 
 export type Actor = "agent" | "group" | "public";
-
-export type GetAccessForOptions = Partial<
-  typeof internal_defaultFetchOptions & {
-    actor: UrlString | WebId;
-  }
->;
 
 /**
  * Get an overview of what access is defined for a given actor (Agent, Group or everyone).
@@ -65,9 +58,8 @@ export type GetAccessForOptions = Partial<
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "agent" | "group",
-  options: Partial<typeof internal_defaultFetchOptions> & {
-    actor: UrlString | WebId;
-  }
+  actor: UrlString | WebId,
+  options?: typeof internal_defaultFetchOptions
 ): Promise<Access | null>;
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -77,37 +69,41 @@ export async function getAccessFor(
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
-  options: GetAccessForOptions = internal_defaultFetchOptions
+  actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
+  options?: typeof internal_defaultFetchOptions
+): Promise<Access | null>;
+export async function getAccessFor(
+  resourceUrl: UrlString,
+  actorType: Actor,
+  actor:
+    | WebId
+    | UrlString
+    | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
+  options = internal_defaultFetchOptions
 ): Promise<Access | null> {
   if (actorType === "agent") {
-    if (options.actor === undefined) {
+    if (typeof actor !== "string") {
       throw new Error(
         "When reading Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await getAgentAccess(resourceUrl, options.actor, {
-      fetch: options.fetch ?? defaultFetch,
-    });
+    return await getAgentAccess(resourceUrl, actor, options);
   }
   if (actorType === "group") {
-    if (options.actor === undefined) {
+    if (typeof actor !== "string") {
       throw new Error(
         "When reading Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await getGroupAccess(resourceUrl, options.actor, {
-      fetch: options.fetch ?? defaultFetch,
-    });
+    return await getGroupAccess(resourceUrl, actor, options);
   }
   if (actorType === "public") {
-    if (options.actor !== undefined) {
+    if (typeof actor === "string") {
       throw new Error(
-        `When reading public access, no actor type should be specified (here [${options.actor}]).`
+        `When reading public access, no actor type should be specified (here [${actor}]).`
       );
     }
-    return await getPublicAccess(resourceUrl, {
-      fetch: options.fetch ?? defaultFetch,
-    });
+    return await getPublicAccess(resourceUrl, actor);
   }
   return null;
 }
