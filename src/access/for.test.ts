@@ -133,10 +133,13 @@ describe("getAccessForAll", () => {
     const universalModule = jest.requireMock("./universal") as {
       getAgentAccessAll: () => Promise<Access | null>;
     };
-    await getAccessForAll("https://some.resource", "agent");
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessForAll("https://some.resource", "agent", options);
     expect(universalModule.getAgentAccessAll).toHaveBeenCalledWith(
       "https://some.resource",
-      expect.anything()
+      options
     );
   });
 
@@ -144,10 +147,13 @@ describe("getAccessForAll", () => {
     const universalModule = jest.requireMock("./universal") as {
       getGroupAccessAll: () => Promise<Access | null>;
     };
-    await getAccessForAll("https://some.resource", "group");
+    const options = {
+      fetch: jest.fn() as typeof fetch,
+    };
+    await getAccessForAll("https://some.resource", "group", options);
     expect(universalModule.getGroupAccessAll).toHaveBeenCalledWith(
       "https://some.resource",
-      expect.anything()
+      options
     );
   });
 
