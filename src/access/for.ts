@@ -28,6 +28,9 @@ import {
   getPublicAccess,
 } from "./universal";
 
+// Note: The module's name is "for", because it exports "*AccessFor" methods, and
+// it is imported as "access/for".
+
 export type Actor = "agent" | "group" | "public";
 
 /**

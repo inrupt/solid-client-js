@@ -38,7 +38,7 @@ import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
 import * as wacModule from "./wac";
 import { addMockResourceAclTo } from "../acl/mock";
-import { getAccessFor } from "./accessFor";
+import { getAccessFor } from "./for";
 
 describe("getAgentAccess", () => {
   it("calls out to the well-tested ACP API for Resources with an ACR", async () => {
