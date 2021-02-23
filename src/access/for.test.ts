@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { Access } from "./universal";
-import { getAccessFor } from "./for";
+import { getAccessFor, getAccessForAll } from "./for";
 
 jest.mock("./universal");
 
@@ -128,6 +128,35 @@ describe("getAccessFor", () => {
   });
 });
 
-// describe("getAccessForAll", () => {
-//   it("calls getAgentAccess all with the correct parameters")
-// })
+describe("getAccessForAll", () => {
+  it("calls getAgentAccessAll with the correct parameters", async () => {
+    const universalModule = jest.requireMock("./universal") as {
+      getAgentAccessAll: () => Promise<Access | null>;
+    };
+    await getAccessForAll("https://some.resource", "agent");
+    expect(universalModule.getAgentAccessAll).toHaveBeenCalledWith(
+      "https://some.resource",
+      expect.anything()
+    );
+  });
+
+  it("calls getGroupAccessAll with the correct parameters", async () => {
+    const universalModule = jest.requireMock("./universal") as {
+      getGroupAccessAll: () => Promise<Access | null>;
+    };
+    await getAccessForAll("https://some.resource", "group");
+    expect(universalModule.getGroupAccessAll).toHaveBeenCalledWith(
+      "https://some.resource",
+      expect.anything()
+    );
+  });
+
+  it("returns null for unknown actor types", async () => {
+    await expect(
+      getAccessForAll(
+        "https://some.resource",
+        ("some actor" as unknown) as "agent"
+      )
+    ).resolves.toBeNull();
+  });
+});
