@@ -226,3 +226,18 @@ export { acp_v1 } from "./acp/v1";
  * them will be included in your bundle.
  */
 export { acp_v2 } from "./acp/v2";
+
+/**
+ * This API is still experimental, and subject to change. It builds on top of both
+ * ACP and ACL, aiming at being adaptable to any Access Control system that may be
+ * implemented in Solid. That is why it is purely Resource-centric: the library
+ * discovers metadata associated to the Resource itself, and calls the appropriate
+ * underlying API to deal with the Access Control in place for the target Resource.
+ *
+ * Being still developped, the following export is *only* intended for experimentation
+ * by early adopters, and is not recommended yet for production applications. Because
+ * of this, all of the Access-related API's are exported on a single object, which does
+ * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
+ * included in your bundle.
+ */
+export { access_api } from "./access/v1";
