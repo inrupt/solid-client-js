@@ -198,7 +198,7 @@ describe("setAccessFor", () => {
         read: true,
       })
     ).rejects.toThrow(
-      "When reading Agent-specific access, the given agent cannot be left undefined."
+      "When writing Agent-specific access, the given agent cannot be left undefined."
     );
   });
 
@@ -234,7 +234,7 @@ describe("setAccessFor", () => {
         read: true,
       })
     ).rejects.toThrow(
-      "When reading Group-specific access, the given group cannot be left undefined."
+      "When writing Group-specific access, the given group cannot be left undefined."
     );
   });
 
@@ -249,7 +249,7 @@ describe("setAccessFor", () => {
         ("some actor" as unknown) as { fetch: typeof fetch }
       )
     ).rejects.toThrow(
-      "When reading public access, no actor type should be specified (here [some actor])."
+      "When writing public access, no actor type should be specified (here [some actor])."
     );
   });
 

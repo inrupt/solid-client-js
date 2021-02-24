@@ -285,7 +285,7 @@ export async function setAccessFor(
   if (actorType === "agent") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When reading Agent-specific access, the given agent cannot be left undefined."
+        "When writing Agent-specific access, the given agent cannot be left undefined."
       );
     }
     return await setAgentAccess(resourceUrl, actor, access, options);
@@ -293,7 +293,7 @@ export async function setAccessFor(
   if (actorType === "group") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When reading Group-specific access, the given group cannot be left undefined."
+        "When writing Group-specific access, the given group cannot be left undefined."
       );
     }
     return await setGroupAccess(resourceUrl, actor, access, options);
@@ -301,7 +301,7 @@ export async function setAccessFor(
   if (actorType === "public") {
     if (typeof actor === "string") {
       throw new Error(
-        `When reading public access, no actor type should be specified (here [${actor}]).`
+        `When writing public access, no actor type should be specified (here [${actor}]).`
       );
     }
     return await setPublicAccess(resourceUrl, access, actor);

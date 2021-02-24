@@ -34,6 +34,7 @@ import {
   setPublicAccess,
   getAccessFor as reexport_getAccessFor,
   getAccessForAll as reexport_getAccessForAll,
+  setAccessFor as reexport_setAccessFor,
 } from "./universal";
 import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
@@ -1279,5 +1280,9 @@ describe("access/for reexports", () => {
 
   it("re-exports getAccessForAll", () => {
     expect(reexport_getAccessForAll).toBeDefined();
+  });
+
+  it("re-exports setAccessFor", () => {
+    expect(reexport_setAccessFor).toBeDefined();
   });
 });
