@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- `access_api`: A set of APIs to manage Access which are agnostic to the Access
+  Control mechanism actually implemented (from the user's point of view).
+
 The following sections document changes that have been released already:
 
 ## [1.4.0] - 2021-02-19
