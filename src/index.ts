@@ -239,5 +239,10 @@ export { acp_v2 } from "./acp/v2";
  * of this, all of the Access-related API's are exported on a single object, which does
  * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
  * included in your bundle.
+ *
+ * Note that the following object is exposed to be available for environments not
+ * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
+ * or environment with support for export maps, we recommand you import these
+ * functions directly from @inrupt/solid-client/access/universal.
  */
 export * as access from "./access/universal";
