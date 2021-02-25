@@ -234,7 +234,7 @@ export { acp_v2 } from "./acp/v2";
  * discovers metadata associated to the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
- * Being still developped, the following export is *only* intended for experimentation
+ * As it is still under development, the following export is *only* intended for experimentation
  * by early adopters, and is not recommended yet for production applications. Because
  * of this, all of the Access-related API's are exported on a single object, which does
  * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
@@ -242,7 +242,7 @@ export { acp_v2 } from "./acp/v2";
  *
  * Note that the following object is exposed to be available for environments not
  * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
- * or environment with support for export maps, we recommand you import these
+ * or environment with support for export maps, we recommend you import these
  * functions directly from @inrupt/solid-client/access/universal.
  */
 export * as access from "./access/universal";
