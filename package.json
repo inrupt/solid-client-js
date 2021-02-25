@@ -48,7 +48,8 @@
     "./acl/agent": "./dist/acl/agent.mjs",
     "./acl/group": "./dist/acl/group.mjs",
     "./acl/class": "./dist/acl/class.mjs",
-    "./acl/mock": "./dist/acl/mock.mjs"
+    "./acl/mock": "./dist/acl/mock.mjs", 
+    "./access/universal": "./dist/access/universal.mjs"
   },
   "files": [
     "dist",

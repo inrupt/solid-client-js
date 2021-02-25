@@ -23,6 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { addMockAcrTo, mockAcrFor } from "../acp/mock";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import {
+  Access,
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
@@ -31,6 +32,9 @@ import {
   setAgentAccess,
   setGroupAccess,
   setPublicAccess,
+  getAccessFor as reexport_getAccessFor,
+  getAccessForAll as reexport_getAccessForAll,
+  setAccessFor as reexport_setAccessFor,
 } from "./universal";
 import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp";
@@ -1266,5 +1270,19 @@ describe("getGroupAccessAll", () => {
     const access = await getGroupAccessAll("https://arbitrary.pod/resource");
 
     expect(access).toBeNull();
+  });
+});
+
+describe("access/for reexports", () => {
+  it("re-exports getAccessFor", () => {
+    expect(reexport_getAccessFor).toBeDefined();
+  });
+
+  it("re-exports getAccessForAll", () => {
+    expect(reexport_getAccessForAll).toBeDefined();
+  });
+
+  it("re-exports setAccessFor", () => {
+    expect(reexport_setAccessFor).toBeDefined();
   });
 });

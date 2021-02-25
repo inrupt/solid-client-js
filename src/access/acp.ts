@@ -97,9 +97,17 @@ export function internal_hasInaccessiblePolicies(
   const ruleUrls: string[] = getActiveRuleAll(resource, activePolicyUrls);
 
   // If either an active policy or rule are not defined in the ACR, return false
-  return activePolicyUrls
-    .concat(ruleUrls)
-    .some((url) => url.substring(0, sourceIri.length) !== sourceIri);
+  return (
+    activePolicyUrls
+      .concat(ruleUrls)
+      // The call to `isDefaultEssPolicyUrl` is a workaround for an ESS bug.
+      // When that workaround can be removed, remove the `&&` leg that calls it.
+      .some(
+        (url) =>
+          url.substring(0, sourceIri.length) !== sourceIri &&
+          !isDefaultEssPolicyUrl(url, sourceIri)
+      )
+  );
 }
 
 const knownActorRelations = [acp.agent, acp.group];
@@ -564,6 +572,10 @@ export function internal_setActorAccess<
 
   const acrPolicyUrls = getAcrPolicyUrlAll(resource);
   const acrPolicies = acrPolicyUrls
+    // This is a temporary workaround until ESS removes its default Policy references:
+    .filter(
+      (policyUrl) => !isDefaultEssPolicyUrl(policyUrl, getSourceIri(resource))
+    )
     .map((policyUrl) => getPolicy(acr, policyUrl))
     .filter((policy) => policy !== null) as Policy[];
   const applicableAcrPolicies = acrPolicies.filter((policy) =>
@@ -572,6 +584,10 @@ export function internal_setActorAccess<
 
   const policyUrls = getPolicyUrlAll(resource);
   const policies = policyUrls
+    // This is a temporary workaround until ESS removes its default Policy references:
+    .filter(
+      (policyUrl) => !isDefaultEssPolicyUrl(policyUrl, getSourceIri(resource))
+    )
     .map((policyUrl) => getPolicy(acr, policyUrl))
     .filter((policy) => policy !== null) as Policy[];
   const applicablePolicies = policies.filter((policy) =>
@@ -1036,4 +1052,50 @@ function copyRulesExcludingActor(
 
 function isNotNull<T>(value: T | null): value is T {
   return value !== null;
+}
+
+/**
+ * Work around ESS adding references to external Policies to ACRs by default.
+ *
+ * Inrupt's Enterprise Solid Server by default adds a reference to a Policy in
+ * every ACR that is not local to that ACR. This will be removed in the near
+ * future: they only reflect access that holds anyway (i.e. the Pod Owner's
+ * access), and removing them does not actually change that access.
+ *
+ * However, until that is implemented, we manually ignore those Policies as a
+ * workaround, rather than always returning `null` because we cannot read them
+ * in the ACR itself.
+ *
+ * When ESS is updated, delete this function and remove references to it to
+ * remove the workaround.
+ *
+ * @param policyUrl URL of a Policy.
+ * @param resourceUrl Resource in whose ACR that URL is referenced.
+ * @returns Whether the given Policy URL is a URL the Inrupt's Enterprise Solid Server has added by default for the given Resource.
+ */
+function isDefaultEssPolicyUrl(
+  policyUrl: UrlString,
+  resourceUrl: UrlString
+): boolean {
+  const essServers = [
+    "https://pod.inrupt.com",
+    "https://demo-ess.inrupt.com",
+    "https://dev-ess.inrupt.com",
+  ];
+  return essServers.some((essServer) => {
+    if (!resourceUrl.startsWith(essServer)) {
+      return false;
+    }
+    // ESS Pods are of the form <origin>/<username>/,
+    // and resource URLs are subpaths of that.
+    // Hence, we can get the Pod root by getting everything up to and including
+    // the first slash after the origin's trailing slash:
+    const resourcePath = resourceUrl.substring(essServer.length + "/".length);
+    const podRoot = resourceUrl.substring(
+      0,
+      essServer.length + "/".length + resourcePath.indexOf("/") + "/".length
+    );
+
+    return policyUrl === podRoot + "policies/#Owner";
+  });
 }

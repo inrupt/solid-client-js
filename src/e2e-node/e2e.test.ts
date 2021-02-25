@@ -781,14 +781,6 @@ describe.each(serversUnderTest)(
       });
 
       it("can read and change access", async () => {
-        if (!supportsWac()) {
-          // At the time of writing, Inrupt's Enterprise Solid Server includes a
-          // reference to a Policy outside of the ACR in every ACR by default,
-          // which causes our high-level ACP implementation to bail out.
-          // Thus, we cannot test it yet.
-          return false;
-        }
-
         const session = await getSession();
         const datasetUrl = `${rootContainer}solid-client-tests/node/access-wrapper/access-test-${session.info.sessionId}.ttl`;
         await saveSolidDatasetAt(datasetUrl, createSolidDataset(), {
