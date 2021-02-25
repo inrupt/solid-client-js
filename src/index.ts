@@ -240,4 +240,4 @@ export { acp_v2 } from "./acp/v2";
  * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
  * included in your bundle.
  */
-export { access_api } from "./access/v1";
+export * as access from "./access/universal";

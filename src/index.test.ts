@@ -158,7 +158,7 @@ import {
   // Preview API's exported for early adopters:
   acp_v1,
   acp_v2,
-  access_api,
+  access,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -308,7 +308,7 @@ it("exports error classes", () => {
 it("exports preview API's for early adopters", () => {
   expect(acp_v1).toBeDefined();
   expect(acp_v2).toBeDefined();
-  expect(access_api).toBeDefined();
+  expect(access).toBeDefined();
 });
 
 // eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:
