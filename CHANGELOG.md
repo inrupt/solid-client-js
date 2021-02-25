@@ -8,7 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
-- `@inrupt/solid-client/access/universal` and `@inrupt/solid-client/access/for`:
+- `@inrupt/solid-client/access/universal`:
   A set of APIs to manage Access which are agnostic to the Access Control mechanism
   actually implemented (from the user's point of view). Currently, these modules
   support the two known access controls for Solid, i.e. Web Access Control and

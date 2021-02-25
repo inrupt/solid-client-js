@@ -84,8 +84,7 @@
       "src/acl/group.ts",
       "src/acl/class.ts",
       "src/acl/mock.ts",
-      "src/access/universal.ts",
-      "src/access/for.ts"
+      "src/access/universal.ts"
     ],
     "exclude": [
       "node_modules/**",

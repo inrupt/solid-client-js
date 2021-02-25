@@ -49,8 +49,7 @@
     "./acl/group": "./dist/acl/group.mjs",
     "./acl/class": "./dist/acl/class.mjs",
     "./acl/mock": "./dist/acl/mock.mjs", 
-    "./access/universal": "./dist/access/universal.mjs",
-    "./access/for": "./dist/access/for.mjs"
+    "./access/universal": "./dist/access/universal.mjs"
   },
   "files": [
     "dist",
