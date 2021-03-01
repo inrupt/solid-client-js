@@ -164,9 +164,17 @@ function copyNonClassProperties(source: object): object {
       copy[key] = value;
       return;
     }
-    if (value.constructor.name !== "Object") {
+
+    // Ignore properties that are Class methods, we don't want to copy those
+    // across (e.g., copying over an RDF/JS `.add()` method would result in the
+    // former instance's implementation of `.add()` being invoked).
+    if (
+      typeof value.constructor === "undefined" ||
+      value.constructor.name !== "Object"
+    ) {
       return;
     }
+
     copy[key] = value;
   });
 

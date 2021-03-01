@@ -20,6 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+import { DataFactory } from "n3";
 
 import {
   AccessControlResource,
@@ -63,7 +64,6 @@ import { getIri, getIriAll } from "../thing/get";
 import { createThing, getThing, setThing } from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
-import { DataFactory } from "n3";
 import { addIri } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { WithAccessibleAcl } from "../acl/acl";
@@ -409,8 +409,7 @@ describe("addAcrPolicyUrl", () => {
 
     addAcrPolicyUrl(resourceWithAcr, "https://some.pod/policy-resource#policy");
 
-    const oldAcrQuads = Array.from(accessControlResource);
-    expect(oldAcrQuads).toEqual([]);
+    expect(accessControlResource.size).toBe(0);
   });
 });
 
@@ -478,8 +477,7 @@ describe("addMemberAcrPolicyUrl", () => {
       "https://some.pod/policy-resource#policy"
     );
 
-    const oldAcrQuads = Array.from(accessControlResource);
-    expect(oldAcrQuads).toEqual([]);
+    expect(accessControlResource.size).toBe(0);
   });
 });
 

@@ -22,6 +22,11 @@
 import { ClientFunction } from "testcafe";
 import { config } from "dotenv-flow";
 import { essUserLogin } from "./roles";
+
+// We re-use the test helpers from elsewhere, but we need to ignore the
+// TypeScript error (TS6059) that complains about not all files being under the
+// one 'rootDir'.
+// @ts-ignore
 import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
 
 // E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
@@ -40,7 +45,7 @@ config({
   silent: process.env.CI === "true",
 });
 
-fixture("End-to-end tests").page("http://localhost:1234");
+fixture("End-to-end tests").page("http://localhost:1234/end-to-end-test.html");
 
 // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
 test("Creating and removing empty Containers", async (t: TestController) => {

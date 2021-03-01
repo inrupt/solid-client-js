@@ -299,7 +299,7 @@ function addLiteralOfType<T extends Thing>(
   value: string,
   type: XmlSchemaTypeIri
 ): T {
-  const literal = DataFactory.literal(value, type);
+  const literal = DataFactory.literal(value, DataFactory.namedNode(type));
   return addLiteral(thing, property, literal);
 }
 

@@ -33,6 +33,7 @@ jest.mock("../fetcher.ts", () => ({
 import { Response } from "cross-fetch";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
+
 import {
   getResourceAcl,
   getFallbackAcl,
@@ -68,6 +69,7 @@ import {
 import { WithServerResourceInfo, ThingPersisted } from "../interfaces";
 import { getFile } from "../resource/file";
 import { mockSolidDatasetFrom } from "../resource/mock";
+import { getMatchingQuads } from "../rdfjs.test";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -1346,8 +1348,7 @@ describe("createAcl", () => {
 
     const resourceAcl = createAcl(solidDataset);
 
-    const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(0);
+    expect(resourceAcl.size).toBe(0);
     expect(resourceAcl.internal_accessTo).toBe(
       "https://some.pod/container/resource"
     );
@@ -1417,20 +1418,21 @@ describe("createAclFromFallbackAcl", () => {
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(5);
-    expect(resourceAclQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(resourceAclQuads[3].object.value).toBe(
-      "https://arbitrary.pod/container/resource"
-    );
-    expect(resourceAclQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(resourceAclQuads[4].object.value).toBe(
-      "https://arbitrary.pod/container/resource"
-    );
+    expect(resourceAcl.size).toBe(5);
+    expect(
+      getMatchingQuads(resourceAcl, {
+        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
+
+        object: "https://arbitrary.pod/container/resource",
+      })
+    ).toHaveLength(1);
+    expect(
+      getMatchingQuads(resourceAcl, {
+        predicate: "http://www.w3.org/ns/auth/acl#default",
+        object: "https://arbitrary.pod/container/resource",
+      })
+    ).toHaveLength(1);
+
     expect(resourceAcl.internal_accessTo).toBe(
       "https://arbitrary.pod/container/resource"
     );
@@ -1498,20 +1500,20 @@ describe("createAclFromFallbackAcl", () => {
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(5);
-    expect(resourceAclQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
-    );
-    expect(resourceAclQuads[3].object.value).toBe(
-      "https://arbitrary.pod/container/resource"
-    );
-    expect(resourceAclQuads[4].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
-    );
-    expect(resourceAclQuads[4].object.value).toBe(
-      "https://arbitrary.pod/container/resource"
-    );
+    expect(resourceAcl.size).toBe(5);
+    expect(
+      getMatchingQuads(resourceAcl, {
+        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
+        object: "https://arbitrary.pod/container/resource",
+      })
+    ).toHaveLength(1);
+    expect(
+      getMatchingQuads(resourceAcl, {
+        predicate: "http://www.w3.org/ns/auth/acl#default",
+        object: "https://arbitrary.pod/container/resource",
+      })
+    ).toHaveLength(1);
+
     expect(resourceAcl.internal_accessTo).toBe(
       "https://arbitrary.pod/container/resource"
     );
@@ -1578,9 +1580,7 @@ describe("createAclFromFallbackAcl", () => {
     );
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
-
-    const resourceAclQuads = Array.from(resourceAcl);
-    expect(resourceAclQuads).toHaveLength(0);
+    expect(resourceAcl.size).toBe(0);
   });
 });
 
@@ -2126,7 +2126,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("does not modify the input SolidDataset", () => {
@@ -2165,8 +2165,8 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toHaveLength(0);
-    expect(Array.from(aclDataset)).toHaveLength(3);
+    expect(updatedDataset.size).toBe(0);
+    expect(aclDataset.size).toBe(3);
   });
 
   it("removes rules that do not set any Access Modes", () => {
@@ -2205,7 +2205,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("removes rules that do not have target Resources to which they apply", () => {
@@ -2244,7 +2244,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("removes rules that specify an acl:origin but not in combination with an Agent, Agent Group or Agent Class", () => {
@@ -2290,7 +2290,7 @@ describe("removeEmptyAclRules", () => {
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual([]);
+    expect(updatedDataset.size).toBe(0);
   });
 
   it("does not remove Rules that are also something other than an ACL Rule", () => {

@@ -19,7 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { jest, describe, it } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
+
 import { foaf, schema } from "rdf-namespaces";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
@@ -62,6 +63,7 @@ import {
   deleteSolidDataset,
   UrlString,
   acp_v2 as acp,
+  FetchError,
 } from "../index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
@@ -84,226 +86,229 @@ describe.each([
   // We can re-enable them once we have a Node library with which we can authenticate,
   // after which we can set the relevant permissions in the tests themselves:
   // ["https://ldp.demo-ess.inrupt.com/105177326598249077653/test-data/"],
-])("End-to-end tests with pre-existing data against %s", (rootContainer) => {
-  it("should be able to read and update data in a Pod", async () => {
-    const randomNick = "Random nick " + Math.random();
+])(
+  "End-to-end tests with pre-existing data against resources in [%s]:",
+  (rootContainer) => {
+    it("should be able to read and update data in a Pod", async () => {
+      const randomNick = "Random nick " + Math.random();
 
-    const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
-    const existingThing = getThing(
-      dataset,
-      `${rootContainer}lit-pod-test.ttl#thing1`
-    );
-
-    if (existingThing === null) {
-      throw new Error(
-        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing1] exists.`
+      const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
+      const existingThing = getThing(
+        dataset,
+        `${rootContainer}lit-pod-test.ttl#thing1`
       );
-    }
 
-    expect(getStringNoLocale(existingThing, foaf.name)).toBe(
-      "Thing for first end-to-end test"
-    );
+      if (existingThing === null) {
+        throw new Error(
+          `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing1] exists.`
+        );
+      }
 
-    let updatedThing = setDatetime(
-      existingThing,
-      schema.dateModified,
-      new Date()
-    );
-    updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
-
-    const updatedDataset = setThing(dataset, updatedThing);
-    const savedDataset = await saveSolidDatasetAt(
-      `${rootContainer}lit-pod-test.ttl`,
-      updatedDataset
-    );
-
-    const savedThing = getThing(
-      savedDataset,
-      `${rootContainer}lit-pod-test.ttl#thing1`
-    );
-    expect(savedThing).not.toBeNull();
-    expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
-      "Thing for first end-to-end test"
-    );
-    expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
-  });
-
-  it("can read and write booleans", async () => {
-    const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
-    const existingThing = getThing(
-      dataset,
-      `${rootContainer}lit-pod-test.ttl#thing2`
-    );
-
-    if (existingThing === null) {
-      throw new Error(
-        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing2] exists.`
+      expect(getStringNoLocale(existingThing, foaf.name)).toBe(
+        "Thing for first end-to-end test"
       );
-    }
 
-    const currentValue = getBoolean(
-      existingThing,
-      "https://example.com/boolean"
-    );
-    const updatedThing = setBoolean(
-      existingThing,
-      "https://example.com/boolean",
-      !currentValue
-    );
-
-    const updatedDataset = setThing(dataset, updatedThing);
-    const savedDataset = await saveSolidDatasetAt(
-      `${rootContainer}lit-pod-test.ttl`,
-      updatedDataset
-    );
-
-    const savedThing = getThing(
-      savedDataset,
-      `${rootContainer}lit-pod-test.ttl#thing2`
-    );
-
-    expect(savedThing).not.toBeNull();
-    expect(getBoolean(savedThing!, "https://example.com/boolean")).toBe(
-      !currentValue
-    );
-  });
-
-  it("can differentiate between RDF and non-RDF Resources", async () => {
-    const rdfResourceInfo = await getResourceInfoWithAcl(
-      `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
-    );
-    const nonRdfResourceInfo = await getResourceInfoWithAcl(
-      `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
-    );
-    expect(isRawData(rdfResourceInfo)).toBe(false);
-    expect(isRawData(nonRdfResourceInfo)).toBe(true);
-  });
-
-  it("can create and remove empty Containers", async () => {
-    const newContainer1 = await createContainerAt(
-      `${rootContainer}container-test/some-container/`
-    );
-    const newContainer2 = await createContainerInContainer(
-      "https://lit-e2e-test.inrupt.net/public/container-test/",
-      { slugSuggestion: "some-other-container" }
-    );
-
-    expect(getSourceUrl(newContainer1)).toBe(
-      `${rootContainer}container-test/some-container/`
-    );
-
-    await deleteFile(`${rootContainer}container-test/some-container/`);
-    await deleteFile(getSourceUrl(newContainer2));
-  });
-
-  it("should be able to read and update ACLs", async () => {
-    const fakeWebId =
-      "https://example.com/fake-webid#" +
-      Date.now().toString() +
-      Math.random().toString();
-
-    const datasetWithAcl = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
-    );
-    const datasetWithoutAcl = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`
-    );
-
-    expect(hasResourceAcl(datasetWithAcl)).toBe(true);
-    expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
-    expect(getPublicAccess(datasetWithAcl)).toEqual({
-      read: true,
-      append: true,
-      write: true,
-      control: true,
-    });
-    expect(
-      getAgentAccess(
-        datasetWithAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
-    ).toEqual({
-      read: false,
-      append: true,
-      write: false,
-      control: false,
-    });
-    expect(
-      getAgentAccess(
-        datasetWithoutAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
-    ).toEqual({
-      read: true,
-      append: false,
-      write: false,
-      control: false,
-    });
-    const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
-    expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
-      `${rootContainer}lit-pod-acl-test/`
-    );
-
-    if (!hasResourceAcl(datasetWithAcl)) {
-      throw new Error(
-        `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+      let updatedThing = setDatetime(
+        existingThing,
+        schema.dateModified,
+        new Date()
       );
-    }
-    const acl = getResourceAcl(datasetWithAcl);
-    const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
-      read: true,
-      append: false,
-      write: false,
-      control: false,
-    });
-    const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
-    const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
-    expect(fakeWebIdAccess).toEqual({
-      read: true,
-      append: false,
-      write: false,
-      control: false,
-    });
+      updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
 
-    // Cleanup
-    const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
-      read: false,
-      append: false,
-      write: false,
-      control: false,
-    });
-    await saveAclFor(datasetWithAcl, cleanedAcl);
-  });
-
-  it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
-    const dataset = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
-    );
-    if (
-      !hasFallbackAcl(dataset) ||
-      !hasAccessibleAcl(dataset) ||
-      hasResourceAcl(dataset)
-    ) {
-      throw new Error(
-        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
+      const updatedDataset = setThing(dataset, updatedThing);
+      const savedDataset = await saveSolidDatasetAt(
+        `${rootContainer}lit-pod-test.ttl`,
+        updatedDataset
       );
-    }
-    const newResourceAcl = createAclFromFallbackAcl(dataset);
-    const existingFallbackAcl = getFallbackAcl(dataset);
-    expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-      getPublicResourceAccess(newResourceAcl)
-    );
-  });
 
-  it("can fetch a non-RDF file and its metadata", async () => {
-    const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
+      const savedThing = getThing(
+        savedDataset,
+        `${rootContainer}lit-pod-test.ttl#thing1`
+      );
+      expect(savedThing).not.toBeNull();
+      expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
+        "Thing for first end-to-end test"
+      );
+      expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
+    });
 
-    expect(getContentType(jsonFile)).toEqual("application/json");
+    it("can read and write booleans", async () => {
+      const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
+      const existingThing = getThing(
+        dataset,
+        `${rootContainer}lit-pod-test.ttl#thing2`
+      );
 
-    const data = JSON.parse(await jsonFile.text());
-    expect(data).toEqual({ arbitrary: "json data" });
-  });
-});
+      if (existingThing === null) {
+        throw new Error(
+          `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing2] exists.`
+        );
+      }
+
+      const currentValue = getBoolean(
+        existingThing,
+        "https://example.com/boolean"
+      );
+      const updatedThing = setBoolean(
+        existingThing,
+        "https://example.com/boolean",
+        !currentValue
+      );
+
+      const updatedDataset = setThing(dataset, updatedThing);
+      const savedDataset = await saveSolidDatasetAt(
+        `${rootContainer}lit-pod-test.ttl`,
+        updatedDataset
+      );
+
+      const savedThing = getThing(
+        savedDataset,
+        `${rootContainer}lit-pod-test.ttl#thing2`
+      );
+
+      expect(savedThing).not.toBeNull();
+      expect(getBoolean(savedThing!, "https://example.com/boolean")).toBe(
+        !currentValue
+      );
+    });
+
+    it("can differentiate between RDF and non-RDF Resources", async () => {
+      const rdfResourceInfo = await getResourceInfoWithAcl(
+        `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
+      );
+      const nonRdfResourceInfo = await getResourceInfoWithAcl(
+        `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
+      );
+      expect(isRawData(rdfResourceInfo)).toBe(false);
+      expect(isRawData(nonRdfResourceInfo)).toBe(true);
+    });
+
+    it("can create and remove empty Containers", async () => {
+      const newContainer1 = await createContainerAt(
+        `${rootContainer}container-test/some-container/`
+      );
+      const newContainer2 = await createContainerInContainer(
+        "https://lit-e2e-test.inrupt.net/public/container-test/",
+        { slugSuggestion: "some-other-container" }
+      );
+
+      expect(getSourceUrl(newContainer1)).toBe(
+        `${rootContainer}container-test/some-container/`
+      );
+
+      await deleteFile(`${rootContainer}container-test/some-container/`);
+      await deleteFile(getSourceUrl(newContainer2));
+    });
+
+    it("should be able to read and update ACLs", async () => {
+      const fakeWebId =
+        "https://example.com/fake-webid#" +
+        Date.now().toString() +
+        Math.random().toString();
+
+      const datasetWithAcl = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
+      );
+      const datasetWithoutAcl = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`
+      );
+
+      expect(hasResourceAcl(datasetWithAcl)).toBe(true);
+      expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
+      expect(getPublicAccess(datasetWithAcl)).toEqual({
+        read: true,
+        append: true,
+        write: true,
+        control: true,
+      });
+      expect(
+        getAgentAccess(
+          datasetWithAcl,
+          "https://vincentt.inrupt.net/profile/card#me"
+        )
+      ).toEqual({
+        read: false,
+        append: true,
+        write: false,
+        control: false,
+      });
+      expect(
+        getAgentAccess(
+          datasetWithoutAcl,
+          "https://vincentt.inrupt.net/profile/card#me"
+        )
+      ).toEqual({
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+      const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
+      expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
+        `${rootContainer}lit-pod-acl-test/`
+      );
+
+      if (!hasResourceAcl(datasetWithAcl)) {
+        throw new Error(
+          `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+        );
+      }
+      const acl = getResourceAcl(datasetWithAcl);
+      const updatedAcl = setAgentResourceAccess(acl, fakeWebId, {
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+      const savedAcl = await saveAclFor(datasetWithAcl, updatedAcl);
+      const fakeWebIdAccess = getAgentResourceAccess(savedAcl, fakeWebId);
+      expect(fakeWebIdAccess).toEqual({
+        read: true,
+        append: false,
+        write: false,
+        control: false,
+      });
+
+      // Cleanup
+      const cleanedAcl = setAgentResourceAccess(savedAcl, fakeWebId, {
+        read: false,
+        append: false,
+        write: false,
+        control: false,
+      });
+      await saveAclFor(datasetWithAcl, cleanedAcl);
+    });
+
+    it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
+      const dataset = await getSolidDatasetWithAcl(
+        `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
+      );
+      if (
+        !hasFallbackAcl(dataset) ||
+        !hasAccessibleAcl(dataset) ||
+        hasResourceAcl(dataset)
+      ) {
+        throw new Error(
+          `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
+        );
+      }
+      const newResourceAcl = createAclFromFallbackAcl(dataset);
+      const existingFallbackAcl = getFallbackAcl(dataset);
+      expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
+        getPublicResourceAccess(newResourceAcl)
+      );
+    });
+
+    it("can fetch a non-RDF file and its metadata", async () => {
+      const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
+
+      expect(getContentType(jsonFile)).toEqual("application/json");
+
+      const data = JSON.parse(await jsonFile.text());
+      expect(data).toEqual({ arbitrary: "json data" });
+    });
+  }
+);
 
 // Load environment variables from .env.test.local if available:
 config({
@@ -345,7 +350,7 @@ const serversUnderTest: AuthDetails[] = [
 ];
 
 describe.each(serversUnderTest)(
-  "Authenticated end-to-end tests against %s",
+  "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
   (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
     function supportsWac() {
       return (
@@ -363,6 +368,7 @@ describe.each(serversUnderTest)(
       await session.login({
         oidcIssuer: oidcIssuer,
         clientId: clientId,
+        clientName: "Solid Client End-2-End Test Client App - Node.js",
         clientSecret: clientSecret,
         refreshToken: refreshToken,
       });
@@ -719,7 +725,7 @@ describe.each(serversUnderTest)(
           getSolidDataset(policyResourceUrl, { fetch: session.fetch })
         ).rejects.toThrow(
           // Forbidden:
-          expect.objectContaining({ statusCode: 403 })
+          expect.objectContaining({ statusCode: 403 }) as FetchError
         );
 
         // Clean up:
@@ -739,7 +745,7 @@ describe.each(serversUnderTest)(
         // when not logged in (i.e. not passing the session's fetch):
         await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
           // Unauthorised:
-          expect.objectContaining({ statusCode: 401 })
+          expect.objectContaining({ statusCode: 401 }) as FetchError
         );
 
         // In the Resource's Access Control Resource, apply the Policy

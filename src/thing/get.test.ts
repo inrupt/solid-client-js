@@ -20,9 +20,10 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
+
 import { NamedNode, Quad, Literal } from "rdf-js";
 import { DataFactory } from "n3";
+import { dataset } from "@rdfjs/dataset";
 import { IriString, Iri, Thing } from "../interfaces";
 import {
   getUrl,
@@ -1661,6 +1662,9 @@ describe("getStringWithLocaleAll", () => {
       internal_url: SUBJECT,
     });
 
+    // TODO: Not sure this RDF-spec compliant - need to double check, but
+    //  according to https://w3c.github.io/rdf-dir-literal/langString.html#literals
+    //  it seems language tags *must* be non-empty...
     expect(
       Array.from(getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, ""))
     ).toEqual(["value 3"]);
