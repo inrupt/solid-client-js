@@ -377,6 +377,26 @@ function policyAppliesTo(
   );
 }
 
+function policyConflictsWith(
+  policy: Policy,
+  otherAccess: {
+    read?: boolean;
+    append?: boolean;
+    write?: boolean;
+  }
+): boolean {
+  const allowModes = getIriAll(policy, acp.allow);
+  const denyModes = getIriAll(policy, acp.deny);
+  return (
+    (otherAccess.read === true && denyModes.includes(acp.Read)) ||
+    (otherAccess.read === false && allowModes.includes(acp.Read)) ||
+    (otherAccess.append === true && denyModes.includes(acp.Append)) ||
+    (otherAccess.append === false && allowModes.includes(acp.Append)) ||
+    (otherAccess.write === true && denyModes.includes(acp.Write)) ||
+    (otherAccess.write === false && allowModes.includes(acp.Write))
+  );
+}
+
 function ruleAppliesTo(
   rule: Rule,
   actorRelation: ActorRelation,
@@ -594,13 +614,28 @@ export function internal_setActorAccess<
     policyAppliesTo(policy, actorRelation, actor, acr)
   );
 
+  // We only need to override Policies that define access other than what we want:
+  const conflictingAcrPolicies = applicableAcrPolicies.filter((policy) =>
+    policyConflictsWith(policy, {
+      read: access.controlRead,
+      write: access.controlWrite,
+    })
+  );
+  const conflictingPolicies = applicablePolicies.filter((policy) =>
+    policyConflictsWith(policy, {
+      read: access.read,
+      append: access.append,
+      write: access.write,
+    })
+  );
+
   // For every Policy that applies specifically to the given Actor, but _also_
   // to another actor (i.e. that applies using an anyOf Rule, or a Rule that
   // mentions both the given and another actor)...
-  const otherActorAcrPolicies = applicableAcrPolicies.filter((acrPolicy) =>
+  const otherActorAcrPolicies = conflictingAcrPolicies.filter((acrPolicy) =>
     policyHasOtherActors(acrPolicy, actorRelation, actor, acr)
   );
-  const otherActorPolicies = applicablePolicies.filter((policy) =>
+  const otherActorPolicies = conflictingPolicies.filter((policy) =>
     policyHasOtherActors(policy, actorRelation, actor, acr)
   );
 
@@ -669,7 +704,7 @@ export function internal_setActorAccess<
     // However, if we're in this if branch, that means we also had to replace
     // Policies that defined access for just this actor, so we'll have to remove
     // all Policies mentioning this actor:
-    acrPoliciesToUnapply = applicableAcrPolicies;
+    acrPoliciesToUnapply = conflictingAcrPolicies;
   }
 
   const newReadAccess = access.read ?? existingAccess.read;
@@ -704,7 +739,7 @@ export function internal_setActorAccess<
     // However, if we're in this if branch, that means we also had to replace
     // Policies that defined access for just this actor, so we'll have to remove
     // all Policies mentioning this actor:
-    policiesToUnapply = applicablePolicies;
+    policiesToUnapply = conflictingPolicies;
   }
 
   // ...then remove existing Policy URLs that mentioned both the given actor
