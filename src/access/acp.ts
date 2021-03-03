@@ -389,11 +389,17 @@ function policyConflictsWith(
   const denyModes = getIriAll(policy, acp.deny);
   return (
     (otherAccess.read === true && denyModes.includes(acp.Read)) ||
-    (otherAccess.read === false && allowModes.includes(acp.Read)) ||
+    (otherAccess.read === false &&
+      allowModes.includes(acp.Read) &&
+      !denyModes.includes(acp.Read)) ||
     (otherAccess.append === true && denyModes.includes(acp.Append)) ||
-    (otherAccess.append === false && allowModes.includes(acp.Append)) ||
+    (otherAccess.append === false &&
+      allowModes.includes(acp.Append) &&
+      !denyModes.includes(acp.Append)) ||
     (otherAccess.write === true && denyModes.includes(acp.Write)) ||
-    (otherAccess.write === false && allowModes.includes(acp.Write))
+    (otherAccess.write === false &&
+      allowModes.includes(acp.Write) &&
+      !denyModes.includes(acp.Write))
   );
 }
 

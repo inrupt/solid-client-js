@@ -4733,7 +4733,6 @@ describe("setActorAccess", () => {
     });
 
     /* The following tests reproduce counter-examples found by fast-check in the past. */
-    // Skipped tests will be fixed later.
     it("does not unapply Policies that should continue to apply", () => {
       const acrConfig = {
         acrPolicies: {},
@@ -4780,8 +4779,7 @@ describe("setActorAccess", () => {
       ).toStrictEqual(accessToSet);
     });
 
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip("Counterexample (source of bug yet to be determined)", () => {
+    it("does not ignore self-contradicting Policies that effectively provide the desired access", () => {
       const acrConfig = {
         acrPolicies: {},
         memberAcrPolicies: {},
