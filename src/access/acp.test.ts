@@ -4614,12 +4614,8 @@ describe("setActorAccess", () => {
   });
 
   describe("edge cases", () => {
-    // The bugs found by fast-check aren't fixed yet, so it is likely to keep running into them:
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip("does not inadvertently cause privilege escalation", () => {
-      // TODO Only use a high number of runs in CI:
-      // const runs = process.env.CI ? 1000 : 1;
-      const runs = 1000;
+    it("does not inadvertently cause privilege escalation", () => {
+      const runs = process.env.CI ? 1000 : 1;
       expect.assertions(runs + 2);
 
       const setAccessArbitrary = fc.record({
