@@ -1,5 +1,5 @@
 {
-  "appCommand": "cd .codesandbox/sandbox && npm run start-e2e-host",
+  "appCommand": "cd .codesandbox/sandbox && npx parcel --port 1234 end-to-end-test.html",
   "appInitDelay": 3000,
   "browsers": ["firefox:headless"],
   "src": "src/e2e-browser/**/*.testcafe.ts",
