@@ -63,6 +63,7 @@ export type Actor = "agent" | "group" | "public";
  * @param actor Identifier of the individual Agent or Group whose access being read.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access the given Agent or Group has.
+ * @since 1.5.0
  */
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -94,6 +95,7 @@ export async function getAccessFor(
  * @param actorType type of actor whose access is being read.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access have been granted to the general public.
+ * @since 1.5.0
  */
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -166,6 +168,7 @@ export async function getAccessFor(
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param actorType type of actor whose access is being read.
  * @returns What access is set for the given resource, grouped by resp. Agent or Group.
+ * @since 1.5.0
  */
 export async function getAccessForAll(
   resourceUrl: UrlString,
@@ -216,6 +219,7 @@ export async function getAccessForAll(
  * @param actor Actor (Agent or Group) you want to set access for.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access has been set for the given Agent explicitly.
+ * @since 1.5.0
  */
 export async function setAccessFor(
   resourceUrl: UrlString,
@@ -258,6 +262,7 @@ export async function setAccessFor(
  * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access has been set for the given Agent explicitly.
+ * @since 1.5.0
  */
 export async function setAccessFor(
   resourceUrl: UrlString,

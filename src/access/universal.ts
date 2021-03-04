@@ -56,6 +56,7 @@ import {
  * Each of the following access modes is in one of two states:
  * - true: this access mode is granted, or
  * - false: this access mode is not granted.
+ * @since 1.5.0
  */
 export interface Access {
   read: boolean;
@@ -87,6 +88,7 @@ export interface Access {
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param webId WebID of the Agent you want to get the access for.
+ * @since 1.5.0
  */
 export async function getAgentAccess(
   resourceUrl: UrlString,
@@ -135,6 +137,7 @@ export async function getAgentAccess(
  * @param webId WebID of the Agent you want to set access for.
  * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for the given Agent explicitly.
+ * @since 1.5.0
  */
 export async function setAgentAccess(
   resourceUrl: UrlString,
@@ -193,6 +196,7 @@ export async function setAgentAccess(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @returns The access information to the Resource, grouped by Agent.
+ * @since 1.5.0
  */
 export async function getAgentAccessAll(
   resourceUrl: UrlString,
@@ -230,6 +234,7 @@ export async function getAgentAccessAll(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param webId WebID of the Group you want to get the access for.
+ * @since 1.5.0
  */
 export async function getGroupAccess(
   resourceUrl: UrlString,
@@ -269,6 +274,7 @@ export async function getGroupAccess(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @returns The access information to the Resource, sorted by Group.
+ * @since 1.5.0
  */
 export async function getGroupAccessAll(
   resourceUrl: UrlString,
@@ -316,6 +322,7 @@ export async function getGroupAccessAll(
  * @param groupUrl URL of the Group you want to set access for.
  * @param access What access permissions you want to set for the given Group to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for the given Group explicitly.
+ * @since 1.5.0
  */
 export async function setGroupAccess(
   resourceUrl: UrlString,
@@ -372,6 +379,7 @@ export async function setGroupAccess(
  *   Resource, this function will resolve to `null`.
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
+ * @since 1.5.0
  */
 export async function getPublicAccess(
   resourceUrl: UrlString,
@@ -418,6 +426,7 @@ export async function getPublicAccess(
  * @param resourceUrl URL of the Resource you want to change public access to.
  * @param access What access permissions you want to set for everybody to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for everybody explicitly.
+ * @since 1.5.0
  */
 export async function setPublicAccess(
   resourceUrl: UrlString,
