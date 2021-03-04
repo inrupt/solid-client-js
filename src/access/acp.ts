@@ -581,18 +581,6 @@ export function internal_setActorAccess<
     return null;
   }
 
-  // Get the access that currently applies to the given actor
-  const existingAccess = internal_getActorAccess(
-    resource,
-    actorRelation,
-    actor
-  );
-
-  /* istanbul ignore if: It returns null if the ACR has inaccessible Policies, which should happen since we already check for that above. */
-  if (existingAccess === null) {
-    return null;
-  }
-
   // Get all Policies that apply specifically to the given actor
   const acr = internal_getAcr(resource);
 
@@ -645,6 +633,32 @@ export function internal_setActorAccess<
     policyHasOtherActors(policy, actorRelation, actor, acr)
   );
 
+  // ...check what access the current actor would have if we removed them...
+  const otherActorAcrPolicyUrls = otherActorAcrPolicies.map((acrPolicy) =>
+    asIri(acrPolicy)
+  );
+  const otherActorPolicyUrls = otherActorPolicies.map((policy) =>
+    asIri(policy)
+  );
+  let resourceWithPoliciesExcluded = otherActorAcrPolicyUrls.reduce(
+    removeAcrPolicyUrl,
+    resource
+  );
+  resourceWithPoliciesExcluded = otherActorPolicyUrls.reduce(
+    removeAcrPolicyUrl,
+    resourceWithPoliciesExcluded
+  );
+  const remainingAccess = internal_getActorAccess(
+    resourceWithPoliciesExcluded,
+    actorRelation,
+    actor
+  );
+
+  /* istanbul ignore if: It returns null if the ACR has inaccessible Policies, which should happen since we already check for that at the start. */
+  if (remainingAccess === null) {
+    return null;
+  }
+
   // ...add copies of those Policies and their Rules, but excluding the given actor...
   let updatedAcr = acr;
   const newAcrPolicyUrls: IriString[] = [];
@@ -679,14 +693,15 @@ export function internal_setActorAccess<
   let newRule = createRule(newRuleIri);
   newRule = setIri(newRule, actorRelation, actor);
 
-  const newControlReadAccess = access.controlRead ?? existingAccess.controlRead;
+  const newControlReadAccess =
+    access.controlRead ?? remainingAccess.controlRead;
   const newControlWriteAccess =
-    access.controlWrite ?? existingAccess.controlWrite;
+    access.controlWrite ?? remainingAccess.controlWrite;
   let acrPoliciesToUnapply = otherActorAcrPolicies;
   // Only replace existing Policies if the defined access actually changes:
   if (
-    newControlReadAccess !== existingAccess.controlRead ||
-    newControlWriteAccess !== existingAccess.controlWrite
+    newControlReadAccess !== remainingAccess.controlRead ||
+    newControlWriteAccess !== remainingAccess.controlWrite
   ) {
     const newAcrPolicyIri =
       getSourceIri(acr) +
@@ -713,15 +728,15 @@ export function internal_setActorAccess<
     acrPoliciesToUnapply = conflictingAcrPolicies;
   }
 
-  const newReadAccess = access.read ?? existingAccess.read;
-  const newAppendAccess = access.append ?? existingAccess.append;
-  const newWriteAccess = access.write ?? existingAccess.write;
+  const newReadAccess = access.read ?? remainingAccess.read;
+  const newAppendAccess = access.append ?? remainingAccess.append;
+  const newWriteAccess = access.write ?? remainingAccess.write;
   let policiesToUnapply = otherActorPolicies;
   // Only replace existing Policies if the defined access actually changes:
   if (
-    newReadAccess !== existingAccess.read ||
-    newAppendAccess !== existingAccess.append ||
-    newWriteAccess !== existingAccess.write
+    newReadAccess !== remainingAccess.read ||
+    newAppendAccess !== remainingAccess.append ||
+    newWriteAccess !== remainingAccess.write
   ) {
     const newPolicyIri =
       getSourceIri(acr) +
