@@ -6,15 +6,15 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.5.0] - 2021-04-04
+
 ### New features
 
 - `@inrupt/solid-client/access/universal`: an early preview of a set of APIs to
   manage Access which are agnostic to the Access Control mechanism actually
   implemented (from the user's point of view). Currently, these modules
   support the two known access controls for Solid, i.e. Web Access Control and
-  Access Control Policies. As this is a preview, there are known bugs happening
-  in some edge cases involving already existing Access Policies, that are still
-  to be fixed.
+  Access Control Policies.
 
 The following sections document changes that have been released already:
 
