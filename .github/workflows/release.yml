@@ -136,7 +136,9 @@ jobs:
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-parcel
         npm install @inrupt/solid-client
-        npx parcel build index.ts
+        # Parcel version currently pinned because of
+        # https://github.com/parcel-bundler/parcel/issues/5943
+        npx parcel@1.12.3 build index.ts
     - name: Archive Parcel build artifacts
       uses: actions/upload-artifact@v2.2.2
       with:
