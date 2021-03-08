@@ -581,6 +581,18 @@ export function internal_setActorAccess<
     return null;
   }
 
+  // Get the access that currently applies to the given actor
+  const existingAccess = internal_getActorAccess(
+    resource,
+    actorRelation,
+    actor
+  );
+
+  /* istanbul ignore if: It returns null if the ACR has inaccessible Policies, which should happen since we already check for that above. */
+  if (existingAccess === null) {
+    return null;
+  }
+
   // Get all Policies that apply specifically to the given actor
   const acr = internal_getAcr(resource);
 
@@ -645,7 +657,7 @@ export function internal_setActorAccess<
     resource
   );
   resourceWithPoliciesExcluded = otherActorPolicyUrls.reduce(
-    removeAcrPolicyUrl,
+    removePolicyUrl,
     resourceWithPoliciesExcluded
   );
   const remainingAccess = internal_getActorAccess(
@@ -693,10 +705,9 @@ export function internal_setActorAccess<
   let newRule = createRule(newRuleIri);
   newRule = setIri(newRule, actorRelation, actor);
 
-  const newControlReadAccess =
-    access.controlRead ?? remainingAccess.controlRead;
+  const newControlReadAccess = access.controlRead ?? existingAccess.controlRead;
   const newControlWriteAccess =
-    access.controlWrite ?? remainingAccess.controlWrite;
+    access.controlWrite ?? existingAccess.controlWrite;
   let acrPoliciesToUnapply = otherActorAcrPolicies;
   // Only replace existing Policies if the defined access actually changes:
   if (
@@ -728,9 +739,9 @@ export function internal_setActorAccess<
     acrPoliciesToUnapply = conflictingAcrPolicies;
   }
 
-  const newReadAccess = access.read ?? remainingAccess.read;
-  const newAppendAccess = access.append ?? remainingAccess.append;
-  const newWriteAccess = access.write ?? remainingAccess.write;
+  const newReadAccess = access.read ?? existingAccess.read;
+  const newAppendAccess = access.append ?? existingAccess.append;
+  const newWriteAccess = access.write ?? existingAccess.write;
   let policiesToUnapply = otherActorPolicies;
   // Only replace existing Policies if the defined access actually changes:
   if (
