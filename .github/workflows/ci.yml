@@ -113,6 +113,7 @@ jobs:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+        GITHUB_OS: ${{ runner.os }}
     - run: npx prettier --check "src/**"
     - run: npx package-check
     - run: npm run check-licenses
