@@ -595,8 +595,9 @@ describe("getForbiddenRuleurlAll", () => {
       forbidden: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
-    expect(forbiddenRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(forbiddenRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toContain(MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toHaveLength(2);
   });
 
   it("returns only the forbidden rules for the given policy", () => {
@@ -606,8 +607,9 @@ describe("getForbiddenRuleurlAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
-    expect(forbiddenRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
-    expect(forbiddenRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
+    expect(forbiddenRules).not.toContain(OPTIONAL_RULE_IRI.value);
+    expect(forbiddenRules).not.toContain(REQUIRED_RULE_IRI.value);
+    expect(forbiddenRules).toHaveLength(1);
   });
 });
 
@@ -617,8 +619,9 @@ describe("getOptionalRulesOnPolicyAll", () => {
       optional: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
-    expect(optionalRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(optionalRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(optionalRules).toContain(MOCKED_RULE_IRI.value);
+    expect(optionalRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(optionalRules).toHaveLength(2);
   });
 
   it("returns only the optional rules for the given policy", () => {
@@ -628,8 +631,9 @@ describe("getOptionalRulesOnPolicyAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
-    expect(optionalRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
-    expect(optionalRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
+    expect(optionalRules).not.toContain(FORBIDDEN_RULE_IRI.value);
+    expect(optionalRules).not.toContain(REQUIRED_RULE_IRI.value);
+    expect(optionalRules).toHaveLength(1);
   });
 });
 
@@ -639,8 +643,9 @@ describe("getRequiredRulesOnPolicyAll", () => {
       required: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
-    expect(requiredRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(requiredRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(requiredRules).toContain(MOCKED_RULE_IRI.value);
+    expect(requiredRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(requiredRules).toHaveLength(2);
   });
 
   it("returns only the required rules for the given policy", () => {
@@ -650,8 +655,9 @@ describe("getRequiredRulesOnPolicyAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
-    expect(requiredRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
-    expect(requiredRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
+    expect(requiredRules).not.toContain(FORBIDDEN_RULE_IRI.value);
+    expect(requiredRules).not.toContain(OPTIONAL_RULE_IRI.value);
+    expect(requiredRules).toHaveLength(1);
   });
 });
 
@@ -828,8 +834,9 @@ describe("getAgentAll", () => {
       agents: [MOCK_WEBID_ME, MOCK_WEBID_YOU],
     });
     const agents = getAgentAll(rule);
-    expect(agents).toContainEqual(MOCK_WEBID_ME.value);
-    expect(agents).toContainEqual(MOCK_WEBID_YOU.value);
+    expect(agents).toContain(MOCK_WEBID_ME.value);
+    expect(agents).toContain(MOCK_WEBID_YOU.value);
+    expect(agents).toHaveLength(2);
   });
 
   it("does not return the groups/public/authenticated/creator/clients a rule applies to", () => {
@@ -841,10 +848,11 @@ describe("getAgentAll", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const agents = getAgentAll(rule);
-    expect(agents).not.toContainEqual(MOCK_GROUP_IRI.value);
-    expect(agents).not.toContainEqual(ACP_CREATOR.value);
-    expect(agents).not.toContainEqual(ACP_AUTHENTICATED.value);
-    expect(agents).not.toContainEqual(ACP_PUBLIC.value);
+    expect(agents).not.toContain(MOCK_GROUP_IRI.value);
+    expect(agents).not.toContain(ACP_CREATOR.value);
+    expect(agents).not.toContain(ACP_AUTHENTICATED.value);
+    expect(agents).not.toContain(ACP_PUBLIC.value);
+    expect(agents).toHaveLength(0);
   });
 });
 
@@ -989,8 +997,9 @@ describe("getGroupAll", () => {
       groups: [MOCK_GROUP_IRI, MOCK_GROUP_OTHER_IRI],
     });
     const groups = getGroupAll(rule);
-    expect(groups).toContainEqual(MOCK_GROUP_IRI.value);
-    expect(groups).toContainEqual(MOCK_GROUP_OTHER_IRI.value);
+    expect(groups).toContain(MOCK_GROUP_IRI.value);
+    expect(groups).toContain(MOCK_GROUP_OTHER_IRI.value);
+    expect(groups).toHaveLength(2);
   });
 
   it("does not return the agents/public/authenticated/clients a rule applies to", () => {
@@ -1001,9 +1010,10 @@ describe("getGroupAll", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const groups = getGroupAll(rule);
-    expect(groups).not.toContainEqual(MOCK_WEBID_ME.value);
-    expect(groups).not.toContainEqual(ACP_AUTHENTICATED.value);
-    expect(groups).not.toContainEqual(ACP_PUBLIC.value);
+    expect(groups).not.toContain(MOCK_WEBID_ME.value);
+    expect(groups).not.toContain(ACP_AUTHENTICATED.value);
+    expect(groups).not.toContain(ACP_PUBLIC.value);
+    expect(groups).toHaveLength(0);
   });
 });
 
@@ -1318,8 +1328,9 @@ describe("getClientAll", () => {
       clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
     });
     const clients = getClientAll(rule);
-    expect(clients).toContainEqual(MOCK_CLIENT_WEBID_1.value);
-    expect(clients).toContainEqual(MOCK_CLIENT_WEBID_2.value);
+    expect(clients).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(clients).toContain(MOCK_CLIENT_WEBID_2.value);
+    expect(clients).toHaveLength(2);
   });
 
   it("does not return the agents/groups/public client a rule applies to", () => {
@@ -1332,10 +1343,11 @@ describe("getClientAll", () => {
       publicClient: true,
     });
     const clients = getClientAll(rule);
-    expect(clients).not.toContainEqual(MOCK_GROUP_IRI.value);
-    expect(clients).not.toContainEqual(ACP_CREATOR.value);
-    expect(clients).not.toContainEqual(ACP_AUTHENTICATED.value);
-    expect(clients).not.toContainEqual(ACP_PUBLIC.value);
+    expect(clients).not.toContain(MOCK_GROUP_IRI.value);
+    expect(clients).not.toContain(ACP_CREATOR.value);
+    expect(clients).not.toContain(ACP_AUTHENTICATED.value);
+    expect(clients).not.toContain(ACP_PUBLIC.value);
+    expect(clients).toHaveLength(0);
   });
 });
 
