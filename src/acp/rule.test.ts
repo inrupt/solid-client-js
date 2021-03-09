@@ -66,7 +66,11 @@ import {
   ruleAsMarkdown,
   removeRule,
   getClientAll,
+  setClient,
+  addClient,
+  removeClient,
   hasAnyClient,
+  setAnyClient,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -1351,6 +1355,156 @@ describe("getClientAll", () => {
   });
 });
 
+describe("setClient", () => {
+  it("sets the given clients for the rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const result = setClient(rule, MOCK_CLIENT_WEBID_1.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+  });
+
+  it("deletes any clients previously set for the rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    const result = setClient(rule, MOCK_CLIENT_WEBID_2.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
+      )
+    ).toBe(true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    setClient(rule, MOCK_CLIENT_WEBID_2.value);
+    expect(
+      rule.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
+      )
+    ).toBe(false);
+    expect(
+      rule.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+  });
+
+  it("does not overwrite the public client class", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+    });
+    const result = setClient(rule, MOCK_CLIENT_WEBID_1.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(true);
+  });
+});
+
+describe("addClient", () => {
+  it("adds the given client to the rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const result = addClient(rule, MOCK_CLIENT_WEBID_1.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+  });
+
+  it("does not override existing clients/the public client class", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+      publicClient: true,
+    });
+    const result = addClient(rule, MOCK_CLIENT_WEBID_2.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
+      )
+    ).toBe(true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(true);
+  });
+});
+
+describe("removeClient", () => {
+  it("removes the given client from the rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    const result = removeClient(rule, MOCK_CLIENT_WEBID_1.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(false);
+  });
+
+  it("does not delete unrelated clients", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
+      publicClient: true,
+    });
+    const result = removeClient(rule, MOCK_CLIENT_WEBID_2.value);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
+      )
+    ).toBe(false);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(true);
+  });
+
+  it("does not remove agents, even with a matching IRI", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      agents: [MOCK_WEBID_ME],
+    });
+    const result = removeClient(rule, MOCK_WEBID_ME.value);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
+    ).toBe(true);
+  });
+
+  it("does not remove groups, even with a matching IRI", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      groups: [MOCK_GROUP_IRI],
+    });
+    const result = removeClient(rule, MOCK_GROUP_IRI.value);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
+    ).toBe(true);
+  });
+});
+
 describe("hasAnyClient", () => {
   it("returns true if the rule applies to any client", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1363,6 +1517,52 @@ describe("hasAnyClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     expect(hasAnyClient(rule)).toBe(false);
+  });
+});
+
+describe("setAnyClient", () => {
+  it("applies to given rule to the public client class", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    const result = setAnyClient(rule, true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(true);
+  });
+
+  it("prevents the rule from applying to the public client class", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+    });
+    const result = setAnyClient(rule, false);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    setAnyClient(rule, true);
+    expect(
+      rule.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(false);
+  });
+
+  it("does not change the other clients", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    const result = setAnyClient(rule, true);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
   });
 });
 

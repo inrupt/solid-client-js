@@ -395,7 +395,7 @@ export function getAgentAll(rule: Rule): WebId[] {
  * Overwrite the agents the [[Rule]] applies to with the provided agents.
  *
  * @param rule The rule for which agents are set.
- * @param agents The list of agents the rule should apply to.
+ * @param agent The agent the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of agents.
  * @since Unreleased
  */
@@ -467,7 +467,7 @@ export function getGroupAll(rule: Rule): UrlString[] {
  * Overwrite the groups the [[Rule]] applies to with the provided groups.
  *
  * @param rule The rule for which groups are set.
- * @param agents The list of groups the rule should apply to.
+ * @param group The group the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of groups.
  * @since Unreleased
  */
@@ -636,6 +636,60 @@ export function getClientAll(rule: Rule): WebId[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Overwrite the clients the [[Rule]] applies to with the provided Client.
+ *
+ * @param rule The rule for which clients are set.
+ * @param client The Client the rule should apply to.
+ * @returns A copy of the input rule, applying to a different set of Clients.
+ * @since Unreleased
+ */
+export function setClient(rule: Rule, client: WebId): Rule {
+  // Preserve the special "any client" class, which we
+  // don't want to overwrite with this function.
+  const anyClientEnabled = hasAnyClient(rule);
+  let result = setIri(rule, acp.client, client);
+  // Restore the "any client" class
+  result = setAnyClient(result, anyClientEnabled);
+  return result;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Apply the [[Rule]] to an additional Client.
+ *
+ * @param rule The [[Rule]] to be applied to an additional Client.
+ * @param client The Client the [[Rule]] should apply to.
+ * @returns A copy of the [[Rule]], applying to an additional Client.
+ * @since Unreleased
+ */
+export function addClient(rule: Rule, client: WebId): Rule {
+  return addIri(rule, acp.client, client);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Prevent the [[Rule]] from applying to a given Client directly.
+ *
+ * @param rule The [[Rule]] that should no longer apply to a given Client.
+ * @param client The Client the rule should no longer apply to.
+ * @returns A copy of the rule, not applying to the given Client.
+ * @since Unreleased
+ */
+export function removeClient(rule: Rule, client: WebId): Rule {
+  return removeIri(rule, acp.client, client);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Check if the rule applies to any client, i.e. all the applications
  * regardless of their identifier.
  *
@@ -648,6 +702,25 @@ export function hasAnyClient(rule: Rule): boolean {
       (client) => client === solid.PublicOidcClient
     ).length > 0
   );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Overwrite the clients the [[Rule]] applies to with the provided client.
+ *
+ * @param rule The rule for which clients are set.
+ * @param anyClient Whether the Rule applies to any client, i.e. all the
+ * applications regardless of their identifier.
+ * @returns A copy of the rule, updated to apply/not apply to any client
+ * @since Unreleased
+ */
+export function setAnyClient(rule: Rule, anyClient: boolean): Rule {
+  return anyClient
+    ? addIri(rule, acp.client, solid.PublicOidcClient)
+    : removeIri(rule, acp.client, solid.PublicOidcClient);
 }
 
 /**
