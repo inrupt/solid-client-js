@@ -66,7 +66,7 @@ import {
   ruleAsMarkdown,
   removeRule,
   getClientAll,
-  hasPublicClient,
+  hasAnyClient,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -1339,18 +1339,18 @@ describe("getClientAll", () => {
   });
 });
 
-describe("hasPublicClient", () => {
+describe("hasAnyClient", () => {
   it("returns true if the rule applies to any client", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       publicClient: true,
     });
-    expect(hasPublicClient(rule)).toEqual(true);
+    expect(hasAnyClient(rule)).toEqual(true);
   });
   it("returns false if the rule only applies to individual clients", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       clients: [MOCK_CLIENT_WEBID_1],
     });
-    expect(hasPublicClient(rule)).toEqual(false);
+    expect(hasAnyClient(rule)).toEqual(false);
   });
 });
 

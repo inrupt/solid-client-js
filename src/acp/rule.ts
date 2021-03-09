@@ -636,13 +636,13 @@ export function getClientAll(rule: Rule): WebId[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Check if the rule applies to public clients (i.e. all the applications
- * regardless of their identifier).
+ * Check if the rule applies to any client, i.e. all the applications
+ * regardless of their identifier.
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to public clients.
  */
-export function hasPublicClient(rule: Rule): boolean {
+export function hasAnyClient(rule: Rule): boolean {
   return (
     getIriAll(rule, acp.client).filter(
       (client) => client === solid.PublicOidcClient
