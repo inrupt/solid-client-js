@@ -20,10 +20,12 @@
  */
 
 import { acp, rdf } from "../constants";
+import { isNamedNode } from "../datatypes";
 import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
+import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
-import { getIriAll, getUrl, getUrlAll } from "../thing/get";
+import { getIriAll } from "../thing/get";
 import { removeAll } from "../thing/remove";
 import { setUrl } from "../thing/set";
 import {
@@ -35,6 +37,16 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
+import { WithAccessibleAcr } from "./acp";
+import {
+  addAcrPolicyUrl,
+  addPolicyUrl,
+  getAcrPolicyUrlAll,
+  getPolicyUrlAll,
+  removeAcrPolicyUrl,
+  removePolicyUrl,
+} from "./control";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 import {
   getNoneOfRuleUrlAll,
   getAnyOfRuleUrlAll,
@@ -42,11 +54,19 @@ import {
 } from "./rule";
 
 export type Policy = ThingPersisted;
+export type ResourcePolicy = ThingPersisted;
 export type AccessModes = {
   read: boolean;
   append: boolean;
   write: boolean;
 };
+
+/**
+ * @param thing the [[Thing]] to check to see if it's an ACP Policy or not
+ */
+function isPolicy(thing: ThingPersisted): thing is Policy {
+  return getIriAll(thing, rdf.type).includes(acp.Policy);
+}
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -81,7 +101,7 @@ export function getPolicy(
   url: Url | UrlString
 ): Policy | null {
   const foundThing = getThing(policyResource, url);
-  if (foundThing === null || getUrl(foundThing, rdf.type) !== acp.Policy) {
+  if (foundThing === null || !isPolicy(foundThing)) {
     return null;
   }
 
@@ -100,8 +120,7 @@ export function getPolicy(
 export function getPolicyAll(policyResource: SolidDataset): Policy[] {
   const foundThings = getThingAll(policyResource);
   const foundPolicies = foundThings.filter(
-    (thing) =>
-      !isThingLocal(thing) && getUrlAll(thing, rdf.type).includes(acp.Policy)
+    (thing) => !isThingLocal(thing) && isPolicy(thing)
   ) as Policy[];
   return foundPolicies;
 }
@@ -152,7 +171,10 @@ export function setPolicy<Dataset extends SolidDataset>(
  * @param policy The Policy on which to set the modes to allow.
  * @param modes Modes to allow for this Policy.
  */
-export function setAllowModes(policy: Policy, modes: AccessModes): Policy {
+export function setAllowModes<P extends Policy | ResourcePolicy>(
+  policy: P,
+  modes: AccessModes
+): P {
   let newPolicy = removeAll(policy, acp.allow);
 
   if (modes.read === true) {
@@ -176,7 +198,9 @@ export function setAllowModes(policy: Policy, modes: AccessModes): Policy {
  *
  * @param policy The Policy for which you want to know the Access Modes it allows.
  */
-export function getAllowModes(policy: Policy): AccessModes {
+export function getAllowModes<P extends Policy | ResourcePolicy>(
+  policy: P
+): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
   return {
     read: allowedModes.includes(acp.Read),
@@ -195,7 +219,10 @@ export function getAllowModes(policy: Policy): AccessModes {
  * @param policy The Policy on which to set the modes to disallow.
  * @param modes Modes to disallow for this Policy.
  */
-export function setDenyModes(policy: Policy, modes: AccessModes): Policy {
+export function setDenyModes<P extends Policy | ResourcePolicy>(
+  policy: P,
+  modes: AccessModes
+): P {
   let newPolicy = removeAll(policy, acp.deny);
 
   if (modes.read === true) {
@@ -219,13 +246,302 @@ export function setDenyModes(policy: Policy, modes: AccessModes): Policy {
  *
  * @param policy The Policy on which you want to know the Access Modes it disallows.
  */
-export function getDenyModes(policy: Policy): AccessModes {
+export function getDenyModes<P extends Policy | ResourcePolicy>(
+  policy: P
+): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
   return {
     read: deniedModes.includes(acp.Read),
     append: deniedModes.includes(acp.Append),
     write: deniedModes.includes(acp.Write),
   };
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Initialise a new, empty [[ResourcePolicy]] for the given Resource.
+ *
+ * @param resourceWithAcr The Resource to which the Policy is to apply.
+ * @param name The name that identifies this Policy.
+ */
+export function createResourcePolicyFor(
+  resourceWithAcr: WithAccessibleAcr,
+  name: string
+): ResourcePolicy {
+  const acr = internal_getAcr(resourceWithAcr);
+  const url = new URL(getSourceUrl(acr));
+  url.hash = `#${name}`;
+  let policyThing = createThing({ url: url.href });
+  policyThing = setUrl(policyThing, rdf.type, acp.Policy);
+
+  return policyThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the [[ResourcePolicy]] with the given name that applies to a Resource
+ * from its Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose ACR contains the given Policy.
+ * @param name The name that identifies this Policy.
+ * @returns The requested Policy, if it exists and applies to the given Resource, or `null` if it does not.
+ */
+export function getResourcePolicy(
+  resourceWithAcr: WithAccessibleAcr,
+  name: string
+): ResourcePolicy | null {
+  const acr = internal_getAcr(resourceWithAcr);
+  const acrUrl = getSourceUrl(acr);
+  const url = new URL(acrUrl);
+  url.hash = `#${name}`;
+  const foundThing = getThing(acr, url.href);
+  if (
+    !getPolicyUrlAll(resourceWithAcr).includes(url.href) ||
+    foundThing === null ||
+    !isPolicy(foundThing)
+  ) {
+    return null;
+  }
+
+  return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get the [[ResourcePolicy]] with the given name that applies to a Resource's
+ * Access Control Resource from that Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose ACR contains the given Policy.
+ * @param name The name that identifies this Policy.
+ * @returns The requested Policy, if it exists and applies to the Resource's ACR, or `null` if it does not.
+ */
+export function getResourceAcrPolicy(
+  resourceWithAcr: WithAccessibleAcr,
+  name: string
+): ResourcePolicy | null {
+  const acr = internal_getAcr(resourceWithAcr);
+  const acrUrl = getSourceUrl(acr);
+  const url = new URL(acrUrl);
+  url.hash = `#${name}`;
+  const foundThing = getThing(acr, url.href);
+  if (
+    !getAcrPolicyUrlAll(resourceWithAcr).includes(url.href) ||
+    foundThing === null ||
+    !isPolicy(foundThing)
+  ) {
+    return null;
+  }
+
+  return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get all [[ResourcePolicy]]'s that apply to a Resource in its Access Control
+ * Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies applying to it.
+ */
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr
+): ResourcePolicy[] {
+  const acr = internal_getAcr(resourceWithAcr);
+  const policyUrls = getPolicyUrlAll(resourceWithAcr);
+  const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
+  const foundPolicies = foundThings.filter(
+    (thing) => thing !== null && isPolicy(thing)
+  ) as ResourcePolicy[];
+  return foundPolicies;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Get all [[ResourcePolicy]]'s that apply to a given Resource's Access Control
+ * Resource from that Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ */
+export function getResourceAcrPolicyAll(
+  resourceWithAcr: WithAccessibleAcr
+): ResourcePolicy[] {
+  const acr = internal_getAcr(resourceWithAcr);
+  const policyUrls = getAcrPolicyUrlAll(resourceWithAcr);
+  const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
+  const foundPolicies = foundThings.filter(
+    (thing) => thing !== null && isPolicy(thing)
+  ) as ResourcePolicy[];
+  return foundPolicies;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove the given [[ResourcePolicy]] from the given Resource's Access Control
+ * Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ * @param policy The Policy to remove from the Resource's Access Control Resource.
+ */
+export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policy: string | Url | UrlString | ResourcePolicy
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  let policyToRemove = policy;
+  if (typeof policyToRemove === "string") {
+    try {
+      new URL(policyToRemove);
+    } catch (e) {
+      // If the given Policy to remove is the name of the Policy,
+      // resolve it to its full URL — developers usually refer to either the
+      // Policy itself, or by its name, as they do not have access to the ACR
+      // directly.
+      const policyUrl = new URL(getSourceUrl(acr));
+      policyUrl.hash = `#${policy}`;
+      policyToRemove = policyUrl.href;
+    }
+  }
+  let policyUrlString: UrlString;
+  if (typeof policyToRemove === "string") {
+    policyUrlString = policyToRemove;
+  } else if (isNamedNode(policyToRemove)) {
+    policyUrlString = internal_toIriString(policyToRemove);
+  } else {
+    policyUrlString = asUrl(policyToRemove, getSourceUrl(acr));
+  }
+
+  // Check whether the actual Policy (i.e. with the Policy type) exists:
+  const matchingRule = getResourcePolicy(
+    resourceWithAcr,
+    new URL(policyUrlString).hash.substring(1)
+  );
+  if (matchingRule === null) {
+    // No such Policy exists yet, so return the Resource+ACR unchanged:
+    return resourceWithAcr;
+  }
+
+  const updatedAcr = removeThing(acr, policyToRemove);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  return removePolicyUrl(updatedResource, policyUrlString);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Remove the given [[ResourcePolicy]] that applies to a given Resource's Access
+ * Control Resource from that Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ * @param policy The ACR Policy to remove from the Resource's Access Control Resource.
+ */
+export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policy: string | Url | UrlString | ResourcePolicy
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  let policyToRemove = policy;
+  if (typeof policyToRemove === "string") {
+    try {
+      new URL(policyToRemove);
+    } catch (e) {
+      // If the given Policy to remove is the name of the Policy,
+      // resolve it to its full URL — developers usually refer to either the
+      // Policy itself, or by its name, as they do not have access to the ACR
+      // directly.
+      const policyUrl = new URL(getSourceUrl(acr));
+      policyUrl.hash = `#${policy}`;
+      policyToRemove = policyUrl.href;
+    }
+  }
+
+  let policyUrlString: string;
+  if (typeof policyToRemove === "string") {
+    policyUrlString = policyToRemove;
+  } else if (isNamedNode(policyToRemove)) {
+    policyUrlString = internal_toIriString(policyToRemove);
+  } else {
+    policyUrlString = asUrl(policyToRemove, getSourceUrl(acr));
+  }
+
+  // Check whether the actual Policy (i.e. with the Policy type) exists:
+  const matchingRule = getResourceAcrPolicy(
+    resourceWithAcr,
+    new URL(policyUrlString).hash.substring(1)
+  );
+  if (matchingRule === null) {
+    // No such Policy exists yet, so return the Resource+ACR unchanged:
+    return resourceWithAcr;
+  }
+
+  const updatedAcr = removeThing(acr, policyToRemove);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  return removeAcrPolicyUrl(updatedResource, policyUrlString);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Insert the given [[ResourcePolicy]] into the given Resource's Acccess Control
+ * Resource, replacing previous instances of that Policy.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ * @param policy The Policy to insert into the Resource's Access Control Resource.
+ * @returns A new Resource equal to the given Resource, but with the given Policy in its Access Control Resource.
+ */
+export function setResourcePolicy<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policy: ResourcePolicy
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  const updatedAcr = setThing(acr, policy);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  const policyUrl = asUrl(policy, getSourceUrl(acr));
+  return addPolicyUrl(updatedResource, policyUrl);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Insert the given [[ResourcePolicy]] into the given Resource's Acccess Control
+ * Resource, replacing previous instances of that Policy, to apply to the Access
+ * Control Resource itself.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ * @param policy The Policy to insert into the Resource's Access Control Resource.
+ * @returns A new Resource equal to the given Resource, but with the given Policy in its Access Control Resource, applying to that Access Control Resource.
+ */
+export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  policy: ResourcePolicy
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  const updatedAcr = setThing(acr, policy);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  const policyUrl = asUrl(policy, getSourceUrl(acr));
+  return addAcrPolicyUrl(updatedResource, policyUrl);
 }
 
 /**
@@ -236,7 +552,7 @@ export function getDenyModes(policy: Policy): AccessModes {
  *
  * @param policy The Policy to get a human-readable representation of.
  */
-export function policyAsMarkdown(policy: Policy): string {
+export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   function getStatus(allow: boolean, deny: boolean): string {
     if (deny) {
       return "denied";

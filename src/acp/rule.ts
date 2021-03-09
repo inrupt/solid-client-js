@@ -41,7 +41,7 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
-import { Policy } from "./policy";
+import { Policy, ResourcePolicy } from "./policy";
 
 export type Rule = ThingPersisted;
 
@@ -68,10 +68,10 @@ function isRule(thing: Thing): thing is Rule {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addAllOfRuleUrl(
-  policy: Policy,
+export function addAllOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return addIri(policy, acp.allOf, rule);
 }
 
@@ -88,10 +88,10 @@ export function addAllOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeAllOfRuleUrl(
-  policy: Policy,
+export function removeAllOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return removeIri(policy, acp.allOf, rule);
 }
 
@@ -108,10 +108,10 @@ export function removeAllOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the "All Of" rules replaced.
  * @since Unreleased
  */
-export function setAllOfRuleUrl(
-  policy: Policy,
+export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return setIri(policy, acp.allOf, rule);
 }
 
@@ -125,7 +125,9 @@ export function setAllOfRuleUrl(
  * @returns A list of the "All Of" [[Rule]]'s
  * @since unreleased
  */
-export function getAllOfRuleUrlAll(policy: Policy): UrlString[] {
+export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
+  policy: P
+): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
 
@@ -142,10 +144,10 @@ export function getAllOfRuleUrlAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addAnyOfRuleUrl(
-  policy: Policy,
+export function addAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return addIri(policy, acp.anyOf, rule);
 }
 
@@ -162,10 +164,10 @@ export function addAnyOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeAnyOfRuleUrl(
-  policy: Policy,
+export function removeAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return removeIri(policy, acp.anyOf, rule);
 }
 
@@ -182,10 +184,10 @@ export function removeAnyOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
  * @since Unreleased
  */
-export function setAnyOfRuleUrl(
-  policy: Policy,
+export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return setIri(policy, acp.anyOf, rule);
 }
 
@@ -199,7 +201,9 @@ export function setAnyOfRuleUrl(
  * @returns A list of the "Any Of" [[Rule]]'s
  * @since unreleased
  */
-export function getAnyOfRuleUrlAll(policy: Policy): UrlString[] {
+export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
+  policy: P
+): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
 
@@ -216,10 +220,10 @@ export function getAnyOfRuleUrlAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addNoneOfRuleUrl(
-  policy: Policy,
+export function addNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return addIri(policy, acp.noneOf, rule);
 }
 
@@ -236,10 +240,10 @@ export function addNoneOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeNoneOfRuleUrl(
-  policy: Policy,
+export function removeNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return removeIri(policy, acp.noneOf, rule);
 }
 
@@ -256,10 +260,10 @@ export function removeNoneOfRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
  * @since Unreleased
  */
-export function setNoneOfRuleUrl(
-  policy: Policy,
+export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
+  policy: P,
   rule: Rule | Url | UrlString
-): Policy {
+): P {
   return setIri(policy, acp.noneOf, rule);
 }
 
@@ -273,7 +277,9 @@ export function setNoneOfRuleUrl(
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getNoneOfRuleUrlAll(policy: Policy): UrlString[] {
+export function getNoneOfRuleUrlAll<P extends Policy | ResourcePolicy>(
+  policy: P
+): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
 
