@@ -74,7 +74,13 @@ export const acp = {
   accessMembers: "http://www.w3.org/ns/solid/acp#accessMembers",
   agent: "http://www.w3.org/ns/solid/acp#agent",
   group: "http://www.w3.org/ns/solid/acp#group",
+  client: "http://www.w3.org/ns/solid/acp#client",
   PublicAgent: "http://www.w3.org/ns/solid/acp#PublicAgent",
   AuthenticatedAgent: "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
   CreatorAgent: "http://www.w3.org/ns/solid/acp#CreatorAgent",
+} as const;
+
+/** @hidden */
+export const solid = {
+  PublicOidcClient: "http://www.w3.org/ns/solid/terms#PublicOidcClient",
 } as const;

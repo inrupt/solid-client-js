@@ -65,6 +65,8 @@ import {
   setCreator,
   ruleAsMarkdown,
   removeRule,
+  getClientAll,
+  hasPublicClient,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -84,6 +86,9 @@ const RDF_TYPE = DataFactory.namedNode(
 const ACP_RULE = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#Rule");
 const ACP_AGENT = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
 const ACP_GROUP = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#group");
+const ACP_CLIENT = DataFactory.namedNode(
+  "http://www.w3.org/ns/solid/acp#client"
+);
 const ACP_PUBLIC = DataFactory.namedNode(
   "http://www.w3.org/ns/solid/acp#PublicAgent"
 );
@@ -92,6 +97,9 @@ const ACP_AUTHENTICATED = DataFactory.namedNode(
 );
 const ACP_CREATOR = DataFactory.namedNode(
   "http://www.w3.org/ns/solid/acp#CreatorAgent"
+);
+const SOLID_PUBLIC_CLIENT = DataFactory.namedNode(
+  "http://www.w3.org/ns/solid/terms#PublicOidcClient"
 );
 
 // Test data
@@ -118,6 +126,12 @@ const MOCK_WEBID_YOU = DataFactory.namedNode("https://your.pod/profile#you");
 const MOCK_GROUP_IRI = DataFactory.namedNode("https://my.pod/group#a-group");
 const MOCK_GROUP_OTHER_IRI = DataFactory.namedNode(
   "https://my.pod/group#another-group"
+);
+const MOCK_CLIENT_WEBID_1 = DataFactory.namedNode(
+  "https://my.app/registration#it"
+);
+const MOCK_CLIENT_WEBID_2 = DataFactory.namedNode(
+  "https://your.app/registration#it"
 );
 
 type ThingObject = ThingPersisted | Url | UrlString;
@@ -159,6 +173,8 @@ const mockRule = (
     public?: boolean;
     authenticated?: boolean;
     creator?: boolean;
+    clients?: Url[];
+    publicClient?: boolean;
   }
 ): Rule => {
   let mockedRule = createThing({
@@ -176,6 +192,9 @@ const mockRule = (
   }
   if (content?.groups) {
     addAllObjects(mockedRule, ACP_GROUP, content.groups);
+  }
+  if (content?.clients) {
+    addAllObjects(mockedRule, ACP_CLIENT, content.clients);
   }
   if (content?.public) {
     mockedRule = mockedRule.add(
@@ -201,6 +220,15 @@ const mockRule = (
         DataFactory.namedNode(asIri(mockedRule)),
         ACP_AGENT,
         ACP_CREATOR
+      )
+    );
+  }
+  if (content?.publicClient) {
+    mockedRule = mockedRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(asIri(mockedRule)),
+        ACP_CLIENT,
+        SOLID_PUBLIC_CLIENT
       )
     );
   }
@@ -804,12 +832,13 @@ describe("getAgentAll", () => {
     expect(agents).toContainEqual(MOCK_WEBID_YOU.value);
   });
 
-  it("does not return the groups/public/authenticated/creator a rule applies to", () => {
+  it("does not return the groups/public/authenticated/creator/clients a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI],
       public: true,
       authenticated: true,
       creator: true,
+      clients: [MOCK_CLIENT_WEBID_1],
     });
     const agents = getAgentAll(rule);
     expect(agents).not.toContainEqual(MOCK_GROUP_IRI.value);
@@ -964,11 +993,12 @@ describe("getGroupAll", () => {
     expect(groups).toContainEqual(MOCK_GROUP_OTHER_IRI.value);
   });
 
-  it("does not return the agents/public/authenticated a rule applies to", () => {
+  it("does not return the agents/public/authenticated/clients a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_ME],
       public: true,
       authenticated: true,
+      clients: [MOCK_CLIENT_WEBID_1],
     });
     const groups = getGroupAll(rule);
     expect(groups).not.toContainEqual(MOCK_WEBID_ME.value);
@@ -1279,6 +1309,48 @@ describe("setCreator", () => {
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
+  });
+});
+
+describe("getClientAll", () => {
+  it("returns all the clients a rule applies to by WebID", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
+    });
+    const clients = getClientAll(rule);
+    expect(clients).toContainEqual(MOCK_CLIENT_WEBID_1.value);
+    expect(clients).toContainEqual(MOCK_CLIENT_WEBID_2.value);
+  });
+
+  it("does not return the agents/groups/public client a rule applies to", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      agents: [MOCK_WEBID_ME],
+      groups: [MOCK_GROUP_IRI],
+      public: true,
+      authenticated: true,
+      creator: true,
+      publicClient: true,
+    });
+    const clients = getClientAll(rule);
+    expect(clients).not.toContainEqual(MOCK_GROUP_IRI.value);
+    expect(clients).not.toContainEqual(ACP_CREATOR.value);
+    expect(clients).not.toContainEqual(ACP_AUTHENTICATED.value);
+    expect(clients).not.toContainEqual(ACP_PUBLIC.value);
+  });
+});
+
+describe("hasPublicClient", () => {
+  it("returns true if the rule applies to any client", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+    });
+    expect(hasPublicClient(rule)).toEqual(true);
+  });
+  it("returns false if the rule only applies to individual clients", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    expect(hasPublicClient(rule)).toEqual(false);
   });
 });
 

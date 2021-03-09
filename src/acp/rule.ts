@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp, rdf } from "../constants";
+import { acp, rdf, solid } from "../constants";
 import {
   SolidDataset,
   Thing,
@@ -611,6 +611,43 @@ export function setCreator(rule: Rule, creator: boolean): Rule {
   return creator
     ? addIri(rule, acp.agent, acp.CreatorAgent)
     : removeIri(rule, acp.agent, acp.CreatorAgent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * List all the clients a [[Rule]] applies **directly** to. This will not include
+ * specific client classes, such as public clients.
+ *
+ * @param rule The rule from which clients are read.
+ * @returns A list of the WebIDs of clients included in the rule.
+ * @since Unreleased
+ */
+export function getClientAll(rule: Rule): WebId[] {
+  return getIriAll(rule, acp.client).filter(
+    (client: WebId) => client !== solid.PublicOidcClient
+  );
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Check if the rule applies to public clients (i.e. all the applications
+ * regardless of their identifier).
+ *
+ * @param rule The rule checked for authenticated access.
+ * @returns Whether the rule applies to public clients.
+ */
+export function hasPublicClient(rule: Rule): boolean {
+  return (
+    getIriAll(rule, acp.client).filter(
+      (client) => client === solid.PublicOidcClient
+    ).length > 0
+  );
 }
 
 /**
