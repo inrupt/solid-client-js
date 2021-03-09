@@ -65,6 +65,8 @@ import {
   setCreator,
   ruleAsMarkdown,
   removeRule,
+  getClientAll,
+  hasAnyClient,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -84,6 +86,9 @@ const RDF_TYPE = DataFactory.namedNode(
 const ACP_RULE = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#Rule");
 const ACP_AGENT = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
 const ACP_GROUP = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#group");
+const ACP_CLIENT = DataFactory.namedNode(
+  "http://www.w3.org/ns/solid/acp#client"
+);
 const ACP_PUBLIC = DataFactory.namedNode(
   "http://www.w3.org/ns/solid/acp#PublicAgent"
 );
@@ -92,6 +97,9 @@ const ACP_AUTHENTICATED = DataFactory.namedNode(
 );
 const ACP_CREATOR = DataFactory.namedNode(
   "http://www.w3.org/ns/solid/acp#CreatorAgent"
+);
+const SOLID_PUBLIC_CLIENT = DataFactory.namedNode(
+  "http://www.w3.org/ns/solid/terms#PublicOidcClient"
 );
 
 // Test data
@@ -118,6 +126,12 @@ const MOCK_WEBID_YOU = DataFactory.namedNode("https://your.pod/profile#you");
 const MOCK_GROUP_IRI = DataFactory.namedNode("https://my.pod/group#a-group");
 const MOCK_GROUP_OTHER_IRI = DataFactory.namedNode(
   "https://my.pod/group#another-group"
+);
+const MOCK_CLIENT_WEBID_1 = DataFactory.namedNode(
+  "https://my.app/registration#it"
+);
+const MOCK_CLIENT_WEBID_2 = DataFactory.namedNode(
+  "https://your.app/registration#it"
 );
 
 type ThingObject = ThingPersisted | Url | UrlString;
@@ -159,6 +173,8 @@ const mockRule = (
     public?: boolean;
     authenticated?: boolean;
     creator?: boolean;
+    clients?: Url[];
+    publicClient?: boolean;
   }
 ): Rule => {
   let mockedRule = createThing({
@@ -176,6 +192,9 @@ const mockRule = (
   }
   if (content?.groups) {
     addAllObjects(mockedRule, ACP_GROUP, content.groups);
+  }
+  if (content?.clients) {
+    addAllObjects(mockedRule, ACP_CLIENT, content.clients);
   }
   if (content?.public) {
     mockedRule = mockedRule.add(
@@ -201,6 +220,15 @@ const mockRule = (
         DataFactory.namedNode(asIri(mockedRule)),
         ACP_AGENT,
         ACP_CREATOR
+      )
+    );
+  }
+  if (content?.publicClient) {
+    mockedRule = mockedRule.add(
+      DataFactory.quad(
+        DataFactory.namedNode(asIri(mockedRule)),
+        ACP_CLIENT,
+        SOLID_PUBLIC_CLIENT
       )
     );
   }
@@ -567,8 +595,9 @@ describe("getForbiddenRuleurlAll", () => {
       forbidden: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
-    expect(forbiddenRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(forbiddenRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toContain(MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(forbiddenRules).toHaveLength(2);
   });
 
   it("returns only the forbidden rules for the given policy", () => {
@@ -578,8 +607,9 @@ describe("getForbiddenRuleurlAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const forbiddenRules = getForbiddenRuleUrlAll(mockedPolicy);
-    expect(forbiddenRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
-    expect(forbiddenRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
+    expect(forbiddenRules).not.toContain(OPTIONAL_RULE_IRI.value);
+    expect(forbiddenRules).not.toContain(REQUIRED_RULE_IRI.value);
+    expect(forbiddenRules).toHaveLength(1);
   });
 });
 
@@ -589,8 +619,9 @@ describe("getOptionalRulesOnPolicyAll", () => {
       optional: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
-    expect(optionalRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(optionalRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(optionalRules).toContain(MOCKED_RULE_IRI.value);
+    expect(optionalRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(optionalRules).toHaveLength(2);
   });
 
   it("returns only the optional rules for the given policy", () => {
@@ -600,8 +631,9 @@ describe("getOptionalRulesOnPolicyAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const optionalRules = getOptionalRuleUrlAll(mockedPolicy);
-    expect(optionalRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
-    expect(optionalRules).not.toContainEqual(REQUIRED_RULE_IRI.value);
+    expect(optionalRules).not.toContain(FORBIDDEN_RULE_IRI.value);
+    expect(optionalRules).not.toContain(REQUIRED_RULE_IRI.value);
+    expect(optionalRules).toHaveLength(1);
   });
 });
 
@@ -611,8 +643,9 @@ describe("getRequiredRulesOnPolicyAll", () => {
       required: [mockRule(MOCKED_RULE_IRI), mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
-    expect(requiredRules).toContainEqual(MOCKED_RULE_IRI.value);
-    expect(requiredRules).toContainEqual(OTHER_MOCKED_RULE_IRI.value);
+    expect(requiredRules).toContain(MOCKED_RULE_IRI.value);
+    expect(requiredRules).toContain(OTHER_MOCKED_RULE_IRI.value);
+    expect(requiredRules).toHaveLength(2);
   });
 
   it("returns only the required rules for the given policy", () => {
@@ -622,8 +655,9 @@ describe("getRequiredRulesOnPolicyAll", () => {
       required: [mockRule(REQUIRED_RULE_IRI)],
     });
     const requiredRules = getRequiredRuleUrlAll(mockedPolicy);
-    expect(requiredRules).not.toContainEqual(FORBIDDEN_RULE_IRI.value);
-    expect(requiredRules).not.toContainEqual(OPTIONAL_RULE_IRI.value);
+    expect(requiredRules).not.toContain(FORBIDDEN_RULE_IRI.value);
+    expect(requiredRules).not.toContain(OPTIONAL_RULE_IRI.value);
+    expect(requiredRules).toHaveLength(1);
   });
 });
 
@@ -636,7 +670,7 @@ describe("removeRequiredRule", () => {
     const result = removeRequiredRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toEqual(false);
+    ).toBe(false);
   });
 
   it("does not remove the rule from the rules optional/forbidden by the given policy", () => {
@@ -648,10 +682,10 @@ describe("removeRequiredRule", () => {
     const result = removeRequiredRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
   });
 });
 
@@ -664,7 +698,7 @@ describe("removeOptionalRuleUrl", () => {
     const result = removeOptionalRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toEqual(false);
+    ).toBe(false);
   });
 
   it("does not remove the rule from the rules required/forbidden by the given policy", () => {
@@ -676,10 +710,10 @@ describe("removeOptionalRuleUrl", () => {
     const result = removeOptionalRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
   });
 });
 
@@ -692,7 +726,7 @@ describe("removeForbiddenRuleUrl", () => {
     const result = removeForbiddenRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toEqual(false);
+    ).toBe(false);
   });
 
   it("does not remove the rule from the rules required/optional by the given policy", () => {
@@ -704,10 +738,10 @@ describe("removeForbiddenRuleUrl", () => {
     const result = removeForbiddenRuleUrl(mockedPolicy, mockedRule);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
     expect(
       result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toEqual(true);
+    ).toBe(true);
   });
 });
 
@@ -800,22 +834,25 @@ describe("getAgentAll", () => {
       agents: [MOCK_WEBID_ME, MOCK_WEBID_YOU],
     });
     const agents = getAgentAll(rule);
-    expect(agents).toContainEqual(MOCK_WEBID_ME.value);
-    expect(agents).toContainEqual(MOCK_WEBID_YOU.value);
+    expect(agents).toContain(MOCK_WEBID_ME.value);
+    expect(agents).toContain(MOCK_WEBID_YOU.value);
+    expect(agents).toHaveLength(2);
   });
 
-  it("does not return the groups/public/authenticated/creator a rule applies to", () => {
+  it("does not return the groups/public/authenticated/creator/clients a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       groups: [MOCK_GROUP_IRI],
       public: true,
       authenticated: true,
       creator: true,
+      clients: [MOCK_CLIENT_WEBID_1],
     });
     const agents = getAgentAll(rule);
-    expect(agents).not.toContainEqual(MOCK_GROUP_IRI.value);
-    expect(agents).not.toContainEqual(ACP_CREATOR.value);
-    expect(agents).not.toContainEqual(ACP_AUTHENTICATED.value);
-    expect(agents).not.toContainEqual(ACP_PUBLIC.value);
+    expect(agents).not.toContain(MOCK_GROUP_IRI.value);
+    expect(agents).not.toContain(ACP_CREATOR.value);
+    expect(agents).not.toContain(ACP_AUTHENTICATED.value);
+    expect(agents).not.toContain(ACP_PUBLIC.value);
+    expect(agents).toHaveLength(0);
   });
 });
 
@@ -960,20 +997,23 @@ describe("getGroupAll", () => {
       groups: [MOCK_GROUP_IRI, MOCK_GROUP_OTHER_IRI],
     });
     const groups = getGroupAll(rule);
-    expect(groups).toContainEqual(MOCK_GROUP_IRI.value);
-    expect(groups).toContainEqual(MOCK_GROUP_OTHER_IRI.value);
+    expect(groups).toContain(MOCK_GROUP_IRI.value);
+    expect(groups).toContain(MOCK_GROUP_OTHER_IRI.value);
+    expect(groups).toHaveLength(2);
   });
 
-  it("does not return the agents/public/authenticated a rule applies to", () => {
+  it("does not return the agents/public/authenticated/clients a rule applies to", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       agents: [MOCK_WEBID_ME],
       public: true,
       authenticated: true,
+      clients: [MOCK_CLIENT_WEBID_1],
     });
     const groups = getGroupAll(rule);
-    expect(groups).not.toContainEqual(MOCK_WEBID_ME.value);
-    expect(groups).not.toContainEqual(ACP_AUTHENTICATED.value);
-    expect(groups).not.toContainEqual(ACP_PUBLIC.value);
+    expect(groups).not.toContain(MOCK_WEBID_ME.value);
+    expect(groups).not.toContain(ACP_AUTHENTICATED.value);
+    expect(groups).not.toContain(ACP_PUBLIC.value);
+    expect(groups).toHaveLength(0);
   });
 });
 
@@ -1104,7 +1144,7 @@ describe("hasPublic", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       public: true,
     });
-    expect(hasPublic(rule)).toEqual(true);
+    expect(hasPublic(rule)).toBe(true);
   });
   it("returns false if the rule only applies to other agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1112,7 +1152,7 @@ describe("hasPublic", () => {
       authenticated: true,
       agents: [MOCK_WEBID_ME],
     });
-    expect(hasPublic(rule)).toEqual(false);
+    expect(hasPublic(rule)).toBe(false);
   });
 });
 
@@ -1165,7 +1205,7 @@ describe("hasAuthenticated", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       authenticated: true,
     });
-    expect(hasAuthenticated(rule)).toEqual(true);
+    expect(hasAuthenticated(rule)).toBe(true);
   });
   it("returns false if the rule only applies to other agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1173,7 +1213,7 @@ describe("hasAuthenticated", () => {
       authenticated: false,
       agents: [MOCK_WEBID_ME],
     });
-    expect(hasAuthenticated(rule)).toEqual(false);
+    expect(hasAuthenticated(rule)).toBe(false);
   });
 });
 
@@ -1228,7 +1268,7 @@ describe("hasCreator", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       creator: true,
     });
-    expect(hasCreator(rule)).toEqual(true);
+    expect(hasCreator(rule)).toBe(true);
   });
   it("returns false if the rule only applies to other agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
@@ -1236,7 +1276,7 @@ describe("hasCreator", () => {
       creator: false,
       agents: [MOCK_WEBID_ME],
     });
-    expect(hasCreator(rule)).toEqual(false);
+    expect(hasCreator(rule)).toBe(false);
   });
 });
 
@@ -1279,6 +1319,50 @@ describe("setCreator", () => {
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
     ).toBe(true);
+  });
+});
+
+describe("getClientAll", () => {
+  it("returns all the clients a rule applies to by WebID", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
+    });
+    const clients = getClientAll(rule);
+    expect(clients).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(clients).toContain(MOCK_CLIENT_WEBID_2.value);
+    expect(clients).toHaveLength(2);
+  });
+
+  it("does not return the agents/groups/public client a rule applies to", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      agents: [MOCK_WEBID_ME],
+      groups: [MOCK_GROUP_IRI],
+      public: true,
+      authenticated: true,
+      creator: true,
+      publicClient: true,
+    });
+    const clients = getClientAll(rule);
+    expect(clients).not.toContain(MOCK_GROUP_IRI.value);
+    expect(clients).not.toContain(ACP_CREATOR.value);
+    expect(clients).not.toContain(ACP_AUTHENTICATED.value);
+    expect(clients).not.toContain(ACP_PUBLIC.value);
+    expect(clients).toHaveLength(0);
+  });
+});
+
+describe("hasAnyClient", () => {
+  it("returns true if the rule applies to any client", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+    });
+    expect(hasAnyClient(rule)).toBe(true);
+  });
+  it("returns false if the rule only applies to individual clients", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    expect(hasAnyClient(rule)).toBe(false);
   });
 });
 
