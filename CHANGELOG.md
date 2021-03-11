@@ -6,7 +6,7 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-## [1.5.0] - 2021-04-08
+## [1.5.0] - 2021-03-08
 
 ### New features
 
