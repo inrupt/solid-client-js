@@ -20,6 +20,7 @@
  */
 
 import { acp, rdf, solid } from "../constants";
+import { isNamedNode } from "../datatypes";
 import {
   SolidDataset,
   Thing,
@@ -29,6 +30,7 @@ import {
   WebId,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
+import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
 import { getIriAll, getUrl } from "../thing/get";
 import { removeIri } from "../thing/remove";
@@ -41,9 +43,12 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
+import { WithAccessibleAcr } from "./acp";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 import { Policy, ResourcePolicy } from "./policy";
 
 export type Rule = ThingPersisted;
+export type ResourceRule = ThingPersisted;
 
 /**
  * NOTE: Don't export for now (i.e. if exported, should this be `isAcpRule()` so
@@ -304,6 +309,28 @@ export function createRule(url: Url | UrlString): Rule {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Initialise a new, empty [[ResourceRule]] for the given Resource.
+ *
+ * @param resourceWithAcr The Resource to which the new Rule is to apply.
+ * @param name Name that identifies this [[Rule]].
+ */
+export function createResourceRuleFor(
+  resourceWithAcr: WithAccessibleAcr,
+  name: string
+): ResourceRule {
+  const acr = internal_getAcr(resourceWithAcr);
+  const url = new URL(getSourceUrl(acr));
+  url.hash = `#${name}`;
+  let ruleThing = createThing({ url: url.href });
+  ruleThing = setUrl(ruleThing, rdf.type, acp.Rule);
+  return ruleThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Get the [[Rule]] with the given URL from an [[RuleDataset]].
  *
  * @param ruleResource The Resource that contains the given [[Rule]].
@@ -326,9 +353,36 @@ export function getRule(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Get the [[ResourceRule]] with the given name from an Resource's Access Control
+ * Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains the given [[ResourceRule]].
+ * @param name Name that identifies this [[ResourceRule]].
+ * @returns The requested [[ResourceRule]], if it exists, or `null` if it does not.
+ */
+export function getResourceRule(
+  resourceWithAcr: WithAccessibleAcr,
+  name: string
+): ResourceRule | null {
+  const acr = internal_getAcr(resourceWithAcr);
+  const acrUrl = getSourceUrl(acr);
+  const url = new URL(acrUrl);
+  url.hash = `#${name}`;
+  const foundThing = getThing(acr, url.href);
+  if (foundThing === null || !isRule(foundThing)) {
+    return null;
+  }
+  return foundThing;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Gets the [[Rule]]s from a [[SolidDataset]].
  *
- * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns The [[Rule]]s contained in this resource.
  */
 export function getRuleAll(ruleResource: SolidDataset): Rule[] {
@@ -341,9 +395,27 @@ export function getRuleAll(ruleResource: SolidDataset): Rule[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Gets the [[ResourceRule]]s from a Resource's Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
+ * @returns The [[ResourceRule]]s contained in this Resource's Access Control Resource.
+ */
+export function getResourceRuleAll(
+  resourceWithAcr: WithAccessibleAcr
+): ResourceRule[] {
+  const acr = internal_getAcr(resourceWithAcr);
+  const things = getThingAll(acr);
+  return things.filter(isRule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Removes the given [[Rule]] from the given [[SolidDataset]].
  *
- * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns A new RuleDataset equal to the given Rule Resource, but without the given Rule.
  */
 export function removeRule<Dataset extends SolidDataset>(
@@ -358,10 +430,60 @@ export function removeRule<Dataset extends SolidDataset>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
+ * Removes the given [[ResourceRule]] from the given Resource's Access Control Resource.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
+ * @returns A new Resource equal to the given Resource, but without the given Rule in its ACR.
+ */
+export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  rule: string | Url | UrlString | ResourceRule
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  let ruleToRemove: UrlString;
+  if (typeof rule === "string") {
+    try {
+      new URL(rule);
+      ruleToRemove = rule;
+    } catch (e) {
+      // If the given Rule to remove is the name of the Rule,
+      // resolve it to its full URL — developers usually refer to either the
+      // Rule itself, or by its name, as they do not have access to the ACR
+      // directly.
+      const ruleUrl = new URL(getSourceUrl(acr));
+      ruleUrl.hash = `#${rule}`;
+      ruleToRemove = ruleUrl.href;
+    }
+  } else if (isNamedNode(rule)) {
+    ruleToRemove = internal_toIriString(rule);
+  } else {
+    ruleToRemove = asUrl(rule);
+  }
+
+  // Check whether the actual Rule (i.e. with the Rule type) exists:
+  const matchingRule = getResourceRule(
+    resourceWithAcr,
+    new URL(ruleToRemove).hash.substring(1)
+  );
+  if (matchingRule === null) {
+    // No such Rule exists yet, so return the Resource+ACR unchanged:
+    return resourceWithAcr;
+  }
+
+  const updatedAcr = removeThing(acr, matchingRule);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  return updatedResource;
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
  * Insert the given [[Rule]] into the given [[SolidDataset]], replacing previous
  * instances of that Rule.
  *
- * @param ruleResource The Resource that contains (zero of more) [[Rule]]s.
+ * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns A new RuleDataset equal to the given Rule Resource, but with the given Rule.
  */
 export function setRule<Dataset extends SolidDataset>(
@@ -369,6 +491,27 @@ export function setRule<Dataset extends SolidDataset>(
   rule: Rule
 ): Dataset {
   return setThing(ruleResource, rule);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Insert the given [[ResourceRule]] into the given Resource's Access Control Resource,
+ * replacing previous instances of that Rule.
+ *
+ * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
+ * @returns A new Resource equal to the given Resource, but with the given Rule in its ACR.
+ */
+export function setResourceRule<ResourceExt extends WithAccessibleAcr>(
+  resourceWithAcr: ResourceExt,
+  rule: ResourceRule
+): ResourceExt {
+  const acr = internal_getAcr(resourceWithAcr);
+  const updatedAcr = setThing(acr, rule);
+  const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+  return updatedResource;
 }
 
 /**

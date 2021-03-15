@@ -75,6 +75,11 @@ import {
   removeAuthenticated,
   removeCreator,
   removeAnyClient,
+  getResourceRule,
+  getResourceRuleAll,
+  removeResourceRule,
+  setResourceRule,
+  createResourceRuleFor,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -82,7 +87,14 @@ import { createSolidDataset } from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
 import { Thing, ThingPersisted, Url, UrlString } from "../interfaces";
 import { acp, rdf } from "../constants";
-import { getIriAll } from "../index";
+import {
+  getIri,
+  getIriAll,
+  getSourceUrl,
+  mockSolidDatasetFrom,
+} from "../index";
+import { addMockAcrTo, mockAcrFor } from "./mock";
+import { internal_getAcr } from "./control.internal";
 
 // Vocabulary terms
 const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
@@ -715,6 +727,28 @@ describe("createRule", () => {
   });
 });
 
+describe("createResourceRuleFor", () => {
+  it("returns a acp:Rule", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const myRule = createResourceRuleFor(mockedResourceWithAcr, "myRule");
+    expect(getIri(myRule, RDF_TYPE)).toBe(ACP_RULE.value);
+  });
+  it("returns an **empty** rule", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const myRule = createResourceRuleFor(mockedResourceWithAcr, "myRule");
+    // The rule should only contain a type triple.
+    expect(myRule.size).toBe(1);
+  });
+});
+
 describe("getRule", () => {
   it("returns the rule with a matching IRI", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
@@ -743,6 +777,57 @@ describe("getRule", () => {
   });
 });
 
+describe("getResourceRule", () => {
+  it("returns the rule with a matching name", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const result = getResourceRule(mockedResourceWithAcr, "rule");
+    expect(result).not.toBeNull();
+  });
+
+  it("does not return a Thing with a matching IRI but the wrong type", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(
+      mockedRule,
+      rdf.type,
+      "http://example.org/ns#NotRuleType"
+    );
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const result = getResourceRule(mockedResourceWithAcr, "rule");
+    expect(result).toBeNull();
+  });
+
+  it("does not return a rule with a mismatching IRI", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    const result = getResourceRule(mockedResourceWithAcr, "other-rule");
+    expect(result).toBeNull();
+  });
+});
+
 describe("getRuleAll", () => {
   it("returns an empty array if there are no Rules in the given Dataset", () => {
     expect(getRuleAll(createSolidDataset())).toHaveLength(0);
@@ -761,6 +846,38 @@ describe("getRuleAll", () => {
   });
 });
 
+describe("getResourceRuleAll", () => {
+  it("returns an empty array if there are no Rules in the given Resource's ACR", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    expect(getResourceRuleAll(mockedResourceWithAcr)).toHaveLength(0);
+  });
+
+  it("returns all the rules in a Resource's ACR", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule1 = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule1`,
+    });
+    mockedRule1 = setUrl(mockedRule1, rdf.type, acp.Rule);
+    let mockedRule2 = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule2`,
+    });
+    mockedRule2 = setUrl(mockedRule2, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule1);
+    mockedAcr = setThing(mockedAcr, mockedRule2);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const result = getResourceRuleAll(mockedResourceWithAcr);
+    expect(result).toHaveLength(2);
+  });
+});
+
 describe("removeRule", () => {
   it("removes the Rule from the given empty Dataset", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
@@ -771,6 +888,104 @@ describe("removeRule", () => {
   });
 });
 
+describe("removeResourceRule", () => {
+  it("removes the Rule from the given Resource's Access control Resource", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const updatedDataset = removeResourceRule(
+      mockedResourceWithAcr,
+      mockedRule
+    );
+    expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
+  });
+
+  it("accepts a plain name to remove a Rule", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const updatedDataset = removeResourceRule(mockedResourceWithAcr, "rule");
+    expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
+  });
+
+  it("accepts a full URL to remove a Rule", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const updatedDataset = removeResourceRule(
+      mockedResourceWithAcr,
+      `${getSourceUrl(mockedAcr)}#rule`
+    );
+    expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
+  });
+
+  it("accepts a Named Node to remove a Rule", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const updatedDataset = removeResourceRule(
+      mockedResourceWithAcr,
+      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#rule`)
+    );
+    expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
+  });
+
+  it("does not remove a non-Rule with the same name", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(
+      mockedRule,
+      rdf.type,
+      "https://example.vocab/not-a-rule"
+    );
+    mockedAcr = setThing(mockedAcr, mockedRule);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+
+    const updatedDataset = removeResourceRule(mockedResourceWithAcr, "rule");
+    const updatedAcr = internal_getAcr(updatedDataset);
+    expect(
+      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#rule`)
+    ).not.toBeNull();
+  });
+});
+
 describe("setRule", () => {
   it("sets the Rule in the given empty Dataset", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
@@ -778,9 +993,24 @@ describe("setRule", () => {
 
     const result = getThing(dataset, MOCKED_RULE_IRI);
     expect(result).not.toBeNull();
-    expect(
-      getIriAll(result as Thing, rdf.type).includes(acp.Rule)
-    ).toBeTruthy();
+    expect(getIriAll(result as Thing, rdf.type)).toContain(acp.Rule);
+  });
+});
+
+describe("setResourceRule", () => {
+  it("sets the Rule in the given Resource's ACR", () => {
+    const mockedAcr = mockAcrFor("https://some.pod/resource");
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr
+    );
+    let mockedRule = createThing({
+      url: `${getSourceUrl(mockedAcr)}#rule`,
+    });
+    mockedRule = setUrl(mockedRule, rdf.type, acp.Rule);
+    const updatedResource = setResourceRule(mockedResourceWithAcr, mockedRule);
+
+    expect(getResourceRuleAll(updatedResource)).toHaveLength(1);
   });
 });
 
