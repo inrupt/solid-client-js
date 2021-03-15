@@ -765,6 +765,68 @@ describe.each(serversUnderTest)(
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
       });
+
+      it("can set Access from a Resource's ACR", async () => {
+        const session = await getSession();
+        const resourceUrl =
+          rootContainer +
+          `solid-client-tests/node/acp/resource-policies-and-rules-${session.info.sessionId}.ttl`;
+
+        await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), {
+          fetch: session.fetch,
+        });
+
+        const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
+          resourceUrl,
+          { fetch: session.fetch }
+        );
+        if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
+          throw new Error(
+            `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`
+          );
+        }
+        let publicRule = acp.createResourceRuleFor(
+          resourceInfoWithAcr,
+          "publicRule"
+        );
+        publicRule = acp.setPublic(publicRule);
+        let publicReadPolicy = acp.createResourcePolicyFor(
+          resourceInfoWithAcr,
+          "publicReadPolicy"
+        );
+        publicReadPolicy = acp.addAllOfRuleUrl(publicReadPolicy, publicRule);
+        publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
+          read: true,
+          append: false,
+          write: false,
+        });
+
+        let updatedResourceInfoWithAcr = acp.setResourceRule(
+          resourceInfoWithAcr,
+          publicRule
+        );
+        updatedResourceInfoWithAcr = acp.setResourcePolicy(
+          updatedResourceInfoWithAcr,
+          publicReadPolicy
+        );
+
+        // Verify that we cannot fetch the Resource before adding public Read access
+        // when not logged in (i.e. not passing the session's fetch):
+        await expect(getFile(resourceUrl)).rejects.toThrow(
+          // Unauthorised:
+          expect.objectContaining({ statusCode: 401 }) as FetchError
+        );
+
+        await acp.saveAcrFor(updatedResourceInfoWithAcr, {
+          fetch: session.fetch,
+        });
+
+        // Verify that indeed, an unauthenticated user can now read it:
+        await expect(getFile(resourceUrl)).resolves.not.toBeNull();
+
+        // Clean up:
+        await deleteFile(resourceUrl, { fetch: session.fetch });
+      });
     });
 
     describe("Wrapper Access API's", () => {
