@@ -19,10 +19,65 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import * as acpAcp from "./acp";
-import * as acpPolicy from "./policy";
-import * as acpRule from "./rule";
-import * as acpMock from "./mock";
+import {
+  getFileWithAccessDatasets,
+  getFileWithAcr,
+  getReferencedPolicyUrlAll,
+  getResourceInfoWithAccessDatasets,
+  getResourceInfoWithAcr,
+  getSolidDatasetWithAccessDatasets,
+  getSolidDatasetWithAcr,
+  hasAccessibleAcr,
+  saveAcrFor,
+  WithAccessibleAcr,
+} from "./acp";
+import {
+  createPolicy,
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  policyAsMarkdown,
+  removePolicy,
+  setAllowModes,
+  setDenyModes,
+  setPolicy,
+} from "./policy";
+import {
+  addAgent,
+  addForbiddenRuleUrl,
+  addGroup,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+  createRule,
+  getAgentAll,
+  getForbiddenRuleUrlAll,
+  getGroupAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+  getRule,
+  getRuleAll,
+  hasAuthenticated,
+  hasCreator,
+  hasPublic,
+  removeAgent,
+  removeForbiddenRuleUrl,
+  removeGroup,
+  removeOptionalRuleUrl,
+  removeRequiredRuleUrl,
+  removeRule,
+  ruleAsMarkdown,
+  setAgent,
+  setAuthenticated,
+  setCreator,
+  setForbiddenRuleUrl,
+  setGroup,
+  setOptionalRuleUrl,
+  setPublic,
+  setRequiredRuleUrl,
+  setRule,
+} from "./rule";
+import { addMockAcrTo, mockAcrFor } from "./mock";
 import {
   hasLinkedAcr,
   addAcrPolicyUrl,
@@ -52,6 +107,71 @@ import {
 } from "./control.internal";
 import { removeThing } from "../thing/thing";
 
+const v1AcpFunctions = {
+  getFileWithAccessDatasets,
+  getFileWithAcr,
+  getReferencedPolicyUrlAll,
+  getResourceInfoWithAccessDatasets,
+  getResourceInfoWithAcr,
+  getSolidDatasetWithAccessDatasets,
+  getSolidDatasetWithAcr,
+  hasAccessibleAcr,
+  saveAcrFor,
+};
+
+const v1PolicyFunctions = {
+  createPolicy,
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  policyAsMarkdown,
+  removePolicy,
+  setAllowModes,
+  setDenyModes,
+  setPolicy,
+};
+
+const v1RuleFunctions = {
+  addAgent,
+  addForbiddenRuleUrl,
+  addGroup,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+  createRule,
+  getAgentAll,
+  getForbiddenRuleUrlAll,
+  getGroupAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+  getRule,
+  getRuleAll,
+  hasAuthenticated,
+  hasCreator,
+  hasPublic,
+  removeAgent,
+  removeForbiddenRuleUrl,
+  removeGroup,
+  removeOptionalRuleUrl,
+  removeRequiredRuleUrl,
+  removeRule,
+  ruleAsMarkdown,
+  setAgent,
+  setAuthenticated,
+  setCreator,
+  setForbiddenRuleUrl,
+  setGroup,
+  setOptionalRuleUrl,
+  setPublic,
+  setRequiredRuleUrl,
+  setRule,
+};
+
+const v1MockFunctions = {
+  addMockAcrTo,
+  mockAcrFor,
+};
+
 const v1ControlFunctions = {
   hasLinkedAcr,
   addAcrPolicyUrl,
@@ -78,6 +198,8 @@ const deprecatedFunctions = {
   getMemberPolicyUrlAll: internal_getMemberPolicyUrlAll,
   removeMemberPolicyUrl: internal_getMemberPolicyUrlAll,
   removeMemberPolicyUrlAll: internal_removeMemberPolicyUrlAll,
+  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
+  getForbiddenRuleurlAll: getForbiddenRuleUrlAll,
 };
 
 /**
@@ -85,14 +207,12 @@ const deprecatedFunctions = {
  * @deprecated Replaced by [[acp_v2]].
  */
 export const acp_v1 = {
-  ...acpAcp,
-  ...acpPolicy,
-  ...acpRule,
-  ...acpMock,
+  ...v1AcpFunctions,
+  ...v1PolicyFunctions,
+  ...v1RuleFunctions,
+  ...v1MockFunctions,
   ...v1ControlFunctions,
   ...deprecatedFunctions,
-  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
-  getForbiddenRuleurlAll: acpRule.getForbiddenRuleUrlAll,
 };
 
 /**
@@ -108,7 +228,7 @@ export const acp_v1 = {
  * @hidden Developers don't need to care about initialising Controls - they can just add Policies directly.
  * @deprecated
  */
-export function removeControl<ResourceExt extends acpAcp.WithAccessibleAcr>(
+export function removeControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
   control: Control
 ): ResourceExt {
