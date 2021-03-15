@@ -19,19 +19,182 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import * as acpAcp from "./acp";
-import * as acpControl from "./control";
-import * as acpPolicy from "./policy";
-import * as acpRule from "./rule";
-import * as acpMock from "./mock";
+import {
+  getFileWithAccessDatasets,
+  getFileWithAcr,
+  getReferencedPolicyUrlAll,
+  getResourceInfoWithAccessDatasets,
+  getResourceInfoWithAcr,
+  getSolidDatasetWithAccessDatasets,
+  getSolidDatasetWithAcr,
+  hasAccessibleAcr,
+  saveAcrFor,
+} from "./acp";
+import {
+  acrAsMarkdown,
+  addAcrPolicyUrl,
+  addMemberAcrPolicyUrl,
+  addMemberPolicyUrl,
+  addPolicyUrl,
+  getAcrPolicyUrlAll,
+  getMemberAcrPolicyUrlAll,
+  getMemberPolicyUrlAll,
+  getPolicyUrlAll,
+  hasLinkedAcr,
+  removeAcrPolicyUrl,
+  removeAcrPolicyUrlAll,
+  removeMemberAcrPolicyUrl,
+  removeMemberAcrPolicyUrlAll,
+  removeMemberPolicyUrl,
+  removeMemberPolicyUrlAll,
+  removePolicyUrl,
+  removePolicyUrlAll,
+} from "./control";
+import {
+  createPolicy,
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  policyAsMarkdown,
+  removePolicy,
+  setAllowModes,
+  setDenyModes,
+  setPolicy,
+} from "./policy";
+import {
+  addAgent,
+  addForbiddenRuleUrl,
+  addGroup,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+  createRule,
+  getAgentAll,
+  getForbiddenRuleUrlAll,
+  getGroupAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+  getRule,
+  getRuleAll,
+  hasAuthenticated,
+  hasCreator,
+  hasPublic,
+  removeAgent,
+  removeForbiddenRuleUrl,
+  removeGroup,
+  removeOptionalRuleUrl,
+  removeRequiredRuleUrl,
+  removeRule,
+  ruleAsMarkdown,
+  setAgent,
+  setAuthenticated,
+  setCreator,
+  setForbiddenRuleUrl,
+  setGroup,
+  setOptionalRuleUrl,
+  setPublic,
+  setRequiredRuleUrl,
+  setRule,
+} from "./rule";
+import { addMockAcrTo, mockAcrFor } from "./mock";
+
+const v2AcpFunctions = {
+  getFileWithAccessDatasets,
+  getFileWithAcr,
+  getReferencedPolicyUrlAll,
+  getResourceInfoWithAccessDatasets,
+  getResourceInfoWithAcr,
+  getSolidDatasetWithAccessDatasets,
+  getSolidDatasetWithAcr,
+  hasAccessibleAcr,
+  saveAcrFor,
+};
+
+const v2ControlFunctions = {
+  acrAsMarkdown,
+  addAcrPolicyUrl,
+  addMemberAcrPolicyUrl,
+  addMemberPolicyUrl,
+  addPolicyUrl,
+  getAcrPolicyUrlAll,
+  getMemberAcrPolicyUrlAll,
+  getMemberPolicyUrlAll,
+  getPolicyUrlAll,
+  hasLinkedAcr,
+  removeAcrPolicyUrl,
+  removeAcrPolicyUrlAll,
+  removeMemberAcrPolicyUrl,
+  removeMemberAcrPolicyUrlAll,
+  removeMemberPolicyUrl,
+  removeMemberPolicyUrlAll,
+  removePolicyUrl,
+  removePolicyUrlAll,
+};
+
+const v2PolicyFunctions = {
+  createPolicy,
+  getAllowModes,
+  getDenyModes,
+  getPolicy,
+  getPolicyAll,
+  policyAsMarkdown,
+  removePolicy,
+  setAllowModes,
+  setDenyModes,
+  setPolicy,
+};
+
+const v2RuleFunctions = {
+  addAgent,
+  addForbiddenRuleUrl,
+  addGroup,
+  addOptionalRuleUrl,
+  addRequiredRuleUrl,
+  createRule,
+  getAgentAll,
+  getForbiddenRuleUrlAll,
+  getGroupAll,
+  getOptionalRuleUrlAll,
+  getRequiredRuleUrlAll,
+  getRule,
+  getRuleAll,
+  hasAuthenticated,
+  hasCreator,
+  hasPublic,
+  removeAgent,
+  removeForbiddenRuleUrl,
+  removeGroup,
+  removeOptionalRuleUrl,
+  removeRequiredRuleUrl,
+  removeRule,
+  ruleAsMarkdown,
+  setAgent,
+  setAuthenticated,
+  setCreator,
+  setForbiddenRuleUrl,
+  setGroup,
+  setOptionalRuleUrl,
+  setPublic,
+  setRequiredRuleUrl,
+  setRule,
+};
+
+const v2MockFunctions = {
+  addMockAcrTo,
+  mockAcrFor,
+};
+
+const deprecatedFunctions = {
+  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
+  getForbiddenRuleurlAll: getForbiddenRuleUrlAll,
+};
 
 /** @hidden */
 export const acp_v2 = {
-  ...acpAcp,
-  ...acpControl,
-  ...acpPolicy,
-  ...acpRule,
-  ...acpMock,
-  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
-  getForbiddenRuleurlAll: acpRule.getForbiddenRuleUrlAll,
+  ...v2AcpFunctions,
+  ...v2ControlFunctions,
+  ...v2PolicyFunctions,
+  ...v2RuleFunctions,
+  ...v2MockFunctions,
+  ...deprecatedFunctions,
 };
