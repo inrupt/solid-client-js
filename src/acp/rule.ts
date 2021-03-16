@@ -61,14 +61,14 @@ function isRule(thing: Thing): thing is Rule {
  * ```
  *
  * Add a rule that refines the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is **not** present in **any** of the required rules,
+ * requesting access to a resource is **not** present in **any** of the "All Of" rules,
  * they will not be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addRequiredRuleUrl(
+export function addAllOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -81,14 +81,14 @@ export function addRequiredRuleUrl(
  * ```
  *
  * Removes a rule that refines the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is **not** present in **any** of the required rules,
+ * requesting access to a resource is **not** present in **any** of the "All Of" rules,
  * they will not be granted access.
  * @param policy The [[Policy]] from which the rule should be removed.
  * @param rule The rule to remove from the policy.
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeRequiredRuleUrl(
+export function removeAllOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -101,14 +101,14 @@ export function removeRequiredRuleUrl(
  * ```
  *
  * Overwrites the rule refining the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is **not** present in **any** of the required rules,
+ * requesting access to a resource is **not** present in **any** of the "All Of" rules,
  * they will not be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy requires.
- * @returns A new [[Policy]] clone of the original one, with the required rules replaced.
+ * @returns A new [[Policy]] clone of the original one, with the "All Of" rules replaced.
  * @since Unreleased
  */
-export function setRequiredRuleUrl(
+export function setAllOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -120,12 +120,12 @@ export function setRequiredRuleUrl(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the [[Rule]]'s required by the given [[Policy]]
+ * Get the "All Of" [[Rule]]'s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
- * @returns A list of the required [[Rule]]'s
+ * @returns A list of the "All Of" [[Rule]]'s
  * @since unreleased
  */
-export function getRequiredRuleUrlAll(policy: Policy): UrlString[] {
+export function getAllOfRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
 
@@ -135,14 +135,14 @@ export function getRequiredRuleUrlAll(policy: Policy): UrlString[] {
  * ```
  *
  * Add a rule that extends the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is present in **any** of the required rules,
+ * requesting access to a resource is present in **any** of the "Any Of" rules,
  * they will be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addOptionalRuleUrl(
+export function addAnyOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -155,14 +155,14 @@ export function addOptionalRuleUrl(
  * ```
  *
  * Removes a rule that extends the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is present in **any** of the required rules,
+ * requesting access to a resource is present in **any** of the "Any Of" rules,
  * they will be granted access.
  * @param policy The [[Policy]] from which the rule should be removed.
  * @param rule The rule to remove from the policy.
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeOptionalRuleUrl(
+export function removeAnyOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -175,14 +175,14 @@ export function removeOptionalRuleUrl(
  * ```
  *
  * Overwrite the rule extending the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is present in **any** of the required rules,
+ * requesting access to a resource is present in **any** of the "Any Of" rules,
  * they will be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy accepts.
- * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
+ * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
  * @since Unreleased
  */
-export function setOptionalRuleUrl(
+export function setAnyOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -196,10 +196,10 @@ export function setOptionalRuleUrl(
  *
  * Get the [[Rule]]'s accepted by the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
- * @returns A list of the optional [[Rule]]'s
+ * @returns A list of the "Any Of" [[Rule]]'s
  * @since unreleased
  */
-export function getOptionalRuleUrlAll(policy: Policy): UrlString[] {
+export function getAnyOfRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
 
@@ -216,7 +216,7 @@ export function getOptionalRuleUrlAll(policy: Policy): UrlString[] {
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
  * @since Unreleased
  */
-export function addForbiddenRuleUrl(
+export function addNoneOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -236,7 +236,7 @@ export function addForbiddenRuleUrl(
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
  * @since Unreleased
  */
-export function removeForbiddenRuleUrl(
+export function removeNoneOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -249,14 +249,14 @@ export function removeForbiddenRuleUrl(
  * ```
  *
  * Set the rules restrincting the scope of a given the [[Policy]]. If an agent
- * requesting access to a resource is present in **any** of the required rules,
+ * requesting access to a resource is present in **any** of the "None Of" rules,
  * they will not be granted access.
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy accepts.
- * @returns A new [[Policy]] clone of the original one, with the optional rules replaced.
+ * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
  * @since Unreleased
  */
-export function setForbiddenRuleUrl(
+export function setNoneOfRuleUrl(
   policy: Policy,
   rule: Rule | Url | UrlString
 ): Policy {
@@ -273,7 +273,7 @@ export function setForbiddenRuleUrl(
  * @returns A list of the forbidden [[Rule]]'s
  * @since unreleased
  */
-export function getForbiddenRuleUrlAll(policy: Policy): UrlString[] {
+export function getNoneOfRuleUrlAll(policy: Policy): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
 
