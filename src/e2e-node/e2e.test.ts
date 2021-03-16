@@ -62,7 +62,7 @@ import {
   createSolidDataset,
   deleteSolidDataset,
   UrlString,
-  acp_v2 as acp,
+  acp_v3 as acp,
   FetchError,
 } from "../index";
 // Functions from this module have to be imported from the module directly,
@@ -625,7 +625,7 @@ describe.each(serversUnderTest)(
         session: Session
       ) {
         let publicRule = acp.createRule(policyResourceUrl + "#rule-public");
-        publicRule = acp.setPublic(publicRule, true);
+        publicRule = acp.setPublic(publicRule);
 
         let publicReadPolicy = acp.createPolicy(
           policyResourceUrl + "#policy-publicRead"
@@ -633,7 +633,7 @@ describe.each(serversUnderTest)(
         // Note: we should think of a better name for "optional", as this isn't really optional.
         //       At least one "optional" rule should apply, and since this is the only rule for this
         //       policy, it will in practice be required.
-        publicReadPolicy = acp.addOptionalRuleUrl(publicReadPolicy, publicRule);
+        publicReadPolicy = acp.addAnyOfRuleUrl(publicReadPolicy, publicRule);
         publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
           read: true,
           append: false,
@@ -647,7 +647,7 @@ describe.each(serversUnderTest)(
         let selfWriteNoReadPolicy = acp.createPolicy(
           policyResourceUrl + "#policy-selfWriteNoRead"
         );
-        selfWriteNoReadPolicy = acp.addRequiredRuleUrl(
+        selfWriteNoReadPolicy = acp.addAllOfRuleUrl(
           selfWriteNoReadPolicy,
           selfRule
         );
