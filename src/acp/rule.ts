@@ -404,6 +404,7 @@ export function setAgent(rule: Rule, agent: WebId): Rule {
   // don't want to overwrite with this function.
   const isPublic = hasPublic(rule);
   const isAuthenticated = hasAuthenticated(rule);
+  const isCreator = hasCreator(rule);
   let result = setIri(rule, acp.agent, agent);
   // Restore public and authenticated
   if (isPublic) {
@@ -411,6 +412,9 @@ export function setAgent(rule: Rule, agent: WebId): Rule {
   }
   if (isAuthenticated) {
     result = setAuthenticated(result);
+  }
+  if (isCreator) {
+    result = setCreator(result);
   }
   return result;
 }
