@@ -406,8 +406,12 @@ export function setAgent(rule: Rule, agent: WebId): Rule {
   const isAuthenticated = hasAuthenticated(rule);
   let result = setIri(rule, acp.agent, agent);
   // Restore public and authenticated
-  result = setPublic(result, isPublic);
-  result = setAuthenticated(result, isAuthenticated);
+  if (isPublic) {
+    result = setPublic(result);
+  }
+  if (isAuthenticated) {
+    result = setAuthenticated(result);
+  }
   return result;
 }
 
@@ -529,17 +533,37 @@ export function hasPublic(rule: Rule): boolean {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Enable or disable a rule from applying to any agent.
+ * Set a Rule to apply to any Agent.
  *
  * @param rule The rule being modified.
- * @param hasPublic A boolean indicating whether the rule should apply or not to any agent.
- * @returns A copy of the rule, updated to apply/not apply to any agent.
+ * @returns A copy of the rule, updated to apply to any agent.
  * @status Unreleased
  */
-export function setPublic(rule: Rule, hasPublic: boolean): Rule {
-  return hasPublic
-    ? addIri(rule, acp.agent, acp.PublicAgent)
-    : removeIri(rule, acp.agent, acp.PublicAgent);
+export function setPublic(rule: Rule): Rule {
+  // The second argument should not be part of the function signature,
+  // so it's not in the parameter list:
+  // eslint-disable-next-line prefer-rest-params
+  if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
+    throw new Error(
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+    );
+  }
+  return addIri(rule, acp.agent, acp.PublicAgent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Set a Rule to no longer apply to any Agent.
+ *
+ * @param rule The rule being modified.
+ * @returns A copy of the rule, updated to no longer apply to any agent.
+ * @status Unreleased
+ */
+export function removePublic(rule: Rule): Rule {
+  return removeIri(rule, acp.agent, acp.PublicAgent);
 }
 
 /**
@@ -565,17 +589,37 @@ export function hasAuthenticated(rule: Rule): boolean {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Enable or disable a rule from applying to any authenticated agent.
+ * Set a Rule to apply to any authenticated Agent.
  *
  * @param rule The rule being modified.
- * @param hasPublic A boolean indicating whether the rule should apply or not to any authenticated agent.
+ * @returns A copy of the rule, updated to apply to any authenticated Agent.
+ * @status Unreleased
+ */
+export function setAuthenticated(rule: Rule): Rule {
+  // The second argument should not be part of the function signature,
+  // so it's not in the parameter list:
+  // eslint-disable-next-line prefer-rest-params
+  if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
+    throw new Error(
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+    );
+  }
+  return addIri(rule, acp.agent, acp.AuthenticatedAgent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Set a Rule to no longer apply to any authenticated Agent.
+ *
+ * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply/not apply to any authenticated agent.
  * @status Unreleased
  */
-export function setAuthenticated(rule: Rule, authenticated: boolean): Rule {
-  return authenticated
-    ? addIri(rule, acp.agent, acp.AuthenticatedAgent)
-    : removeIri(rule, acp.agent, acp.AuthenticatedAgent);
+export function removeAuthenticated(rule: Rule): Rule {
+  return removeIri(rule, acp.agent, acp.AuthenticatedAgent);
 }
 
 /**
@@ -600,17 +644,37 @@ export function hasCreator(rule: Rule): boolean {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Enable or disable a rule from applying to the creator of the Resource.
+ * Set a Rule to apply to the creator of a Resource.
  *
  * @param rule The rule being modified.
- * @param hasPublic A boolean indicating whether the rule should apply or not to the creator of the Resource.
- * @returns A copy of the rule, updated to apply/not apply to the creator of the Resource.
+ * @returns A copy of the rule, updated to apply to the creator of a Resource.
  * @status Unreleased
  */
-export function setCreator(rule: Rule, creator: boolean): Rule {
-  return creator
-    ? addIri(rule, acp.agent, acp.CreatorAgent)
-    : removeIri(rule, acp.agent, acp.CreatorAgent);
+export function setCreator(rule: Rule): Rule {
+  // The second argument should not be part of the function signature,
+  // so it's not in the parameter list:
+  // eslint-disable-next-line prefer-rest-params
+  if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
+    throw new Error(
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+    );
+  }
+  return addIri(rule, acp.agent, acp.CreatorAgent);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Set a Rule to no longer apply to the creator of a Resource.
+ *
+ * @param rule The rule being modified.
+ * @returns A copy of the rule, updated to apply/not apply to the creator of a Resource.
+ * @status Unreleased
+ */
+export function removeCreator(rule: Rule): Rule {
+  return removeIri(rule, acp.agent, acp.CreatorAgent);
 }
 
 /**
@@ -649,7 +713,9 @@ export function setClient(rule: Rule, client: WebId): Rule {
   const anyClientEnabled = hasAnyClient(rule);
   let result = setIri(rule, acp.client, client);
   // Restore the "any client" class
-  result = setAnyClient(result, anyClientEnabled);
+  if (anyClientEnabled) {
+    result = setAnyClient(result);
+  }
   return result;
 }
 
@@ -709,18 +775,29 @@ export function hasAnyClient(rule: Rule): boolean {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Overwrite the clients the [[Rule]] applies to with the provided client.
+ * Make the [[Rule]] apply to any client application.
  *
  * @param rule The rule for which clients are set.
- * @param anyClient Whether the Rule applies to any client, i.e. all the
- * applications regardless of their identifier.
- * @returns A copy of the rule, updated to apply/not apply to any client
+ * @returns A copy of the rule, updated to apply to any client
  * @since Unreleased
  */
-export function setAnyClient(rule: Rule, anyClient: boolean): Rule {
-  return anyClient
-    ? addIri(rule, acp.client, solid.PublicOidcClient)
-    : removeIri(rule, acp.client, solid.PublicOidcClient);
+export function setAnyClient(rule: Rule): Rule {
+  return addIri(rule, acp.client, solid.PublicOidcClient);
+}
+
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Make the [[Rule]] no longer apply to any client application.
+ *
+ * @param rule The rule for which clients are set.
+ * @returns A copy of the rule, updated to no longer apply to any client
+ * @since Unreleased
+ */
+export function removeAnyClient(rule: Rule): Rule {
+  return removeIri(rule, acp.client, solid.PublicOidcClient);
 }
 
 /**

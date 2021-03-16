@@ -106,6 +106,11 @@ import {
   internal_setControl,
 } from "./control.internal";
 import { removeThing } from "../thing/thing";
+import {
+  previousSetAuthenticatedSignature,
+  previousSetCreatorSignature,
+  previousSetPublicSignature,
+} from "./v2";
 
 const v1AcpFunctions = {
   getFileWithAccessDatasets,
@@ -157,12 +162,9 @@ const v1RuleFunctions = {
   removeRule,
   ruleAsMarkdown,
   setAgent,
-  setAuthenticated,
-  setCreator,
   setForbiddenRuleUrl,
   setGroup,
   setOptionalRuleUrl,
-  setPublic,
   setRequiredRuleUrl,
   setRule,
 };
@@ -200,6 +202,9 @@ const deprecatedFunctions = {
   removeMemberPolicyUrlAll: internal_removeMemberPolicyUrlAll,
   /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
   getForbiddenRuleurlAll: getForbiddenRuleUrlAll,
+  setPublic: previousSetPublicSignature,
+  setAuthenticated: previousSetAuthenticatedSignature,
+  setCreator: previousSetCreatorSignature,
 };
 
 /**

@@ -71,6 +71,10 @@ import {
   removeClient,
   hasAnyClient,
   setAnyClient,
+  removePublic,
+  removeAuthenticated,
+  removeCreator,
+  removeAnyClient,
 } from "./rule";
 
 import { Policy } from "./policy";
@@ -1161,27 +1165,17 @@ describe("hasPublic", () => {
 });
 
 describe("setPublic", () => {
-  it("applies to given rule to the public agent", () => {
+  it("applies the given rule to the public agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setPublic(rule, true);
+    const result = setPublic(rule);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
   });
 
-  it("prevents the rule from applying to the public agent", () => {
-    const rule = mockRule(MOCKED_RULE_IRI, {
-      public: true,
-    });
-    const result = setPublic(rule, false);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(false);
-  });
-
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setPublic(rule, true);
+    setPublic(rule);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(false);
@@ -1192,7 +1186,54 @@ describe("setPublic", () => {
       authenticated: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setPublic(rule, true);
+    const result = setPublic(rule);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
+      )
+    ).toBe(true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
+    ).toBe(true);
+  });
+
+  it("throws an error when you attempt to use the deprecated API", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    expect(
+      // @ts-expect-error The type signature should warn about passing a second argument:
+      () => setPublic(rule, true)
+    ).toThrow(
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+    );
+  });
+});
+
+describe("removePublic", () => {
+  it("prevents the rule from applying to the public agent", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      public: true,
+    });
+    const result = removePublic(rule);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, { public: true });
+    removePublic(rule);
+    expect(
+      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
+    ).toBe(true);
+  });
+
+  it("does not change the other agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      authenticated: true,
+      agents: [MOCK_WEBID_ME],
+      public: true,
+    });
+    const result = removePublic(rule);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
@@ -1224,7 +1265,7 @@ describe("hasAuthenticated", () => {
 describe("setAuthenticated", () => {
   it("applies to given rule to authenticated agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setAuthenticated(rule, true);
+    const result = setAuthenticated(rule);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
@@ -1232,21 +1273,9 @@ describe("setAuthenticated", () => {
     ).toBe(true);
   });
 
-  it("prevents the rule from applying to authenticated agents", () => {
-    const rule = mockRule(MOCKED_RULE_IRI, {
-      authenticated: true,
-    });
-    const result = setAuthenticated(rule, false);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(false);
-  });
-
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setAuthenticated(rule, true);
+    setAuthenticated(rule);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
     ).toBe(false);
@@ -1257,7 +1286,54 @@ describe("setAuthenticated", () => {
       public: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setAuthenticated(rule, true);
+    const result = setAuthenticated(rule);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
+    ).toBe(true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
+    ).toBe(true);
+  });
+
+  it("throws an error when you attempt to use the deprecated API", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    expect(
+      // @ts-expect-error The type signature should warn about passing a second argument:
+      () => setAuthenticated(rule, true)
+    ).toThrow(
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+    );
+  });
+});
+
+describe("removeAuthenticated", () => {
+  it("prevents the rule from applying to authenticated agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      authenticated: true,
+    });
+    const result = removeAuthenticated(rule);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
+      )
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, { authenticated: true });
+    removeAuthenticated(rule);
+    expect(
+      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
+    ).toBe(true);
+  });
+
+  it("does not change the other agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      public: true,
+      authenticated: true,
+      agents: [MOCK_WEBID_ME],
+    });
+    const result = removeAuthenticated(rule);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
@@ -1287,25 +1363,15 @@ describe("hasCreator", () => {
 describe("setCreator", () => {
   it("applies the given rule to the Resource's creator", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setCreator(rule, true);
+    const result = setCreator(rule);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
     ).toBe(true);
   });
 
-  it("prevents the rule from applying to the Resource's creator", () => {
-    const rule = mockRule(MOCKED_RULE_IRI, {
-      creator: true,
-    });
-    const result = setCreator(rule, false);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(false);
-  });
-
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setCreator(rule, true);
+    setCreator(rule);
     expect(
       rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
     ).toBe(false);
@@ -1316,7 +1382,52 @@ describe("setCreator", () => {
       public: true,
       agents: [MOCK_WEBID_ME],
     });
-    const result = setCreator(rule, true);
+    const result = setCreator(rule);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
+    ).toBe(true);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
+    ).toBe(true);
+  });
+
+  it("throws an error when you attempt to use the deprecated API", () => {
+    const rule = mockRule(MOCKED_RULE_IRI);
+    expect(
+      // @ts-expect-error The type signature should warn about passing a second argument:
+      () => setCreator(rule, true)
+    ).toThrow(
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+    );
+  });
+});
+
+describe("removeCreator", () => {
+  it("prevents the rule from applying to the Resource's creator", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      creator: true,
+    });
+    const result = removeCreator(rule);
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, { creator: true });
+    removeCreator(rule);
+    expect(
+      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
+    ).toBe(true);
+  });
+
+  it("does not change the other agents", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      creator: true,
+      public: true,
+      agents: [MOCK_WEBID_ME],
+    });
+    const result = removeCreator(rule);
     expect(
       result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
     ).toBe(true);
@@ -1523,7 +1634,7 @@ describe("hasAnyClient", () => {
 describe("setAnyClient", () => {
   it("applies to given rule to the public client class", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    const result = setAnyClient(rule, true);
+    const result = setAnyClient(rule);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
@@ -1531,21 +1642,9 @@ describe("setAnyClient", () => {
     ).toBe(true);
   });
 
-  it("prevents the rule from applying to the public client class", () => {
-    const rule = mockRule(MOCKED_RULE_IRI, {
-      publicClient: true,
-    });
-    const result = setAnyClient(rule, false);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(false);
-  });
-
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
-    setAnyClient(rule, true);
+    setAnyClient(rule);
     expect(
       rule.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
@@ -1557,7 +1656,44 @@ describe("setAnyClient", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       clients: [MOCK_CLIENT_WEBID_1],
     });
-    const result = setAnyClient(rule, true);
+    const result = setAnyClient(rule);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
+      )
+    ).toBe(true);
+  });
+});
+
+describe("removeAnyClient", () => {
+  it("prevents the rule from applying to the public client class", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+    });
+    const result = removeAnyClient(rule);
+    expect(
+      result.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(false);
+  });
+
+  it("does not change the input rule", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, { publicClient: true });
+    removeAnyClient(rule);
+    expect(
+      rule.has(
+        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
+      )
+    ).toBe(true);
+  });
+
+  it("does not change the other clients", () => {
+    const rule = mockRule(MOCKED_RULE_IRI, {
+      publicClient: true,
+      clients: [MOCK_CLIENT_WEBID_1],
+    });
+    const result = removeAnyClient(rule);
     expect(
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
@@ -1577,9 +1713,9 @@ describe("ruleAsMarkdown", () => {
 
   it("can show everything to which the rule applies", () => {
     let rule = createRule("https://some.pod/policyResource#rule");
-    rule = setCreator(rule, true);
-    rule = setAuthenticated(rule, true);
-    rule = setPublic(rule, true);
+    rule = setCreator(rule);
+    rule = setAuthenticated(rule);
+    rule = setPublic(rule);
     rule = addAgent(rule, "https://some.pod/profile#agent");
     rule = addAgent(rule, "https://some-other.pod/profile#agent");
     rule = addGroup(rule, "https://some.pod/groups#family");

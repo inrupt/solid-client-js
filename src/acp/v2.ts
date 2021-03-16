@@ -80,11 +80,15 @@ import {
   hasCreator,
   hasPublic,
   removeAgent,
+  removeAuthenticated,
+  removeCreator,
   removeForbiddenRuleUrl,
   removeGroup,
   removeOptionalRuleUrl,
+  removePublic,
   removeRequiredRuleUrl,
   removeRule,
+  Rule,
   ruleAsMarkdown,
   setAgent,
   setAuthenticated,
@@ -169,12 +173,9 @@ const v2RuleFunctions = {
   removeRule,
   ruleAsMarkdown,
   setAgent,
-  setAuthenticated,
-  setCreator,
   setForbiddenRuleUrl,
   setGroup,
   setOptionalRuleUrl,
-  setPublic,
   setRequiredRuleUrl,
   setRule,
 };
@@ -184,9 +185,31 @@ const v2MockFunctions = {
   mockAcrFor,
 };
 
+/* istanbul ignore next Not a supported public API: */
+/** @deprecated Replaced by [[setPublic]] */
+export function previousSetPublicSignature(rule: Rule, enable: boolean): Rule {
+  return enable ? setPublic(rule) : removePublic(rule);
+}
+/* istanbul ignore next Not a supported public API: */
+/** @deprecated Replaced by [[setAuthenticated]] */
+export function previousSetAuthenticatedSignature(
+  rule: Rule,
+  enable: boolean
+): Rule {
+  return enable ? setAuthenticated(rule) : removeAuthenticated(rule);
+}
+/* istanbul ignore next Not a supported public API: */
+/** @deprecated Replaced by [[setCreator]] */
+export function previousSetCreatorSignature(rule: Rule, enable: boolean): Rule {
+  return enable ? setCreator(rule) : removeCreator(rule);
+}
+
 const deprecatedFunctions = {
   /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
   getForbiddenRuleurlAll: getForbiddenRuleUrlAll,
+  setPublic: previousSetPublicSignature,
+  setAuthenticated: previousSetAuthenticatedSignature,
+  setCreator: previousSetCreatorSignature,
 };
 
 /** @hidden */
