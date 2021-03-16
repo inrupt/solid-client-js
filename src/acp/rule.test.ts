@@ -899,10 +899,11 @@ describe("setAgent", () => {
     ).toBe(true);
   });
 
-  it("does not overwrite public and authenticated agents", () => {
+  it("does not overwrite public, authenticated and creator agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI, {
       public: true,
       authenticated: true,
+      creator: true,
     });
     const result = setAgent(rule, MOCK_WEBID_YOU.value);
     expect(
@@ -913,6 +914,10 @@ describe("setAgent", () => {
       result.has(
         DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
       )
+    ).toBe(true);
+
+    expect(
+      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
     ).toBe(true);
   });
 });
