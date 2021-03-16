@@ -48,12 +48,12 @@ export class IndexPage {
     // hence the use of TestCafe's native Selector:
     // const initialisationNotification = screen.getByText("End-to-end test helpers initialised.");
     const initialisationNotification = Selector("[role=alert]");
-    await t.expect(initialisationNotification.exists).ok(
-      "solid-client-authn took too long to verify the query parameters after redirection.",
-      // Running this in GitHub Actions on MacOS appears to be somewhat slower,
-      // so we'll put up with a higher timeout there:
-      { timeout: process.env.GITHUB_OS == "macOS" ? 20000 : 10000 }
-    );
+    await t
+      .expect(initialisationNotification.exists)
+      .ok(
+        "solid-client-authn took too long to verify the query parameters after redirection.",
+        { timeout: 20000 }
+      );
   }
 }
 
