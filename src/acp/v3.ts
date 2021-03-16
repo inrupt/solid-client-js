@@ -80,15 +80,11 @@ import {
   hasCreator,
   hasPublic,
   removeAgent,
-  removeAuthenticated,
-  removeCreator,
   removeNoneOfRuleUrl,
   removeGroup,
   removeAnyOfRuleUrl,
-  removePublic,
   removeAllOfRuleUrl,
   removeRule,
-  Rule,
   ruleAsMarkdown,
   setAgent,
   setAuthenticated,
@@ -99,10 +95,20 @@ import {
   setPublic,
   setAllOfRuleUrl,
   setRule,
+  addClient,
+  getClientAll,
+  hasAnyClient,
+  removeClient,
+  setAnyClient,
+  setClient,
+  removeAnyClient,
+  removeAuthenticated,
+  removeCreator,
+  removePublic,
 } from "./rule";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 
-const v2AcpFunctions = {
+const v3AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
   getReferencedPolicyUrlAll,
@@ -114,7 +120,7 @@ const v2AcpFunctions = {
   saveAcrFor,
 };
 
-const v2ControlFunctions = {
+const v3ControlFunctions = {
   acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
@@ -135,7 +141,7 @@ const v2ControlFunctions = {
   removePolicyUrlAll,
 };
 
-const v2PolicyFunctions = {
+const v3PolicyFunctions = {
   createPolicy,
   getAllowModes,
   getDenyModes,
@@ -148,79 +154,61 @@ const v2PolicyFunctions = {
   setPolicy,
 };
 
-const v2RuleFunctions = {
+const v3RuleFunctions = {
   addAgent,
-  addForbiddenRuleUrl: addNoneOfRuleUrl,
   addGroup,
-  addOptionalRuleUrl: addAnyOfRuleUrl,
-  addRequiredRuleUrl: addAllOfRuleUrl,
   createRule,
   getAgentAll,
-  getForbiddenRuleUrlAll: getNoneOfRuleUrlAll,
   getGroupAll,
-  getOptionalRuleUrlAll: getAnyOfRuleUrlAll,
-  getRequiredRuleUrlAll: getAllOfRuleUrlAll,
   getRule,
   getRuleAll,
-  hasAuthenticated,
-  hasCreator,
-  hasPublic,
   removeAgent,
-  removeForbiddenRuleUrl: removeNoneOfRuleUrl,
   removeGroup,
-  removeOptionalRuleUrl: removeAnyOfRuleUrl,
-  removeRequiredRuleUrl: removeAllOfRuleUrl,
   removeRule,
   ruleAsMarkdown,
   setAgent,
-  setForbiddenRuleUrl: setNoneOfRuleUrl,
   setGroup,
-  setOptionalRuleUrl: setAnyOfRuleUrl,
-  setRequiredRuleUrl: setAllOfRuleUrl,
   setRule,
+  addClient,
+  getClientAll,
+  hasAnyClient,
+  removeClient,
+  setAnyClient,
+  setClient,
+  removeAnyClient,
+  hasAuthenticated,
+  hasCreator,
+  hasPublic,
+  setAuthenticated,
+  setCreator,
+  setPublic,
+  removeAuthenticated,
+  removeCreator,
+  removePublic,
+  getAnyOfRuleUrlAll,
+  addAnyOfRuleUrl,
+  removeAnyOfRuleUrl,
+  setAnyOfRuleUrl,
+  getAllOfRuleUrlAll,
+  addAllOfRuleUrl,
+  removeAllOfRuleUrl,
+  setAllOfRuleUrl,
+  getNoneOfRuleUrlAll,
+  addNoneOfRuleUrl,
+  removeNoneOfRuleUrl,
+  setNoneOfRuleUrl,
 };
 
-const v2MockFunctions = {
+const v3MockFunctions = {
   addMockAcrTo,
   mockAcrFor,
 };
 
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setPublic]] */
-export function previousSetPublicSignature(rule: Rule, enable: boolean): Rule {
-  return enable ? setPublic(rule) : removePublic(rule);
-}
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setAuthenticated]] */
-export function previousSetAuthenticatedSignature(
-  rule: Rule,
-  enable: boolean
-): Rule {
-  return enable ? setAuthenticated(rule) : removeAuthenticated(rule);
-}
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setCreator]] */
-export function previousSetCreatorSignature(rule: Rule, enable: boolean): Rule {
-  return enable ? setCreator(rule) : removeCreator(rule);
-}
-
-const deprecatedFunctions = {
-  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
-  getForbiddenRuleurlAll: getNoneOfRuleUrlAll,
-  setPublic: previousSetPublicSignature,
-  setAuthenticated: previousSetAuthenticatedSignature,
-  setCreator: previousSetCreatorSignature,
-};
-
-/**
- * @hidden
- * @deprecated Replaced by [[acp_v3]].
- */
-export const acp_v2 = {
-  ...v2AcpFunctions,
-  ...v2ControlFunctions,
-  ...v2PolicyFunctions,
-  ...v2RuleFunctions,
-  ...v2MockFunctions,
-  ...deprecatedFunctions,
+/** @hidden */
+export const acp_v3 = {
+  ...v3AcpFunctions,
+  ...v3ControlFunctions,
+  ...v3PolicyFunctions,
+  ...v3RuleFunctions,
+  ...v3MockFunctions,
 };
