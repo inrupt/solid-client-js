@@ -43,9 +43,9 @@ import {
 } from "../acp/policy";
 import {
   createRule,
-  getForbiddenRuleUrlAll,
-  getOptionalRuleUrlAll,
-  getRequiredRuleUrlAll,
+  getNoneOfRuleUrlAll,
+  getAnyOfRuleUrlAll,
+  getAllOfRuleUrlAll,
   getRule,
   Rule,
 } from "../acp/rule";
@@ -349,13 +349,13 @@ function policyAppliesTo(
     return false;
   }
 
-  const allOfRules = getRequiredRuleUrlAll(policy)
+  const allOfRules = getAllOfRuleUrlAll(policy)
     .map((ruleUrl) => getRule(acr, ruleUrl))
     .filter(isNotNull);
-  const anyOfRules = getOptionalRuleUrlAll(policy)
+  const anyOfRules = getAnyOfRuleUrlAll(policy)
     .map((ruleUrl) => getRule(acr, ruleUrl))
     .filter(isNotNull);
-  const noneOfRules = getForbiddenRuleUrlAll(policy)
+  const noneOfRules = getNoneOfRuleUrlAll(policy)
     .map((ruleUrl) => getRule(acr, ruleUrl))
     .filter(isNotNull);
 

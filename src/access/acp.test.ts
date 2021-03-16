@@ -42,9 +42,9 @@ import {
   setPolicy,
 } from "../acp/policy";
 import {
-  addForbiddenRuleUrl,
-  addOptionalRuleUrl,
-  addRequiredRuleUrl,
+  addNoneOfRuleUrl,
+  addAnyOfRuleUrl,
+  addAllOfRuleUrl,
   createRule,
   getRule,
   Rule,
@@ -411,7 +411,7 @@ describe("hasInaccessiblePolicies", () => {
     let policyReferencingRuleInDifferentResource = createPolicy(
       "https://some.pod/resource?ext=acr#policy"
     );
-    policyReferencingRuleInDifferentResource = addRequiredRuleUrl(
+    policyReferencingRuleInDifferentResource = addAllOfRuleUrl(
       policyReferencingRuleInDifferentResource,
       "https://some.pod/other-resource#rule"
     );
@@ -430,7 +430,7 @@ describe("hasInaccessiblePolicies", () => {
     let policyReferencingRuleInDifferentResource = createPolicy(
       "https://some.pod/resource?ext=acr#policy"
     );
-    policyReferencingRuleInDifferentResource = addOptionalRuleUrl(
+    policyReferencingRuleInDifferentResource = addAnyOfRuleUrl(
       policyReferencingRuleInDifferentResource,
       "https://some.pod/other-resource#rule"
     );
@@ -449,7 +449,7 @@ describe("hasInaccessiblePolicies", () => {
     let policyReferencingRuleInDifferentResource = createPolicy(
       "https://some.pod/resource?ext=acr#policy"
     );
-    policyReferencingRuleInDifferentResource = addForbiddenRuleUrl(
+    policyReferencingRuleInDifferentResource = addNoneOfRuleUrl(
       policyReferencingRuleInDifferentResource,
       "https://some.pod/other-resource#rule"
     );

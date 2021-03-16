@@ -36,9 +36,9 @@ import {
   setThing,
 } from "../thing/thing";
 import {
-  getForbiddenRuleUrlAll,
-  getOptionalRuleUrlAll,
-  getRequiredRuleUrlAll,
+  getNoneOfRuleUrlAll,
+  getAnyOfRuleUrlAll,
+  getAllOfRuleUrlAll,
 } from "./rule";
 
 export type Policy = ThingPersisted;
@@ -253,28 +253,28 @@ export function policyAsMarkdown(policy: Policy): string {
   markdown += `- Append: ${getStatus(allowModes.append, denyModes.append)}\n`;
   markdown += `- Write: ${getStatus(allowModes.write, denyModes.write)}\n`;
 
-  const requiredRules = getRequiredRuleUrlAll(policy);
-  const optionalRules = getOptionalRuleUrlAll(policy);
-  const forbiddenRules = getForbiddenRuleUrlAll(policy);
+  const allOfRules = getAllOfRuleUrlAll(policy);
+  const anyOfRules = getAnyOfRuleUrlAll(policy);
+  const noneOfRules = getNoneOfRuleUrlAll(policy);
 
   if (
-    requiredRules.length === 0 &&
-    optionalRules.length === 0 &&
-    forbiddenRules.length === 0
+    allOfRules.length === 0 &&
+    anyOfRules.length === 0 &&
+    noneOfRules.length === 0
   ) {
     markdown += "\n<no rules specified yet>\n";
   }
-  if (requiredRules.length > 0) {
+  if (allOfRules.length > 0) {
     markdown += "\nAll of these rules should match:\n";
-    markdown += "- " + requiredRules.join("\n- ") + "\n";
+    markdown += "- " + allOfRules.join("\n- ") + "\n";
   }
-  if (optionalRules.length > 0) {
+  if (anyOfRules.length > 0) {
     markdown += "\nAt least one of these rules should match:\n";
-    markdown += "- " + optionalRules.join("\n- ") + "\n";
+    markdown += "- " + anyOfRules.join("\n- ") + "\n";
   }
-  if (forbiddenRules.length > 0) {
+  if (noneOfRules.length > 0) {
     markdown += "\nNone of these rules should match:\n";
-    markdown += "- " + forbiddenRules.join("\n- ") + "\n";
+    markdown += "- " + noneOfRules.join("\n- ") + "\n";
   }
 
   return markdown;

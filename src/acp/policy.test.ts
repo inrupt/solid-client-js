@@ -51,11 +51,7 @@ import {
   setDenyModes,
   setPolicy,
 } from "./policy";
-import {
-  addForbiddenRuleUrl,
-  addOptionalRuleUrl,
-  addRequiredRuleUrl,
-} from "./rule";
+import { addNoneOfRuleUrl, addAnyOfRuleUrl, addAllOfRuleUrl } from "./rule";
 
 const policyUrl = "https://some.pod/policy-resource";
 
@@ -355,9 +351,9 @@ describe("policyAsMarkdown", () => {
 
   it("can list individual rules without adding unused types of rules", () => {
     let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = addRequiredRuleUrl(
+    policy = addAllOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#requiredRule"
+      "https://some.pod/policyResource#allOfRule"
     );
 
     expect(policyAsMarkdown(policy)).toBe(
@@ -368,23 +364,23 @@ describe("policyAsMarkdown", () => {
         "- Write: unspecified\n" +
         "\n" +
         "All of these rules should match:\n" +
-        "- https://some.pod/policyResource#requiredRule\n"
+        "- https://some.pod/policyResource#allOfRule\n"
     );
   });
 
   it("can list all applicable rules", () => {
     let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = addRequiredRuleUrl(
+    policy = addAllOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#requiredRule"
+      "https://some.pod/policyResource#allOfRule"
     );
-    policy = addOptionalRuleUrl(
+    policy = addAnyOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#optionalRule"
+      "https://some.pod/policyResource#anyOfRule"
     );
-    policy = addForbiddenRuleUrl(
+    policy = addNoneOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#forbiddenRule"
+      "https://some.pod/policyResource#noneOfRule"
     );
 
     expect(policyAsMarkdown(policy)).toBe(
@@ -395,13 +391,13 @@ describe("policyAsMarkdown", () => {
         "- Write: unspecified\n" +
         "\n" +
         "All of these rules should match:\n" +
-        "- https://some.pod/policyResource#requiredRule\n" +
+        "- https://some.pod/policyResource#allOfRule\n" +
         "\n" +
         "At least one of these rules should match:\n" +
-        "- https://some.pod/policyResource#optionalRule\n" +
+        "- https://some.pod/policyResource#anyOfRule\n" +
         "\n" +
         "None of these rules should match:\n" +
-        "- https://some.pod/policyResource#forbiddenRule\n"
+        "- https://some.pod/policyResource#noneOfRule\n"
     );
   });
 });
