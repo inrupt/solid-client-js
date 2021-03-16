@@ -1716,9 +1716,11 @@ describe("ruleAsMarkdown", () => {
     rule = setCreator(rule);
     rule = setAuthenticated(rule);
     rule = setPublic(rule);
+    rule = setAnyClient(rule);
     rule = addAgent(rule, "https://some.pod/profile#agent");
     rule = addAgent(rule, "https://some-other.pod/profile#agent");
     rule = addGroup(rule, "https://some.pod/groups#family");
+    rule = addClient(rule, "https://some.app/registration#it");
 
     expect(ruleAsMarkdown(rule)).toBe(
       "## Rule: https://some.pod/policyResource#rule\n" +
@@ -1727,11 +1729,14 @@ describe("ruleAsMarkdown", () => {
         "- Everyone\n" +
         "- All authenticated agents\n" +
         "- The creator of this resource\n" +
+        "- Users of any client application\n" +
         "- The following agents:\n" +
         "  - https://some.pod/profile#agent\n" +
         "  - https://some-other.pod/profile#agent\n" +
         "- Members of the following groups:\n" +
-        "  - https://some.pod/groups#family\n"
+        "  - https://some.pod/groups#family\n" +
+        "- Users of the following client applications:\n" +
+        "  - https://some.app/registration#it\n"
     );
   });
 });

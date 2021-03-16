@@ -821,6 +821,9 @@ export function ruleAsMarkdown(rule: Rule): string {
   if (hasCreator(rule)) {
     targetEnumeration += "- The creator of this resource\n";
   }
+  if (hasAnyClient(rule)) {
+    targetEnumeration += "- Users of any client application\n";
+  }
   const targetAgents = getAgentAll(rule);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
@@ -830,6 +833,11 @@ export function ruleAsMarkdown(rule: Rule): string {
   if (targetGroups.length > 0) {
     targetEnumeration += "- Members of the following groups:\n  - ";
     targetEnumeration += targetGroups.join("\n  - ") + "\n";
+  }
+  const targetClients = getClientAll(rule);
+  if (targetClients.length > 0) {
+    targetEnumeration += "- Users of the following client applications:\n  - ";
+    targetEnumeration += targetClients.join("\n  - ") + "\n";
   }
 
   markdown +=
