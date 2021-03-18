@@ -42,7 +42,7 @@ import {
   removeMemberPolicyUrlAll,
   removePolicyUrl,
   removePolicyUrlAll,
-  WithLinkedAcpAccessControl,
+  WithLinkedAcr,
 } from "./control";
 import {
   internal_createControl,
@@ -72,7 +72,7 @@ import { removeControl } from "./v1";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
-    const withLinkedAcr: WithLinkedAcpAccessControl = {
+    const withLinkedAcr: WithLinkedAcr = {
       internal_resourceInfo: {
         isRawData: false,
         sourceIri: "https://some.pod/resource",
@@ -1908,7 +1908,7 @@ describe("acrAsMarkdown", () => {
     );
 
     expect(acrAsMarkdown(resourceWithAcr)).toBe(
-      "# Access control for https://some.pod/resource\n" +
+      "# Access controls for https://some.pod/resource\n" +
         "\n" +
         "<no policies specified yet>\n"
     );
@@ -1938,7 +1938,7 @@ describe("acrAsMarkdown", () => {
     );
 
     expect(acrAsMarkdown(resourceWithAcr)).toBe(
-      "# Access control for https://some.pod/resource\n" +
+      "# Access controls for https://some.pod/resource\n" +
         "\n" +
         "The following policies apply to this resource:\n" +
         "- https://some.pod/policyResource#policy\n" +

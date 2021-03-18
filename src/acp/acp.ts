@@ -274,11 +274,17 @@ export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
   return internal_setAcr(resource, savedAcr);
 }
 
+/**
+ * The Access Control Resource of Resources that conform to this type were attempted to be fetched together with those Resources. This might not have been successful; see [[hasAccessibleAcr]] to check.
+ */
 export type WithAcp = {
   internal_acp: {
     acr: AccessControlResource | null;
   };
 };
+/**
+ * Resources that conform to this type have an Access Control Resource attached. See [[hasAccessibleAcr]].
+ */
 export type WithAccessibleAcr = WithAcp & {
   internal_acp: {
     acr: Exclude<WithAcp["internal_acp"]["acr"], null>;
@@ -287,7 +293,7 @@ export type WithAccessibleAcr = WithAcp & {
 
 /**
  * @param resource Resource of which to check whether it has an Access Control Resource attached.
- * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getControl]].
+ * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getPolicyUrlAll]].
  */
 export function hasAccessibleAcr(
   resource: WithAcp

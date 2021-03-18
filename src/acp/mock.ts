@@ -56,7 +56,7 @@ export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
  * ```
  *
  * Attaches an Access Control Resource to a given [[SolidDataset]] for use
- * in **unit tests**; e.g., unit tests that call [[getAccessControl]].
+ * in **unit tests**; e.g., unit tests that call [[getPolicyUrlAll]].
  *
  * @param resource The Resource to mock up with a new resource ACL.
  * @param accessControlResource The Access Control Resource to attach to the given Resource.
