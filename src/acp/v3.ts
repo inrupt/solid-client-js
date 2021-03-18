@@ -61,6 +61,15 @@ import {
   setAllowModes,
   setDenyModes,
   setPolicy,
+  createResourcePolicyFor,
+  getResourceAcrPolicy,
+  getResourceAcrPolicyAll,
+  getResourcePolicy,
+  getResourcePolicyAll,
+  removeResourceAcrPolicy,
+  removeResourcePolicy,
+  setResourceAcrPolicy,
+  setResourcePolicy,
 } from "./policy";
 import {
   addAgent,
@@ -105,6 +114,11 @@ import {
   removeAuthenticated,
   removeCreator,
   removePublic,
+  createResourceRuleFor,
+  getResourceRule,
+  getResourceRuleAll,
+  removeResourceRule,
+  setResourceRule,
 } from "./rule";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 
@@ -152,6 +166,15 @@ const v3PolicyFunctions = {
   setAllowModes,
   setDenyModes,
   setPolicy,
+  createResourcePolicyFor,
+  getResourceAcrPolicy,
+  getResourceAcrPolicyAll,
+  getResourcePolicy,
+  getResourcePolicyAll,
+  removeResourceAcrPolicy,
+  removeResourcePolicy,
+  setResourceAcrPolicy,
+  setResourcePolicy,
 };
 
 const v3RuleFunctions = {
@@ -197,6 +220,11 @@ const v3RuleFunctions = {
   addNoneOfRuleUrl,
   removeNoneOfRuleUrl,
   setNoneOfRuleUrl,
+  createResourceRuleFor,
+  getResourceRule,
+  getResourceRuleAll,
+  removeResourceRule,
+  setResourceRule,
 };
 
 const v3MockFunctions = {
