@@ -47,7 +47,13 @@ import { WithAccessibleAcr } from "./acp";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
 import { Policy, ResourcePolicy } from "./policy";
 
+/**
+ * A Rule can be applied to a [[Policy]] to determine under what circumstances that Policy is applied to a Resource.
+ */
 export type Rule = ThingPersisted;
+/**
+ * A ResourceRule is like a [[Rule]], but applied to a [[ResourcePolicy]] and therefore not re-used across different Resources, but only used for a single Resource and stored in that Resource's Access Control Resource.
+ */
 export type ResourceRule = ThingPersisted;
 
 /**
@@ -68,6 +74,9 @@ function isRule(thing: Thing): thing is Rule {
  * Add a rule that refines the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is **not** present in **any** of the "All Of" rules,
  * they will not be granted access.
+ *
+ * Also see [[addAnyOfRuleUrl]] and [[addNoneOfRuleUrl]].
+ *
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
@@ -125,9 +134,9 @@ export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the "All Of" [[Rule]]'s for the given [[Policy]]
+ * Get the "All Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
- * @returns A list of the "All Of" [[Rule]]'s
+ * @returns A list of the "All Of" [[Rule]]s
  * @since unreleased
  */
 export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
@@ -144,6 +153,9 @@ export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  * Add a rule that extends the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is present in **any** of the "Any Of" rules,
  * they will be granted access.
+ *
+ * Also see [[addAllOfRuleUrl]] and [[addNoneOfRuleUrl]].
+ *
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
@@ -201,9 +213,9 @@ export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the [[Rule]]'s accepted by the given [[Policy]]
+ * Get the "Any Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
- * @returns A list of the "Any Of" [[Rule]]'s
+ * @returns A list of the "Any Of" [[Rule]]s
  * @since unreleased
  */
 export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
@@ -220,6 +232,9 @@ export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  * Add a rule that restricts the scope of a given the [[Policy]]. If an agent
  * requesting access to a resource is present in **any** of the forbidden rules,
  * they will **not** be granted access.
+ *
+ * Also see [[addAllOfRuleUrl]] and [[addAnyOfRuleUrl]].
+ *
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
@@ -277,9 +292,9 @@ export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the [[Rule]]'s forbidden by the given [[Policy]]
+ * Get the "None Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
- * @returns A list of the forbidden [[Rule]]'s
+ * @returns A list of the forbidden [[Rule]]s
  * @since unreleased
  */
 export function getNoneOfRuleUrlAll<P extends Policy | ResourcePolicy>(
@@ -331,7 +346,7 @@ export function createResourceRuleFor(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the [[Rule]] with the given URL from an [[RuleDataset]].
+ * Get the [[Rule]] with the given URL from an [[SolidDataset]].
  *
  * @param ruleResource The Resource that contains the given [[Rule]].
  * @param url URL that identifies this [[Rule]].
@@ -416,7 +431,7 @@ export function getResourceRuleAll(
  * Removes the given [[Rule]] from the given [[SolidDataset]].
  *
  * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
- * @returns A new RuleDataset equal to the given Rule Resource, but without the given Rule.
+ * @returns A new SolidDataset equal to the given Rule Resource, but without the given Rule.
  */
 export function removeRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,
@@ -484,7 +499,7 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
  * instances of that Rule.
  *
  * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
- * @returns A new RuleDataset equal to the given Rule Resource, but with the given Rule.
+ * @returns A new SolidDataset equal to the given Rule Resource, but with the given Rule.
  */
 export function setRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,

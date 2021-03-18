@@ -53,8 +53,17 @@ import {
   getAllOfRuleUrlAll,
 } from "./rule";
 
+/**
+ * A Policy can be applied to Resources to grant or deny [[AccessModes]] to users who match the Policy's [[Rule]]s.
+ */
 export type Policy = ThingPersisted;
+/**
+ * A Resource Policy is like a regular [[Policy]], but rather than being re-used for different Resources, it is used for a single Resource and is stored in that Resource's Access Control Resource.
+ */
 export type ResourcePolicy = ThingPersisted;
+/**
+ * The different Access Modes that a [[Policy]] can allow or deny for a Resource.
+ */
 export type AccessModes = {
   read: boolean;
   append: boolean;
@@ -90,7 +99,7 @@ export function createPolicy(url: Url | UrlString): Policy {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get the [[Policy]] with the given URL from an [[PolicyDataset]].
+ * Get the [[Policy]] with the given URL from an [[SolidDataset]].
  *
  * @param policyResource The Resource that contains the given Policy.
  * @param url URL that identifies this Policy.
@@ -113,7 +122,7 @@ export function getPolicy(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Get all [[Policy]]'s in a given [[PolicyDataset]].
+ * Get all [[Policy]]'s in a given [[SolidDataset]].
  *
  * @param policyResource The Resource that contains Access Policies.
  */
@@ -130,7 +139,7 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Remove the given [[Policy]] from the given [[PolicyDataset]].
+ * Remove the given [[Policy]] from the given [[SolidDataset]].
  *
  * @param policyResource The Resource that contains Access Policies.
  * @param policy The Policy to remove from the resource.
@@ -147,7 +156,7 @@ export function removePolicy<Dataset extends SolidDataset>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Insert the given [[Policy]] into the given [[PolicyDataset]], replacing previous instances of that Policy.
+ * Insert the given [[Policy]] into the given [[SolidDataset]], replacing previous instances of that Policy.
  *
  * @param policyResource The Resource that contains Access Policies.
  * @param policy The Policy to insert into the Resource.

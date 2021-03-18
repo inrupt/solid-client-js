@@ -74,7 +74,7 @@ import {
  */
 export function hasLinkedAcr<Resource extends WithServerResourceInfo>(
   resource: Resource
-): resource is WithLinkedAcpAccessControl<Resource> {
+): resource is WithLinkedAcr<Resource> {
   return (
     hasServerResourceInfo(resource) &&
     Array.isArray(
@@ -116,7 +116,7 @@ export type Control = Thing;
  * It does not indicate that this Access Control Resource will also be accessible to the current
  * user.
  */
-export type WithLinkedAcpAccessControl<
+export type WithLinkedAcr<
   Resource extends WithServerResourceInfo = WithServerResourceInfo
 > = Resource & {
   internal_resourceInfo: {
@@ -134,9 +134,9 @@ export type WithLinkedAcpAccessControl<
  * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to the Access
  * Control Resource itself, rather than the Resource it governs.
  *
- * @param resourceWithAcr The [[Control]] to which the ACR Policy should be added.
+ * @param resourceWithAcr The Resource with an Access Control Resource to which the ACR Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Access Control Resource.
- * @returns A new [[Control]] equal to the given [[Control]], but with the given ACR Policy added to it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given ACR Policy added to it.
  */
 export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -158,12 +158,12 @@ export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to the Access
- * Control Resources of child Resources.
+ * Add a [[Policy]] to a Resource's Access Control Resource such that that
+ * Policy applies to the Access Control Resources of child Resources.
  *
- * @param resourceWithAcr The [[Control]] to which the ACR Policy should be added.
+ * @param resourceWithAcr The Resource with an Access Control Resource to which the ACR Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Access Control Resources of children of the Resource.
- * @returns A new [[Control]] equal to the given [[Control]], but with the given ACR Policy added to it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given ACR Policy added to it.
  */
 export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -237,7 +237,7 @@ export function getMemberAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to which the given URL of a Policy should no longer apply.
  * @param policyUrl The URL of the Policy that should no longer apply.
- * @returns A new [[Control]] equal to the given Access Control, but with the given ACR Policy removed from it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given ACR Policy removed from it.
  */
 export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -266,7 +266,7 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to whose children's ACRs the given URL of a Policy should no longer apply.
  * @param policyUrl The URL of the Policy that should no longer apply.
- * @returns A new Access Control equal to the given Access Control, but with the given Member ACR Policy removed from it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given member ACR Policy removed from it.
  */
 export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -293,7 +293,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * Stop all URL of Access Policies from applying to an Access Control Resource itself.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to which no more Policies should apply.
- * @returns A new [[Control]] equal to the given [[Control]], but without any Policy applying to it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but without any Policy applying to it.
  */
 export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
@@ -320,7 +320,7 @@ export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * children.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource that should no longer apply Policies to its children's ACRs.
- * @returns A new [[Control]] equal to the given [[Control]], but without any Policy applying to its children's ACRs.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but without any Policy applying to its children's ACRs.
  */
 export function removeMemberAcrPolicyUrlAll<
   ResourceExt extends WithAccessibleAcr
@@ -347,7 +347,7 @@ export function removeMemberAcrPolicyUrlAll<
  *
  * @param resourceWithAcr The Resource to which the ACR Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Resource.
- * @returns A new Resource equal to the given Resource, but with the given ACR Policy added to it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given Policy added to it.
  */
 export function addPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -364,12 +364,12 @@ export function addPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * function is still experimental and subject to change, even in a non-major release.
  * ```
  *
- * Add a [[Policy]] to an Access Control Resource such that that [[Policy]] applies to that
- * Resource's children.
+ * Add a [[Policy]] to a Resource's Access Control Resource such that that
+ * Policy applies to that Resource's children.
  *
- * @param resourceWithAcr The Resource to which the ACR Policy should be added.
+ * @param resourceWithAcr The Resource to whose Access Control Resource the Policy should be added.
  * @param policyUrl URL of the Policy that should apply to the given Resource's children.
- * @returns A new Resource equal to the given Resource, but with the given Member ACR Policy added to it.
+ * @returns A new Resource equal to the given Resource, but with the given Member Policy added to its Access Control Resource.
  */
 export function addMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -438,7 +438,7 @@ export function getMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource, with its Access Control Resource, to which the given URL of a Policy should no longer apply.
  * @param policyUrl The URL of the Policy that should no longer apply.
- * @returns A new Resource equal to the given Resource, but with the given Policy removed from it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given Policy removed from it.
  */
 export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -464,7 +464,7 @@ export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource with the Access Control Resource to whose children the given URL of a Policy should no longer apply.
  * @param policyUrl The URL of the Policy that should no longer apply.
- * @returns A new Resource equal to the given Resource but with the given Member Policy removed from it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but with the given Member Policy removed from it.
  */
 export function removeMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -489,7 +489,7 @@ export function removeMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * Stop all URL of Access Policies from applying to a Resource.
  *
  * @param resourceWithAcr The Resource, with its Access Control Resource, to which no more Policies should apply.
- * @returns A new Resource equal to the given Resource, but without any Policy applying to it.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but without any Policy applying to the Resource.
  */
 export function removePolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
@@ -513,7 +513,7 @@ export function removePolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * Stop all URL of Access Policies from applying to the Resource's children.
  *
  * @param resourceWithAcr The Resource with the Access Control Resource that should no longer apply Policies to its children.
- * @returns A new Resource equal to the given Resource, but without any Policy applying to its children.
+ * @returns A Resource with a new Access Control Resource equal to the original ACR, but without any Policy applying to the Resource's children.
  */
 export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt
@@ -535,12 +535,12 @@ export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * Note that changes to the exact format of the return value are not considered a breaking change;
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
- * @param control The Control to get a human-readable representation of.
+ * @param resourceWithAcr The Resource with an attached Access Control Resource of which you want to get a human-readable representation.
  */
 export function acrAsMarkdown(
   resourceWithAcr: WithResourceInfo & WithAccessibleAcr
 ): string {
-  let markdown = `# Access control for ${getSourceUrl(resourceWithAcr)}\n`;
+  let markdown = `# Access controls for ${getSourceUrl(resourceWithAcr)}\n`;
 
   const policyUrls = getPolicyUrlAll(resourceWithAcr);
   const memberPolicyUrls = getMemberPolicyUrlAll(resourceWithAcr);
