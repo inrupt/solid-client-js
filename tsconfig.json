@@ -84,6 +84,11 @@
       "src/acl/group.ts",
       "src/acl/class.ts",
       "src/acl/mock.ts",
+      "src/acp/acp.ts",
+      "src/acp/control.ts",
+      "src/acp/policy.ts",
+      "src/acp/rule.ts",
+      "src/acp/mock.ts",
       "src/access/universal.ts"
     ],
     "exclude": [

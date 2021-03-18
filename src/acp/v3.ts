@@ -232,7 +232,10 @@ const v3MockFunctions = {
   mockAcrFor,
 };
 
-/** @hidden */
+/**
+ * @hidden
+ * @deprecated Please import directly from the "acp/*" modules.
+ */
 export const acp_v3 = {
   ...v3AcpFunctions,
   ...v3ControlFunctions,

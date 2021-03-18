@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- A number of new `acp/*` modules are now available that support working
+  directly with Access Control Policies on Pod servers that implement this
+  experimental proposal.
+
 ## [1.5.0] - 2021-03-08
 
 ### New features
