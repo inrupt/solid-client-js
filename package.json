@@ -48,6 +48,11 @@
     "./acl/group": "./dist/acl/group.mjs",
     "./acl/class": "./dist/acl/class.mjs",
     "./acl/mock": "./dist/acl/mock.mjs",
+    "./acp/acp": "./dist/acp/acp.mjs",
+    "./acp/control": "./dist/acp/control.mjs",
+    "./acp/policy": "./dist/acp/policy.mjs",
+    "./acp/rule": "./dist/acp/rule.mjs",
+    "./acp/mock": "./dist/acp/mock.mjs",
     "./access/universal": "./dist/access/universal.mjs"
   },
   "files": [

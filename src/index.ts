@@ -211,7 +211,7 @@ export {
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- * @deprecated
+ * @deprecated Replaced by [[acp_v2]].
  */
 export { acp_v1 } from "./acp/v1";
 
@@ -224,7 +224,7 @@ export { acp_v1 } from "./acp/v1";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- * @deprecated
+ * @deprecated Replaced by [[acp_v3]].
  */
 export { acp_v2 } from "./acp/v2";
 
@@ -237,6 +237,7 @@ export { acp_v2 } from "./acp/v2";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
+ * @deprecated Please import directly from the "acp/*" modules.
  */
 export { acp_v3 } from "./acp/v3";
 
@@ -257,5 +258,6 @@ export { acp_v3 } from "./acp/v3";
  * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
  * or environment with support for export maps, we recommend you import these
  * functions directly from @inrupt/solid-client/access/universal.
+ * @deprecated Please import directly from the "access/universal" module.
  */
 export * as access from "./access/universal";
