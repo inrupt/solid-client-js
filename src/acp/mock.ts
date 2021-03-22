@@ -38,6 +38,7 @@ import { AccessControlResource } from "./control";
  *
  * @param resourceUrl The URL of the Resource to which the mocked ACR should apply.
  * @returns The mocked empty Access Control Resource for the given Resource.
+ * @since 1.6.0
  */
 export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
   const acrUrl = new URL("access-control-resource", resourceUrl).href;
@@ -61,6 +62,7 @@ export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
  * @param resource The Resource to mock up with a new resource ACL.
  * @param accessControlResource The Access Control Resource to attach to the given Resource.
  * @returns The input Resource with an empty resource ACL attached.
+ * @since 1.6.0
  */
 export function addMockAcrTo<T extends WithResourceInfo>(
   resource: T,

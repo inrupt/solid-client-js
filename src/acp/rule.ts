@@ -49,10 +49,12 @@ import { Policy, ResourcePolicy } from "./policy";
 
 /**
  * A Rule can be applied to a [[Policy]] to determine under what circumstances that Policy is applied to a Resource.
+ * @since 1.6.0
  */
 export type Rule = ThingPersisted;
 /**
  * A ResourceRule is like a [[Rule]], but applied to a [[ResourcePolicy]] and therefore not re-used across different Resources, but only used for a single Resource and stored in that Resource's Access Control Resource.
+ * @since 1.6.0
  */
 export type ResourceRule = ThingPersisted;
 
@@ -80,7 +82,7 @@ function isRule(thing: Thing): thing is Rule {
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -100,7 +102,7 @@ export function addAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] from which the rule should be removed.
  * @param rule The rule to remove from the policy.
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -120,7 +122,7 @@ export function removeAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy requires.
  * @returns A new [[Policy]] clone of the original one, with the "All Of" rules replaced.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -137,7 +139,7 @@ export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  * Get the "All Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
  * @returns A list of the "All Of" [[Rule]]s
- * @since unreleased
+ * @since 1.6.0
  */
 export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
   policy: P
@@ -159,7 +161,7 @@ export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -179,7 +181,7 @@ export function addAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] from which the rule should be removed.
  * @param rule The rule to remove from the policy.
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -199,7 +201,7 @@ export function removeAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy accepts.
  * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -216,7 +218,7 @@ export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  * Get the "Any Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
  * @returns A list of the "Any Of" [[Rule]]s
- * @since unreleased
+ * @since 1.6.0
  */
 export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
   policy: P
@@ -238,7 +240,7 @@ export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rule The rule to add to the policy.
  * @returns A new [[Policy]] clone of the original one, with the new rule added.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -258,7 +260,7 @@ export function addNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] from which the rule should be removed.
  * @param rule The rule to remove from the policy.
  * @returns A new [[Policy]] clone of the original one, with the rule removed.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -278,7 +280,7 @@ export function removeNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @param policy The [[Policy]] to which the rule should be added.
  * @param rules The rules the policy accepts.
  * @returns A new [[Policy]] clone of the original one, with the "Any Of" rules replaced.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -295,7 +297,7 @@ export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  * Get the "None Of" [[Rule]]s for the given [[Policy]]
  * @param policy The [[policy]] from which the rules should be read.
  * @returns A list of the forbidden [[Rule]]s
- * @since unreleased
+ * @since 1.6.0
  */
 export function getNoneOfRuleUrlAll<P extends Policy | ResourcePolicy>(
   policy: P
@@ -311,6 +313,7 @@ export function getNoneOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  * Initialise a new, empty [[Rule]].
  *
  * @param url URL that identifies this [[Rule]].
+ * @since 1.6.0
  */
 export function createRule(url: Url | UrlString): Rule {
   const stringUrl = internal_toIriString(url);
@@ -328,6 +331,7 @@ export function createRule(url: Url | UrlString): Rule {
  *
  * @param resourceWithAcr The Resource to which the new Rule is to apply.
  * @param name Name that identifies this [[Rule]].
+ * @since 1.6.0
  */
 export function createResourceRuleFor(
   resourceWithAcr: WithAccessibleAcr,
@@ -351,6 +355,7 @@ export function createResourceRuleFor(
  * @param ruleResource The Resource that contains the given [[Rule]].
  * @param url URL that identifies this [[Rule]].
  * @returns The requested [[Rule]], if it exists, or `null` if it does not.
+ * @since 1.6.0
  */
 export function getRule(
   ruleResource: SolidDataset,
@@ -374,6 +379,7 @@ export function getRule(
  * @param resourceWithAcr The Resource whose Access Control Resource contains the given [[ResourceRule]].
  * @param name Name that identifies this [[ResourceRule]].
  * @returns The requested [[ResourceRule]], if it exists, or `null` if it does not.
+ * @since 1.6.0
  */
 export function getResourceRule(
   resourceWithAcr: WithAccessibleAcr,
@@ -399,6 +405,7 @@ export function getResourceRule(
  *
  * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns The [[Rule]]s contained in this resource.
+ * @since 1.6.0
  */
 export function getRuleAll(ruleResource: SolidDataset): Rule[] {
   const things = getThingAll(ruleResource);
@@ -414,6 +421,7 @@ export function getRuleAll(ruleResource: SolidDataset): Rule[] {
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
  * @returns The [[ResourceRule]]s contained in this Resource's Access Control Resource.
+ * @since 1.6.0
  */
 export function getResourceRuleAll(
   resourceWithAcr: WithAccessibleAcr
@@ -432,6 +440,7 @@ export function getResourceRuleAll(
  *
  * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns A new SolidDataset equal to the given Rule Resource, but without the given Rule.
+ * @since 1.6.0
  */
 export function removeRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,
@@ -449,6 +458,7 @@ export function removeRule<Dataset extends SolidDataset>(
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
  * @returns A new Resource equal to the given Resource, but without the given Rule in its ACR.
+ * @since 1.6.0
  */
 export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -500,6 +510,7 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
  *
  * @param ruleResource The Resource that contains (zero or more) [[Rule]]s.
  * @returns A new SolidDataset equal to the given Rule Resource, but with the given Rule.
+ * @since 1.6.0
  */
 export function setRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,
@@ -518,6 +529,7 @@ export function setRule<Dataset extends SolidDataset>(
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains (zero or more) [[ResourceRule]]s.
  * @returns A new Resource equal to the given Resource, but with the given Rule in its ACR.
+ * @since 1.6.0
  */
 export function setResourceRule<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -540,7 +552,7 @@ export function setResourceRule<ResourceExt extends WithAccessibleAcr>(
  *
  * @param rule The rule from which agents are read.
  * @returns A list of the WebIDs of agents included in the rule.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function getAgentAll(rule: Rule): WebId[] {
   return getIriAll(rule, acp.agent).filter(
@@ -561,7 +573,7 @@ export function getAgentAll(rule: Rule): WebId[] {
  * @param rule The rule for which agents are set.
  * @param agent The agent the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of agents.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setAgent(rule: Rule, agent: WebId): Rule {
   // Preserve the special agent classes authenticated and public, which we
@@ -593,7 +605,7 @@ export function setAgent(rule: Rule, agent: WebId): Rule {
  * @param rule The [[Rule]] to be applied to an additional agent.
  * @param agent The agent the [[Rule]] should apply to.
  * @returns A copy of the [[Rule]], applying to an additional agent.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addAgent(rule: Rule, agent: WebId): Rule {
   return addIri(rule, acp.agent, agent);
@@ -610,7 +622,7 @@ export function addAgent(rule: Rule, agent: WebId): Rule {
  * @param rule The [[Rule]] that should no longer apply to a given agent.
  * @param agent The agent the rule should no longer apply to.
  * @returns A copy of the rule, not applying to the given agent.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeAgent(rule: Rule, agent: WebId): Rule {
   return removeIri(rule, acp.agent, agent);
@@ -625,7 +637,7 @@ export function removeAgent(rule: Rule, agent: WebId): Rule {
  *
  * @param rule The rule from which groups are read.
  * @returns A list of the [[URL]]'s of groups included in the rule.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function getGroupAll(rule: Rule): UrlString[] {
   return getIriAll(rule, acp.group);
@@ -641,7 +653,7 @@ export function getGroupAll(rule: Rule): UrlString[] {
  * @param rule The rule for which groups are set.
  * @param group The group the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of groups.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setGroup(rule: Rule, group: UrlString): Rule {
   return setIri(rule, acp.group, group);
@@ -657,7 +669,7 @@ export function setGroup(rule: Rule, group: UrlString): Rule {
  * @param rule The [[Rule]] to be applied to an additional group.
  * @param agent The group the [[Rule]] should apply to.
  * @returns A copy of the [[Rule]], applying to an additional group.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addGroup(rule: Rule, group: UrlString): Rule {
   return addIri(rule, acp.group, group);
@@ -673,7 +685,7 @@ export function addGroup(rule: Rule, group: UrlString): Rule {
  * @param rule The [[Rule]] that should no longer apply to a given group.
  * @param agent The group the rule should no longer apply to.
  * @returns A copy of the rule, not applying to the given group.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeGroup(rule: Rule, group: UrlString): Rule {
   return removeIri(rule, acp.group, group);
@@ -688,6 +700,7 @@ export function removeGroup(rule: Rule, group: UrlString): Rule {
  *
  * @param rule The rule checked for public access.
  * @returns Whether the rule applies to any agent or not.
+ * @status 1.6.0
  */
 export function hasPublic(rule: Rule): boolean {
   return (
@@ -705,7 +718,7 @@ export function hasPublic(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to any agent.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function setPublic(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -728,7 +741,7 @@ export function setPublic(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to no longer apply to any agent.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function removePublic(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.PublicAgent);
@@ -743,6 +756,7 @@ export function removePublic(rule: Rule): Rule {
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to any authenticated agent or not.
+ * @status 1.6.0
  */
 export function hasAuthenticated(rule: Rule): boolean {
   return (
@@ -761,7 +775,7 @@ export function hasAuthenticated(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to any authenticated Agent.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function setAuthenticated(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -784,7 +798,7 @@ export function setAuthenticated(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply/not apply to any authenticated agent.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function removeAuthenticated(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.AuthenticatedAgent);
@@ -799,6 +813,7 @@ export function removeAuthenticated(rule: Rule): Rule {
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to the creator of the Resource or not.
+ * @status 1.6.0
  */
 export function hasCreator(rule: Rule): boolean {
   return (
@@ -816,7 +831,7 @@ export function hasCreator(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to the creator of a Resource.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function setCreator(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -839,7 +854,7 @@ export function setCreator(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply/not apply to the creator of a Resource.
- * @status Unreleased
+ * @status 1.6.0
  */
 export function removeCreator(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.CreatorAgent);
@@ -855,7 +870,7 @@ export function removeCreator(rule: Rule): Rule {
  *
  * @param rule The rule from which clients are read.
  * @returns A list of the WebIDs of clients included in the rule.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function getClientAll(rule: Rule): WebId[] {
   return getIriAll(rule, acp.client).filter(
@@ -873,7 +888,7 @@ export function getClientAll(rule: Rule): WebId[] {
  * @param rule The rule for which clients are set.
  * @param client The Client the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of Clients.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setClient(rule: Rule, client: WebId): Rule {
   // Preserve the special "any client" class, which we
@@ -897,7 +912,7 @@ export function setClient(rule: Rule, client: WebId): Rule {
  * @param rule The [[Rule]] to be applied to an additional Client.
  * @param client The Client the [[Rule]] should apply to.
  * @returns A copy of the [[Rule]], applying to an additional Client.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function addClient(rule: Rule, client: WebId): Rule {
   return addIri(rule, acp.client, client);
@@ -913,7 +928,7 @@ export function addClient(rule: Rule, client: WebId): Rule {
  * @param rule The [[Rule]] that should no longer apply to a given Client.
  * @param client The Client the rule should no longer apply to.
  * @returns A copy of the rule, not applying to the given Client.
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeClient(rule: Rule, client: WebId): Rule {
   return removeIri(rule, acp.client, client);
@@ -929,6 +944,7 @@ export function removeClient(rule: Rule, client: WebId): Rule {
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to public clients.
+ * @since 1.6.0
  */
 export function hasAnyClient(rule: Rule): boolean {
   return (
@@ -947,7 +963,7 @@ export function hasAnyClient(rule: Rule): boolean {
  *
  * @param rule The rule for which clients are set.
  * @returns A copy of the rule, updated to apply to any client
- * @since Unreleased
+ * @since 1.6.0
  */
 export function setAnyClient(rule: Rule): Rule {
   return addIri(rule, acp.client, solid.PublicOidcClient);
@@ -962,7 +978,7 @@ export function setAnyClient(rule: Rule): Rule {
  *
  * @param rule The rule for which clients are set.
  * @returns A copy of the rule, updated to no longer apply to any client
- * @since Unreleased
+ * @since 1.6.0
  */
 export function removeAnyClient(rule: Rule): Rule {
   return removeIri(rule, acp.client, solid.PublicOidcClient);
@@ -975,6 +991,7 @@ export function removeAnyClient(rule: Rule): Rule {
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
  * @param rule The Rule to get a human-readable representation of.
+ * @since 1.6.0
  */
 export function ruleAsMarkdown(rule: Rule): string {
   let markdown = `## Rule: ${asUrl(rule)}\n\n`;

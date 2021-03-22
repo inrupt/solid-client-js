@@ -58,6 +58,7 @@ import { internal_getAcr, internal_setAcr } from "./control.internal";
  * @param url URL of the SolidDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A SolidDataset and the ACR that applies to it, if available to the authenticated user.
+ * @since 1.6.0
  */
 export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
@@ -86,6 +87,7 @@ export async function getSolidDatasetWithAcr(
  * @param url URL of the file to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A file and the ACR that applies to it, if available to the authenticated user.
+ * @since 1.6.0
  */
 export async function getFileWithAcr(
   url: Url | UrlString,
@@ -115,6 +117,7 @@ export async function getFileWithAcr(
  * @param url URL of the Resource about which to fetch its information.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Metadata describing a Resource, and the ACR that applies to it, if available to the authenticated user.
+ * @since 1.6.0
  */
 export async function getResourceInfoWithAcr(
   url: Url | UrlString,
@@ -148,6 +151,7 @@ export async function getResourceInfoWithAcr(
  * @param url URL of the SolidDataset to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A SolidDataset and either the ACL access data or the ACR access data, if available to the current user.
+ * @since 1.6.0
  */
 export async function getSolidDatasetWithAccessDatasets(
   url: Url | UrlString,
@@ -186,6 +190,7 @@ export async function getSolidDatasetWithAccessDatasets(
  * @param url URL of the File to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns A File and either the ACL access data or the ACR access data, if available to the current user.
+ * @since 1.6.0
  */
 export async function getFileWithAccessDatasets(
   url: Url | UrlString,
@@ -224,6 +229,7 @@ export async function getFileWithAccessDatasets(
  * @param url URL of the Resource information about which to fetch.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Information about a Resource and either the ACL access data or the ACR access data, if available to the current user.
+ * @since 1.6.0
  */
 export async function getResourceInfoWithAccessDatasets(
   url: Url | UrlString,
@@ -256,6 +262,7 @@ export async function getResourceInfoWithAccessDatasets(
  *
  * @param resource Resource with an Access Control Resource that should be saved.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @since 1.6.0
  */
 export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
   resource: ResourceExt,
@@ -276,6 +283,7 @@ export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
 
 /**
  * The Access Control Resource of Resources that conform to this type were attempted to be fetched together with those Resources. This might not have been successful; see [[hasAccessibleAcr]] to check.
+ * @since 1.6.0
  */
 export type WithAcp = {
   internal_acp: {
@@ -284,6 +292,7 @@ export type WithAcp = {
 };
 /**
  * Resources that conform to this type have an Access Control Resource attached. See [[hasAccessibleAcr]].
+ * @since 1.6.0
  */
 export type WithAccessibleAcr = WithAcp & {
   internal_acp: {
@@ -294,6 +303,7 @@ export type WithAccessibleAcr = WithAcp & {
 /**
  * @param resource Resource of which to check whether it has an Access Control Resource attached.
  * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getPolicyUrlAll]].
+ * @since 1.6.0
  */
 export function hasAccessibleAcr(
   resource: WithAcp
@@ -361,6 +371,7 @@ async function fetchAcr(
  *
  * @param withAcr A Resource with an Access Control Resource attached.
  * @returns List of all unique Access Policy Resources that are referenced in the given Access Control Resource.
+ * @since 1.6.0
  */
 export function getReferencedPolicyUrlAll(
   withAcr: WithAccessibleAcr
