@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.6.0] - 2021-03-22
+
 ### New features
 
 - A number of new `acp/*` modules are now available that support working
@@ -21,8 +25,6 @@ The following changes have been implemented but not released yet:
   implemented (from the user's point of view). Currently, these modules
   support the two known access controls for Solid, i.e. Web Access Control and
   Access Control Policies.
-
-The following sections document changes that have been released already:
 
 ## [1.4.0] - 2021-02-19
 

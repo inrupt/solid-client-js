@@ -55,14 +55,17 @@ import {
 
 /**
  * A Policy can be applied to Resources to grant or deny [[AccessModes]] to users who match the Policy's [[Rule]]s.
+ * @since 1.6.0
  */
 export type Policy = ThingPersisted;
 /**
  * A Resource Policy is like a regular [[Policy]], but rather than being re-used for different Resources, it is used for a single Resource and is stored in that Resource's Access Control Resource.
+ * @since 1.6.0
  */
 export type ResourcePolicy = ThingPersisted;
 /**
  * The different Access Modes that a [[Policy]] can allow or deny for a Resource.
+ * @since 1.6.0
  */
 export type AccessModes = {
   read: boolean;
@@ -85,6 +88,7 @@ function isPolicy(thing: ThingPersisted): thing is Policy {
  * Initialise a new, empty [[Policy]].
  *
  * @param url URL that identifies this Policy.
+ * @since 1.6.0
  */
 export function createPolicy(url: Url | UrlString): Policy {
   const stringUrl = internal_toIriString(url);
@@ -104,6 +108,7 @@ export function createPolicy(url: Url | UrlString): Policy {
  * @param policyResource The Resource that contains the given Policy.
  * @param url URL that identifies this Policy.
  * @returns The requested Policy, if it exists, or `null` if it does not.
+ * @since 1.6.0
  */
 export function getPolicy(
   policyResource: SolidDataset,
@@ -125,6 +130,7 @@ export function getPolicy(
  * Get all [[Policy]]'s in a given [[SolidDataset]].
  *
  * @param policyResource The Resource that contains Access Policies.
+ * @since 1.6.0
  */
 export function getPolicyAll(policyResource: SolidDataset): Policy[] {
   const foundThings = getThingAll(policyResource);
@@ -143,6 +149,7 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
  *
  * @param policyResource The Resource that contains Access Policies.
  * @param policy The Policy to remove from the resource.
+ * @since 1.6.0
  */
 export function removePolicy<Dataset extends SolidDataset>(
   policyResource: Dataset,
@@ -161,6 +168,7 @@ export function removePolicy<Dataset extends SolidDataset>(
  * @param policyResource The Resource that contains Access Policies.
  * @param policy The Policy to insert into the Resource.
  * @returns A new dataset equal to the given resource, but with the given Policy.
+ * @since 1.6.0
  */
 export function setPolicy<Dataset extends SolidDataset>(
   policyResource: Dataset,
@@ -179,6 +187,7 @@ export function setPolicy<Dataset extends SolidDataset>(
  *
  * @param policy The Policy on which to set the modes to allow.
  * @param modes Modes to allow for this Policy.
+ * @since 1.6.0
  */
 export function setAllowModes<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -206,6 +215,7 @@ export function setAllowModes<P extends Policy | ResourcePolicy>(
  * Given a [[Policy]], return which [[AccessModes]] it allows.
  *
  * @param policy The Policy for which you want to know the Access Modes it allows.
+ * @since 1.6.0
  */
 export function getAllowModes<P extends Policy | ResourcePolicy>(
   policy: P
@@ -227,6 +237,7 @@ export function getAllowModes<P extends Policy | ResourcePolicy>(
  *
  * @param policy The Policy on which to set the modes to disallow.
  * @param modes Modes to disallow for this Policy.
+ * @since 1.6.0
  */
 export function setDenyModes<P extends Policy | ResourcePolicy>(
   policy: P,
@@ -254,6 +265,7 @@ export function setDenyModes<P extends Policy | ResourcePolicy>(
  * Given a [[Policy]], return which [[AccessModes]] it disallows.
  *
  * @param policy The Policy on which you want to know the Access Modes it disallows.
+ * @since 1.6.0
  */
 export function getDenyModes<P extends Policy | ResourcePolicy>(
   policy: P
@@ -275,6 +287,7 @@ export function getDenyModes<P extends Policy | ResourcePolicy>(
  *
  * @param resourceWithAcr The Resource to which the Policy is to apply.
  * @param name The name that identifies this Policy.
+ * @since 1.6.0
  */
 export function createResourcePolicyFor(
   resourceWithAcr: WithAccessibleAcr,
@@ -300,6 +313,7 @@ export function createResourcePolicyFor(
  * @param resourceWithAcr The Resource whose ACR contains the given Policy.
  * @param name The name that identifies this Policy.
  * @returns The requested Policy, if it exists and applies to the given Resource, or `null` if it does not.
+ * @since 1.6.0
  */
 export function getResourcePolicy(
   resourceWithAcr: WithAccessibleAcr,
@@ -332,6 +346,7 @@ export function getResourcePolicy(
  * @param resourceWithAcr The Resource whose ACR contains the given Policy.
  * @param name The name that identifies this Policy.
  * @returns The requested Policy, if it exists and applies to the Resource's ACR, or `null` if it does not.
+ * @since 1.6.0
  */
 export function getResourceAcrPolicy(
   resourceWithAcr: WithAccessibleAcr,
@@ -362,6 +377,7 @@ export function getResourceAcrPolicy(
  * Resource.
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies applying to it.
+ * @since 1.6.0
  */
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr
@@ -384,6 +400,7 @@ export function getResourcePolicyAll(
  * Resource from that Access Control Resource.
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
+ * @since 1.6.0
  */
 export function getResourceAcrPolicyAll(
   resourceWithAcr: WithAccessibleAcr
@@ -407,6 +424,7 @@ export function getResourceAcrPolicyAll(
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
  * @param policy The Policy to remove from the Resource's Access Control Resource.
+ * @since 1.6.0
  */
 export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -461,6 +479,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
  * @param policy The ACR Policy to remove from the Resource's Access Control Resource.
+ * @since 1.6.0
  */
 export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -517,6 +536,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
  * @param policy The Policy to insert into the Resource's Access Control Resource.
  * @returns A new Resource equal to the given Resource, but with the given Policy in its Access Control Resource.
+ * @since 1.6.0
  */
 export function setResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -541,6 +561,7 @@ export function setResourcePolicy<ResourceExt extends WithAccessibleAcr>(
  * @param resourceWithAcr The Resource whose Access Control Resource contains Access Policies.
  * @param policy The Policy to insert into the Resource's Access Control Resource.
  * @returns A new Resource equal to the given Resource, but with the given Policy in its Access Control Resource, applying to that Access Control Resource.
+ * @since 1.6.0
  */
 export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
@@ -560,6 +581,7 @@ export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
  * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
  *
  * @param policy The Policy to get a human-readable representation of.
+ * @since 1.6.0
  */
 export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   function getStatus(allow: boolean, deny: boolean): string {
