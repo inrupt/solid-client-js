@@ -1,6 +1,11 @@
 name: CI
 
-on: [push]
+on:
+  push:
+  schedule:
+  # Run every fifth minute.
+  # This is to verify that ESS is running properly.
+  - cron: '*/5 * * * *'
 
 env:
   CI: true
@@ -28,6 +33,7 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
+      if: github.event_name != 'schedule'
     - run: npm run e2e-test-node
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
@@ -75,7 +81,9 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows'
+      # The scheduled tests are also just there to verify that ESS is running properly,
+      # so they only need to run on one platform (Linux, the most stable one).
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -107,7 +115,9 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS'
+      # The scheduled tests are also just there to verify that ESS is running properly,
+      # so they only need to run on one platform (Linux, the most stable one).
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -115,18 +125,30 @@ jobs:
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
         GITHUB_OS: ${{ runner.os }}
     - run: npx prettier --check "src/**"
+      if: github.event_name != 'schedule'
     - run: npx package-check
+      if: github.event_name != 'schedule'
     - run: npm run check-licenses
+      if: github.event_name != 'schedule'
     - run: npm audit --audit-level=moderate
+      if: github.event_name != 'schedule'
     - name: Archive code coverage results
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
+      if: github.event_name != 'schedule'
       with:
         name: code-coverage-report
         path: coverage
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
+      if: github.event_name != 'schedule'
       with:
         name: dist
         path: dist
+    - name: Send a notification that the test has failed
+      run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com, pod-compat.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+      if: failure() && github.event_name == 'schedule'
+      env:
+        WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
+        RUN_ID: "${{ github.run_id }}"
