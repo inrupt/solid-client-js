@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfix
+
+- Saving a dataset to an IRI with a hash fragment (e.g. the WebID) is processed
+  as an update, and not anymore as an overwrite.
+
 The following sections document changes that have been released already:
 
 ## [1.6.0] - 2021-03-22
