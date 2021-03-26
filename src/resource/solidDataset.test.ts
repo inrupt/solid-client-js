@@ -429,6 +429,33 @@ describe("saveSolidDatasetAt", () => {
       );
     });
 
+    it("uses the response URL to compute the saved resource source IRI", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
+      const mockDataset = dataset();
+      mockDataset.add(
+        DataFactory.quad(
+          DataFactory.namedNode("https://arbitrary.vocab/subject"),
+          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
+          DataFactory.namedNode("https://arbitrary.vocab/object"),
+          undefined
+        )
+      );
+
+      const savedDataset = await saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      expect(savedDataset.internal_resourceInfo.sourceIri).toBe(
+        "https://saved.at/url"
+      );
+    });
+
     it("sets relative IRIs for LocalNodes", async () => {
       const mockFetch = jest
         .fn(window.fetch)
@@ -684,6 +711,39 @@ describe("saveSolidDatasetAt", () => {
       );
     });
 
+    it("uses the response IRI to compute the saved resource IRI", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [],
+        },
+        "https://some.pod/resource"
+      );
+
+      const savedDataset = await saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      expect(savedDataset.internal_resourceInfo.sourceIri).toBe(
+        "https://saved.at/url"
+      );
+    });
+
     it("sets relative IRIs for LocalNodes", async () => {
       const mockFetch = jest
         .fn(window.fetch)
@@ -800,7 +860,7 @@ describe("saveSolidDatasetAt", () => {
       ).toBeGreaterThan(0);
     });
 
-    it("ignores hash fragments in the target IRI if any", async () => {
+    it("ignores hash fragments in the target IRI if any when determining if the request is an update or a creation", async () => {
       const mockedResponse = new Response();
       jest
         .spyOn(mockedResponse, "url", "get")
@@ -841,18 +901,11 @@ describe("saveSolidDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toEqual(
+        // Note that the hash fragment is still present in the target URL
         "https://some.pod/resource#something"
       );
+      // The library detects that the desired operation is a PATCH, and not a PUT
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
-      expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
-          "Content-Type"
-        ]
-      ).toBe("application/sparql-update");
-      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-        "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
-          "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
-      );
     });
 
     it("does not include a DELETE statement if the change log contains no deletions", async () => {
