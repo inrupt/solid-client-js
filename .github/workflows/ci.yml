@@ -61,7 +61,8 @@ jobs:
         cd ../..
     - name: Run browser-based end-to-end tests (Linux)
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
-      run: npm run e2e-test-browser -- firefox:headless,chrome:headless
+      # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
+      run: npm run e2e-test-browser -- firefox:headless,chrome:headless --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
       # (But I've explicitly set it to *not* run in the oldest versions,
@@ -75,7 +76,8 @@ jobs:
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (Windows)
       continue-on-error: true
-      run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless
+      # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
+      run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one:
       # (But I've explicitly set it to *not* run in the oldest versions,
@@ -96,12 +98,13 @@ jobs:
       # obtain programmatically. Thus, we have to run the browser as a remote as a workaround.
       # Source: https://devexpress.github.io/testcafe/documentation/guides/continuous-integration/github-actions.html#step-2---create-a-job
       # Additionally, the tests on MacOS fail particularly often due to network errors;
-      # hence, they are run in quarantine mode (--quarantine-mode) to make TestCafe automatically retry them.
+      # hence, they are run in quarantine mode (--quarantine-mode) to make TestCafe automatically retry them,
+      # and with --retry-test-pages to retry failed network connections.
       run: |
         export HOSTNAME=localhost
         export PORT1=1337
         export PORT2=1338
-        npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode &
+        npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode --retry-test-pages --hostname localhost &
         pid=$!
         sleep 1s
         open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
