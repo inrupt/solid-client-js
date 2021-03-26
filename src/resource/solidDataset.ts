@@ -519,8 +519,7 @@ export async function saveSolidDatasetInContainer(
     );
   }
 
-  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
-    .href;
+  const resourceIri = new URL(locationHeader, response.url).href;
 
   const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
@@ -600,8 +599,7 @@ export async function createContainerInContainer(
     );
   }
 
-  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
-    .href;
+  const resourceIri = new URL(locationHeader, response.url).href;
 
   const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
