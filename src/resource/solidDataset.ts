@@ -62,6 +62,7 @@ import {
   internal_withChangeLog,
 } from "../thing/thing.internal";
 import { getIriAll } from "../thing/get";
+import { normalizeServerSideIri } from "./iri.internal";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -444,7 +445,8 @@ function isUpdate(
     hasChangelog(solidDataset) &&
     hasResourceInfo(solidDataset) &&
     typeof solidDataset.internal_resourceInfo.sourceIri === "string" &&
-    solidDataset.internal_resourceInfo.sourceIri === url
+    normalizeServerSideIri(solidDataset.internal_resourceInfo.sourceIri) ===
+      normalizeServerSideIri(url)
   );
 }
 

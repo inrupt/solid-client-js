@@ -788,6 +788,61 @@ describe("saveSolidDatasetAt", () => {
       ).toBeGreaterThan(0);
     });
 
+    it("ignores hash fragments in the target IRI if any", async () => {
+      const mockedResponse = new Response();
+      jest
+        .spyOn(mockedResponse, "url", "get")
+        .mockReturnValue("https://some.url");
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(Promise.resolve(mockedResponse));
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      await saveSolidDatasetAt(
+        "https://some.pod/resource#something",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toEqual(
+        "https://some.pod/resource#something"
+      );
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
+      expect(
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
+          "Content-Type"
+        ]
+      ).toBe("application/sparql-update");
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
+        "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
+          "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
+      );
+    });
+
     it("does not include a DELETE statement if the change log contains no deletions", async () => {
       const mockFetch = jest
         .fn(window.fetch)
