@@ -592,6 +592,7 @@ describe("getFileWithAccessDatasets", () => {
         linkedResources: { acl: ["https://some.pod/resource.acl"] },
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
+        url: "https://arbitrary.pod/resource",
       },
     });
     const mockedGetSolidDataset = jest.spyOn(
@@ -889,12 +890,20 @@ describe("getResourceInfoWithAccessDatasets", () => {
 
 describe("saveAcrFor", () => {
   it("calls the included fetcher by default", async () => {
+    const mockedResponse = new Response();
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://arbitrary.pod/resource");
+
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
       >;
     };
+
+    mockedFetcher.fetch.mockResolvedValue(mockedResponse);
+
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),
@@ -907,7 +916,11 @@ describe("saveAcrFor", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockedResponse = new Response();
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://arbitrary.pod/resource");
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockedResponse);
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),
@@ -922,7 +935,11 @@ describe("saveAcrFor", () => {
   });
 
   it("sends the ACR to the Pod", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockedResponse = new Response();
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://arbitrary.pod/resource");
+    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockedResponse);
     const mockedSaveSolidDatasetAt = jest.spyOn(
       SolidDatasetModule,
       "saveSolidDatasetAt"
