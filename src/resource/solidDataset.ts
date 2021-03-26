@@ -436,6 +436,16 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   return containerDataset;
 };
 
+function isSourceIriEqualTo(
+  dataset: SolidDataset & WithResourceInfo,
+  iri: IriString
+): boolean {
+  return (
+    normalizeServerSideIri(dataset.internal_resourceInfo.sourceIri) ===
+    normalizeServerSideIri(iri)
+  );
+}
+
 function isUpdate(
   solidDataset: SolidDataset,
   url: UrlString
@@ -444,8 +454,7 @@ function isUpdate(
     hasChangelog(solidDataset) &&
     hasResourceInfo(solidDataset) &&
     typeof solidDataset.internal_resourceInfo.sourceIri === "string" &&
-    normalizeServerSideIri(solidDataset.internal_resourceInfo.sourceIri) ===
-      normalizeServerSideIri(url)
+    isSourceIriEqualTo(solidDataset, url)
   );
 }
 
