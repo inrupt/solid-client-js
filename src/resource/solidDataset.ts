@@ -242,7 +242,6 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     ...internal_parseResourceInfo(response),
-    sourceIri: url,
     isRawData: false,
   };
   const storedDataset: Dataset &
