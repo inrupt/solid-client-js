@@ -68,7 +68,7 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux'
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux' && github.event_name != 'schedule'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -83,8 +83,6 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      # The scheduled tests are also just there to verify that ESS is running properly,
-      # so they only need to run on one platform (Linux, the most stable one).
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
@@ -118,8 +116,6 @@ jobs:
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      # The scheduled tests are also just there to verify that ESS is running properly,
-      # so they only need to run on one platform (Linux, the most stable one).
       if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
