@@ -25,45 +25,31 @@ import * as RdfJs from "rdf-js";
 import { IriString } from "./interfaces";
 import { xmlSchemaTypes } from "./datatypes";
 
+const localNodeSkolemPrefix = "https://inrupt.com/.well-known/sdk-local-node/" as const;
+type LocalNodeIri = `${typeof localNodeSkolemPrefix}${string}`;
 export type LocalNodeName = string;
 export type Objects = Readonly<
   Partial<{
     literals: Readonly<Record<IriString, readonly string[]>>;
     langStrings: Readonly<Record<string, readonly string[]>>;
-    namedNodes: readonly IriString[];
+    namedNodes: ReadonlyArray<LocalNodeIri | IriString>;
     // By abstracting over the specific blank nodes, we can neatly skip over the
     // issue of fetching the same data twice and then not being able to reconcile
     // different instances of the same blank nodes.
     blankNodes: readonly Predicates[];
-    // There's are a solid-client concept.
-    // There's not really a way to define these independently,
-    // but at the cost of worse performance and risking more bugs,
-    // we could also shove these into `namedNodes` by skolemising them directly.
-    localNodes: readonly LocalNodeName[];
     // TODO: Do we need RDF/JS Variables as well, or are they just for SPARQL?
   }>
 >;
 
 export type Predicates = Readonly<Record<IriString, Objects>>;
 
-// At the cost of worse performance and risking more bugs,
-// we can also have two properties `urlPrefix` and `name`,
-// with the former set to a known skolemised value for local Things.
-export type Subject = ResolvedSubject | LocalSubject;
-export type ResolvedSubject = Readonly<{ url: IriString }> & SubjectBase;
-export type LocalSubject = Readonly<{ name: string }> & SubjectBase;
-export type SubjectBase = Readonly<{
+export type Subject = Readonly<{
   type: "Subject";
+  url: LocalNodeIri | IriString;
   predicates: Predicates;
 }>;
 
-// Here, too, we could use skolemised values for local Things
-// at a cost of worse performance and higher risk of bugs,
-// in which case this would become a Readonly<Record<IriString, Subject>>:
-export type Graph = Readonly<{
-  resolvedSubject: Readonly<Record<IriString, ResolvedSubject>>;
-  localSubject: Readonly<Record<string, LocalSubject>>;
-}>;
+export type Graph = Readonly<Record<IriString, Subject>>;
 
 export type Dataset = Readonly<{
   type: "Dataset";
@@ -76,8 +62,6 @@ export type Dataset = Readonly<{
  * that merely marks its input as Readonly<> for static analysis.
  */
 const freeze: typeof Object.freeze = Object.freeze;
-
-const localNodeSkolemPrefix = "https://inrupt.com/.well-known/sdk-local-node/";
 
 export function fromRdfJsDataset(rdfJsDataset: RdfJs.DatasetCore): Dataset {
   const dataset: Dataset = {
@@ -118,10 +102,7 @@ function addRdfJsQuadToDataset(
   const graphId =
     quad.graph.termType === "DefaultGraph" ? "default" : quad.graph.value;
 
-  const graph: Graph = dataset.graphs[graphId] ?? {
-    resolvedSubject: freeze({}),
-    localSubject: freeze({}),
-  };
+  const graph: Graph = dataset.graphs[graphId] ?? {};
   return freeze({
     ...dataset,
     graphs: freeze({
@@ -147,43 +128,22 @@ function addRdfJsQuadToGraph(
 
   const subjectIri = quad.subject.value;
 
-  if (subjectIri.startsWith(localNodeSkolemPrefix)) {
-    const subjectName = subjectIri.substring(localNodeSkolemPrefix.length);
-    const subject: LocalSubject = graph.localSubject[subjectName] ?? {
-      type: "Subject",
-      name: subjectName,
-      predicates: {},
-    };
-    const localSubjects: Graph["localSubject"] = freeze({
-      ...graph.localSubject,
-      [subjectName]: addRdfJsQuadToSubject(subject, quad, quadParseOptions),
-    });
-    return freeze({
-      ...graph,
-      localSubject: localSubjects,
-    });
-  }
-
-  const subject: ResolvedSubject = graph.resolvedSubject[subjectIri] ?? {
+  const subject: Subject = graph[subjectIri] ?? {
     type: "Subject",
     url: subjectIri,
     predicates: {},
   };
-  const resolvedSubjects: Graph["resolvedSubject"] = freeze({
-    ...graph.resolvedSubject,
-    [subjectIri]: addRdfJsQuadToSubject(subject, quad, quadParseOptions),
-  });
   return freeze({
     ...graph,
-    resolvedSubject: resolvedSubjects,
+    [subjectIri]: addRdfJsQuadToSubject(subject, quad, quadParseOptions),
   });
 }
 
-function addRdfJsQuadToSubject<SubjectExt extends Subject>(
-  subject: SubjectExt,
+function addRdfJsQuadToSubject(
+  subject: Subject,
   quad: RdfJs.Quad,
   quadParseOptions: QuadParseOptions = {}
-): SubjectExt {
+): Subject {
   return freeze({
     ...subject,
     predicates: addRdfJsQuadToPredicates(
@@ -221,17 +181,6 @@ function addRdfJsQuadToObjects(
   quadParseOptions: QuadParseOptions = {}
 ): Objects {
   if (quad.object.termType === "NamedNode") {
-    if (quad.object.value.startsWith(localNodeSkolemPrefix)) {
-      const localNodes = freeze([
-        ...(objects.localNodes ?? []),
-        quad.object.value.substring(localNodeSkolemPrefix.length),
-      ]);
-      return freeze({
-        ...objects,
-        localNodes: localNodes,
-      });
-    }
-
     const namedNodes = freeze([
       ...(objects.namedNodes ?? []),
       quad.object.value,
@@ -388,17 +337,9 @@ export function toRdfJsQuads(dataset: Dataset): RdfJs.Quad[] {
         ? RdfJsDataFactory.defaultGraph()
         : RdfJsDataFactory.namedNode(graphIri);
 
-    Object.keys(graph.resolvedSubject).forEach((subjectIri) => {
-      const predicates = graph.resolvedSubject[subjectIri].predicates;
+    Object.keys(graph).forEach((subjectIri) => {
+      const predicates = graph[subjectIri].predicates;
       const subjectNode = RdfJsDataFactory.namedNode(subjectIri);
-      quads.push(...subjecToRdfJsQuads(predicates, subjectNode, graphNode));
-    });
-
-    Object.keys(graph.localSubject).forEach((localSubjectName) => {
-      const predicates = graph.localSubject[localSubjectName].predicates;
-      const subjectNode = RdfJsDataFactory.namedNode(
-        localNodeSkolemPrefix + localSubjectName
-      );
       quads.push(...subjecToRdfJsQuads(predicates, subjectNode, graphNode));
     });
   });
@@ -417,7 +358,6 @@ function subjecToRdfJsQuads(
     const predicateNode = RdfJsDataFactory.namedNode(predicateIri);
     const langStrings = predicates[predicateIri].langStrings ?? {};
     const namedNodes = predicates[predicateIri].namedNodes ?? [];
-    const localNodes = predicates[predicateIri].localNodes ?? [];
     const literals = predicates[predicateIri].literals ?? {};
     const blankNodes = predicates[predicateIri].blankNodes ?? [];
 
@@ -460,20 +400,6 @@ function subjecToRdfJsQuads(
       const node = RdfJsDataFactory.namedNode(namedNodeIri);
       quads.push(
         RdfJsDataFactory.quad(subjectNode, predicateNode, node, graphNode)
-      );
-    });
-
-    localNodes.forEach((localNodeName) => {
-      const skolemisedNode = RdfJsDataFactory.namedNode(
-        localNodeSkolemPrefix + localNodeName
-      );
-      quads.push(
-        RdfJsDataFactory.quad(
-          subjectNode,
-          predicateNode,
-          skolemisedNode,
-          graphNode
-        )
       );
     });
 

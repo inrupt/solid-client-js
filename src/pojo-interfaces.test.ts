@@ -151,62 +151,56 @@ describe("fromRdfJsDataset", () => {
       type: "Dataset",
       graphs: {
         default: {
-          resolvedSubject: {
-            [subject1Iri]: {
-              url: subject1Iri,
-              type: "Subject",
-              predicates: {
-                [predicate1Iri]: {
-                  literals: {
-                    [xmlSchemaTypes.string]: [literalStringValue],
-                    [xmlSchemaTypes.integer]: [literalIntegerValue],
-                  },
-                  langStrings: {
-                    [literalLangStringLocale]: [literalLangStringValue],
-                  },
+          [subject1Iri]: {
+            url: subject1Iri,
+            type: "Subject",
+            predicates: {
+              [predicate1Iri]: {
+                literals: {
+                  [xmlSchemaTypes.string]: [literalStringValue],
+                  [xmlSchemaTypes.integer]: [literalIntegerValue],
                 },
-                [predicate2Iri]: {
-                  namedNodes: [subject2Iri],
+                langStrings: {
+                  [literalLangStringLocale]: [literalLangStringValue],
                 },
+              },
+              [predicate2Iri]: {
+                namedNodes: [subject2Iri],
               },
             },
           },
-          localSubject: {},
         },
         [acrGraphIri]: {
-          resolvedSubject: {
-            [subject2Iri]: {
-              url: subject2Iri,
-              type: "Subject",
-              predicates: {
-                [predicate1Iri]: {
-                  blankNodes: [
-                    {
-                      [predicate1Iri]: {
-                        literals: {
-                          [xmlSchemaTypes.string]: [literalStringValue],
-                        },
+          [subject2Iri]: {
+            url: subject2Iri,
+            type: "Subject",
+            predicates: {
+              [predicate1Iri]: {
+                blankNodes: [
+                  {
+                    [predicate1Iri]: {
+                      literals: {
+                        [xmlSchemaTypes.string]: [literalStringValue],
                       },
                     },
-                    {
-                      [predicate1Iri]: {
-                        literals: {
-                          [xmlSchemaTypes.string]: [literalStringValue],
-                          [xmlSchemaTypes.integer]: [literalIntegerValue],
-                        },
-                      },
-                      [predicate2Iri]: {
-                        literals: {
-                          [xmlSchemaTypes.integer]: [literalIntegerValue],
-                        },
+                  },
+                  {
+                    [predicate1Iri]: {
+                      literals: {
+                        [xmlSchemaTypes.string]: [literalStringValue],
+                        [xmlSchemaTypes.integer]: [literalIntegerValue],
                       },
                     },
-                  ],
-                },
+                    [predicate2Iri]: {
+                      literals: {
+                        [xmlSchemaTypes.integer]: [literalIntegerValue],
+                      },
+                    },
+                  },
+                ],
               },
             },
           },
-          localSubject: {},
         },
       },
     });
@@ -235,15 +229,19 @@ describe("toRdfJsDataset", () => {
       fc.set(fc.string(), { minLength: 1 })
     )
     .filter(isNotEmpty);
-  const fcNamedNodes = fc.set(fc.webUrl(), { minLength: 1 });
-  const fcLocalNodes = fc.set(fc.string(), { minLength: 1 });
+  const fcLocalNodeIri = fc.webUrl().map((url) => {
+    const originalUrl = new URL(url);
+    return `https://inrupt.com/.well-known/sdk-local-node/${originalUrl.hash}`;
+  });
+  const fcNamedNodes = fc.set(fc.oneof(fcLocalNodeIri, fc.webUrl()), {
+    minLength: 1,
+  });
   const fcObjects = fc
     .record(
       {
         literals: fcLiterals,
         langStrings: fcLangStrings,
         namedNodes: fcNamedNodes,
-        localNodes: fcLocalNodes,
         // blankNodes: fcBlankNodes,
       },
       { withDeletedKeys: true }
@@ -259,7 +257,6 @@ describe("toRdfJsDataset", () => {
   //       literals: fcLiterals,
   //       langStrings: fcLangStrings,
   //       namedNodes: fcNamedNodes,
-  //       localNodes: fcLocalNodes,
   //       blankNodes: tie("blankNodes").filter(value => isNotEmpty(value as object)),
   //     }
   //   ),
@@ -268,46 +265,27 @@ describe("toRdfJsDataset", () => {
   //   // leaf: fc.constant({}),
   //   // nodes: tie("predicates"),
   // })).predicates;
-  const fcResolvedSubject = fc
+  const fcSubject = fc.record({
+    type: fc.constant("Subject"),
+    url: fc.webUrl(),
+    predicates: fcPredicates,
+  });
+  const fcGraph = fc
     .dictionary(
-      fc.webUrl(),
+      fc.oneof(fcLocalNodeIri, fc.webUrl()),
       fc.record({
         type: fc.constant("Subject"),
         url: fc.webUrl(),
         predicates: fcPredicates,
       })
     )
-    .map((resolvedSubject) => {
-      Object.keys(resolvedSubject).forEach((resolvedSubjectIri) => {
-        resolvedSubject[resolvedSubjectIri].url = resolvedSubjectIri;
+    .filter(isNotEmpty)
+    .map((graph) => {
+      Object.keys(graph).forEach((subjectIri) => {
+        graph[subjectIri].url = subjectIri;
       });
-      return resolvedSubject;
+      return graph;
     });
-  const fcLocalSubject = fc
-    .dictionary(
-      fc.string(),
-      fc.record({
-        type: fc.constant("Subject"),
-        name: fc.string(),
-        predicates: fcPredicates,
-      })
-    )
-    .map((localSubject) => {
-      Object.keys(localSubject).forEach((localSubjectName) => {
-        localSubject[localSubjectName].name = localSubjectName;
-      });
-      return localSubject;
-    });
-  const fcGraph = fc.oneof(
-    fc.record({
-      resolvedSubject: fcResolvedSubject.filter(isNotEmpty),
-      localSubject: fcLocalSubject,
-    }),
-    fc.record({
-      resolvedSubject: fcResolvedSubject,
-      localSubject: fcLocalSubject.filter(isNotEmpty),
-    })
-  );
   const fcDataset = fc.record({
     type: fc.constant("Dataset"),
     graphs: fc.dictionary(
