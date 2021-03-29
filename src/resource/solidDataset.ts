@@ -62,6 +62,7 @@ import {
   internal_withChangeLog,
 } from "../thing/thing.internal";
 import { getIriAll } from "../thing/get";
+import { normalizeServerSideIri } from "./iri.internal";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -241,7 +242,6 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     ...internal_parseResourceInfo(response),
-    sourceIri: url,
     isRawData: false,
   };
   const storedDataset: Dataset &
@@ -436,6 +436,16 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   return containerDataset;
 };
 
+function isSourceIriEqualTo(
+  dataset: SolidDataset & WithResourceInfo,
+  iri: IriString
+): boolean {
+  return (
+    normalizeServerSideIri(dataset.internal_resourceInfo.sourceIri) ===
+    normalizeServerSideIri(iri)
+  );
+}
+
 function isUpdate(
   solidDataset: SolidDataset,
   url: UrlString
@@ -444,7 +454,7 @@ function isUpdate(
     hasChangelog(solidDataset) &&
     hasResourceInfo(solidDataset) &&
     typeof solidDataset.internal_resourceInfo.sourceIri === "string" &&
-    solidDataset.internal_resourceInfo.sourceIri === url
+    isSourceIriEqualTo(solidDataset, url)
   );
 }
 
@@ -518,8 +528,7 @@ export async function saveSolidDatasetInContainer(
     );
   }
 
-  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
-    .href;
+  const resourceIri = new URL(locationHeader, response.url).href;
 
   const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
@@ -599,8 +608,7 @@ export async function createContainerInContainer(
     );
   }
 
-  const resourceIri = new URL(locationHeader, new URL(containerUrl).origin)
-    .href;
+  const resourceIri = new URL(locationHeader, response.url).href;
 
   const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {

@@ -47,6 +47,7 @@ import {
   hasLinkedAcr,
 } from "./control";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
+import { normalizeServerSideIri } from "../resource/iri.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -377,21 +378,11 @@ export function getReferencedPolicyUrlAll(
   withAcr: WithAccessibleAcr
 ): UrlString[] {
   const policyUrls: UrlString[] = getPolicyUrlAll(withAcr)
-    .map(getResourceUrl)
-    .concat(getMemberPolicyUrlAll(withAcr).map(getResourceUrl))
-    .concat(getAcrPolicyUrlAll(withAcr).map(getResourceUrl))
-    .concat(getMemberAcrPolicyUrlAll(withAcr).map(getResourceUrl));
+    .map(normalizeServerSideIri)
+    .concat(getMemberPolicyUrlAll(withAcr).map(normalizeServerSideIri))
+    .concat(getAcrPolicyUrlAll(withAcr).map(normalizeServerSideIri))
+    .concat(getMemberAcrPolicyUrlAll(withAcr).map(normalizeServerSideIri));
 
   const uniqueUrls = Array.from(new Set(policyUrls));
   return uniqueUrls;
-}
-
-/**
- * To verify whether two URLs are at the same location, we need to strip the hash.
- * This function does that.
- */
-function getResourceUrl(urlWithHash: UrlString): UrlString {
-  const url = new URL(urlWithHash);
-  url.hash = "";
-  return url.href;
 }
