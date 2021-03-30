@@ -107,45 +107,85 @@ describe("fromRdfJsDataset", () => {
   it("can represent all Quads", () => {
     const blankNode1 = DataFactory.blankNode();
     const blankNode2 = DataFactory.blankNode();
-    const subject1Iri = "https://some.pod/resource#subject1";
-    const subject1 = DataFactory.namedNode(subject1Iri);
-    const subject2Iri = "https://some.pod/resource#subject2";
-    const subject2 = DataFactory.namedNode(subject2Iri);
-    const predicate1Iri = "https://some.vocab/predicate1";
-    const predicate1 = DataFactory.namedNode(predicate1Iri);
-    const predicate2Iri = "https://some.vocab/predicate2";
-    const predicate2 = DataFactory.namedNode(predicate2Iri);
+    const subject1IriString = "https://some.pod/resource#subject1";
+    const subject1Node = DataFactory.namedNode(subject1IriString);
+    const subject2IriString = "https://some.pod/resource#subject2";
+    const subject2Node = DataFactory.namedNode(subject2IriString);
+    const predicate1IriString = "https://some.vocab/predicate1";
+    const predicate1Node = DataFactory.namedNode(predicate1IriString);
+    const predicate2IriString = "https://some.vocab/predicate2";
+    const predicate2Node = DataFactory.namedNode(predicate2IriString);
     const literalStringValue = "Some string";
-    const literalString = DataFactory.literal(
+    const literalStringNode = DataFactory.literal(
       literalStringValue,
       DataFactory.namedNode(xmlSchemaTypes.string)
     );
     const literalLangStringValue = "Some lang string";
     const literalLangStringLocale = "en-gb";
-    const literalLangString = DataFactory.literal(
+    const literalLangStringNode = DataFactory.literal(
       literalLangStringValue,
       literalLangStringLocale
     );
     const literalIntegerValue = "42";
-    const literalInteger = DataFactory.literal(
+    const literalIntegerNode = DataFactory.literal(
       literalIntegerValue,
       DataFactory.namedNode(xmlSchemaTypes.integer)
     );
-    const defaultGraph = DataFactory.defaultGraph();
-    const acrGraphIri = "https://some.pod/resource?ext=acr";
-    const acrGraph = DataFactory.namedNode(acrGraphIri);
+    const defaultGraphNode = DataFactory.defaultGraph();
+    const acrGraphIriString = "https://some.pod/resource?ext=acr";
+    const acrGraphNode = DataFactory.namedNode(acrGraphIriString);
 
     const quads = [
-      DataFactory.quad(subject1, predicate1, literalString, defaultGraph),
-      DataFactory.quad(subject1, predicate1, literalLangString, defaultGraph),
-      DataFactory.quad(subject1, predicate1, literalInteger, defaultGraph),
-      DataFactory.quad(subject1, predicate2, subject2, defaultGraph),
-      DataFactory.quad(subject2, predicate1, blankNode1, acrGraph),
-      DataFactory.quad(subject2, predicate1, blankNode2, acrGraph),
-      DataFactory.quad(blankNode1, predicate1, literalString, acrGraph),
-      DataFactory.quad(blankNode2, predicate1, literalString, acrGraph),
-      DataFactory.quad(blankNode2, predicate1, literalInteger, acrGraph),
-      DataFactory.quad(blankNode2, predicate2, literalInteger, acrGraph),
+      DataFactory.quad(
+        subject1Node,
+        predicate1Node,
+        literalStringNode,
+        defaultGraphNode
+      ),
+      DataFactory.quad(
+        subject1Node,
+        predicate1Node,
+        literalLangStringNode,
+        defaultGraphNode
+      ),
+      DataFactory.quad(
+        subject1Node,
+        predicate1Node,
+        literalIntegerNode,
+        defaultGraphNode
+      ),
+      DataFactory.quad(
+        subject1Node,
+        predicate2Node,
+        subject2Node,
+        defaultGraphNode
+      ),
+      DataFactory.quad(subject2Node, predicate1Node, blankNode1, acrGraphNode),
+      DataFactory.quad(subject2Node, predicate1Node, blankNode2, acrGraphNode),
+      DataFactory.quad(
+        blankNode1,
+        predicate1Node,
+        literalStringNode,
+        acrGraphNode
+      ),
+      DataFactory.quad(
+        blankNode2,
+        predicate1Node,
+        literalStringNode,
+        acrGraphNode
+      ),
+      DataFactory.quad(
+        blankNode2,
+        predicate1Node,
+        literalIntegerNode,
+        acrGraphNode
+      ),
+      DataFactory.quad(
+        blankNode2,
+        predicate2Node,
+        literalIntegerNode,
+        acrGraphNode
+      ),
     ];
     const rdfJsDataset = dataset(quads);
 
@@ -153,11 +193,11 @@ describe("fromRdfJsDataset", () => {
       type: "Dataset",
       graphs: {
         default: {
-          [subject1Iri]: {
-            url: subject1Iri,
+          [subject1IriString]: {
+            url: subject1IriString,
             type: "Subject",
             predicates: {
-              [predicate1Iri]: {
+              [predicate1IriString]: {
                 literals: {
                   [xmlSchemaTypes.string]: [literalStringValue],
                   [xmlSchemaTypes.integer]: [literalIntegerValue],
@@ -166,34 +206,34 @@ describe("fromRdfJsDataset", () => {
                   [literalLangStringLocale]: [literalLangStringValue],
                 },
               },
-              [predicate2Iri]: {
-                namedNodes: [subject2Iri],
+              [predicate2IriString]: {
+                namedNodes: [subject2IriString],
               },
             },
           },
         },
-        [acrGraphIri]: {
-          [subject2Iri]: {
-            url: subject2Iri,
+        [acrGraphIriString]: {
+          [subject2IriString]: {
+            url: subject2IriString,
             type: "Subject",
             predicates: {
-              [predicate1Iri]: {
+              [predicate1IriString]: {
                 blankNodes: [
                   {
-                    [predicate1Iri]: {
+                    [predicate1IriString]: {
                       literals: {
                         [xmlSchemaTypes.string]: [literalStringValue],
                       },
                     },
                   },
                   {
-                    [predicate1Iri]: {
+                    [predicate1IriString]: {
                       literals: {
                         [xmlSchemaTypes.string]: [literalStringValue],
                         [xmlSchemaTypes.integer]: [literalIntegerValue],
                       },
                     },
-                    [predicate2Iri]: {
+                    [predicate2IriString]: {
                       literals: {
                         [xmlSchemaTypes.integer]: [literalIntegerValue],
                       },
