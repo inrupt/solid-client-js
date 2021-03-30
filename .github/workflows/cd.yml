@@ -8,11 +8,16 @@ on:
     # Only create preview releases for branches
     # (the `release` workflow creates actual releases for version tags):
     - '**'
+  workflow_dispatch:
 
 env:
   CI: true
 jobs:
   prepare-deployment:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
@@ -41,6 +46,10 @@ jobs:
         echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
 
   publish-npm:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     outputs:
@@ -128,6 +137,10 @@ jobs:
         echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -157,6 +170,10 @@ jobs:
       if: matrix.node-version != '10.x'
 
   verify-imports-parcel:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
@@ -182,6 +199,10 @@ jobs:
         path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
 
   verify-imports-webpack:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
@@ -208,6 +229,10 @@ jobs:
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
   cd-end-to-end-tests:
+    # Dependabot does not have access to our secrets,
+    # so publishing packages for Dependabot PRs can only be manually started.
+    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     strategy:
       matrix:

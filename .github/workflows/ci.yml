@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+  # Allow manual triggering, e.g. to run end-to-end tests against Dependabot PRs:
+  workflow_dispatch:
   schedule:
   # Run every fifth minute.
   # This is to verify that ESS is running properly.
@@ -37,8 +39,11 @@ jobs:
     - run: npm run e2e-test-node
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
-      # end-to-end tests only need to run on one OS:
-      if: runner.os == 'Linux' && matrix.node-version == '14.x'
+      # end-to-end tests only need to run on one OS.
+      # Additionally, Dependabot does not have access to our secrets,
+      # so end-to-end tests for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: runner.os == 'Linux' && matrix.node-version == '14.x' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
@@ -64,11 +69,14 @@ jobs:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
       run: npm run e2e-test-browser -- firefox:headless,chrome:headless --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one:
+      # so we only need to test in one.
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux' && github.event_name != 'schedule'
+      # Additionally, Dependabot does not have access to our secrets,
+      # so end-to-end tests for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -79,11 +87,14 @@ jobs:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
       run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one:
+      # so we only need to test in one.
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule'
+      # Additionally, Dependabot does not have access to our secrets,
+      # so end-to-end tests for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -112,11 +123,14 @@ jobs:
       # time of writing for the end-to-end tests to succeed, so cut them off after that:
       timeout-minutes: 20
       # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one:
+      # so we only need to test in one.
       # (But I've explicitly set it to *not* run in the oldest versions,
       # rather than running in the newest, so ensure that changing Node versions in CI
       # does not cause end-to-end tests to stop running.)
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule'
+      # Additionally, Dependabot does not have access to our secrets,
+      # so end-to-end tests for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
