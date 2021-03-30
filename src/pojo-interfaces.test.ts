@@ -33,7 +33,9 @@ import {
 import { fromRdfJsDataset, toRdfJsDataset } from "./pojo-interfaces";
 
 describe("fromRdfJsDataset", () => {
-  const fcNamedNode = fc.webUrl().map((url) => DataFactory.namedNode(url));
+  const fcNamedNode = fc
+    .webUrl({ withFragments: true, withQueryParameters: true })
+    .map((url) => DataFactory.namedNode(url));
   const fcString = fc.string().map((value) => DataFactory.literal(value));
   const fcInteger = fc
     .integer()
@@ -74,7 +76,7 @@ describe("fromRdfJsDataset", () => {
     )
     .map(([value, lang]) => DataFactory.literal(value, lang));
   const fcArbitraryLiteral = fc
-    .tuple(fc.string(), fc.webUrl())
+    .tuple(fc.string(), fc.webUrl({ withFragments: true }))
     .map(([value, dataType]) =>
       DataFactory.literal(value, DataFactory.namedNode(dataType))
     );
@@ -221,7 +223,10 @@ describe("toRdfJsDataset", () => {
     return Object.keys(value).length > 0;
   };
   const fcLiterals = fc
-    .dictionary(fc.webUrl(), fc.set(fc.string(), { minLength: 1 }))
+    .dictionary(
+      fc.webUrl({ withFragments: true }),
+      fc.set(fc.string(), { minLength: 1 })
+    )
     .filter(isNotEmpty);
   const fcLangStrings = fc
     .dictionary(
@@ -229,13 +234,19 @@ describe("toRdfJsDataset", () => {
       fc.set(fc.string(), { minLength: 1 })
     )
     .filter(isNotEmpty);
-  const fcLocalNodeIri = fc.webUrl().map((url) => {
+  const fcLocalNodeIri = fc.webUrl({ withFragments: true }).map((url) => {
     const originalUrl = new URL(url);
     return `https://inrupt.com/.well-known/sdk-local-node/${originalUrl.hash}`;
   });
-  const fcNamedNodes = fc.set(fc.oneof(fcLocalNodeIri, fc.webUrl()), {
-    minLength: 1,
-  });
+  const fcNamedNodes = fc.set(
+    fc.oneof(
+      fcLocalNodeIri,
+      fc.webUrl({ withFragments: true, withQueryParameters: true })
+    ),
+    {
+      minLength: 1,
+    }
+  );
   const fcObjects = fc
     .record(
       {
@@ -247,11 +258,13 @@ describe("toRdfJsDataset", () => {
       { withDeletedKeys: true }
     )
     .filter(isNotEmpty);
-  const fcPredicates = fc.dictionary(fc.webUrl(), fcObjects).filter(isNotEmpty);
+  const fcPredicates = fc
+    .dictionary(fc.webUrl({ withFragments: true }), fcObjects)
+    .filter(isNotEmpty);
   // Unfortunately I haven't figured out how to generate the recursive blank node
   // structures with fast-check yet:
   // const fcPredicates = fc.letrec(tie => ({
-  //   predicates: fc.dictionary(fc.webUrl(), tie("objects")).filter(isNotEmpty),
+  //   predicates: fc.dictionary(fc.webUrl({ withFragments: true }), tie("objects")).filter(isNotEmpty),
   //   objects: fc.record(
   //     {
   //       literals: fcLiterals,
@@ -267,15 +280,18 @@ describe("toRdfJsDataset", () => {
   // })).predicates;
   const fcSubject = fc.record({
     type: fc.constant("Subject"),
-    url: fc.webUrl(),
+    url: fc.webUrl({ withFragments: true, withQueryParameters: true }),
     predicates: fcPredicates,
   });
   const fcGraph = fc
     .dictionary(
-      fc.oneof(fcLocalNodeIri, fc.webUrl()),
+      fc.oneof(
+        fcLocalNodeIri,
+        fc.webUrl({ withFragments: true, withQueryParameters: true })
+      ),
       fc.record({
         type: fc.constant("Subject"),
-        url: fc.webUrl(),
+        url: fc.webUrl({ withFragments: true, withQueryParameters: true }),
         predicates: fcPredicates,
       })
     )
@@ -289,7 +305,10 @@ describe("toRdfJsDataset", () => {
   const fcDataset = fc.record({
     type: fc.constant("Dataset"),
     graphs: fc.dictionary(
-      fc.oneof(fc.constant("default"), fc.webUrl()),
+      fc.oneof(
+        fc.constant("default"),
+        fc.webUrl({ withQueryParameters: true })
+      ),
       fcGraph
     ),
   });
