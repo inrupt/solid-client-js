@@ -72,11 +72,13 @@ export function fromRdfJsDataset(rdfJsDataset: RdfJs.DatasetCore): Dataset {
   };
 
   const quads = Array.from(rdfJsDataset);
-  const quadsWithoutBlankNodes = quads.filter(
+  // Quads with Blank Nodes as their Subject will be parsed when those Subject
+  // are referred to in an Object. See `addRdfJsQuadToObjects`.
+  const quadsWithoutBlankNodeSubjects = quads.filter(
     (quad) => !isBlankNode(quad.subject)
   );
 
-  return quadsWithoutBlankNodes.reduce(
+  return quadsWithoutBlankNodeSubjects.reduce(
     (datasetAcc, quad) =>
       addRdfJsQuadToDataset(datasetAcc, quad, { otherQuads: quads }),
     dataset
