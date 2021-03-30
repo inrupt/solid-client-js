@@ -23,15 +23,17 @@ import { dataset as rdfJsDataset } from "@rdfjs/dataset";
 import RdfJsDataFactory from "@rdfjs/data-model";
 import * as RdfJs from "rdf-js";
 import { IriString } from "./interfaces";
-import { xmlSchemaTypes } from "./datatypes";
+import { XmlSchemaTypeIri, xmlSchemaTypes } from "./datatypes";
 
 const localNodeSkolemPrefix = "https://inrupt.com/.well-known/sdk-local-node/" as const;
 type LocalNodeIri = `${typeof localNodeSkolemPrefix}${string}`;
 export type LocalNodeName = string;
+type DataTypeIriString = XmlSchemaTypeIri | IriString;
+type LocaleString = string;
 export type Objects = Readonly<
   Partial<{
-    literals: Readonly<Record<IriString, readonly string[]>>;
-    langStrings: Readonly<Record<string, readonly string[]>>;
+    literals: Readonly<Record<DataTypeIriString, readonly string[]>>;
+    langStrings: Readonly<Record<LocaleString, readonly string[]>>;
     namedNodes: ReadonlyArray<LocalNodeIri | IriString>;
     // By abstracting over the specific blank nodes, we can neatly skip over the
     // issue of fetching the same data twice and then not being able to reconcile
