@@ -329,16 +329,22 @@ type AuthDetails = [Pod, OidcIssuer, ClientId, ClientSecret, RefreshToken];
 const serversUnderTest: AuthDetails[] = [
   // pod.inrupt.com:
   [
-    process.env.E2E_TEST_ESS_POD!,
-    process.env.E2E_TEST_ESS_IDP_URL!,
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    process.env.E2E_TEST_ESS_POD!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
     process.env.E2E_TEST_ESS_REFRESH_TOKEN!,
   ],
   // pod-compat.inrupt.com:
   [
-    process.env.E2E_TEST_ESS_COMPAT_POD!,
-    process.env.E2E_TEST_ESS_COMPAT_IDP_URL!,
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    process.env.E2E_TEST_ESS_COMPAT_POD!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_COMPAT_IDP_URL!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_ESS_COMPAT_CLIENT_ID!,
     process.env.E2E_TEST_ESS_COMPAT_CLIENT_SECRET!,
     process.env.E2E_TEST_ESS_COMPAT_REFRESH_TOKEN!,
@@ -352,6 +358,10 @@ const serversUnderTest: AuthDetails[] = [
 describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
   (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
+    // Re-add `https://` at the start of these URLs, which we trimmed above
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    rootContainer = "https://" + rootContainer;
+    oidcIssuer = "https://" + oidcIssuer;
     function supportsWac() {
       return (
         rootContainer.includes("pod-compat.inrupt.com") ||
