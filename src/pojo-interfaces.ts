@@ -53,7 +53,7 @@ export type Subject = Readonly<{
 
 export type Graph = Readonly<Record<IriString, Subject>>;
 
-export type Dataset = Readonly<{
+export type ImmutableDataset = Readonly<{
   type: "Dataset";
   graphs: Readonly<Record<"default" | IriString, Graph>>;
 }>;
@@ -65,8 +65,10 @@ export type Dataset = Readonly<{
  */
 const freeze: typeof Object.freeze = Object.freeze;
 
-export function fromRdfJsDataset(rdfJsDataset: RdfJs.DatasetCore): Dataset {
-  const dataset: Dataset = {
+export function fromRdfJsDataset(
+  rdfJsDataset: RdfJs.DatasetCore
+): ImmutableDataset {
+  const dataset: ImmutableDataset = {
     graphs: {},
     type: "Dataset",
   };
@@ -90,10 +92,10 @@ type QuadParseOptions = Partial<{
 }>;
 
 function addRdfJsQuadToDataset(
-  dataset: Dataset,
+  dataset: ImmutableDataset,
   quad: RdfJs.Quad,
   quadParseOptions: QuadParseOptions = {}
-): Dataset {
+): ImmutableDataset {
   const supportedGraphTypes: Array<typeof quad.graph.termType> = [
     "NamedNode",
     "DefaultGraph",
@@ -327,11 +329,11 @@ function isBlankNode(term: RdfJs.Term): term is RdfJs.BlankNode {
   return term.termType === "BlankNode";
 }
 
-export function toRdfJsDataset(set: Dataset): RdfJs.DatasetCore {
+export function toRdfJsDataset(set: ImmutableDataset): RdfJs.DatasetCore {
   return rdfJsDataset(toRdfJsQuads(set));
 }
 
-export function toRdfJsQuads(dataset: Dataset): RdfJs.Quad[] {
+export function toRdfJsQuads(dataset: ImmutableDataset): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
 
   Object.keys(dataset.graphs).forEach((graphIri: IriString) => {
