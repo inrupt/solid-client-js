@@ -108,84 +108,44 @@ describe("fromRdfJsDataset", () => {
     const blankNode1 = DataFactory.blankNode();
     const blankNode2 = DataFactory.blankNode();
     const subject1IriString = "https://some.pod/resource#subject1";
-    const subject1Node = DataFactory.namedNode(subject1IriString);
+    const subject1 = DataFactory.namedNode(subject1IriString);
     const subject2IriString = "https://some.pod/resource#subject2";
-    const subject2Node = DataFactory.namedNode(subject2IriString);
+    const subject2 = DataFactory.namedNode(subject2IriString);
     const predicate1IriString = "https://some.vocab/predicate1";
-    const predicate1Node = DataFactory.namedNode(predicate1IriString);
+    const predicate1 = DataFactory.namedNode(predicate1IriString);
     const predicate2IriString = "https://some.vocab/predicate2";
-    const predicate2Node = DataFactory.namedNode(predicate2IriString);
+    const predicate2 = DataFactory.namedNode(predicate2IriString);
     const literalStringValue = "Some string";
-    const literalStringNode = DataFactory.literal(
+    const literalString = DataFactory.literal(
       literalStringValue,
       DataFactory.namedNode(xmlSchemaTypes.string)
     );
     const literalLangStringValue = "Some lang string";
     const literalLangStringLocale = "en-gb";
-    const literalLangStringNode = DataFactory.literal(
+    const literalLangString = DataFactory.literal(
       literalLangStringValue,
       literalLangStringLocale
     );
     const literalIntegerValue = "42";
-    const literalIntegerNode = DataFactory.literal(
+    const literalInteger = DataFactory.literal(
       literalIntegerValue,
       DataFactory.namedNode(xmlSchemaTypes.integer)
     );
-    const defaultGraphNode = DataFactory.defaultGraph();
+    const defaultGraph = DataFactory.defaultGraph();
     const acrGraphIriString = "https://some.pod/resource?ext=acr";
-    const acrGraphNode = DataFactory.namedNode(acrGraphIriString);
+    const acrGraph = DataFactory.namedNode(acrGraphIriString);
 
     const quads = [
-      DataFactory.quad(
-        subject1Node,
-        predicate1Node,
-        literalStringNode,
-        defaultGraphNode
-      ),
-      DataFactory.quad(
-        subject1Node,
-        predicate1Node,
-        literalLangStringNode,
-        defaultGraphNode
-      ),
-      DataFactory.quad(
-        subject1Node,
-        predicate1Node,
-        literalIntegerNode,
-        defaultGraphNode
-      ),
-      DataFactory.quad(
-        subject1Node,
-        predicate2Node,
-        subject2Node,
-        defaultGraphNode
-      ),
-      DataFactory.quad(subject2Node, predicate1Node, blankNode1, acrGraphNode),
-      DataFactory.quad(subject2Node, predicate1Node, blankNode2, acrGraphNode),
-      DataFactory.quad(
-        blankNode1,
-        predicate1Node,
-        literalStringNode,
-        acrGraphNode
-      ),
-      DataFactory.quad(
-        blankNode2,
-        predicate1Node,
-        literalStringNode,
-        acrGraphNode
-      ),
-      DataFactory.quad(
-        blankNode2,
-        predicate1Node,
-        literalIntegerNode,
-        acrGraphNode
-      ),
-      DataFactory.quad(
-        blankNode2,
-        predicate2Node,
-        literalIntegerNode,
-        acrGraphNode
-      ),
+      DataFactory.quad(subject1, predicate1, literalString, defaultGraph),
+      DataFactory.quad(subject1, predicate1, literalLangString, defaultGraph),
+      DataFactory.quad(subject1, predicate1, literalInteger, defaultGraph),
+      DataFactory.quad(subject1, predicate2, subject2, defaultGraph),
+      DataFactory.quad(subject2, predicate1, blankNode1, acrGraph),
+      DataFactory.quad(subject2, predicate1, blankNode2, acrGraph),
+      DataFactory.quad(blankNode1, predicate1, literalString, acrGraph),
+      DataFactory.quad(blankNode2, predicate1, literalString, acrGraph),
+      DataFactory.quad(blankNode2, predicate1, literalInteger, acrGraph),
+      DataFactory.quad(blankNode2, predicate2, literalInteger, acrGraph),
     ];
     const rdfJsDataset = dataset(quads);
 
