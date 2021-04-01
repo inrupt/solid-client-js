@@ -10,6 +10,10 @@ The following changes have been implemented but not released yet:
 
 - Saving a dataset to an IRI with a hash fragment (e.g. the WebID) is processed
   as an update, and not anymore as an overwrite.
+- An update in one of our dependencies caused writes to a Pod to fail. This
+  dependency has now been pinned to an older, working version while we
+  investigate further. For more info, see
+  https://github.com/inrupt/solid-client-js/issues/957.
 
 The following sections document changes that have been released already:
 
