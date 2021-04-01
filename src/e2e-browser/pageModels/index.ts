@@ -58,6 +58,10 @@ export class IndexPage {
 }
 
 export async function isIndexPage() {
+  // Pretend that `window` actually is defined (even though the `window`
+  // referred to in the ClientFunction is actually in a different runtime),
+  // so static analysis does not stumble over this:
+  const window: any = undefined;
   return (
     (await ClientFunction(() => window.location.origin)()) ===
     "http://localhost:1234"
