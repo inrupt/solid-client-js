@@ -46,10 +46,6 @@ jobs:
         echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
 
   publish-npm:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     outputs:
@@ -59,6 +55,10 @@ jobs:
     - name: Mark GitHub Deployment as in progress
       id: start-deployment
       uses: octokit/request-action@v2.0.26
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       with:
         route: POST /repos/:repository/deployments/:deployment/statuses
         repository: ${{ github.repository }}
@@ -76,6 +76,10 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     - name: Prepare prerelease version
       id: determine-npm-version
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
@@ -90,6 +94,10 @@ jobs:
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
     - run: npm ci
     - name: Publish an npm tag for this branch
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         # Unfortunately GitHub Actions does not currently let us do something like
         #     if: secrets.NPM_TOKEN != ''
@@ -104,6 +112,10 @@ jobs:
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
     - name: Mark GitHub Deployment as successful
       uses: octokit/request-action@v2.0.26
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       with:
         route: POST /repos/:repository/deployments/:deployment/statuses
         repository: ${{ github.repository }}
@@ -131,16 +143,16 @@ jobs:
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     - name: Waiting for npm CDNs to update...
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         echo "Giving npm some time to make the newly-published package available…"
         sleep 5m
         echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -153,27 +165,34 @@ jobs:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
     - name: Install the preview release of solid-client in the packaging test project
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         cd .github/workflows/cd-packaging-tests/node
         npm install @inrupt/solid-client@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Verify that the package can be imported in Node from a CommonJS module
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict commonjs.cjs
     - name: Verify that the package can be imported in Node from an ES module
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      # Also, Node 10 does not support ES modules:
+      if: github.actor != 'dependabot[bot]' && matrix.node-version != '10.x'
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict esmodule.mjs
-      # Node 10 does not support ES modules:
-      if: matrix.node-version != '10.x'
 
   verify-imports-parcel:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
@@ -183,6 +202,10 @@ jobs:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
     - name: Verify that the package can be imported in a Parcel project
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-parcel
         npm install @inrupt/solid-client@$VERSION_NR
@@ -194,15 +217,15 @@ jobs:
     - name: Archive Parcel build artifacts
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       with:
         name: parcel-dist
         path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
 
   verify-imports-webpack:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
@@ -212,6 +235,10 @@ jobs:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
     - name: Verify that the package can be imported in a Webpack project
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-webpack
         npm install @inrupt/solid-client@$VERSION_NR
@@ -222,6 +249,10 @@ jobs:
     - name: Archive Webpack build artifacts
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       with:
         name: webpack-dist
         path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
@@ -229,10 +260,6 @@ jobs:
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
   cd-end-to-end-tests:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -245,7 +272,15 @@ jobs:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
     - run: npm ci
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
     - name: Install the preview release of solid-client
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       # The `--force` allows us to install it even though our own package has the same name.
       # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
       run: |
@@ -253,12 +288,20 @@ jobs:
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Make sure that the end-to-end tests run against the just-published package
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: |
         cd src/e2e-node
         # For all files (`-type f`) in this directory,
         # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client`:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
     - name: Run the Node-based end-to-end tests
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       run: npm run e2e-test-node
       env:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
