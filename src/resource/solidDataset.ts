@@ -854,11 +854,7 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
     ? getNamedNodeFromLocalNode(quad.object)
     : quad.object;
 
-  return {
-    ...quad,
-    subject: subject,
-    object: object,
-  };
+  return DataFactory.quad(subject, quad.predicate, object, quad.graph);
 }
 
 function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
