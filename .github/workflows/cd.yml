@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
-      deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
+      deployment-id: ${{ fromJson(steps.create-deployment.outputs.data || '{}').id || 'Skipped for Dependabot' }}
     steps:
     - name: Create GitHub Deployment
       id: create-deployment
