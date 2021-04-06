@@ -14,10 +14,6 @@ env:
   CI: true
 jobs:
   prepare-deployment:
-    # Dependabot does not have access to our secrets,
-    # so publishing packages for Dependabot PRs can only be manually started.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-20.04
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
@@ -25,6 +21,10 @@ jobs:
     steps:
     - name: Create GitHub Deployment
       id: create-deployment
+      # Dependabot does not have access to our secrets,
+      # so publishing packages for Dependabot PRs can only be manually started.
+      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+      if: github.actor != 'dependabot[bot]'
       uses: octokit/request-action@v2.0.26
       with:
         route: POST /repos/:repository/deployments
