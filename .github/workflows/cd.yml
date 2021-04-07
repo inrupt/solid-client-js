@@ -215,7 +215,7 @@ jobs:
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Archive Parcel build artifacts
-      uses: actions/upload-artifact@v2.2.2
+      uses: actions/upload-artifact@v2.2.3
       continue-on-error: true
       # Dependabot does not have access to our secrets,
       # so publishing packages for Dependabot PRs can only be manually started.
@@ -247,7 +247,7 @@ jobs:
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Archive Webpack build artifacts
-      uses: actions/upload-artifact@v2.2.2
+      uses: actions/upload-artifact@v2.2.3
       continue-on-error: true
       # Dependabot does not have access to our secrets,
       # so publishing packages for Dependabot PRs can only be manually started.
