@@ -6,11 +6,16 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- While the API documentation mentioned an `isThingLocal` function, it could not
+  actually be imported from `@inrupt/solid-client`.
+
 The following sections document changes that have been released already:
 
 ## [1.6.1] - 2021-04-01
 
-### Bugfix
+### Bugs fixed
 
 - Saving a dataset to an IRI with a hash fragment (e.g. the WebID) is processed
   as an update, and not anymore as an overwrite.

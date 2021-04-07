@@ -399,7 +399,7 @@ export function thingAsMarkdown(thing: Thing): string {
 
 /**
  * @param thing The [[Thing]] of which a URL might or might not be known.
- * @return Whether `thing` has no known URL yet.
+ * @return `true` if `thing` has no known URL yet.
  */
 export function isThingLocal(
   thing: ThingPersisted | ThingLocal

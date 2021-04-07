@@ -51,6 +51,7 @@ import {
   removeThing,
   createThing,
   isThing,
+  isThingLocal,
   asUrl,
   asIri,
   thingAsMarkdown,
@@ -197,6 +198,7 @@ it("exports the public API from the entry file", () => {
   expect(removeThing).toBeDefined();
   expect(createThing).toBeDefined();
   expect(isThing).toBeDefined();
+  expect(isThingLocal).toBeDefined();
   expect(asUrl).toBeDefined();
   expect(asIri).toBeDefined();
   expect(thingAsMarkdown).toBeDefined();
