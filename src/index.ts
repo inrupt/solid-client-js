@@ -62,6 +62,7 @@ export {
   removeThing,
   createThing,
   isThing,
+  isThingLocal,
   asUrl,
   asIri,
   thingAsMarkdown,
