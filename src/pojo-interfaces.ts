@@ -82,12 +82,21 @@ export function fromRdfJsDataset(
   const quadsWithoutBlankNodeSubjects = quads.filter(
     (quad) => !isBlankNode(quad.subject)
   );
-
-  return quadsWithoutBlankNodeSubjects.reduce(
-    (datasetAcc, quad) =>
-      addRdfJsQuadToDataset(datasetAcc, quad, { otherQuads: quads }),
-    dataset
+  // Get Quads with a Blank Node as the Subject that does not appear as the
+  // Object in any other Quads:
+  const quadsWithDanglingBlankNodeSubjects = quads.filter(
+    (quad) =>
+      isBlankNode(quad.subject) &&
+      rdfJsDataset.match(null, null, quad.subject, quad.graph).size === 0
   );
+
+  return quadsWithoutBlankNodeSubjects
+    .concat(quadsWithDanglingBlankNodeSubjects)
+    .reduce(
+      (datasetAcc, quad) =>
+        addRdfJsQuadToDataset(datasetAcc, quad, { otherQuads: quads }),
+      dataset
+    );
 }
 
 type QuadParseOptions = Partial<{
@@ -128,6 +137,7 @@ function addRdfJsQuadToGraph(
 ): Graph {
   const supportedSubjectTypes: Array<typeof quad.subject.termType> = [
     "NamedNode",
+    "BlankNode",
   ];
   if (!supportedSubjectTypes.includes(quad.subject.termType)) {
     throw new Error(
@@ -135,7 +145,10 @@ function addRdfJsQuadToGraph(
     );
   }
 
-  const subjectIri = quad.subject.value;
+  const subjectIri =
+    quad.subject.termType === "BlankNode"
+      ? `_:${quad.subject.value}`
+      : quad.subject.value;
 
   const subject: Subject = graph[subjectIri] ?? {
     type: "Subject",
