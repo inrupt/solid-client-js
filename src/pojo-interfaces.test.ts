@@ -255,6 +255,27 @@ describe("fromRdfJsDataset", () => {
       ).size
     ).toBe(1);
   });
+
+  it("does not lose any predicates", () => {
+    const blankNode1 = DataFactory.blankNode();
+    const blankNode2 = DataFactory.blankNode();
+    const blankNode3 = DataFactory.blankNode();
+    const blankNode4 = DataFactory.blankNode();
+    const predicate1 = DataFactory.namedNode("https://example.com/predicate1");
+    const predicate2 = DataFactory.namedNode("https://example.com/predicate2");
+    const predicate3 = DataFactory.namedNode("https://example.com/predicate3");
+    const acrGraph = DataFactory.namedNode("https://example.com/acrGraph");
+    const literalString = DataFactory.literal("Arbitrary literal string");
+    const quads = [
+      DataFactory.quad(blankNode1, predicate1, blankNode2, acrGraph),
+      DataFactory.quad(blankNode2, predicate2, blankNode3, acrGraph),
+      DataFactory.quad(blankNode3, predicate3, blankNode4, acrGraph),
+      DataFactory.quad(blankNode4, predicate2, literalString, acrGraph),
+    ];
+    const rdfJsDataset = dataset(quads);
+    const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
+    expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
+  });
 });
 
 describe("toRdfJsDataset", () => {

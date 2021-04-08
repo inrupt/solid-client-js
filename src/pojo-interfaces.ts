@@ -247,8 +247,8 @@ function addRdfJsQuadToObjects(
 
   if (quad.object.termType === "BlankNode") {
     const blankNodePredicates = getPredicatesForBlankNode(
-      quadParseOptions.otherQuads ?? [],
-      quad.object
+      quad.object,
+      quadParseOptions
     );
     const blankNodes = freeze([
       ...(objects.blankNodes ?? []),
@@ -265,54 +265,37 @@ function addRdfJsQuadToObjects(
   );
 }
 
-function addRdfJsBlankNodeObjectsToPredicates(
-  objects: Objects,
-  subject: RdfJs.Quad_Subject,
-  quads: RdfJs.Quad[]
-): Objects {
-  const quadsWithBlankNodeObjects = quads.filter((quad) => {
-    // Quads with a Blank Node as their Subject will be parsed
-    // when that Blank Node is encountered in the Object position.
-    return quad.subject.equals(subject) && isBlankNode(quad.object);
-  });
-
-  const blankNodePredicates: readonly Predicates[] = quadsWithBlankNodeObjects.map(
-    (quad) => {
-      // The assertion is valid because we filtered on Blank Nodes above:
-      return getPredicatesForBlankNode(quads, quad.object as RdfJs.BlankNode);
-    }
-  );
-
-  return freeze({
-    ...objects,
-    blankNodes: blankNodePredicates,
-  });
-}
-
 function getPredicatesForBlankNode(
-  quads: RdfJs.Quad[],
-  node: RdfJs.BlankNode
+  node: RdfJs.BlankNode,
+  quadParseOptions: QuadParseOptions = {}
 ): Predicates {
+  const quads = quadParseOptions.otherQuads ?? [];
   const quadsWithNodeAsSubject = quads.filter((quad) =>
     quad.subject.equals(node)
   );
 
   // First add the Quads with regular Objects
-  const predicates = quadsWithNodeAsSubject.reduce((predicatesAcc, quad) => {
-    const supportedPredicateTypes: Array<typeof quad.predicate.termType> = [
-      "NamedNode",
-    ];
-    if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
-      throw new Error(
-        `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
-      );
-    }
-    const objects: Objects = predicatesAcc[quad.predicate.value] ?? {};
-    return freeze({
-      ...predicatesAcc,
-      [quad.predicate.value]: addRdfJsQuadToObjects(objects, quad),
-    });
-  }, {} as Predicates);
+  const predicates = quadsWithNodeAsSubject
+    .filter((quad) => !isBlankNode(quad.object))
+    .reduce((predicatesAcc, quad) => {
+      const supportedPredicateTypes: Array<typeof quad.predicate.termType> = [
+        "NamedNode",
+      ];
+      if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
+        throw new Error(
+          `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
+        );
+      }
+      const objects: Objects = predicatesAcc[quad.predicate.value] ?? {};
+      return freeze({
+        ...predicatesAcc,
+        [quad.predicate.value]: addRdfJsQuadToObjects(
+          objects,
+          quad,
+          quadParseOptions
+        ),
+      });
+    }, {} as Predicates);
 
   // And then also add the Quads that have another Blank Node as the Object
   // in addition to the Blank Node `node` as the Subject:
@@ -329,14 +312,20 @@ function getPredicatesForBlankNode(
       );
     }
     const objects: Objects = predicatesAcc[quad.predicate.value] ?? {};
+    const blankNodes = objects.blankNodes ?? [];
     return freeze({
       ...predicatesAcc,
       // The cast to a BlankNode is valid because we filtered on BlankNodes above:
-      [quad.predicate.value]: addRdfJsBlankNodeObjectsToPredicates(
-        objects,
-        quad.object as RdfJs.BlankNode,
-        quads
-      ),
+      [quad.predicate.value]: {
+        ...objects,
+        blankNodes: [
+          ...blankNodes,
+          getPredicatesForBlankNode(
+            quad.object as RdfJs.BlankNode,
+            quadParseOptions
+          ),
+        ],
+      },
     });
   }, predicates);
 }
