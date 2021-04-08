@@ -346,14 +346,14 @@ export function toRdfJsQuads(dataset: ImmutableDataset): RdfJs.Quad[] {
     Object.keys(graph).forEach((subjectIri) => {
       const predicates = graph[subjectIri].predicates;
       const subjectNode = RdfJsDataFactory.namedNode(subjectIri);
-      quads.push(...subjecToRdfJsQuads(predicates, subjectNode, graphNode));
+      quads.push(...subjectToRdfJsQuads(predicates, subjectNode, graphNode));
     });
   });
 
   return quads;
 }
 
-function subjecToRdfJsQuads(
+function subjectToRdfJsQuads(
   predicates: Predicates,
   subjectNode: RdfJs.NamedNode | RdfJs.BlankNode,
   graphNode: RdfJs.NamedNode | RdfJs.DefaultGraph
@@ -411,7 +411,7 @@ function subjecToRdfJsQuads(
 
     blankNodes.forEach((blankNodePredicates) => {
       const blankSubjectNode = RdfJsDataFactory.blankNode();
-      const blankNodeQuads = subjecToRdfJsQuads(
+      const blankNodeQuads = subjectToRdfJsQuads(
         blankNodePredicates,
         blankSubjectNode,
         graphNode
