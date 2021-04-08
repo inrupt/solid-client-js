@@ -299,12 +299,12 @@ function getPredicatesForBlankNode(
 
   // First add the Quads with regular Objects
   const predicates = quadsWithNodeAsSubject.reduce((predicatesAcc, quad) => {
-    const supportedPredicateTypes: Array<typeof quad.graph.termType> = [
+    const supportedPredicateTypes: Array<typeof quad.predicate.termType> = [
       "NamedNode",
     ];
-    if (!supportedPredicateTypes.includes(quad.graph.termType)) {
+    if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
       throw new Error(
-        `Cannot parse Quads with nodes of type [${quad.graph.termType}] as their Predicate node.`
+        `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
       );
     }
     const objects: Objects = predicatesAcc[quad.predicate.value] ?? {};
