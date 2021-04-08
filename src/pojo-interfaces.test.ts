@@ -30,7 +30,11 @@ import {
   serializeInteger,
   xmlSchemaTypes,
 } from "./datatypes";
-import { fromRdfJsDataset, toRdfJsDataset } from "./pojo-interfaces";
+import {
+  fromRdfJsDataset,
+  ImmutableDataset,
+  toRdfJsDataset,
+} from "./pojo-interfaces";
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
@@ -328,6 +332,32 @@ describe("toRdfJsDataset", () => {
 
     expect(fcResult.counterexample).toBeNull();
     expect(fcResult.failed).toBe(false);
+  });
+
+  it("can represent dangling Blank Nodes", () => {
+    const datasetWithDanglingBlankNodes: ImmutableDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {
+          "_:danglingSubjectBlankNode": {
+            type: "Subject",
+            url: "_:danglingSubjectBlankNode",
+            predicates: {
+              "http://www.w3.org/ns/auth/acl#origin": {
+                blankNodes: [{}],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const rdfJsDataset = toRdfJsDataset(datasetWithDanglingBlankNodes);
+    expect(rdfJsDataset.size).toBe(1);
+    const quad = Array.from(rdfJsDataset)[0];
+    expect(quad.subject.termType).toBe("BlankNode");
+    expect(quad.predicate.value).toBe("http://www.w3.org/ns/auth/acl#origin");
+    expect(quad.object.termType).toBe("BlankNode");
   });
 });
 

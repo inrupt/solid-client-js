@@ -30,6 +30,7 @@ type LocalNodeIri = `${typeof localNodeSkolemPrefix}${string}`;
 export type LocalNodeName = string;
 type DataTypeIriString = XmlSchemaTypeIri | IriString;
 type LocaleString = string;
+type DanglingBlankNode = `_:${string}`;
 export type Objects = Readonly<
   Partial<{
     literals: Readonly<Record<DataTypeIriString, readonly string[]>>;
@@ -47,11 +48,13 @@ export type Predicates = Readonly<Record<IriString, Objects>>;
 
 export type Subject = Readonly<{
   type: "Subject";
-  url: LocalNodeIri | IriString;
+  url: DanglingBlankNode | LocalNodeIri | IriString;
   predicates: Predicates;
 }>;
 
-export type Graph = Readonly<Record<IriString, Subject>>;
+export type Graph = Readonly<
+  Record<DanglingBlankNode | LocalNodeIri | IriString, Subject>
+>;
 
 export type ImmutableDataset = Readonly<{
   type: "Dataset";
@@ -352,7 +355,9 @@ export function toRdfJsQuads(
 
     Object.keys(graph).forEach((subjectIri) => {
       const predicates = graph[subjectIri].predicates;
-      const subjectNode = dataFactory.namedNode(subjectIri);
+      const subjectNode = isDanglingBlankNode(subjectIri)
+        ? dataFactory.blankNode(getBlankNodeValue(subjectIri))
+        : dataFactory.namedNode(subjectIri);
       quads.push(...subjectToRdfJsQuads(predicates, subjectNode, graphNode));
     });
   });
@@ -424,15 +429,32 @@ function subjectToRdfJsQuads(
     });
 
     blankNodes.forEach((blankNodePredicates) => {
-      const blankSubjectNode = dataFactory.blankNode();
-      const blankNodeQuads = subjectToRdfJsQuads(
+      const node = dataFactory.blankNode();
+      const blankNodeObjectQuad = dataFactory.quad(
+        subjectNode,
+        predicateNode,
+        node,
+        graphNode
+      ) as RdfJs.Quad;
+      const blankNodeSubjectQuads = subjectToRdfJsQuads(
         blankNodePredicates,
-        blankSubjectNode,
+        node,
         graphNode
       );
-      quads.push(...blankNodeQuads);
+      quads.push(blankNodeObjectQuad);
+      quads.push(...blankNodeSubjectQuads);
     });
   });
 
   return quads;
+}
+
+function isDanglingBlankNode(
+  value: IriString | DanglingBlankNode
+): value is DanglingBlankNode {
+  return value.substring(0, 2) === "_:";
+}
+
+function getBlankNodeValue(danglingBlankNode: DanglingBlankNode): string {
+  return danglingBlankNode.substring(2);
 }
