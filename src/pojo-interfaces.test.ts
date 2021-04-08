@@ -211,6 +211,50 @@ describe("fromRdfJsDataset", () => {
       },
     });
   });
+
+  it("can represent lists", () => {
+    const first = DataFactory.namedNode(
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"
+    );
+    const rest = DataFactory.namedNode(
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"
+    );
+    const nil = DataFactory.namedNode(
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+    );
+    const item1Node = DataFactory.blankNode();
+    const item2Node = DataFactory.blankNode();
+    const quad1 = DataFactory.quad(
+      item1Node,
+      first,
+      DataFactory.literal("First item in a list")
+    );
+    const quad2 = DataFactory.quad(item1Node, rest, item2Node);
+    const quad3 = DataFactory.quad(
+      item2Node,
+      first,
+      DataFactory.literal("Second item in a list")
+    );
+    const quad4 = DataFactory.quad(item2Node, rest, nil);
+
+    const rdfJsDataset = dataset([quad1, quad2, quad3, quad4]);
+    const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
+    expect(thereAndBackAgain.size).toBe(4);
+    expect(
+      thereAndBackAgain.match(
+        null,
+        null,
+        DataFactory.literal("First item in a list")
+      ).size
+    ).toBe(1);
+    expect(
+      thereAndBackAgain.match(
+        null,
+        null,
+        DataFactory.literal("Second item in a list")
+      ).size
+    ).toBe(1);
+  });
 });
 
 describe("toRdfJsDataset", () => {
