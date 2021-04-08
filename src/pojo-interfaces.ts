@@ -333,19 +333,26 @@ export function toRdfJsDataset(set: ImmutableDataset): RdfJs.DatasetCore {
   return rdfJsDataset(toRdfJsQuads(set));
 }
 
-export function toRdfJsQuads(dataset: ImmutableDataset): RdfJs.Quad[] {
+type ToRdfJsOptions = Partial<{
+  dataFactory: RdfJs.DataFactory;
+}>;
+export function toRdfJsQuads(
+  dataset: ImmutableDataset,
+  options: ToRdfJsOptions = {}
+): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
+  const dataFactory = options.dataFactory ?? RdfJsDataFactory;
 
   Object.keys(dataset.graphs).forEach((graphIri: IriString) => {
     const graph = dataset.graphs[graphIri];
     const graphNode =
       graphIri === "default"
-        ? RdfJsDataFactory.defaultGraph()
-        : RdfJsDataFactory.namedNode(graphIri);
+        ? dataFactory.defaultGraph()
+        : dataFactory.namedNode(graphIri);
 
     Object.keys(graph).forEach((subjectIri) => {
       const predicates = graph[subjectIri].predicates;
-      const subjectNode = RdfJsDataFactory.namedNode(subjectIri);
+      const subjectNode = dataFactory.namedNode(subjectIri);
       quads.push(...subjectToRdfJsQuads(predicates, subjectNode, graphNode));
     });
   });
@@ -356,12 +363,14 @@ export function toRdfJsQuads(dataset: ImmutableDataset): RdfJs.Quad[] {
 function subjectToRdfJsQuads(
   predicates: Predicates,
   subjectNode: RdfJs.NamedNode | RdfJs.BlankNode,
-  graphNode: RdfJs.NamedNode | RdfJs.DefaultGraph
+  graphNode: RdfJs.NamedNode | RdfJs.DefaultGraph,
+  options: ToRdfJsOptions = {}
 ): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
+  const dataFactory = options.dataFactory ?? RdfJsDataFactory;
 
   Object.keys(predicates).forEach((predicateIri) => {
-    const predicateNode = RdfJsDataFactory.namedNode(predicateIri);
+    const predicateNode = dataFactory.namedNode(predicateIri);
     const langStrings = predicates[predicateIri].langStrings ?? {};
     const namedNodes = predicates[predicateIri].namedNodes ?? [];
     const literals = predicates[predicateIri].literals ?? {};
@@ -369,17 +378,17 @@ function subjectToRdfJsQuads(
 
     const literalTypes = Object.keys(literals);
     literalTypes.forEach((typeIri) => {
-      const typeNode = RdfJsDataFactory.namedNode(typeIri);
+      const typeNode = dataFactory.namedNode(typeIri);
       const literalValues = literals[typeIri];
       literalValues.forEach((value) => {
-        const literalNode = RdfJsDataFactory.literal(value, typeNode);
+        const literalNode = dataFactory.literal(value, typeNode);
         quads.push(
-          RdfJsDataFactory.quad(
+          dataFactory.quad(
             subjectNode,
             predicateNode,
             literalNode,
             graphNode
-          )
+          ) as RdfJs.Quad
         );
       });
     });
@@ -390,27 +399,32 @@ function subjectToRdfJsQuads(
       localeValues.forEach((value) => {
         // TODO: Make sure `locale` doesn't get interpreted as a URL
         //       (probably by using a different implementation of .literal?)
-        const langStringNode = RdfJsDataFactory.literal(value, locale);
+        const langStringNode = dataFactory.literal(value, locale);
         quads.push(
-          RdfJsDataFactory.quad(
+          dataFactory.quad(
             subjectNode,
             predicateNode,
             langStringNode,
             graphNode
-          )
+          ) as RdfJs.Quad
         );
       });
     });
 
     namedNodes.forEach((namedNodeIri) => {
-      const node = RdfJsDataFactory.namedNode(namedNodeIri);
+      const node = dataFactory.namedNode(namedNodeIri);
       quads.push(
-        RdfJsDataFactory.quad(subjectNode, predicateNode, node, graphNode)
+        dataFactory.quad(
+          subjectNode,
+          predicateNode,
+          node,
+          graphNode
+        ) as RdfJs.Quad
       );
     });
 
     blankNodes.forEach((blankNodePredicates) => {
-      const blankSubjectNode = RdfJsDataFactory.blankNode();
+      const blankSubjectNode = dataFactory.blankNode();
       const blankNodeQuads = subjectToRdfJsQuads(
         blankNodePredicates,
         blankSubjectNode,
