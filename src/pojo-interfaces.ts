@@ -30,7 +30,7 @@ type LocalNodeIri = `${typeof localNodeSkolemPrefix}${string}`;
 export type LocalNodeName = string;
 type DataTypeIriString = XmlSchemaTypeIri | IriString;
 type LocaleString = string;
-type DanglingBlankNode = `_:${string}`;
+type BlankNodeId = `_:${string}`;
 export type Objects = Readonly<
   Partial<{
     literals: Readonly<Record<DataTypeIriString, readonly string[]>>;
@@ -39,7 +39,7 @@ export type Objects = Readonly<
     // By abstracting over the specific blank nodes, we can neatly skip over the
     // issue of fetching the same data twice and then not being able to reconcile
     // different instances of the same blank nodes.
-    blankNodes: readonly Predicates[];
+    blankNodes: ReadonlyArray<Predicates | BlankNodeId>;
     // TODO: Do we need RDF/JS Variables as well, or are they just for SPARQL?
   }>
 >;
@@ -48,12 +48,12 @@ export type Predicates = Readonly<Record<IriString, Objects>>;
 
 export type Subject = Readonly<{
   type: "Subject";
-  url: DanglingBlankNode | LocalNodeIri | IriString;
+  url: BlankNodeId | LocalNodeIri | IriString;
   predicates: Predicates;
 }>;
 
 export type Graph = Readonly<
-  Record<DanglingBlankNode | LocalNodeIri | IriString, Subject>
+  Record<BlankNodeId | LocalNodeIri | IriString, Subject>
 >;
 
 export type ImmutableDataset = Readonly<{
@@ -77,6 +77,13 @@ export function fromRdfJsDataset(
   };
 
   const quads = Array.from(rdfJsDataset);
+
+  const blankNodeObjects = quads.map((quad) => quad.object).filter(isBlankNode);
+  const cycleBlankNodes: RdfJs.BlankNode[] = [];
+  blankNodeObjects.forEach((blankNodeObject) => {
+    cycleBlankNodes.push(...getCycleBlankNodes(blankNodeObject, [], quads));
+  });
+
   // Quads with Blank Nodes as their Subject will be parsed when those Subject
   // are referred to in an Object. See `addRdfJsQuadToObjects`.
   const quadsWithoutBlankNodeSubjects = quads.filter(
@@ -90,17 +97,32 @@ export function fromRdfJsDataset(
       rdfJsDataset.match(null, null, quad.subject, quad.graph).size === 0
   );
 
+  // Get Quads with a Blank Node as the Subject that is part of a cycle
+  // (i.e. Blank Nodes (transitively) referring to each other):
+  const quadsWithCycleBlankNodeSubjects = quads.filter(
+    (quad) =>
+      isBlankNode(quad.subject) &&
+      cycleBlankNodes.find((cycleBlankNode) =>
+        cycleBlankNode.equals(quad.subject)
+      )
+  );
+
   return quadsWithoutBlankNodeSubjects
     .concat(quadsWithDanglingBlankNodeSubjects)
+    .concat(quadsWithCycleBlankNodeSubjects)
     .reduce(
       (datasetAcc, quad) =>
-        addRdfJsQuadToDataset(datasetAcc, quad, { otherQuads: quads }),
+        addRdfJsQuadToDataset(datasetAcc, quad, {
+          otherQuads: quads,
+          cycleBlankNodes: cycleBlankNodes,
+        }),
       dataset
     );
 }
 
 type QuadParseOptions = Partial<{
   otherQuads: RdfJs.Quad[];
+  cycleBlankNodes: RdfJs.BlankNode[];
 }>;
 
 function addRdfJsQuadToDataset(
@@ -268,7 +290,15 @@ function addRdfJsQuadToObjects(
 function getPredicatesForBlankNode(
   node: RdfJs.BlankNode,
   quadParseOptions: QuadParseOptions = {}
-): Predicates {
+): Predicates | BlankNodeId {
+  const cycleBlankNodes = quadParseOptions.cycleBlankNodes ?? [];
+  if (
+    cycleBlankNodes.find((cycleBlankNode) => cycleBlankNode.equals(node)) !==
+    undefined
+  ) {
+    return getBlankNodeId(node);
+  }
+
   const quads = quadParseOptions.otherQuads ?? [];
   const quadsWithNodeAsSubject = quads.filter((quad) =>
     quad.subject.equals(node)
@@ -315,7 +345,7 @@ function getPredicatesForBlankNode(
     const blankNodes = objects.blankNodes ?? [];
     return freeze({
       ...predicatesAcc,
-      // The cast to a BlankNode is valid because we filtered on BlankNodes above:
+      // The BlankNode assertions are valid because we filtered on BlankNodes above:
       [quad.predicate.value]: {
         ...objects,
         blankNodes: [
@@ -357,7 +387,7 @@ export function toRdfJsQuads(
 
     Object.keys(graph).forEach((subjectIri) => {
       const predicates = graph[subjectIri].predicates;
-      const subjectNode = isDanglingBlankNode(subjectIri)
+      const subjectNode = isBlankNodeId(subjectIri)
         ? dataFactory.blankNode(getBlankNodeValue(subjectIri))
         : dataFactory.namedNode(subjectIri);
       quads.push(...subjectToRdfJsQuads(predicates, subjectNode, graphNode));
@@ -430,33 +460,81 @@ function subjectToRdfJsQuads(
       );
     });
 
-    blankNodes.forEach((blankNodePredicates) => {
-      const node = dataFactory.blankNode();
-      const blankNodeObjectQuad = dataFactory.quad(
-        subjectNode,
-        predicateNode,
-        node,
-        graphNode
-      ) as RdfJs.Quad;
-      const blankNodeSubjectQuads = subjectToRdfJsQuads(
-        blankNodePredicates,
-        node,
-        graphNode
-      );
-      quads.push(blankNodeObjectQuad);
-      quads.push(...blankNodeSubjectQuads);
+    blankNodes.forEach((blankNodeIdOrPredicates) => {
+      if (isBlankNodeId(blankNodeIdOrPredicates)) {
+        const blankNode = dataFactory.blankNode(
+          getBlankNodeValue(blankNodeIdOrPredicates)
+        );
+        quads.push(
+          dataFactory.quad(
+            subjectNode,
+            predicateNode,
+            blankNode,
+            graphNode
+          ) as RdfJs.Quad
+        );
+      } else {
+        const node = dataFactory.blankNode();
+        const blankNodeObjectQuad = dataFactory.quad(
+          subjectNode,
+          predicateNode,
+          node,
+          graphNode
+        ) as RdfJs.Quad;
+        const blankNodeSubjectQuads = subjectToRdfJsQuads(
+          blankNodeIdOrPredicates,
+          node,
+          graphNode
+        );
+        quads.push(blankNodeObjectQuad);
+        quads.push(...blankNodeSubjectQuads);
+      }
     });
   });
 
   return quads;
 }
 
-function isDanglingBlankNode(
-  value: IriString | DanglingBlankNode
-): value is DanglingBlankNode {
-  return value.substring(0, 2) === "_:";
+function getCycleBlankNodes(
+  currentNode: RdfJs.BlankNode,
+  traversedBlankNodes: RdfJs.BlankNode[],
+  quads: RdfJs.Quad[]
+): RdfJs.BlankNode[] {
+  if (
+    traversedBlankNodes.find((traversedBlankNode) =>
+      traversedBlankNode.equals(currentNode)
+    ) !== undefined
+  ) {
+    return traversedBlankNodes;
+  }
+  const blankNodeObjects = quads
+    .filter(
+      (quad) => quad.subject.equals(currentNode) && isBlankNode(quad.object)
+    )
+    .map((quad) => quad.object as RdfJs.BlankNode);
+  if (blankNodeObjects.length === 0) {
+    return traversedBlankNodes;
+  }
+
+  const nextTraversedNodes = [...traversedBlankNodes, currentNode];
+  const cycleBlankNodeArrays = blankNodeObjects.map((nextNode) =>
+    getCycleBlankNodes(nextNode, nextTraversedNodes, quads)
+  );
+  const allCycleBlankNodes: RdfJs.BlankNode[] = [];
+  for (const cycleBlankNodes of cycleBlankNodeArrays) {
+    allCycleBlankNodes.push(...cycleBlankNodes);
+  }
+  return allCycleBlankNodes;
 }
 
-function getBlankNodeValue(danglingBlankNode: DanglingBlankNode): string {
-  return danglingBlankNode.substring(2);
+function isBlankNodeId<T>(value: T | BlankNodeId): value is BlankNodeId {
+  return typeof value === "string" && value.substring(0, 2) === "_:";
+}
+
+function getBlankNodeValue(blankNodeId: BlankNodeId): string {
+  return blankNodeId.substring(2);
+}
+
+function getBlankNodeId(blankNode: RdfJs.BlankNode): BlankNodeId {
+  return `_:${blankNode.value}` as const;
 }

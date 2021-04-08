@@ -276,6 +276,42 @@ describe("fromRdfJsDataset", () => {
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
+
+  it("does not trip over circular blank nodes", () => {
+    const namedNode = DataFactory.namedNode("https://example.com/namedNode");
+    const blankNode1 = DataFactory.blankNode();
+    const blankNode2 = DataFactory.blankNode();
+    const blankNode3 = DataFactory.blankNode();
+    const predicate = DataFactory.namedNode("https://example.com/predicate");
+    const literalString = DataFactory.literal("Arbitrary literal string");
+    const quads = [
+      DataFactory.quad(namedNode, predicate, blankNode2),
+      DataFactory.quad(blankNode1, predicate, blankNode2),
+      DataFactory.quad(blankNode2, predicate, blankNode3),
+      DataFactory.quad(blankNode3, predicate, blankNode1),
+      DataFactory.quad(blankNode2, predicate, literalString),
+    ];
+    const rdfJsDataset = dataset(quads);
+    const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
+    expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
+  });
+
+  it("does not trip over Datasets that only contain Blank Node Subjects", () => {
+    const blankNode1 = DataFactory.blankNode();
+    const blankNode2 = DataFactory.blankNode();
+    const blankNode3 = DataFactory.blankNode();
+    const predicate = DataFactory.namedNode("https://example.com/predicate");
+    const literalString = DataFactory.literal("Arbitrary literal string");
+    const quads = [
+      DataFactory.quad(blankNode1, predicate, blankNode2),
+      DataFactory.quad(blankNode2, predicate, blankNode3),
+      DataFactory.quad(blankNode3, predicate, blankNode1),
+      DataFactory.quad(blankNode2, predicate, literalString),
+    ];
+    const rdfJsDataset = dataset(quads);
+    const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
+    expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
+  });
 });
 
 describe("toRdfJsDataset", () => {
