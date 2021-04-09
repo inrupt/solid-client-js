@@ -23,6 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import * as fc from "fast-check";
 import { DataFactory } from "n3";
+import * as RdfJs from "rdf-js";
 import {
   serializeBoolean,
   serializeDatetime,
@@ -107,6 +108,71 @@ describe("fromRdfJsDataset", () => {
     );
   const fcTerm = fc.oneof(fcNamedNode, fcLiteral, fcBlankNode, fcQuad);
   const fcDataset = fc.set(fcQuad).map((quads) => dataset(quads));
+  const fcDatasetWithReusedBlankNodes = fc.set(fcQuad).map((quads) => {
+    const reusedBlankNode = DataFactory.blankNode();
+    function maybeReplaceBlankNode(node: RdfJs.BlankNode): RdfJs.BlankNode {
+      return Math.random() < 0.5 ? node : reusedBlankNode;
+    }
+    function maybeReplaceBlankNodesInQuad(quad: RdfJs.Quad): RdfJs.Quad {
+      const subject =
+        quad.subject.termType === "BlankNode"
+          ? maybeReplaceBlankNode(quad.subject)
+          : quad.subject;
+      const object =
+        quad.object.termType === "BlankNode"
+          ? maybeReplaceBlankNode(quad.object)
+          : quad.object;
+      return DataFactory.quad(subject, quad.predicate, object, quad.graph);
+    }
+    return dataset(quads.map(maybeReplaceBlankNodesInQuad));
+  });
+
+  it("loses no data", () => {
+    const runs = process.env.CI ? 1000 : 100;
+    expect.assertions(runs * 2 + 2);
+
+    function hasMatchingQuads(
+      a: RdfJs.DatasetCore,
+      b: RdfJs.DatasetCore
+    ): boolean {
+      function blankNodeToNull(term: RdfJs.Term): RdfJs.Term | null {
+        return term.termType === "BlankNode" ? null : term;
+      }
+
+      const aQuads = Array.from(a);
+      const bQuads = Array.from(b);
+      return (
+        aQuads.every((quad) =>
+          b.match(
+            blankNodeToNull(quad.subject),
+            quad.predicate,
+            blankNodeToNull(quad.object),
+            quad.graph
+          )
+        ) &&
+        bQuads.every((quad) =>
+          a.match(
+            blankNodeToNull(quad.subject),
+            quad.predicate,
+            blankNodeToNull(quad.object),
+            quad.graph
+          )
+        )
+      );
+    }
+
+    const fcResult = fc.check(
+      fc.property(fcDatasetWithReusedBlankNodes, (dataset) => {
+        const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(dataset));
+        expect(thereAndBackAgain.size).toBe(dataset.size);
+        expect(hasMatchingQuads(thereAndBackAgain, dataset)).toBe(true);
+      }),
+      { numRuns: runs }
+    );
+
+    expect(fcResult.counterexample).toBeNull();
+    expect(fcResult.failed).toBe(false);
+  });
 
   it("can represent all Quads", () => {
     const blankNode1 = DataFactory.blankNode();
