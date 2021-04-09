@@ -296,6 +296,23 @@ describe("fromRdfJsDataset", () => {
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
 
+  it("does not trip over blank nodes that appear as the object for different subjects", () => {
+    const namedNode = DataFactory.namedNode("https://example.com/namedNode");
+    const blankNode1 = DataFactory.blankNode();
+    const blankNode2 = DataFactory.blankNode();
+    const blankNode3 = DataFactory.blankNode();
+    const predicate = DataFactory.namedNode("https://example.com/predicate");
+    const literalString = DataFactory.literal("Arbitrary literal string");
+    const quads = [
+      DataFactory.quad(blankNode1, predicate, blankNode2),
+      DataFactory.quad(blankNode2, predicate, literalString),
+      DataFactory.quad(blankNode3, predicate, blankNode2),
+    ];
+    const rdfJsDataset = dataset(quads);
+    const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
+    expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
+  });
+
   it("does not trip over Datasets that only contain Blank Node Subjects", () => {
     const blankNode1 = DataFactory.blankNode();
     const blankNode2 = DataFactory.blankNode();

@@ -78,51 +78,68 @@ export function fromRdfJsDataset(
 
   const quads = Array.from(rdfJsDataset);
 
+  const blankNodeSubjects = quads
+    .map((quad) => quad.subject)
+    .filter(isBlankNode);
   const blankNodeObjects = quads.map((quad) => quad.object).filter(isBlankNode);
+  function everyNodeTheSame(nodes: RdfJs.Term[]): boolean {
+    // This could potentially be made more performant by mapping every term
+    // to their value and using native JS comparisons, assuming every node is
+    // either a Blank or a Named Node.
+    return nodes.every((otherNode) =>
+      nodes.every((anotherNode) => otherNode.equals(anotherNode))
+    );
+  }
+
   const cycleBlankNodes: RdfJs.BlankNode[] = [];
   blankNodeObjects.forEach((blankNodeObject) => {
     cycleBlankNodes.push(...getCycleBlankNodes(blankNodeObject, [], quads));
   });
 
-  // Quads with Blank Nodes as their Subject will be parsed when those Subject
-  // are referred to in an Object. See `addRdfJsQuadToObjects`.
-  const quadsWithoutBlankNodeSubjects = quads.filter(
-    (quad) => !isBlankNode(quad.subject)
-  );
-  // Get Quads with a Blank Node as the Subject that does not appear as the
-  // Object in any other Quads:
-  const quadsWithDanglingBlankNodeSubjects = quads.filter(
-    (quad) =>
-      isBlankNode(quad.subject) &&
-      rdfJsDataset.match(null, null, quad.subject, quad.graph).size === 0
+  // Get Blank Nodes that are used to provide nested values for a single Subject,
+  // which we'll represent as nested values as well
+  // (this allows us to avoid generating a non-deterministic, ad-hoc identifier
+  // for those Blank Nodes):
+  const chainBlankNodes = blankNodeSubjects
+    .concat(blankNodeObjects)
+    .filter((blankNode) => {
+      if (
+        cycleBlankNodes.some((cycleBlankNode) =>
+          cycleBlankNode.equals(blankNode)
+        )
+      ) {
+        return false;
+      }
+      const subjectsWithThisNodeAsObject = quads
+        .filter((quad) => quad.object.equals(blankNode))
+        .map((quad) => quad.subject);
+      return (
+        subjectsWithThisNodeAsObject.length > 0 &&
+        everyNodeTheSame(subjectsWithThisNodeAsObject)
+      );
+    });
+
+  // Quads with chain Blank Nodes as their Subject will be parsed when those
+  // Blank Nodes are referred to in an Object. See `addRdfJsQuadToObjects`.
+  const quadsWithoutChainBlankNodeSubjects = quads.filter((quad) =>
+    chainBlankNodes.every(
+      (chainBlankNode) => !chainBlankNode.equals(quad.subject)
+    )
   );
 
-  // Get Quads with a Blank Node as the Subject that is part of a cycle
-  // (i.e. Blank Nodes (transitively) referring to each other):
-  const quadsWithCycleBlankNodeSubjects = quads.filter(
-    (quad) =>
-      isBlankNode(quad.subject) &&
-      cycleBlankNodes.find((cycleBlankNode) =>
-        cycleBlankNode.equals(quad.subject)
-      )
+  return quadsWithoutChainBlankNodeSubjects.reduce(
+    (datasetAcc, quad) =>
+      addRdfJsQuadToDataset(datasetAcc, quad, {
+        otherQuads: quads,
+        chainBlankNodes: chainBlankNodes,
+      }),
+    dataset
   );
-
-  return quadsWithoutBlankNodeSubjects
-    .concat(quadsWithDanglingBlankNodeSubjects)
-    .concat(quadsWithCycleBlankNodeSubjects)
-    .reduce(
-      (datasetAcc, quad) =>
-        addRdfJsQuadToDataset(datasetAcc, quad, {
-          otherQuads: quads,
-          cycleBlankNodes: cycleBlankNodes,
-        }),
-      dataset
-    );
 }
 
 type QuadParseOptions = Partial<{
   otherQuads: RdfJs.Quad[];
-  cycleBlankNodes: RdfJs.BlankNode[];
+  chainBlankNodes: RdfJs.BlankNode[];
 }>;
 
 function addRdfJsQuadToDataset(
@@ -291,11 +308,14 @@ function getPredicatesForBlankNode(
   node: RdfJs.BlankNode,
   quadParseOptions: QuadParseOptions = {}
 ): Predicates | BlankNodeId {
-  const cycleBlankNodes = quadParseOptions.cycleBlankNodes ?? [];
+  const chainBlankNodes = quadParseOptions.chainBlankNodes ?? [];
   if (
-    cycleBlankNodes.find((cycleBlankNode) => cycleBlankNode.equals(node)) !==
+    chainBlankNodes.find((chainBlankNode) => chainBlankNode.equals(node)) ===
     undefined
   ) {
+    // If this Blank Node is not used to provide nested values for another Subject,
+    // just return its identifier.
+    // That identifier will also be listed among the Subjects in the Graph.
     return getBlankNodeId(node);
   }
 
