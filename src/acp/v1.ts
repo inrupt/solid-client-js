@@ -208,7 +208,6 @@ const deprecatedFunctions = {
 };
 
 /**
- * @hidden
  * @deprecated Replaced by [[acp_v2]].
  */
 export const acp_v1 = {
