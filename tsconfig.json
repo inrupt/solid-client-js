@@ -86,6 +86,7 @@
       "src/acl/mock.ts",
       "src/acp/acp.ts",
       "src/acp/control.ts",
+      "src/acp/control.internal.ts",
       "src/acp/policy.ts",
       "src/acp/rule.ts",
       "src/acp/mock.ts",
