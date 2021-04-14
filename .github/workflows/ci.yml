@@ -4,10 +4,11 @@ on:
   push:
   # Allow manual triggering, e.g. to run end-to-end tests against Dependabot PRs:
   workflow_dispatch:
-  schedule:
+  # This is temporarily disabled while an issue is getting resolved:
+  # schedule:
   # Run every fifth minute.
   # This is to verify that ESS is running properly.
-  - cron: '*/5 * * * *'
+  # - cron: '*/5 * * * *'
 
 env:
   CI: true
