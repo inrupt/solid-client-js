@@ -67,7 +67,8 @@ jobs:
     - name: Run browser-based end-to-end tests (Linux)
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
-      run: npm run e2e-test-browser -- firefox:headless,chrome:headless --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
+      # Setting a test-specific user agent is only possible for Chrome: https://stackoverflow.com/a/59358925
+      run: npm run e2e-test-browser -- "firefox:headless,chrome:headless:userAgent='Browser-based solid-client end-to-end tests running in CI. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $(chrome --version) Safari/537.36'" --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one.
       # (But I've explicitly set it to *not* run in the oldest versions,
