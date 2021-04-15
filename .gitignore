@@ -11,3 +11,4 @@ docs/api/source/api/
 docs/dist/
 docs/.DS_Store
 .env*.local
+src/e2e-browser/testcafe-requests/

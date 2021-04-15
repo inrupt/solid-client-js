@@ -19,8 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ClientFunction } from "testcafe";
+import { ClientFunction, RequestLogger } from "testcafe";
 import { config } from "dotenv-flow";
+import { promises } from "fs";
+import { resolve } from "path";
 import { essUserLogin } from "./roles";
 
 // We re-use the test helpers from elsewhere, but we need to ignore the
@@ -45,7 +47,31 @@ config({
   silent: process.env.CI === "true",
 });
 
-fixture("End-to-end tests").page("http://localhost:1234/end-to-end-test.html");
+const requestLogger = RequestLogger(undefined, {
+  logRequestHeaders: true,
+  logRequestBody: true,
+  logResponseHeaders: true,
+  logResponseBody: true,
+  stringifyRequestBody: true,
+  stringifyResponseBody: true,
+});
+
+fixture("End-to-end tests")
+  .page("http://localhost:1234/end-to-end-test.html")
+  .requestHooks(requestLogger)
+  .after(async () => {
+    await promises.mkdir(resolve(__dirname, "testcafe-requests"), {
+      recursive: true,
+    });
+    await promises.writeFile(
+      resolve(
+        __dirname,
+        "testcafe-requests",
+        `testcafe-requests-${Date.now()}.log`
+      ),
+      JSON.stringify(requestLogger.requests, undefined, 2)
+    );
+  });
 
 // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
 test("Creating and removing empty Containers", async (t: TestController) => {
