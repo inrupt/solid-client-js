@@ -23,7 +23,6 @@ import { getSolidDataset } from "../resource/solidDataset";
 import {
   IriString,
   WithChangeLog,
-  SolidDataset,
   Thing,
   WithServerResourceInfo,
 } from "../interfaces";
@@ -32,7 +31,7 @@ import {
   internal_defaultFetchOptions,
   getResourceInfo,
 } from "../resource/resource";
-import { acl, foaf, rdf } from "../constants";
+import { acl, rdf } from "../constants";
 import { Quad } from "rdf-js";
 import { DataFactory } from "../rdfjs";
 import {
@@ -55,6 +54,8 @@ import {
   WithResourceAcl,
 } from "./acl";
 import { removeAll, removeIri } from "../thing/remove";
+import { freeze, subjectToRdfJsQuads } from "../rdf.internal";
+import { internal_cloneResource } from "../resource/resource.internal";
 
 /**
  * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
@@ -105,7 +106,8 @@ export async function internal_fetchResourceAcl(
       dataset.internal_resourceInfo.aclUrl,
       options
     );
-    return Object.assign(aclSolidDataset, {
+    return freeze({
+      ...aclSolidDataset,
       internal_accessTo: getSourceUrl(dataset),
     });
   } catch (e) {
@@ -294,7 +296,13 @@ export function internal_removeEmptyAclRules<Dataset extends AclDataset>(
 function isEmptyAclRule(aclRule: AclRule): boolean {
   // If there are Quads in there unrelated to Access Control,
   // this is not an empty ACL rule that can be deleted:
-  if (Array.from(aclRule).some((quad) => !isAclQuad(quad))) {
+  if (
+    subjectToRdfJsQuads(
+      aclRule.predicates,
+      DataFactory.namedNode(aclRule.url),
+      DataFactory.defaultGraph()
+    ).some((quad) => !isAclQuad(quad))
+  ) {
     return false;
   }
 
@@ -501,7 +509,7 @@ export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   resource: ResourceExt,
   acl: WithAcl["internal_acl"]
 ): ResourceExt & WithAcl {
-  return Object.assign(resource, { internal_acl: acl });
+  return Object.assign(internal_cloneResource(resource), { internal_acl: acl });
 }
 
 const supportedActorPredicates = [

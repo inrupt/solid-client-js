@@ -21,10 +21,9 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { NamedNode, Quad, Literal } from "rdf-js";
+import { NamedNode, Literal, BlankNode } from "rdf-js";
 import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
-import { IriString, Iri, Thing } from "../interfaces";
+import { IriString, Thing, UrlString } from "../interfaces";
 import {
   getUrl,
   getBoolean,
@@ -52,50 +51,27 @@ import {
 import { xmlSchemaTypes } from "../datatypes";
 import { ValidPropertyUrlExpectedError } from "./thing";
 import { mockThingFrom } from "./mock";
+import { localNodeSkolemPrefix } from "../rdf.internal";
 
 const SUBJECT = "https://arbitrary.vocab/subject";
 const PREDICATE = "https://some.vocab/predicate";
 
-function makeQuad(
-  subject: IriString,
-  predicate: IriString,
-  value: IriString,
-  locale?: IriString | Iri
-): Quad {
-  return DataFactory.quad(
-    DataFactory.namedNode(subject),
-    DataFactory.namedNode(predicate),
-    DataFactory.literal(value, locale)
-  );
-}
-
-function getMockQuadWithLiteralFor(
-  predicate: IriString,
-  literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
-): Quad {
-  const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.literal(
-      literalValue,
-      DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
-    )
-  );
-  return quad;
-}
 function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
 ): Thing {
-  const quad = getMockQuadWithLiteralFor(predicate, literalValue, literalType);
-  const thing = dataset();
-  thing.add(quad);
-
-  return Object.assign(thing, {
-    internal_url: "https://arbitrary.vocab/subject",
-  });
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        literals: {
+          [`http://www.w3.org/2001/XMLSchema#${literalType}`]: [literalValue],
+        },
+      },
+    },
+  };
 }
 function getMockThingWithLiteralsFor(
   predicate: IriString,
@@ -103,48 +79,38 @@ function getMockThingWithLiteralsFor(
   literal2Value: string,
   literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
 ): Thing {
-  const quad1 = getMockQuadWithLiteralFor(
-    predicate,
-    literal1Value,
-    literalType
-  );
-  const quad2 = getMockQuadWithLiteralFor(
-    predicate,
-    literal2Value,
-    literalType
-  );
-  const thing = dataset();
-  thing.add(quad1);
-  thing.add(quad2);
-
-  return Object.assign(thing, {
-    internal_url: "https://arbitrary.vocab/subject",
-  });
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        literals: {
+          [`http://www.w3.org/2001/XMLSchema#${literalType}`]: [
+            literal1Value,
+            literal2Value,
+          ],
+        },
+      },
+    },
+  };
 }
 
 describe("getIri", () => {
-  function getMockQuadWithIri(
-    predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
-  ): Quad {
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(iri)
-    );
-    return quad;
-  }
   function getMockThingWithIri(
     predicate: IriString,
     iri: IriString = "https://arbitrary.vocab/object"
   ): Thing {
-    const quad = getMockQuadWithIri(predicate, iri);
-    const thing = dataset();
-    thing.add(quad);
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        [predicate]: {
+          namedNodes: [iri],
+        },
+      },
+    };
 
-    return Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    return thing;
   }
 
   it("returns the IRI value for the given Property", () => {
@@ -172,6 +138,19 @@ describe("getIri", () => {
     ).toBe("https://some.vocab/object");
   });
 
+  it("returns an LocalNode if that is the first match", () => {
+    const thingWithIriAndLocalNode = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      `${localNodeSkolemPrefix}someLocalNode`
+    );
+    (thingWithIriAndLocalNode.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]).push("https://some.vocab/object");
+
+    expect(
+      getUrl(thingWithIriAndLocalNode, "https://some.vocab/predicate")
+    ).toBe("#someLocalNode");
+  });
+
   it("returns null if no IRI value was found", () => {
     const thingWithoutIri = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -182,25 +161,28 @@ describe("getIri", () => {
     expect(getUrl(thingWithoutIri, "https://some.vocab/predicate")).toBeNull();
   });
 
+  it("returns LocalNodes", () => {
+    const thingWithIri = getMockThingWithIri(
+      "https://some.vocab/predicate",
+      `${localNodeSkolemPrefix}someLocalNode`
+    );
+
+    expect(getUrl(thingWithIri, "https://some.vocab/predicate")).toBe(
+      "#someLocalNode"
+    );
+  });
+
   it("does not return non-IRI values", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithIri(
-        "https://some.vocab/predicate",
-        "https://some.vocab/object"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = [
+      "https://some.vocab/object",
+      "https://arbitrary.vocab/object",
+    ];
 
     expect(
       getUrl(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -245,31 +227,20 @@ describe("getIri", () => {
 });
 
 describe("getIriAll", () => {
-  function getMockQuadWithIri(
-    predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
-  ): Quad {
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode(predicate),
-      DataFactory.namedNode(iri)
-    );
-    return quad;
-  }
   function getMockThingWithIris(
     predicate: IriString,
     iri1: IriString = "https://arbitrary.vocab/object1",
     iri2: IriString = "https://arbitrary.vocab/object2"
   ): Thing {
-    const quad1 = getMockQuadWithIri(predicate, iri1);
-    const quad2 = getMockQuadWithIri(predicate, iri2);
-    const thing = dataset();
-    thing.add(quad1);
-    thing.add(quad2);
-
-    return Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    return {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        [predicate]: {
+          namedNodes: [iri1, iri2],
+        },
+      },
+    };
   }
 
   it("returns the IRI values for the given Predicate", () => {
@@ -318,12 +289,8 @@ describe("getIriAll", () => {
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithIri(
-        "https://some.vocab/predicate",
-        "https://some.vocab/object"
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://some.vocab/object"];
 
     expect(
       getUrlAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -416,16 +383,12 @@ describe("getBoolean", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "1", "boolean")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#boolean"] as string[]) = [
+      "1",
+    ];
 
     expect(
       getBoolean(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -539,16 +502,12 @@ describe("getBooleanAll", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "1", "boolean")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#boolean"] as string[]) = [
+      "1",
+    ];
 
     expect(
       getBooleanAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -663,20 +622,12 @@ describe("getDatetime", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "1990-11-12T13:37:42.000Z",
-        "dateTime"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#dateTime"] as string[]) = [
+      "1990-11-12T13:37:42.000Z",
+    ];
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
@@ -795,20 +746,12 @@ describe("getDatetimeAll", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "1990-11-12T13:37:42.000Z",
-        "dateTime"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#dateTime"] as string[]) = [
+      "1990-11-12T13:37:42.000Z",
+    ];
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
@@ -927,20 +870,12 @@ describe("getDecimal", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "13.37",
-        "decimal"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#decimal"] as string[]) = [
+      "13.37",
+    ];
 
     expect(
       getDecimal(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -1042,20 +977,12 @@ describe("getDecimalAll", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "13.37",
-        "decimal"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#decimal"] as string[]) = [
+      "13.37",
+    ];
 
     expect(
       getDecimalAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -1155,16 +1082,12 @@ describe("getInteger", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]) = [
+      "42",
+    ];
 
     expect(
       getInteger(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -1266,16 +1189,12 @@ describe("getIntegerAll", () => {
       "Arbitrary value",
       "string"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor("https://some.vocab/predicate", "42", "integer")
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]) = [
+      "42",
+    ];
 
     expect(
       getIntegerAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
@@ -1331,17 +1250,17 @@ describe("getIntegerAll", () => {
 
 describe("getStringWithLocale", () => {
   it("returns the string value for the given Predicate in the given locale", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocale(
@@ -1353,17 +1272,17 @@ describe("getStringWithLocale", () => {
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocale(
@@ -1375,17 +1294,17 @@ describe("getStringWithLocale", () => {
   });
 
   it("supports matching locales with different casing", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocale(
@@ -1413,17 +1332,17 @@ describe("getStringWithLocale", () => {
   });
 
   it("returns null if no locale string with the requested locale was found", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithDifferentLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithDifferentLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocale(
@@ -1453,14 +1372,12 @@ describe("getStringWithLocale", () => {
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(quadWithLocaleString);
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .langStrings as Record<string, string[]>) = {
+      "nl-NL": ["Some value"],
+    };
 
     expect(
       getStringWithLocale(
@@ -1472,17 +1389,17 @@ describe("getStringWithLocale", () => {
   });
 
   it("returns null if no locale string was found for the given Predicate", () => {
-    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocale(
@@ -1533,15 +1450,19 @@ describe("getStringWithLocale", () => {
 
 describe("getStringByLocaleAll", () => {
   it("returns all the string values for the given Predicate keyed by their locale", () => {
-    const thing = dataset()
-      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "en"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 2", "en"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 3", "fr"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 4", "es"));
-
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: SUBJECT,
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            en: ["value 1", "value 2"],
+            fr: ["value 3"],
+            es: ["value 4"],
+          },
+        },
+      },
+    };
 
     expect(
       Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
@@ -1553,16 +1474,21 @@ describe("getStringByLocaleAll", () => {
   });
 
   it("excludes non-language string values", () => {
-    const thing = dataset()
-      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "fr"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 2"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 3", "es"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 4"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 5", "es"));
-
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: SUBJECT,
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            fr: ["value 1"],
+            es: ["value 3", "value 5"],
+          },
+          literals: {
+            [xmlSchemaTypes.string]: ["value 2", "value 4"],
+          },
+        },
+      },
+    };
 
     expect(
       Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
@@ -1573,13 +1499,18 @@ describe("getStringByLocaleAll", () => {
   });
 
   it("allows empty language tags - literal is still an rdf:langString", () => {
-    const thing = dataset()
-      .add(makeQuad(SUBJECT, PREDICATE, "chien", "fr"))
-      .add(makeQuad(SUBJECT, PREDICATE, "dog", ""));
-
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: SUBJECT,
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            fr: ["chien"],
+            "": ["dog"],
+          },
+        },
+      },
+    };
 
     // An empty language tag is valid, and even in Turtle should be serialized
     // as an rdf:langString, e.g.:
@@ -1593,26 +1524,57 @@ describe("getStringByLocaleAll", () => {
     ]);
   });
 
-  it("ignores non-string literals...", () => {
-    const thing = dataset()
-      .add(makeQuad(SUBJECT, PREDICATE, "value 1", "fr"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 2"))
-      .add(
-        makeQuad(
-          SUBJECT,
-          PREDICATE,
-          "99.999",
-          DataFactory.namedNode(xmlSchemaTypes.decimal)
-        )
-      );
-
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: SUBJECT,
-    });
+  it("ignores non-string literals", () => {
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            fr: ["value 1"],
+          },
+          literals: {
+            [xmlSchemaTypes.string]: ["value 2"],
+            [xmlSchemaTypes.decimal]: ["99.999"],
+          },
+        },
+      },
+    };
 
     expect(
       Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
     ).toEqual([["fr", ["value 1"]]]);
+  });
+
+  it("ignores non-string literals even when there are no lang strings", () => {
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          literals: {
+            [xmlSchemaTypes.string]: ["value 2"],
+            [xmlSchemaTypes.decimal]: ["99.999"],
+          },
+        },
+      },
+    };
+
+    expect(
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+    ).toEqual([]);
+  });
+
+  it("ignores non-string literals even when there is no data at all", () => {
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {},
+    };
+
+    expect(
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+    ).toEqual([]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1652,43 +1614,43 @@ describe("getStringByLocaleAll", () => {
 
 describe("getStringWithLocaleAll", () => {
   it("treats empty-string locale literally - i.e. only returns values added with an empty language tag", () => {
-    const thing = dataset()
-      .add(makeQuad(SUBJECT, PREDICATE, "value 1"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 2", "fr"))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 3", ""))
-      .add(makeQuad(SUBJECT, PREDICATE, "value 4", "es"));
-
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: SUBJECT,
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            fr: ["value 2"],
+            "": ["value 3"],
+            es: ["value 4"],
+          },
+          literals: {
+            [xmlSchemaTypes.string]: ["value 1"],
+          },
+        },
+      },
+    };
 
     // TODO: Not sure this RDF-spec compliant - need to double check, but
     //  according to https://w3c.github.io/rdf-dir-literal/langString.html#literals
     //  it seems language tags *must* be non-empty...
     expect(
-      Array.from(getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, ""))
+      getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, "")
     ).toEqual(["value 3"]);
   });
 
   it("returns the string values for the given Predicate in the given locale", () => {
-    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
-    const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale1
-    );
-    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
-    const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale2
-    );
-    const thing = dataset();
-    thing.add(quad1);
-    thing.add(quad2);
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value 1", "Some value 2"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1700,24 +1662,17 @@ describe("getStringWithLocaleAll", () => {
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const literalWithLocale1 = DataFactory.literal("Some value 1", "nl-NL");
-    const quad1 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale1
-    );
-    const literalWithLocale2 = DataFactory.literal("Some value 2", "nl-NL");
-    const quad2 = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale2
-    );
-    const thing = dataset();
-    thing.add(quad1);
-    thing.add(quad2);
-    const thingWithLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value 1", "Some value 2"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1729,17 +1684,17 @@ describe("getStringWithLocaleAll", () => {
   });
 
   it("supports matching locales with different casing", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1767,17 +1722,17 @@ describe("getStringWithLocaleAll", () => {
   });
 
   it("returns an empty array if no locale strings with the requested locale were found", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithDifferentLocaleStrings = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithDifferentLocaleStrings: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Some value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1796,25 +1751,17 @@ describe("getStringWithLocaleAll", () => {
   });
 
   it("does not return non-locale-string values", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(quadWithLocaleString);
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .langStrings as Record<string, string[]>) = {
+      "nl-NL": ["Some value"],
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1826,17 +1773,17 @@ describe("getStringWithLocaleAll", () => {
   });
 
   it("returns an empty array if no locale strings were found for the given Predicate", () => {
-    const literalWithLocale = DataFactory.literal("Arbitrary value", "nl-NL");
-    const quad = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
-    );
-    const thing = dataset();
-    thing.add(quad);
-    const thingWithLocaleString = Object.assign(thing, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "nl-NL": ["Arbitrary value"],
+          },
+        },
+      },
+    };
 
     expect(
       getStringWithLocaleAll(
@@ -1934,20 +1881,10 @@ describe("getStringNoLocale", () => {
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "Some value",
-        "string"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals![xmlSchemaTypes.string] as string[]) = ["Some value"];
 
     expect(
       getStringNoLocale(
@@ -2061,20 +1998,10 @@ describe("getStringNoLocaleAll", () => {
       "42",
       "integer"
     );
-    thingWithDifferentDatatypes.add(
-      getMockQuadWithLiteralFor(
-        "https://some.vocab/predicate",
-        "Some value",
-        "string"
-      )
-    );
-    thingWithDifferentDatatypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals![xmlSchemaTypes.string] as string[]) = ["Some value"];
 
     expect(
       getStringNoLocaleAll(
@@ -2151,6 +2078,30 @@ describe("getLiteral", () => {
     expect((foundLiteral as Literal).value).toBe("Some string");
   });
 
+  it("can return langStrings", () => {
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "empty-locale": [],
+            "nl-NL": ["Some lang string"],
+          },
+        },
+      },
+    };
+
+    const foundLiteral = getLiteral(
+      thingWithLocaleString,
+      "https://some.vocab/predicate"
+    );
+    expect(foundLiteral).not.toBeNull();
+    expect((foundLiteral as Literal).termType).toBe("Literal");
+    expect((foundLiteral as Literal).value).toBe("Some lang string");
+    expect((foundLiteral as Literal).language.toLowerCase()).toBe("nl-nl");
+  });
+
   it("accepts Properties as Named Nodes", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
@@ -2168,11 +2119,20 @@ describe("getLiteral", () => {
   });
 
   it("returns null if no Literal value was found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutLiteral: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutLiteral: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "empty-locale": [],
+          },
+          literals: {
+            "https://empty.data/type": [],
+          },
+        },
+      },
+    };
 
     expect(
       getLiteral(thingWithoutLiteral, "https://some.vocab/predicate")
@@ -2185,13 +2145,8 @@ describe("getLiteral", () => {
       "Arbitrary string",
       "string"
     );
-    thingWithDifferentTermTypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     expect(
       (getLiteral(
@@ -2256,6 +2211,30 @@ describe("getLiteralAll", () => {
     expect(foundLiterals[1].value).toBe("Some string 2");
   });
 
+  it("returns the lang string Literals for the given Predicate", () => {
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "empty-locale": [],
+            "nl-NL": ["Some lang string"],
+          },
+        },
+      },
+    };
+
+    const foundLiterals = getLiteralAll(
+      thingWithLocaleString,
+      "https://some.vocab/predicate"
+    );
+    expect(foundLiterals).toHaveLength(1);
+    expect(foundLiterals[0].termType).toBe("Literal");
+    expect(foundLiterals[0].value).toBe("Some lang string");
+    expect(foundLiterals[0].language.toLowerCase()).toBe("nl-nl");
+  });
+
   it("accepts Properties as Named Nodes", () => {
     const thingWithLiterals = getMockThingWithLiteralsFor(
       "https://some.vocab/predicate",
@@ -2276,11 +2255,20 @@ describe("getLiteralAll", () => {
   });
 
   it("returns an empty array if no Literal values were found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutLiterals: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutLiterals: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            "empty-locale": [],
+          },
+          literals: {
+            "https://empty.data/type": [],
+          },
+        },
+      },
+    };
 
     expect(
       getLiteralAll(thingWithoutLiterals, "https://some.vocab/predicate")
@@ -2293,13 +2281,8 @@ describe("getLiteralAll", () => {
       "Arbitrary string",
       "string"
     );
-    thingWithDifferentTermTypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     const foundLiterals = getLiteralAll(
       thingWithDifferentTermTypes,
@@ -2345,53 +2328,34 @@ describe("getLiteralAll", () => {
   });
 });
 
-function getMockQuadWithNamedNode(
-  predicate: IriString,
-  object: IriString
-): Quad {
-  const quad = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object)
-  );
-  return quad;
-}
 function getMockThingWithNamedNode(
   predicate: IriString,
   object: IriString
 ): Thing {
-  const plainDataset = dataset();
-  const quad = getMockQuadWithNamedNode(predicate, object);
-  plainDataset.add(quad);
-
-  const thing: Thing = Object.assign(plainDataset, {
-    internal_url: "https://arbitrary.vocab/subject",
-  });
-  return thing;
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        namedNodes: [object],
+      },
+    },
+  };
 }
 function getMockThingWithNamedNodes(
   predicate: IriString,
   object1: IriString,
   object2: IriString
 ): Thing {
-  const plainDataset = dataset();
-  const quad1 = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object1)
-  );
-  const quad2 = DataFactory.quad(
-    DataFactory.namedNode("https://arbitrary.vocab/subject"),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object2)
-  );
-  plainDataset.add(quad1);
-  plainDataset.add(quad2);
-
-  const thing: Thing = Object.assign(plainDataset, {
-    internal_url: "https://arbitrary.vocab/subject",
-  });
-  return thing;
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        namedNodes: [object1, object2],
+      },
+    },
+  };
 }
 
 describe("getNamedNode", () => {
@@ -2430,11 +2394,11 @@ describe("getNamedNode", () => {
   });
 
   it("returns null if no Named Node value was found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutNamedNode: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutNamedNode: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {},
+    };
 
     expect(
       getNamedNode(thingWithoutNamedNode, "https://some.vocab/predicate")
@@ -2447,13 +2411,8 @@ describe("getNamedNode", () => {
       "Arbitrary string",
       "string"
     );
-    thingWithDifferentTermTypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     expect(
       (getNamedNode(
@@ -2536,11 +2495,11 @@ describe("getNamedNodeAll", () => {
   });
 
   it("returns an empty array if no Named Node values were found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutNamedNodes: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutNamedNodes: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {},
+    };
 
     expect(
       getNamedNodeAll(thingWithoutNamedNodes, "https://some.vocab/predicate")
@@ -2553,13 +2512,8 @@ describe("getNamedNodeAll", () => {
       "Arbitrary string",
       "string"
     );
-    thingWithDifferentTermTypes.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
-    );
+    (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithDifferentTermTypes,
@@ -2636,6 +2590,66 @@ describe("getTerm", () => {
     );
   });
 
+  it("returns a NamedNode for a Local Node", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
+      "https://some.vocab/predicate",
+      localNodeSkolemPrefix + "local-node-name"
+    );
+
+    const foundTerm = getTerm(
+      thingWithNamedNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as NamedNode).termType).toBe("NamedNode");
+    expect((foundTerm as NamedNode).value).toBe("#local-node-name");
+  });
+
+  it("returns the Blank Node for the given Predicate", () => {
+    const thingWithBlankNode: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          blankNodes: ["_:some-blank-node"],
+        },
+      },
+    };
+
+    const foundTerm = getTerm(
+      thingWithBlankNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as BlankNode).termType).toBe("BlankNode");
+    expect((foundTerm as BlankNode).value).toBe("some-blank-node");
+  });
+
+  it("returns the cycle Blank Node for the given Predicate", () => {
+    const thingWithBlankNode: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          blankNodes: [
+            {
+              "https://arbitrary-other.vocab/predicate": {
+                namedNodes: ["https://arbitrary.url"],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const foundTerm = getTerm(
+      thingWithBlankNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerm).not.toBeNull();
+    expect((foundTerm as BlankNode).termType).toBe("BlankNode");
+  });
+
   it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
@@ -2652,11 +2666,11 @@ describe("getTerm", () => {
   });
 
   it("returns null if no value was found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutTerm: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutTerm: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {},
+    };
 
     expect(
       getTerm(thingWithoutTerm, "https://some.vocab/predicate")
@@ -2739,22 +2753,74 @@ describe("getTermAll", () => {
     );
   });
 
-  it("returns Terms of different TermTypes for the given Predicate", () => {
-    const thingWithMixedTerms = getMockThingWithNamedNode(
+  it("returns NamedNodes for Local Nodes", () => {
+    const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://some.vocab/object1"
+      localNodeSkolemPrefix + "local-node-name"
     );
-    const existingQuad = Array.from(thingWithMixedTerms)[0];
-    thingWithMixedTerms.add(
-      DataFactory.quad(
-        existingQuad.subject,
-        existingQuad.predicate,
-        DataFactory.literal(
-          "Some string",
-          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
-        )
-      )
+
+    const foundTerms = getTermAll(
+      thingWithNamedNode,
+      "https://some.vocab/predicate"
     );
+    expect(foundTerms).toHaveLength(1);
+    expect(foundTerms[0].termType).toBe("NamedNode");
+    expect(foundTerms[0].value).toBe("#local-node-name");
+  });
+
+  it("returns Blank Nodes for the given Predicate", () => {
+    const thingWithBlankNode: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          blankNodes: ["_:some-blank-node"],
+        },
+      },
+    };
+
+    const foundTerms = getTermAll(
+      thingWithBlankNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerms).toHaveLength(1);
+    expect(foundTerms[0].termType).toBe("BlankNode");
+    expect(foundTerms[0].value).toBe("some-blank-node");
+  });
+
+  it("returns cycle Blank Nodes for the given Predicate", () => {
+    const thingWithBlankNode: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          blankNodes: [
+            {
+              "https://arbitrary-other.vocab/predicate": {
+                namedNodes: ["https://arbitrary.url"],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const foundTerms = getTermAll(
+      thingWithBlankNode,
+      "https://some.vocab/predicate"
+    );
+    expect(foundTerms).toHaveLength(1);
+    expect(foundTerms[0].termType).toBe("BlankNode");
+  });
+
+  it("returns Terms of different TermTypes for the given Predicate", () => {
+    const thingWithMixedTerms = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+    (thingWithMixedTerms.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://some.vocab/object1"];
 
     const foundTerms = getTermAll(
       thingWithMixedTerms,
@@ -2789,11 +2855,11 @@ describe("getTermAll", () => {
   });
 
   it("returns an empty array if no values were found", () => {
-    const plainDataset = dataset();
-
-    const thingWithoutTerms: Thing = Object.assign(plainDataset, {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
+    const thingWithoutTerms: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {},
+    };
 
     expect(
       getTermAll(thingWithoutTerms, "https://some.vocab/predicate")

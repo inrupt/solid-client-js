@@ -20,7 +20,11 @@
  */
 
 import { acl } from "../constants";
-import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
+import {
+  createSolidDataset,
+  getSolidDataset,
+  saveSolidDatasetAt,
+} from "../resource/solidDataset";
 import {
   WithResourceInfo,
   File,
@@ -31,7 +35,6 @@ import {
   Thing,
 } from "../interfaces";
 import { setThing } from "../thing/thing";
-import { dataset } from "../rdfjs";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
 import {
@@ -47,6 +50,7 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_setAcl,
 } from "./acl.internal";
+import { freeze } from "../rdf.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -280,7 +284,8 @@ export function getFallbackAcl(dataset: WithAcl): AclDataset | null {
 export function createAcl(
   targetResource: WithResourceInfo & WithAccessibleAcl
 ): AclDataset {
-  const emptyResourceAcl: AclDataset = Object.assign(dataset(), {
+  const emptyResourceAcl: AclDataset = freeze({
+    ...createSolidDataset(),
     internal_accessTo: getSourceUrl(targetResource),
     internal_resourceInfo: {
       sourceIri: targetResource.internal_resourceInfo.aclUrl,
@@ -361,12 +366,10 @@ export async function saveAclFor(
     resourceAcl,
     options
   );
-  const savedAclDataset: AclDataset & typeof savedDataset = Object.assign(
-    savedDataset,
-    {
-      internal_accessTo: getSourceUrl(resource),
-    }
-  );
+  const savedAclDataset: AclDataset & typeof savedDataset = {
+    ...savedDataset,
+    internal_accessTo: getSourceUrl(resource),
+  };
 
   return savedAclDataset;
 }

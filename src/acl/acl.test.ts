@@ -31,8 +31,6 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
-import { dataset } from "@rdfjs/dataset";
-import { DataFactory } from "n3";
 
 import {
   getResourceAcl,
@@ -46,7 +44,6 @@ import {
   getFileWithAcl,
   getResourceInfoWithAcl,
   WithAccessibleAcl,
-  AclRule,
   AclDataset,
   Access,
   WithAcl,
@@ -66,10 +63,13 @@ import {
   internal_fetchAcl,
   internal_setAcl,
 } from "./acl.internal";
-import { WithServerResourceInfo, ThingPersisted } from "../interfaces";
+import { WithServerResourceInfo, WithChangeLog } from "../interfaces";
 import { getFile } from "../resource/file";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { getMatchingQuads } from "../rdfjs.test";
+import { createSolidDataset } from "../resource/solidDataset";
+import { createThing, getThingAll, setThing } from "../thing/thing";
+import { addIri, addStringNoLocale } from "../thing/add";
+import { getIri } from "../thing/get";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -127,12 +127,12 @@ describe("fetchAcl", () => {
 
   it("returns null for the Container ACL if the Container's ACL file could not be fetched", async () => {
     const mockFetch = jest.fn((url) => {
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: "" }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -174,12 +174,12 @@ describe("fetchAcl", () => {
         );
       }
 
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -222,13 +222,14 @@ describe("fetchResourceAcl", () => {
         },
       },
     };
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValueOnce(
-        Promise.resolve(
-          mockResponse(undefined, { url: "https://some.pod/resource.acl" })
-        )
-      );
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
 
     const fetchedAcl = await internal_fetchResourceAcl(sourceDataset, {
       fetch: mockFetch,
@@ -337,7 +338,12 @@ describe("fetchFallbackAcl", () => {
       )
     );
     mockFetch.mockReturnValueOnce(
-      Promise.resolve(mockResponse(undefined, { url: "https://some.pod/.acl" }))
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
     );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
@@ -421,7 +427,10 @@ describe("fetchFallbackAcl", () => {
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, { url: "https://some.pod/with-acl/.acl" })
+        mockResponse(undefined, {
+          url: "https://some.pod/with-acl/.acl",
+          headers: { "Content-Type": "text/turtle" },
+        })
       )
     );
 
@@ -570,12 +579,12 @@ describe("hasAcl", () => {
 describe("getSolidDatasetWithAcl", () => {
   it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
+          ? { Link: '<resource.acl>; rel="acl"', "Content-Type": "text/turtle" }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -608,12 +617,12 @@ describe("getSolidDatasetWithAcl", () => {
         return Promise.resolve(new Response("Not found", { status: 404 }));
       }
 
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
-          ? { Link: '<resource.acl>; rel="acl"' }
+          ? { Link: '<resource.acl>; rel="acl"', "Content-Type": "text/turtle" }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -650,7 +659,11 @@ describe("getSolidDatasetWithAcl", () => {
       >;
     };
 
-    await getSolidDatasetWithAcl("https://some.pod/resource");
+    getSolidDatasetWithAcl("https://some.pod/resource").catch(() => {
+      // We're just checking that this is called,
+      // so we can ignore the error about not being able to parse
+      // the mock Response.
+    });
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -665,6 +678,7 @@ describe("getSolidDatasetWithAcl", () => {
         mockResponse(undefined, {
           headers: {
             Link: "",
+            "Content-Type": "text/turtle",
           },
           url: "https://some.pod/resource",
         })
@@ -801,12 +815,12 @@ describe("getFileWithAcl", () => {
 
   it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
         headers: headers,
         url: url as string,
@@ -838,12 +852,12 @@ describe("getFileWithAcl", () => {
         return Promise.resolve(new Response("Not found", { status: 404 }));
       }
 
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
         headers: headers,
         url: url as string,
@@ -992,12 +1006,12 @@ describe("getFileWithAcl", () => {
 describe("getResourceInfoWithAcl", () => {
   it("returns the Resource's own ACL and not its Container's if available", async () => {
     const mockFetch = jest.fn((url) => {
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -1030,12 +1044,12 @@ describe("getResourceInfoWithAcl", () => {
         return Promise.resolve(new Response("Not found", { status: 404 }));
       }
 
-      const headers =
+      const headers: HeadersInit =
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
-          : undefined;
+          : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
           headers: headers,
@@ -1109,43 +1123,41 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
+    const mockResponse = new Response("Not allowed", { status: 403 });
+    jest
+      .spyOn(mockResponse, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+      .mockReturnValue(Promise.resolve(mockResponse));
 
-    const fetchPromise = getResourceInfoWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [403] [Forbidden]."
+        "Fetching the metadata of the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
+    const mockResponse = new Response("Not found", { status: 404 });
+    jest
+      .spyOn(mockResponse, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
+      .mockReturnValue(Promise.resolve(mockResponse));
 
-    const fetchPromise = getResourceInfoWithAcl(
-      "https://arbitrary.pod/resource",
-      {
-        fetch: mockFetch,
-      }
-    );
+    const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [404] [Not Found]."
+        "Fetching the metadata of the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
       )
     );
   });
@@ -1194,134 +1206,138 @@ describe("getResourceInfoWithAcl", () => {
 
 describe("getResourceAcl", () => {
   it("returns the attached Resource ACL Dataset", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    const aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: aclDataset,
-        fallbackAcl: null,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/resource.acl"],
-          },
+    };
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: aclDataset,
+          fallbackAcl: null,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
         },
-      }
-    );
+      },
+    };
     expect(getResourceAcl(solidDataset)).toEqual(aclDataset);
   });
 
   it("returns null if the given Resource does not consider the attached ACL to pertain to it", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    const aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: aclDataset,
-        fallbackAcl: null,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/other-resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/other-resource.acl"],
-          },
+    };
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: aclDataset,
+          fallbackAcl: null,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/other-resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/other-resource.acl"],
         },
-      }
-    );
+      },
+    };
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
   it("returns null if the attached ACL does not pertain to the given Resource", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    const aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/other-resource",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: aclDataset,
-        fallbackAcl: null,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/resource.acl"],
-          },
+    };
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: aclDataset,
+          fallbackAcl: null,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/resource.acl"],
         },
-      }
-    );
+      },
+    };
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 
   it("returns null if the given SolidDataset does not have a Resource ACL attached", () => {
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: null,
-        fallbackAcl: null,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/resource",
-          isRawData: false,
-          linkedResources: {},
-        },
-      }
-    );
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: null,
+          fallbackAcl: null,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/resource",
+        isRawData: false,
+        linkedResources: {},
+      },
+    };
     expect(getResourceAcl(solidDataset)).toBeNull();
   });
 });
 
 describe("getFallbackAcl", () => {
   it("returns the attached Fallback ACL Dataset", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    const aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+    };
+    const solidDataset = internal_setAcl(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      {
         resourceAcl: null,
         fallbackAcl: aclDataset,
-      }),
-      {}
+      }
     );
     expect(getFallbackAcl(solidDataset)).toEqual(aclDataset);
   });
 
   it("returns null if the given SolidDataset does not have a Fallback ACL attached", () => {
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
+    const solidDataset = internal_setAcl(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      {
         resourceAcl: null,
         fallbackAcl: null,
-      }),
-      {}
+      }
     );
     expect(getFallbackAcl(solidDataset)).toBeNull();
   });
@@ -1329,26 +1345,27 @@ describe("getFallbackAcl", () => {
 
 describe("createAcl", () => {
   it("creates a new empty ACL", () => {
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: null,
-        fallbackAcl: null,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/container/resource",
-          isRawData: false,
-          aclUrl: "https://some.pod/container/resource.acl",
-          linkedResources: {
-            acl: ["https://some.pod/container/resource.acl"],
-          },
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: null,
+          fallbackAcl: null,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/container/resource",
+        isRawData: false,
+        aclUrl: "https://some.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/container/resource.acl"],
         },
-      }
-    );
+      },
+    };
 
     const resourceAcl = createAcl(solidDataset);
 
-    expect(resourceAcl.size).toBe(0);
+    expect(getThingAll(resourceAcl)).toHaveLength(0);
     expect(resourceAcl.internal_accessTo).toBe(
       "https://some.pod/container/resource"
     );
@@ -1360,79 +1377,63 @@ describe("createAcl", () => {
 
 describe("createAclFromFallbackAcl", () => {
   it("creates a new ACL including existing default rules as Resource and default rules", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let rule = createThing();
+    rule = addIri(
+      rule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: null,
-        fallbackAcl: aclDataset,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/container/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/container/resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/container/resource.acl"],
-          },
+    aclDataset = setThing(aclDataset, rule);
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: null,
+          fallbackAcl: aclDataset,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/container/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
         },
-      }
-    );
+      },
+    };
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    expect(resourceAcl.size).toBe(5);
-    expect(
-      getMatchingQuads(resourceAcl, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-
-        object: "https://arbitrary.pod/container/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(resourceAcl, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/resource",
-      })
-    ).toHaveLength(1);
-
+    const firstControl = getThingAll(resourceAcl)[0];
+    expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
     expect(resourceAcl.internal_accessTo).toBe(
       "https://arbitrary.pod/container/resource"
     );
@@ -1442,78 +1443,63 @@ describe("createAclFromFallbackAcl", () => {
   });
 
   it("supports the legacy acl:defaultForNew predicate", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let rule = createThing();
+    rule = addIri(
+      rule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#defaultForNew"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#defaultForNew",
+      "https://arbitrary.pod/container/"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: null,
-        fallbackAcl: aclDataset,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/container/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/container/resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/container/resource.acl"],
-          },
+    aclDataset = setThing(aclDataset, rule);
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: null,
+          fallbackAcl: aclDataset,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/container/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
         },
-      }
-    );
+      },
+    };
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
 
-    expect(resourceAcl.size).toBe(5);
-    expect(
-      getMatchingQuads(resourceAcl, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/container/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(resourceAcl, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/resource",
-      })
-    ).toHaveLength(1);
-
+    const firstControl = getThingAll(resourceAcl)[0];
+    expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
+    expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/resource"
+    );
     expect(resourceAcl.internal_accessTo).toBe(
       "https://arbitrary.pod/container/resource"
     );
@@ -1523,265 +1509,202 @@ describe("createAclFromFallbackAcl", () => {
   });
 
   it("does not copy over Resource rules from the fallback ACL", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_accessTo: "https://arbitrary.pod/container/",
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/.acl",
         isRawData: false,
-        linkedResources: {},
       },
-    });
-    const subjectIri = "https://arbitrary.pod/container/.acl#" + Math.random();
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let rule = createThing();
+    rule = addIri(
+      rule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/container/"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    rule = addIri(
+      rule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    const solidDataset = Object.assign(
-      internal_setAcl(mockSolidDatasetFrom("https://arbitrary.pod/resource"), {
-        resourceAcl: null,
-        fallbackAcl: aclDataset,
-      }),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://arbitrary.pod/container/resource",
-          isRawData: false,
-          aclUrl: "https://arbitrary.pod/container/resource.acl",
-          linkedResources: {
-            acl: ["https://arbitrary.pod/container/resource.acl"],
-          },
+    aclDataset = setThing(aclDataset, rule);
+    const solidDataset = {
+      ...internal_setAcl(
+        mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+        {
+          resourceAcl: null,
+          fallbackAcl: aclDataset,
+        }
+      ),
+      internal_resourceInfo: {
+        sourceIri: "https://arbitrary.pod/container/resource",
+        isRawData: false,
+        aclUrl: "https://arbitrary.pod/container/resource.acl",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/container/resource.acl"],
         },
-      }
-    );
+      },
+    };
 
     const resourceAcl = createAclFromFallbackAcl(solidDataset);
-    expect(resourceAcl.size).toBe(0);
+    expect(getThingAll(resourceAcl)).toHaveLength(0);
   });
 });
 
 describe("getAclRules", () => {
   it("only returns Things that represent ACL Rules", () => {
-    const aclDataset = Object.assign(dataset(), {
+    let aclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
         linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
+    };
 
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/not-an-acl-rule"),
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
+    let notARule = createThing();
+    notARule = addIri(
+      notARule,
+      "https://arbitrary.vocab/predicate",
+      "https://arbitrary.pod/resource#object"
     );
-
-    const agentClassRuleSubjectIri =
-      "https://some.pod/resource.acl#agentClassRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let classRule = createThing();
+    classRule = addIri(
+      classRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    classRule = addIri(
+      classRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    classRule = addIri(
+      classRule,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+    classRule = addIri(
+      classRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Append"
     );
-
-    const agentRuleSubjectIri = "https://some.pod/resource.acl#agentRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let agentRule = createThing();
+    agentRule = addIri(
+      agentRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    agentRule = addIri(
+      agentRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    agentRule = addIri(
+      agentRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(agentRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    agentRule = addIri(
+      agentRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
+    aclDataset = setThing(aclDataset, notARule);
+    aclDataset = setThing(aclDataset, classRule);
+    aclDataset = setThing(aclDataset, agentRule);
 
     const rules = internal_getAclRules(aclDataset);
 
     expect(rules).toHaveLength(2);
-    expect((rules[0] as ThingPersisted).internal_url).toBe(
-      agentClassRuleSubjectIri
-    );
-    expect((rules[1] as ThingPersisted).internal_url).toBe(agentRuleSubjectIri);
+    expect(getIri(rules[0], "https://arbitrary.vocab/predicate")).toBeNull();
+    expect(getIri(rules[1], "https://arbitrary.vocab/predicate")).toBeNull();
   });
 
   it("returns Things with multiple `rdf:type`s, as long as at least on type is `acl:Authorization`", () => {
-    const aclDataset = Object.assign(dataset(), {
+    let aclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
         linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-
-    const ruleWithMultipleTypesSubjectIri =
-      "https://some.pod/resource.acl#agentClassRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("https://arbitrary.vocab/not-an#Authorization")
-      )
+    };
+    let ruleWithMultipleTypes = createThing();
+    ruleWithMultipleTypes = addIri(
+      ruleWithMultipleTypes,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "https://arbitrary.vocab/not-an#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    ruleWithMultipleTypes = addIri(
+      ruleWithMultipleTypes,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    ruleWithMultipleTypes = addIri(
+      ruleWithMultipleTypes,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    ruleWithMultipleTypes = addIri(
+      ruleWithMultipleTypes,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(ruleWithMultipleTypesSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+    ruleWithMultipleTypes = addIri(
+      ruleWithMultipleTypes,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Append"
     );
+    aclDataset = setThing(aclDataset, ruleWithMultipleTypes);
 
     const rules = internal_getAclRules(aclDataset);
 
     expect(rules).toHaveLength(1);
-    expect((rules[0] as ThingPersisted).internal_url).toBe(
-      ruleWithMultipleTypesSubjectIri
-    );
   });
 });
 
 describe("getResourceAclRules", () => {
   it("only returns ACL Rules that apply to a Resource", () => {
-    const resourceAclRule1: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule1",
-    });
-    resourceAclRule1.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource1")
-      )
+    let resourceAclRule1 = createThing();
+    resourceAclRule1 = addIri(
+      resourceAclRule1,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource1"
     );
 
-    const defaultAclRule1: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule2",
-    });
-    defaultAclRule1.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container1/")
-      )
+    let defaultAclRule1 = createThing();
+    defaultAclRule1 = addIri(
+      defaultAclRule1,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container1/"
     );
 
-    const resourceAclRule2: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule3",
-    });
-    resourceAclRule2.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule3"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource2")
-      )
+    let resourceAclRule2 = createThing();
+    resourceAclRule2 = addIri(
+      resourceAclRule2,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource2"
     );
 
-    const defaultAclRule2: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule4",
-    });
-    defaultAclRule2.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule4"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container2/")
-      )
+    let defaultAclRule2 = createThing();
+    defaultAclRule2 = addIri(
+      defaultAclRule2,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container2/"
     );
 
     const aclRules = [
@@ -1799,37 +1722,25 @@ describe("getResourceAclRules", () => {
 
 describe("getResourceAclRulesForResource", () => {
   it("only returns ACL Rules that apply to a given Resource", () => {
-    const targetResourceAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule1",
-    });
-    targetResourceAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://some.pod/resource")
-      )
+    let targetResourceAclRule = createThing();
+    targetResourceAclRule = addIri(
+      targetResourceAclRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://some.pod/resource"
     );
 
-    const defaultAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule2",
-    });
-    defaultAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    let defaultAclRule = createThing();
+    defaultAclRule = addIri(
+      defaultAclRule,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/"
     );
 
-    const otherResourceAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule3",
-    });
-    otherResourceAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule3"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://some-other.pod/resource")
-      )
+    let otherResourceAclRule = createThing();
+    otherResourceAclRule = addIri(
+      otherResourceAclRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://some-other.pod/resource"
     );
 
     const aclRules = [
@@ -1849,48 +1760,32 @@ describe("getResourceAclRulesForResource", () => {
 
 describe("getDefaultAclRules", () => {
   it("only returns ACL Rules that are the default for a Container", () => {
-    const resourceAclRule1: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule1",
-    });
-    resourceAclRule1.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource1")
-      )
+    let resourceAclRule1 = createThing();
+    resourceAclRule1 = addIri(
+      resourceAclRule1,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource1"
     );
 
-    const defaultAclRule1: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule2",
-    });
-    defaultAclRule1.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container1/")
-      )
+    let defaultAclRule1 = createThing();
+    defaultAclRule1 = addIri(
+      defaultAclRule1,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container1/"
     );
 
-    const resourceAclRule2: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule3",
-    });
-    resourceAclRule2.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule3"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource2")
-      )
+    let resourceAclRule2 = createThing();
+    resourceAclRule2 = addIri(
+      resourceAclRule2,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource2"
     );
 
-    const defaultAclRule2: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule4",
-    });
-    defaultAclRule2.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule4"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container2/")
-      )
+    let defaultAclRule2 = createThing();
+    defaultAclRule2 = addIri(
+      defaultAclRule2,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container2/"
     );
 
     const aclRules = [
@@ -1908,37 +1803,25 @@ describe("getDefaultAclRules", () => {
 
 describe("getDefaultAclRulesForResource", () => {
   it("only returns ACL Rules that are the default for children of a given Container", () => {
-    const resourceAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/resource.acl#rule1",
-    });
-    resourceAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource.acl#rule1"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    let resourceAclRule = createThing();
+    resourceAclRule = addIri(
+      resourceAclRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
 
-    const targetDefaultAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule2",
-    });
-    targetDefaultAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule2"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://some.pod/container/")
-      )
+    let targetDefaultAclRule = createThing();
+    targetDefaultAclRule = addIri(
+      targetDefaultAclRule,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://some.pod/container/"
     );
 
-    const otherDefaultAclRule: AclRule = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.pod/container/.acl#rule3",
-    });
-    otherDefaultAclRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/container/.acl#rule3"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://some-other.pod/container/")
-      )
+    let otherDefaultAclRule = createThing();
+    otherDefaultAclRule = addIri(
+      otherDefaultAclRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://some-other.pod/container/"
     );
 
     const aclRules = [
@@ -1958,36 +1841,26 @@ describe("getDefaultAclRulesForResource", () => {
 
 describe("getAccess", () => {
   it("returns true for Access Modes that are granted", () => {
-    const subject = "https://arbitrary.pod/profileDoc#webId";
-
-    const mockRule = Object.assign(dataset(), { internal_url: subject });
-    mockRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subject),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    let mockRule = createThing();
+    mockRule = addIri(
+      mockRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    mockRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subject),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+    mockRule = addIri(
+      mockRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Append"
     );
-    mockRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subject),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+    mockRule = addIri(
+      mockRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Write"
     );
-    mockRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subject),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
+    mockRule = addIri(
+      mockRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Control"
     );
 
     expect(internal_getAccess(mockRule)).toEqual({
@@ -1999,9 +1872,7 @@ describe("getAccess", () => {
   });
 
   it("returns false for undefined Access Modes", () => {
-    const subject = "https://arbitrary.pod/profileDoc#webId";
-
-    const mockRule = Object.assign(dataset(), { internal_url: subject });
+    const mockRule = createThing();
 
     expect(internal_getAccess(mockRule)).toEqual({
       read: false,
@@ -2012,15 +1883,11 @@ describe("getAccess", () => {
   });
 
   it("infers Append access from Write access", () => {
-    const subject = "https://arbitrary.pod/profileDoc#webId";
-
-    const mockRule = Object.assign(dataset(), { internal_url: subject });
-    mockRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subject),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+    let mockRule = createThing();
+    mockRule = addIri(
+      mockRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Write"
     );
 
     expect(internal_getAccess(mockRule)).toEqual({
@@ -2091,498 +1958,401 @@ describe("combineAccessModes", () => {
 
 describe("removeEmptyAclRules", () => {
   it("removes rules that do not apply to anyone", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("does not modify the input SolidDataset", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset.size).toBe(0);
-    expect(aclDataset.size).toBe(3);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
+    expect(getThingAll(aclDataset)).toHaveLength(1);
   });
 
   it("removes rules that do not set any Access Modes", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("removes rules that do not have target Resources to which they apply", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("removes rules that specify an acl:origin but not in combination with an Agent, Agent Group or Agent Class", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#emptyRule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#origin"),
-        DataFactory.namedNode("https://arbitrary.origin")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#origin",
+      "https://arbitrary.origin"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("does not remove Rules that are also something other than an ACL Rule", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("https://arbitrary.vocab/not/an/Authorization")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "https://arbitrary.vocab/not/an/Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 
   it("does not remove Things that are Rules but also have other Quads", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.literal("Arbitrary non-ACL value")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addStringNoLocale(
+      emptyRule,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary non-ACL value"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 
   it("does not remove Rules that apply to a Container's child Resources", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/container/.acl",
+        sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
-      internal_accessTo: "https://arbitrary.pod/container/",
-    });
-    const subjectIri = "https://arbitrary.pod/container/.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 
   it("does not remove Rules that apply to an Agent", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://arbitrary.pod/profileDoc#webId")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://arbitrary.pod/profileDoc#webId"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 
   it("does not remove Rules that apply to an Agent Group", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentGroup"),
-        DataFactory.namedNode("https://arbitrary.pod/groups#colleagues")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agentGroup",
+      "https://arbitrary.pod/groups#colleagues"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 
   it("does not remove Rules that apply to an Agent Class", () => {
-    const aclDataset: AclDataset = Object.assign(dataset(), {
+    let aclDataset: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
-    const subjectIri = "https://arbitrary.pod/resource.acl#rule";
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    };
+    let emptyRule = createThing();
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    emptyRule = addIri(
+      emptyRule,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
+    aclDataset = setThing(aclDataset, emptyRule);
 
     const updatedDataset = internal_removeEmptyAclRules(aclDataset);
 
-    expect(Array.from(updatedDataset)).toEqual(Array.from(aclDataset));
+    expect(updatedDataset).toEqual(aclDataset);
   });
 });
 
@@ -2604,14 +2374,14 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
+    };
 
     await saveAclFor(withResourceInfo, aclResource);
 
@@ -2632,14 +2402,14 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
+    };
 
     await saveAclFor(withResourceInfo, aclResource, {
       fetch: mockFetch,
@@ -2657,14 +2427,14 @@ describe("saveAclFor", () => {
         linkedResources: {},
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
+    };
 
     const fetchPromise = saveAclFor(withResourceInfo, aclResource);
 
@@ -2689,14 +2459,14 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
-    });
+    };
 
     const fetchPromise = saveAclFor(withResourceInfo, aclResource, {
       fetch: mockFetch,
@@ -2721,14 +2491,14 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
-      internal_accessTo: "https://some-other.pod/resource",
-    });
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
 
     const savedAcl = await saveAclFor(withResourceInfo, aclResource, {
       fetch: mockFetch,
@@ -2751,18 +2521,18 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset & WithChangeLog = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
         additions: [],
         deletions: [],
       },
-    });
+    };
 
     await saveAclFor(withResourceInfo, aclResource, {
       fetch: mockFetch,
@@ -2785,18 +2555,18 @@ describe("saveAclFor", () => {
         },
       },
     };
-    const aclResource: AclDataset = Object.assign(dataset(), {
+    const aclResource: AclDataset & WithChangeLog = {
+      ...createSolidDataset(),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary-other.pod/resource.acl",
         isRawData: false,
-        linkedResources: {},
       },
       internal_accessTo: "https://arbitrary.pod/resource",
       internal_changeLog: {
         additions: [],
         deletions: [],
       },
-    });
+    };
 
     await saveAclFor(withResourceInfo, aclResource, {
       fetch: mockFetch,

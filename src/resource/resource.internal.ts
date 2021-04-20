@@ -21,8 +21,7 @@
 
 import LinkHeader from "http-link-header";
 import { Access } from "../acl/acl";
-import { WithServerResourceInfo, SolidDataset, UrlString } from "../interfaces";
-import { clone as cloneDataset } from "../rdfjs";
+import { WithServerResourceInfo } from "../interfaces";
 
 /**
  * @internal
@@ -136,49 +135,13 @@ export function internal_cloneResource<ResourceExt extends object>(
   let clonedResource;
   if (typeof (resource as File).slice === "function") {
     // If given Resource is a File:
-    clonedResource = (resource as File).slice();
-  } else if (typeof (resource as SolidDataset).match === "function") {
-    // If given Resource is a SolidDataset:
-    // (We use the existince of a `match` method as a heuristic:)
-    clonedResource = cloneDataset(resource as SolidDataset);
+    clonedResource = Object.assign((resource as File).slice(), { ...resource });
   } else {
     // If it is just a plain object containing metadata:
     clonedResource = { ...resource };
   }
 
-  return Object.assign(
-    clonedResource,
-    // Although the RDF/JS data structures use classes and mutation,
-    // we only attach atomic properties that we never mutate.
-    // Hence, `copyNonClassProperties` is a heuristic that allows us to only clone our own data
-    // structures, rather than references to the same mutable instances of RDF/JS data structures:
-    copyNonClassProperties(resource)
-  ) as ResourceExt;
-}
-
-function copyNonClassProperties(source: object): object {
-  const copy: Record<string, unknown> = {};
-  Object.keys(source).forEach((key) => {
-    const value = (source as Record<string, unknown>)[key];
-    if (typeof value !== "object" || value === null) {
-      copy[key] = value;
-      return;
-    }
-
-    // Ignore properties that are Class methods, we don't want to copy those
-    // across (e.g., copying over an RDF/JS `.add()` method would result in the
-    // former instance's implementation of `.add()` being invoked).
-    if (
-      typeof value.constructor === "undefined" ||
-      value.constructor.name !== "Object"
-    ) {
-      return;
-    }
-
-    copy[key] = value;
-  });
-
-  return copy;
+  return clonedResource;
 }
 
 /** @internal */

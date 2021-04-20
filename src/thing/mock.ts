@@ -21,7 +21,6 @@
 
 import { Url, UrlString, ThingPersisted } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
-import { dataset } from "../rdfjs";
 
 /**
  * Function for use in unit tests to mock a [[Thing]] with a given URL.
@@ -36,9 +35,12 @@ import { dataset } from "../rdfjs";
  * @since 0.2.0
  */
 export function mockThingFrom(url: Url | UrlString): ThingPersisted {
-  const thing: ThingPersisted = Object.assign(dataset(), {
-    internal_url: internal_toIriString(url),
-  });
+  const iri = internal_toIriString(url);
+  const thing: ThingPersisted = {
+    type: "Subject",
+    predicates: {},
+    url: iri,
+  };
 
   return thing;
 }

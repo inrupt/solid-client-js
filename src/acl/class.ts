@@ -40,14 +40,8 @@ import {
   internal_getDefaultAclRulesForResource,
   internal_getAccess,
   internal_combineAccessModes,
-  internal_removeEmptyAclRules,
-  internal_initialiseAclRule,
-  internal_duplicateAclRule,
   internal_setActorAccess,
 } from "./acl.internal";
-import { removeIri, removeAll } from "../thing/remove";
-import { getThingAll, setThing } from "../thing/thing";
-import { setIri } from "../thing/set";
 
 /**
  * ```{note}

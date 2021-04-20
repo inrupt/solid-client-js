@@ -50,6 +50,7 @@ export {
   getContainedResourceUrlAll,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
+  Parser,
 } from "./resource/solidDataset";
 export {
   mockSolidDatasetFrom,
@@ -67,7 +68,7 @@ export {
   isThingLocal,
   asUrl,
   asIri,
-  thingAsMarkdown,
+  thingAsMarkdown as thingAsMarkdown,
   ThingExpectedError,
 } from "./thing/thing";
 export {
@@ -201,9 +202,12 @@ export {
   hasServerResourceInfo,
   WithResourceInfo,
   WithChangeLog,
+  WithServerResourceInfo,
   UploadRequestInit,
   SolidClientError,
 } from "./interfaces";
+/** @hidden These are available for testing, but not part of our public API yet. */
+export { fromRdfJsDataset, toRdfJsDataset } from "./rdf.internal";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.

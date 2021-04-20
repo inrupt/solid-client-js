@@ -47,7 +47,6 @@ import {
 } from "./acl.internal";
 
 import { acl } from "../constants";
-import { getThingAll } from "../thing/thing";
 
 /**
  * ```{note} This function is still experimental and subject to change, even in a non-major release.

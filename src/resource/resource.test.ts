@@ -50,7 +50,7 @@ import {
   WithServerResourceInfo,
   SolidClientError,
 } from "../interfaces";
-import { dataset } from "../rdfjs";
+import { createSolidDataset } from "./solidDataset";
 
 function mockResponse(
   body?: BodyInit | null,
@@ -392,37 +392,41 @@ describe("getResourceInfo", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
+    const mockResponse = new Response("Not allowed", { status: 403 });
+    jest
+      .spyOn(mockResponse, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+      .mockReturnValue(Promise.resolve(mockResponse));
 
-    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+    const fetchPromise = getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [403] [Forbidden]."
+        "Fetching the metadata of the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
       )
     );
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
+    const mockResponse = new Response("Not found", { status: 404 });
+    jest
+      .spyOn(mockResponse, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
-      );
+      .mockReturnValue(Promise.resolve(mockResponse));
 
-    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+    const fetchPromise = getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
     });
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Fetching the metadata of the Resource at [https://arbitrary.pod/resource] failed: [404] [Not Found]."
+        "Fetching the metadata of the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
       )
     );
   });
@@ -814,7 +818,10 @@ describe("getEffectiveAccess", () => {
 
 describe("cloneResource", () => {
   it("returns a new but equal Dataset", () => {
-    const sourceObject = Object.assign(dataset(), { some: "property" });
+    const sourceObject = {
+      ...createSolidDataset(),
+      some: "property",
+    };
 
     const clonedObject = internal_cloneResource(sourceObject);
 

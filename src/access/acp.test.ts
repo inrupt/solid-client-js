@@ -129,12 +129,10 @@ function mockAcr(
     ...mockPolicies,
   };
 
-  let acr: AccessControlResource & WithServerResourceInfo = Object.assign(
-    mockSolidDatasetFrom(mockAcrUrl),
-    {
-      accessTo: accessTo,
-    }
-  );
+  let acr: AccessControlResource & WithServerResourceInfo = {
+    ...mockSolidDatasetFrom(mockAcrUrl),
+    accessTo: accessTo,
+  };
   let control = internal_createControl({ url: mockAcrUrl });
 
   function getRule(mockRuleUrl: UrlString, mockRule: MockRule): Rule {

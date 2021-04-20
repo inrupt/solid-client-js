@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp, rdf } from "../constants";
+import { acp } from "../constants";
 import {
   hasServerResourceInfo,
   SolidDataset,
@@ -34,7 +34,6 @@ import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
-import { setIri } from "../thing/set";
 import {
   createThing,
   getThing,

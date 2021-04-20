@@ -20,14 +20,9 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
-import { Thing, UrlString, Url } from "../interfaces";
+import { UrlString, Url, Thing, IriString } from "../interfaces";
+import { internal_throwIfNotThing } from "./thing.internal";
 import {
-  internal_cloneThing,
-  internal_toNode,
-  internal_throwIfNotThing,
-} from "./thing.internal";
-import {
-  asNamedNode,
   serializeBoolean,
   serializeDatetime,
   serializeDecimal,
@@ -36,13 +31,17 @@ import {
   XmlSchemaTypeIri,
   xmlSchemaTypes,
   internal_isValidUrl,
+  isNamedNode,
 } from "../datatypes";
-import { DataFactory } from "../rdfjs";
 import {
+  asIri,
   isThing,
+  isThingLocal,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
+import { internal_toIriString } from "../interfaces.internal";
+import { freeze, getBlankNodeId } from "../rdf.internal";
 
 /**
  * Create a new Thing with a URL added for a Property.
@@ -65,21 +64,43 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
   }
-  const predicateNode = asNamedNode(property);
-  const newThing = internal_cloneThing(thing);
-
   if (!isThing(url) && !internal_isValidUrl(url)) {
     throw new ValidValueUrlExpectedError(url);
   }
 
-  newThing.add(
-    DataFactory.quad(
-      internal_toNode(newThing),
-      predicateNode,
-      internal_toNode(url)
-    )
+  const predicateIri = internal_toIriString(property);
+
+  const existingPredicate = thing.predicates[predicateIri] ?? {};
+  const existingNamedNodes = existingPredicate.namedNodes ?? [];
+
+  let iriToAdd: IriString;
+  if (isNamedNode(url)) {
+    iriToAdd = url.value;
+  } else if (typeof url === "string") {
+    iriToAdd = url;
+  } else if (isThingLocal(url)) {
+    iriToAdd = url.url;
+  } else {
+    iriToAdd = asIri(url);
+  }
+  const updatedNamedNodes = freeze(
+    existingNamedNodes.concat(internal_toIriString(iriToAdd))
   );
-  return newThing;
+
+  const updatedPredicate = freeze({
+    ...existingPredicate,
+    namedNodes: updatedNamedNodes,
+  });
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  const updatedThing = freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
+
+  return updatedThing;
 };
 /** @hidden Alias for [[addUrl]] for those who prefer IRI terminology. */
 export const addIri = addUrl;
@@ -192,8 +213,36 @@ export function addStringWithLocale<T extends Thing>(
   locale: string
 ): T {
   internal_throwIfNotThing(thing);
-  const literal = DataFactory.literal(value, normalizeLocale(locale));
-  return addLiteral(thing, property, literal);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+
+  const predicateIri = internal_toIriString(property);
+  const normalizedLocale = normalizeLocale(locale);
+
+  const existingPredicate = thing.predicates[predicateIri] ?? {};
+  const existingLangStrings = existingPredicate.langStrings ?? {};
+  const existingStringsInLocale = existingLangStrings[normalizedLocale] ?? [];
+
+  const updatedStringsInLocale = freeze(existingStringsInLocale.concat(value));
+  const updatedLangStrings = freeze({
+    ...existingLangStrings,
+    [normalizedLocale]: updatedStringsInLocale,
+  });
+  const updatedPredicate = freeze({
+    ...existingPredicate,
+    langStrings: updatedLangStrings,
+  });
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  const updatedThing = freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
+
+  return updatedThing;
 }
 
 /**
@@ -235,8 +284,7 @@ export function addNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
-  internal_throwIfNotThing(thing);
-  return addTerm(thing, property, value);
+  return addUrl(thing, property, value.value);
 }
 
 /**
@@ -258,7 +306,15 @@ export function addLiteral<T extends Thing>(
   value: Literal
 ): T {
   internal_throwIfNotThing(thing);
-  return addTerm(thing, property, value);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const typeIri = value.datatype.value;
+  if (typeIri === xmlSchemaTypes.langString) {
+    return addStringWithLocale(thing, property, value.value, value.language);
+  }
+
+  return addLiteralOfType(thing, property, value.value, value.datatype.value);
 }
 
 /**
@@ -280,27 +336,84 @@ export function addTerm<T extends Thing>(
   property: Url | UrlString,
   value: Quad_Object
 ): T {
-  internal_throwIfNotThing(thing);
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
+  if (value.termType === "NamedNode") {
+    return addNamedNode(thing, property, value);
   }
-  const predicateNode = asNamedNode(property);
-  const newThing = internal_cloneThing(thing);
+  if (value.termType === "Literal") {
+    return addLiteral(thing, property, value);
+  }
 
-  newThing.add(
-    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
+  if (value.termType === "BlankNode") {
+    internal_throwIfNotThing(thing);
+    if (!internal_isValidUrl(property)) {
+      throw new ValidPropertyUrlExpectedError(property);
+    }
+
+    const predicateIri = internal_toIriString(property);
+
+    const existingPredicate = thing.predicates[predicateIri] ?? {};
+    const existingBlankNodes = existingPredicate.blankNodes ?? [];
+
+    const updatedBlankNodes = freeze(
+      existingBlankNodes.concat(getBlankNodeId(value))
+    );
+    const updatedPredicate = freeze({
+      ...existingPredicate,
+      blankNodes: updatedBlankNodes,
+    });
+    const updatedPredicates = freeze({
+      ...thing.predicates,
+      [predicateIri]: updatedPredicate,
+    });
+    const updatedThing = freeze({
+      ...thing,
+      predicates: updatedPredicates,
+    });
+
+    return updatedThing;
+  }
+
+  throw new Error(
+    `Term type [${value.termType}] is not supported by @inrupt/solid-client.`
   );
-  return newThing;
 }
 
 function addLiteralOfType<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: string,
-  type: XmlSchemaTypeIri
+  type: XmlSchemaTypeIri | UrlString
 ): T {
-  const literal = DataFactory.literal(value, DataFactory.namedNode(type));
-  return addLiteral(thing, property, literal);
+  internal_throwIfNotThing(thing);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+
+  const predicateIri = internal_toIriString(property);
+
+  const existingPredicate = thing.predicates[predicateIri] ?? {};
+  const existingLiterals = existingPredicate.literals ?? {};
+  const existingValuesOfType = existingLiterals[type] ?? [];
+
+  const updatedValuesOfType = freeze(existingValuesOfType.concat(value));
+  const updatedLiterals = freeze({
+    ...existingLiterals,
+    [type]: updatedValuesOfType,
+  });
+  const updatedPredicate = freeze({
+    ...existingPredicate,
+    literals: updatedLiterals,
+  });
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  const updatedThing = freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
+
+  return updatedThing;
 }
 
 /**

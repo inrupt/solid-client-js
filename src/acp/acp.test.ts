@@ -78,12 +78,10 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
     acrThing = addIri(acrThing, acp.accessMembers, policyUrl);
   });
 
-  let acr: AccessControlResource & WithServerResourceInfo = Object.assign(
-    mockSolidDatasetFrom(acrUrl),
-    {
-      accessTo: accessTo,
-    }
-  );
+  let acr: AccessControlResource & WithServerResourceInfo = {
+    ...mockSolidDatasetFrom(acrUrl),
+    accessTo: accessTo,
+  };
   acr = setThing(acr, control);
   acr = setThing(acr, acrThing);
 
@@ -99,7 +97,11 @@ describe("getSolidDatasetWithAcr", () => {
       >;
     };
 
-    await getSolidDatasetWithAcr("https://some.pod/resource");
+    getSolidDatasetWithAcr("https://some.pod/resource").catch(() => {
+      // We're just checking that this is called,
+      // so we can ignore the error about not being able to parse
+      // the mock Response.
+    });
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
       "https://some.pod/resource"
@@ -107,7 +109,11 @@ describe("getSolidDatasetWithAcr", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockResolvedValue(
+        new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+      );
 
     await getSolidDatasetWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
@@ -123,6 +129,7 @@ describe("getSolidDatasetWithAcr", () => {
         new Response(undefined, {
           headers: {
             Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+            "Content-Type": "text/turtle",
           },
           url: "https://some.pod/resource",
         } as ResponseInit)
@@ -164,7 +171,7 @@ describe("getSolidDatasetWithAcr", () => {
       "https://some.pod/resource"
     );
 
-    expect(fetchedDataset.internal_acp.acr).toBe(mockedAcr);
+    expect(fetchedDataset.internal_acp.acr).toStrictEqual(mockedAcr);
   });
 });
 
@@ -229,7 +236,7 @@ describe("getFileWithAcr", () => {
         },
       }
     );
-    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+    const mockedAcr = mockAcr("https://some.pod/resource", {
       policies: [],
       memberPolicies: [],
       acrPolicies: [],
@@ -245,7 +252,7 @@ describe("getFileWithAcr", () => {
 
     const fetchedFile = await getFileWithAcr("https://some.pod/resource");
 
-    expect(fetchedFile.internal_acp.acr).toBe(mockedAcr);
+    expect(fetchedFile.internal_acp.acr).toStrictEqual(mockedAcr);
   });
 });
 
@@ -303,7 +310,7 @@ describe("getResourceInfoWithAcr", () => {
       "https://some.pod/resource"
     );
 
-    expect(fetchedResourceInfo.internal_acp.acr).toBe(mockedAcr);
+    expect(fetchedResourceInfo.internal_acp.acr).toStrictEqual(mockedAcr);
   });
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
@@ -440,10 +447,9 @@ describe("getReferencedPolicyUrlAll", () => {
 
 describe("getSolidDatasetWithAccessDatasets", () => {
   it("fetches the Resource at the given URL", async () => {
-    const mockedGetSolidDataset = jest.spyOn(
-      SolidDatasetModule,
-      "getSolidDataset"
-    );
+    const mockedGetSolidDataset = jest
+      .spyOn(SolidDatasetModule, "getSolidDataset")
+      .mockResolvedValueOnce(mockSolidDatasetFrom("https://some.pod/resource"));
 
     await getSolidDatasetWithAccessDatasets("https://some.pod/resource");
 

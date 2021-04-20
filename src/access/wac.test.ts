@@ -55,6 +55,7 @@ import { internal_getResourceAcl } from "../acl/acl.internal";
 import { AclDataset } from "../acl/acl";
 import { getGroupResourceAccess } from "../acl/group";
 import { getPublicResourceAccess } from "../acl/class";
+import { toRdfJsQuads } from "../rdf.internal";
 
 function getMockDataset(
   sourceIri: IriString,
@@ -159,9 +160,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -212,9 +214,10 @@ describe("getAgentAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -255,9 +258,10 @@ describe("getAgentAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -272,9 +276,10 @@ describe("getAgentAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -304,9 +309,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -337,9 +343,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -370,9 +377,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -403,9 +411,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -438,9 +447,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -473,9 +483,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -508,9 +519,10 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -619,9 +631,10 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -674,9 +687,10 @@ describe("getGroupAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -721,9 +735,10 @@ describe("getGroupAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -738,9 +753,10 @@ describe("getGroupAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -772,9 +788,10 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -807,9 +824,10 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -842,9 +860,10 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -877,9 +896,10 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -988,9 +1008,10 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1043,9 +1064,10 @@ describe("getPublicAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -1090,9 +1112,10 @@ describe("getPublicAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -1107,9 +1130,10 @@ describe("getPublicAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -1141,9 +1165,10 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1176,9 +1201,10 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1211,9 +1237,10 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1246,9 +1273,10 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1374,6 +1402,7 @@ describe("getAgentAccessAll", () => {
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
     const resource = getMockDataset(
@@ -1404,9 +1433,10 @@ describe("getAgentAccessAll", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1446,9 +1476,10 @@ describe("getAgentAccessAll", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1576,6 +1607,7 @@ describe("getGroupAccessAll", () => {
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
     const resource = getMockDataset(
@@ -1610,9 +1642,10 @@ describe("getGroupAccessAll", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1654,9 +1687,10 @@ describe("getGroupAccessAll", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1793,9 +1827,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1838,9 +1873,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1883,9 +1919,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1928,9 +1965,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -1975,9 +2013,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2020,9 +2059,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2066,9 +2106,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2135,9 +2176,10 @@ describe("setAgentAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Save the ACL
@@ -2198,9 +2240,10 @@ describe("setAgentAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -2215,9 +2258,10 @@ describe("setAgentAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -2261,9 +2305,10 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2302,9 +2347,10 @@ describe("setAgentAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Cannot save the ACL
@@ -2342,6 +2388,7 @@ describe("setAgentAccess", () => {
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2483,9 +2530,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2530,9 +2578,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2577,9 +2626,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2624,9 +2674,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2673,9 +2724,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2720,9 +2772,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2767,9 +2820,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -2838,9 +2892,10 @@ describe("setGroupResourceAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Save the ACL
@@ -2905,9 +2960,10 @@ describe("setGroupResourceAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -2922,9 +2978,10 @@ describe("setGroupResourceAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -2970,9 +3027,10 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3013,9 +3071,10 @@ describe("setGroupResourceAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Cannot save the ACL
@@ -3053,6 +3112,7 @@ describe("setGroupResourceAccess", () => {
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3192,9 +3252,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3235,9 +3296,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3278,9 +3340,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3321,9 +3384,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3365,9 +3429,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3408,9 +3473,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3451,9 +3517,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3518,9 +3585,10 @@ describe("setPublicResourceAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Save the ACL
@@ -3581,9 +3649,10 @@ describe("setPublicResourceAccess", () => {
       .fn(window.fetch)
       // The resource ACL is available...
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
           status: 200,
           url: "https://some.pod/resource.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       )
       // Link to the fallback ACL...
@@ -3598,9 +3667,10 @@ describe("setPublicResourceAccess", () => {
       )
       // Get the fallback ACL
       .mockResolvedValueOnce(
-        mockResponse(await triplesToTurtle(Array.from(fallbackAclResource)), {
+        mockResponse(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), {
           status: 200,
           url: "https://some.pod/.acl",
+          headers: { "Content-Type": "text/turtle" },
         })
       );
 
@@ -3643,9 +3713,10 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      mockResponse(await triplesToTurtle(Array.from(aclResource)), {
+      mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
@@ -3675,6 +3746,7 @@ describe("setPublicResourceAccess", () => {
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
+        headers: { "Content-Type": "text/turtle" },
       })
     );
 
