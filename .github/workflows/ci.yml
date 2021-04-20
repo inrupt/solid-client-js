@@ -67,7 +67,7 @@ jobs:
     - name: Run browser-based end-to-end tests (Linux)
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
-      run: npm run e2e-test-browser -- firefox:headless,chrome:headless --retry-test-pages --hostname localhost
+      run: npm run e2e-test-browser -- firefox:headless,chrome:headless --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
       # The Node version does not influence how well our tests run in the browser,
       # so we only need to test in one.
       # (But I've explicitly set it to *not* run in the oldest versions,
@@ -145,6 +145,13 @@ jobs:
       if: github.event_name != 'schedule'
     - run: npm audit --audit-level=moderate
       if: github.event_name != 'schedule'
+    - name: Archive browser-based E2E test failure screenshots, if any
+      uses: actions/upload-artifact@v2.2.3
+      continue-on-error: true
+      if: failure() && github.event_name != 'schedule'
+      with:
+        name: e2e-browser-failures
+        path: e2e-browser-failures
     - name: Archive code coverage results
       uses: actions/upload-artifact@v2.2.3
       continue-on-error: true
