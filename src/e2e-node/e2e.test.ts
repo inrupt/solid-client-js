@@ -355,7 +355,11 @@ const serversUnderTest: AuthDetails[] = [
   // Once that is fixed, credentials can be added here, and the other `describe()` can be removed.
 ];
 
-describe.each(serversUnderTest)(
+// End-to-end tests against ESS are temporarily disabled while we work out
+// how to authenticate against it now that refresh tokens are rotated after
+// every request:
+// eslint-disable-next-line jest/no-disabled-tests
+describe.skip.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
   (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
     // Re-add `https://` at the start of these URLs, which we trimmed above
