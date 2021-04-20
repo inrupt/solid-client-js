@@ -19,13 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  WithServerResourceInfo,
-  WithChangeLog,
-  IriString,
-  WebId,
-} from "../interfaces";
-import { getIri, getIriAll } from "../thing/get";
+import { WithServerResourceInfo, WithChangeLog, WebId } from "../interfaces";
+import { getIri } from "../thing/get";
 import { acl } from "../constants";
 import {
   AclDataset,
@@ -38,21 +33,15 @@ import {
   WithAcl,
 } from "./acl";
 import {
-  internal_duplicateAclRule,
-  internal_initialiseAclRule,
   internal_combineAccessModes,
   internal_getAccess,
   internal_getAccessByIri,
   internal_getAclRules,
   internal_getAclRulesForIri,
   internal_getDefaultAclRulesForResource,
-  internal_removeEmptyAclRules,
   internal_getResourceAclRulesForResource,
   internal_setActorAccess,
 } from "./acl.internal";
-import { getThingAll, setThing } from "../thing/thing";
-import { removeIri, removeAll } from "../thing/remove";
-import { setIri } from "../thing/set";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this

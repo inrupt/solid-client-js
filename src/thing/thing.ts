@@ -19,39 +19,40 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Quad } from "rdf-js";
-import { dataset } from "../rdfjs";
-import { internal_isDatasetCore } from "../rdfjs.internal";
 import {
-  isLocalNode,
-  isEqual,
   isNamedNode,
-  getLocalNode,
-  asNamedNode,
   resolveLocalIri,
   internal_isValidUrl,
 } from "../datatypes";
 import {
-  SolidDataset,
   UrlString,
-  Thing,
   Url,
-  ThingLocal,
-  LocalNode,
-  ThingPersisted,
-  WithChangeLog,
-  hasChangelog,
-  hasResourceInfo,
   SolidClientError,
+  Thing,
+  ThingLocal,
+  ThingPersisted,
+  SolidDataset,
+  WithChangeLog,
+  IriString,
+  hasServerResourceInfo,
 } from "../interfaces";
-import { getTermAll } from "./get";
+import { DataFactory } from "../rdfjs";
 import { getSourceUrl } from "../resource/resource";
-import { internal_cloneResource } from "../resource/resource.internal";
 import {
-  internal_toNode,
+  internal_addAdditionsToChangeLog,
+  internal_addDeletionsToChangeLog,
   internal_getReadableValue,
-  internal_withChangeLog,
 } from "./thing.internal";
+import {
+  freeze,
+  getLocalNodeIri,
+  getLocalNodeName,
+  isLocalNodeIri,
+  LocalNodeIri,
+  subjectToRdfJsQuads,
+} from "../rdf.internal";
+import { internal_toIriString } from "../interfaces.internal";
+import { getTermAll } from "./get";
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -72,12 +73,12 @@ export function getThing(
 ): ThingPersisted | null;
 export function getThing(
   solidDataset: SolidDataset,
-  thingUrl: LocalNode,
+  thingUrl: LocalNodeIri,
   options?: GetThingOptions
 ): ThingLocal | null;
 export function getThing(
   solidDataset: SolidDataset,
-  thingUrl: UrlString | Url | LocalNode,
+  thingUrl: UrlString | Url | LocalNodeIri,
   options?: GetThingOptions
 ): Thing | null;
 /**
@@ -89,35 +90,28 @@ export function getThing(
  */
 export function getThing(
   solidDataset: SolidDataset,
-  thingUrl: UrlString | Url | LocalNode,
+  thingUrl: UrlString | Url | LocalNodeIri,
   options: GetThingOptions = {}
 ): Thing | null {
-  if (!isLocalNode(thingUrl) && !internal_isValidUrl(thingUrl)) {
+  if (!internal_isValidUrl(thingUrl)) {
     throw new ValidThingUrlExpectedError(thingUrl);
   }
-  const subject = isLocalNode(thingUrl) ? thingUrl : asNamedNode(thingUrl);
-  const scope: NamedNode | null = options.scope
-    ? asNamedNode(options.scope)
-    : null;
 
-  const thingDataset = solidDataset.match(subject, null, null, scope);
-  if (thingDataset.size === 0) {
+  const graph =
+    typeof options.scope !== "undefined"
+      ? internal_toIriString(options.scope)
+      : "default";
+  const thingsByIri = solidDataset.graphs[graph] ?? {};
+  const thingIri = internal_toIriString(thingUrl);
+  const resolvedThingIri =
+    isLocalNodeIri(thingIri) && hasServerResourceInfo(solidDataset)
+      ? resolveLocalIri(getLocalNodeName(thingIri), getSourceUrl(solidDataset))
+      : thingIri;
+  const thing = thingsByIri[resolvedThingIri];
+  if (typeof thing === "undefined") {
     return null;
   }
-
-  if (isLocalNode(subject)) {
-    const thing: ThingLocal = Object.assign(thingDataset, {
-      internal_localSubject: subject,
-    });
-
-    return thing;
-  } else {
-    const thing: Thing = Object.assign(thingDataset, {
-      internal_url: subject.value,
-    });
-
-    return thing;
-  }
+  return thing;
 }
 
 /**
@@ -130,34 +124,12 @@ export function getThingAll(
   solidDataset: SolidDataset,
   options: GetThingOptions = {}
 ): Thing[] {
-  const subjectNodes = new Array<Url | LocalNode>();
-  for (const quad of solidDataset) {
-    // Because NamedNode objects with the same IRI are actually different
-    // object instances, we have to manually check whether `subjectNodes` does
-    // not yet include `quadSubject` before adding it.
-    const quadSubject = quad.subject;
-    if (
-      isNamedNode(quadSubject) &&
-      !subjectNodes.some((subjectNode) => isEqual(subjectNode, quadSubject))
-    ) {
-      subjectNodes.push(quadSubject);
-    }
-    if (
-      isLocalNode(quadSubject) &&
-      !subjectNodes.some((subjectNode) => isEqual(subjectNode, quadSubject))
-    ) {
-      subjectNodes.push(quadSubject);
-    }
-  }
-
-  const things: Thing[] = subjectNodes.map(
-    (subjectNode) => getThing(solidDataset, subjectNode, options)
-    // We can make the type assertion here because `getThing` only returns `null` if no data with
-    // the given subject node can be found, and in this case the subject node was extracted from
-    // existing data (i.e. that can be found by definition):
-  ) as Thing[];
-
-  return things;
+  const graph =
+    typeof options.scope !== "undefined"
+      ? internal_toIriString(options.scope)
+      : "default";
+  const thingsByIri = solidDataset.graphs[graph] ?? {};
+  return Object.values(thingsByIri);
 }
 
 /**
@@ -171,57 +143,47 @@ export function setThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
   thing: Thing
 ): Dataset & WithChangeLog {
-  const newDataset = removeThing(solidDataset, thing);
-  newDataset.internal_changeLog = {
-    additions: [...newDataset.internal_changeLog.additions],
-    deletions: [...newDataset.internal_changeLog.deletions],
-  };
+  const thingIri =
+    isThingLocal(thing) && hasServerResourceInfo(solidDataset)
+      ? resolveLocalIri(getLocalNodeName(thing.url), getSourceUrl(solidDataset))
+      : thing.url;
+  const defaultGraph = solidDataset.graphs.default;
+  const updatedDefaultGraph = freeze({
+    ...defaultGraph,
+    [thingIri]: freeze({ ...thing, url: thingIri }),
+  });
+  const updatedGraphs = freeze({
+    ...solidDataset.graphs,
+    default: updatedDefaultGraph,
+  });
 
-  for (const quad of thing) {
-    newDataset.add(quad);
-    const alreadyDeletedQuad = newDataset.internal_changeLog.deletions.find(
-      (deletedQuad) => equalsExcludingBlankNodes(quad, deletedQuad)
-    );
-    if (typeof alreadyDeletedQuad !== "undefined") {
-      newDataset.internal_changeLog.deletions = newDataset.internal_changeLog.deletions.filter(
-        (deletion) => deletion !== alreadyDeletedQuad
-      );
-    } else {
-      newDataset.internal_changeLog.additions.push(quad);
-    }
-  }
+  const subjectNode = DataFactory.namedNode(thingIri);
 
-  return newDataset;
-}
+  const deletedThingPredicates =
+    solidDataset.graphs.default[thingIri]?.predicates;
+  const deletions =
+    typeof deletedThingPredicates !== "undefined"
+      ? subjectToRdfJsQuads(
+          deletedThingPredicates,
+          subjectNode,
+          DataFactory.defaultGraph()
+        )
+      : [];
 
-/**
- * Compare two Quads but, if both Quads have objects that are Blank Nodes and are otherwise equal, treat them as equal.
- *
- * The reason we do this is because you cannot write Blank Nodes as Quad
- * Subjects using solid-client, so they wouldn't be used in an Object position
- * either. Thus, if a SolidDataset has a ChangeLog in which a given Quad with a
- * Blank node as object is listed as deleted, and then an otherwise equivalent
- * Quad but with a different instance of a Blank Node is added, we can assume
- * that they are the same, and that rather than adding the new Quad, we can just
- * prevent the old Quad from being removed.
- * This occurs in situations in which, for example, you extract a Thing from a
- * SolidDataset, change that Thing, then re-fetch that same SolidDataset (to
- * make sure you are working with up-to-date data) and add the Thing to _that_.
- * When the server returns the data in a serialisation that does not assign a
- * consistent value to Blank Nodes (e.g. Turtle), our client-side parser will
- * have to instantiate unique instances on every parse. Therefore, the Blank
- * Nodes in the refetched SolidDataset will now be different instances from the
- * ones in the original SolidDataset, even though they're equivalent.
- */
-function equalsExcludingBlankNodes(a: Quad, b: Quad): boolean {
-  // Potential future improvement: compare the actual values of the nodes.
-  // For example, currently a decimal serialised as "1.0" is considered different from a decimal
-  // serialised as "1.00".
-  return (
-    a.subject.equals(b.subject) &&
-    b.predicate.equals(b.predicate) &&
-    (a.object.equals(b.object) ||
-      (a.object.termType === "BlankNode" && b.object.termType === "BlankNode"))
+  const additions = subjectToRdfJsQuads(
+    thing.predicates,
+    subjectNode,
+    DataFactory.defaultGraph()
+  );
+  return internal_addAdditionsToChangeLog(
+    internal_addDeletionsToChangeLog(
+      freeze({
+        ...solidDataset,
+        graphs: updatedGraphs,
+      }),
+      deletions
+    ),
+    additions
   );
 }
 
@@ -234,38 +196,49 @@ function equalsExcludingBlankNodes(a: Quad, b: Quad): boolean {
  */
 export function removeThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
-  thing: UrlString | Url | LocalNode | Thing
+  thing: UrlString | Url | Thing
 ): Dataset & WithChangeLog {
-  const newSolidDataset = internal_withChangeLog(
-    internal_cloneResource(solidDataset)
-  );
-  newSolidDataset.internal_changeLog = {
-    additions: [...newSolidDataset.internal_changeLog.additions],
-    deletions: [...newSolidDataset.internal_changeLog.deletions],
-  };
-  const resourceIri: UrlString | undefined = hasResourceInfo(newSolidDataset)
-    ? getSourceUrl(newSolidDataset)
-    : undefined;
+  let thingIri: IriString;
+  if (isNamedNode(thing)) {
+    thingIri = thing.value;
+  } else if (typeof thing === "string") {
+    thingIri =
+      isLocalNodeIri(thing) && hasServerResourceInfo(solidDataset)
+        ? resolveLocalIri(getLocalNodeName(thing), getSourceUrl(solidDataset))
+        : thing;
+  } else if (isThingLocal(thing)) {
+    thingIri = thing.url;
+  } else {
+    thingIri = asIri(thing);
+  }
 
-  const thingSubject = internal_toNode(thing);
-  const existingQuads = Array.from(newSolidDataset);
-  existingQuads.forEach((quad) => {
-    if (!isNamedNode(quad.subject) && !isLocalNode(quad.subject)) {
-      // This data is unexpected, and hence unlikely to be added by us. Thus, leave it intact:
-      return;
-    }
-    if (isEqual(thingSubject, quad.subject, { resourceIri: resourceIri })) {
-      newSolidDataset.delete(quad);
-      if (newSolidDataset.internal_changeLog.additions.includes(quad)) {
-        newSolidDataset.internal_changeLog.additions = newSolidDataset.internal_changeLog.additions.filter(
-          (addition) => addition !== quad
-        );
-      } else {
-        newSolidDataset.internal_changeLog.deletions.push(quad);
-      }
-    }
+  const defaultGraph = solidDataset.graphs.default;
+  const updatedDefaultGraph = { ...defaultGraph };
+  delete updatedDefaultGraph[thingIri];
+  const updatedGraphs = freeze({
+    ...solidDataset.graphs,
+    default: freeze(updatedDefaultGraph),
   });
-  return newSolidDataset;
+
+  const subjectNode = DataFactory.namedNode(thingIri);
+  const deletedThingPredicates =
+    solidDataset.graphs.default[thingIri]?.predicates;
+  const deletions =
+    typeof deletedThingPredicates !== "undefined"
+      ? subjectToRdfJsQuads(
+          deletedThingPredicates,
+          subjectNode,
+          DataFactory.defaultGraph()
+        )
+      : [];
+
+  return internal_addDeletionsToChangeLog(
+    freeze({
+      ...solidDataset,
+      graphs: updatedGraphs,
+    }),
+    deletions
+  );
 }
 
 /** Pass these options to [[createThing]] to initialise a new [[Thing]] whose URL will be determined when it is saved. */
@@ -312,15 +285,19 @@ export function createThing(options: CreateThingOptions = {}): Thing {
     if (!internal_isValidUrl(url)) {
       throw new ValidThingUrlExpectedError(url);
     }
-    const thing: ThingPersisted = Object.assign(dataset(), {
-      internal_url: url,
+    const thing: ThingPersisted = freeze({
+      type: "Subject",
+      predicates: freeze({}),
+      url: url,
     });
     return thing;
   }
   const name = (options as CreateThingLocalOptions).name ?? generateName();
-  const localSubject: LocalNode = getLocalNode(name);
-  const thing: ThingLocal = Object.assign(dataset(), {
-    internal_localSubject: localSubject,
+  const localNodeIri = getLocalNodeIri(name);
+  const thing: ThingLocal = freeze({
+    type: "Subject",
+    predicates: freeze({}),
+    url: localNodeIri,
   });
   return thing;
 }
@@ -332,9 +309,10 @@ export function createThing(options: CreateThingOptions = {}): Thing {
  */
 export function isThing<X>(input: X | Thing): input is Thing {
   return (
-    internal_isDatasetCore(input) &&
-    (isThingLocal(input as ThingLocal) ||
-      typeof (input as ThingPersisted).internal_url === "string")
+    typeof input === "object" &&
+    input !== null &&
+    typeof (input as Thing).type === "string" &&
+    (input as Thing).type === "Subject"
   );
 }
 
@@ -354,10 +332,10 @@ export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
         "The URL of a Thing that has not been persisted cannot be determined without a base URL."
       );
     }
-    return resolveLocalIri(thing.internal_localSubject.internal_name, baseUrl);
+    return resolveLocalIri(getLocalNodeName(thing.url), baseUrl);
   }
 
-  return thing.internal_url;
+  return thing.url;
 }
 /** @hidden Alias of [[asUrl]] for those who prefer IRI terminology. */
 export const asIri = asUrl;
@@ -375,17 +353,18 @@ export function thingAsMarkdown(thing: Thing): string {
   let thingAsMarkdown: string = "";
 
   if (isThingLocal(thing)) {
-    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${thing.internal_localSubject.internal_name}\`)\n`;
+    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
+      thing.url
+    )}\`)\n`;
   } else {
-    thingAsMarkdown += `## Thing: ${thing.internal_url}\n`;
+    thingAsMarkdown += `## Thing: ${thing.url}\n`;
   }
 
-  const quads = Array.from(thing);
-  if (quads.length === 0) {
+  const predicateIris = Object.keys(thing.predicates);
+  if (predicateIris.length === 0) {
     thingAsMarkdown += "\n<empty>\n";
   } else {
-    const predicates = new Set(quads.map((quad) => quad.predicate.value));
-    for (const predicate of predicates) {
+    for (const predicate of predicateIris) {
       thingAsMarkdown += `\nProperty: ${predicate}\n`;
       const values = getTermAll(thing, predicate);
       values.forEach((value) => {
@@ -405,10 +384,7 @@ export function thingAsMarkdown(thing: Thing): string {
 export function isThingLocal(
   thing: ThingPersisted | ThingLocal
 ): thing is ThingLocal {
-  return (
-    typeof (thing as ThingLocal).internal_localSubject?.internal_name ===
-      "string" && typeof (thing as ThingPersisted).internal_url === "undefined"
-  );
+  return isLocalNodeIri(thing.url);
 }
 
 /**

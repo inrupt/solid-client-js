@@ -34,7 +34,6 @@ jest.mock("../fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
 import {
   getSolidDataset,
   saveSolidDatasetAt,
@@ -48,6 +47,8 @@ import {
   deleteContainer,
   getContainedResourceUrlAll,
   internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
+  responseToSolidDataset,
+  Parser,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -58,24 +59,196 @@ import {
   UrlString,
 } from "../interfaces";
 import { mockContainerFrom, mockSolidDatasetFrom } from "./mock";
-import { createThing, setThing } from "../thing/thing";
+import { createThing, getThing, setThing } from "../thing/thing";
 import { mockThingFrom } from "../thing/mock";
-import { addStringNoLocale, addUrl } from "../thing/add";
+import { addInteger, addStringNoLocale, addUrl } from "../thing/add";
 import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
+import { getUrl } from "../thing/get";
+import { getLocalNodeIri } from "../rdf.internal";
 
 function mockResponse(
   body?: BodyInit | null,
   init?: ResponseInit & { url: string }
 ): Response {
-  return new Response(body, init);
+  return new Response(body, {
+    ...init,
+    headers: {
+      ...init?.headers,
+      "Content-Type":
+        (init?.headers as Record<string, string>)?.["Content-Type"] ??
+        "text/turtle",
+    },
+  });
 }
 
 describe("createSolidDataset", () => {
   it("should initialise a new empty SolidDataset", () => {
     const solidDataset = createSolidDataset();
 
-    expect(solidDataset.size).toBe(0);
+    expect(solidDataset.graphs.default).toStrictEqual({});
+  });
+});
+
+describe("responseToSolidDataset", () => {
+  it("returns a SolidDataset representing the fetched Turtle", async () => {
+    const turtle = `
+      @prefix : <#>.
+      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+      @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+
+      <> a foaf:PersonalProfileDocument; foaf:maker :me; foaf:primaryTopic :me.
+
+      :me
+        a foaf:Person;
+        vcard:fn "Vincent", [:predicate <for://a.blank/node>].
+    `;
+
+    const response = new Response(turtle, {
+      headers: {
+        "Content-Type": "text/turtle",
+      },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+    const solidDataset = await responseToSolidDataset(response);
+
+    expect(solidDataset).toStrictEqual({
+      graphs: {
+        default: {
+          "https://some.pod/resource": {
+            predicates: {
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                namedNodes: [
+                  "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+                ],
+              },
+              "http://xmlns.com/foaf/0.1/maker": {
+                namedNodes: ["https://some.pod/resource#me"],
+              },
+              "http://xmlns.com/foaf/0.1/primaryTopic": {
+                namedNodes: ["https://some.pod/resource#me"],
+              },
+            },
+            type: "Subject",
+            url: "https://some.pod/resource",
+          },
+          "https://some.pod/resource#me": {
+            predicates: {
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
+              },
+              "http://www.w3.org/2006/vcard/ns#fn": {
+                blankNodes: [
+                  {
+                    "https://some.pod/resource#predicate": {
+                      namedNodes: ["for://a.blank/node"],
+                    },
+                  },
+                ],
+                literals: {
+                  "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+                },
+              },
+            },
+            type: "Subject",
+            url: "https://some.pod/resource#me",
+          },
+        },
+      },
+      internal_resourceInfo: {
+        contentType: "text/turtle",
+        isRawData: false,
+        linkedResources: {},
+        sourceIri: "https://some.pod/resource",
+      },
+      type: "Dataset",
+    });
+  });
+
+  it("throws a meaningful error when the server returned a 403", async () => {
+    const response = new Response("Not allowed", { status: 403 });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+
+    const parsePromise = responseToSolidDataset(response);
+
+    await expect(parsePromise).rejects.toThrow(
+      new Error(
+        "Fetching the SolidDataset at [https://some.pod/resource] failed: [403] [Forbidden]."
+      )
+    );
+  });
+
+  it("can match MIME types even if the Content-Type header also specifies a character encoding", async () => {
+    const response = new Response("", {
+      headers: {
+        "Content-Type": "text/turtle;charset=UTF-8",
+      },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+
+    const parsePromise = responseToSolidDataset(response);
+
+    await expect(parsePromise).resolves.not.toThrow();
+  });
+
+  it("throws an error when no parsers for the Resource's content type are available", async () => {
+    const response = new Response("", {
+      headers: {
+        "Content-Type": "some unsupported content type",
+      },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+
+    const parsePromise = responseToSolidDataset(response);
+
+    await expect(parsePromise).rejects.toThrow(
+      new Error(
+        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle]."
+      )
+    );
+  });
+
+  it("throws an error when the Parser cannot parse the data", async () => {
+    const response = new Response("", {
+      headers: { "Content-Type": "text/turtle" },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+    let resolveDataPromise: (value: string) => void = jest.fn();
+    const dataPromise = new Promise<string>((resolve) => {
+      resolveDataPromise = resolve;
+    });
+    jest.spyOn(response, "text").mockReturnValueOnce(dataPromise);
+
+    const onErrorHandlers: Array<Parameters<Parser["onError"]>[0]> = [];
+    const mockParser: Parser = {
+      onComplete: jest.fn(),
+      onQuad: jest.fn(),
+      parse: jest.fn(),
+      onError: (errorHandler) => onErrorHandlers.push(errorHandler),
+    };
+
+    const parsePromise = responseToSolidDataset(response, {
+      parsers: { "text/turtle": mockParser },
+    });
+    resolveDataPromise("");
+    await dataPromise;
+    onErrorHandlers[0](new Error("Some error"));
+
+    await expect(parsePromise).rejects.toThrow(
+      new Error(
+        "Encountered an error parsing the Resource at [https://some.pod/resource] with content type [text/turtle]: Error: Some error"
+      )
+    );
   });
 });
 
@@ -87,6 +260,9 @@ describe("getSolidDataset", () => {
         [RequestInfo, RequestInit?]
       >;
     };
+    mockedFetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+    );
 
     await getSolidDataset("https://some.pod/resource");
 
@@ -96,9 +272,13 @@ describe("getSolidDataset", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
 
@@ -106,9 +286,13 @@ describe("getSolidDataset", () => {
   });
 
   it("adds an Accept header accepting turtle by default", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
 
@@ -119,10 +303,49 @@ describe("getSolidDataset", () => {
     });
   });
 
+  it("advertises all formats supported by given parsers in the Accept header", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
+
+    const mockParser: Parser = {
+      onComplete: jest
+        .fn()
+        .mockImplementationOnce((completionCallback: any) =>
+          completionCallback()
+        ),
+      onQuad: jest.fn(),
+      parse: jest.fn(),
+      onError: jest.fn(),
+    };
+    const mockParsers = {
+      "text/turtle": mockParser,
+      "application/n-triples": mockParser,
+    };
+    await getSolidDataset("https://some.pod/resource", {
+      fetch: mockFetch,
+      parsers: mockParsers,
+    });
+
+    expect(mockFetch.mock.calls[0][1]).toEqual({
+      headers: {
+        Accept: "text/turtle, application/n-triples",
+      },
+    });
+  });
+
   it("can be called with NamedNodes", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(Promise.resolve(new Response()));
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
 
     await getSolidDataset(DataFactory.namedNode("https://some.pod/resource"), {
       fetch: mockFetch,
@@ -175,6 +398,7 @@ describe("getSolidDataset", () => {
     const mockResponse = new Response(undefined, {
       headers: {
         Link: '<arbitrary-resource>; rel="not-acl"',
+        "Content-Type": "text/turtle",
       },
       url: "https://arbitrary.pod",
       // We need the type assertion because in non-mock situations,
@@ -196,6 +420,7 @@ describe("getSolidDataset", () => {
         new Response(undefined, {
           headers: {
             "wac-aLLOW": 'public="read",user="read write append control"',
+            "Content-Type": "text/turtle",
           },
         })
       )
@@ -229,6 +454,7 @@ describe("getSolidDataset", () => {
           headers: {
             // Public permissions are missing double quotes, user permissions are absent:
             "WAC-Allow": "public=read",
+            "Content-Type": "text/turtle",
           },
         })
       )
@@ -259,7 +485,9 @@ describe("getSolidDataset", () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
-          headers: {},
+          headers: {
+            "Content-Type": "text/turtle",
+          },
         })
       )
     );
@@ -300,7 +528,6 @@ describe("getSolidDataset", () => {
       }
     );
 
-    expect(solidDataset.size).toBe(5);
     expect(solidDataset).toMatchSnapshot();
   });
 
@@ -377,7 +604,7 @@ describe("saveSolidDatasetAt", () => {
       })
     );
 
-    await saveSolidDatasetAt("https://some.pod/resource", dataset());
+    await saveSolidDatasetAt("https://some.pod/resource", createSolidDataset());
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
   });
@@ -387,9 +614,13 @@ describe("saveSolidDatasetAt", () => {
       .fn(window.fetch)
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await saveSolidDatasetAt("https://some.pod/resource", dataset(), {
-      fetch: mockFetch,
-    });
+    await saveSolidDatasetAt(
+      "https://some.pod/resource",
+      createSolidDataset(),
+      {
+        fetch: mockFetch,
+      }
+    );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
@@ -399,15 +630,12 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
-      const mockDataset = dataset();
-      mockDataset.add(
-        DataFactory.quad(
-          DataFactory.namedNode("https://arbitrary.vocab/subject"),
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object"),
-          undefined
-        )
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
       );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
 
       await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
@@ -433,15 +661,12 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn(window.fetch)
         .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
-      const mockDataset = dataset();
-      mockDataset.add(
-        DataFactory.quad(
-          DataFactory.namedNode("https://arbitrary.vocab/subject"),
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object"),
-          undefined
-        )
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
       );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
 
       const savedDataset = await saveSolidDatasetAt(
         "https://some.pod/resource",
@@ -462,21 +687,13 @@ describe("saveSolidDatasetAt", () => {
         .mockResolvedValue(
           mockResponse(null, { url: "https://some.irrelevant/url" })
         );
-      const mockDataset = dataset();
-      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-subject-name",
-      });
-      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-object-name",
-      });
-      mockDataset.add(
-        DataFactory.quad(
-          subjectLocal,
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          objectLocal,
-          undefined
-        )
+      const mockObjectThing = createThing({ name: "some-object-name" });
+      const mockThing = addUrl(
+        createThing({ name: "some-subject-name" }),
+        "https://arbitrary.vocab/predicate",
+        mockObjectThing
       );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
 
       await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
@@ -492,21 +709,24 @@ describe("saveSolidDatasetAt", () => {
         .fn(window.fetch)
         .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
 
-      const mockDataset = dataset();
-      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-subject-name",
-      });
-      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-object-name",
-      });
-      mockDataset.add(
-        DataFactory.quad(
-          subjectLocal,
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          objectLocal,
-          undefined
-        )
+      const mockObjectThing = createThing({ name: "some-object-name" });
+      let mockThing = addUrl(
+        createThing({ name: "some-subject-name" }),
+        "https://arbitrary.vocab/predicate",
+        mockObjectThing
       );
+      mockThing = addUrl(
+        mockThing,
+        "https://arbitrary.vocab/predicate",
+        "https://regular.url"
+      );
+      mockThing = addUrl(
+        mockThing,
+        "https://arbitrary-other.vocab/predicate",
+        "https://regular.url"
+      );
+      mockThing = addInteger(mockThing, "https://another.vocab/predicate", 42);
+      const mockDataset = setThing(createSolidDataset(), mockThing);
 
       const storedSolidDataset = await saveSolidDatasetAt(
         "https://some.pod/resource",
@@ -516,17 +736,62 @@ describe("saveSolidDatasetAt", () => {
         }
       );
 
-      expect(
-        storedSolidDataset.match(
-          DataFactory.namedNode("https://saved.at/url#some-subject-name"),
-          null,
-          DataFactory.namedNode("https://saved.at/url#some-object-name")
-        ).size
-      ).toBe(1);
+      const storedThing = getThing(
+        storedSolidDataset,
+        "https://saved.at/url#some-subject-name"
+      );
+
+      expect(storedThing).not.toBeNull();
+      expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
+        "https://saved.at/url#some-object-name"
+      );
+    });
+
+    it("also resolves relative IRIs for Things that have absolute IRIs", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
+
+      const mockObjectThing = createThing({ name: "some-object-name" });
+      let mockThing = addUrl(
+        createThing({ url: "https://some.pod/resource#thing" }),
+        "https://arbitrary.vocab/predicate",
+        mockObjectThing
+      );
+      mockThing = addUrl(
+        mockThing,
+        "https://arbitrary.vocab/predicate",
+        "https://regular.url"
+      );
+      mockThing = addUrl(
+        mockThing,
+        "https://arbitrary-other.vocab/predicate",
+        "https://regular.url"
+      );
+      mockThing = addInteger(mockThing, "https://another.vocab/predicate", 42);
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      const storedSolidDataset = await saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+        }
+      );
+
+      const storedThing = getThing(
+        storedSolidDataset,
+        "https://some.pod/resource#thing"
+      );
+
+      expect(storedThing).not.toBeNull();
+      expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
+        "https://saved.at/url#some-object-name"
+      );
     });
 
     it("makes sure the returned SolidDataset has an empty change log", async () => {
-      const mockDataset = dataset();
+      const mockDataset = createSolidDataset();
 
       const storedSolidDataset = await saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
@@ -544,9 +809,13 @@ describe("saveSolidDatasetAt", () => {
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
-      await saveSolidDatasetAt("https://arbitrary.pod/resource", dataset(), {
-        fetch: mockFetch,
-      });
+      await saveSolidDatasetAt(
+        "https://arbitrary.pod/resource",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        }
+      );
 
       expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
         "If-None-Match": "*",
@@ -562,7 +831,7 @@ describe("saveSolidDatasetAt", () => {
 
       const fetchPromise = saveSolidDatasetAt(
         "https://some.pod/resource",
-        dataset(),
+        createSolidDataset(),
         {
           fetch: mockFetch,
         }
@@ -583,7 +852,7 @@ describe("saveSolidDatasetAt", () => {
 
       const fetchPromise = saveSolidDatasetAt(
         "https://some.pod/resource",
-        dataset(),
+        createSolidDataset(),
         {
           fetch: mockFetch,
         }
@@ -606,7 +875,7 @@ describe("saveSolidDatasetAt", () => {
 
       const fetchPromise = saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
-        dataset(),
+        createSolidDataset(),
         {
           fetch: mockFetch,
         }
@@ -623,9 +892,10 @@ describe("saveSolidDatasetAt", () => {
         .fn(window.fetch)
         .mockReturnValue(Promise.resolve(new Response()));
 
-      const mockDataset = Object.assign(dataset(), {
+      const mockDataset = {
+        ...createSolidDataset(),
         internal_changeLog: { additions: [], deletions: [] },
-      });
+      };
 
       await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
         fetch: mockFetch,
@@ -641,29 +911,35 @@ describe("saveSolidDatasetAt", () => {
       changeLog: WithChangeLog["internal_changeLog"],
       fromUrl: IriString
     ): SolidDataset & WithChangeLog & WithResourceInfo {
-      const mockDataset = dataset();
-      mockDataset.add(
-        DataFactory.quad(
-          DataFactory.namedNode("https://arbitrary.vocab/subject"),
-          DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-          DataFactory.namedNode("https://arbitrary.vocab/object"),
-          undefined
-        )
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
       );
+      let mockDataset = setThing(createSolidDataset(), mockThing);
 
-      changeLog.additions.forEach((tripleToAdd) =>
-        mockDataset.add(tripleToAdd)
-      );
+      changeLog.additions.forEach((tripleToAdd) => {
+        let additionThing =
+          getThing(mockDataset, tripleToAdd.subject.value) ??
+          createThing({ url: tripleToAdd.subject.value });
+        additionThing = addUrl(
+          additionThing,
+          tripleToAdd.predicate.value,
+          tripleToAdd.object.value
+        );
+        mockDataset = setThing(mockDataset, additionThing);
+      });
 
       const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
         sourceIri: fromUrl,
         isRawData: false,
       };
 
-      return Object.assign(mockDataset, {
+      return {
+        ...mockDataset,
         internal_changeLog: changeLog,
         internal_resourceInfo: resourceInfo,
-      });
+      };
     }
 
     it("sends just the change log to the Pod", async () => {
@@ -751,12 +1027,12 @@ describe("saveSolidDatasetAt", () => {
           mockResponse(null, { url: "https://some.irrelevant/url" })
         );
 
-      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-subject-name",
-      });
-      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-object-name",
-      });
+      const subjectLocal: LocalNode = DataFactory.namedNode(
+        getLocalNodeIri("some-subject-name")
+      );
+      const objectLocal: LocalNode = DataFactory.namedNode(
+        getLocalNodeIri("some-object-name")
+      );
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
@@ -796,12 +1072,12 @@ describe("saveSolidDatasetAt", () => {
         .fn(window.fetch)
         .mockResolvedValue(mockResponse(null, { url: "https://saved.at/url" }));
 
-      const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-subject-name",
-      });
-      const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-        internal_name: "some-object-name",
-      });
+      const subjectLocal: LocalNode = DataFactory.namedNode(
+        getLocalNodeIri("some-subject-name")
+      );
+      const objectLocal: LocalNode = DataFactory.namedNode(
+        getLocalNodeIri("some-object-name")
+      );
       const mockDataset = getMockUpdatedDataset(
         {
           additions: [
@@ -825,11 +1101,12 @@ describe("saveSolidDatasetAt", () => {
         }
       );
 
-      const storedQuads = Array.from(storedSolidDataset);
-      expect(storedQuads[storedQuads.length - 1].subject.value).toBe(
+      const storedThing = getThing(
+        storedSolidDataset,
         "https://saved.at/url#some-subject-name"
       );
-      expect(storedQuads[storedQuads.length - 1].object.value).toBe(
+      expect(storedThing).not.toBeNull();
+      expect(getUrl(storedThing!, "https://some.vocab/predicate")).toBe(
         "https://saved.at/url#some-object-name"
       );
     });
@@ -1010,9 +1287,10 @@ describe("saveSolidDatasetAt", () => {
         isRawData: false,
       };
       // Note that the dataset has been fetched from a given IRI, but has no changelog.
-      const mockDataset = Object.assign(dataset(), {
+      const mockDataset = {
+        ...createSolidDataset(),
         internal_resourceInfo: resourceInfo,
-      });
+      };
 
       await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
         fetch: mockFetch,
@@ -1491,7 +1769,7 @@ describe("createContainerAt", () => {
       }
     );
 
-    expect(solidDataset.size).toBe(0);
+    expect(solidDataset.graphs.default).toStrictEqual({});
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
@@ -1694,6 +1972,13 @@ describe("createContainerAt", () => {
     });
 
     it("returns an error when it couldn't check whether a Container already exists", async () => {
+      const fetchErrorResponse = new Response(
+        "Not allowed to fetch the existing Container without logging in",
+        { status: 401 }
+      );
+      jest
+        .spyOn(fetchErrorResponse, "url", "get")
+        .mockReturnValue("https://arbitrary.pod/container/");
       const mockFetch = jest
         .fn(window.fetch)
         // Mock the response to the request that tries to create a Container the regular way:
@@ -1706,14 +1991,7 @@ describe("createContainerAt", () => {
           )
         )
         // Mock the response to the request that tests whether the Container already exists
-        .mockReturnValueOnce(
-          Promise.resolve(
-            new Response(
-              "Not allowed to fetch the existing Container without logging in",
-              { status: 401 }
-            )
-          )
-        );
+        .mockReturnValueOnce(Promise.resolve(fetchErrorResponse));
 
       const fetchPromise = createContainerAt(
         "https://arbitrary.pod/container/",
@@ -1825,7 +2103,10 @@ describe("saveSolidDatasetInContainer", () => {
       fetch: MockFetch;
     };
 
-    await saveSolidDatasetInContainer("https://some.pod/container/", dataset());
+    await saveSolidDatasetInContainer(
+      "https://some.pod/container/",
+      createSolidDataset()
+    );
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
@@ -1837,7 +2118,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -1859,7 +2140,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -1880,7 +2161,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -1899,7 +2180,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -1923,7 +2204,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -1937,15 +2218,12 @@ describe("saveSolidDatasetInContainer", () => {
 
   it("sends the given SolidDataset to the Pod", async () => {
     const mockFetch = setMockOnFetch(jest.fn(window.fetch));
-    const mockDataset = dataset();
-    mockDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.vocab/subject"),
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.vocab/object"),
-        undefined
-      )
+    const mockThing = addUrl(
+      createThing({ url: "https://arbitrary.vocab/subject" }),
+      "https://arbitrary.vocab/predicate",
+      "https://arbitrary.vocab/object"
     );
+    const mockDataset = setThing(createSolidDataset(), mockThing);
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -1972,21 +2250,13 @@ describe("saveSolidDatasetInContainer", () => {
 
   it("sets relative IRIs for LocalNodes", async () => {
     const mockFetch = setMockOnFetch(jest.fn(window.fetch));
-    const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-subject-name",
-    });
-    const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-object-name",
-    });
-    const mockDataset = dataset();
-    mockDataset.add(
-      DataFactory.quad(
-        subjectLocal,
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        objectLocal,
-        undefined
-      )
+    const mockObjectThing = createThing({ name: "some-object-name" });
+    const mockThing = addUrl(
+      createThing({ name: "some-subject-name" }),
+      "https://arbitrary.vocab/predicate",
+      mockObjectThing
     );
+    const mockDataset = setThing(createSolidDataset(), mockThing);
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -2006,7 +2276,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
         slugSuggestion: "some-slug",
@@ -2023,7 +2293,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -2045,7 +2315,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -2067,21 +2337,13 @@ describe("saveSolidDatasetInContainer", () => {
       })
     );
 
-    const subjectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-subject-name",
-    });
-    const objectLocal: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-object-name",
-    });
-    const mockDataset = dataset();
-    mockDataset.add(
-      DataFactory.quad(
-        subjectLocal,
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        objectLocal,
-        undefined
-      )
+    const mockObjectThing = createThing({ name: "some-object-name" });
+    const mockThing = addUrl(
+      createThing({ name: "some-subject-name" }),
+      "https://arbitrary.vocab/predicate",
+      mockObjectThing
     );
+    const mockDataset = setThing(createSolidDataset(), mockThing);
 
     const storedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/",
@@ -2091,10 +2353,13 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(Array.from(storedSolidDataset!)[0].subject.value).toBe(
+    const storedThing = getThing(
+      storedSolidDataset,
       "https://saved.at/url#some-subject-name"
     );
-    expect(Array.from(storedSolidDataset!)[0].object.value).toBe(
+
+    expect(storedThing).not.toBeNull();
+    expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
       "https://saved.at/url#some-object-name"
     );
   });
@@ -2110,7 +2375,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      dataset(),
+      createSolidDataset(),
       {
         fetch: mockFetch,
       }
@@ -2598,12 +2863,15 @@ describe("solidDatasetAsMarkdown", () => {
       "https://some.vocab/predicate",
       "Some other string"
     );
-    const datasetWithSavedThing = setThing(
+    let datasetWithSavedThing = setThing(
       mockSolidDatasetFrom("https://some.pod/resource"),
       thing
     );
     // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
-    datasetWithSavedThing.internal_changeLog = { additions: [], deletions: [] };
+    datasetWithSavedThing = {
+      ...datasetWithSavedThing,
+      internal_changeLog: { additions: [], deletions: [] },
+    };
     let changedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
@@ -2685,9 +2953,12 @@ describe("solidDatasetAsMarkdown", () => {
     datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
 
     // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
-    datasetWithSavedThings.internal_changeLog = {
-      additions: [],
-      deletions: [],
+    datasetWithSavedThings = {
+      ...datasetWithSavedThings,
+      internal_changeLog: {
+        additions: [],
+        deletions: [],
+      },
     };
     let changedThing1 = addStringNoLocale(
       thing1,
@@ -2722,14 +2993,15 @@ describe("solidDatasetAsMarkdown", () => {
   });
 
   it("does not show a list of changes if none is available", () => {
-    const datasetWithoutChangeLog = dataset();
-    datasetWithoutChangeLog.add(
-      DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
-        DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-        DataFactory.literal("Arbitrary string")
-      )
+    const mockThing = addStringNoLocale(
+      createThing({ url: "https://arbitrary.pod/resource#thing" }),
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
     );
+    const datasetWithoutChangeLog = {
+      ...setThing(createSolidDataset(), mockThing),
+      internal_changeLog: undefined,
+    };
 
     expect(solidDatasetAsMarkdown(datasetWithoutChangeLog)).toBe(
       "# SolidDataset (no URL yet)\n\n" +
@@ -2788,6 +3060,32 @@ describe("changeLogAsMarkdown", () => {
     );
   });
 
+  it("returns a readable version of a SolidDataset that had a new Thing with a local Subject added to it", () => {
+    let thing = createThing({ name: "some-new-thing" });
+    thing = addStringNoLocale(
+      thing,
+      "https://arbitrary.vocab/predicate",
+      "Arbitrary string"
+    );
+    const newDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const fetchedDataset = {
+      ...newDataset,
+      internal_changeLog: {
+        additions: [],
+        deletions: [],
+      },
+    };
+    const changedDataset = setThing(fetchedDataset, thing);
+
+    expect(changeLogAsMarkdown(changedDataset)).toBe(
+      "## Changes compared to https://some.pod/resource\n\n" +
+        "### Thing: https://some.pod/resource#some-new-thing\n\n" +
+        "Property: https://arbitrary.vocab/predicate\n" +
+        "- Added:\n" +
+        '  - "Arbitrary string" (string)\n'
+    );
+  });
+
   it("returns a readable version of local changes to a SolidDataset", () => {
     let thing1 = mockThingFrom("https://some.pod/resource#thing1");
     thing1 = addStringNoLocale(
@@ -2818,9 +3116,12 @@ describe("changeLogAsMarkdown", () => {
     datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
 
     // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
-    datasetWithSavedThings.internal_changeLog = {
-      additions: [],
-      deletions: [],
+    datasetWithSavedThings = {
+      ...datasetWithSavedThings,
+      internal_changeLog: {
+        additions: [],
+        deletions: [],
+      },
     };
     let changedThing1 = addStringNoLocale(
       thing1,

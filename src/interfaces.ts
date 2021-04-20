@@ -19,8 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DatasetCore, Quad, NamedNode, BlankNode } from "rdf-js";
+import { Quad, NamedNode } from "rdf-js";
 import { Access } from "./acl/acl";
+import { ImmutableDataset, LocalNodeIri, Subject } from "./rdf.internal";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
@@ -42,7 +43,7 @@ export type WebId = UrlString;
 /**
  * A SolidDataset represents all Quads from a single Resource.
  */
-export type SolidDataset = DatasetCore;
+export type SolidDataset = ImmutableDataset;
 
 /**
  * A File is anything stored on a Pod in a format that solid-client does not have special affordances for, e.g. an image, or a plain JSON file.
@@ -58,16 +59,17 @@ export type Resource = SolidDataset | File;
  * A Thing represents all Quads with a given Subject URL and a given Named
  * Graph, from a single Resource.
  */
-export type Thing = DatasetCore &
-  ({ internal_url: UrlString } | { internal_localSubject: LocalNode });
+export type Thing = Subject;
+
 /**
  * A [[Thing]] for which we know what the full Subject URL is.
  */
-export type ThingPersisted = Thing & { internal_url: UrlString };
+export type ThingPersisted = Thing & { url: UrlString };
 /**
  * A [[Thing]] whose full Subject URL will be determined when it is persisted.
  */
-export type ThingLocal = Thing & { internal_localSubject: LocalNode };
+export type ThingLocal = Thing & { url: LocalNodeIri };
+
 /**
  * Represents the BlankNode that will be initialised to a NamedNode when persisted.
  *
@@ -76,7 +78,7 @@ export type ThingLocal = Thing & { internal_localSubject: LocalNode };
  *
  * @hidden Utility type; library users should not need to interact with LocalNodes directly.
  */
-export type LocalNode = BlankNode & { internal_name: string };
+export type LocalNode = NamedNode<LocalNodeIri>;
 
 /**
  * Data that was sent to a Pod includes this metadata describing its relation to the Pod Resource it was sent to.

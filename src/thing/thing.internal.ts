@@ -19,12 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Quad, Quad_Object } from "rdf-js";
-import { filter, clone } from "../rdfjs";
+import { Quad, Quad_Object } from "rdf-js";
 import {
-  isLocalNode,
   isNamedNode,
-  asNamedNode,
   isLiteral,
   xmlSchemaTypes,
   deserializeBoolean,
@@ -33,18 +30,13 @@ import {
   deserializeInteger,
 } from "../datatypes";
 import {
-  UrlString,
   Thing,
-  Url,
-  ThingLocal,
-  LocalNode,
-  ThingPersisted,
   SolidDataset,
-  WithChangeLog,
   hasChangelog,
+  WithChangeLog,
 } from "../interfaces";
-import { isThingLocal, asUrl, isThing, ThingExpectedError } from "./thing";
-import { internal_cloneResource } from "../resource/resource.internal";
+import { ThingExpectedError, isThing } from "./thing";
+import { freeze } from "../rdf.internal";
 
 /** @hidden For internal use only. */
 export function internal_getReadableValue(value: Quad_Object): string {
@@ -52,6 +44,7 @@ export function internal_getReadableValue(value: Quad_Object): string {
     return `<${value.value}> (URL)`;
   }
   if (isLiteral(value)) {
+    /* istanbul ignore if: thingAsMarkdown always instantiates a NamedNode, so we can't hit this code path in tests. */
     if (!isNamedNode(value.datatype)) {
       return `[${value.value}] (RDF/JS Literal of unknown type)`;
     }
@@ -85,16 +78,16 @@ export function internal_getReadableValue(value: Quad_Object): string {
         return `[${value.value}] (RDF/JS Literal of type: \`${value.datatype.value}\`)`;
     }
   }
-  if (isLocalNode(value)) {
-    return `<#${value.internal_name}> (URL)`;
-  }
+  /* istanbul ignore else: thingAsMarkdown doesn't generate other Nodes, so we can't hit this path in tests. */
   if (value.termType === "BlankNode") {
     return `[${value.value}] (RDF/JS BlankNode)`;
   }
+  /* istanbul ignore next: thingAsMarkdown doesn't generate Quad Nodes, so we can't hit this path in tests. */
   if (value.termType === "Quad") {
     return `??? (nested RDF* Quad)`;
   }
   /* istanbul ignore else: The if statements are exhaustive; if not, TypeScript will complain. */
+  /* istanbul ignore next: thingAsMarkdown doesn't generate Variable Nodes, so we can't hit this path in tests. */
   if (value.termType === "Variable") {
     return `?${value.value} (RDF/JS Variable)`;
   }
@@ -104,76 +97,90 @@ export function internal_getReadableValue(value: Quad_Object): string {
 
 /**
  * @hidden
- * @param thing The Thing whose Subject Node you're interested in.
- * @returns A Node that can be used as the Subject for this Thing's Quads.
- */
-export function internal_toNode(
-  thing: UrlString | Url | ThingPersisted
-): NamedNode;
-/** @hidden */
-export function internal_toNode(thing: LocalNode | ThingLocal): LocalNode;
-/** @hidden */
-export function internal_toNode(
-  thing: UrlString | Url | LocalNode | Thing
-): NamedNode | LocalNode;
-/** @hidden */
-export function internal_toNode(
-  thing: UrlString | Url | LocalNode | Thing
-): NamedNode | LocalNode {
-  if (isNamedNode(thing) || isLocalNode(thing)) {
-    return thing;
-  }
-  if (typeof thing === "string") {
-    return asNamedNode(thing);
-  }
-  if (isThingLocal(thing)) {
-    return thing.internal_localSubject;
-  }
-  return asNamedNode(asUrl(thing));
-}
-
-/**
- * @internal
- * @param thing Thing to clone.
- * @returns A new Thing with the same Quads as `input`.
- */
-export function internal_cloneThing<T extends Thing>(thing: T): T {
-  const cloned = clone(thing);
-  if (isThingLocal(thing)) {
-    (cloned as ThingLocal).internal_localSubject = thing.internal_localSubject;
-    return cloned as T;
-  }
-  (cloned as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
-  return cloned as T;
-}
-
-/**
- * @internal
- * @param thing Thing to clone.
- * @param callback Function that takes a Quad, and returns a boolean indicating whether that Quad should be included in the cloned Dataset.
- * @returns A new Thing with the same Quads as `input`, excluding the ones for which `callback` returned `false`.
- */
-export function internal_filterThing<T extends Thing>(
-  thing: T,
-  callback: (quad: Quad) => boolean
-): T {
-  const filtered = filter(thing, callback);
-  if (isThingLocal(thing)) {
-    (filtered as ThingLocal).internal_localSubject =
-      thing.internal_localSubject;
-    return filtered as T;
-  }
-  (filtered as ThingPersisted).internal_url = (thing as ThingPersisted).internal_url;
-  return filtered as T;
-}
-
-/**
- * @hidden
  */
 export function internal_throwIfNotThing(thing: Thing): void {
   if (!isThing(thing)) {
     throw new ThingExpectedError(thing);
   }
+}
+
+/**
+ * @hidden
+ * @param solidDataset
+ */
+export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
+  solidDataset: Dataset,
+  additions: Quad[]
+): Dataset & WithChangeLog {
+  const changeLog = hasChangelog(solidDataset)
+    ? solidDataset.internal_changeLog
+    : /* istanbul ignore next: This function always gets called after addDeletionsToChangeLog, so the ChangeLog always already exists in tests: */
+      { additions: [], deletions: [] };
+
+  const [newAdditions, newDeletions] = additions
+    .filter((addition) => !containsBlankNode(addition))
+    .reduce(
+      ([additionsAcc, deletionsAcc], addition) => {
+        const existingDeletion = deletionsAcc.find((deletion) =>
+          deletion.equals(addition)
+        );
+        if (typeof existingDeletion !== "undefined") {
+          return [
+            additionsAcc,
+            deletionsAcc.filter((deletion) => !deletion.equals(addition)),
+          ];
+        }
+        return [additionsAcc.concat(addition), deletionsAcc];
+      },
+      [changeLog.additions, changeLog.deletions]
+    );
+
+  return freeze({
+    ...solidDataset,
+    internal_changeLog: {
+      additions: newAdditions,
+      deletions: newDeletions,
+    },
+  });
+}
+
+/**
+ * @hidden
+ * @param solidDataset
+ */
+export function internal_addDeletionsToChangeLog<Dataset extends SolidDataset>(
+  solidDataset: Dataset,
+  deletions: Quad[]
+): Dataset & WithChangeLog {
+  const changeLog = hasChangelog(solidDataset)
+    ? solidDataset.internal_changeLog
+    : { additions: [], deletions: [] };
+
+  const [newAdditions, newDeletions] = deletions
+    .filter((deletion) => !containsBlankNode(deletion))
+    .reduce(
+      ([additionsAcc, deletionsAcc], deletion) => {
+        const existingAddition = additionsAcc.find((addition) =>
+          addition.equals(deletion)
+        );
+        if (typeof existingAddition !== "undefined") {
+          return [
+            additionsAcc.filter((addition) => !addition.equals(deletion)),
+            deletionsAcc,
+          ];
+        }
+        return [additionsAcc, deletionsAcc.concat(deletion)];
+      },
+      [changeLog.additions, changeLog.deletions]
+    );
+
+  return freeze({
+    ...solidDataset,
+    internal_changeLog: {
+      additions: newAdditions,
+      deletions: newDeletions,
+    },
+  });
 }
 
 /**
@@ -187,8 +194,24 @@ export function internal_withChangeLog<Dataset extends SolidDataset>(
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
     ? solidDataset
-    : Object.assign(internal_cloneResource(solidDataset), {
+    : freeze({
+        ...solidDataset,
         internal_changeLog: { additions: [], deletions: [] },
       });
   return newSolidDataset;
+}
+
+/**
+ * We don't currently support reading and writing Blank Nodes, so this function can be used to skip those Quads.
+ *
+ * This is needed because we cannot reconcile Blank Nodes in additions and
+ * deletions. Down the road, we should do a diff before saving a SolidDataset
+ * against a saved copy of the originally-fetched one, based on our own data
+ * structures, which should make it easier to reconcile.
+ */
+function containsBlankNode(quad: Quad): boolean {
+  return (
+    quad.subject.termType === "BlankNode" ||
+    quad.object.termType === "BlankNode"
+  );
 }

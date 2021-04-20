@@ -24,7 +24,7 @@ import { describe, it, expect } from "@jest/globals";
 import { Quad } from "rdf-js";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
-import { IriString, ThingLocal, LocalNode, Thing } from "../interfaces";
+import { IriString, Thing } from "../interfaces";
 import {
   setUrl,
   setBoolean,
@@ -42,48 +42,46 @@ import {
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
-import { getMatchingQuads } from "../rdfjs.test";
+import { localNodeSkolemPrefix } from "../rdf.internal";
 
-function getMockQuad(
-  subject: IriString,
+function getMockThingWithLiteralFor(
+  predicate: IriString,
+  literalValue: string,
+  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+): Thing {
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        literals: {
+          [`http://www.w3.org/2001/XMLSchema#${literalType}`]: [literalValue],
+        },
+      },
+    },
+  };
+}
+function getMockThingWithNamedNode(
   predicate: IriString,
   object: IriString
-): Quad {
-  return DataFactory.quad(
-    DataFactory.namedNode(subject),
-    DataFactory.namedNode(predicate),
-    DataFactory.namedNode(object)
-  );
-}
-function getMockThing(quad: Quad) {
-  const thing = dataset();
-  thing.add(quad);
-  return Object.assign(thing, { internal_url: quad.subject.value });
-}
-function literalOfType(
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime",
-  literalValue: string
-) {
-  return DataFactory.literal(
-    literalValue,
-    DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#" + literalType)
-  );
+): Thing {
+  return {
+    type: "Subject",
+    url: "https://arbitrary.vocab/subject",
+    predicates: {
+      [predicate]: {
+        namedNodes: [object],
+      },
+    },
+  };
 }
 
 describe("setIri", () => {
   it("replaces existing values with the given IRI for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "https://arbitrary.pod/resource#object"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setUrl(
       thing,
@@ -91,23 +89,16 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("accepts values as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setUrl(
       thing,
@@ -115,26 +106,17 @@ describe("setIri", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("accepts values as ThingPersisteds", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
-    const targetThing = Object.assign(dataset(), {
-      internal_url: "https://some.pod/other-resource#object",
-    });
+    const targetThing = mockThingFrom("https://some.pod/other-resource#object");
 
     const updatedThing = setUrl(
       thing,
@@ -142,30 +124,18 @@ describe("setIri", () => {
       targetThing
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("accepts values as ThingLocals", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
-    const datasetWithThingLocal = dataset();
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "localObject",
-    });
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    const thingLocal = mockThingFrom("https://some.pod/other-resource#object");
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localObject`;
 
     const updatedThing = setUrl(
       thing,
@@ -173,24 +143,16 @@ describe("setIri", () => {
       thingLocal
     );
 
-    expect(updatedThing.size).toBe(1);
-    const matchedQuads = getMatchingQuads(updatedThing, {
-      subject: "https://some.pod/resource#subject",
-      predicate: "https://some.vocab/predicate",
-    });
-
-    expect((matchedQuads[0].object as LocalNode).internal_name).toBe(
-      "localObject"
-    );
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual([`${localNodeSkolemPrefix}localObject`]);
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setUrl(
       thing,
@@ -198,41 +160,37 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "https://some.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
-    setUrl(
+    const updatedThing = setUrl(
       thing,
-      "https://arbitrary.vocab/predicate",
-      "https://arbitrary.pod/other-resource#object"
+      "https://some.vocab/predicate",
+      "https://some.pod/other-resource#object"
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/resource#object"]);
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("also works on ThingLocals", () => {
-    const datasetWithThingLocal = dataset();
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "localSubject",
-    });
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setUrl(
       thingLocal,
@@ -240,23 +198,16 @@ describe("setIri", () => {
       "https://some.pod/other-resource#object"
     );
 
-    expect(updatedThing.size).toBe(1);
-    const matchingQuads = getMatchingQuads(updatedThing, {
-      predicate: "https://some.vocab/predicate",
-      object: "https://some.pod/other-resource#object",
-    });
-    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
-      "localSubject"
-    );
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setUrl(
       thing,
@@ -264,21 +215,9 @@ describe("setIri", () => {
       "https://some.pod/resource#object"
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/resource#object"]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -346,18 +285,11 @@ describe("setIri", () => {
 
 describe("setBoolean", () => {
   it("replaces existing values with the given boolean for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setBoolean(
       thing,
@@ -365,23 +297,19 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "true"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#boolean": ["true"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setBoolean(
       thing,
@@ -389,49 +317,39 @@ describe("setBoolean", () => {
       false
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "false"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#boolean": ["false"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setBoolean(
+    const updatedThing = setBoolean(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       true
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setBoolean(
       thingLocal,
@@ -439,25 +357,18 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("boolean", "true"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#boolean": ["true"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://some.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setBoolean(
       thing,
@@ -465,21 +376,14 @@ describe("setBoolean", () => {
       true
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/resource#object"]);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("boolean", "true"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#boolean": ["true"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -522,18 +426,11 @@ describe("setBoolean", () => {
 
 describe("setDatetime", () => {
   it("replaces existing values with the given datetime for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setDatetime(
       thing,
@@ -541,23 +438,19 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#dateTime": ["1990-11-12T13:37:42.000Z"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setDatetime(
       thing,
@@ -565,49 +458,44 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#dateTime": ["1990-11-12T13:37:42.000Z"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setDatetime(
+    const updatedThing = setDatetime(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#dateTime": ["1990-11-12T13:37:42.000Z"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setDatetime(
       thingLocal,
@@ -615,25 +503,19 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#dateTime": ["1990-11-12T13:37:42.000Z"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setDatetime(
       thing,
@@ -641,21 +523,16 @@ describe("setDatetime", () => {
       new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("dateTime", "1990-11-12T13:37:42.000Z"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#dateTime": ["1990-11-12T13:37:42.000Z"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -698,18 +575,11 @@ describe("setDatetime", () => {
 
 describe("setDecimal", () => {
   it("replaces existing values with the given decimal for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setDecimal(
       thing,
@@ -717,23 +587,19 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("decimal", "13.37"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#decimal": ["13.37"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setDecimal(
       thing,
@@ -741,49 +607,44 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("decimal", "13.37"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#decimal": ["13.37"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setDecimal(
+    const updatedThing = setDecimal(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       13.37
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#decimal": ["13.37"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setDecimal(
       thingLocal,
@@ -791,25 +652,19 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("decimal", "13.37"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#decimal": ["13.37"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setDecimal(
       thing,
@@ -817,21 +672,16 @@ describe("setDecimal", () => {
       13.37
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("decimal", "13.37"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#decimal": ["13.37"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -874,38 +724,27 @@ describe("setDecimal", () => {
 
 describe("setInteger", () => {
   it("replaces existing values with the given integer for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setInteger(thing, "https://some.vocab/predicate", 42);
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("integer", "42"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#integer": ["42"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setInteger(
       thing,
@@ -913,49 +752,44 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("integer", "42"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#integer": ["42"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setInteger(
+    const updatedThing = setInteger(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       42
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#integer": ["42"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setInteger(
       thingLocal,
@@ -963,25 +797,19 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("integer", "42"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#integer": ["42"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setInteger(
       thing,
@@ -989,21 +817,16 @@ describe("setInteger", () => {
       42
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("integer", "42"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#integer": ["42"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1046,18 +869,11 @@ describe("setInteger", () => {
 
 describe("setStringWithLocale", () => {
   it("replaces existing values with the given localised string for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setStringWithLocale(
       thing,
@@ -1066,23 +882,22 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value", "en-gb"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toBeUndefined();
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      "en-gb": ["Some string value"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setStringWithLocale(
       thing,
@@ -1091,50 +906,45 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value", "en-gb"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      "en-gb": ["Some string value"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setStringWithLocale(
+    const updatedThing = setStringWithLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string value",
       "en-GB"
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      "en-gb": ["Some string value"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setStringWithLocale(
       thingLocal,
@@ -1143,25 +953,19 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value", "en-gb"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      "en-gb": ["Some string value"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setStringWithLocale(
       thing,
@@ -1170,21 +974,16 @@ describe("setStringWithLocale", () => {
       "en-GB"
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: DataFactory.literal("Some string value", "en-gb"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].langStrings
+    ).toStrictEqual({
+      "en-gb": ["Some string value"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1230,18 +1029,11 @@ describe("setStringWithLocale", () => {
 
 describe("setStringNoLocale", () => {
   it("replaces existing values with the given unlocalised string for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setStringNoLocale(
       thing,
@@ -1249,23 +1041,19 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("string", "Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setStringNoLocale(
       thing,
@@ -1273,49 +1061,44 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("string", "Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setStringNoLocale(
+    const updatedThing = setStringNoLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      "Some string value"
+      "Some other string value"
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some other string value"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setStringNoLocale(
       thingLocal,
@@ -1323,25 +1106,19 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: literalOfType("string", "Some string value"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setStringNoLocale(
       thing,
@@ -1349,21 +1126,16 @@ describe("setStringNoLocale", () => {
       "Some string value"
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: literalOfType("string", "Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1406,18 +1178,10 @@ describe("setStringNoLocale", () => {
 
 describe("setNamedNode", () => {
   it("replaces existing values with the given Named Node for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "https://arbitrary.pod/resource#object"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setNamedNode(
       thing,
@@ -1425,23 +1189,16 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setNamedNode(
       thing,
@@ -1449,42 +1206,37 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "https://some.pod/resource#object"
     );
-    const thing = getMockThing(existingQuad);
 
-    setNamedNode(
+    const updatedThing = setNamedNode(
       thing,
-      "https://arbitrary.vocab/predicate",
-      DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/resource#object"]);
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("also works on ThingLocals", () => {
-    const datasetWithThingLocal = dataset();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setNamedNode(
       thingLocal,
@@ -1492,23 +1244,17 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
-    const matchingQuads = getMatchingQuads(updatedThing, {
-      predicate: "https://some.vocab/predicate",
-      object: "https://some.pod/other-resource#object",
-    });
-    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
-      "localSubject"
-    );
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setNamedNode(
       thing,
@@ -1516,21 +1262,14 @@ describe("setNamedNode", () => {
       DataFactory.namedNode("https://some.pod/resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/resource#object"]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1573,18 +1312,11 @@ describe("setNamedNode", () => {
 
 describe("setLiteral", () => {
   it("replaces existing values with the given Literal for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setLiteral(
       thing,
@@ -1592,23 +1324,19 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setLiteral(
       thing,
@@ -1616,49 +1344,44 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setLiteral(
+    const updatedThing = setLiteral(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.literal("Arbitrary string value")
+      DataFactory.literal("Some string value")
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("also works on ThingLocals", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(
-      DataFactory.quad(
-        localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
-    );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setLiteral(
       thingLocal,
@@ -1666,25 +1389,19 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string value"),
-      })
-    ).toHaveLength(1);
-    expect(updatedThing.internal_localSubject.internal_name).toBe(
-      "localSubject"
-    );
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setLiteral(
       thing,
@@ -1692,21 +1409,16 @@ describe("setLiteral", () => {
       DataFactory.literal("Some string value")
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: DataFactory.literal("Some string value"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
   });
 
   it("throws an error when passed something other than a Thing", () => {
@@ -1749,18 +1461,11 @@ describe("setLiteral", () => {
 
 describe("setTerm", () => {
   it("replaces existing values with the given Named Node for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setTerm(
       thing,
@@ -1768,29 +1473,17 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
-  it("replaces existing values with the given Term for the given Predicate", () => {
-    const existingQuad1 = getMockQuad(
-      "https://some.pod/resource#subject",
+  it("replaces existing values with the given Literal for the given Predicate", () => {
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object1"
+      "Arbitrary string",
+      "string"
     );
-    const existingQuad2 = getMockQuad(
-      "https://some.pod/resource#subject",
-      "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object2"
-    );
-    const thing = getMockThing(existingQuad1);
-    thing.add(existingQuad2);
 
     const updatedThing = setTerm(
       thing,
@@ -1801,23 +1494,19 @@ describe("setTerm", () => {
       )
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: DataFactory.literal("Some string"),
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
   });
 
   it("accepts Properties as Named Nodes", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Arbitrary string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setTerm(
       thing,
@@ -1825,42 +1514,40 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/other-resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("does not modify the input Thing", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
-    setTerm(
+    const updatedThing = setTerm(
       thing,
-      "https://arbitrary.vocab/predicate",
-      DataFactory.namedNode("https://arbitrary.pod/other-resource#object")
+      "https://some.vocab/predicate",
+      DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(Array.from(thing)).toEqual([existingQuad]);
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("also works on ThingLocals", () => {
-    const datasetWithThingLocal = dataset();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
     );
-    const thingLocal: ThingLocal = Object.assign(datasetWithThingLocal, {
-      internal_localSubject: localSubject,
-    });
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = setTerm(
       thingLocal,
@@ -1868,45 +1555,32 @@ describe("setTerm", () => {
       DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(1);
-    const matchingQuads = getMatchingQuads(updatedThing, {
-      predicate: "https://some.vocab/predicate",
-      object: "https://some.pod/other-resource#object",
-    });
-    expect((matchingQuads[0].subject as LocalNode).internal_name).toBe(
-      "localSubject"
-    );
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("preserves existing Quads with different Predicates", () => {
-    const existingQuad = getMockQuad(
-      "https://some.pod/resource#subject",
+    const thing = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
-      "https://some.pod/resource#object"
+      "Some string",
+      "string"
     );
-    const thing = getMockThing(existingQuad);
 
     const updatedThing = setTerm(
       thing,
       "https://some.vocab/other-predicate",
-      DataFactory.namedNode("https://some.pod/resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object")
     );
 
-    expect(updatedThing.size).toBe(2);
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
     expect(
-      getMatchingQuads(updatedThing, {
-        subject: "https://some.pod/resource#subject",
-        predicate: "https://some.vocab/other-predicate",
-        object: "https://some.pod/resource#object",
-      })
-    ).toHaveLength(1);
+      updatedThing.predicates["https://some.vocab/other-predicate"].namedNodes
+    ).toStrictEqual(["https://some.pod/other-resource#object"]);
   });
 
   it("throws an error when passed something other than a Thing", () => {

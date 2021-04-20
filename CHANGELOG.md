@@ -6,6 +6,22 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Changed
+
+- `getUrl` now returns local URLs (e.g. #my-thing)
+- `getThing` now returns empty Things if they were added, rather than `null`.
+- The internal structure of SolidDatasets has been reworked. This shouldn't
+  affect you if you relied on just our public API's, but if you were
+  manipulating the data directly, you might need to update to use our public
+  API's. If something's not covered that you need, please [file an
+  issue](https://github.com/inrupt/solid-client-js/issues/new/choose).
+
+### New features
+
+- `getSolidDataset` now returns atomic objects, making it easier to integrate
+  with other tools in the JavaScript ecosystem, easier to debug, and easier to
+  serialise.
+
 The following sections document changes that have been released already:
 
 ## [1.7.0] - 2021-05-06

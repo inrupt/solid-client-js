@@ -1,114 +1,56 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`getSolidDataset returns a SolidDataset representing the fetched Turtle 1`] = `
-DatasetCore {
+Object {
+  "graphs": Object {
+    "default": Object {
+      "https://arbitrary.pod/resource": Object {
+        "predicates": Object {
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": Object {
+            "namedNodes": Array [
+              "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+            ],
+          },
+          "http://xmlns.com/foaf/0.1/maker": Object {
+            "namedNodes": Array [
+              "https://arbitrary.pod/resource#me",
+            ],
+          },
+          "http://xmlns.com/foaf/0.1/primaryTopic": Object {
+            "namedNodes": Array [
+              "https://arbitrary.pod/resource#me",
+            ],
+          },
+        },
+        "type": "Subject",
+        "url": "https://arbitrary.pod/resource",
+      },
+      "https://arbitrary.pod/resource#me": Object {
+        "predicates": Object {
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": Object {
+            "namedNodes": Array [
+              "http://xmlns.com/foaf/0.1/Person",
+            ],
+          },
+          "http://www.w3.org/2006/vcard/ns#fn": Object {
+            "literals": Object {
+              "http://www.w3.org/2001/XMLSchema#string": Array [
+                "Vincent",
+              ],
+            },
+          },
+        },
+        "type": "Subject",
+        "url": "https://arbitrary.pod/resource#me",
+      },
+    },
+  },
   "internal_resourceInfo": Object {
-    "contentType": "text/plain;charset=UTF-8",
-    "isRawData": true,
+    "contentType": "text/turtle",
+    "isRawData": false,
     "linkedResources": Object {},
     "sourceIri": "https://arbitrary.pod/resource",
   },
-  "quads": Set {
-    Object {
-      "graph": Object {
-        "termType": "DefaultGraph",
-        "value": "",
-      },
-      "object": Object {
-        "termType": "NamedNode",
-        "value": "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
-      },
-      "predicate": Object {
-        "termType": "NamedNode",
-        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      },
-      "subject": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
-      },
-      "termType": "Quad",
-    },
-    Object {
-      "graph": Object {
-        "termType": "DefaultGraph",
-        "value": "",
-      },
-      "object": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
-      },
-      "predicate": Object {
-        "termType": "NamedNode",
-        "value": "http://xmlns.com/foaf/0.1/maker",
-      },
-      "subject": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
-      },
-      "termType": "Quad",
-    },
-    Object {
-      "graph": Object {
-        "termType": "DefaultGraph",
-        "value": "",
-      },
-      "object": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
-      },
-      "predicate": Object {
-        "termType": "NamedNode",
-        "value": "http://xmlns.com/foaf/0.1/primaryTopic",
-      },
-      "subject": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource",
-      },
-      "termType": "Quad",
-    },
-    Object {
-      "graph": Object {
-        "termType": "DefaultGraph",
-        "value": "",
-      },
-      "object": Object {
-        "termType": "NamedNode",
-        "value": "http://xmlns.com/foaf/0.1/Person",
-      },
-      "predicate": Object {
-        "termType": "NamedNode",
-        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      },
-      "subject": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
-      },
-      "termType": "Quad",
-    },
-    Object {
-      "graph": Object {
-        "termType": "DefaultGraph",
-        "value": "",
-      },
-      "object": Object {
-        "datatype": Object {
-          "termType": "NamedNode",
-          "value": "http://www.w3.org/2001/XMLSchema#string",
-        },
-        "language": "",
-        "termType": "Literal",
-        "value": "Vincent",
-      },
-      "predicate": Object {
-        "termType": "NamedNode",
-        "value": "http://www.w3.org/2006/vcard/ns#fn",
-      },
-      "subject": Object {
-        "termType": "NamedNode",
-        "value": "https://arbitrary.pod/resource#me",
-      },
-      "termType": "Quad",
-    },
-  },
+  "type": "Dataset",
 }
 `;

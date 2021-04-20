@@ -66,9 +66,21 @@ export async function getResourceInfo(
   };
 
   const response = await config.fetch(url, { method: "HEAD" });
+  return responseToResourceInfo(response);
+}
+
+/**
+ * Parse Solid metadata from a Response obtained by fetching a Resource from a Solid Pod,
+ *
+ * @param response A Fetch API Response. See {@link https://developer.mozilla.org/en-US/docs/Web/API/Response MDN}.
+ * @returns Resource metadata readable by functions such as [[getSourceUrl]].
+ */
+export function responseToResourceInfo(
+  response: Response
+): WithServerResourceInfo {
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the metadata of the Resource at [${url}] failed: [${response.status}] [${response.statusText}].`,
+      `Fetching the metadata of the Resource at [${response.url}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }

@@ -20,27 +20,23 @@
  */
 
 import { Quad, NamedNode, Quad_Object } from "rdf-js";
-import { dataset, DataFactory } from "../rdfjs";
+import { DataFactory } from "../rdfjs";
 import { ldp } from "../constants";
-import { turtleToTriples, triplesToTurtle } from "../formats/turtle";
-import {
-  isLocalNode,
-  isNamedNode,
-  resolveIriForLocalNode,
-  resolveIriForLocalNodes,
-} from "../datatypes";
+import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
+import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
 import {
   UrlString,
-  SolidDataset,
-  WithChangeLog,
-  hasChangelog,
   WithResourceInfo,
   hasResourceInfo,
-  LocalNode,
   Url,
   IriString,
   Thing,
+  ThingPersisted,
   WithServerResourceInfo,
+  SolidDataset,
+  WithChangeLog,
+  hasChangelog,
+  LocalNode,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
@@ -49,20 +45,28 @@ import {
   getResourceInfo,
   isContainer,
   FetchError,
+  responseToResourceInfo,
+  getContentType,
 } from "./resource";
 import {
-  internal_cloneResource,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
-import { thingAsMarkdown, getThingAll, getThing } from "../thing/thing";
+import { thingAsMarkdown, getThing, getThingAll } from "../thing/thing";
 import {
   internal_getReadableValue,
-  internal_toNode,
   internal_withChangeLog,
 } from "../thing/thing.internal";
 import { getIriAll } from "../thing/get";
 import { normalizeServerSideIri } from "./iri.internal";
+import {
+  addRdfJsQuadToDataset,
+  freeze,
+  getChainBlankNodes,
+  getLocalNodeName,
+  isLocalNodeIri,
+  toRdfJsQuads,
+} from "../rdf.internal";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -70,7 +74,141 @@ import { normalizeServerSideIri } from "./iri.internal";
  * @returns An empty [[SolidDataset]].
  */
 export function createSolidDataset(): SolidDataset {
-  return dataset();
+  return freeze({
+    type: "Dataset",
+    graphs: {
+      default: {},
+    },
+  });
+}
+
+/**
+ * @hidden This interface is not exposed yet; we'll first have to put it through
+ *         its paces by trying it out with other parsers than n3 as well.
+ */
+export type Parser = {
+  onQuad: (onQuadCallback: (quad: Quad) => void) => void;
+  onError: (onErrorCallback: (error: unknown) => void) => void;
+  onComplete: (onCompleteCallback: () => void) => void;
+  parse: (source: string, resourceInfo: WithServerResourceInfo) => void;
+};
+type ContentType = string;
+/**
+ * @hidden This interface is not exposed yet; we'll first have to put it through
+ *         its paces by trying it out with other parsers than n3 as well.
+ */
+export type ParseOptions = {
+  parsers: Record<ContentType, Parser>;
+};
+/**
+ * @hidden This interface is not exposed yet until we've tried it out in practice.
+ */
+export async function responseToSolidDataset(
+  response: Response,
+  parseOptions: Partial<ParseOptions> = {}
+): Promise<SolidDataset & WithServerResourceInfo> {
+  if (internal_isUnsuccessfulResponse(response)) {
+    throw new FetchError(
+      `Fetching the SolidDataset at [${response.url}] failed: [${response.status}] [${response.statusText}].`,
+      response
+    );
+  }
+
+  const resourceInfo = responseToResourceInfo(response);
+
+  const parsers: Record<ContentType, Parser> = {
+    "text/turtle": getTurtleParser(),
+    ...parseOptions.parsers,
+  };
+  const contentType = getContentType(resourceInfo);
+  if (contentType === null) {
+    throw new Error(
+      `Could not determine the content type of the Resource at [${getSourceUrl(
+        resourceInfo
+      )}].`
+    );
+  }
+
+  const mimeType = contentType.split(";")[0];
+  const parser = parsers[mimeType];
+  if (typeof parser === "undefined") {
+    throw new Error(
+      `The Resource at [${getSourceUrl(
+        resourceInfo
+      )}] has a MIME type of [${mimeType}], but the only parsers available are for the following MIME types: [${Object.keys(
+        parsers
+      ).join(", ")}].`
+    );
+  }
+
+  const data = await response.text();
+  const parsingPromise = new Promise<SolidDataset & WithServerResourceInfo>(
+    (resolve, reject) => {
+      let solidDataset: SolidDataset = freeze({
+        graphs: freeze({ default: freeze({}) }),
+        type: "Dataset",
+      });
+
+      // While Quads without Blank Nodes can be added to the SolidDataset as we
+      // encounter them, to parse Quads with Blank Nodes, we'll have to wait until
+      // we've seen all the Quads, so that we can reconcile equal Blank Nodes.
+      const quadsWithBlankNodes: Quad[] = [];
+      const allQuads: Quad[] = [];
+
+      parser.onError((error) => {
+        reject(
+          new Error(
+            `Encountered an error parsing the Resource at [${getSourceUrl(
+              resourceInfo
+            )}] with content type [${contentType}]: ${error}`
+          )
+        );
+      });
+      parser.onQuad((quad) => {
+        allQuads.push(quad);
+        if (
+          quad.subject.termType === "BlankNode" ||
+          quad.object.termType === "BlankNode"
+        ) {
+          // Quads with Blank Nodes will be parsed when all Quads are known,
+          // so that equal Blank Nodes can be reconciled:
+          quadsWithBlankNodes.push(quad);
+        } else {
+          solidDataset = addRdfJsQuadToDataset(solidDataset, quad);
+        }
+      });
+      parser.onComplete(() => {
+        // Some Blank Nodes only serve to use a set of Quads as the Object for a
+        // single Subject. Those Quads will be added to the SolidDataset when
+        // their Subject's Blank Node is encountered in the Object position.
+        const chainBlankNodes = getChainBlankNodes(quadsWithBlankNodes);
+        const quadsWithoutChainBlankNodeSubjects = quadsWithBlankNodes.filter(
+          (quad) =>
+            chainBlankNodes.every(
+              (chainBlankNode) => !chainBlankNode.equals(quad.subject)
+            )
+        );
+        solidDataset = quadsWithoutChainBlankNodeSubjects.reduce(
+          (datasetAcc, quad) =>
+            addRdfJsQuadToDataset(datasetAcc, quad, {
+              otherQuads: allQuads,
+              chainBlankNodes: chainBlankNodes,
+            }),
+          solidDataset
+        );
+        const solidDatasetWithResourceInfo: SolidDataset &
+          WithServerResourceInfo = freeze({
+          ...solidDataset,
+          ...resourceInfo,
+        });
+        resolve(solidDatasetWithResourceInfo);
+      });
+
+      parser.parse(data, resourceInfo);
+    }
+  );
+
+  return await parsingPromise;
 }
 
 /**
@@ -83,7 +221,7 @@ export function createSolidDataset(): SolidDataset {
 export async function getSolidDataset(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & ParseOptions
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
@@ -92,9 +230,14 @@ export async function getSolidDataset(
     ...options,
   };
 
+  const parserContentTypes = Object.keys(options.parsers ?? {});
+  const acceptedContentTypes =
+    parserContentTypes.length > 0
+      ? parserContentTypes.join(", ")
+      : "text/turtle";
   const response = await config.fetch(url, {
     headers: {
-      Accept: "text/turtle",
+      Accept: acceptedContentTypes,
     },
   });
   if (internal_isUnsuccessfulResponse(response)) {
@@ -103,19 +246,9 @@ export async function getSolidDataset(
       response
     );
   }
-  const data = await response.text();
-  const triples = await turtleToTriples(data, url);
-  const resource = dataset();
-  triples.forEach((triple) => resource.add(triple));
+  const solidDataset = await responseToSolidDataset(response, options);
 
-  const resourceInfo = internal_parseResourceInfo(response);
-
-  const resourceWithResourceInfo: SolidDataset &
-    WithServerResourceInfo = Object.assign(resource, {
-    internal_resourceInfo: resourceInfo,
-  });
-
-  return resourceWithResourceInfo;
+  return solidDataset;
 }
 
 type UpdateableDataset = SolidDataset &
@@ -173,7 +306,7 @@ async function prepareSolidDatasetCreation(
   return {
     method: "PUT",
     body: await triplesToTurtle(
-      Array.from(solidDataset).map(getNamedNodesForLocalNodes)
+      toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
     ),
     headers: {
       "Content-Type": "text/turtle",
@@ -246,13 +379,11 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   };
   const storedDataset: Dataset &
     WithChangeLog &
-    WithServerResourceInfo = Object.assign(
-    internal_cloneResource(datasetWithChangelog),
-    {
-      internal_changeLog: { additions: [], deletions: [] },
-      internal_resourceInfo: resourceInfo,
-    }
-  );
+    WithServerResourceInfo = freeze({
+    ...solidDataset,
+    internal_changeLog: { additions: [], deletions: [] },
+    internal_resourceInfo: resourceInfo,
+  });
 
   const storedDatasetWithResolvedIris = resolveLocalIrisInSolidDataset(
     storedDataset
@@ -348,7 +479,8 @@ export async function createContainerAt(
   const resourceInfo = internal_parseResourceInfo(response);
   const containerDataset: SolidDataset &
     WithChangeLog &
-    WithServerResourceInfo = Object.assign(dataset(), {
+    WithServerResourceInfo = freeze({
+    ...createSolidDataset(),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -428,7 +560,8 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   const resourceInfo = internal_parseResourceInfo(containerInfoResponse);
   const containerDataset: SolidDataset &
     WithChangeLog &
-    WithServerResourceInfo = Object.assign(dataset(), {
+    WithServerResourceInfo = freeze({
+    ...createSolidDataset(),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -497,7 +630,7 @@ export async function saveSolidDatasetInContainer(
   containerUrl = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
-    Array.from(solidDataset).map(getNamedNodesForLocalNodes)
+    toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
   );
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
@@ -537,11 +670,10 @@ export async function saveSolidDatasetInContainer(
     },
   };
 
-  const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(
-    internal_cloneResource(solidDataset),
-    resourceInfo
-  );
+  const resourceWithResourceInfo: SolidDataset & WithResourceInfo = freeze({
+    ...solidDataset,
+    ...resourceInfo,
+  });
 
   const resourceWithResolvedIris = resolveLocalIrisInSolidDataset(
     resourceWithResourceInfo
@@ -617,8 +749,10 @@ export async function createContainerInContainer(
     },
   };
 
-  const resourceWithResourceInfo: SolidDataset &
-    WithResourceInfo = Object.assign(dataset(), resourceInfo);
+  const resourceWithResourceInfo: SolidDataset & WithResourceInfo = freeze({
+    ...createSolidDataset(),
+    ...resourceInfo,
+  });
   return resourceWithResourceInfo;
 }
 
@@ -690,7 +824,7 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
   let readableSolidDataset: string = "";
 
   if (hasResourceInfo(solidDataset)) {
-    readableSolidDataset += `# SolidDataset: ${solidDataset.internal_resourceInfo.sourceIri}\n`;
+    readableSolidDataset += `# SolidDataset: ${getSourceUrl(solidDataset)}\n`;
   } else {
     readableSolidDataset += `# SolidDataset (no URL yet)\n`;
   }
@@ -786,7 +920,8 @@ function sortChangeLogByThingAndProperty(
   > = {};
   solidDataset.internal_changeLog.deletions.forEach((deletion) => {
     const subjectNode = isLocalNode(deletion.subject)
-      ? resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
+      ? /* istanbul ignore next: Unsaved deletions should be removed from the additions list instead, so this code path shouldn't be hit: */
+        resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
       : deletion.subject;
     if (!isNamedNode(subjectNode) || !isNamedNode(deletion.predicate)) {
       return;
@@ -804,7 +939,8 @@ function sortChangeLogByThingAndProperty(
   });
   solidDataset.internal_changeLog.additions.forEach((addition) => {
     const subjectNode = isLocalNode(addition.subject)
-      ? resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
+      ? /* istanbul ignore next: setThing already resolves local Subjects when adding them, so this code path should never be hit. */
+        resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
       : addition.subject;
     if (!isNamedNode(subjectNode) || !isNamedNode(addition.predicate)) {
       return;
@@ -828,7 +964,7 @@ function getReadableChangeLogSummary(
   solidDataset: WithChangeLog,
   thing: Thing
 ): string {
-  const subject = internal_toNode(thing);
+  const subject = DataFactory.namedNode(thing.url);
   const nrOfAdditions = solidDataset.internal_changeLog.additions.reduce(
     (count, addition) => (addition.subject.equals(subject) ? count + 1 : count),
     0
@@ -847,31 +983,92 @@ function getReadableChangeLogSummary(
 }
 
 function getNamedNodesForLocalNodes(quad: Quad): Quad {
-  const subject = isLocalNode(quad.subject)
+  const subject = isNamedNode(quad.subject)
     ? getNamedNodeFromLocalNode(quad.subject)
-    : quad.subject;
-  const object = isLocalNode(quad.object)
+    : /* istanbul ignore next: We don't allow non-NamedNodes as the Subject, so this code path should never be hit: */
+      quad.subject;
+  const object = isNamedNode(quad.object)
     ? getNamedNodeFromLocalNode(quad.object)
     : quad.object;
-
   return DataFactory.quad(subject, quad.predicate, object, quad.graph);
 }
 
-function getNamedNodeFromLocalNode(localNode: LocalNode): NamedNode {
-  return DataFactory.namedNode("#" + localNode.internal_name);
+function getNamedNodeFromLocalNode(node: LocalNode | NamedNode): NamedNode {
+  if (isLocalNodeIri(node.value)) {
+    return DataFactory.namedNode("#" + getLocalNodeName(node.value));
+  }
+  return node;
 }
 
 function resolveLocalIrisInSolidDataset<
   Dataset extends SolidDataset & WithResourceInfo
 >(solidDataset: Dataset): Dataset {
   const resourceIri = getSourceUrl(solidDataset);
-  const unresolvedQuads = Array.from(solidDataset);
+  const defaultGraph = solidDataset.graphs.default;
+  const thingIris = Object.keys(defaultGraph);
 
-  unresolvedQuads.forEach((unresolvedQuad) => {
-    const resolvedQuad = resolveIriForLocalNodes(unresolvedQuad, resourceIri);
-    solidDataset.delete(unresolvedQuad);
-    solidDataset.add(resolvedQuad);
+  const updatedDefaultGraph = thingIris.reduce((graphAcc, thingIri) => {
+    const resolvedThing = resolveLocalIrisInThing(
+      graphAcc[thingIri],
+      resourceIri
+    );
+
+    const resolvedThingIri = isLocalNodeIri(thingIri)
+      ? `${resourceIri}#${getLocalNodeName(thingIri)}`
+      : thingIri;
+    const updatedGraph = { ...graphAcc };
+    delete updatedGraph[thingIri];
+    updatedGraph[resolvedThingIri] = resolvedThing;
+    return freeze(updatedGraph);
+  }, defaultGraph);
+
+  const updatedGraphs = freeze({
+    ...solidDataset.graphs,
+    default: updatedDefaultGraph,
   });
 
-  return solidDataset;
+  return freeze({
+    ...solidDataset,
+    graphs: updatedGraphs,
+  });
+}
+
+function resolveLocalIrisInThing(
+  thing: Thing,
+  baseIri: IriString
+): ThingPersisted {
+  const predicateIris = Object.keys(thing.predicates);
+  const updatedPredicates = predicateIris.reduce(
+    (predicatesAcc, predicateIri) => {
+      const namedNodes = predicatesAcc[predicateIri].namedNodes ?? [];
+      if (namedNodes.every((namedNode) => !isLocalNodeIri(namedNode))) {
+        // This Predicate has no local node Objects, so return it unmodified:
+        return predicatesAcc;
+      }
+      const updatedNamedNodes = freeze(
+        namedNodes.map((namedNode) =>
+          isLocalNodeIri(namedNode)
+            ? `${baseIri}#${getLocalNodeName(namedNode)}`
+            : namedNode
+        )
+      );
+      const updatedPredicate = freeze({
+        ...predicatesAcc[predicateIri],
+        namedNodes: updatedNamedNodes,
+      });
+      return freeze({
+        ...predicatesAcc,
+        [predicateIri]: updatedPredicate,
+      });
+    },
+    thing.predicates
+  );
+
+  return freeze({
+    ...thing,
+    predicates: updatedPredicates,
+    url: isLocalNodeIri(thing.url)
+      ? `${baseIri}#${getLocalNodeName(thing.url)}`
+      : thing.url,
+  });
 }

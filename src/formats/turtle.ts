@@ -22,6 +22,43 @@
 import { Quad } from "rdf-js";
 import { IriString } from "../interfaces";
 import { DataFactory } from "../rdfjs";
+import { getSourceUrl } from "../resource/resource";
+import { Parser } from "../resource/solidDataset";
+
+export const getTurtleParser = (): Parser => {
+  const onQuadCallbacks: Array<Parameters<Parser["onQuad"]>[0]> = [];
+  const onCompleteCallbacks: Array<Parameters<Parser["onComplete"]>[0]> = [];
+  const onErrorCallbacks: Array<Parameters<Parser["onError"]>[0]> = [];
+
+  return {
+    onQuad: (callback) => {
+      onQuadCallbacks.push(callback);
+    },
+    onError: (callback) => {
+      onErrorCallbacks.push(callback);
+    },
+    onComplete: (callback) => {
+      onCompleteCallbacks.push(callback);
+    },
+    parse: async (source, resourceInfo) => {
+      const parser = await getParser(getSourceUrl(resourceInfo));
+      parser.parse(source, (error, quad, _prefixes) => {
+        if (error) {
+          onErrorCallbacks.forEach((callback) => callback(error));
+        } else if (quad) {
+          onQuadCallbacks.every((callback) => callback(quad));
+        } else {
+          onCompleteCallbacks.every((callback) => callback());
+        }
+      });
+    },
+  };
+};
+
+async function getParser(baseIri: IriString) {
+  const n3 = await loadN3();
+  return new n3.Parser({ format: "text/turtle", baseIRI: baseIri });
+}
 
 /**
  * @param quads Triples that should be serialised to Turtle
@@ -49,35 +86,6 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
 
   const rawTurtle = await writePromise;
   return rawTurtle;
-}
-
-/**
- * @param raw Turtle that should be parsed into Triples
- * @internal Utility method for internal use; not part of the public API.
- */
-export async function turtleToTriples(
-  raw: string,
-  resourceIri: IriString
-): Promise<Quad[]> {
-  const format = "text/turtle";
-  const n3 = await loadN3();
-  const parser = new n3.Parser({ format: format, baseIRI: resourceIri });
-
-  const parsingPromise = new Promise<Quad[]>((resolve, reject) => {
-    const parsedTriples: Quad[] = [];
-    parser.parse(raw, (error, triple, _prefixes) => {
-      if (error) {
-        return reject(error);
-      }
-      if (triple) {
-        parsedTriples.push(triple);
-      } else {
-        resolve(parsedTriples);
-      }
-    });
-  });
-
-  return parsingPromise;
 }
 
 async function loadN3() {

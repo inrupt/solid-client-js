@@ -19,10 +19,11 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Literal, Quad, Term } from "rdf-js";
+import { NamedNode, Literal, Quad, Term, Quad_Subject } from "rdf-js";
 import { DataFactory } from "./rdfjs";
-import { IriString, LocalNode, Iri, SolidClientError } from "./interfaces";
+import { IriString, Iri, SolidClientError, LocalNode } from "./interfaces";
 import { internal_toIriString } from "./interfaces.internal";
+import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 
 /**
  * IRIs of the XML Schema data types we support
@@ -272,26 +273,10 @@ export function isTerm<T>(value: T | Term): value is Term {
  * @param value The value that might or might not be a Node with no known IRI yet.
  * @returns Whether `value` is a Node with no known IRI yet.
  */
-export function isLocalNode<T>(value: T | LocalNode): value is LocalNode {
-  return (
-    isTerm(value) &&
-    value.termType === "BlankNode" &&
-    typeof (value as LocalNode).internal_name === "string"
-  );
-}
-
-/**
- * Construct a new LocalNode.
- *
- * @internal Library users shouldn't need to be exposed to LocalNodes.
- * @param name Name to identify this node by.
- * @returns A LocalNode whose name will be resolved when it is persisted to a Pod.
- */
-export function getLocalNode(name: string): LocalNode {
-  const localNode: LocalNode = Object.assign(DataFactory.blankNode(), {
-    internal_name: name,
-  });
-  return localNode;
+export function isLocalNode<T>(
+  value: T | Quad_Subject | LocalNode
+): value is LocalNode {
+  return isNamedNode(value) && isLocalNodeIri(value.value);
 }
 
 /**
@@ -338,61 +323,6 @@ export function asNamedNode(iri: Iri | IriString): NamedNode {
   return DataFactory.namedNode(iri);
 }
 
-interface IsEqualOptions {
-  resourceIri?: IriString;
-}
-/**
- * Check whether two current- or potential NamedNodes are/will be equal.
- *
- * @internal Utility method; library users should not need to interact with LocalNodes directly.
- */
-export function isEqual(
-  node1: NamedNode | LocalNode,
-  node2: NamedNode | LocalNode,
-  options: IsEqualOptions = {}
-): boolean {
-  if (isNamedNode(node1) && isNamedNode(node2)) {
-    return node1.equals(node2);
-  }
-  if (isLocalNode(node1) && isLocalNode(node2)) {
-    return node1.internal_name === node2.internal_name;
-  }
-  if (typeof options.resourceIri === "undefined") {
-    // If we don't know what IRI to resolve the LocalNode to,
-    // we cannot conclude that it is equal to the NamedNode's full IRI:
-    return false;
-  }
-  const namedNode1 = isNamedNode(node1)
-    ? node1
-    : resolveIriForLocalNode(node1, options.resourceIri);
-  const namedNode2 = isNamedNode(node2)
-    ? node2
-    : resolveIriForLocalNode(node2, options.resourceIri);
-  return namedNode1.equals(namedNode2);
-}
-
-/**
- * @internal Utility method; library users should not need to interact with LocalNodes directly.
- * @param quad The Quad to resolve LocalNodes in.
- * @param resourceIri The IRI of the Resource to resolve the LocalNodes against.
- */
-export function resolveIriForLocalNodes(
-  quad: Quad,
-  resourceIri: IriString
-): Quad {
-  const subject = isLocalNode(quad.subject)
-    ? resolveIriForLocalNode(quad.subject, resourceIri)
-    : quad.subject;
-  const object = isLocalNode(quad.object)
-    ? resolveIriForLocalNode(quad.object, resourceIri)
-    : quad.object;
-  return {
-    ...quad,
-    subject: subject,
-    object: object,
-  };
-}
-
 /**
  * @internal Utility method; library users should not need to interact with LocalNodes directly.
  * @param localNode The LocalNode to resolve to a NamedNode.
@@ -403,7 +333,7 @@ export function resolveIriForLocalNode(
   resourceIri: IriString
 ): NamedNode {
   return DataFactory.namedNode(
-    resolveLocalIri(localNode.internal_name, resourceIri)
+    resolveLocalIri(getLocalNodeName(localNode.value), resourceIri)
   );
 }
 

@@ -20,8 +20,6 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
-import { DataFactory } from "n3";
 
 import {
   getAgentResourceAccess,
@@ -33,14 +31,14 @@ import {
   getAgentAccessAll,
   setAgentDefaultAccess,
 } from "./agent";
-import { SolidDataset, IriString, WithServerResourceInfo } from "../interfaces";
-import { getThingAll } from "../thing/thing";
+import { SolidDataset, WithServerResourceInfo } from "../interfaces";
+import { createThing, getThingAll, setThing } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
-import { getLocalNode } from "../datatypes";
 import { AclDataset, WithAcl } from "./acl";
 import { addMockAclRuleQuads } from "./mock.internal";
 import { internal_setAcl } from "./acl.internal";
-import { getMatchingQuads } from "../rdfjs.test";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { addIri } from "../thing/add";
 
 function addAclDatasetToSolidDataset(
   solidDataset: SolidDataset & WithServerResourceInfo,
@@ -63,23 +61,13 @@ function addAclDatasetToSolidDataset(
   return internal_setAcl(solidDataset, acl);
 }
 
-function getMockDataset(
-  sourceIri: IriString
-): SolidDataset & WithServerResourceInfo {
-  return Object.assign(dataset(), {
-    internal_resourceInfo: {
-      sourceIri: sourceIri,
-      isRawData: false,
-      linkedResources: {},
-    },
-  });
-}
-
 describe("getGroupAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: false, append: false, write: false, control: true },
@@ -105,9 +93,11 @@ describe("getGroupAccess", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
@@ -133,7 +123,9 @@ describe("getGroupAccess", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
       fallbackAcl: null,
       resourceAcl: null,
@@ -148,16 +140,18 @@ describe("getGroupAccess", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
@@ -188,9 +182,9 @@ describe("getGroupAccess", () => {
   });
 
   it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/");
+    const solidDataset = mockSolidDatasetFrom("https://some.pod/container/");
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -223,9 +217,11 @@ describe("getGroupAccess", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -260,9 +256,11 @@ describe("getGroupAccess", () => {
 
 describe("getAgentAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Agent", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: false, append: false, write: false, control: true },
@@ -287,9 +285,11 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
@@ -314,7 +314,9 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
       fallbackAcl: null,
       resourceAcl: null,
@@ -324,16 +326,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
@@ -363,16 +367,18 @@ describe("getAgentAccessAll", () => {
   });
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
@@ -404,9 +410,9 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores default ACL rules from the Resource's own ACL SolidDataset", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/");
+    const solidDataset = mockSolidDatasetFrom("https://some.pod/container/");
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -438,9 +444,11 @@ describe("getAgentAccessAll", () => {
   });
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
-    const solidDataset = getMockDataset("https://some.pod/container/resource");
+    const solidDataset = mockSolidDatasetFrom(
+      "https://some.pod/container/resource"
+    );
     const fallbackAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -475,7 +483,7 @@ describe("getAgentAccessAll", () => {
 describe("getAgentResourceAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: true },
@@ -497,7 +505,7 @@ describe("getAgentResourceAccess", () => {
 
   it("combines Access Modes defined for a given Agent in separate rules", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -526,7 +534,7 @@ describe("getAgentResourceAccess", () => {
 
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
     const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -548,7 +556,7 @@ describe("getAgentResourceAccess", () => {
 
   it("ignores ACL rules that apply to a different Agent", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -577,7 +585,7 @@ describe("getAgentResourceAccess", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -608,7 +616,7 @@ describe("getAgentResourceAccess", () => {
 describe("getAgentResourceAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -642,7 +650,7 @@ describe("getAgentResourceAccessAll", () => {
 
   it("combines Access Modes defined for the same Agent in different Rules", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -669,21 +677,20 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let resourceAcl = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const oneQuad = Array.from(resourceAcl)[0];
-    resourceAcl.add(
-      DataFactory.quad(
-        oneQuad.subject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(resourceAcl)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
+    resourceAcl = setThing(resourceAcl, firstControl);
 
     const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
@@ -704,37 +711,30 @@ describe("getAgentResourceAccessAll", () => {
   });
 
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let resourceAcl = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
-    resourceAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let agentClassRule = createThing();
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    resourceAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/resource")
-      )
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/resource"
     );
-    resourceAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
+    resourceAcl = setThing(resourceAcl, agentClassRule);
 
     const agentAccess = getAgentResourceAccessAll(resourceAcl);
 
@@ -750,7 +750,7 @@ describe("getAgentResourceAccessAll", () => {
 
   it("ignores ACL rules that apply to a different Resource", () => {
     let resourceAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/resource.acl"),
+      mockSolidDatasetFrom("https://some.pod/resource.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -779,10 +779,10 @@ describe("getAgentResourceAccessAll", () => {
 
 describe("setAgentResourceAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { internal_accessTo: "https://arbitrary.pod/resource" }
-    );
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -795,48 +795,30 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(6);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Write",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Control",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Control");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
 
   it("does not copy over access for an unrelated Agent", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
@@ -876,14 +858,11 @@ describe("setAgentResourceAccess", () => {
         getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
       ).toHaveLength(expectedNrOfDefaultRules);
     });
-
-    // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(13);
   });
 
   it("does not copy over access for an unrelated Group, Agent Class or Origin", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -948,16 +927,13 @@ describe("setAgentResourceAccess", () => {
         getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo")
       ).toBeNull();
     });
-
-    // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(18);
   });
 
   it("does not alter the input SolidDataset", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { internal_accessTo: "https://arbitrary.pod/resource" }
-    );
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
 
     setAgentResourceAccess(sourceDataset, "https://some.pod/profileDoc#webId", {
       read: true,
@@ -966,14 +942,14 @@ describe("setAgentResourceAccess", () => {
       control: false,
     });
 
-    expect(sourceDataset.size).toBe(0);
+    expect(getThingAll(sourceDataset)).toHaveLength(0);
   });
 
   it("keeps a log of changes made to the ACL", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { internal_accessTo: "https://arbitrary.pod/resource" }
-    );
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1018,10 +994,10 @@ describe("setAgentResourceAccess", () => {
     // This test is basically there to test for regressions
     // if we ever try to be clever about inferring Append access
     // (but we should be able to leave that to the server).
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
-      { internal_accessTo: "https://arbitrary.pod/resource" }
-    );
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
+      internal_accessTo: "https://arbitrary.pod/resource",
+    };
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1034,36 +1010,24 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Append",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Append"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
 
   it("replaces existing Quads defining Access Modes for this agent", () => {
     const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: false, append: false, write: false, control: true },
@@ -1081,36 +1045,24 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
 
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
     const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -1128,25 +1080,24 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("does not remove ACL rules that apply to the Agent but also act as default rules", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/"
     );
+    sourceDataset = setThing(sourceDataset, firstControl);
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1159,49 +1110,36 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
 
   it("does not remove ACL rules that apply to the Agent but also apply to a different Resource", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/other-resource")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/other-resource"
     );
+    sourceDataset = setThing(sourceDataset, firstControl);
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1214,49 +1152,36 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/other-resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/other-resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
+    sourceDataset = setThing(sourceDataset, firstControl);
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1269,49 +1194,36 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some-other.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some-other.pod/profileDoc#webId"
+    );
   });
 
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
+    sourceDataset = setThing(sourceDataset, firstControl);
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1324,49 +1236,36 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agentClass",
-        object: "http://xmlns.com/foaf/0.1/Agent",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentClass")).toBe(
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
   });
 
   it("does not change ACL rules that also apply to other Agents", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
+    sourceDataset = setThing(sourceDataset, firstControl);
 
     const updatedDataset = setAgentResourceAccess(
       sourceDataset,
@@ -1379,64 +1278,33 @@ describe("setAgentResourceAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(8);
+    const newControls = getThingAll(updatedDataset);
+    expect(newControls).toHaveLength(2);
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(2);
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBeNull();
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/resource",
-      })
-    ).toHaveLength(2);
-    const matchedQuads1 = getMatchingQuads(updatedDataset, {
-      predicate: "http://www.w3.org/ns/auth/acl#mode",
-      object: "http://www.w3.org/ns/auth/acl#Read",
-    });
+      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBeNull();
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some-other.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
-    const matchedQuads2 = getMatchingQuads(updatedDataset, {
-      predicate: "http://www.w3.org/ns/auth/acl#mode",
-      object: "http://www.w3.org/ns/auth/acl#Append",
-    });
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
-
-    // Make sure the Access Modes granted are in separate ACL Rules:
-    expect(matchedQuads1.length).toBeGreaterThan(0);
-    expect(matchedQuads2.length).toBeGreaterThan(0);
-    expect(matchedQuads1[0].subject.value).not.toBe(
-      matchedQuads2[0].subject.value
-    );
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBe(getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"));
   });
 });
 
 describe("getAgentDefaultAccess", () => {
   it("returns the applicable Access Modes for a single Agent", () => {
     const containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: true },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
-
     expect(agentAccess).toEqual({
       read: true,
       append: false,
@@ -1444,10 +1312,9 @@ describe("getAgentDefaultAccess", () => {
       control: true,
     });
   });
-
   it("combines Access Modes defined for a given Agent in separate rules", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1460,12 +1327,10 @@ describe("getAgentDefaultAccess", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
-
     expect(agentAccess).toEqual({
       read: true,
       append: true,
@@ -1473,21 +1338,18 @@ describe("getAgentDefaultAccess", () => {
       control: false,
     });
   });
-
   it("returns false for all Access Modes if there are no ACL rules for the given Agent", () => {
     const containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some-other.pod/profileDoc#webId"
     );
-
     expect(agentAccess).toEqual({
       read: false,
       append: false,
@@ -1495,10 +1357,9 @@ describe("getAgentDefaultAccess", () => {
       control: false,
     });
   });
-
   it("ignores ACL rules that apply to a different Agent", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1511,12 +1372,10 @@ describe("getAgentDefaultAccess", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://some.pod/profileDoc#webId"
     );
-
     expect(agentAccess).toEqual({
       read: false,
       append: true,
@@ -1524,10 +1383,9 @@ describe("getAgentDefaultAccess", () => {
       control: false,
     });
   });
-
   it("ignores ACL rules that apply to a different Resource", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1540,12 +1398,10 @@ describe("getAgentDefaultAccess", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccess(
       containerAcl,
       "https://arbitrary.pod/profileDoc#webId"
     );
-
     expect(agentAccess).toEqual({
       read: false,
       append: true,
@@ -1558,7 +1414,7 @@ describe("getAgentDefaultAccess", () => {
 describe("getAgentDefaultAccessAll", () => {
   it("returns the applicable Access Modes for all Agents for whom Access Modes have been defined", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1571,9 +1427,7 @@ describe("getAgentDefaultAccessAll", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccessAll(containerAcl);
-
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: false,
@@ -1589,10 +1443,9 @@ describe("getAgentDefaultAccessAll", () => {
       },
     });
   });
-
   it("combines Access Modes defined for the same Agent in different Rules", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1605,9 +1458,7 @@ describe("getAgentDefaultAccessAll", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccessAll(containerAcl);
-
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
@@ -1617,26 +1468,22 @@ describe("getAgentDefaultAccessAll", () => {
       },
     });
   });
-
   it("returns Access Modes for all Agents even if they are assigned in the same Rule", () => {
-    const containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acln"),
+    let containerAcl = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acln"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const oneQuad = Array.from(containerAcl)[0];
-    containerAcl.add(
-      DataFactory.quad(
-        oneQuad.subject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(containerAcl)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
-
+    containerAcl = setThing(containerAcl, firstControl);
     const agentAccess = getAgentDefaultAccessAll(containerAcl);
-
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
@@ -1652,42 +1499,32 @@ describe("getAgentDefaultAccessAll", () => {
       },
     });
   });
-
   it("ignores ACL rules that do not apply to an Agent", () => {
-    const containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let containerAcl = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const agentClassRuleSubjectIri = "#arbitrary-agent-class-rule";
-    containerAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-      )
+    let agentClassRule = createThing();
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/ns/auth/acl#Authorization"
     );
-    containerAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/container/"
     );
-    containerAcl.add(
-      DataFactory.quad(
-        getLocalNode(agentClassRuleSubjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    agentClassRule = addIri(
+      agentClassRule,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
-
+    containerAcl = setThing(containerAcl, agentClassRule);
     const agentAccess = getAgentDefaultAccessAll(containerAcl);
-
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: true,
@@ -1697,10 +1534,9 @@ describe("getAgentDefaultAccessAll", () => {
       },
     });
   });
-
   it("ignores ACL rules that apply to a different Resource", () => {
     let containerAcl = addMockAclRuleQuads(
-      getMockDataset("https://some.pod/container/.acl"),
+      mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
@@ -1713,9 +1549,7 @@ describe("getAgentDefaultAccessAll", () => {
       { read: false, append: true, write: false, control: false },
       "default"
     );
-
     const agentAccess = getAgentDefaultAccessAll(containerAcl);
-
     expect(agentAccess).toEqual({
       "https://some.pod/profileDoc#webId": {
         read: false,
@@ -1729,11 +1563,10 @@ describe("getAgentDefaultAccessAll", () => {
 
 describe("setAgentDefaultAccess", () => {
   it("adds Quads for the appropriate Access Modes", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { internal_accessTo: "https://arbitrary.pod/container/" }
-    );
-
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
+      internal_accessTo: "https://arbitrary.pod/container/",
+    };
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -1745,48 +1578,29 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(6);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Write",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Control",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+    ).toContain("http://www.w3.org/ns/auth/acl#Control");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
-
   it("adds the appropriate Quads for the given Access Modes if the rule is both a resource and default rule", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
@@ -1801,7 +1615,6 @@ describe("setAgentDefaultAccess", () => {
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -1812,7 +1625,6 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
     // Explicitly check that the agent given resource access doesn't get additional privilege
     getThingAll(updatedDataset).forEach((thing) => {
       // The agent given default access should not have resource access
@@ -1826,14 +1638,10 @@ describe("setAgentDefaultAccess", () => {
         getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
       ).toHaveLength(expectedNrOfResourceRules);
     });
-
-    // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(13);
   });
-
   it("does not copy over access for an unrelated Group, Agent Class or origin", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
@@ -1868,7 +1676,6 @@ describe("setAgentDefaultAccess", () => {
       "https://arbitrary.pod/resource/?ext=acl#owner",
       "http://www.w3.org/ns/auth/acl#origin"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://arbitrary.pod/profileDoc#webId",
@@ -1879,7 +1686,6 @@ describe("setAgentDefaultAccess", () => {
         control: true,
       }
     );
-
     // Explicitly check that the group ACL is separate from the modified agent ACL
     getThingAll(updatedDataset).forEach((thing) => {
       const isAgentGroupRule =
@@ -1891,37 +1697,28 @@ describe("setAgentDefaultAccess", () => {
       if (!isAgentGroupRule && !isAgentClassRule && !isOriginRule) {
         return;
       }
-
       // Any actors other than the specified agent should not have been given default access:
       expect(getIri(thing, "http://www.w3.org/ns/auth/acl#default")).toBeNull();
     });
-
-    // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(18);
   });
-
   it("does not alter the input SolidDataset", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { internal_accessTo: "https://arbitrary.pod/container/" }
-    );
-
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
+      internal_accessTo: "https://arbitrary.pod/container/",
+    };
     setAgentDefaultAccess(sourceDataset, "https://some.pod/profileDoc#webId", {
       read: true,
       append: false,
       write: false,
       control: false,
     });
-
-    expect(sourceDataset.size).toBe(0);
+    expect(getThingAll(sourceDataset)).toHaveLength(0);
   });
-
   it("keeps a log of changes made to the ACL", () => {
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { internal_accessTo: "https://arbitrary.pod/container/" }
-    );
-
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
+      internal_accessTo: "https://arbitrary.pod/container/",
+    };
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -1932,7 +1729,6 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
     const deletedQuads = updatedDataset.internal_changeLog.deletions;
     expect(deletedQuads).toEqual([]);
     const addedQuads = updatedDataset.internal_changeLog.additions;
@@ -1960,16 +1756,14 @@ describe("setAgentDefaultAccess", () => {
       "https://some.pod/profileDoc#webId"
     );
   });
-
   it("does not forget to add a Quad for Append access if Write access is not given", () => {
     // This test is basically there to test for regressions
     // if we ever try to be clever about inferring Append access
     // (but we should be able to leave that to the server).
-    const sourceDataset = Object.assign(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
-      { internal_accessTo: "https://arbitrary.pod/container/" }
-    );
-
+    const sourceDataset = {
+      ...mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
+      internal_accessTo: "https://arbitrary.pod/container/",
+    };
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -1980,43 +1774,28 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Append",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Append"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
-
   it("replaces existing Quads defining Access Modes for this agent", () => {
     const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2027,43 +1806,28 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
-
   it("removes all Quads for an ACL rule if it no longer applies to anything", () => {
     const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2074,27 +1838,23 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
-
   it("does not remove ACL rules that apply to the Agent but also act as resource rules", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#accessTo"),
-        DataFactory.namedNode("https://arbitrary.pod/container/")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#accessTo",
+      "https://arbitrary.pod/container/"
     );
-
+    sourceDataset = setThing(sourceDataset, firstControl);
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2105,51 +1865,35 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#accessTo",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
-
   it("does not remove ACL rules that apply to the Agent but also apply to a different Container", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#default"),
-        DataFactory.namedNode("https://arbitrary.pod/other-container/")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#default",
+      "https://arbitrary.pod/other-container/"
     );
-
+    sourceDataset = setThing(sourceDataset, firstControl);
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2161,50 +1905,35 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/other-container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/other-container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some.pod/profileDoc#webId"
+    );
   });
-
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to others", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
-
+    sourceDataset = setThing(sourceDataset, firstControl);
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2216,50 +1945,35 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some-other.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agent")).toBe(
+      "https://some-other.pod/profileDoc#webId"
+    );
   });
-
   it("does not remove ACL rules that no longer apply to the given Agent, but still apply to non-Agents", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agentClass"),
-        DataFactory.namedNode("http://xmlns.com/foaf/0.1/Agent")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agentClass",
+      "http://xmlns.com/foaf/0.1/Agent"
     );
-
+    sourceDataset = setThing(sourceDataset, firstControl);
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2271,50 +1985,35 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(4);
+    const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#mode",
-        object: "http://www.w3.org/ns/auth/acl#Read",
-      })
-    ).toHaveLength(1);
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agentClass",
-        object: "http://xmlns.com/foaf/0.1/Agent",
-      })
-    ).toHaveLength(1);
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
+      "http://www.w3.org/ns/auth/acl#Read"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
+      "https://arbitrary.pod/container/"
+    );
+    expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentClass")).toBe(
+      "http://xmlns.com/foaf/0.1/Agent"
+    );
   });
-
   it("does not change ACL rules that also apply to other Agents", () => {
-    const sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/container/.acl"),
+    let sourceDataset = addMockAclRuleQuads(
+      mockSolidDatasetFrom("https://arbitrary.pod/container/.acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default"
     );
-    const aclRuleSubject = Array.from(sourceDataset)[0].subject;
-    sourceDataset.add(
-      DataFactory.quad(
-        aclRuleSubject,
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#agent"),
-        DataFactory.namedNode("https://some-other.pod/profileDoc#webId")
-      )
+    let firstControl = getThingAll(sourceDataset)[0];
+    firstControl = addIri(
+      firstControl,
+      "http://www.w3.org/ns/auth/acl#agent",
+      "https://some-other.pod/profileDoc#webId"
     );
-
+    sourceDataset = setThing(sourceDataset, firstControl);
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2326,51 +2025,21 @@ describe("setAgentDefaultAccess", () => {
       }
     );
 
-    expect(updatedDataset.size).toBe(8);
+    const newControls = getThingAll(updatedDataset);
+    expect(newControls).toHaveLength(2);
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object: "http://www.w3.org/ns/auth/acl#Authorization",
-      })
-    ).toHaveLength(2);
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBeNull();
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#default",
-        object: "https://arbitrary.pod/container/",
-      })
-    ).toHaveLength(2);
-    const matchedQuads1 = getMatchingQuads(updatedDataset, {
-      predicate: "http://www.w3.org/ns/auth/acl#mode",
-      object: "http://www.w3.org/ns/auth/acl#Read",
-    });
+      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBeNull();
     expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some-other.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
-    const matchedQuads2 = getMatchingQuads(updatedDataset, {
-      predicate: "http://www.w3.org/ns/auth/acl#mode",
-      object: "http://www.w3.org/ns/auth/acl#Append",
-    });
-    expect(
-      getMatchingQuads(updatedDataset, {
-        predicate: "http://www.w3.org/ns/auth/acl#agent",
-        object: "https://some.pod/profileDoc#webId",
-      })
-    ).toHaveLength(1);
-
-    // Make sure the default Access Modes granted are in separate ACL Rules:
-    expect(matchedQuads1.length).toBeGreaterThan(0);
-    expect(matchedQuads2.length).toBeGreaterThan(0);
-    expect(matchedQuads1[0].subject.value).not.toBe(
-      matchedQuads2[0].subject.value
-    );
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+    ).not.toBe(getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"));
   });
-
   it("does not forget to clean up the legacy defaultForNew predicate when setting default access", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
@@ -2385,7 +2054,6 @@ describe("setAgentDefaultAccess", () => {
       "legacyDefault",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2396,7 +2064,6 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
     // Explicitly check that the agent given resource access doesn't get additional privilege:
     // The newly created resource rule does not give any default access.
     getThingAll(updatedDataset).forEach((thing) => {
@@ -2415,14 +2082,12 @@ describe("setAgentDefaultAccess", () => {
         getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
       ).toHaveLength(0);
     });
-
     // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
-
   it("does not preserve existing acl:defaultForNew predicates, which are deprecated, when setting default access", async () => {
     let sourceDataset = addMockAclRuleQuads(
-      getMockDataset("https://arbitrary.pod/resource/?ext=acl"),
+      mockSolidDatasetFrom("https://arbitrary.pod/resource/?ext=acl"),
       "https://some.pod/profileDoc#webId",
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
@@ -2437,7 +2102,6 @@ describe("setAgentDefaultAccess", () => {
       "legacyDefault",
       "https://arbitrary.pod/resource/?ext=acl#owner"
     );
-
     const updatedDataset = setAgentDefaultAccess(
       sourceDataset,
       "https://some.pod/profileDoc#webId",
@@ -2448,7 +2112,6 @@ describe("setAgentDefaultAccess", () => {
         control: false,
       }
     );
-
     // Explicitly check that the agent given default access no longer has 'defaultForNew'
     // access: the legacy predicate is not written back if the access is modified.
     getThingAll(updatedDataset).forEach((thing) => {
@@ -2467,8 +2130,5 @@ describe("setAgentDefaultAccess", () => {
         getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
       ).toHaveLength(0);
     });
-
-    // Roughly check that the ACL dataset is as we expect it
-    expect(updatedDataset.size).toBe(4);
   });
 });

@@ -21,25 +21,26 @@
 
 import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { Thing, Url, UrlString } from "../interfaces";
-import {
-  asNamedNode,
-  serializeBoolean,
-  serializeDatetime,
-  serializeDecimal,
-  serializeInteger,
-  normalizeLocale,
-  XmlSchemaTypeIri,
-  xmlSchemaTypes,
-  internal_isValidUrl,
-} from "../datatypes";
-import { DataFactory } from "../rdfjs";
-import { internal_toNode, internal_throwIfNotThing } from "./thing.internal";
+import { internal_isValidUrl } from "../datatypes";
+import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 import {
   isThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
+import {
+  addBoolean,
+  addDatetime,
+  addDecimal,
+  addInteger,
+  addLiteral,
+  addNamedNode,
+  addStringNoLocale,
+  addStringWithLocale,
+  addTerm,
+  addUrl,
+} from "./add";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -66,18 +67,7 @@ export const setUrl: SetOfType<Url | UrlString | Thing> = (
     throw new ValidValueUrlExpectedError(url);
   }
 
-  const newThing = removeAll(thing, property);
-  const predicateNode = asNamedNode(property);
-
-  newThing.add(
-    DataFactory.quad(
-      internal_toNode(newThing),
-      predicateNode,
-      internal_toNode(url)
-    )
-  );
-
-  return newThing;
+  return addUrl(removeAll(thing, property), property, url);
 };
 /** @hidden Alias of [[setUrl]] for those who prefer IRI terminology. */
 export const setIri = setUrl;
@@ -96,12 +86,7 @@ export const setIri = setUrl;
  */
 export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
-  return setLiteralOfType(
-    thing,
-    property,
-    serializeBoolean(value),
-    xmlSchemaTypes.boolean
-  );
+  return addBoolean(removeAll(thing, property), property, value);
 };
 
 /**
@@ -118,12 +103,7 @@ export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
  */
 export const setDatetime: SetOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
-  return setLiteralOfType(
-    thing,
-    property,
-    serializeDatetime(value),
-    xmlSchemaTypes.dateTime
-  );
+  return addDatetime(removeAll(thing, property), property, value);
 };
 
 /**
@@ -140,12 +120,7 @@ export const setDatetime: SetOfType<Date> = (thing, property, value) => {
  */
 export const setDecimal: SetOfType<number> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
-  return setLiteralOfType(
-    thing,
-    property,
-    serializeDecimal(value),
-    xmlSchemaTypes.decimal
-  );
+  return addDecimal(removeAll(thing, property), property, value);
 };
 
 /**
@@ -162,12 +137,7 @@ export const setDecimal: SetOfType<number> = (thing, property, value) => {
  */
 export const setInteger: SetOfType<number> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
-  return setLiteralOfType(
-    thing,
-    property,
-    serializeInteger(value),
-    xmlSchemaTypes.integer
-  );
+  return addInteger(removeAll(thing, property), property, value);
 };
 
 /**
@@ -190,8 +160,12 @@ export function setStringWithLocale<T extends Thing>(
   locale: string
 ): T {
   internal_throwIfNotThing(thing);
-  const literal = DataFactory.literal(value, normalizeLocale(locale));
-  return setLiteral(thing, property, literal);
+  return addStringWithLocale(
+    removeAll(thing, property),
+    property,
+    value,
+    locale
+  );
 }
 
 /**
@@ -212,7 +186,7 @@ export const setStringNoLocale: SetOfType<string> = (
   value
 ) => {
   internal_throwIfNotThing(thing);
-  return setLiteralOfType(thing, property, value, xmlSchemaTypes.string);
+  return addStringNoLocale(removeAll(thing, property), property, value);
 };
 
 /**
@@ -234,7 +208,7 @@ export function setNamedNode<T extends Thing>(
   value: NamedNode
 ): T {
   internal_throwIfNotThing(thing);
-  return setTerm(thing, property, value);
+  return addNamedNode(removeAll(thing, property), property, value);
 }
 
 /**
@@ -256,7 +230,7 @@ export function setLiteral<T extends Thing>(
   value: Literal
 ): T {
   internal_throwIfNotThing(thing);
-  return setTerm(thing, property, value);
+  return addLiteral(removeAll(thing, property), property, value);
 }
 
 /**
@@ -283,29 +257,7 @@ export function setTerm<T extends Thing>(
     throw new ValidPropertyUrlExpectedError(property);
   }
 
-  const newThing = removeAll(thing, property);
-  const predicateNode = asNamedNode(property);
-  newThing.add(
-    DataFactory.quad(internal_toNode(newThing), predicateNode, value)
-  );
-
-  return newThing;
-}
-
-function setLiteralOfType<T extends Thing>(
-  thing: T,
-  property: Url | UrlString,
-  value: string,
-  type: XmlSchemaTypeIri
-): T;
-function setLiteralOfType(
-  thing: Thing,
-  property: Url | UrlString,
-  value: string,
-  type: XmlSchemaTypeIri
-): Thing {
-  const literal = DataFactory.literal(value, DataFactory.namedNode(type));
-  return setLiteral(thing, property, literal);
+  return addTerm(removeAll(thing, property), property, value);
 }
 
 /**

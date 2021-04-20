@@ -19,21 +19,33 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { jest, describe, it, expect } from "@jest/globals";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
-import { triplesToTurtle, turtleToTriples } from "./turtle";
+import { getTurtleParser, triplesToTurtle } from "./turtle";
 
-describe("turtleToTriples", () => {
+describe("The Parser", () => {
   it("should correctly find all triples in raw Turtle", async () => {
-    const parsed = await turtleToTriples(
-      `
-      @prefix : <#>.
-      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+    const parser = getTurtleParser();
+    type OnQuadReturnType = ReturnType<Parameters<typeof parser.onQuad>[0]>;
+    type OnQuadParameters = Parameters<Parameters<typeof parser.onQuad>[0]>;
+    const onQuadCallback = jest.fn<OnQuadReturnType, OnQuadParameters>();
+    const onCompleteCallback = jest.fn();
 
-      :someSubject a foaf:Person; foaf:name "Some name".
-    `,
-      "https://example.com/some-path"
-    );
+    parser.onQuad(onQuadCallback);
+    parser.onComplete(onCompleteCallback);
+    const turtle = `
+    @prefix : <#>.
+    @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+    :someSubject a foaf:Person; foaf:name "Some name".
+  `;
+    await parser.parse(turtle, {
+      internal_resourceInfo: {
+        sourceIri: "https://example.com/some-path",
+        isRawData: false,
+        linkedResources: {},
+      },
+    });
 
     const expectedTriple1 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
@@ -53,23 +65,34 @@ describe("turtleToTriples", () => {
     // but we just need to make sure we use the RDF/JS 'quad equals' method
     // instead of the generic Jest `.toEqual()`, since it's RDF-quad-equality
     // we're checking, and not quad-implementation-equality.
-    // TODO: I don't like that we're still reliant on the order of the parsed
-    //  triples - I guess we need a simple quad-array-contains helper...
-    expect(parsed[0].equals(expectedTriple1)).toBe(true);
-    expect(parsed[1].equals(expectedTriple2)).toBe(true);
+    expect(onQuadCallback).toHaveBeenCalledTimes(2);
+    expect(onQuadCallback.mock.calls[0][0].equals(expectedTriple1)).toBe(true);
+    expect(onQuadCallback.mock.calls[1][0].equals(expectedTriple2)).toBe(true);
+    expect(onCompleteCallback).toHaveBeenCalledTimes(1);
   });
 
   it("should reject if the Turtle is invalid", async () => {
+    const parser = getTurtleParser();
+    const onErrorCallback = jest.fn();
+    const onCompleteCallback = jest.fn();
+
+    parser.onError(onErrorCallback);
+    parser.onComplete(onCompleteCallback);
     const turtle = `
       @prefix : <#>.
       @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-
       :arbitrarySubject a foaf:Person; foaf:name “A literal with invalid quotes”.
     `;
+    await parser.parse(turtle, {
+      internal_resourceInfo: {
+        sourceIri: "https://example.com/some-path",
+        isRawData: false,
+        linkedResources: {},
+      },
+    });
 
-    await expect(
-      turtleToTriples(turtle, "https://example.com/some-path")
-    ).rejects.toThrow();
+    expect(onErrorCallback).toHaveBeenCalledTimes(1);
+    expect(onErrorCallback.mock.calls[0][0]).toBeInstanceOf(Error);
   });
 });
 

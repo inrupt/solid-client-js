@@ -163,6 +163,8 @@ import {
   acp_v2,
   acp_v3,
   access,
+  toRdfJsDataset,
+  fromRdfJsDataset,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -317,6 +319,8 @@ it("exports preview API's for early adopters", () => {
   expect(acp_v2).toBeDefined();
   expect(acp_v3).toBeDefined();
   expect(access).toBeDefined();
+  expect(fromRdfJsDataset).toBeDefined();
+  expect(toRdfJsDataset).toBeDefined();
 });
 
 // eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:

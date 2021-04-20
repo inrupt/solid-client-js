@@ -42,10 +42,10 @@ import { AccessControlResource } from "./control";
  */
 export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
   const acrUrl = new URL("access-control-resource", resourceUrl).href;
-  const acr: AccessControlResource = Object.assign(
-    mockSolidDatasetFrom(acrUrl),
-    { accessTo: resourceUrl }
-  );
+  const acr: AccessControlResource = {
+    ...mockSolidDatasetFrom(acrUrl),
+    accessTo: resourceUrl,
+  };
 
   return acr;
 }

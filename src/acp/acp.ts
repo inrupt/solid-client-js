@@ -75,7 +75,7 @@ export async function getSolidDatasetWithAcr(
 
   const solidDataset = await getSolidDataset(urlString, config);
   const acp = await fetchAcr(solidDataset, config);
-  return Object.assign(solidDataset, acp);
+  return { ...solidDataset, ...acp };
 }
 
 /**
@@ -134,7 +134,7 @@ export async function getResourceInfoWithAcr(
 
   const resourceInfo = await getResourceInfo(urlString, config);
   const acp = await fetchAcr(resourceInfo, config);
-  return Object.assign(resourceInfo, acp);
+  return { ...resourceInfo, ...acp };
 }
 
 /**
@@ -172,7 +172,7 @@ export async function getSolidDatasetWithAccessDatasets(
     return internal_setAcl(solidDataset, acl);
   } else {
     const acr = await fetchAcr(solidDataset, config);
-    return Object.assign(solidDataset, acr);
+    return { ...solidDataset, ...acr };
   }
 }
 
@@ -250,7 +250,7 @@ export async function getResourceInfoWithAccessDatasets(
     return internal_setAcl(resourceInfo, acl);
   } else {
     const acr = await fetchAcr(resourceInfo, config);
-    return Object.assign(resourceInfo, acr);
+    return { ...resourceInfo, ...acr };
   }
 }
 
@@ -345,11 +345,10 @@ async function fetchAcr(
     };
   }
 
-  const resourceUrl = getSourceUrl(resource);
-  const acrUrl = getSourceUrl(acr);
-  const acrDataset: AccessControlResource = Object.assign(acr, {
+  const acrDataset: AccessControlResource = {
+    ...acr,
     accessTo: getSourceUrl(resource),
-  });
+  };
   const acpInfo: WithAccessibleAcr = {
     internal_acp: {
       acr: acrDataset,

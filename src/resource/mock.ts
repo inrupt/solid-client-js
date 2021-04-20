@@ -52,15 +52,15 @@ export function mockSolidDatasetFrom(
   url: Url | UrlString
 ): Unpromisify<ReturnType<typeof getSolidDataset>> {
   const solidDataset = createSolidDataset();
-  const solidDatasetWithResourceInfo: SolidDataset &
-    WithServerResourceInfo = Object.assign(solidDataset, {
+  const solidDatasetWithResourceInfo: SolidDataset & WithServerResourceInfo = {
+    ...solidDataset,
     internal_resourceInfo: {
       sourceIri: internal_toIriString(url),
       isRawData: false,
       contentType: "text/turtle",
       linkedResources: {},
     },
-  });
+  };
 
   return solidDatasetWithResourceInfo;
 }

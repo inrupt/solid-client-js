@@ -22,12 +22,14 @@
 import {
   IriString,
   SolidDataset,
+  Thing,
   UrlString,
   WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
-import { DataFactory } from "../rdfjs";
 import { internal_cloneResource } from "../resource/resource.internal";
+import { addIri } from "../thing/add";
+import { createThing, getThing, setThing } from "../thing/thing";
 import { Access, AclDataset, WithAccessibleAcl } from "./acl";
 
 export function addMockAclRuleQuads(
@@ -43,78 +45,57 @@ export function addMockAclRuleQuads(
     | "http://www.w3.org/ns/auth/acl#agentClass"
     | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent"
 ): AclDataset {
-  const subjectIri =
-    ruleIri ?? resource + "#" + encodeURIComponent(agent) + Math.random();
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Authorization")
-    )
+  let newControl: Thing = createThing({
+    name: encodeURIComponent(agent) + Math.random(),
+  });
+  if (typeof ruleIri === "string") {
+    newControl = getThing(aclDataset, ruleIri) ?? createThing({ url: ruleIri });
+  }
+  newControl = addIri(
+    newControl,
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+    "http://www.w3.org/ns/auth/acl#Authorization"
   );
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(
-        ((_type: typeof type) => {
-          switch (_type) {
-            case "resource":
-              return "http://www.w3.org/ns/auth/acl#accessTo";
-            case "default":
-              return "http://www.w3.org/ns/auth/acl#default";
-            case "legacyDefault":
-              return "http://www.w3.org/ns/auth/acl#defaultForNew";
-          }
-        })(type)
-      ),
-      DataFactory.namedNode(resource)
-    )
-  );
-  aclDataset.add(
-    DataFactory.quad(
-      DataFactory.namedNode(subjectIri),
-      DataFactory.namedNode(targetType),
-      DataFactory.namedNode(agent)
-    )
-  );
+  let resourceRelation: IriString = "http://www.w3.org/ns/auth/acl#accessTo";
+  if (type === "default") {
+    resourceRelation = "http://www.w3.org/ns/auth/acl#default";
+  }
+  if (type === "legacyDefault") {
+    resourceRelation = "http://www.w3.org/ns/auth/acl#defaultForNew";
+  }
+  newControl = addIri(newControl, resourceRelation, resource);
+  newControl = addIri(newControl, targetType, agent);
   if (access.read) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Read")
-      )
+    newControl = addIri(
+      newControl,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Read"
     );
   }
   if (access.append) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Append")
-      )
+    newControl = addIri(
+      newControl,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Append"
     );
   }
   if (access.write) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Write")
-      )
+    newControl = addIri(
+      newControl,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Write"
     );
   }
   if (access.control) {
-    aclDataset.add(
-      DataFactory.quad(
-        DataFactory.namedNode(subjectIri),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#mode"),
-        DataFactory.namedNode("http://www.w3.org/ns/auth/acl#Control")
-      )
+    newControl = addIri(
+      newControl,
+      "http://www.w3.org/ns/auth/acl#mode",
+      "http://www.w3.org/ns/auth/acl#Control"
     );
   }
 
-  return Object.assign(aclDataset, { internal_accessTo: resource });
+  aclDataset = setThing(aclDataset, newControl);
+  return { ...aclDataset, internal_accessTo: resource };
 }
 
 export function setMockAclUrl<T extends WithServerResourceInfo>(

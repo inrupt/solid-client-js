@@ -19,23 +19,27 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad_Object, Quad, NamedNode, Literal } from "rdf-js";
+import { Quad_Object, NamedNode, Literal } from "rdf-js";
 import { Thing, Url, UrlString } from "../interfaces";
 import {
-  asNamedNode,
-  isNamedNode,
-  isLiteral,
   deserializeBoolean,
   deserializeDatetime,
   deserializeDecimal,
   deserializeInteger,
   xmlSchemaTypes,
   XmlSchemaTypeIri,
-  isTerm,
   internal_isValidUrl,
 } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { ValidPropertyUrlExpectedError } from "./thing";
+import { internal_toIriString } from "../interfaces.internal";
+import {
+  getBlankNodeValue,
+  getLocalNodeName,
+  isBlankNodeId,
+  isLocalNodeIri,
+} from "../rdf.internal";
+import { DataFactory } from "../rdfjs";
 
 /**
  * Returns the URL value of the specified Property from a [[Thing]].
@@ -51,15 +55,15 @@ export function getUrl(
   property: Url | UrlString
 ): UrlString | null {
   internal_throwIfNotThing(thing);
-  const namedNodeMatcher = getNamedNodeMatcher(property);
-
-  const matchingQuad = findOne(thing, namedNodeMatcher);
-
-  if (matchingQuad === null) {
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateUrl = internal_toIriString(property);
+  const firstUrl = thing.predicates[predicateUrl]?.namedNodes?.[0] ?? null;
+  if (firstUrl === null) {
     return null;
   }
-
-  return matchingQuad.object.value;
+  return isLocalNodeIri(firstUrl) ? `#${getLocalNodeName(firstUrl)}` : firstUrl;
 }
 /** @hidden Alias of [[getUrl]] for those who prefer IRI terminology. */
 export const getIri = getUrl;
@@ -78,11 +82,15 @@ export function getUrlAll(
   property: Url | UrlString
 ): UrlString[] {
   internal_throwIfNotThing(thing);
-  const iriMatcher = getNamedNodeMatcher(property);
-
-  const matchingQuads = findAll(thing, iriMatcher);
-
-  return matchingQuads.map((quad) => quad.object.value);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateUrl = internal_toIriString(property);
+  return (
+    thing.predicates[predicateUrl]?.namedNodes?.map((iri) =>
+      isLocalNodeIri(iri) ? `#${getLocalNodeName(iri)}` : iri
+    ) ?? []
+  );
 }
 /** @hidden Alias of [[getUrlAll]] for those who prefer IRI terminology. */
 export const getIriAll = getUrlAll;
@@ -311,15 +319,21 @@ export function getStringWithLocale(
   locale: string
 ): string | null {
   internal_throwIfNotThing(thing);
-  const localeStringMatcher = getLocaleStringMatcher(property, locale);
-
-  const matchingQuad = findOne(thing, localeStringMatcher);
-
-  if (matchingQuad === null) {
-    return null;
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
   }
-
-  return matchingQuad.object.value;
+  const predicateIri = internal_toIriString(property);
+  const langStrings = thing.predicates[predicateIri]?.langStrings ?? {};
+  const existingLocales = Object.keys(langStrings);
+  const matchingLocale = existingLocales.find(
+    (existingLocale) =>
+      existingLocale.toLowerCase() === locale.toLowerCase() &&
+      Array.isArray(langStrings[existingLocale]) &&
+      langStrings[existingLocale].length > 0
+  );
+  return typeof matchingLocale === "string"
+    ? langStrings[matchingLocale][0]
+    : null;
 }
 
 /**
@@ -338,11 +352,21 @@ export function getStringWithLocaleAll(
   locale: string
 ): string[] {
   internal_throwIfNotThing(thing);
-  const localeStringMatcher = getLocaleStringMatcher(property, locale);
-
-  const matchingQuads = findAll(thing, localeStringMatcher);
-
-  return matchingQuads.map((quad) => quad.object.value);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateIri = internal_toIriString(property);
+  const langStrings = thing.predicates[predicateIri]?.langStrings ?? {};
+  const existingLocales = Object.keys(langStrings);
+  const matchingLocale = existingLocales.find(
+    (existingLocale) =>
+      existingLocale.toLowerCase() === locale.toLowerCase() &&
+      Array.isArray(langStrings[existingLocale]) &&
+      langStrings[existingLocale].length > 0
+  );
+  return typeof matchingLocale === "string"
+    ? [...langStrings[matchingLocale]]
+    : [];
 }
 
 /**
@@ -358,22 +382,17 @@ export function getStringByLocaleAll(
   property: Url | UrlString
 ): Map<string, string[]> {
   internal_throwIfNotThing(thing);
-  const literalMatcher = getLiteralMatcher(property);
-
-  const matchingQuads = findAll(thing, literalMatcher);
-
-  const result = new Map<string, string[]>();
-  matchingQuads.map((quad) => {
-    if (quad.object.datatype.value === xmlSchemaTypes.langString) {
-      const languageTag = quad.object.language;
-      const current: string[] | undefined = result.get(languageTag);
-      current
-        ? result.set(languageTag, [...current, quad.object.value])
-        : result.set(languageTag, [quad.object.value]);
-    }
-  });
-
-  return result;
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateIri = internal_toIriString(property);
+  const stringsByLocale = thing.predicates[predicateIri]?.langStrings ?? {};
+  return new Map(
+    Object.entries(stringsByLocale).map(([locale, values]) => [
+      locale,
+      [...values],
+    ])
+  );
 }
 
 /**
@@ -433,16 +452,13 @@ export function getNamedNode(
   thing: Thing,
   property: Url | UrlString
 ): NamedNode | null {
-  internal_throwIfNotThing(thing);
-  const namedNodeMatcher = getNamedNodeMatcher(property);
+  const iriString = getIri(thing, property);
 
-  const matchingQuad = findOne(thing, namedNodeMatcher);
-
-  if (matchingQuad === null) {
+  if (iriString === null) {
     return null;
   }
 
-  return matchingQuad.object;
+  return DataFactory.namedNode(iriString);
 }
 
 /**
@@ -456,12 +472,9 @@ export function getNamedNodeAll(
   thing: Thing,
   property: Url | UrlString
 ): NamedNode[] {
-  internal_throwIfNotThing(thing);
-  const namedNodeMatcher = getNamedNodeMatcher(property);
+  const iriStrings = getIriAll(thing, property);
 
-  const matchingQuads = findAll(thing, namedNodeMatcher);
-
-  return matchingQuads.map((quad) => quad.object);
+  return iriStrings.map((iriString) => DataFactory.namedNode(iriString));
 }
 
 /**
@@ -476,15 +489,43 @@ export function getLiteral(
   property: Url | UrlString
 ): Literal | null {
   internal_throwIfNotThing(thing);
-  const literalMatcher = getLiteralMatcher(property);
-
-  const matchingQuad = findOne(thing, literalMatcher);
-
-  if (matchingQuad === null) {
-    return null;
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateIri = internal_toIriString(property);
+  const langStrings = thing.predicates[predicateIri]?.langStrings ?? {};
+  const locales = Object.keys(langStrings);
+  if (locales.length > 0) {
+    const nonEmptyLocale = locales.find(
+      (locale) =>
+        Array.isArray(langStrings[locale]) && langStrings[locale].length > 0
+    );
+    if (typeof nonEmptyLocale === "string") {
+      return DataFactory.literal(
+        langStrings[nonEmptyLocale][0],
+        nonEmptyLocale
+      );
+    }
   }
 
-  return matchingQuad.object;
+  const otherLiterals = thing.predicates[predicateIri]?.literals ?? {};
+  const dataTypes = Object.keys(otherLiterals);
+
+  if (dataTypes.length > 0) {
+    const nonEmptyDataType = dataTypes.find(
+      (dataType) =>
+        Array.isArray(otherLiterals[dataType]) &&
+        otherLiterals[dataType].length > 0
+    );
+    if (typeof nonEmptyDataType === "string") {
+      return DataFactory.literal(
+        otherLiterals[nonEmptyDataType][0],
+        DataFactory.namedNode(nonEmptyDataType)
+      );
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -499,11 +540,35 @@ export function getLiteralAll(
   property: Url | UrlString
 ): Literal[] {
   internal_throwIfNotThing(thing);
-  const literalMatcher = getLiteralMatcher(property);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateIri = internal_toIriString(property);
+  let literals: Literal[] = [];
 
-  const matchingQuads = findAll(thing, literalMatcher);
+  const langStrings = thing.predicates[predicateIri]?.langStrings ?? {};
+  const locales = Object.keys(langStrings);
+  for (const locale of locales) {
+    const stringsInLocale = langStrings[locale];
+    const localeLiterals = stringsInLocale.map((langString) =>
+      DataFactory.literal(langString, locale)
+    );
+    literals = literals.concat(localeLiterals);
+  }
 
-  return matchingQuads.map((quad) => quad.object);
+  const otherLiterals = thing.predicates[predicateIri]?.literals ?? {};
+  const dataTypes = Object.keys(otherLiterals);
+
+  for (const dataType of dataTypes) {
+    const values = otherLiterals[dataType];
+    const typeNode = DataFactory.namedNode(dataType);
+    const dataTypeLiterals = values.map((value) =>
+      DataFactory.literal(value, typeNode)
+    );
+    literals = literals.concat(dataTypeLiterals);
+  }
+
+  return literals;
 }
 
 /**
@@ -519,15 +584,26 @@ export function getTerm(
   property: Url | UrlString
 ): Quad_Object | null {
   internal_throwIfNotThing(thing);
-  const termMatcher = getTermMatcher(property);
-
-  const matchingQuad = findOne(thing, termMatcher);
-
-  if (matchingQuad === null) {
-    return null;
+  const namedNode = getNamedNode(thing, property);
+  if (namedNode !== null) {
+    return namedNode;
   }
 
-  return matchingQuad.object;
+  const literal = getLiteral(thing, property);
+  if (literal !== null) {
+    return literal;
+  }
+
+  const predicateIri = internal_toIriString(property);
+  const blankNodes = thing.predicates[predicateIri]?.blankNodes ?? [];
+  if (blankNodes.length > 0) {
+    const blankNodeValue = isBlankNodeId(blankNodes[0])
+      ? getBlankNodeValue(blankNodes[0])
+      : undefined;
+    return DataFactory.blankNode(blankNodeValue);
+  }
+
+  return null;
 }
 
 /**
@@ -543,143 +619,23 @@ export function getTermAll(
   property: Url | UrlString
 ): Quad_Object[] {
   internal_throwIfNotThing(thing);
-  const namedNodeMatcher = getTermMatcher(property);
+  const namedNodes = getNamedNodeAll(thing, property);
 
-  const matchingQuads = findAll(thing, namedNodeMatcher);
+  const literals = getLiteralAll(thing, property);
 
-  return matchingQuads.map((quad) => quad.object);
-}
+  const predicateIri = internal_toIriString(property);
+  const blankNodeValues = thing.predicates[predicateIri]?.blankNodes ?? [];
+  const blankNodes = blankNodeValues.map((rawBlankNode) => {
+    const blankNodeName = isBlankNodeId(rawBlankNode)
+      ? getBlankNodeValue(rawBlankNode)
+      : undefined;
+    return DataFactory.blankNode(blankNodeName);
+  });
 
-type QuadWithObject<Object extends Quad_Object> = Quad & { object: Object };
-type Matcher<Object extends Quad_Object> = (
-  quad: Quad
-) => quad is QuadWithObject<Object>;
-
-/**
- * @param thing The [[Thing]] to extract a Quad from.
- * @param matcher Callback function that returns a boolean indicating whether a given Quad should be included.
- * @returns First Quad in `thing` for which `matcher` returned true.
- */
-function findOne<Object extends Quad_Object>(
-  thing: Thing,
-  matcher: Matcher<Object>
-): QuadWithObject<Object> | null {
-  for (const quad of thing) {
-    if (matcher(quad)) {
-      return quad;
-    }
-  }
-  return null;
-}
-
-/**
- * @param thing The [[Thing]] to extract Quads from.
- * @param matcher Callback function that returns a boolean indicating whether a given Quad should be included.
- * @returns All Quads in `thing` for which `matcher` returned true.
- */
-function findAll<Object extends Quad_Object>(
-  thing: Thing,
-  matcher: Matcher<Object>
-): QuadWithObject<Object>[] {
-  const matched: QuadWithObject<Object>[] = [];
-  for (const quad of thing) {
-    if (matcher(quad)) {
-      matched.push(quad);
-    }
-  }
-  return matched;
-}
-
-function getNamedNodeMatcher(property: Url | UrlString): Matcher<NamedNode> {
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-
-  const matcher = function matcher(
-    quad: Quad
-  ): quad is QuadWithObject<NamedNode> {
-    return predicateNode.equals(quad.predicate) && isNamedNode(quad.object);
-  };
-  return matcher;
-}
-
-function getLiteralMatcher(property: Url | UrlString): Matcher<Literal> {
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-
-  const matcher = function matcher(
-    quad: Quad
-  ): quad is QuadWithObject<Literal> {
-    return predicateNode.equals(quad.predicate) && isLiteral(quad.object);
-  };
-  return matcher;
-}
-
-function getTermMatcher(property: Url | UrlString): Matcher<Quad_Object> {
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-
-  const matcher = function matcher(
-    quad: Quad
-  ): quad is QuadWithObject<NamedNode> {
-    return predicateNode.equals(quad.predicate) && isTerm(quad.object);
-  };
-  return matcher;
-}
-
-type LiteralOfType<Type extends XmlSchemaTypeIri> = Literal & {
-  datatype: { value: Type };
-};
-function getLiteralOfTypeMatcher<Datatype extends XmlSchemaTypeIri>(
-  property: Url | UrlString,
-  datatype: Datatype
-): Matcher<LiteralOfType<Datatype>> {
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-
-  const matcher = function matcher(
-    quad: Quad
-  ): quad is QuadWithObject<LiteralOfType<Datatype>> {
-    return (
-      predicateNode.equals(quad.predicate) &&
-      isLiteral(quad.object) &&
-      quad.object.datatype.value === datatype
-    );
-  };
-  return matcher;
-}
-
-type LiteralLocaleString = Literal & {
-  datatype: { value: typeof xmlSchemaTypes.langString };
-  language: string;
-};
-function getLocaleStringMatcher(
-  property: Url | UrlString,
-  locale: string
-): Matcher<LiteralLocaleString> {
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-
-  const matcher = function matcher(
-    quad: Quad
-  ): quad is QuadWithObject<LiteralLocaleString> {
-    return (
-      predicateNode.equals(quad.predicate) &&
-      isLiteral(quad.object) &&
-      quad.object.datatype.value === xmlSchemaTypes.langString &&
-      quad.object.language.toLowerCase() === locale.toLowerCase()
-    );
-  };
-  return matcher;
+  const terms: Quad_Object[] = (namedNodes as Quad_Object[])
+    .concat(literals)
+    .concat(blankNodes);
+  return terms;
 }
 
 /**
@@ -693,15 +649,11 @@ function getLiteralOfType<Datatype extends XmlSchemaTypeIri>(
   property: Url | UrlString,
   literalType: Datatype
 ): string | null {
-  const literalOfTypeMatcher = getLiteralOfTypeMatcher(property, literalType);
-
-  const matchingQuad = findOne(thing, literalOfTypeMatcher);
-
-  if (matchingQuad === null) {
-    return null;
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
   }
-
-  return matchingQuad.object.value;
+  const predicateIri = internal_toIriString(property);
+  return thing.predicates[predicateIri]?.literals?.[literalType]?.[0] ?? null;
 }
 
 /**
@@ -715,9 +667,11 @@ function getLiteralAllOfType<Datatype extends XmlSchemaTypeIri>(
   property: Url | UrlString,
   literalType: Datatype
 ): string[] {
-  const literalOfTypeMatcher = getLiteralOfTypeMatcher(property, literalType);
-
-  const matchingQuads = findAll(thing, literalOfTypeMatcher);
-
-  return matchingQuads.map((quad) => quad.object.value);
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+  const predicateIri = internal_toIriString(property);
+  const literalsOfType =
+    thing.predicates[predicateIri]?.literals?.[literalType] ?? [];
+  return [...literalsOfType];
 }

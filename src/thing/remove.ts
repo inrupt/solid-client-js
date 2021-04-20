@@ -20,11 +20,9 @@
  */
 
 import { Literal, NamedNode } from "rdf-js";
-import { Thing, Url, UrlString, ThingPersisted } from "../interfaces";
+import { Url, UrlString, Thing, ThingPersisted } from "../interfaces";
 import {
-  asNamedNode,
   isNamedNode,
-  isLiteral,
   normalizeLocale,
   XmlSchemaTypeIri,
   xmlSchemaTypes,
@@ -34,17 +32,15 @@ import {
   deserializeInteger,
   internal_isValidUrl,
 } from "../datatypes";
-import { DataFactory } from "../rdfjs";
+import { internal_throwIfNotThing } from "./thing.internal";
 import {
-  internal_filterThing,
-  internal_throwIfNotThing,
-} from "./thing.internal";
-import {
-  asIri,
   isThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
+  asIri,
 } from "./thing";
+import { internal_toIriString } from "../interfaces.internal";
+import { freeze } from "../rdf.internal";
 
 /**
  * Create a new Thing with all values removed for the given Property.
@@ -64,13 +60,14 @@ export function removeAll(thing: Thing, property: Url | UrlString): Thing {
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
   }
-  const predicateNode = asNamedNode(property);
+  const predicateIri = internal_toIriString(property);
+  const newPredicates = { ...thing.predicates };
+  delete newPredicates[predicateIri];
 
-  const updatedThing = internal_filterThing(
-    thing,
-    (quad) => !quad.predicate.equals(predicateNode)
-  );
-  return updatedThing;
+  return freeze({
+    ...thing,
+    predicates: freeze(newPredicates),
+  });
 }
 
 /**
@@ -93,25 +90,36 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
   }
-  const predicateNode = asNamedNode(property);
+  const predicateIri = internal_toIriString(property);
 
   if (!isThing(value) && !internal_isValidUrl(value)) {
     throw new ValidValueUrlExpectedError(value);
   }
-  const iriNode = isNamedNode(value)
-    ? value
+  const iriToRemove = isNamedNode(value)
+    ? value.value
     : typeof value === "string"
-    ? asNamedNode(value)
-    : asNamedNode(asIri(value));
+    ? value
+    : asIri(value);
 
-  const updatedThing = internal_filterThing(thing, (quad) => {
-    return (
-      !quad.predicate.equals(predicateNode) ||
-      !isNamedNode(quad.object) ||
-      !quad.object.equals(iriNode)
-    );
+  const updatedNamedNodes = freeze(
+    thing.predicates[predicateIri]?.namedNodes?.filter(
+      (namedNode) => namedNode.toLowerCase() !== iriToRemove.toLowerCase()
+    ) ?? []
+  );
+
+  const updatedPredicate = freeze({
+    ...thing.predicates[predicateIri],
+    namedNodes: updatedNamedNodes,
   });
-  return updatedThing;
+
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  return freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
 };
 /** @hidden Alias of [[removeUrl]] for those who prefer IRI terminology. */
 export const removeIri = removeUrl;
@@ -219,14 +227,47 @@ export function removeStringWithLocale<T extends Thing>(
   locale: string
 ): T {
   internal_throwIfNotThing(thing);
-  // Note: Due to how the `DataFactory.literal` constructor behaves, this function
-  // must call directly `removeLiteral` directly, with the locale as the data
-  // type of the Literal (which is not a valid NamedNode).
-  return removeLiteral(
-    thing,
-    property,
-    DataFactory.literal(value, normalizeLocale(locale))
+  if (!internal_isValidUrl(property)) {
+    throw new ValidPropertyUrlExpectedError(property);
+  }
+
+  const predicateIri = internal_toIriString(property);
+
+  const existingLangStrings = thing.predicates[predicateIri]?.langStrings ?? {};
+  const matchingLocale = Object.keys(existingLangStrings).find(
+    (existingLocale) =>
+      normalizeLocale(existingLocale) === normalizeLocale(locale) &&
+      Array.isArray(existingLangStrings[existingLocale]) &&
+      existingLangStrings[existingLocale].length > 0
   );
+
+  if (typeof matchingLocale !== "string") {
+    // Nothing to remove.
+    return thing;
+  }
+  const existingStringsInLocale = existingLangStrings[matchingLocale];
+
+  const updatedStringsInLocale = freeze(
+    existingStringsInLocale.filter((existingString) => existingString !== value)
+  );
+  const updatedLangStrings = freeze({
+    ...existingLangStrings,
+    [matchingLocale]: updatedStringsInLocale,
+  });
+
+  const updatedPredicate = freeze({
+    ...thing.predicates[predicateIri],
+    langStrings: updatedLangStrings,
+  });
+
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  return freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
 }
 
 /**
@@ -265,19 +306,7 @@ export function removeNamedNode<T extends Thing>(
   property: Url | UrlString,
   value: NamedNode
 ): T {
-  internal_throwIfNotThing(thing);
-  if (!internal_isValidUrl(property)) {
-    throw new ValidPropertyUrlExpectedError(property);
-  }
-  const predicateNode = asNamedNode(property);
-  const updatedThing = internal_filterThing(thing, (quad) => {
-    return (
-      !quad.predicate.equals(predicateNode) ||
-      !isNamedNode(quad.object) ||
-      !quad.object.equals(value)
-    );
-  });
-  return updatedThing;
+  return removeUrl(thing, property, value.value);
 }
 
 /**
@@ -296,14 +325,40 @@ export function removeLiteral<T extends Thing>(
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
   }
-  const predicateNode = asNamedNode(property);
-  const updatedThing = internal_filterThing(thing, (quad) => {
-    return (
-      !quad.predicate.equals(predicateNode) ||
-      !isLiteral(quad.object) ||
-      !quad.object.equals(value)
-    );
+  const typeIri = value.datatype.value;
+
+  if (typeIri === xmlSchemaTypes.langString) {
+    return removeStringWithLocale(thing, property, value.value, value.language);
+  }
+
+  const predicateIri = internal_toIriString(property);
+
+  const existingPredicateValues = thing.predicates[predicateIri] ?? {};
+  const existingLiterals = existingPredicateValues.literals ?? {};
+  const existingValuesOfType = existingLiterals[typeIri] ?? [];
+
+  const updatedValues = freeze(
+    existingValuesOfType.filter(
+      (existingValue) => existingValue !== value.value
+    )
+  );
+  const updatedLiterals = freeze({
+    ...existingLiterals,
+    [typeIri]: updatedValues,
   });
+  const updatedPredicate = freeze({
+    ...existingPredicateValues,
+    literals: updatedLiterals,
+  });
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  const updatedThing = freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
+
   return updatedThing;
 }
 
@@ -322,23 +377,31 @@ function removeLiteralMatching<T extends Thing>(
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
   }
-  const predicateNode = asNamedNode(property);
-  const updatedThing = internal_filterThing(thing, (quad) => {
-    // Copy every value from the old thing into the new thing, unless it:
-    return !(
-      // has the predicate of the value-to-be-removed,
-      (
-        quad.predicate.equals(predicateNode) &&
-        // also is a literal
-        isLiteral(quad.object) &&
-        // of the same type as the value-to-be-removed,
-        quad.object.datatype.equals(DataFactory.namedNode(type)) &&
-        // and has a value determined to be equal to the value-to-be-removed
-        // by the given matcher (i.e. because their serialisations are equal):
-        matcher(quad.object.value)
-      )
-    );
+  const predicateIri = internal_toIriString(property);
+  const existingPredicateValues = thing.predicates[predicateIri] ?? {};
+  const existingLiterals = existingPredicateValues.literals ?? {};
+  const existingValuesOfType = existingLiterals[type] ?? [];
+
+  const updatedValues = freeze(
+    existingValuesOfType.filter((existingValue) => !matcher(existingValue))
+  );
+  const updatedLiterals = freeze({
+    ...existingLiterals,
+    [type]: updatedValues,
   });
+  const updatedPredicate = freeze({
+    ...existingPredicateValues,
+    literals: updatedLiterals,
+  });
+  const updatedPredicates = freeze({
+    ...thing.predicates,
+    [predicateIri]: updatedPredicate,
+  });
+  const updatedThing = freeze({
+    ...thing,
+    predicates: updatedPredicates,
+  });
+
   return updatedThing;
 }
 

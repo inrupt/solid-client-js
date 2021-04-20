@@ -23,14 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { NamedNode } from "rdf-js";
 import { DataFactory } from "n3";
 
-import {
-  asIri,
-  createThing,
-  getThing,
-  getThingAll,
-  isThing,
-  setThing,
-} from "../thing/thing";
+import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
 import {
   addAgent,
   addNoneOfRuleUrl,
@@ -85,7 +78,7 @@ import {
 import { Policy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
-import { Thing, ThingPersisted, Url, UrlString } from "../interfaces";
+import { Thing, ThingPersisted, Url } from "../interfaces";
 import { acp, rdf } from "../constants";
 import {
   getIri,
@@ -95,6 +88,8 @@ import {
 } from "../index";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { internal_getAcr } from "./control.internal";
+import { addUrl } from "../thing/add";
+import { getUrl, getUrlAll } from "../thing/get";
 
 // Vocabulary terms
 const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
@@ -154,35 +149,24 @@ const MOCK_CLIENT_WEBID_2 = DataFactory.namedNode(
   "https://your.app/registration#it"
 );
 
-type ThingObject = ThingPersisted | Url | UrlString;
-
-function isNamedNode(object: ThingObject): object is Url {
-  return typeof (object as Url).value !== undefined;
-}
-
 const addAllObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: ThingObject[]
-): void => {
-  objects.forEach((objectToAdd) => {
-    let objectUrl: string;
-    if (isThing(objectToAdd)) {
-      objectUrl = asIri(objectToAdd);
-    } else if (isNamedNode(objectToAdd)) {
-      // The object is an Url (aka NamedNode)
-      objectUrl = objectToAdd.value;
-    } else {
-      objectUrl = objectToAdd;
-    }
-    thing.add(
-      DataFactory.quad(
-        DataFactory.namedNode(asIri(thing)),
-        predicate,
-        DataFactory.namedNode(objectUrl)
-      )
-    );
-  });
+  objects: Url[]
+): ThingPersisted => {
+  return objects.reduce((thingAcc, object) => {
+    return addUrl(thingAcc, predicate, object);
+  }, thing);
+};
+
+const addAllThingObjects = (
+  thing: ThingPersisted,
+  predicate: NamedNode,
+  objects: Thing[]
+): ThingPersisted => {
+  return objects.reduce((thingAcc, object) => {
+    return addUrl(thingAcc, predicate, object);
+  }, thing);
 };
 
 const mockRule = (
@@ -200,57 +184,27 @@ const mockRule = (
   let mockedRule = createThing({
     url: url.value,
   });
-  mockedRule = mockedRule.add(
-    DataFactory.quad(
-      DataFactory.namedNode(asIri(mockedRule)),
-      RDF_TYPE,
-      ACP_RULE
-    )
-  );
+  mockedRule = addUrl(mockedRule, RDF_TYPE, ACP_RULE);
   if (content?.agents) {
-    addAllObjects(mockedRule, ACP_AGENT, content.agents);
+    mockedRule = addAllObjects(mockedRule, ACP_AGENT, content.agents);
   }
   if (content?.groups) {
-    addAllObjects(mockedRule, ACP_GROUP, content.groups);
+    mockedRule = addAllObjects(mockedRule, ACP_GROUP, content.groups);
   }
   if (content?.clients) {
-    addAllObjects(mockedRule, ACP_CLIENT, content.clients);
+    mockedRule = addAllObjects(mockedRule, ACP_CLIENT, content.clients);
   }
   if (content?.public) {
-    mockedRule = mockedRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(asIri(mockedRule)),
-        ACP_AGENT,
-        ACP_PUBLIC
-      )
-    );
+    mockedRule = addUrl(mockedRule, ACP_AGENT, ACP_PUBLIC);
   }
   if (content?.authenticated) {
-    mockedRule = mockedRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(asIri(mockedRule)),
-        ACP_AGENT,
-        ACP_AUTHENTICATED
-      )
-    );
+    mockedRule = addUrl(mockedRule, ACP_AGENT, ACP_AUTHENTICATED);
   }
   if (content?.creator) {
-    mockedRule = mockedRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(asIri(mockedRule)),
-        ACP_AGENT,
-        ACP_CREATOR
-      )
-    );
+    mockedRule = addUrl(mockedRule, ACP_AGENT, ACP_CREATOR);
   }
   if (content?.publicClient) {
-    mockedRule = mockedRule.add(
-      DataFactory.quad(
-        DataFactory.namedNode(asIri(mockedRule)),
-        ACP_CLIENT,
-        SOLID_PUBLIC_CLIENT
-      )
-    );
+    mockedRule = addUrl(mockedRule, ACP_CLIENT, SOLID_PUBLIC_CLIENT);
   }
   return mockedRule;
 };
@@ -259,15 +213,15 @@ const mockPolicy = (
   url: NamedNode,
   rules?: { allOf?: Rule[]; anyOf?: Rule[]; noneOf?: Rule[] }
 ): Policy => {
-  const mockPolicy = createThing({ url: url.value });
+  let mockPolicy = createThing({ url: url.value });
   if (rules?.noneOf) {
-    addAllObjects(mockPolicy, ACP_NONE, rules.noneOf);
+    mockPolicy = addAllThingObjects(mockPolicy, ACP_NONE, rules.noneOf);
   }
   if (rules?.anyOf) {
-    addAllObjects(mockPolicy, ACP_ANY, rules.anyOf);
+    mockPolicy = addAllThingObjects(mockPolicy, ACP_ANY, rules.anyOf);
   }
   if (rules?.allOf) {
-    addAllObjects(mockPolicy, ACP_ALL, rules.allOf);
+    mockPolicy = addAllThingObjects(mockPolicy, ACP_ALL, rules.allOf);
   }
   return mockPolicy;
 };
@@ -278,11 +232,7 @@ describe("addNoneOfRuleUrl", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the existing noneOf rules", () => {
@@ -290,11 +240,9 @@ describe("addNoneOfRuleUrl", () => {
       noneOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = addNoneOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(
+      OTHER_MOCKED_RULE_IRI.value
+    );
   });
 
   it("does not change the existing allOf and anyOf rules", () => {
@@ -303,19 +251,14 @@ describe("addNoneOfRuleUrl", () => {
       allOf: [mockRule(ALLOF_RULE_IRI)],
     });
     const myPolicy = addNoneOfRuleUrl(mockedPolicy, mockRule(NONEOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, ALLOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, ANYOF_RULE_IRI))
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    const mypolicySize = myPolicy.size;
-    addNoneOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(mypolicySize);
+    const updatedPolicy = addNoneOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -325,11 +268,7 @@ describe("addAnyOfRuleUrl", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the existing anyOf rules", () => {
@@ -337,11 +276,7 @@ describe("addAnyOfRuleUrl", () => {
       anyOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = addAnyOfRuleUrl(mockedPolicy, mockRule(MOCKED_POLICY_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(OTHER_MOCKED_RULE_IRI.value);
   });
 
   it("does not change the existing allOf and noneOf rules", () => {
@@ -350,20 +285,14 @@ describe("addAnyOfRuleUrl", () => {
       allOf: [mockRule(ALLOF_RULE_IRI)],
     });
     const myPolicy = addAnyOfRuleUrl(mockedPolicy, mockRule(ANYOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, ALLOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, NONEOF_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    addAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(0);
+    const updatedPolicy = addAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -373,11 +302,7 @@ describe("addAllOfRule", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the existing allOf rules", () => {
@@ -385,11 +310,7 @@ describe("addAllOfRule", () => {
       allOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = addAllOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(OTHER_MOCKED_RULE_IRI.value);
   });
 
   it("does not change the existing anyOf and noneOf rules", () => {
@@ -398,20 +319,14 @@ describe("addAllOfRule", () => {
       anyOf: [mockRule(ANYOF_RULE_IRI)],
     });
     const myPolicy = addAllOfRuleUrl(mockedPolicy, mockRule(ANYOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, ANYOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, NONEOF_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    addAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(0);
+    const updatedPolicy = addAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -421,11 +336,7 @@ describe("setNoneOfRuleUrl", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("removes any previous noneOf rules for on the policy", () => {
@@ -433,11 +344,9 @@ describe("setNoneOfRuleUrl", () => {
       noneOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = setNoneOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(false);
+    expect(getUrlAll(myPolicy, ACP_NONE)).not.toContain(
+      OTHER_MOCKED_RULE_IRI.value
+    );
   });
 
   it("does not change the existing anyOf and allOf rules on the policy", () => {
@@ -446,18 +355,14 @@ describe("setNoneOfRuleUrl", () => {
       allOf: [mockRule(ALLOF_RULE_IRI)],
     });
     const myPolicy = setNoneOfRuleUrl(mockedPolicy, mockRule(NONEOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, ALLOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, ANYOF_RULE_IRI))
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setNoneOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(0);
+    const updatedPolicy = setNoneOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -467,11 +372,7 @@ describe("setAnyOfRuleUrl", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("removes any previous anyOf rules for on the policy", () => {
@@ -479,11 +380,9 @@ describe("setAnyOfRuleUrl", () => {
       anyOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = setAnyOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(false);
+    expect(getUrlAll(myPolicy, ACP_ANY)).not.toContain(
+      OTHER_MOCKED_RULE_IRI.value
+    );
   });
 
   it("does not change the existing noneOf and allOf rules on the policy", () => {
@@ -492,20 +391,14 @@ describe("setAnyOfRuleUrl", () => {
       allOf: [mockRule(ALLOF_RULE_IRI)],
     });
     const myPolicy = setAnyOfRuleUrl(mockedPolicy, mockRule(ANYOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, ALLOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, NONEOF_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(0);
+    const updatedPolicy = setAnyOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -515,11 +408,7 @@ describe("setAllOfRuleUrl", () => {
       mockPolicy(MOCKED_POLICY_IRI),
       mockRule(MOCKED_RULE_IRI)
     );
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
   });
 
   it("removes any previous allOf rules for on the policy", () => {
@@ -527,11 +416,9 @@ describe("setAllOfRuleUrl", () => {
       allOf: [mockRule(OTHER_MOCKED_RULE_IRI)],
     });
     const myPolicy = setAllOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, OTHER_MOCKED_RULE_IRI)
-      )
-    ).toBe(false);
+    expect(getUrlAll(myPolicy, ACP_ALL)).not.toContain(
+      OTHER_MOCKED_RULE_IRI.value
+    );
   });
 
   it("does not change the existing noneOf and anyOf rules on the policy", () => {
@@ -540,20 +427,14 @@ describe("setAllOfRuleUrl", () => {
       anyOf: [mockRule(ANYOF_RULE_IRI)],
     });
     const myPolicy = setAllOfRuleUrl(mockedPolicy, mockRule(ALLOF_RULE_IRI));
-    expect(
-      myPolicy.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, ANYOF_RULE_IRI))
-    ).toBe(true);
-    expect(
-      myPolicy.has(
-        DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, NONEOF_RULE_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_RULE_IRI.value);
+    expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_RULE_IRI.value);
   });
 
   it("does not change the input policy", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
-    setAllOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
-    expect(myPolicy.size).toBe(0);
+    const updatedPolicy = setAllOfRuleUrl(myPolicy, mockRule(MOCKED_RULE_IRI));
+    expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
 });
 
@@ -636,9 +517,7 @@ describe("removeAllOfRule", () => {
       allOf: [mockedRule],
     });
     const result = removeAllOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_ALL)).not.toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the rule from the anyOf/noneOf rules for the given policy", () => {
@@ -648,12 +527,8 @@ describe("removeAllOfRule", () => {
       noneOf: [mockedRule],
     });
     const result = removeAllOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
+    expect(getUrlAll(result, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
 });
 
@@ -664,9 +539,7 @@ describe("removeAnyOfRuleUrl", () => {
       anyOf: [mockedRule],
     });
     const result = removeAnyOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_ANY)).not.toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the rule from the allOf/noneOf rules for the given policy", () => {
@@ -676,12 +549,8 @@ describe("removeAnyOfRuleUrl", () => {
       noneOf: [mockedRule],
     });
     const result = removeAnyOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
+    expect(getUrlAll(result, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
 });
 
@@ -692,9 +561,7 @@ describe("removeNoneOfRuleUrl", () => {
       noneOf: [mockedRule],
     });
     const result = removeNoneOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_NONE, MOCKED_RULE_IRI))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_NONE)).not.toContain(MOCKED_RULE_IRI.value);
   });
 
   it("does not remove the rule from the allOf/anyOf rules for the given policy", () => {
@@ -704,26 +571,20 @@ describe("removeNoneOfRuleUrl", () => {
       anyOf: [mockedRule],
     });
     const result = removeNoneOfRuleUrl(mockedPolicy, mockedRule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ALL, MOCKED_RULE_IRI))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_POLICY_IRI, ACP_ANY, MOCKED_RULE_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
+    expect(getUrlAll(result, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
   });
 });
 
 describe("createRule", () => {
   it("returns a acp:Rule", () => {
     const myRule = createRule(MOCKED_RULE_IRI.value);
-    expect(
-      myRule.has(DataFactory.quad(MOCKED_RULE_IRI, RDF_TYPE, ACP_RULE))
-    ).toBe(true);
+    expect(getUrl(myRule, RDF_TYPE)).toBe(ACP_RULE.value);
   });
   it("returns an **empty** rule", () => {
     const myRule = createRule("https://my.pod/rule-resource#rule");
     // The rule should only contain a type triple.
-    expect(myRule.size).toBe(1);
+    expect(Object.keys(myRule.predicates)).toHaveLength(1);
   });
 });
 
@@ -745,7 +606,7 @@ describe("createResourceRuleFor", () => {
     );
     const myRule = createResourceRuleFor(mockedResourceWithAcr, "myRule");
     // The rule should only contain a type triple.
-    expect(myRule.size).toBe(1);
+    expect(Object.keys(myRule.predicates)).toHaveLength(1);
   });
 });
 
@@ -1046,9 +907,7 @@ describe("setAgent", () => {
   it("sets the given agents for the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setAgent(rule, MOCK_WEBID_ME.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 
   it("deletes any agents previously set for the rule", () => {
@@ -1056,12 +915,8 @@ describe("setAgent", () => {
       agents: [MOCK_WEBID_YOU],
     });
     const result = setAgent(rule, MOCK_WEBID_ME.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(MOCK_WEBID_YOU.value);
   });
 
   it("does not change the input rule", () => {
@@ -1069,12 +924,8 @@ describe("setAgent", () => {
       agents: [MOCK_WEBID_YOU],
     });
     setAgent(rule, MOCK_WEBID_ME.value);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(false);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_AGENT)).not.toContain(MOCK_WEBID_ME.value);
+    expect(getUrlAll(rule, ACP_AGENT)).toContain(MOCK_WEBID_YOU.value);
   });
 
   it("does not overwrite public, authenticated and creator agents", () => {
@@ -1084,19 +935,9 @@ describe("setAgent", () => {
       creator: true,
     });
     const result = setAgent(rule, MOCK_WEBID_YOU.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
-
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_CREATOR.value);
   });
 });
 
@@ -1104,9 +945,7 @@ describe("addAgent", () => {
   it("adds the given agent to the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = addAgent(rule, MOCK_WEBID_YOU.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_YOU.value);
   });
 
   it("does not override existing agents/public/authenticated/groups", () => {
@@ -1117,23 +956,11 @@ describe("addAgent", () => {
       authenticated: true,
     });
     const result = addAgent(rule, MOCK_WEBID_YOU.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_YOU.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
   });
 });
 
@@ -1143,9 +970,7 @@ describe("removeAgent", () => {
       agents: [MOCK_WEBID_YOU],
     });
     const result = removeAgent(rule, MOCK_WEBID_YOU.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(MOCK_WEBID_YOU.value);
   });
 
   it("does not delete unrelated agents", () => {
@@ -1155,20 +980,10 @@ describe("removeAgent", () => {
       authenticated: true,
     });
     const result = removeAgent(rule, MOCK_WEBID_YOU.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_YOU))
-    ).toBe(false);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(MOCK_WEBID_YOU.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
   });
 
   it("does not remove groups, even with matching IRI", () => {
@@ -1176,9 +991,7 @@ describe("removeAgent", () => {
       groups: [MOCK_GROUP_IRI],
     });
     const result = removeAgent(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
   });
 });
 
@@ -1212,9 +1025,7 @@ describe("setGroup", () => {
   it("sets the given groups for the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setGroup(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
   });
 
   it("deletes any groups previously set for the rule", () => {
@@ -1222,14 +1033,10 @@ describe("setGroup", () => {
       groups: [MOCK_GROUP_OTHER_IRI],
     });
     const result = setGroup(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_OTHER_IRI)
-      )
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
+    expect(getUrlAll(result, ACP_GROUP)).not.toContain(
+      MOCK_GROUP_OTHER_IRI.value
+    );
   });
 
   it("does not change the input rule", () => {
@@ -1237,14 +1044,8 @@ describe("setGroup", () => {
       groups: [MOCK_GROUP_OTHER_IRI],
     });
     setGroup(rule, MOCK_GROUP_IRI.value);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(false);
-    expect(
-      rule.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_OTHER_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_GROUP)).not.toContain(MOCK_GROUP_IRI.value);
+    expect(getUrlAll(rule, ACP_GROUP)).toContain(MOCK_GROUP_OTHER_IRI.value);
   });
 });
 
@@ -1252,15 +1053,9 @@ describe("addGroup", () => {
   it("adds the given group to the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = addGroup(rule, "https://your.pod/groups#a-group");
-    expect(
-      result.has(
-        DataFactory.quad(
-          MOCKED_RULE_IRI,
-          ACP_GROUP,
-          DataFactory.namedNode("https://your.pod/groups#a-group")
-        )
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(
+      "https://your.pod/groups#a-group"
+    );
   });
 
   it("does not override existing agents/public/authenticated/groups", () => {
@@ -1271,25 +1066,11 @@ describe("addGroup", () => {
       authenticated: true,
     });
     const result = addGroup(rule, MOCK_GROUP_OTHER_IRI.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_OTHER_IRI)
-      )
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_OTHER_IRI.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
   });
 });
 
@@ -1299,9 +1080,7 @@ describe("removeGroup", () => {
       groups: [MOCK_GROUP_IRI],
     });
     const result = removeGroup(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_GROUP)).not.toContain(MOCK_GROUP_IRI.value);
   });
 
   it("does not delete unrelated groups", () => {
@@ -1309,14 +1088,8 @@ describe("removeGroup", () => {
       groups: [MOCK_GROUP_IRI, MOCK_GROUP_OTHER_IRI],
     });
     const result = removeGroup(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(false);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_OTHER_IRI)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).not.toContain(MOCK_GROUP_IRI.value);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_OTHER_IRI.value);
   });
 
   it("does not remove agents, even with matching IRI", () => {
@@ -1324,9 +1097,7 @@ describe("removeGroup", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = removeGroup(rule, MOCK_WEBID_ME.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 });
 
@@ -1351,17 +1122,13 @@ describe("setPublic", () => {
   it("applies the given rule to the public agent", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setPublic(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     setPublic(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(false);
+    expect(getUrlAll(rule, ACP_AGENT)).not.toContain(ACP_PUBLIC.value);
   });
 
   it("does not change the other agents", () => {
@@ -1370,14 +1137,8 @@ describe("setPublic", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = setPublic(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 
   it("throws an error when you attempt to use the deprecated API", () => {
@@ -1397,17 +1158,13 @@ describe("removePublic", () => {
       public: true,
     });
     const result = removePublic(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(ACP_PUBLIC.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, { public: true });
     removePublic(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_AGENT)).toContain(ACP_PUBLIC.value);
   });
 
   it("does not change the other agents", () => {
@@ -1417,14 +1174,8 @@ describe("removePublic", () => {
       public: true,
     });
     const result = removePublic(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 });
 
@@ -1449,19 +1200,13 @@ describe("setAuthenticated", () => {
   it("applies to given rule to authenticated agents", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setAuthenticated(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     setAuthenticated(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
-    ).toBe(false);
+    expect(getUrlAll(rule, ACP_AGENT)).not.toContain(ACP_AUTHENTICATED.value);
   });
 
   it("does not change the other agents", () => {
@@ -1470,12 +1215,8 @@ describe("setAuthenticated", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = setAuthenticated(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 
   it("throws an error when you attempt to use the deprecated API", () => {
@@ -1495,19 +1236,13 @@ describe("removeAuthenticated", () => {
       authenticated: true,
     });
     const result = removeAuthenticated(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED)
-      )
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(ACP_AUTHENTICATED.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, { authenticated: true });
     removeAuthenticated(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_AUTHENTICATED))
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_AGENT)).toContain(ACP_AUTHENTICATED.value);
   });
 
   it("does not change the other agents", () => {
@@ -1517,12 +1252,8 @@ describe("removeAuthenticated", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = removeAuthenticated(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 });
 
@@ -1547,17 +1278,13 @@ describe("setCreator", () => {
   it("applies the given rule to the Resource's creator", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setCreator(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_CREATOR.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     setCreator(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(false);
+    expect(getUrlAll(rule, ACP_AGENT)).not.toContain(ACP_CREATOR.value);
   });
 
   it("does not change the other agents", () => {
@@ -1566,12 +1293,8 @@ describe("setCreator", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = setCreator(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 
   it("throws an error when you attempt to use the deprecated API", () => {
@@ -1591,17 +1314,13 @@ describe("removeCreator", () => {
       creator: true,
     });
     const result = removeCreator(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_AGENT)).not.toContain(ACP_CREATOR.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, { creator: true });
     removeCreator(rule);
-    expect(
-      rule.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_CREATOR))
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_AGENT)).toContain(ACP_CREATOR.value);
   });
 
   it("does not change the other agents", () => {
@@ -1611,12 +1330,8 @@ describe("removeCreator", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = removeCreator(rule);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, ACP_PUBLIC))
-    ).toBe(true);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(ACP_PUBLIC.value);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 });
 
@@ -1653,11 +1368,7 @@ describe("setClient", () => {
   it("sets the given clients for the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setClient(rule, MOCK_CLIENT_WEBID_1.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
 
   it("deletes any clients previously set for the rule", () => {
@@ -1665,16 +1376,10 @@ describe("setClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const result = setClient(rule, MOCK_CLIENT_WEBID_2.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
-      )
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_WEBID_1.value
+    );
   });
 
   it("does not change the input rule", () => {
@@ -1682,16 +1387,10 @@ describe("setClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     setClient(rule, MOCK_CLIENT_WEBID_2.value);
-    expect(
-      rule.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
-      )
-    ).toBe(false);
-    expect(
-      rule.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_WEBID_2.value
+    );
+    expect(getUrlAll(rule, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
 
   it("does not overwrite the public client class", () => {
@@ -1699,11 +1398,7 @@ describe("setClient", () => {
       publicClient: true,
     });
     const result = setClient(rule, MOCK_CLIENT_WEBID_1.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 });
 
@@ -1711,11 +1406,7 @@ describe("addClient", () => {
   it("adds the given client to the rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = addClient(rule, MOCK_CLIENT_WEBID_1.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
 
   it("does not override existing clients/the public client class", () => {
@@ -1724,21 +1415,9 @@ describe("addClient", () => {
       publicClient: true,
     });
     const result = addClient(rule, MOCK_CLIENT_WEBID_2.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
-      )
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 });
 
@@ -1748,11 +1427,9 @@ describe("removeClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const result = removeClient(rule, MOCK_CLIENT_WEBID_1.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_WEBID_1.value
+    );
   });
 
   it("does not delete unrelated clients", () => {
@@ -1761,21 +1438,11 @@ describe("removeClient", () => {
       publicClient: true,
     });
     const result = removeClient(rule, MOCK_CLIENT_WEBID_2.value);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_2)
-      )
-    ).toBe(false);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_WEBID_2.value
+    );
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 
   it("does not remove agents, even with a matching IRI", () => {
@@ -1783,9 +1450,7 @@ describe("removeClient", () => {
       agents: [MOCK_WEBID_ME],
     });
     const result = removeClient(rule, MOCK_WEBID_ME.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_AGENT, MOCK_WEBID_ME))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_AGENT)).toContain(MOCK_WEBID_ME.value);
   });
 
   it("does not remove groups, even with a matching IRI", () => {
@@ -1793,9 +1458,7 @@ describe("removeClient", () => {
       groups: [MOCK_GROUP_IRI],
     });
     const result = removeClient(rule, MOCK_GROUP_IRI.value);
-    expect(
-      result.has(DataFactory.quad(MOCKED_RULE_IRI, ACP_GROUP, MOCK_GROUP_IRI))
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
   });
 });
 
@@ -1818,21 +1481,15 @@ describe("setAnyClient", () => {
   it("applies to given rule to the public client class", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = setAnyClient(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     setAnyClient(rule);
-    expect(
-      rule.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(false);
+    expect(getUrlAll(rule, ACP_CLIENT)).not.toContain(
+      SOLID_PUBLIC_CLIENT.value
+    );
   });
 
   it("does not change the other clients", () => {
@@ -1840,11 +1497,7 @@ describe("setAnyClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const result = setAnyClient(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
 });
 
@@ -1854,21 +1507,15 @@ describe("removeAnyClient", () => {
       publicClient: true,
     });
     const result = removeAnyClient(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(false);
+    expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
+      SOLID_PUBLIC_CLIENT.value
+    );
   });
 
   it("does not change the input rule", () => {
     const rule = mockRule(MOCKED_RULE_IRI, { publicClient: true });
     removeAnyClient(rule);
-    expect(
-      rule.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, SOLID_PUBLIC_CLIENT)
-      )
-    ).toBe(true);
+    expect(getUrlAll(rule, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 
   it("does not change the other clients", () => {
@@ -1877,11 +1524,7 @@ describe("removeAnyClient", () => {
       clients: [MOCK_CLIENT_WEBID_1],
     });
     const result = removeAnyClient(rule);
-    expect(
-      result.has(
-        DataFactory.quad(MOCKED_RULE_IRI, ACP_CLIENT, MOCK_CLIENT_WEBID_1)
-      )
-    ).toBe(true);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
 });
 

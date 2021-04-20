@@ -21,7 +21,6 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { Literal, NamedNode, Quad_Object } from "rdf-js";
 import { DataFactory } from "n3";
 import { dataset } from "@rdfjs/dataset";
 import {
@@ -38,21 +37,14 @@ import {
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
+import { internal_throwIfNotThing } from "./thing.internal";
 import {
-  internal_getReadableValue,
-  internal_throwIfNotThing,
-  internal_toNode,
-} from "./thing.internal";
-import {
-  IriString,
   Thing,
   ThingLocal,
   ThingPersisted,
   SolidDataset,
-  WithResourceInfo,
-  WithChangeLog,
-  LocalNode,
   SolidClientError,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { createSolidDataset } from "../resource/solidDataset";
 import { mockThingFrom } from "./mock";
@@ -65,51 +57,25 @@ import {
   addDatetime,
   addDecimal,
 } from "./add";
-import { AclDataset, WithAcl } from "../acl/acl";
+import { WithAcl } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_setAcl } from "../acl/acl.internal";
-
-function getMockQuad(
-  terms: Partial<{
-    subject: IriString;
-    predicate: IriString;
-    object: IriString;
-    namedGraph: IriString;
-  }> = {}
-) {
-  const subject: NamedNode = DataFactory.namedNode(
-    terms.subject ?? "https://arbitrary.vocab/subject"
-  );
-  const predicate: NamedNode = DataFactory.namedNode(
-    terms.predicate ?? "https://arbitrary.vocab/predicate"
-  );
-  const object: NamedNode = DataFactory.namedNode(
-    terms.object ?? "https://arbitrary.vocab/object"
-  );
-  const namedGraph: NamedNode | undefined = terms.namedGraph
-    ? DataFactory.namedNode(terms.namedGraph)
-    : undefined;
-  return DataFactory.quad(subject, predicate, object, namedGraph);
-}
+import { LocalNodeIri, localNodeSkolemPrefix } from "../rdf.internal";
 
 describe("createThing", () => {
   it("automatically generates a unique name for the Thing", () => {
     const thing1: ThingLocal = createThing();
     const thing2: ThingLocal = createThing();
 
-    expect(typeof thing1.internal_localSubject.internal_name).toBe("string");
-    expect(thing1.internal_localSubject.internal_name.length).toBeGreaterThan(
-      0
-    );
-    expect(thing1.internal_localSubject.internal_name).not.toEqual(
-      thing2.internal_localSubject.internal_name
-    );
+    expect(typeof thing1.url).toBe("string");
+    expect(thing1.url.length).toBeGreaterThan(localNodeSkolemPrefix.length);
+    expect(thing1.url).not.toBe(thing2.url);
   });
 
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.internal_localSubject.internal_name).toBe("some-name");
+    expect(thing.url).toBe(localNodeSkolemPrefix + "some-name");
   });
 
   it("uses the given IRI, if any", () => {
@@ -117,7 +83,7 @@ describe("createThing", () => {
       url: "https://some.pod/resource#thing",
     });
 
-    expect(thing.internal_url).toBe("https://some.pod/resource#thing");
+    expect(thing.url).toBe("https://some.pod/resource#thing");
   });
 
   it("throws an error if the given URL is invalid", () => {
@@ -154,157 +120,157 @@ describe("isThing", () => {
 });
 
 describe("getThing", () => {
+  const mockThing1Iri = "https://some.pod/resource#subject1";
+  const mockThing2Iri = "https://some.pod/resource#subject2";
+  const otherGraphIri = "https://some.vocab/graph";
+  const mockThing1: ThingPersisted = {
+    type: "Subject",
+    url: mockThing1Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockThing2: ThingPersisted = {
+    type: "Subject",
+    url: mockThing2Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockLocalThingIri = (localNodeSkolemPrefix +
+    "localSubject") as LocalNodeIri;
+  const mockLocalThing: ThingLocal = {
+    type: "Subject",
+    url: mockLocalThingIri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  function getMockDataset(
+    things = [mockThing1, mockThing2],
+    otherGraphThings = [mockThing1]
+  ): SolidDataset {
+    const solidDataset: SolidDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {},
+        [otherGraphIri]: {},
+      },
+    };
+    things.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs.default[thing.url] as any) = thing;
+    });
+    otherGraphThings.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs[otherGraphIri][thing.url] as any) = thing;
+    });
+    return solidDataset;
+  }
+
   it("returns a Dataset with just Quads in there with the given Subject", () => {
-    const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(relevantQuad);
-    datasetWithMultipleThings.add(
-      getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
-    );
+    const thing = getThing(getMockDataset(), mockThing1Iri);
 
-    const thing = getThing(
-      datasetWithMultipleThings,
-      "https://some.vocab/subject"
-    ) as Thing;
-
-    expect(Array.from(thing)).toEqual([relevantQuad]);
+    expect(thing).toStrictEqual(mockThing1);
   });
 
   it("accepts a Named Node as the Subject identifier", () => {
-    const relevantQuad = getMockQuad({ subject: "https://some.vocab/subject" });
-    const datasetWithAThing = dataset();
-    datasetWithAThing.add(relevantQuad);
-
     const thing = getThing(
-      datasetWithAThing,
-      DataFactory.namedNode("https://some.vocab/subject")
-    ) as Thing;
+      getMockDataset(),
+      DataFactory.namedNode(mockThing1Iri)
+    );
 
-    expect(Array.from(thing)).toEqual([relevantQuad]);
+    expect(thing).toStrictEqual(mockThing1);
   });
 
   it("accepts a LocalNode as the Subject identifier", () => {
-    const quadWithLocalSubject = getMockQuad();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
+    const thing = getThing(
+      getMockDataset([mockLocalThing]),
+      DataFactory.namedNode(mockLocalThingIri)
     );
-    quadWithLocalSubject.subject = localSubject;
-    const datasetWithThingLocal = dataset();
-    datasetWithThingLocal.add(quadWithLocalSubject);
 
-    const thing = getThing(datasetWithThingLocal, localSubject) as Thing;
-
-    expect(Array.from(thing)).toEqual([quadWithLocalSubject]);
+    expect(thing).toStrictEqual(mockLocalThing);
   });
 
   it("returns null if the given SolidDataset does not include Quads with the given Subject", () => {
-    const datasetWithoutTheThing = dataset();
-    datasetWithoutTheThing.add(
-      getMockQuad({ subject: "https://arbitrary-other.vocab/subject" })
-    );
-
     const thing = getThing(
-      datasetWithoutTheThing,
-      "https://some.vocab/subject"
+      getMockDataset([]),
+      "https://arbitrary.vocab/subject"
     );
 
     expect(thing).toBeNull();
   });
 
-  it("returns Quads from all Named Graphs if no scope was specified", () => {
-    const quadInDefaultGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-    });
-    const quadInArbitraryGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://arbitrary.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
-    datasetWithMultipleNamedGraphs.add(quadInArbitraryGraph);
-
+  it("accepts a LocalNode as the Subject identifier even for Things with resolved IRIs", () => {
+    const mockDataset = getMockDataset([mockThing1]);
+    const mockDatasetWithResourceInfo: SolidDataset & WithServerResourceInfo = {
+      ...mockDataset,
+      internal_resourceInfo: {
+        isRawData: false,
+        linkedResources: {},
+        sourceIri: mockThing1Iri.substring(
+          0,
+          mockThing1Iri.length - "subject1".length
+        ),
+      },
+    };
     const thing = getThing(
-      datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject"
-    ) as Thing;
+      mockDatasetWithResourceInfo,
+      localNodeSkolemPrefix + "subject1"
+    );
 
-    expect(thing.size).toBe(2);
-    expect(Array.from(thing)).toContain(quadInDefaultGraph);
-    expect(Array.from(thing)).toContain(quadInArbitraryGraph);
+    expect(thing).toStrictEqual(mockThing1);
+  });
+
+  it("only returns Quads from the default graph if no scope was specified", () => {
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri)
+    ).toBeNull();
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing1Iri)
+    ).toStrictEqual(mockThing1);
   });
 
   it("is able to limit the Thing's scope to a single Named Graph", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
+        scope: otherGraphIri,
       })
-    );
-
-    const thing = getThing(
-      datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: "https://some.vocab/namedGraph" }
-    ) as Thing;
-
-    expect(Array.from(thing)).toEqual([relevantQuad]);
-  });
-
-  it("ignores Quads in the default graph when specifying an explicit scope", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: undefined,
-      })
-    );
-
-    const thing = getThing(
-      datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: "https://some.vocab/namedGraph" }
-    ) as Thing;
-
-    expect(Array.from(thing)).toEqual([relevantQuad]);
+    ).toStrictEqual(mockThing2);
   });
 
   it("is able to specify the scope using a Named Node", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
+        scope: DataFactory.namedNode(otherGraphIri),
       })
-    );
+    ).toStrictEqual(mockThing2);
+  });
 
-    const thing = getThing(
-      datasetWithMultipleNamedGraphs,
-      "https://some.vocab/subject",
-      { scope: DataFactory.namedNode("https://some.vocab/namedGraph") }
-    ) as Thing;
+  it("returns null if the given scope does not include the requested Thing", () => {
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing1Iri, {
+        scope: otherGraphIri,
+      })
+    ).toBeNull();
+  });
 
-    expect(Array.from(thing)).toEqual([relevantQuad]);
+  it("returns null if the given scope does not include any Things", () => {
+    expect(
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
+        scope: "https://arbitrary.vocab/other-graph",
+      })
+    ).toBeNull();
   });
 
   it("throws an error when given an invalid URL", () => {
-    expect(() => getThing(dataset(), "not-a-url")).toThrow(
+    expect(() => getThing(getMockDataset(), "not-a-url")).toThrow(
       "Expected a valid URL to identify a Thing, but received: [not-a-url]."
     );
   });
@@ -312,7 +278,7 @@ describe("getThing", () => {
   it("throws an instance of ThingUrlExpectedError on invalid URLs", () => {
     let thrownError;
     try {
-      getThing(dataset(), "not-a-url");
+      getThing(getMockDataset(), "not-a-url");
     } catch (e) {
       thrownError = e;
     }
@@ -322,678 +288,374 @@ describe("getThing", () => {
 });
 
 describe("getThingAll", () => {
-  it("returns multiple Datasets, each with Quads with the same Subject", () => {
-    const thing1Quad = getMockQuad({ subject: "https://some.vocab/subject" });
-    const thing2Quad = getMockQuad({
-      subject: "https://some-other.vocab/subject",
+  const mockThing1Iri = "https://some.vocab/subject1";
+  const mockThing2Iri = "https://some.vocab/subject2";
+  const otherGraphIri = "https://some.vocab/graph";
+  const mockThing1: ThingPersisted = {
+    type: "Subject",
+    url: mockThing1Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockThing2: ThingPersisted = {
+    type: "Subject",
+    url: mockThing2Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  function getMockDataset(
+    things = [mockThing1, mockThing2],
+    otherGraphThings = [mockThing1]
+  ): SolidDataset {
+    const solidDataset: SolidDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {},
+        [otherGraphIri]: {},
+      },
+    };
+    things.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs.default[thing.url] as any) = thing;
     });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thing1Quad);
-    datasetWithMultipleThings.add(thing2Quad);
+    otherGraphThings.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs[otherGraphIri][thing.url] as any) = thing;
+    });
+    return solidDataset;
+  }
 
-    const things = getThingAll(datasetWithMultipleThings);
+  it("returns the individual Things", () => {
+    const things = getThingAll(getMockDataset([mockThing1, mockThing2]));
 
-    expect(Array.from(things[0])).toEqual([thing1Quad]);
-    expect(Array.from(things[1])).toEqual([thing2Quad]);
+    expect(things).toStrictEqual([mockThing1, mockThing2]);
   });
 
-  it("returns one Thing per unique Subject", () => {
-    const thing1Quad1 = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/object1",
-    });
-    const thing1Quad2 = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/object2",
-    });
-    const thing2Quad = getMockQuad({
-      subject: "https://some-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thing1Quad1);
-    datasetWithMultipleThings.add(thing1Quad2);
-    datasetWithMultipleThings.add(thing2Quad);
+  it("returns Quads from the default Graphs if no scope was specified", () => {
+    const things = getThingAll(getMockDataset([mockThing1], [mockThing2]));
 
-    const things = getThingAll(datasetWithMultipleThings);
-
-    expect(things).toHaveLength(2);
-    expect(Array.from(things[0])).toEqual([thing1Quad1, thing1Quad2]);
-    expect(Array.from(things[1])).toEqual([thing2Quad]);
-  });
-
-  it("returns Quads from all Named Graphs if no scope was specified", () => {
-    const quadInDefaultGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-    });
-    const quadInArbitraryGraph = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://arbitrary.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(quadInDefaultGraph);
-    datasetWithMultipleNamedGraphs.add(quadInArbitraryGraph);
-
-    const things = getThingAll(datasetWithMultipleNamedGraphs);
-
-    expect(Array.from(things[0])).toContain(quadInDefaultGraph);
-    expect(Array.from(things[0])).toContain(quadInArbitraryGraph);
-  });
-
-  it("is able to limit the Things' scope to a single Named Graph", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
-      })
-    );
-
-    const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: "https://some.vocab/namedGraph",
-    });
-
-    expect(Array.from(things[0])).toEqual([relevantQuad]);
+    expect(things).toStrictEqual([mockThing1]);
   });
 
   it("ignores Quads in the default graph when specifying an explicit scope", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: undefined,
-      })
-    );
-
-    const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: "https://some.vocab/namedGraph",
+    const things = getThingAll(getMockDataset([mockThing1], [mockThing2]), {
+      scope: otherGraphIri,
     });
 
-    expect(Array.from(things[0])).toEqual([relevantQuad]);
+    expect(things).toStrictEqual([mockThing2]);
   });
 
   it("is able to specify the scope using a Named Node", () => {
-    const relevantQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      namedGraph: "https://some.vocab/namedGraph",
-    });
-    const datasetWithMultipleNamedGraphs = dataset();
-    datasetWithMultipleNamedGraphs.add(relevantQuad);
-    datasetWithMultipleNamedGraphs.add(
-      getMockQuad({
-        subject: "https://some.vocab/subject",
-        namedGraph: "https://arbitrary-other.vocab/namedGraph",
-      })
-    );
-
-    const things = getThingAll(datasetWithMultipleNamedGraphs, {
-      scope: DataFactory.namedNode("https://some.vocab/namedGraph"),
+    const things = getThingAll(getMockDataset([mockThing1], [mockThing2]), {
+      scope: DataFactory.namedNode(otherGraphIri),
     });
 
-    expect(Array.from(things[0])).toEqual([relevantQuad]);
+    expect(things).toStrictEqual([mockThing2]);
   });
 
-  it("only returns Things whose Subject has an IRI, or is a LocalNode", () => {
-    const quadWithNamedSubject = getMockQuad({
-      subject: "https://some.vocab/subject",
+  it("returns an empty array if the given scope does not include any Things", () => {
+    const things = getThingAll(getMockDataset([mockThing1], [mockThing2]), {
+      scope: "https://arbitrary.vocab/other-graph",
     });
-    const quadWithBlankSubject = getMockQuad();
-    quadWithBlankSubject.subject = DataFactory.blankNode(
-      "Arbitrary blank node"
-    );
-    const quadWithLocalSubject = getMockQuad();
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
-    quadWithLocalSubject.subject = localSubject;
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(quadWithNamedSubject);
-    datasetWithMultipleThings.add(quadWithBlankSubject);
-    datasetWithMultipleThings.add(quadWithLocalSubject);
 
-    const things = getThingAll(datasetWithMultipleThings);
-
-    expect(things).toHaveLength(2);
-    expect(Array.from(things[0])).toEqual([quadWithNamedSubject]);
-    expect(Array.from(things[1])).toEqual([quadWithLocalSubject]);
+    expect(things).toStrictEqual([]);
   });
 });
 
 describe("setThing", () => {
-  it("returns a Dataset with only the Thing's Quads having the Thing's Subject", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
+  const mockThing1Iri = "https://some.vocab/subject1";
+  const mockThing2Iri = "https://some.vocab/subject2";
+  const mockThing1: ThingPersisted = {
+    type: "Subject",
+    url: mockThing1Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockThing2: ThingPersisted = {
+    type: "Subject",
+    url: mockThing2Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  function getMockDataset(things = [mockThing1, mockThing2]): SolidDataset {
+    const solidDataset: SolidDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {},
+      },
+    };
+    things.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs.default[thing.url] as any) = thing;
     });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(oldThingQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    return solidDataset;
+  }
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(newThingQuad);
+  it("returns a Dataset with the new Thing added to it", () => {
+    const datasetWithExistingThings = getMockDataset([mockThing1]);
 
-    const updatedDataset = setThing(datasetWithMultipleThings, newThing);
+    const updatedDataset = setThing(datasetWithExistingThings, mockThing2);
 
-    expect(Array.from(updatedDataset)).toEqual([otherQuad, newThingQuad]);
+    expect(updatedDataset.graphs).toStrictEqual(
+      getMockDataset([mockThing1, mockThing2]).graphs
+    );
   });
 
   it("keeps track of additions and deletions in the attached change log", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(oldThingQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithExistingThings = getMockDataset([mockThing1]);
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(newThingQuad);
+    const updatedDataset = setThing(datasetWithExistingThings, mockThing2);
 
-    const updatedDataset = setThing(datasetWithMultipleThings, newThing);
-
-    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([oldThingQuad]);
+    expect(updatedDataset.internal_changeLog.additions).toHaveLength(1);
+    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(0);
+    expect(updatedDataset.internal_changeLog.additions[0].subject.value).toBe(
+      mockThing2Iri
+    );
   });
 
   it("reconciles deletions and additions in the change log", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const addedQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/previously-added-object",
-    });
-    const deletedQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/previously-deleted-object",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(oldThingQuad);
-    datasetWithMultipleThings.add(otherQuad);
-    datasetWithMultipleThings.add(addedQuad);
-    const datasetWithExistingChangeLog = Object.assign(
-      datasetWithMultipleThings,
-      {
-        internal_changeLog: {
-          additions: [addedQuad],
-          deletions: [deletedQuad],
-        },
-      }
+    const datasetWithExistingThings = getMockDataset([mockThing1, mockThing2]);
+
+    const datasetWithThing2Removed = removeThing(
+      datasetWithExistingThings,
+      mockThing2
     );
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(newThingQuad);
-    newThing.add(deletedQuad);
-
-    const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
-
-    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([oldThingQuad]);
-  });
-
-  it("does not add Quads with Blank Node objects to the ChangeLog", () => {
-    const blankNodeThingQuad = DataFactory.quad(
-      DataFactory.namedNode("https://some.vocab/subject"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.blankNode()
+    expect(datasetWithThing2Removed.internal_changeLog.additions).toHaveLength(
+      0
     );
-    const datasetWithBlankNodeThing = dataset();
-    datasetWithBlankNodeThing.add(blankNodeThingQuad);
-
-    const equivalentBlankNodeThingQuad = DataFactory.quad(
-      DataFactory.namedNode("https://some.vocab/subject"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.blankNode()
+    expect(datasetWithThing2Removed.internal_changeLog.deletions).toHaveLength(
+      1
     );
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(equivalentBlankNodeThingQuad);
-    newThing.add(newThingQuad);
 
-    const updatedDataset = setThing(datasetWithBlankNodeThing, newThing);
+    const datasetWithThing2AddedAgain = setThing(
+      datasetWithThing2Removed,
+      mockThing2
+    );
 
-    expect(updatedDataset.internal_changeLog.additions).toEqual([newThingQuad]);
-    // Specifically: deletions does not include blankNodeThingQuad:
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([]);
+    expect(
+      datasetWithThing2AddedAgain.internal_changeLog.additions
+    ).toHaveLength(0);
+    expect(
+      datasetWithThing2AddedAgain.internal_changeLog.deletions
+    ).toHaveLength(0);
   });
 
   it("preserves existing change logs", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
-    });
-    const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
-    });
-    const datasetWithExistingChangeLog: SolidDataset &
-      WithChangeLog = Object.assign(dataset(), {
-      internal_changeLog: {
-        additions: [existingAddition],
-        deletions: [existingDeletion],
-      },
-    });
-    datasetWithExistingChangeLog.add(oldThingQuad);
-    datasetWithExistingChangeLog.add(otherQuad);
+    const datasetWithoutThings = getMockDataset([]);
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(newThingQuad);
+    const datasetWithThing1Added = setThing(datasetWithoutThings, mockThing1);
 
-    const updatedDataset = setThing(datasetWithExistingChangeLog, newThing);
+    expect(datasetWithThing1Added.internal_changeLog.additions).toHaveLength(1);
+    expect(datasetWithThing1Added.internal_changeLog.deletions).toHaveLength(0);
 
-    expect(updatedDataset.internal_changeLog.additions).toEqual([
-      existingAddition,
-      newThingQuad,
-    ]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([
-      existingDeletion,
-      oldThingQuad,
-    ]);
+    const datasetWithThing2AddedToo = setThing(
+      datasetWithThing1Added,
+      mockThing2
+    );
+
+    expect(datasetWithThing2AddedToo.internal_changeLog.additions).toHaveLength(
+      2
+    );
+    expect(datasetWithThing2AddedToo.internal_changeLog.deletions).toHaveLength(
+      0
+    );
   });
 
   it("does not modify the original SolidDataset", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
-    });
-    const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
-    });
-    const datasetWithExistingChangeLog: SolidDataset &
-      WithChangeLog = Object.assign(dataset(), {
-      internal_changeLog: {
-        additions: [existingAddition],
-        deletions: [existingDeletion],
-      },
-    });
-    datasetWithExistingChangeLog.add(oldThingQuad);
-    datasetWithExistingChangeLog.add(otherQuad);
+    const datasetWithExistingThings = getMockDataset([mockThing1]);
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    newThing.add(newThingQuad);
+    const updatedDataset = setThing(datasetWithExistingThings, mockThing2);
 
-    setThing(datasetWithExistingChangeLog, newThing);
-
-    expect(Array.from(datasetWithExistingChangeLog)).toEqual([
-      oldThingQuad,
-      otherQuad,
-    ]);
-    expect(datasetWithExistingChangeLog.internal_changeLog.additions).toEqual([
-      existingAddition,
-    ]);
-    expect(datasetWithExistingChangeLog.internal_changeLog.deletions).toEqual([
-      existingDeletion,
-    ]);
-  });
-
-  it("does not modify Quads with unexpected Subjects", () => {
-    const unexpectedQuad = DataFactory.quad(
-      DataFactory.variable("Arbitrary unexpected Subject type"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.namedNode("https://arbitrary.vocab/object")
-    );
-    const datasetWithUnexpectedQuad = dataset();
-    datasetWithUnexpectedQuad.add(unexpectedQuad);
-
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
-
-    const updatedDataset = setThing(datasetWithUnexpectedQuad, thing);
-
-    expect(Array.from(updatedDataset)).toEqual([unexpectedQuad]);
-  });
-
-  it("can recognise LocalNodes", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const oldThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
-    );
-    const datasetWithLocalSubject = dataset();
-    datasetWithLocalSubject.add(oldThingQuad);
-
-    const newThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
-    );
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
-    newThing.add(newThingQuad);
-
-    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
-
-    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
+    expect(updatedDataset).not.toStrictEqual(datasetWithExistingThings);
   });
 
   it("can reconcile new LocalNodes with existing NamedNodes if the SolidDataset has a resource IRI attached", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
-      object: "https://some.vocab/old-object",
-    });
-    const datasetWithNamedNode: SolidDataset & WithResourceInfo = Object.assign(
-      dataset(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: false,
-          linkedResources: {},
+    let solidDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const originalThing: ThingPersisted = {
+      type: "Subject",
+      url: "https://some.pod/resource#subjectName",
+      predicates: {
+        "https://arbitrary.predicate": {
+          namedNodes: ["https://arbitrary.value"],
         },
-      }
-    );
-    datasetWithNamedNode.add(oldThingQuad);
-
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const newThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
-    );
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
-    newThing.add(newThingQuad);
-
-    const updatedDataset = setThing(datasetWithNamedNode, newThing);
-
-    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
-  });
-
-  it("can reconcile new NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const oldThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
-    );
-    const datasetWithLocalSubject: SolidDataset &
-      WithResourceInfo = Object.assign(dataset(), {
-      internal_resourceInfo: {
-        sourceIri: "https://some.pod/resource",
-        isRawData: false,
-        linkedResources: {},
       },
-    });
-    datasetWithLocalSubject.add(oldThingQuad);
+    };
+    solidDataset = setThing(solidDataset, originalThing);
 
-    const newThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
-      object: "https://some.vocab/old-object",
-    });
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
-    newThing.add(newThingQuad);
+    const updatedThing: ThingLocal = {
+      type: "Subject",
+      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      predicates: {
+        "https://some.predicate": {
+          namedNodes: ["https://some.value"],
+        },
+      },
+    };
+    const updatedDataset = setThing(solidDataset, updatedThing);
 
-    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
-
-    expect(Array.from(updatedDataset)).toEqual([newThingQuad]);
+    expect(
+      getThing(updatedDataset, "https://some.pod/resource#subjectName")
+        ?.predicates
+    ).toStrictEqual(updatedThing.predicates);
   });
 
   it("only updates LocalNodes if the SolidDataset has no known IRI", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const oldThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
-    );
-    const similarSubjectQuad = getMockQuad({
-      subject: "https://some.pod/resource#localSubject",
-    });
-    const datasetWithLocalSubject = dataset();
-    datasetWithLocalSubject.add(oldThingQuad);
-    datasetWithLocalSubject.add(similarSubjectQuad);
+    let solidDataset = createSolidDataset();
+    const originalThing: ThingPersisted = {
+      type: "Subject",
+      url: "https://some.pod/resource#subjectName",
+      predicates: {
+        "https://arbitrary.predicate": {
+          namedNodes: ["https://arbitrary.value"],
+        },
+      },
+    };
+    solidDataset = setThing(solidDataset, originalThing);
 
-    const newThingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
-    );
-    const newThing: Thing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
-    newThing.add(newThingQuad);
+    const updatedThing: ThingLocal = {
+      type: "Subject",
+      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      predicates: {
+        "https://some.predicate": {
+          namedNodes: ["https://some.value"],
+        },
+      },
+    };
+    const updatedDataset = setThing(solidDataset, updatedThing);
 
-    const updatedDataset = setThing(datasetWithLocalSubject, newThing);
-
-    expect(Array.from(updatedDataset)).toEqual([
-      similarSubjectQuad,
-      newThingQuad,
-    ]);
+    expect(
+      getThing(updatedDataset, "https://some.pod/resource#subjectName")
+    ).toStrictEqual(originalThing);
   });
 });
 
 describe("removeThing", () => {
+  const mockThing1Iri = "https://some.vocab/subject1";
+  const mockThing2Iri = "https://some.vocab/subject2";
+  const mockThing1: ThingPersisted = {
+    type: "Subject",
+    url: mockThing1Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockThing2: ThingPersisted = {
+    type: "Subject",
+    url: mockThing2Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockLocalThingIri = (localNodeSkolemPrefix +
+    "localSubject") as LocalNodeIri;
+  const mockLocalThing: ThingLocal = {
+    type: "Subject",
+    url: mockLocalThingIri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  function getMockDataset(things = [mockThing1, mockThing2]): SolidDataset {
+    const solidDataset: SolidDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {},
+      },
+    };
+    things.forEach((thing) => {
+      // The assertion allows writing to what we've declared to be a read-only property:
+      (solidDataset.graphs.default[thing.url] as any) = thing;
+    });
+    return solidDataset;
+  }
+
   it("returns a Dataset that excludes Quads with the Thing's Subject", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(sameSubjectQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithMultipleThings = getMockDataset([mockThing1, mockThing2]);
 
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
+    const updatedDataset = removeThing(datasetWithMultipleThings, mockThing2);
 
-    const updatedDataset = removeThing(datasetWithMultipleThings, thing);
-
-    expect(Array.from(updatedDataset)).toEqual([otherQuad]);
+    expect(updatedDataset.graphs).toStrictEqual(
+      getMockDataset([mockThing1]).graphs
+    );
   });
 
   it("keeps track of deletions in the attached change log", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(sameSubjectQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithExistingThings = getMockDataset([mockThing1, mockThing2]);
 
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
+    const updatedDataset = removeThing(datasetWithExistingThings, mockThing2);
 
-    const updatedDataset = removeThing(datasetWithMultipleThings, thing);
-
-    expect(updatedDataset.internal_changeLog.additions).toEqual([]);
-    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(2);
-    expect(updatedDataset.internal_changeLog.deletions).toContain(
-      sameSubjectQuad
+    expect(updatedDataset.internal_changeLog.additions).toHaveLength(0);
+    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(1);
+    expect(updatedDataset.internal_changeLog.deletions[0].subject.value).toBe(
+      mockThing2Iri
     );
-    expect(updatedDataset.internal_changeLog.deletions).toContain(thingQuad);
   });
 
   it("reconciles deletions in the change log with additions", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const sameSubjectQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/old-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(sameSubjectQuad);
-    datasetWithMultipleThings.add(otherQuad);
-    const datasetWithChangelog = Object.assign(datasetWithMultipleThings, {
-      internal_changeLog: {
-        additions: [thingQuad],
-        deletions: [],
-      },
-    });
+    const datasetWithExistingThings = getMockDataset([mockThing1]);
 
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
-
-    const updatedDataset = removeThing(datasetWithChangelog, thing);
-
-    expect(updatedDataset.internal_changeLog.additions).toEqual([]);
-    expect(updatedDataset.internal_changeLog.deletions).toHaveLength(1);
-    expect(updatedDataset.internal_changeLog.deletions).toContain(
-      sameSubjectQuad
+    const datasetWithThing2Added = setThing(
+      datasetWithExistingThings,
+      mockThing2
     );
+
+    expect(datasetWithThing2Added.internal_changeLog.additions).toHaveLength(1);
+    expect(datasetWithThing2Added.internal_changeLog.deletions).toHaveLength(0);
+
+    const datasetWithThing2RemovedAgain = removeThing(
+      datasetWithExistingThings,
+      mockThing2
+    );
+
+    expect(
+      datasetWithThing2RemovedAgain.internal_changeLog.additions
+    ).toHaveLength(0);
+    expect(
+      datasetWithThing2RemovedAgain.internal_changeLog.deletions
+    ).toHaveLength(0);
   });
 
   it("preserves existing change logs", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const existingAddition = getMockQuad({
-      object: "https://some.vocab/addition-object",
-    });
-    const existingDeletion = getMockQuad({
-      object: "https://some.vocab/deletion-object",
-    });
-    const datasetWithExistingChangeLog: SolidDataset &
-      WithChangeLog = Object.assign(dataset(), {
-      internal_changeLog: {
-        additions: [existingAddition],
-        deletions: [existingDeletion],
-      },
-    });
-    datasetWithExistingChangeLog.add(thingQuad);
+    const datasetWithoutThings = getMockDataset([mockThing2]);
 
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
+    const datasetWithThing1Added = setThing(datasetWithoutThings, mockThing1);
 
-    const updatedDataset = removeThing(datasetWithExistingChangeLog, thing);
+    expect(datasetWithThing1Added.internal_changeLog.additions).toHaveLength(1);
+    expect(datasetWithThing1Added.internal_changeLog.deletions).toHaveLength(0);
 
-    expect(updatedDataset.internal_changeLog.additions).toEqual([
-      existingAddition,
-    ]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([
-      existingDeletion,
-      thingQuad,
-    ]);
+    const datasetWithThing2AddedToo = removeThing(
+      datasetWithThing1Added,
+      mockThing2
+    );
+
+    expect(datasetWithThing2AddedToo.internal_changeLog.additions).toHaveLength(
+      1
+    );
+    expect(datasetWithThing2AddedToo.internal_changeLog.deletions).toHaveLength(
+      1
+    );
   });
 
   it("preserves attached ACLs", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
     const datasetWithFetchedAcls: SolidDataset & WithAcl = internal_setAcl(
       mockSolidDatasetFrom("https://some.vocab/"),
       {
@@ -1001,14 +663,12 @@ describe("removeThing", () => {
         fallbackAcl: null,
       }
     );
-    datasetWithFetchedAcls.add(thingQuad);
+    // The assertion is to tell the type system we can write to this:
+    (datasetWithFetchedAcls.graphs.default[
+      mockThing1Iri
+    ] as Thing) = mockThing1;
 
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
-
-    const updatedDataset = removeThing(datasetWithFetchedAcls, thing);
+    const updatedDataset = removeThing(datasetWithFetchedAcls, mockThing1);
 
     expect(updatedDataset.internal_acl).toEqual({
       resourceAcl: null,
@@ -1016,247 +676,118 @@ describe("removeThing", () => {
     });
   });
 
-  it("preserves metadata on ACL Datasets", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const aclDataset: AclDataset = Object.assign(dataset(), {
-      internal_accessTo: "https://arbitrary.pod/resource",
-      internal_resourceInfo: {
-        sourceIri: "https://arbitrary.pod/resource.acl",
-        isRawData: false,
-        linkedResources: {},
-      },
-    });
-    aclDataset.add(thingQuad);
-
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.vocab/subject",
-    });
-    thing.add(thingQuad);
-
-    const updatedDataset = removeThing(aclDataset, thing);
-
-    expect(updatedDataset.internal_accessTo).toBe(
-      "https://arbitrary.pod/resource"
-    );
-    expect(updatedDataset.internal_resourceInfo).toEqual({
-      sourceIri: "https://arbitrary.pod/resource.acl",
-      isRawData: false,
-      linkedResources: {},
-    });
-  });
-
   it("returns a Dataset that excludes Quads with a given Subject IRI", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithMultipleThings = getMockDataset([mockThing1, mockThing2]);
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      "https://some.vocab/subject"
+      mockThing2Iri
     );
 
-    expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
+    expect(updatedDataset.graphs).toStrictEqual(
+      getMockDataset([mockThing1]).graphs
+    );
   });
 
   it("does not modify the original SolidDataset", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(otherQuad);
-
-    removeThing(datasetWithMultipleThings, "https://some.vocab/subject");
-
-    expect(Array.from(datasetWithMultipleThings)).toEqual([
-      thingQuad,
-      otherQuad,
-    ]);
-    expect(
-      (datasetWithMultipleThings as SolidDataset & WithChangeLog)
-        .internal_changeLog
-    ).toBeUndefined();
-  });
-
-  it("does not modify Quads with unexpected Subjects", () => {
-    const unexpectedQuad = DataFactory.quad(
-      DataFactory.variable("Arbitrary unexpected Subject type"),
-      DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.namedNode("https://arbitrary.vocab/object")
-    );
-    const datasetWithUnexpectedQuad = dataset();
-    datasetWithUnexpectedQuad.add(unexpectedQuad);
-
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://arbitrary.vocab/subject",
-    });
-
-    const updatedDataset = removeThing(datasetWithUnexpectedQuad, thing);
-
-    expect(Array.from(updatedDataset)).toEqual([unexpectedQuad]);
-  });
-
-  it("returns a Dataset that excludes Quads with a given NamedNode as their Subject", () => {
-    const thingQuad = getMockQuad({
-      subject: "https://some.vocab/subject",
-      object: "https://some.vocab/new-object",
-    });
-    const otherQuad = getMockQuad({
-      subject: "https://arbitrary-other.vocab/subject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(otherQuad);
+    const datasetWithMultipleThings = getMockDataset([mockThing1, mockThing2]);
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      DataFactory.namedNode("https://some.vocab/subject")
+      mockThing2Iri
     );
 
-    expect(Array.from(updatedDataset)).toEqual([otherQuad]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
+    expect(datasetWithMultipleThings.graphs).not.toStrictEqual(
+      updatedDataset.graphs
+    );
+  });
+
+  it("returns a Dataset that excludes Quads with a given NamedNode as their Subject", () => {
+    const datasetWithMultipleThings = getMockDataset([mockThing1, mockThing2]);
+
+    const updatedDataset = removeThing(
+      datasetWithMultipleThings,
+      DataFactory.namedNode(mockThing2Iri)
+    );
+
+    expect(updatedDataset.graphs).toStrictEqual(
+      getMockDataset([mockThing1]).graphs
+    );
   });
 
   it("can recognise LocalNodes", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const thingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
-    );
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
+    const solidDataset = getMockDataset([mockLocalThing]);
 
-    const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
+    const updatedDataset = removeThing(solidDataset, mockLocalThingIri);
 
-    expect(updatedDataset.size).toBe(0);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("can reconcile given LocalNodes with existing NamedNodes if the SolidDataset has a resource IRI attached", () => {
-    const oldThingQuad = getMockQuad({
-      subject: "https://some.pod/resource#subject",
-      object: "https://some.vocab/old-object",
-    });
-    const datasetWithNamedNode: SolidDataset & WithResourceInfo = Object.assign(
-      dataset(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: false,
-          linkedResources: {},
+    let solidDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const thingWithFullIri: ThingPersisted = {
+      type: "Subject",
+      url: "https://some.pod/resource#subjectName",
+      predicates: {
+        "https://arbitrary.predicate": {
+          namedNodes: ["https://arbitrary.value"],
         },
-      }
-    );
-    datasetWithNamedNode.add(oldThingQuad);
-
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
-
-    const updatedDataset = removeThing(datasetWithNamedNode, localSubject);
-
-    expect(updatedDataset.size).toBe(0);
-  });
-
-  it("can reconcile given NamedNodes with existing LocalNodes if the SolidDataset has a resource IRI attached", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "subject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const thingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/new-object")
-    );
-    const datasetWithLocalNode: SolidDataset & WithResourceInfo = Object.assign(
-      dataset(),
-      {
-        internal_resourceInfo: {
-          sourceIri: "https://some.pod/resource",
-          isRawData: false,
-          linkedResources: {},
-        },
-      }
-    );
-    datasetWithLocalNode.add(thingQuad);
+      },
+    };
+    solidDataset = setThing(solidDataset, thingWithFullIri);
 
     const updatedDataset = removeThing(
-      datasetWithLocalNode,
-      DataFactory.namedNode("https://some.pod/resource#subject")
+      solidDataset,
+      localNodeSkolemPrefix + "subjectName"
     );
 
-    expect(updatedDataset.size).toBe(0);
+    expect(getThingAll(updatedDataset)).toHaveLength(0);
   });
 
   it("only removes LocalNodes if the SolidDataset has no known IRI", () => {
-    const localSubject = Object.assign(
-      DataFactory.blankNode("Blank node representing a LocalNode"),
-      { internal_name: "localSubject" }
-    );
-    const mockPredicate = DataFactory.namedNode(
-      "https://arbitrary.vocab/predicate"
-    );
-    const thingQuad = DataFactory.quad(
-      localSubject,
-      mockPredicate,
-      DataFactory.namedNode("https://some.vocab/old-object")
-    );
-    const similarSubjectQuad = getMockQuad({
-      subject: "https://some.pod/resource#localSubject",
-    });
-    const datasetWithMultipleThings = dataset();
-    datasetWithMultipleThings.add(thingQuad);
-    datasetWithMultipleThings.add(similarSubjectQuad);
+    let solidDataset = createSolidDataset();
+    const resolvedThing: ThingPersisted = {
+      type: "Subject",
+      url: "https://some.pod/resource#subjectName",
+      predicates: {
+        "https://arbitrary.predicate": {
+          namedNodes: ["https://arbitrary.value"],
+        },
+      },
+    };
+    const localThing: ThingLocal = {
+      type: "Subject",
+      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      predicates: {
+        "https://some.predicate": {
+          namedNodes: ["https://some.value"],
+        },
+      },
+    };
+    solidDataset = setThing(solidDataset, resolvedThing);
+    solidDataset = setThing(solidDataset, localThing);
 
-    const updatedDataset = removeThing(datasetWithMultipleThings, localSubject);
+    const updatedDataset = removeThing(solidDataset, localThing);
 
-    expect(Array.from(updatedDataset)).toEqual([similarSubjectQuad]);
-    expect(updatedDataset.internal_changeLog.deletions).toEqual([thingQuad]);
+    expect(
+      getThing(updatedDataset, "https://some.pod/resource#subjectName")
+    ).toStrictEqual(resolvedThing);
   });
 });
 
 describe("asIri", () => {
   it("returns the IRI of a persisted Thing", () => {
-    const persistedThing: ThingPersisted = Object.assign(dataset(), {
-      internal_url: "https://some.pod/resource#thing",
-    });
+    const persistedThing = mockThingFrom("https://some.pod/resource#thing");
 
     expect(asUrl(persistedThing)).toBe("https://some.pod/resource#thing");
   });
 
   it("returns the IRI of a local Thing relative to a given base IRI", () => {
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-name",
-    });
-    const localThing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
+    const localThing: ThingLocal = {
+      type: "Subject",
+      predicates: {},
+      url: (localNodeSkolemPrefix + "some-name") as LocalNodeIri,
+    };
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
       "https://some.pod/resource#some-name"
@@ -1264,9 +795,7 @@ describe("asIri", () => {
   });
 
   it("accepts a Thing of which it is not known whether it is persisted yet", () => {
-    const thing: Thing = Object.assign(dataset(), {
-      internal_url: "https://some.pod/resource#thing",
-    });
+    const thing = mockThingFrom("https://some.pod/resource#thing");
 
     expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
       "https://some.pod/resource#thing"
@@ -1274,12 +803,11 @@ describe("asIri", () => {
   });
 
   it("throws an error when a local Thing was given without a base IRI", () => {
-    const localSubject: LocalNode = Object.assign(DataFactory.blankNode(), {
-      internal_name: "some-name",
-    });
-    const localThing = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
+    const localThing: ThingLocal = {
+      type: "Subject",
+      predicates: {},
+      url: (localNodeSkolemPrefix + "some-name") as LocalNodeIri,
+    };
 
     expect(() => asUrl(localThing, undefined as any)).toThrow(
       "The URL of a Thing that has not been persisted cannot be determined without a base URL."
@@ -1287,38 +815,19 @@ describe("asIri", () => {
   });
 });
 
-describe("toNode", () => {
-  it("should result in equal LocalNodes for the same ThingLocal", () => {
-    const localSubject: LocalNode = Object.assign(
-      DataFactory.blankNode("Arbitrary blank node"),
-      { internal_name: "localSubject" }
-    );
-    const thing: ThingLocal = Object.assign(dataset(), {
-      internal_localSubject: localSubject,
-    });
-    const node1 = internal_toNode(thing);
-    const node2 = internal_toNode(thing);
-    expect(node1.equals(node2)).toBe(true);
-  });
-});
-
 describe("thingAsMarkdown", () => {
   it("returns a readable version of an empty, unsaved Thing", () => {
     const emptyThing = createThing({ name: "empty-thing" });
-
     expect(thingAsMarkdown(emptyThing)).toBe(
       "## Thing (no URL yet — identifier: `#empty-thing`)\n\n<empty>\n"
     );
   });
-
   it("returns a readable version of an empty Thing with a known URL", () => {
     const emptyThing = mockThingFrom("https://some.pod/resource#thing");
-
     expect(thingAsMarkdown(emptyThing)).toBe(
       "## Thing: https://some.pod/resource#thing\n\n<empty>\n"
     );
   });
-
   it("returns a readable version of a Thing with just one property", () => {
     let thingWithValue = createThing({ name: "with-one-value" });
     thingWithValue = addStringNoLocale(
@@ -1326,7 +835,6 @@ describe("thingAsMarkdown", () => {
       "https://some.vocab/predicate",
       "Some value"
     );
-
     expect(thingAsMarkdown(thingWithValue)).toBe(
       "## Thing (no URL yet — identifier: `#with-one-value`)\n" +
         "\n" +
@@ -1334,19 +842,19 @@ describe("thingAsMarkdown", () => {
         '- "Some value" (string)\n'
     );
   });
-
   it("returns a readable version of a Thing with multiple properties and values", () => {
+    const mockThingObject = createThing({ name: "local-node-object" });
     let thingWithValues = createThing({ name: "with-values" });
-    thingWithValues = addStringNoLocale(
-      thingWithValues,
-      "https://some.vocab/predicate",
-      "Some value"
-    );
     thingWithValues = addStringWithLocale(
       thingWithValues,
       "https://some.vocab/predicate",
-      "Some other value",
+      "Some value",
       "en-gb"
+    );
+    thingWithValues = addStringNoLocale(
+      thingWithValues,
+      "https://some.vocab/predicate",
+      "Some other value"
     );
     thingWithValues = addBoolean(
       thingWithValues,
@@ -1373,139 +881,68 @@ describe("thingAsMarkdown", () => {
       "https://some.vocab/other-predicate",
       "https://some.url"
     );
-
+    thingWithValues = addIri(
+      thingWithValues,
+      "https://some.vocab/other-predicate",
+      mockThingObject
+    );
     expect(thingAsMarkdown(thingWithValues)).toBe(
       "## Thing (no URL yet — identifier: `#with-values`)\n" +
         "\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- "Some value" (string)\n' +
-        '- "Some other value" (en-gb string)\n' +
+        '- "Some value" (en-gb string)\n' +
+        '- "Some other value" (string)\n' +
         "- true (boolean)\n" +
         "- Mon, 12 Nov 1990 13:37:42 GMT (datetime)\n" +
         "- 13.37 (decimal)\n" +
         "- 42 (integer)\n" +
         "\n" +
         "Property: https://some.vocab/other-predicate\n" +
-        "- <https://some.url> (URL)\n"
+        "- <https://some.url> (URL)\n" +
+        "- <#local-node-object> (URL)\n"
     );
   });
-
   it("returns a readable version of a Thing that points to other Things", () => {
     let thing1 = createThing({ name: "thing1" });
-    const thing2 = createThing({ name: "thing2" });
-    const thing3 = mockThingFrom("https://some.pod/resource#thing3");
+    const thing2 = mockThingFrom("https://some.pod/resource#thing2");
+    const thing3 = createThing({ name: "thing3" });
     thing1 = addIri(thing1, "https://some.vocab/predicate", thing2);
     thing1 = addIri(thing1, "https://some.vocab/predicate", thing3);
-
     expect(thingAsMarkdown(thing1)).toBe(
       "## Thing (no URL yet — identifier: `#thing1`)\n" +
         "\n" +
         "Property: https://some.vocab/predicate\n" +
-        "- <#thing2> (URL)\n" +
-        "- <https://some.pod/resource#thing3> (URL)\n"
+        "- <https://some.pod/resource#thing2> (URL)\n" +
+        "- <#thing3> (URL)\n"
     );
   });
-
-  it("returns a readable version of a Thing with values that we do not explicitly provide convenience functions for", () => {
-    const thingWithRdfValues = createThing({ name: "with-rdf-values" });
-    const someBlankNode = DataFactory.blankNode("blank-node-id");
-    const someLiteral = DataFactory.literal(
-      "some-serialised-value",
-      DataFactory.namedNode("https://some.vocab/datatype")
-    );
-    thingWithRdfValues.add(
-      DataFactory.quad(
-        thingWithRdfValues.internal_localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        someBlankNode
-      )
-    );
-    thingWithRdfValues.add(
-      DataFactory.quad(
-        thingWithRdfValues.internal_localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        someLiteral
-      )
-    );
-
-    thingWithRdfValues.add(
-      DataFactory.quad(
-        thingWithRdfValues.internal_localSubject,
-        DataFactory.namedNode("https://some.vocab/predicate"),
-        DataFactory.quad(
-          DataFactory.blankNode("Arbitrary Subject in an RDF* nested Quad."),
-          DataFactory.namedNode("https://some.vocab/predicate"),
-          DataFactory.literal("Arbitrary Object in an RDF* nested Quad.")
-        )
-      )
-    );
-
-    expect(thingAsMarkdown(thingWithRdfValues)).toBe(
-      "## Thing (no URL yet — identifier: `#with-rdf-values`)\n" +
-        "\n" +
-        "Property: https://some.vocab/predicate\n" +
-        "- [blank-node-id] (RDF/JS BlankNode)\n" +
-        "- [some-serialised-value] (RDF/JS Literal of type: `https://some.vocab/datatype`)\n" +
-        "- ??? (nested RDF* Quad)\n"
-    );
-  });
-
-  it("returns a readable version even of a Thing that contains invalid data", () => {
-    const thingWithValues = createThing({ name: "with-values" });
-    function addInvalidValue(value: Quad_Object) {
-      thingWithValues.add(
-        DataFactory.quad(
-          thingWithValues.internal_localSubject,
-          DataFactory.namedNode("https://some.vocab/predicate"),
-          value
-        )
-      );
-    }
-
-    const invalidDatatype: Literal = {
-      equals: () => false,
-      language: "",
-      termType: "Literal",
-      value: "With invalid datatype",
-      datatype: new Error("Not a valid datatype") as any,
+  it("renders when values are invalid", () => {
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://some.pod/resource#thing",
+      predicates: {
+        "https://some.vocab/predicate": {
+          blankNodes: ["_:some-blank-node"],
+          literals: {
+            "http://www.w3.org/2001/XMLSchema#boolean": ["not-a-boolean"],
+            "http://www.w3.org/2001/XMLSchema#dateTime": ["not-a-dateTime"],
+            "http://www.w3.org/2001/XMLSchema#decimal": ["not-a-decimal"],
+            "http://www.w3.org/2001/XMLSchema#integer": ["not-an-integer"],
+            "https://some.vocab/other-type": ["some other value"],
+          },
+        },
+      },
     };
-    addInvalidValue(invalidDatatype);
-    addInvalidValue(
-      DataFactory.literal(
-        "Not a boolean",
-        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")
-      )
-    );
-    addInvalidValue(
-      DataFactory.literal(
-        "Not a datetime",
-        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#dateTime")
-      )
-    );
-    addInvalidValue(
-      DataFactory.literal(
-        "Not a decimal",
-        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#decimal")
-      )
-    );
-    addInvalidValue(
-      DataFactory.literal(
-        "Not an integer",
-        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#integer")
-      )
-    );
-    addInvalidValue(DataFactory.variable("some-variable"));
-
-    expect(thingAsMarkdown(thingWithValues)).toBe(
-      "## Thing (no URL yet — identifier: `#with-values`)\n" +
+    expect(thingAsMarkdown(thing)).toBe(
+      "## Thing: https://some.pod/resource#thing\n" +
         "\n" +
         "Property: https://some.vocab/predicate\n" +
-        "- [With invalid datatype] (RDF/JS Literal of unknown type)\n" +
-        "- Invalid data: `Not a boolean` (boolean)\n" +
-        "- Invalid data: `Not a datetime` (datetime)\n" +
-        "- Invalid data: `Not a decimal` (decimal)\n" +
-        "- Invalid data: `Not an integer` (integer)\n" +
-        "- ?some-variable (RDF/JS Variable)\n"
+        "- Invalid data: `not-a-boolean` (boolean)\n" +
+        "- Invalid data: `not-a-dateTime` (datetime)\n" +
+        "- Invalid data: `not-a-decimal` (decimal)\n" +
+        "- Invalid data: `not-an-integer` (integer)\n" +
+        "- [some other value] (RDF/JS Literal of type: `https://some.vocab/other-type`)\n" +
+        "- [some-blank-node] (RDF/JS BlankNode)\n"
     );
   });
 });
