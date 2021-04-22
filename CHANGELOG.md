@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- The function `getLinkedResourceUrlAll` that gives you all Resources linked to
+  a given Resource, indexed by their relation to the given Resource.
+
 ### Bugs fixed
 
 - While the API documentation mentioned an `isThingLocal` function, it could not

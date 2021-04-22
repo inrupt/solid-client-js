@@ -40,6 +40,7 @@ import {
   isContainer,
   isRawData,
   getContentType,
+  getLinkedResourceUrlAll,
 } from "./resource";
 import { internal_cloneResource } from "./resource.internal";
 import {
@@ -668,6 +669,42 @@ describe("isPodOwner", () => {
     expect(
       isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
     ).toBeNull();
+  });
+});
+
+describe("getLinkedResourceUrlAll", () => {
+  it("returns the URLs of the Resources linked to the given URL, indexed by their relation type", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/.acl"],
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(getLinkedResourceUrlAll(resourceInfo)).toStrictEqual({
+      acl: ["https://arbitrary.pod/.acl"],
+      "http://www.w3.org/ns/solid/terms#podOwner": [
+        "https://some.pod/profile#WebId",
+      ],
+    });
+  });
+
+  it("returns an empty object when there are no linked Resources", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {},
+      },
+    };
+
+    expect(getLinkedResourceUrlAll(resourceInfo)).toStrictEqual({});
   });
 });
 

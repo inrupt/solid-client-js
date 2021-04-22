@@ -28,6 +28,7 @@ export {
   getResourceInfo,
   getPodOwner,
   isPodOwner,
+  getLinkedResourceUrlAll,
   FetchError,
 } from "./resource/resource";
 export {
