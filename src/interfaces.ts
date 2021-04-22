@@ -99,6 +99,13 @@ type internal_WacAllow = {
 };
 
 /**
+ * URLs of Resources linked to a given Resource, indexed by relation.
+ *
+ * @since Not released yet.
+ */
+export type LinkedResourceUrlAll = Record<UrlString | string, UrlString[]>;
+
+/**
  * Data that was fetched from a Pod includes this metadata describing its relation to the Pod Resource it was fetched from.
  *
  * **Do not read these properties directly**; their internal representation may change at any time.
@@ -122,7 +129,7 @@ export type WithServerResourceInfo = WithResourceInfo & {
      * An object of the links in the `Link` header, keyed by their `rel`.
      * @hidden
      */
-    linkedResources: Record<string, string[]>;
+    linkedResources: LinkedResourceUrlAll;
     /**
      * Access permissions for the current user and the general public for this resource.
      *

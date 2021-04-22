@@ -31,6 +31,7 @@ import {
   getResourceInfoWithAcl,
   getPodOwner,
   isPodOwner,
+  getLinkedResourceUrlAll,
   isContainer,
   isRawData,
   getContentType,
@@ -178,6 +179,7 @@ it("exports the public API from the entry file", () => {
   expect(getResourceInfoWithAcl).toBeDefined();
   expect(getPodOwner).toBeDefined();
   expect(isPodOwner).toBeDefined();
+  expect(getLinkedResourceUrlAll).toBeDefined();
   expect(isContainer).toBeDefined();
   expect(isRawData).toBeDefined();
   expect(getContentType).toBeDefined();

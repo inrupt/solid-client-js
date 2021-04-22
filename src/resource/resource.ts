@@ -29,6 +29,7 @@ import {
   WithResourceInfo,
   hasServerResourceInfo,
   SolidClientError,
+  LinkedResourceUrlAll,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
@@ -142,7 +143,7 @@ export function getPodOwner(resource: WithServerResourceInfo): WebId | null {
   }
 
   const podOwners =
-    resource.internal_resourceInfo.linkedResources[
+    getLinkedResourceUrlAll(resource)[
       "http://www.w3.org/ns/solid/terms#podOwner"
     ] ?? [];
 
@@ -174,6 +175,23 @@ export function isPodOwner(
   }
 
   return podOwner === webId;
+}
+
+/**
+ * Get the URLs of Resources linked to the given Resource.
+ *
+ * Solid servers can link Resources to each other. For example, in servers
+ * implementing Web Access Control, Resources can have an Access Control List
+ * Resource linked to it via the `acl` relation.
+ *
+ * @param resource A Resource fetched from a Solid Pod.
+ * @returns The URLs of Resources linked to the given Resource, indexed by the key that links them.
+ * @since Not released yet.
+ */
+export function getLinkedResourceUrlAll(
+  resource: WithServerResourceInfo
+): LinkedResourceUrlAll {
+  return resource.internal_resourceInfo.linkedResources;
 }
 
 /**
