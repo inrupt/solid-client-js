@@ -99,6 +99,28 @@ type internal_WacAllow = {
 };
 
 /**
+ * What access the current user has to a particular Resource, and what access everybody has.
+ *
+ * Note that access for everybody is at the time of writing not returned by
+ * servers implementing Access Control Policies, so the `public` property is
+ * only available on servers that implement Web Access Control.
+ *
+ * @since Not released yet.
+ */
+export type EffectiveAccess = {
+  user: {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+  };
+  public?: {
+    read: boolean;
+    append: boolean;
+    write: boolean;
+  };
+};
+
+/**
  * URLs of Resources linked to a given Resource, indexed by relation.
  *
  * @since Not released yet.
