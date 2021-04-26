@@ -3,6 +3,7 @@
   "appInitDelay": 3000,
   "browsers": ["firefox:headless"],
   "src": "src/e2e-browser/**/*.testcafe.ts",
+  "assertionTimeout": 10000,
   "clientScripts": [
     { "module": "@testing-library/dom/dist/@testing-library/dom.umd.js" }
   ],

@@ -29,6 +29,8 @@ import {
   WithResourceInfo,
   hasServerResourceInfo,
   SolidClientError,
+  LinkedResourceUrlAll,
+  EffectiveAccess,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
@@ -36,6 +38,7 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
+import { acp } from "../constants";
 
 /** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
@@ -142,7 +145,7 @@ export function getPodOwner(resource: WithServerResourceInfo): WebId | null {
   }
 
   const podOwners =
-    resource.internal_resourceInfo.linkedResources[
+    getLinkedResourceUrlAll(resource)[
       "http://www.w3.org/ns/solid/terms#podOwner"
     ] ?? [];
 
@@ -174,6 +177,67 @@ export function isPodOwner(
   }
 
   return podOwner === webId;
+}
+
+/**
+ * Get the URLs of Resources linked to the given Resource.
+ *
+ * Solid servers can link Resources to each other. For example, in servers
+ * implementing Web Access Control, Resources can have an Access Control List
+ * Resource linked to it via the `acl` relation.
+ *
+ * @param resource A Resource fetched from a Solid Pod.
+ * @returns The URLs of Resources linked to the given Resource, indexed by the key that links them.
+ * @since Not released yet.
+ */
+export function getLinkedResourceUrlAll(
+  resource: WithServerResourceInfo
+): LinkedResourceUrlAll {
+  return resource.internal_resourceInfo.linkedResources;
+}
+
+/**
+ * Get what access the current user has to the given Resource.
+ *
+ * This function can tell you what access the current user has for the given
+ * Resource, allowing you to e.g. determine that changes to it will be rejected
+ * before attempting to do so.
+ * Additionally, for servers adhering to the Web Access Control specification,
+ * it will tell you what access unauthenticated users have to the given Resource.
+ *
+ * @param resource A Resource fetched from a Solid Pod.
+ * @returns What access the current user and, if supported by the server, unauthenticated users have to the given Resource.
+ * @since Not released yet.
+ */
+export function getEffectiveAccess(
+  resource: WithServerResourceInfo
+): EffectiveAccess {
+  if (typeof resource.internal_resourceInfo.permissions === "object") {
+    return {
+      user: {
+        read: resource.internal_resourceInfo.permissions.user.read,
+        append: resource.internal_resourceInfo.permissions.user.append,
+        write: resource.internal_resourceInfo.permissions.user.write,
+      },
+      public: {
+        read: resource.internal_resourceInfo.permissions.public.read,
+        append: resource.internal_resourceInfo.permissions.public.append,
+        write: resource.internal_resourceInfo.permissions.public.write,
+      },
+    };
+  }
+
+  const linkedResourceUrls = getLinkedResourceUrlAll(resource);
+  return {
+    user: {
+      read: linkedResourceUrls[acp.allow]?.includes(acp.Read) ?? false,
+      append:
+        (linkedResourceUrls[acp.allow]?.includes(acp.Append) ||
+          linkedResourceUrls[acp.allow]?.includes(acp.Write)) ??
+        false,
+      write: linkedResourceUrls[acp.allow]?.includes(acp.Write) ?? false,
+    },
+  };
 }
 
 /**

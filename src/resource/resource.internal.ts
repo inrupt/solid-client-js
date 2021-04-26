@@ -21,7 +21,7 @@
 
 import LinkHeader from "http-link-header";
 import { Access } from "../acl/acl";
-import { WithServerResourceInfo, SolidDataset } from "../interfaces";
+import { WithServerResourceInfo, SolidDataset, UrlString } from "../interfaces";
 import { clone as cloneDataset } from "../rdfjs";
 
 /**

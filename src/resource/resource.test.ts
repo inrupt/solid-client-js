@@ -40,6 +40,8 @@ import {
   isContainer,
   isRawData,
   getContentType,
+  getLinkedResourceUrlAll,
+  getEffectiveAccess,
 } from "./resource";
 import { internal_cloneResource } from "./resource.internal";
 import {
@@ -668,6 +670,145 @@ describe("isPodOwner", () => {
     expect(
       isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
     ).toBeNull();
+  });
+});
+
+describe("getLinkedResourceUrlAll", () => {
+  it("returns the URLs of the Resources linked to the given URL, indexed by their relation type", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          acl: ["https://arbitrary.pod/.acl"],
+          "http://www.w3.org/ns/solid/terms#podOwner": [
+            "https://some.pod/profile#WebId",
+          ],
+        },
+      },
+    };
+
+    expect(getLinkedResourceUrlAll(resourceInfo)).toStrictEqual({
+      acl: ["https://arbitrary.pod/.acl"],
+      "http://www.w3.org/ns/solid/terms#podOwner": [
+        "https://some.pod/profile#WebId",
+      ],
+    });
+  });
+
+  it("returns an empty object when there are no linked Resources", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {},
+      },
+    };
+
+    expect(getLinkedResourceUrlAll(resourceInfo)).toStrictEqual({});
+  });
+});
+
+describe("getEffectiveAccess", () => {
+  it("returns the access for the current user and everyone for WAC-controlled Resources", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        permissions: {
+          user: {
+            read: true,
+            append: true,
+            write: false,
+            control: false,
+          },
+          public: {
+            read: true,
+            append: false,
+            write: false,
+            control: false,
+          },
+        },
+        linkedResources: {},
+      },
+    };
+
+    expect(getEffectiveAccess(resourceInfo)).toStrictEqual({
+      user: {
+        read: true,
+        append: true,
+        write: false,
+      },
+      public: {
+        read: true,
+        append: false,
+        write: false,
+      },
+    });
+  });
+
+  it("returns the access for the current user for ACP-controlled Resources", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/acp#allow": [
+            "http://www.w3.org/ns/solid/acp#Read",
+            "http://www.w3.org/ns/solid/acp#Append",
+          ],
+        },
+      },
+    };
+
+    expect(getEffectiveAccess(resourceInfo)).toStrictEqual({
+      user: {
+        read: true,
+        append: true,
+        write: false,
+      },
+    });
+  });
+
+  it("understands Write to imply Append for ACP-controlled servers", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {
+          "http://www.w3.org/ns/solid/acp#allow": [
+            "http://www.w3.org/ns/solid/acp#Read",
+            "http://www.w3.org/ns/solid/acp#Write",
+          ],
+        },
+      },
+    };
+
+    expect(getEffectiveAccess(resourceInfo)).toStrictEqual({
+      user: {
+        read: true,
+        append: true,
+        write: true,
+      },
+    });
+  });
+
+  it("interprets absence of acp:allow Link headers to mean absence of their respective access", () => {
+    const resourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        isRawData: true,
+        sourceIri: "https://arbitrary.pod",
+        linkedResources: {},
+      },
+    };
+
+    expect(getEffectiveAccess(resourceInfo)).toStrictEqual({
+      user: {
+        read: false,
+        append: false,
+        write: false,
+      },
+    });
   });
 });
 
