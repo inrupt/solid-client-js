@@ -160,6 +160,7 @@ import {
   acp_v1,
   acp_v2,
   acp_v3,
+  acp,
   access,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
@@ -312,6 +313,7 @@ it("exports preview API's for early adopters", () => {
   expect(acp_v1).toBeDefined();
   expect(acp_v2).toBeDefined();
   expect(acp_v3).toBeDefined();
+  expect(acp).toBeDefined();
   expect(access).toBeDefined();
 });
 

@@ -240,7 +240,7 @@ export { acp_v2 } from "./acp/v2";
  * them will be included in your bundle.
  * @deprecated Please import directly from the "acp/*" modules.
  */
-export { acp_v3 } from "./acp/v3";
+export { acp_v3, acp_v3 as acp } from "./acp/v3";
 
 /**
  * This API is still experimental, and subject to change. It builds on top of both
