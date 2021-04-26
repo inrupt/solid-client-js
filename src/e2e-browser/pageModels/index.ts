@@ -52,7 +52,7 @@ export class IndexPage {
       .expect(initialisationNotification.exists)
       .ok(
         "solid-client-authn took too long to verify the query parameters after redirection.",
-        { timeout: 30000 }
+        { timeout: 100000 }
       );
   }
 }
