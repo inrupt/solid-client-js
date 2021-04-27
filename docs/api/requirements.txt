@@ -1,5 +1,5 @@
 # pip install -r requirements.txt
 
-pydata-sphinx-theme==0.6.1
+pydata-sphinx-theme==0.6.3
 myst-parser
 Sphinx
