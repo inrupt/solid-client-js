@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node-version: [14.x, 12.x, 10.x]
+        node-version: [16.x, 14.x, 12.x]
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
@@ -120,8 +120,6 @@ jobs:
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict esmodule.mjs
-      # Node 10 does not support ES modules:
-      if: matrix.node-version != '10.x'
 
   verify-imports-parcel:
     runs-on: ubuntu-20.04

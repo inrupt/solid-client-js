@@ -6,8 +6,17 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Deprecated
+
+- With Node.js version 10 [reaching end-of-life on
+  2021-04-30](https://github.com/nodejs/Release), @inrupt/solid-client no longer
+  actively supports it. It will not stop working right away, but it will no
+  longer be actively tested and no special effort will be made to keep it from
+  breaking.
+
 ### New features
 
+- Node.js version 16 is now supported.
 - The function `getLinkedResourceUrlAll` that gives you all Resources linked to
   a given Resource, indexed by their relation to the given Resource.
 - The function `getEffectiveAccess`, which tells you what access the current
