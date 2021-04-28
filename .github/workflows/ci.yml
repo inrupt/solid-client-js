@@ -18,7 +18,7 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-20.04, windows-2019, macos-10.15]
-        node-version: [14.x, 12.x, 10.x]
+        node-version: [16.x, 14.x, 12.x]
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Use Node.js ${{ matrix.node-version }}
@@ -79,7 +79,7 @@ jobs:
       # Additionally, Dependabot does not have access to our secrets,
       # so end-to-end tests for Dependabot PRs can only be manually started.
       # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+      if: matrix.node-version != '14.x' && matrix.node-version != '12.x' && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -99,7 +99,7 @@ jobs:
       # Additionally, Dependabot does not have access to our secrets,
       # so end-to-end tests for Dependabot PRs can only be manually started.
       # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+      if: matrix.node-version != '14.x' && matrix.node-version != '12.x' && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -137,7 +137,7 @@ jobs:
       # Additionally, Dependabot does not have access to our secrets,
       # so end-to-end tests for Dependabot PRs can only be manually started.
       # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+      if: matrix.node-version != '14.x' && matrix.node-version != '12.x' && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -162,7 +162,7 @@ jobs:
     - name: Archive browser-based end-to-end test request logs
       uses: actions/upload-artifact@v2.2.3
       continue-on-error: true
-      if: (failure() || success()) && matrix.node-version != '10.x' && matrix.node-version != '12.x' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+      if: (failure() || success()) && matrix.node-version != '14.x' && matrix.node-version != '12.x' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       with:
         name: testcafe-requests
         path: src/e2e-browser/testcafe-requests
