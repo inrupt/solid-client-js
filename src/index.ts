@@ -240,7 +240,6 @@ export { acp_v2 } from "./acp/v2";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- * @deprecated Please import directly from the "acp/*" modules.
  */
 export { acp_v3 } from "./acp/v3";
 
