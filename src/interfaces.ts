@@ -105,7 +105,7 @@ type internal_WacAllow = {
  * servers implementing Access Control Policies, so the `public` property is
  * only available on servers that implement Web Access Control.
  *
- * @since Not released yet.
+ * @since 1.7.0
  */
 export type EffectiveAccess = {
   user: {
@@ -123,7 +123,7 @@ export type EffectiveAccess = {
 /**
  * URLs of Resources linked to a given Resource, indexed by relation.
  *
- * @since Not released yet.
+ * @since 1.7.0
  */
 export type LinkedResourceUrlAll = Record<UrlString | string, UrlString[]>;
 

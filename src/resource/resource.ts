@@ -188,7 +188,7 @@ export function isPodOwner(
  *
  * @param resource A Resource fetched from a Solid Pod.
  * @returns The URLs of Resources linked to the given Resource, indexed by the key that links them.
- * @since Not released yet.
+ * @since 1.7.0
  */
 export function getLinkedResourceUrlAll(
   resource: WithServerResourceInfo
@@ -207,7 +207,7 @@ export function getLinkedResourceUrlAll(
  *
  * @param resource A Resource fetched from a Solid Pod.
  * @returns What access the current user and, if supported by the server, unauthenticated users have to the given Resource.
- * @since Not released yet.
+ * @since 1.7.0
  */
 export function getEffectiveAccess(
   resource: WithServerResourceInfo
