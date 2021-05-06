@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.7.0] - 2021-05-06
+
 ### Deprecated
 
 - With Node.js version 10 [reaching end-of-life on
@@ -27,8 +31,6 @@ The following changes have been implemented but not released yet:
 
 - While the API documentation mentioned an `isThingLocal` function, it could not
   actually be imported from `@inrupt/solid-client`.
-
-The following sections document changes that have been released already:
 
 ## [1.6.1] - 2021-04-01
 
