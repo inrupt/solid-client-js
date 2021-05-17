@@ -47,11 +47,14 @@ import {
   getTerm,
   getTermAll,
   getIriAll,
+  getPropertyAll,
 } from "./get";
 import { xmlSchemaTypes } from "../datatypes";
-import { ValidPropertyUrlExpectedError } from "./thing";
+import { createThing, ValidPropertyUrlExpectedError } from "./thing";
 import { mockThingFrom } from "./mock";
 import { localNodeSkolemPrefix } from "../rdf.internal";
+import { addStringNoLocale } from "./add";
+import { removeStringNoLocale } from "./remove";
 
 const SUBJECT = "https://arbitrary.vocab/subject";
 const PREDICATE = "https://some.vocab/predicate";
@@ -94,6 +97,54 @@ function getMockThingWithLiteralsFor(
     },
   };
 }
+
+describe("getPropertyAll", () => {
+  it("returns all Properties for which a value is defined", () => {
+    const mockThing = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate1",
+      "value1",
+      "value2",
+      "string"
+    );
+
+    expect(getPropertyAll(mockThing)).toStrictEqual([
+      "https://some.vocab/predicate1",
+    ]);
+  });
+
+  it("returns all Properties for which a value is defined, excluding Properties that no longer have a value", () => {
+    let mockThing = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate1",
+      "value1",
+      "value2",
+      "string"
+    );
+    mockThing = addStringNoLocale(
+      mockThing,
+      "https://arbitrary.vocab/predicate2",
+      "value 3"
+    );
+    mockThing = addStringNoLocale(
+      mockThing,
+      "https://some.vocab/predicate3",
+      "value 4"
+    );
+    mockThing = removeStringNoLocale(
+      mockThing,
+      "https://arbitrary.vocab/predicate2",
+      "value 3"
+    );
+
+    expect(getPropertyAll(mockThing)).toStrictEqual([
+      "https://some.vocab/predicate1",
+      "https://some.vocab/predicate3",
+    ]);
+  });
+
+  it("returns an empty array for an empty Thing", () => {
+    expect(getPropertyAll(createThing())).toStrictEqual([]);
+  });
+});
 
 describe("getIri", () => {
   function getMockThingWithIri(

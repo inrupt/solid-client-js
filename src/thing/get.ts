@@ -42,6 +42,19 @@ import {
 import { DataFactory } from "../rdfjs";
 
 /**
+ * Returns the URLs of all Properties that the given [[Thing ]]has values for.b
+ *
+ * @param thing The [[Thing]] of which to get that Property URLs that have a value.
+ * @returns The URLs of the Properties for which values are defined for the given Thing.
+ * @hidden This is an advanced API that should not be needed for most Solid use cases. If you do find yourself needing this, please file a feature request sharing your use case.
+ */
+export function getPropertyAll(thing: Thing): UrlString[] {
+  return Object.keys(thing.predicates).filter(
+    (predicate) => getTerm(thing, predicate) !== null
+  );
+}
+
+/**
  * Returns the URL value of the specified Property from a [[Thing]].
  * If the Property is not present or its value is not of type URL, returns null.
  * If the Property has multiple URL values, returns one of its URL values.

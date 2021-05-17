@@ -72,6 +72,7 @@ export {
   ThingExpectedError,
 } from "./thing/thing";
 export {
+  getPropertyAll,
   getUrl,
   getIri,
   getBoolean,
