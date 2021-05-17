@@ -57,6 +57,7 @@ import {
   asUrl,
   asIri,
   thingAsMarkdown,
+  getPropertyAll,
   getUrl,
   getIri,
   getBoolean,
@@ -208,6 +209,7 @@ it("exports the public API from the entry file", () => {
   expect(asUrl).toBeDefined();
   expect(asIri).toBeDefined();
   expect(thingAsMarkdown).toBeDefined();
+  expect(getPropertyAll).toBeDefined();
   expect(getUrl).toBeDefined();
   expect(getIri).toBeDefined();
   expect(getBoolean).toBeDefined();
