@@ -2321,10 +2321,10 @@ describe("setAgentAccess", () => {
       setAgentResourceAccess(
         resource,
         "https://some.pod/profile#agent",
-        ({
+        {
           controlRead: true,
           controlWrite: undefined,
-        } as unknown) as WacAccess,
+        } as unknown as WacAccess,
         {
           fetch: mockFetch,
         }
@@ -3043,10 +3043,10 @@ describe("setGroupResourceAccess", () => {
       setAgentResourceAccess(
         resource,
         "https://some.pod/groups#group",
-        ({
+        {
           controlRead: true,
           controlWrite: undefined,
-        } as unknown) as WacAccess,
+        } as unknown as WacAccess,
         {
           fetch: mockFetch,
         }
@@ -3728,10 +3728,10 @@ describe("setPublicResourceAccess", () => {
     await expect(
       setPublicResourceAccess(
         resource,
-        ({
+        {
           controlRead: true,
           controlWrite: undefined,
-        } as unknown) as WacAccess,
+        } as unknown as WacAccess,
         {
           fetch: mockFetch,
         }

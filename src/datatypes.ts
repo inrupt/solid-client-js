@@ -38,7 +38,8 @@ export const xmlSchemaTypes = {
   langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
 } as const;
 /** @internal */
-export type XmlSchemaTypeIri = typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
+export type XmlSchemaTypeIri =
+  typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
 
 /**
  * @internal
@@ -100,7 +101,8 @@ export function deserializeDatetime(literalString: string): Date | null {
   // (Z|(\+|-)\d\d:\d\d) - The letter Z indicating UTC, or a `+` or `-` followed by two digits for
   //                       the hour offset and two for the minute offset, separated by a `:`.
   //                       Example: "+13:37".
-  const datetimeRegEx = /-?\d{4,}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)/;
+  const datetimeRegEx =
+    /-?\d{4,}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)/;
   if (!datetimeRegEx.test(literalString)) {
     return null;
   }

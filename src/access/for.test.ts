@@ -53,7 +53,7 @@ describe("getAccessFor", () => {
     await expect(
       getAccessFor(
         "https://some.resource",
-        ("agent" as unknown) as "public",
+        "agent" as unknown as "public",
         options
       )
     ).rejects.toThrow(
@@ -83,7 +83,7 @@ describe("getAccessFor", () => {
 
   it("throws if the group has been omitted", async () => {
     await expect(
-      getAccessFor("https://some.resource", ("group" as unknown) as "public")
+      getAccessFor("https://some.resource", "group" as unknown as "public")
     ).rejects.toThrow(
       "When reading Group-specific access, the given group cannot be left undefined."
     );
@@ -94,7 +94,7 @@ describe("getAccessFor", () => {
       getAccessFor(
         "https://some.resource",
         "public",
-        ("some actor" as unknown) as { fetch: typeof fetch }
+        "some actor" as unknown as { fetch: typeof fetch }
       )
     ).rejects.toThrow(
       "When reading public access, no actor type should be specified (here [some actor])."
@@ -120,7 +120,7 @@ describe("getAccessFor", () => {
     await expect(
       getAccessFor(
         "https://some.resource",
-        ("unknown-actor" as unknown) as "public"
+        "unknown-actor" as unknown as "public"
       )
     ).resolves.toBeNull();
   });
@@ -159,7 +159,7 @@ describe("getAccessForAll", () => {
     await expect(
       getAccessForAll(
         "https://some.resource",
-        ("some actor" as unknown) as "agent"
+        "some actor" as unknown as "agent"
       )
     ).resolves.toBeNull();
   });
@@ -194,7 +194,7 @@ describe("setAccessFor", () => {
 
   it("throws if the agent is missing", async () => {
     await expect(
-      setAccessFor("https://some.resource", ("agent" as unknown) as "public", {
+      setAccessFor("https://some.resource", "agent" as unknown as "public", {
         read: true,
       })
     ).rejects.toThrow(
@@ -230,7 +230,7 @@ describe("setAccessFor", () => {
 
   it("throws if the group is missing", async () => {
     await expect(
-      setAccessFor("https://some.resource", ("group" as unknown) as "public", {
+      setAccessFor("https://some.resource", "group" as unknown as "public", {
         read: true,
       })
     ).rejects.toThrow(
@@ -246,7 +246,7 @@ describe("setAccessFor", () => {
         {
           read: true,
         },
-        ("some actor" as unknown) as { fetch: typeof fetch }
+        "some actor" as unknown as { fetch: typeof fetch }
       )
     ).rejects.toThrow(
       "When writing public access, no actor type should be specified (here [some actor])."
@@ -282,7 +282,7 @@ describe("setAccessFor", () => {
     await expect(
       setAccessFor(
         "https://some.resource",
-        ("unknown-actor" as unknown) as "public",
+        "unknown-actor" as unknown as "public",
         {
           read: true,
         }

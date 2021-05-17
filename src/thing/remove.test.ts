@@ -171,8 +171,10 @@ describe("removeAll", () => {
       "https://some.vocab/predicate",
       "https://arbitrary.pod/resource#name"
     );
-    (thingWithDuplicateIri.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://arbitrary.pod/resource#name");
+    (
+      thingWithDuplicateIri.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://arbitrary.pod/resource#name");
 
     const updatedThing = removeAll(
       thingWithDuplicateIri,
@@ -207,7 +209,7 @@ describe("removeAll", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      removeAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+      removeAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -350,8 +352,10 @@ describe("removeIri", () => {
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
     );
-    (thingWithIri.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://some.pod/resource#name");
+    (
+      thingWithIri.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://some.pod/resource#name");
 
     const updatedThing = removeUrl(
       thingWithIri,
@@ -369,8 +373,10 @@ describe("removeIri", () => {
       "https://some.vocab/predicate",
       "https://some.pod/resource#name"
     );
-    (thingWithIri.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://some-other.pod/resource#name");
+    (
+      thingWithIri.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://some-other.pod/resource#name");
     (thingWithIri.predicates["https://some-other.vocab/predicate"] as {
       namedNodes: UrlString[];
     }) = {
@@ -441,7 +447,7 @@ describe("removeIri", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeUrl(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "https://arbitrary.url"
       )
@@ -686,10 +692,10 @@ describe("removeBoolean", () => {
       "1",
       "boolean"
     );
-    (thingWithDuplicateBoolean.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#boolean"] as string[]).push(
-      "1"
-    );
+    (
+      thingWithDuplicateBoolean.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#boolean"] as string[]
+    ).push("1");
 
     const updatedThing = removeBoolean(
       thingWithDuplicateBoolean,
@@ -710,9 +716,11 @@ describe("removeBoolean", () => {
       "1",
       "boolean"
     );
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#boolean"
-    ] as string[]).push("0");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#boolean"
+      ] as string[]
+    ).push("0");
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
     ] as any) = {
@@ -758,7 +766,7 @@ describe("removeBoolean", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeBoolean(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         true
       )
@@ -926,10 +934,10 @@ describe("removeDatetime", () => {
       "1990-11-12T13:37:42Z",
       "dateTime"
     );
-    (thingWithDuplicateDatetime.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#dateTime"] as string[]).push(
-      "1990-11-12T13:37:42Z"
-    );
+    (
+      thingWithDuplicateDatetime.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#dateTime"] as string[]
+    ).push("1990-11-12T13:37:42Z");
 
     const updatedThing = removeDatetime(
       thingWithDuplicateDatetime,
@@ -951,13 +959,17 @@ describe("removeDatetime", () => {
       "dateTime"
     );
     // A different Object:
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#dateTime"
-    ] as string[]).push("1955-06-08T13:37:42Z");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#dateTime"
+      ] as string[]
+    ).push("1955-06-08T13:37:42Z");
     // An invalid object
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#dateTime"
-    ] as string[]).push("not-a-datetime");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#dateTime"
+      ] as string[]
+    ).push("not-a-datetime");
     // A different predicate
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
@@ -1017,7 +1029,7 @@ describe("removeDatetime", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeDatetime(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
       )
@@ -1221,10 +1233,10 @@ describe("removeDecimal", () => {
       "13.37",
       "decimal"
     );
-    (thingWithDuplicateDecimal.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#decimal"] as string[]).push(
-      "13.37"
-    );
+    (
+      thingWithDuplicateDecimal.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#decimal"] as string[]
+    ).push("13.37");
 
     const updatedThing = removeDecimal(
       thingWithDuplicateDecimal,
@@ -1246,9 +1258,11 @@ describe("removeDecimal", () => {
       "decimal"
     );
     // A different Object:
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#decimal"
-    ] as string[]).push("4.2");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#decimal"
+      ] as string[]
+    ).push("4.2");
     // A different predicate
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
@@ -1305,7 +1319,7 @@ describe("removeDecimal", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeDecimal(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         13.37
       )
@@ -1493,10 +1507,10 @@ describe("removeInteger", () => {
       "42",
       "integer"
     );
-    (thingWithDuplicateInteger.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]).push(
-      "42"
-    );
+    (
+      thingWithDuplicateInteger.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]
+    ).push("42");
 
     const updatedThing = removeInteger(
       thingWithDuplicateInteger,
@@ -1518,9 +1532,11 @@ describe("removeInteger", () => {
       "integer"
     );
     // A different Object:
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#integer"
-    ] as string[]).push("1337");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#integer"
+      ] as string[]
+    ).push("1337");
     // A different predicate
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
@@ -1577,7 +1593,7 @@ describe("removeInteger", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeInteger(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         42
       )
@@ -1746,14 +1762,17 @@ describe("removeStringWithLocale", () => {
   });
 
   it("removes multiple instances of the same localised string for the same Predicate", () => {
-    const thingWithDuplicateStringWithLocale = getMockThingWithStringWithLocaleFor(
-      "https://some.vocab/predicate",
-      "Some arbitrary string",
-      "en-us"
-    );
-    (thingWithDuplicateStringWithLocale.predicates[
-      "https://some.vocab/predicate"
-    ].langStrings!["en-us"] as string[]).push("Some arbitrary string");
+    const thingWithDuplicateStringWithLocale =
+      getMockThingWithStringWithLocaleFor(
+        "https://some.vocab/predicate",
+        "Some arbitrary string",
+        "en-us"
+      );
+    (
+      thingWithDuplicateStringWithLocale.predicates[
+        "https://some.vocab/predicate"
+      ].langStrings!["en-us"] as string[]
+    ).push("Some arbitrary string");
 
     const updatedThing = removeStringWithLocale(
       thingWithDuplicateStringWithLocale,
@@ -1776,8 +1795,10 @@ describe("removeStringWithLocale", () => {
       "en-us"
     );
     // A different Object:
-    (thingWithStringWithLocale.predicates["https://some.vocab/predicate"]
-      .langStrings!["en-us"] as string[]).push("Some other arbitrary string");
+    (
+      thingWithStringWithLocale.predicates["https://some.vocab/predicate"]
+        .langStrings!["en-us"] as string[]
+    ).push("Some other arbitrary string");
     // A different locale
     (thingWithStringWithLocale.predicates["https://some.vocab/predicate"]
       .langStrings!["en-uk"] as string[]) = ["Some arbitrary string"];
@@ -1866,7 +1887,7 @@ describe("removeStringWithLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeStringWithLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "Arbitrary string",
         "nl-NL"
@@ -2019,10 +2040,10 @@ describe("removeStringNoLocale", () => {
       "Some arbitrary string",
       "string"
     );
-    (thingWithDuplicateString.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#string"] as string[]).push(
-      "Some arbitrary string"
-    );
+    (
+      thingWithDuplicateString.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#string"] as string[]
+    ).push("Some arbitrary string");
 
     const updatedThing = removeStringNoLocale(
       thingWithDuplicateString,
@@ -2044,9 +2065,11 @@ describe("removeStringNoLocale", () => {
       "string"
     );
     // A different Object:
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#string"
-    ] as string[]).push("Some other arbitrary string");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#string"
+      ] as string[]
+    ).push("Some other arbitrary string");
     // A different predicate
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
@@ -2105,7 +2128,7 @@ describe("removeStringNoLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeStringNoLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "Arbitrary string"
       )
@@ -2395,10 +2418,10 @@ describe("removeLiteral", () => {
       "42",
       "integer"
     );
-    (thingWithDuplicateInteger.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]).push(
-      "42"
-    );
+    (
+      thingWithDuplicateInteger.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#integer"] as string[]
+    ).push("42");
 
     const updatedThing = removeLiteral(
       thingWithDuplicateInteger,
@@ -2423,9 +2446,11 @@ describe("removeLiteral", () => {
       "integer"
     );
     // A different Object:
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
-      "http://www.w3.org/2001/XMLSchema#integer"
-    ] as string[]).push("1337");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#integer"
+      ] as string[]
+    ).push("1337");
     // A different predicate
     (thingWithOtherQuads.predicates[
       "https://some-other.vocab/predicate"
@@ -2490,7 +2515,7 @@ describe("removeLiteral", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeLiteral(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         DataFactory.literal(
           "42",
@@ -2607,8 +2632,10 @@ describe("removeNamedNode", () => {
       "https://some.vocab/predicate",
       "https://some.vocab/object"
     );
-    (thingWithDuplicateNamedNode.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://some.vocab/object");
+    (
+      thingWithDuplicateNamedNode.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://some.vocab/object");
 
     const updatedThing = removeNamedNode(
       thingWithDuplicateNamedNode,
@@ -2626,8 +2653,10 @@ describe("removeNamedNode", () => {
       "https://some.vocab/predicate",
       "https://some.vocab/object"
     );
-    (thingWithOtherQuads.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://some-other.vocab/object");
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://some-other.vocab/object");
     (thingWithOtherQuads.predicates["https://some-other.vocab/predicate"] as {
       namedNodes: UrlString[];
     }) = {
@@ -2653,7 +2682,7 @@ describe("removeNamedNode", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       removeNamedNode(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         DataFactory.namedNode("https://arbitrary.vocab/object")
       )

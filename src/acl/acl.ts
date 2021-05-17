@@ -474,13 +474,12 @@ export type WithAcl = {
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type WithResourceAcl<
-  ResourceExt extends WithAcl = WithAcl
-> = ResourceExt & {
-  internal_acl: {
-    resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
+export type WithResourceAcl<ResourceExt extends WithAcl = WithAcl> =
+  ResourceExt & {
+    internal_acl: {
+      resourceAcl: Exclude<WithAcl["internal_acl"]["resourceAcl"], null>;
+    };
   };
-};
 
 /**
  * If this type applies to a Resource, the Access Control List that applies to its nearest Container with an ACL is accessible to the currently authenticated user.
@@ -488,13 +487,12 @@ export type WithResourceAcl<
  * Please note that the Web Access Control specification is not yet finalised, and hence, this
  * function is still experimental and can change in a non-major release.
  */
-export type WithFallbackAcl<
-  ResourceExt extends WithAcl = WithAcl
-> = ResourceExt & {
-  internal_acl: {
-    fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
+export type WithFallbackAcl<ResourceExt extends WithAcl = WithAcl> =
+  ResourceExt & {
+    internal_acl: {
+      fallbackAcl: Exclude<WithAcl["internal_acl"]["fallbackAcl"], null>;
+    };
   };
-};
 
 /**
  * If this type applies to a Resource, its Access Control List, if it exists, is accessible to the currently authenticated user.

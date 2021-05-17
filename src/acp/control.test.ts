@@ -254,7 +254,7 @@ describe("getControlAll", () => {
   it("throws an error if the given Resource's ACR could not be fetched", () => {
     const withoutAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      (null as unknown) as AccessControlResource
+      null as unknown as AccessControlResource
     );
 
     expect(() => internal_getControlAll(withoutAcr as any)).toThrow(

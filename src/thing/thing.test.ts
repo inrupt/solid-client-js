@@ -664,9 +664,8 @@ describe("removeThing", () => {
       }
     );
     // The assertion is to tell the type system we can write to this:
-    (datasetWithFetchedAcls.graphs.default[
-      mockThing1Iri
-    ] as Thing) = mockThing1;
+    (datasetWithFetchedAcls.graphs.default[mockThing1Iri] as Thing) =
+      mockThing1;
 
     const updatedDataset = removeThing(datasetWithFetchedAcls, mockThing1);
 
@@ -949,7 +948,7 @@ describe("thingAsMarkdown", () => {
 
 describe("throwIfNotThing", () => {
   it("throws when passed null", () => {
-    expect(() => internal_throwIfNotThing((null as unknown) as Thing)).toThrow(
+    expect(() => internal_throwIfNotThing(null as unknown as Thing)).toThrow(
       "Expected a Thing, but received: [null]."
     );
   });
@@ -961,7 +960,7 @@ describe("throwIfNotThing", () => {
   it("throws an instance of a SolidClientError", () => {
     let error;
     try {
-      internal_throwIfNotThing((null as unknown) as Thing);
+      internal_throwIfNotThing(null as unknown as Thing);
     } catch (e: unknown) {
       error = e;
     }
@@ -971,7 +970,7 @@ describe("throwIfNotThing", () => {
   it("throws an instance of a ThingExpectedError", () => {
     let error;
     try {
-      internal_throwIfNotThing((null as unknown) as Thing);
+      internal_throwIfNotThing(null as unknown as Thing);
     } catch (e: unknown) {
       error = e;
     }
