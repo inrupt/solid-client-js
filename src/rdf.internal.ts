@@ -28,7 +28,8 @@ import * as RdfJs from "rdf-js";
 import { IriString } from "./interfaces";
 import { XmlSchemaTypeIri, xmlSchemaTypes } from "./datatypes";
 
-export const localNodeSkolemPrefix = "https://inrupt.com/.well-known/sdk-local-node/" as const;
+export const localNodeSkolemPrefix =
+  "https://inrupt.com/.well-known/sdk-local-node/" as const;
 export type LocalNodeIri = `${typeof localNodeSkolemPrefix}${string}`;
 export type LocalNodeName = string;
 type DataTypeIriString = XmlSchemaTypeIri | IriString;

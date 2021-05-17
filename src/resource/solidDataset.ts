@@ -377,17 +377,15 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     ...internal_parseResourceInfo(response),
     isRawData: false,
   };
-  const storedDataset: Dataset &
-    WithChangeLog &
-    WithServerResourceInfo = freeze({
-    ...solidDataset,
-    internal_changeLog: { additions: [], deletions: [] },
-    internal_resourceInfo: resourceInfo,
-  });
+  const storedDataset: Dataset & WithChangeLog & WithServerResourceInfo =
+    freeze({
+      ...solidDataset,
+      internal_changeLog: { additions: [], deletions: [] },
+      internal_resourceInfo: resourceInfo,
+    });
 
-  const storedDatasetWithResolvedIris = resolveLocalIrisInSolidDataset(
-    storedDataset
-  );
+  const storedDatasetWithResolvedIris =
+    resolveLocalIrisInSolidDataset(storedDataset);
 
   return storedDatasetWithResolvedIris;
 }
@@ -877,9 +875,8 @@ export function changeLogAsMarkdown(
     solidDataset
   )}\n`;
 
-  const changeLogsByThingAndProperty = sortChangeLogByThingAndProperty(
-    solidDataset
-  );
+  const changeLogsByThingAndProperty =
+    sortChangeLogByThingAndProperty(solidDataset);
   Object.keys(changeLogsByThingAndProperty).forEach((thingUrl) => {
     readableChangeLog += `\n### Thing: ${thingUrl}\n`;
     const changeLogByProperty = changeLogsByThingAndProperty[thingUrl];

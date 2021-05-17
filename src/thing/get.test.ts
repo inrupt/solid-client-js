@@ -194,8 +194,10 @@ describe("getIri", () => {
       "https://some.vocab/predicate",
       `${localNodeSkolemPrefix}someLocalNode`
     );
-    (thingWithIriAndLocalNode.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]).push("https://some.vocab/object");
+    (
+      thingWithIriAndLocalNode.predicates["https://some.vocab/predicate"]
+        .namedNodes as UrlString[]
+    ).push("https://some.vocab/object");
 
     expect(
       getUrl(thingWithIriAndLocalNode, "https://some.vocab/predicate")
@@ -250,7 +252,7 @@ describe("getIri", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getUrl((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+      getUrl(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -358,7 +360,7 @@ describe("getIriAll", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getUrlAll((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+      getUrlAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -472,10 +474,7 @@ describe("getBoolean", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getBoolean(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getBoolean(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -593,7 +592,7 @@ describe("getBooleanAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getBooleanAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -712,10 +711,7 @@ describe("getDatetime", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDatetime(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getDatetime(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -843,7 +839,7 @@ describe("getDatetimeAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getDatetimeAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -947,10 +943,7 @@ describe("getDecimal", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDecimal(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getDecimal(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1055,7 +1048,7 @@ describe("getDecimalAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getDecimalAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -1159,10 +1152,7 @@ describe("getInteger", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getInteger(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getInteger(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1267,7 +1257,7 @@ describe("getIntegerAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getIntegerAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -1464,7 +1454,7 @@ describe("getStringWithLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getStringWithLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "nl-NL"
       )
@@ -1631,7 +1621,7 @@ describe("getStringByLocaleAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getStringByLocaleAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -1848,7 +1838,7 @@ describe("getStringWithLocaleAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getStringWithLocaleAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "nl-NL"
       )
@@ -1963,7 +1953,7 @@ describe("getStringNoLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getStringNoLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -2080,7 +2070,7 @@ describe("getStringNoLocaleAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getStringNoLocaleAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -2200,19 +2190,18 @@ describe("getLiteral", () => {
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     expect(
-      (getLiteral(
-        thingWithDifferentTermTypes,
-        "https://some.vocab/predicate"
-      ) as Literal).termType
+      (
+        getLiteral(
+          thingWithDifferentTermTypes,
+          "https://some.vocab/predicate"
+        ) as Literal
+      ).termType
     ).toBe("Literal");
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getLiteral(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getLiteral(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2347,7 +2336,7 @@ describe("getLiteralAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getLiteralAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -2466,17 +2455,19 @@ describe("getNamedNode", () => {
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     expect(
-      (getNamedNode(
-        thingWithDifferentTermTypes,
-        "https://some.vocab/predicate"
-      ) as NamedNode).termType
+      (
+        getNamedNode(
+          thingWithDifferentTermTypes,
+          "https://some.vocab/predicate"
+        ) as NamedNode
+      ).termType
     ).toBe("NamedNode");
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getNamedNode(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -2577,7 +2568,7 @@ describe("getNamedNodeAll", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       getNamedNodeAll(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate"
       )
     ).toThrow("Expected a Thing, but received: [null].");
@@ -2730,7 +2721,7 @@ describe("getTerm", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTerm((null as unknown) as Thing, "https://arbitrary.vocab/predicate")
+      getTerm(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2919,10 +2910,7 @@ describe("getTermAll", () => {
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTermAll(
-        (null as unknown) as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+      getTermAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
     ).toThrow("Expected a Thing, but received: [null].");
   });
 

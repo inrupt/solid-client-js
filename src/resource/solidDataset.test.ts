@@ -1059,8 +1059,9 @@ describe("saveSolidDatasetAt", () => {
         fetch: mockFetch,
       });
 
-      const [deleteStatement, insertStatement] = (mockFetch.mock.calls[0][1]!
-        .body as string).split(";");
+      const [deleteStatement, insertStatement] = (
+        mockFetch.mock.calls[0][1]!.body as string
+      ).split(";");
       expect(deleteStatement).toMatch("#some-subject-name");
       expect(insertStatement).toMatch("#some-subject-name");
       expect(deleteStatement).toMatch("#some-object-name");
@@ -3018,7 +3019,7 @@ describe("changeLogAsMarkdown", () => {
 
     expect(
       changeLogAsMarkdown(
-        (freshDataset as unknown) as SolidDataset & WithChangeLog
+        freshDataset as unknown as SolidDataset & WithChangeLog
       )
     ).toBe(
       "This is a newly initialized SolidDataset, so there is no source to compare it to."
@@ -3030,7 +3031,7 @@ describe("changeLogAsMarkdown", () => {
 
     expect(
       changeLogAsMarkdown(
-        (unchangedDataset as unknown) as SolidDataset & WithChangeLog
+        unchangedDataset as unknown as SolidDataset & WithChangeLog
       )
     ).toBe(
       "## Changes compared to https://some.pod/resource\n\n" +

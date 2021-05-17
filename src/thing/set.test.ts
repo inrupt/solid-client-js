@@ -223,7 +223,7 @@ describe("setIri", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setUrl(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "https://arbitrary.url"
       )
@@ -389,7 +389,7 @@ describe("setBoolean", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setBoolean(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         true
       )
@@ -538,7 +538,7 @@ describe("setDatetime", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setDatetime(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
       )
@@ -687,7 +687,7 @@ describe("setDecimal", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setDecimal(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         13.37
       )
@@ -832,7 +832,7 @@ describe("setInteger", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setInteger(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         42
       )
@@ -989,7 +989,7 @@ describe("setStringWithLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setStringWithLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "Arbitrary string",
         "nl-NL"
@@ -1141,7 +1141,7 @@ describe("setStringNoLocale", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setStringNoLocale(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "Arbitrary string"
       )
@@ -1275,7 +1275,7 @@ describe("setNamedNode", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setNamedNode(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         DataFactory.namedNode("https://arbitrary.pod/resource#object")
       )
@@ -1424,7 +1424,7 @@ describe("setLiteral", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setLiteral(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         DataFactory.literal("Arbitrary string value")
       )
@@ -1586,7 +1586,7 @@ describe("setTerm", () => {
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
       setTerm(
-        (null as unknown) as Thing,
+        null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         DataFactory.namedNode("https://arbitrary.pod/resource#object")
       )

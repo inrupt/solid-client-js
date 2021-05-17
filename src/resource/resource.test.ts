@@ -235,8 +235,7 @@ describe("getResourceInfo", () => {
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
-            Link:
-              '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
+            Link: '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
           },
           url: "https://some.pod",
         })

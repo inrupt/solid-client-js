@@ -104,7 +104,7 @@ function addAclDatasetToSolidDataset(
   const acl: WithAcl["internal_acl"] = {
     fallbackAcl: null,
     resourceAcl: null,
-    ...(((solidDataset as any) as WithAcl).internal_acl ?? {}),
+    ...((solidDataset as any as WithAcl).internal_acl ?? {}),
   };
   if (type === "resource") {
     solidDataset.internal_resourceInfo.aclUrl =
