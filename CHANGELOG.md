@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.8.0] - 2021-05-18
+
 ### Changed
 
 - `getUrl` now returns local URLs (e.g. #my-thing)
@@ -21,8 +25,6 @@ The following changes have been implemented but not released yet:
 - `getSolidDataset` now returns atomic objects, making it easier to integrate
   with other tools in the JavaScript ecosystem, easier to debug, and easier to
   serialise.
-
-The following sections document changes that have been released already:
 
 ## [1.7.0] - 2021-05-06
 
