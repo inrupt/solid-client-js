@@ -66,7 +66,7 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
-    "@inrupt/solid-client-authn-node": "^1.2.2",
+    "@inrupt/solid-client-authn-node": "^1.8.2-feat1994client-credentials-811194486-6096-1620157207.0",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.2.3",
     "@types/dotenv-flow": "^3.1.0",
