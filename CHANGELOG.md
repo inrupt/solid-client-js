@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- The Universal access API's would sometimes attempt to create Access Policies
+  and Rules with invalid URLs, which could be rejected by some Solid servers.
+
 The following sections document changes that have been released already:
 
 ## [1.8.0] - 2021-05-18

@@ -703,7 +703,8 @@ export function internal_setActorAccess<
   // ...add a new Policy that applies the given access,
   // and the previously applying access for access modes that were undefined...
   const newRuleIri =
-    getSourceIri(acr) + `#rule_${encodeURIComponent(actorRelation)}_${actor}`;
+    getSourceIri(acr) +
+    `#rule_${encodeURIComponent(`${actorRelation}_${actor}`)}`;
   let newRule = createRule(newRuleIri);
   newRule = setIri(newRule, actorRelation, actor);
 
@@ -719,7 +720,7 @@ export function internal_setActorAccess<
     const newAcrPolicyIri =
       getSourceIri(acr) +
       `#acr_policy` +
-      `_${encodeURIComponent(actorRelation)}_${actor}` +
+      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
     let newAcrPolicy = createPolicy(newAcrPolicyIri);
     newAcrPolicy = setAllowModes(newAcrPolicy, {
@@ -754,7 +755,7 @@ export function internal_setActorAccess<
     const newPolicyIri =
       getSourceIri(acr) +
       `#policy` +
-      `_${encodeURIComponent(actorRelation)}_${encodeURIComponent(actor)}` +
+      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
     let newPolicy = createPolicy(newPolicyIri);
     newPolicy = setAllowModes(newPolicy, {
@@ -1033,7 +1034,7 @@ function copyPolicyExcludingActor(
   actorToExclude: IriString
 ): [Policy, Rule[]] {
   const newIriSuffix =
-    "_copy_wihout" +
+    "_copy_without" +
     `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
     `_${Date.now()}_${Math.random()}`;
 
