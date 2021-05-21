@@ -32,7 +32,10 @@ jobs:
       with:
         path: node_modules
         key: ${{ runner.os }}-node${{ runner.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-    - run: npm ci
+    # Unfortunately `npm ci` regularly fails for reasons outside our control (e.g. network errors),
+    # so retry it twice if it fails to avoid those:
+    # (No, GitHub Actions at this point in time does not have native retry functionality.)
+    - run: npm ci || npm ci || npm ci
     - run: npm run build
     - run: npm test
       if: github.event_name != 'schedule'
