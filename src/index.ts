@@ -51,6 +51,8 @@ export {
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
   Parser,
+  ParseOptions,
+  responseToSolidDataset,
 } from "./resource/solidDataset";
 export {
   mockSolidDatasetFrom,

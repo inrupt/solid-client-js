@@ -166,6 +166,7 @@ import {
   access,
   toRdfJsDataset,
   fromRdfJsDataset,
+  responseToSolidDataset,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -323,6 +324,7 @@ it("exports preview API's for early adopters", () => {
   expect(access).toBeDefined();
   expect(fromRdfJsDataset).toBeDefined();
   expect(toRdfJsDataset).toBeDefined();
+  expect(responseToSolidDataset).toBeDefined();
 });
 
 // eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:
