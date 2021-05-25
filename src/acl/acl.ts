@@ -349,7 +349,7 @@ export function createAclFromFallbackAcl(
  */
 export async function saveAclFor(
   resource: WithAccessibleAcl,
-  resourceAcl: AclDataset,
+  resourceAcl: SolidDataset,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
