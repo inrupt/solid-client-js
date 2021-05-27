@@ -27,8 +27,8 @@ export class BrokerPage {
   denyButton: Selector;
 
   constructor() {
-    this.authoriseButton = screen.getByText("Approve");
-    this.denyButton = screen.getByText("Deny");
+    this.authoriseButton = screen.getByText("Allow");
+    this.denyButton = screen.getByText("Cancel");
   }
 
   async authoriseOnce() {
