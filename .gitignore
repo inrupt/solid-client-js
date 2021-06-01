@@ -10,6 +10,7 @@ docs/api/build/
 docs/api/source/api/
 docs/dist/
 docs/.DS_Store
+docs/api/.DS_Store
 .env*.local
 src/e2e-browser/testcafe-requests/
-docs/api/.DS_Store
+.codesandbox/sandbox/.parcel-cache/
