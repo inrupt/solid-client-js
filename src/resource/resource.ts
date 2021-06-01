@@ -74,6 +74,7 @@ export async function getResourceInfo(
  *
  * @param response A Fetch API Response. See {@link https://developer.mozilla.org/en-US/docs/Web/API/Response MDN}.
  * @returns Resource metadata readable by functions such as [[getSourceUrl]].
+ * @hidden This interface is not exposed yet until we've tried it out in practice.
  */
 export function responseToResourceInfo(
   response: Response
