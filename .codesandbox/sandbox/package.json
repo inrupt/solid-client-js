@@ -13,7 +13,7 @@
     "rdf-namespaces": "1.8.0"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.6.1"
+    "parcel": "^2.0.0-beta.2"
   },
   "keywords": [
     "typescript",
