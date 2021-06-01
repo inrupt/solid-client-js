@@ -316,6 +316,15 @@ export function isThing<X>(input: X | Thing): input is Thing {
   );
 }
 
+// This is a somewhat involved construct to ensure that TypeScript throws an error
+// when you pass a ThingLocal without a baseUrl, but not when you pass a ThingPersisted.
+// This is needed because a ThingLocal is assignable to a ThingPersisted (it also
+// has a `url` string property, it's just that it needs a *particular* string).
+// Context: https://stackoverflow.com/a/67788029/
+type IsThingLocal<T extends Thing> = T extends ThingLocal ? true : false;
+type OtherArgsIf<MatchesType extends boolean> = MatchesType extends true
+  ? [baseUrl: UrlString]
+  : [];
 /**
  * Get the URL to a given [[Thing]].
  *
@@ -323,9 +332,23 @@ export function isThing<X>(input: X | Thing): input is Thing {
  * @param baseUrl If `thing` is not persisted yet, the base URL that should be used to construct this [[Thing]]'s URL.
  */
 export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
-export function asUrl(thing: ThingPersisted): UrlString;
-export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
-export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
+/**
+ * Get the URL to a given [[Thing]].
+ *
+ * @param thing The [[Thing]] you want to obtain the URL from.
+ * @param baseUrl If `thing` is not persisted yet, the base URL that should be used to construct this [[Thing]]'s URL.
+ */
+export function asUrl<T extends Thing>(
+  thing: T,
+  ...otherArgs: OtherArgsIf<IsThingLocal<T>>
+): UrlString;
+export function asUrl<T extends Thing>(
+  thing: T,
+  ...otherArgs: OtherArgsIf<IsThingLocal<T>>
+): UrlString {
+  // If T is a ThingLocal, the second argument (i.e. the first element of `otherArgs`)
+  // should be the baseUrl. If it's a ThingPersisted, it can be omitted:
+  const [baseUrl] = otherArgs as [] | [UrlString];
   if (isThingLocal(thing)) {
     if (typeof baseUrl === "undefined") {
       throw new Error(

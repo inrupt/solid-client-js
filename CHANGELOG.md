@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- Since version 1.8.0, TypeScript would no longer warn you if you omitted the
+  second argument to `asUrl` in cases where it was should not be omitted,
+  thereby risking runtime errors.
+
 The following sections document changes that have been released already:
 
 ## [1.8.1] - 2021-05-25

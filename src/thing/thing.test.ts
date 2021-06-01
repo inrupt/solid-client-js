@@ -801,6 +801,15 @@ describe("asIri", () => {
     );
   });
 
+  it("triggers a TypeScript error when passed a Thing without a base IRI", () => {
+    // We're only checking for TypeScript errors:
+    expect.assertions(0);
+    const localThing: ThingLocal = createThing();
+
+    // @ts-expect-error
+    asUrl(localThing);
+  });
+
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localThing: ThingLocal = {
       type: "Subject",
