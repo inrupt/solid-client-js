@@ -270,7 +270,7 @@ export function setTerm<T extends Thing>(
  * @param value Value to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
  */
-type SetOfType<Type> = <T extends Thing>(
+export type SetOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Type

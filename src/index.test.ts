@@ -115,6 +115,7 @@ import {
   removeStringNoLocale,
   removeLiteral,
   removeNamedNode,
+  buildThing,
   getSolidDatasetWithAcl,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
@@ -269,6 +270,7 @@ it("exports the public API from the entry file", () => {
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
   expect(removeNamedNode).toBeDefined();
+  expect(buildThing).toBeDefined();
   expect(getSolidDatasetWithAcl).toBeDefined();
   expect(solidDatasetAsMarkdown).toBeDefined();
   expect(changeLogAsMarkdown).toBeDefined();

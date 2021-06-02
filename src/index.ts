@@ -139,6 +139,7 @@ export {
   removeLiteral,
   removeNamedNode,
 } from "./thing/remove";
+export { buildThing, ThingBuilder } from "./thing/build";
 export { mockThingFrom } from "./thing/mock";
 export {
   hasAcl,
