@@ -78,6 +78,7 @@
       "src/thing/set.ts",
       "src/thing/add.ts",
       "src/thing/remove.ts",
+      "src/thing/build.ts",
       "src/thing/mock.ts",
       "src/acl/acl.ts",
       "src/acl/agent.ts",

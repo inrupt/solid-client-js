@@ -12,6 +12,23 @@ The following changes have been implemented but not released yet:
   export SolidDatasets into RDF/JS Datasets using `toRdfJsDataset`, and to
   import existing RDF/JS Dataset for storing on a Solid Pod using
   `fromRdfJsDataset`.
+- A new function `buildThing()` makes it easier to set multiple properties on a
+  Thing in one go. So instead of:
+
+```javascript
+let newThing = createThing();
+newThing = addUrl(newThing, rdf.type, schema.Person);
+newThing = addStringNoLocale(newThing, schema.givenName, "Vincent");
+```
+
+you can now avoid having to repeat `newThing`:
+
+```javascript
+const newThing = buildThing()
+  .addUrl(rdf.type, schema.Person)
+  .addStringNoLocale(schema.givenName, "Vincent")
+  .build();
+```
 
 ### Bugs fixed
 

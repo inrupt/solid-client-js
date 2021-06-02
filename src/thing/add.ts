@@ -422,7 +422,7 @@ function addLiteralOfType<T extends Thing>(
  * @param value Value to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
  */
-type AddOfType<Type> = <T extends Thing>(
+export type AddOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: Type

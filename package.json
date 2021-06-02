@@ -42,6 +42,7 @@
     "./thing/add": "./dist/thing/add.mjs",
     "./thing/set": "./dist/thing/set.mjs",
     "./thing/remove": "./dist/thing/remove.mjs",
+    "./thing/build": "./dist/thing/build.mjs",
     "./thing/mock": "./dist/thing/mock.mjs",
     "./acl/acl": "./dist/acl/acl.mjs",
     "./acl/agent": "./dist/acl/agent.mjs",
