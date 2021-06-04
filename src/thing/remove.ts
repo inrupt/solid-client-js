@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Literal, NamedNode } from "rdf-js";
+import { Literal, NamedNode } from "@rdfjs/types";
 import { Url, UrlString, Thing, ThingPersisted } from "../interfaces";
 import {
   isNamedNode,

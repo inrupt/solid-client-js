@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad, NamedNode } from "rdf-js";
+import { Quad, NamedNode } from "@rdfjs/types";
 import { Access } from "./acl/acl";
 import { ImmutableDataset, LocalNodeIri, Subject } from "./rdf.internal";
 

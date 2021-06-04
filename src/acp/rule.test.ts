@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { NamedNode } from "rdf-js";
+import { NamedNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
 
 import { createThing, getThing, getThingAll, setThing } from "../thing/thing";

@@ -24,7 +24,7 @@
 import rdfJsDatasetModule from "@rdfjs/dataset";
 export const rdfJsDataset = rdfJsDatasetModule.dataset;
 import RdfJsDataFactory from "@rdfjs/data-model";
-import * as RdfJs from "rdf-js";
+import * as RdfJs from "@rdfjs/types";
 import { IriString } from "./interfaces";
 import { XmlSchemaTypeIri, xmlSchemaTypes } from "./datatypes";
 

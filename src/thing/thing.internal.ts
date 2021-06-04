@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad, Quad_Object } from "rdf-js";
+import { Quad, Quad_Object } from "@rdfjs/types";
 import {
   isNamedNode,
   isLiteral,
