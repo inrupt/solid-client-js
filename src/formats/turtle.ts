@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad } from "rdf-js";
+import { Quad } from "@rdfjs/types";
 import { IriString } from "../interfaces";
 import { DataFactory } from "../rdfjs";
 import { getSourceUrl } from "../resource/resource";

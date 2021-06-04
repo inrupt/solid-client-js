@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad, NamedNode, Quad_Object } from "rdf-js";
+import { Quad, NamedNode, Quad_Object } from "@rdfjs/types";
 import { DataFactory } from "../rdfjs";
 import { ldp } from "../constants";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";

@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DatasetCore } from "rdf-js";
+import { DatasetCore } from "@rdfjs/types";
 
 /**
  * Verify whether a given value has the required DatasetCore properties.

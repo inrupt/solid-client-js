@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { NamedNode, Literal, Quad, Term, Quad_Subject } from "rdf-js";
+import { NamedNode, Literal, Term, Quad_Subject } from "@rdfjs/types";
 import { DataFactory } from "./rdfjs";
 import { IriString, Iri, SolidClientError, LocalNode } from "./interfaces";
 import { internal_toIriString } from "./interfaces.internal";

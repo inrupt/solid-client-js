@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { NamedNode, Literal, BlankNode } from "rdf-js";
+import { NamedNode, Literal, BlankNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import { IriString, Thing, UrlString } from "../interfaces";
 import {

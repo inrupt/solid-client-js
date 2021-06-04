@@ -32,7 +32,7 @@ import {
   getResourceInfo,
 } from "../resource/resource";
 import { acl, rdf } from "../constants";
-import { Quad } from "rdf-js";
+import { Quad } from "@rdfjs/types";
 import { DataFactory } from "../rdfjs";
 import {
   createThing,
