@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { jest, describe, it } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
 import { getAgentResourceAccess } from "../acl/agent";
 import {
