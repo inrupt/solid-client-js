@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { expect } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 
 import {
   SolidDataset,

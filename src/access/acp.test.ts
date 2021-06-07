@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 import * as fc from "fast-check";
 import { WithAccessibleAcr } from "../acp/acp";
 import {
