@@ -14,7 +14,8 @@
     "lint": "eslint --config .eslintrc.js --fix",
     "build-api-docs": "typedoc",
     "build-docs-preview-site": "npm run build-api-docs; cd docs/api; rm source/api/index.md; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "preinstall": "npx npm-force-resolutions@0.0.10"
   },
   "keywords": [
     "rdf",
@@ -105,5 +106,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"
+  },
+  "resolutions": {
+    "glob-parent": "^5.1.2"
   }
 }
