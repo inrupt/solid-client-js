@@ -55,7 +55,7 @@ import { internal_getResourceAcl } from "../acl/acl.internal";
 import { AclDataset } from "../acl/acl";
 import { getGroupResourceAccess } from "../acl/group";
 import { getPublicResourceAccess } from "../acl/class";
-import { toRdfJsQuads } from "../rdf.internal";
+import { toRdfJsQuads } from "../rdfjs.internal";
 
 function getMockDataset(
   sourceIri: IriString,

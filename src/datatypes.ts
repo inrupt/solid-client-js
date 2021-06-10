@@ -20,7 +20,7 @@
  */
 
 import { NamedNode, Literal, Term, Quad_Subject } from "@rdfjs/types";
-import { DataFactory } from "./rdfjs";
+import { DataFactory } from "./rdfjs.internal";
 import { IriString, Iri, SolidClientError, LocalNode } from "./interfaces";
 import { internal_toIriString } from "./interfaces.internal";
 import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";

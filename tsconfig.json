@@ -89,7 +89,8 @@
       "src/acp/policy.ts",
       "src/acp/rule.ts",
       "src/acp/mock.ts",
-      "src/access/universal.ts"
+      "src/access/universal.ts",
+      "src/rdfjs.ts",
     ],
     "exclude": [
       "node_modules/**",

@@ -53,7 +53,8 @@
     "./acp/policy": "./dist/acp/policy.mjs",
     "./acp/rule": "./dist/acp/rule.mjs",
     "./acp/mock": "./dist/acp/mock.mjs",
-    "./access/universal": "./dist/access/universal.mjs"
+    "./access/universal": "./dist/access/universal.mjs",
+    "./rdfjs": "./dist/rdfjs.mjs"
   },
   "files": [
     "dist",

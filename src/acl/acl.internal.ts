@@ -33,7 +33,7 @@ import {
 } from "../resource/resource";
 import { acl, rdf } from "../constants";
 import { Quad } from "@rdfjs/types";
-import { DataFactory } from "../rdfjs";
+import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import {
   createThing,
   getThingAll,
@@ -54,7 +54,7 @@ import {
   WithResourceAcl,
 } from "./acl";
 import { removeAll, removeIri } from "../thing/remove";
-import { freeze, subjectToRdfJsQuads } from "../rdf.internal";
+import { freeze } from "../rdf.internal";
 import { internal_cloneResource } from "../resource/resource.internal";
 
 /**

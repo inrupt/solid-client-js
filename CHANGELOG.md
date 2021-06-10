@@ -6,6 +6,13 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- To ease interoperability with generic RDF libraries, it is now possibile to
+  export SolidDatasets into RDF/JS Datasets using `toRdfJsDataset`, and to
+  import existing RDF/JS Dataset for storing on a Solid Pod using
+  `fromRdfJsDataset`.
+
 ### Bugs fixed
 
 - Since version 1.8.0, TypeScript would no longer warn you if you omitted the

@@ -36,7 +36,7 @@ import {
   IriString,
   hasServerResourceInfo,
 } from "../interfaces";
-import { DataFactory } from "../rdfjs";
+import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import {
   internal_addAdditionsToChangeLog,
@@ -49,7 +49,6 @@ import {
   getLocalNodeName,
   isLocalNodeIri,
   LocalNodeIri,
-  subjectToRdfJsQuads,
 } from "../rdf.internal";
 import { internal_toIriString } from "../interfaces.internal";
 import { getTermAll } from "./get";
