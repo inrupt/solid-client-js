@@ -38,17 +38,79 @@
 //      needs to be explicit, and to always call 'DataFactory.literal()' with
 //      NamedNode instances for the 2nd param when we know we want a Datatype.
 
-import rdfjsDataset from "@rdfjs/dataset";
-export const dataset = rdfjsDataset.dataset;
-const { quad, literal, namedNode, blankNode, defaultGraph } = rdfjsDataset;
+import * as RdfJs from "@rdfjs/types";
+import rdfjsDatasetModule from "@rdfjs/dataset";
+import { ImmutableDataset } from "./rdf.internal";
+import {
+  addRdfJsQuadToDataset,
+  getChainBlankNodes,
+  toRdfJsQuads,
+} from "./rdfjs.internal";
+const rdfJsDataset = rdfjsDatasetModule.dataset;
 
 /**
- * @internal
+ * Convert an RDF/JS Dataset into a [[SolidDataset]]
+ *
+ * Parse an RDF/JS
+ * {@link https://rdf.js.org/dataset-spec/#datasetcore-interface DatasetCore},
+ * into a [[SolidDataset]]. Note that, when saving the returned SolidDataset to
+ * a Solid Pod, only Quads in the Default Graph will be stored.
+ *
+ * @param rdfJsDataset The source RDF/JS Dataset.
+ * @returns A [[SolidDataset]] containing the same data as the given RDF/JS Dataset.
+ * @since Not released yet.
  */
-export const DataFactory = {
-  quad,
-  literal,
-  namedNode,
-  blankNode,
-  defaultGraph,
-};
+export function fromRdfJsDataset(
+  rdfJsDataset: RdfJs.DatasetCore
+): ImmutableDataset {
+  const dataset: ImmutableDataset = {
+    graphs: { default: {} },
+    type: "Dataset",
+  };
+
+  const quads = Array.from(rdfJsDataset);
+
+  const chainBlankNodes = getChainBlankNodes(quads);
+
+  // Quads with chain Blank Nodes as their Subject will be parsed when those
+  // Blank Nodes are referred to in an Object. See `addRdfJsQuadToObjects`.
+  const quadsWithoutChainBlankNodeSubjects = quads.filter((quad) =>
+    chainBlankNodes.every(
+      (chainBlankNode) => !chainBlankNode.equals(quad.subject)
+    )
+  );
+
+  return quadsWithoutChainBlankNodeSubjects.reduce(
+    (datasetAcc, quad) =>
+      addRdfJsQuadToDataset(datasetAcc, quad, {
+        otherQuads: quads,
+        chainBlankNodes: chainBlankNodes,
+      }),
+    dataset
+  );
+}
+
+export type ToRdfJsOptions = Partial<{
+  dataFactory: RdfJs.DataFactory;
+  // We could consider making this a required parameter,
+  // so we can remove our dependency on @rdfjs/dataset:
+  datasetFactory: RdfJs.DatasetCoreFactory;
+}>;
+/**
+ * Convert a [[SolidDataset]] into an RDF/JS Dataset
+ *
+ * Export a [[SolidDataset]] into an RDF/JS
+ * {@link https://rdf.js.org/dataset-spec/#datasetcore-interface DatasetCore}.
+ *
+ * @param set A [[SolidDataset]] to export into an RDF/JS Dataset.
+ * @param options Optional parameter that allows you to pass in your own RDF/JS DataFactory or DatasetCoreFactory.
+ * @returns An RDF/JS Dataset containing the data from the given SolidDataset.
+ * @since Not released yet.
+ */
+export function toRdfJsDataset(
+  set: ImmutableDataset,
+  options: ToRdfJsOptions = {}
+): RdfJs.DatasetCore {
+  const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
+  return datasetFactory(toRdfJsQuads(set, options));
+}

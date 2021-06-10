@@ -39,7 +39,7 @@ import {
   isBlankNodeId,
   isLocalNodeIri,
 } from "../rdf.internal";
-import { DataFactory } from "../rdfjs";
+import { DataFactory } from "../rdfjs.internal";
 
 /**
  * Returns the URLs of all Properties that the given [[Thing ]]has values for.b

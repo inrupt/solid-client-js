@@ -210,8 +210,7 @@ export {
   UploadRequestInit,
   SolidClientError,
 } from "./interfaces";
-/** @hidden These are available for testing, but not part of our public API yet. */
-export { fromRdfJsDataset, toRdfJsDataset } from "./rdf.internal";
+export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.

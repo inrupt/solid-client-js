@@ -155,6 +155,8 @@ import {
   mockThingFrom,
   addMockResourceAclTo,
   addMockFallbackAclTo,
+  fromRdfJsDataset,
+  toRdfJsDataset,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -164,8 +166,6 @@ import {
   acp_v2,
   acp_v3,
   access,
-  toRdfJsDataset,
-  fromRdfJsDataset,
   responseToSolidDataset,
   responseToResourceInfo,
   // Deprecated functions still exported for backwards compatibility:
@@ -310,6 +310,8 @@ it("exports the public API from the entry file", () => {
   expect(mockThingFrom).toBeDefined();
   expect(addMockResourceAclTo).toBeDefined();
   expect(addMockFallbackAclTo).toBeDefined();
+  expect(fromRdfJsDataset).toBeDefined();
+  expect(toRdfJsDataset).toBeDefined();
 });
 
 it("exports error classes", () => {
@@ -323,8 +325,6 @@ it("exports preview API's for early adopters", () => {
   expect(acp_v2).toBeDefined();
   expect(acp_v3).toBeDefined();
   expect(access).toBeDefined();
-  expect(fromRdfJsDataset).toBeDefined();
-  expect(toRdfJsDataset).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();
 });

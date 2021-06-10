@@ -31,12 +31,9 @@ import {
   serializeInteger,
   xmlSchemaTypes,
 } from "./datatypes";
-import {
-  addRdfJsQuadToDataset,
-  fromRdfJsDataset,
-  ImmutableDataset,
-  toRdfJsDataset,
-} from "./rdf.internal";
+import { ImmutableDataset } from "./rdf.internal";
+import { addRdfJsQuadToDataset } from "./rdfjs.internal";
+import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
