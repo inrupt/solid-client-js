@@ -105,5 +105,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"
+  },
+  "resolutions": {
+    "glob-parent": "^5.1.2"
   }
 }
