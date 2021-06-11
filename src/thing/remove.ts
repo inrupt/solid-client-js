@@ -31,6 +31,7 @@ import {
   deserializeDecimal,
   deserializeInteger,
   internal_isValidUrl,
+  deserializeDate,
 } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import {
@@ -166,6 +167,37 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
     xmlSchemaTypes.dateTime,
     (foundDatetime) =>
       deserializeDatetime(foundDatetime)?.getTime() === value.getTime()
+  );
+};
+
+/**
+ * Create a new Thing with the given date removed for the given Property.
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to remove a date value from.
+ * @param property Property for which to remove the given date value.
+ * @param value Date to remove from `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
+ */
+export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return removeLiteralMatching(
+    thing,
+    property,
+    xmlSchemaTypes.date,
+    function (foundDate) {
+      const deserializedDate = deserializeDate(foundDate);
+      if (deserializedDate) {
+        return (
+          deserializedDate.getFullYear() === value.getFullYear() &&
+          deserializedDate.getMonth() === value.getMonth() &&
+          deserializedDate.getDate() === value.getDate()
+        );
+      } else {
+        return false;
+      }
+    }
   );
 };
 

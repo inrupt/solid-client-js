@@ -32,6 +32,7 @@ import {
 import {
   addBoolean,
   addDatetime,
+  addDate,
   addDecimal,
   addInteger,
   addLiteral,
@@ -104,6 +105,23 @@ export const setBoolean: SetOfType<boolean> = (thing, property, value) => {
 export const setDatetime: SetOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
   return addDatetime(removeAll(thing, property), property, value);
+};
+
+/**
+ * Create a new Thing with existing values replaced by the given date for the given Property.
+ *
+ * To preserve existing values, see [[addDate]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to set an date value on.
+ * @param property Property for which to set the given date value.
+ * @param value Date to set on `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ */
+export const setDate: SetOfType<Date> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return addDate(removeAll(thing, property), property, value);
 };
 
 /**

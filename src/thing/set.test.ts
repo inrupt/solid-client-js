@@ -29,6 +29,7 @@ import {
   setUrl,
   setBoolean,
   setDatetime,
+  setDate,
   setDecimal,
   setInteger,
   setStringWithLocale,
@@ -565,6 +566,155 @@ describe("setDatetime", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("setDate", () => {
+  it("replaces existing values with the given date for the given Predicate", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setDate(
+      thing,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setDate(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+  });
+
+  it("does not modify the input Thing", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const updatedThing = setDate(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
+
+    const updatedThing = setDate(
+      thingLocal,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+  });
+
+  it("preserves existing Quads with different Predicates", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const updatedThing = setDate(
+      thing,
+      "https://some.vocab/other-predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setDate(
+        null as unknown as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      setDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      setDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
       );
     } catch (e) {
       thrownError = e;

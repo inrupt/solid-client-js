@@ -63,6 +63,7 @@ import {
   getIri,
   getBoolean,
   getDatetime,
+  getDate,
   getDecimal,
   getInteger,
   getStringWithLocale,
@@ -71,6 +72,7 @@ import {
   getIriAll,
   getBooleanAll,
   getDatetimeAll,
+  getDateAll,
   getDecimalAll,
   getIntegerAll,
   getStringWithLocaleAll,
@@ -86,6 +88,7 @@ import {
   addIri,
   addBoolean,
   addDatetime,
+  addDate,
   addDecimal,
   addInteger,
   addStringWithLocale,
@@ -97,6 +100,7 @@ import {
   setIri,
   setBoolean,
   setDatetime,
+  setDate,
   setDecimal,
   setInteger,
   setStringWithLocale,
@@ -109,6 +113,7 @@ import {
   removeIri,
   removeBoolean,
   removeDatetime,
+  removeDate,
   removeDecimal,
   removeInteger,
   removeStringWithLocale,
@@ -218,6 +223,7 @@ it("exports the public API from the entry file", () => {
   expect(getIri).toBeDefined();
   expect(getBoolean).toBeDefined();
   expect(getDatetime).toBeDefined();
+  expect(getDate).toBeDefined();
   expect(getDecimal).toBeDefined();
   expect(getInteger).toBeDefined();
   expect(getStringWithLocale).toBeDefined();
@@ -227,6 +233,7 @@ it("exports the public API from the entry file", () => {
   expect(getIriAll).toBeDefined();
   expect(getBooleanAll).toBeDefined();
   expect(getDatetimeAll).toBeDefined();
+  expect(getDateAll).toBeDefined();
   expect(getDecimalAll).toBeDefined();
   expect(getIntegerAll).toBeDefined();
   expect(getStringWithLocaleAll).toBeDefined();
@@ -241,6 +248,7 @@ it("exports the public API from the entry file", () => {
   expect(addIri).toBeDefined();
   expect(addBoolean).toBeDefined();
   expect(addDatetime).toBeDefined();
+  expect(addDate).toBeDefined();
   expect(addDecimal).toBeDefined();
   expect(addInteger).toBeDefined();
   expect(addStringWithLocale).toBeDefined();
@@ -252,6 +260,7 @@ it("exports the public API from the entry file", () => {
   expect(setIri).toBeDefined();
   expect(setBoolean).toBeDefined();
   expect(setDatetime).toBeDefined();
+  expect(setDate).toBeDefined();
   expect(setDecimal).toBeDefined();
   expect(setInteger).toBeDefined();
   expect(setStringWithLocale).toBeDefined();
@@ -264,6 +273,7 @@ it("exports the public API from the entry file", () => {
   expect(removeIri).toBeDefined();
   expect(removeBoolean).toBeDefined();
   expect(removeDatetime).toBeDefined();
+  expect(removeDate).toBeDefined();
   expect(removeDecimal).toBeDefined();
   expect(removeInteger).toBeDefined();
   expect(removeStringWithLocale).toBeDefined();

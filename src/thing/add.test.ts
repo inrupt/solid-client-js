@@ -27,6 +27,7 @@ import {
   addUrl,
   addBoolean,
   addDatetime,
+  addDate,
   addDecimal,
   addInteger,
   addStringWithLocale,
@@ -599,6 +600,171 @@ describe("addDatetime", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("addDate", () => {
+  it("adds the given date value for the given predicate", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addDate(
+      thing,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1990-11-12Z"]);
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addDate(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1990-11-12Z"]);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addDate(
+      thing,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(thing.predicates["https://some.vocab/predicate"]).toBeUndefined();
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1990-11-12Z"]);
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
+
+    const updatedThing = addDate(
+      thingLocal,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1990-11-12Z"]);
+  });
+
+  it("preserves existing values for the same Predicate", () => {
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://some.pod/resource#subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          literals: {
+            "http://www.w3.org/2001/XMLSchema#date": ["1955-06-08Z"],
+          },
+        },
+      },
+    };
+
+    const updatedThing = addDate(
+      thing,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1955-06-08Z", "1990-11-12Z"]);
+  });
+
+  it("preserves existing Quads with different Predicates", () => {
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://some.pod/resource#subject",
+      predicates: {
+        "https://some-other.vocab/predicate": {
+          literals: {
+            "http://www.w3.org/2001/XMLSchema#string": ["Some other value"],
+          },
+        },
+      },
+    };
+
+    const updatedThing = addDate(
+      thing,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some-other.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#string"
+      ]
+    ).toStrictEqual(["Some other value"]);
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ]
+    ).toStrictEqual(["1990-11-12Z"]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addDate(
+        null as unknown as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      addDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      addDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
       );
     } catch (e) {
       thrownError = e;

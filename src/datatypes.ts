@@ -32,6 +32,7 @@ import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 export const xmlSchemaTypes = {
   boolean: "http://www.w3.org/2001/XMLSchema#boolean",
   dateTime: "http://www.w3.org/2001/XMLSchema#dateTime",
+  date: "http://www.w3.org/2001/XMLSchema#date",
   decimal: "http://www.w3.org/2001/XMLSchema#decimal",
   integer: "http://www.w3.org/2001/XMLSchema#integer",
   string: "http://www.w3.org/2001/XMLSchema#string",
@@ -79,6 +80,7 @@ export function serializeDatetime(value: Date): string {
   // Therefore, we can just use .toISOString():
   return value.toISOString();
 }
+
 /**
  * @internal
  * @param value Value to deserialise.
@@ -148,6 +150,76 @@ export function deserializeDatetime(literalString: string): Date | null {
     // Note that we base it on the calculated year, rather than the year that was actually read.
     // This is because the year might actually differ from the value listed in the serialisation,
     // i.e. when moving the timezone offset to UTC pushes it into a different year:
+    date.setUTCFullYear(date.getUTCFullYear() - 1900);
+  }
+  return date;
+}
+
+/**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value`.
+ * @see https://www.w3.org/TR/xmlschema-2/#date-lexical-representation
+ */
+export function serializeDate(value: Date): string {
+  const year = value.getFullYear();
+  const month = value.getMonth();
+  const day = value.getDate();
+  const [_, timezone] = splitTimeFromTimezone(value.toISOString());
+
+  return year + "-" + (month + 1) + "-" + day + timezone;
+}
+
+/**
+ * @internal
+ * @param value Value to deserialise.
+ * @returns Deserialized datetime, or null if the given value is not a valid serialised datetime.
+ * @see https://www.w3.org/TR/xmlschema-2/#date-lexical-representation
+ */
+export function deserializeDate(literalString: string): Date | null {
+  // Date in the format described at
+  // https://www.w3.org/TR/xmlschema-2/#date-lexical-representation
+  // (without constraints on the value).
+  // -? - An optional leading `-`.
+  // \d{4,}- - Four or more digits followed by a `-` representing the year. Example: "3000-".
+  // \d\d-\d\d - Two digits representing the month and two representing the day of the month,
+  //             separated by a `-`. Example: "11-03".
+  // (Z|(\+|-)\d\d:\d\d) - Optionally, the letter Z indicating UTC, or a `+` or `-` followed by two digits for
+  //                       the hour offset and two for the minute offset, separated by a `:`.
+  //                       Example: "+13:37".
+
+  const dateRegEx = /-?\d{4,}-\d\d-\d\d(Z|(\+|-)\d\d:\d\d)?/;
+  if (!dateRegEx.test(literalString)) {
+    return null;
+  }
+
+  const signedDateString = literalString;
+  // The date string can optionally be prefixed with `-`,
+  // in which case the year is negative:
+  const [yearMultiplier, dateString] =
+    signedDateString.charAt(0) === "-"
+      ? [-1, signedDateString.substring(1)]
+      : [1, signedDateString];
+  const [yearString, monthString, dayAndTimezoneString] = dateString.split("-");
+
+  const dayString =
+    dayAndTimezoneString.length > 2
+      ? dayAndTimezoneString.substring(0, 2)
+      : dayAndTimezoneString;
+
+  const utcFullYear = Number.parseInt(yearString, 10) * yearMultiplier;
+  const utcMonth = Number.parseInt(monthString, 10) - 1;
+  const utcDate = Number.parseInt(dayString, 10);
+  const hour = 12;
+
+  // setting at 12:00 avoids all timezones
+  const date = new Date(Date.UTC(utcFullYear, utcMonth, utcDate, hour));
+
+  // For the year, values from 0 to 99 map to the years 1900 to 1999. Since the serialisation
+  // always writes out the years fully, we should correct this to actually map to the years 0 to 99.
+  // See
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#Individual_date_and_time_component_values
+  if (utcFullYear >= 0 && utcFullYear < 100) {
     date.setUTCFullYear(date.getUTCFullYear() - 1900);
   }
   return date;

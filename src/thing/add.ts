@@ -25,6 +25,7 @@ import { internal_throwIfNotThing } from "./thing.internal";
 import {
   serializeBoolean,
   serializeDatetime,
+  serializeDate,
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
@@ -146,6 +147,28 @@ export const addDatetime: AddOfType<Date> = (thing, property, value) => {
     property,
     serializeDatetime(value),
     xmlSchemaTypes.dateTime
+  );
+};
+
+/**
+ * Create a new Thing with a date added for a Property.
+ *
+ * This preserves existing values for the given Property. To replace them, see [[setDate]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to add a date value to.
+ * @param property Property for which to add the given date value.
+ * @param value Date to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ */
+export const addDate: AddOfType<Date> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return addLiteralOfType(
+    thing,
+    property,
+    serializeDate(value),
+    xmlSchemaTypes.date
   );
 };
 
