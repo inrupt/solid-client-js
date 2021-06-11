@@ -29,6 +29,7 @@ import {
   removeUrl,
   removeBoolean,
   removeDatetime,
+  removeDate,
   removeDecimal,
   removeInteger,
   removeStringWithLocale,
@@ -46,7 +47,13 @@ import { localNodeSkolemPrefix } from "../rdf.internal";
 function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType:
+    | "string"
+    | "integer"
+    | "decimal"
+    | "boolean"
+    | "dateTime"
+    | "date"
 ): Thing {
   return {
     type: "Subject",
@@ -1056,6 +1063,250 @@ describe("removeDatetime", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("removeDate", () => {
+  it("removes the given date value for the given Predicate", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+
+    const updatedThing = removeDate(
+      thingWithDate,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("removes the given date value for the given Predicate regardless of the time value set", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+
+    const updatedThing = removeDate(
+      thingWithDate,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+
+    const updatedThing = removeDate(
+      thingWithDate,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("does not modify the input Thing", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+
+    const updatedThing = removeDate(
+      thingWithDate,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(thingWithDate).not.toStrictEqual(updatedThing);
+    expect(
+      thingWithDate.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}arbitrary-subject-name`;
+
+    const updatedThing = removeDate(
+      thingLocal,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("removes multiple instances of the same date for the same Predicate", () => {
+    const thingWithDuplicateDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    (
+      thingWithDuplicateDate.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#date"] as string[]
+    ).push("1990-11-12Z");
+
+    const updatedThing = removeDate(
+      thingWithDuplicateDate,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+    });
+  });
+
+  it("does not remove Quads with different Predicates or Objects", () => {
+    const thingWithOtherQuads = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    // A different Object:
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ] as string[]
+    ).push("1955-06-08Z");
+    // An invalid object
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#date"
+      ] as string[]
+    ).push("not-a-date");
+    // A different predicate
+    (thingWithOtherQuads.predicates[
+      "https://some-other.vocab/predicate"
+    ] as any) = {
+      literals: {
+        "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+      },
+    };
+
+    const updatedThing = removeDate(
+      thingWithOtherQuads,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(updatedThing.predicates).toStrictEqual({
+      "https://some.vocab/predicate": {
+        literals: {
+          "http://www.w3.org/2001/XMLSchema#date": [
+            "1955-06-08Z",
+            "not-a-date",
+          ],
+        },
+      },
+      "https://some-other.vocab/predicate": {
+        literals: {
+          "http://www.w3.org/2001/XMLSchema#date": ["1990-11-12Z"],
+        },
+      },
+    });
+  });
+
+  it("does not remove Quads with non-date Objects", () => {
+    const thingWithString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    (thingWithString.predicates["https://some.vocab/predicate"].literals![
+      "http://www.w3.org/2001/XMLSchema#string"
+    ] as string[]) = ["Some string value"];
+
+    const updatedThing = removeDate(
+      thingWithString,
+      "https://some.vocab/predicate",
+      new Date(Date.UTC(1990, 10, 12))
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#date": [],
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeDate(
+        null as unknown as Thing,
+        "https://arbitrary.vocab/predicate",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        new Date(Date.UTC(1990, 10, 12))
       );
     } catch (e) {
       thrownError = e;

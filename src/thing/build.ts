@@ -28,6 +28,7 @@ import {
 } from "../interfaces";
 import {
   addBoolean,
+  addDate,
   addDatetime,
   addDecimal,
   addInteger,
@@ -43,6 +44,7 @@ import {
 import {
   removeAll,
   removeBoolean,
+  removeDate,
   removeDatetime,
   removeDecimal,
   removeInteger,
@@ -56,6 +58,7 @@ import {
 } from "./remove";
 import {
   setBoolean,
+  setDate,
   setDatetime,
   setDecimal,
   setInteger,
@@ -105,6 +108,7 @@ export type ThingBuilder<T extends Thing> = {
   addIri: Adder<Url | UrlString | Thing, T>;
   addBoolean: Adder<boolean, T>;
   addDatetime: Adder<Date, T>;
+  addDate: Adder<Date, T>;
   addDecimal: Adder<number, T>;
   addInteger: Adder<number, T>;
   addStringNoLocale: Adder<string, T>;
@@ -129,6 +133,7 @@ export type ThingBuilder<T extends Thing> = {
   setIri: Setter<Url | UrlString | Thing, T>;
   setBoolean: Setter<boolean, T>;
   setDatetime: Setter<Date, T>;
+  setDate: Setter<Date, T>;
   setDecimal: Setter<number, T>;
   setInteger: Setter<number, T>;
   setStringNoLocale: Setter<string, T>;
@@ -154,6 +159,7 @@ export type ThingBuilder<T extends Thing> = {
   removeIri: Remover<Url | UrlString | Thing, T>;
   removeBoolean: Remover<boolean, T>;
   removeDatetime: Remover<Date, T>;
+  removeDate: Remover<Date, T>;
   removeDecimal: Remover<number, T>;
   removeInteger: Remover<number, T>;
   removeStringNoLocale: Remover<string, T>;
@@ -286,6 +292,7 @@ export function buildThing(
     addIri: getAdder(thing, addIri),
     addBoolean: getAdder(thing, addBoolean),
     addDatetime: getAdder(thing, addDatetime),
+    addDate: getAdder(thing, addDate),
     addDecimal: getAdder(thing, addDecimal),
     addInteger: getAdder(thing, addInteger),
     addStringNoLocale: getAdder(thing, addStringNoLocale),
@@ -301,6 +308,7 @@ export function buildThing(
     setIri: getSetter(thing, setIri),
     setBoolean: getSetter(thing, setBoolean),
     setDatetime: getSetter(thing, setDatetime),
+    setDate: getSetter(thing, setDate),
     setDecimal: getSetter(thing, setDecimal),
     setInteger: getSetter(thing, setInteger),
     setStringNoLocale: getSetter(thing, setStringNoLocale),
@@ -318,6 +326,7 @@ export function buildThing(
     removeIri: getRemover(thing, removeIri),
     removeBoolean: getRemover(thing, removeBoolean),
     removeDatetime: getRemover(thing, removeDatetime),
+    removeDate: getRemover(thing, removeDate),
     removeDecimal: getRemover(thing, removeDecimal),
     removeInteger: getRemover(thing, removeInteger),
     removeStringNoLocale: getRemover(thing, removeStringNoLocale),

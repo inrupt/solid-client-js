@@ -39,6 +39,8 @@ import {
   deserializeInteger,
   normalizeLocale,
   ValidUrlExpectedError,
+  serializeDate,
+  deserializeDate,
 } from "./datatypes";
 import { LocalNode } from "./interfaces";
 import { localNodeSkolemPrefix } from "./rdf.internal";
@@ -259,6 +261,45 @@ describe("deserializeDatetime", () => {
   it("returns null if a value is not a serialised datetime", () => {
     expect(deserializeDatetime("1990-11-12")).toBeNull();
     expect(deserializeDatetime("Not a serialised datetime")).toBeNull();
+  });
+});
+
+describe("serializeDate", () => {
+  it("properly serialises a given date", () => {
+    expect(serializeDate(new Date(Date.UTC(1990, 10, 12)))).toBe("1990-11-12Z");
+  });
+});
+
+describe("deserializeDate", () => {
+  it("properly parses a serialised date", () => {
+    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
+    expect(deserializeDate("1990-11-12Z")).toEqual(expectedDate);
+
+    const expectedDateWithNegativeYear = new Date(Date.UTC(-42, 10, 12, 12));
+    expect(deserializeDate("-0042-11-12Z")).toEqual(
+      expectedDateWithNegativeYear
+    );
+
+    const dateBeforeTheYear100 = new Date(Date.UTC(0, 0, 1, 12));
+    dateBeforeTheYear100.setUTCFullYear(99);
+    expect(deserializeDate("0099-01-01Z")).toEqual(dateBeforeTheYear100);
+
+    const expectedEarliestRepresentableDate = new Date(Date.UTC(0, 3, 20, 12));
+    expectedEarliestRepresentableDate.setUTCFullYear(-271821);
+    expect(deserializeDate("-271821-04-20Z")).toEqual(
+      expectedEarliestRepresentableDate
+    );
+
+    // find largest date and set time to 12
+    const expectedLatestRepresentableDate = new Date(Date.UTC(0, 11, 31, 12));
+    expectedLatestRepresentableDate.setUTCFullYear(275759);
+    expect(deserializeDate("275759-12-31Z")).toEqual(
+      expectedLatestRepresentableDate
+    );
+  });
+
+  it("returns null if a value is not a serialised date", () => {
+    expect(deserializeDate("Not a serialised date")).toBeNull();
   });
 });
 

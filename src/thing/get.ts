@@ -24,6 +24,7 @@ import { Thing, Url, UrlString } from "../interfaces";
 import {
   deserializeBoolean,
   deserializeDatetime,
+  deserializeDate,
   deserializeDecimal,
   deserializeInteger,
   xmlSchemaTypes,
@@ -188,6 +189,27 @@ export function getDatetime(
 }
 
 /**
+ * Returns the date value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type date, returns null.
+ * If the Property has multiple date values, returns one of its values.
+ *
+ * @param thing The [[Thing]] to read a date value from.
+ * @param property The Property whose date value to return.
+ * @returns A date value for the given Property if present, or null if the Property is not present or the value is not of type date.
+ */
+export function getDate(thing: Thing, property: Url | UrlString): Date | null {
+  internal_throwIfNotThing(thing);
+
+  const literalString = getLiteralOfType(thing, property, xmlSchemaTypes.date);
+
+  if (literalString === null) {
+    return null;
+  }
+
+  return deserializeDate(literalString);
+}
+
+/**
  * Returns the datetime values of the specified Property from a [[Thing]].
  * If the Property is not present, returns an empty array.
  * If the Property's value is not of type datetime, omits that value in the array.
@@ -210,6 +232,28 @@ export function getDatetimeAll(
   return literalStrings
     .map(deserializeDatetime)
     .filter((potentialDatetime) => potentialDatetime !== null) as Date[];
+}
+
+/**
+ * Returns the date values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type date, omits that value in the array.
+ *
+ * @param thing The [[Thing]] to read the date values from.
+ * @param property The Property whose date values to return.
+ * @returns An array of date values for the given Property.
+ */
+export function getDateAll(thing: Thing, property: Url | UrlString): Date[] {
+  internal_throwIfNotThing(thing);
+  const literalStrings = getLiteralAllOfType(
+    thing,
+    property,
+    xmlSchemaTypes.date
+  );
+
+  return literalStrings
+    .map(deserializeDate)
+    .filter((potentialDate) => potentialDate !== null) as Date[];
 }
 
 /**
