@@ -20,7 +20,12 @@
  */
 
 import { Quad, NamedNode, Quad_Object } from "@rdfjs/types";
-import { DataFactory } from "../rdfjs";
+import {
+  addRdfJsQuadToDataset,
+  DataFactory,
+  getChainBlankNodes,
+  toRdfJsQuads,
+} from "../rdfjs.internal";
 import { ldp } from "../constants";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
@@ -59,14 +64,7 @@ import {
 } from "../thing/thing.internal";
 import { getIriAll } from "../thing/get";
 import { normalizeServerSideIri } from "./iri.internal";
-import {
-  addRdfJsQuadToDataset,
-  freeze,
-  getChainBlankNodes,
-  getLocalNodeName,
-  isLocalNodeIri,
-  toRdfJsQuads,
-} from "../rdf.internal";
+import { freeze, getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.

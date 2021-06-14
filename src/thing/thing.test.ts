@@ -801,6 +801,36 @@ describe("asIri", () => {
     );
   });
 
+  it("triggers a TypeScript error when passed a ThingLocal without a base IRI", () => {
+    const localThing: ThingLocal = createThing();
+
+    // @ts-expect-error
+    expect(() => asUrl(localThing)).toThrow();
+  });
+
+  // This currently fails because a plain `Thing` always has a `url` property that is a string,
+  // and is therefore indistinguishable from a `ThingPersisted`. Not sure what the solution is yet.
+  // Meanwhile TS users won't get a build-time error if they're passing a plain `Thing`,
+  // which is annoying but not a major issue.
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("triggers a TypeScript error when passed a Thing without a base IRI", () => {
+    const plainThing = createThing() as Thing;
+
+    // @ts-expect<disabled because it does not work yet>-error
+    expect(() => asUrl(plainThing)).toThrow();
+  });
+
+  it("does not trigger a TypeScript error when passed a ThingPersisted without a base IRI", () => {
+    // We're only checking for the absence TypeScript errors:
+    expect.assertions(0);
+    const resolvedThing: ThingPersisted = mockThingFrom(
+      "https://some.pod/resource#thing"
+    );
+
+    // This should not error:
+    asUrl(resolvedThing);
+  });
+
   it("throws an error when a local Thing was given without a base IRI", () => {
     const localThing: ThingLocal = {
       type: "Subject",

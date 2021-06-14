@@ -6,6 +6,19 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- To ease interoperability with generic RDF libraries, it is now possibile to
+  export SolidDatasets into RDF/JS Datasets using `toRdfJsDataset`, and to
+  import existing RDF/JS Dataset for storing on a Solid Pod using
+  `fromRdfJsDataset`.
+
+### Bugs fixed
+
+- Since version 1.8.0, TypeScript would no longer warn you if you omitted the
+  second argument to `asUrl` in cases where it's required, thereby risking
+  runtime errors. In most of these cases, TypeScript should now warn you again.
+
 The following sections document changes that have been released already:
 
 ## [1.8.1] - 2021-05-25

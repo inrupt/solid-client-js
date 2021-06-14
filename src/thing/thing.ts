@@ -36,7 +36,7 @@ import {
   IriString,
   hasServerResourceInfo,
 } from "../interfaces";
-import { DataFactory } from "../rdfjs";
+import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import {
   internal_addAdditionsToChangeLog,
@@ -49,7 +49,6 @@ import {
   getLocalNodeName,
   isLocalNodeIri,
   LocalNodeIri,
-  subjectToRdfJsQuads,
 } from "../rdf.internal";
 import { internal_toIriString } from "../interfaces.internal";
 import { getTermAll } from "./get";
@@ -316,6 +315,7 @@ export function isThing<X>(input: X | Thing): input is Thing {
   );
 }
 
+type IsNotThingLocal<T extends Thing> = T extends ThingLocal ? never : T;
 /**
  * Get the URL to a given [[Thing]].
  *
@@ -323,7 +323,9 @@ export function isThing<X>(input: X | Thing): input is Thing {
  * @param baseUrl If `thing` is not persisted yet, the base URL that should be used to construct this [[Thing]]'s URL.
  */
 export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
-export function asUrl(thing: ThingPersisted): UrlString;
+export function asUrl<T extends ThingPersisted>(
+  thing: T & IsNotThingLocal<T>
+): UrlString;
 export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
 export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
   if (isThingLocal(thing)) {

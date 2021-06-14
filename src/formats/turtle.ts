@@ -21,7 +21,7 @@
 
 import { Quad } from "@rdfjs/types";
 import { IriString } from "../interfaces";
-import { DataFactory } from "../rdfjs";
+import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
 

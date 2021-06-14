@@ -53,7 +53,8 @@
     "./acp/policy": "./dist/acp/policy.mjs",
     "./acp/rule": "./dist/acp/rule.mjs",
     "./acp/mock": "./dist/acp/mock.mjs",
-    "./access/universal": "./dist/access/universal.mjs"
+    "./access/universal": "./dist/access/universal.mjs",
+    "./rdfjs": "./dist/rdfjs.mjs"
   },
   "files": [
     "dist",
@@ -105,5 +106,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"
+  },
+  "resolutions": {
+    "glob-parent": "^5.1.2"
   }
 }
