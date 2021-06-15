@@ -172,14 +172,93 @@ export type ThingBuilder<T extends Thing> = {
   ) => ThingBuilder<T>;
 };
 
+/**
+ * Modify a [[Thing]], setting multiple properties in a single expresssion.
+ *
+ * For example, you can initialise several properties of a given Thing as follows:
+ *
+ *     const me = buildThing(createThing({ name: "profile-vincent" }))
+ *       .addUrl(rdf.type, schema.Person)
+ *       .addStringNoLocale(schema.givenName, "Vincent")
+ *       .build();
+ *
+ * Take note of the final call to `.build()` to obtain the actual Thing.
+ *
+ * @param init A Thing to modify.
+ * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
+ * @since Not released yet.
+ */
 export function buildThing(init: ThingLocal): ThingBuilder<ThingLocal>;
+/**
+ * Modify a [[Thing]], setting multiple properties in a single expresssion.
+ *
+ * For example, you can initialise several properties of a given Thing as follows:
+ *
+ *     const me = buildThing(createThing({ url: "https://example.pod/profile#vincent" }))
+ *       .addUrl(rdf.type, schema.Person)
+ *       .addStringNoLocale(schema.givenName, "Vincent")
+ *       .build();
+ *
+ * Take note of the final call to `.build()` to obtain the actual Thing.
+ *
+ * @param init A Thing to modify.
+ * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
+ * @since Not released yet.
+ */
 export function buildThing(init: ThingPersisted): ThingBuilder<ThingPersisted>;
+/**
+ * Create a [[Thing]], setting multiple properties in a single expresssion.
+ *
+ * For example, you can create a new Thing and initialise several properties as follows:
+ *
+ *     const me = buildThing({ name: "profile-vincent" })
+ *       .addUrl(rdf.type, schema.Person)
+ *       .addStringNoLocale(schema.givenName, "Vincent")
+ *       .build();
+ *
+ * Take note of the final call to `.build()` to obtain the actual Thing.
+ *
+ * @param init Options used to initialise a new Thing.
+ * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
+ * @since Not released yet.
+ */
 export function buildThing(
   init: CreateThingLocalOptions
 ): ThingBuilder<ThingLocal>;
+/**
+ * Create a [[Thing]], setting multiple properties in a single expresssion.
+ *
+ * For example, you can create a new Thing and initialise several properties as follows:
+ *
+ *     const me = buildThing({ url: "https://example.pod/profile#vincent" })
+ *       .addUrl(rdf.type, schema.Person)
+ *       .addStringNoLocale(schema.givenName, "Vincent")
+ *       .build();
+ *
+ * Take note of the final call to `.build()` to obtain the actual Thing.
+ *
+ * @param init Optionally pass an existing [[Thing]] to modify the properties of. If left empty, `buildThing` will initialise a new Thing.
+ * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
+ * @since Not released yet.
+ */
 export function buildThing(
   init: CreateThingPersistedOptions
 ): ThingBuilder<ThingPersisted>;
+/**
+ * Create a [[Thing]], setting multiple properties in a single expresssion.
+ *
+ * For example, you can create a new Thing and initialise several properties as follows:
+ *
+ *     const me = buildThing()
+ *       .addUrl(rdf.type, schema.Person)
+ *       .addStringNoLocale(schema.givenName, "Vincent")
+ *       .build();
+ *
+ * Take note of the final call to `.build()` to obtain the actual Thing.
+ *
+ * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
+ * @since Not released yet.
+ */
 export function buildThing(): ThingBuilder<ThingLocal>;
 /**
  * Create or modify a [[Thing]], setting multiple properties in a single expresssion.
