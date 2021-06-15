@@ -58,7 +58,7 @@ const rdfJsDataset = rdfjsDatasetModule.dataset;
  *
  * @param rdfJsDataset The source RDF/JS Dataset.
  * @returns A [[SolidDataset]] containing the same data as the given RDF/JS Dataset.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function fromRdfJsDataset(
   rdfJsDataset: RdfJs.DatasetCore
@@ -105,7 +105,7 @@ export type ToRdfJsOptions = Partial<{
  * @param set A [[SolidDataset]] to export into an RDF/JS Dataset.
  * @param options Optional parameter that allows you to pass in your own RDF/JS DataFactory or DatasetCoreFactory.
  * @returns An RDF/JS Dataset containing the data from the given SolidDataset.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function toRdfJsDataset(
   set: ImmutableDataset,

@@ -97,7 +97,7 @@ type Remover<Type, T extends Thing> = (
  * Add, replace or remove property values using consecutive calls to `.add*()`,
  * `.set*()` and `.remove*()`, then finally generate a [[Thing]] with the given
  * properties using `.build()`.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export type ThingBuilder<T extends Thing> = {
   build: () => T;
@@ -186,7 +186,7 @@ export type ThingBuilder<T extends Thing> = {
  *
  * @param init A Thing to modify.
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(init: ThingLocal): ThingBuilder<ThingLocal>;
 /**
@@ -203,7 +203,7 @@ export function buildThing(init: ThingLocal): ThingBuilder<ThingLocal>;
  *
  * @param init A Thing to modify.
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(init: ThingPersisted): ThingBuilder<ThingPersisted>;
 /**
@@ -220,7 +220,7 @@ export function buildThing(init: ThingPersisted): ThingBuilder<ThingPersisted>;
  *
  * @param init Options used to initialise a new Thing.
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(
   init: CreateThingLocalOptions
@@ -239,7 +239,7 @@ export function buildThing(
  *
  * @param init Optionally pass an existing [[Thing]] to modify the properties of. If left empty, `buildThing` will initialise a new Thing.
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(
   init: CreateThingPersistedOptions
@@ -257,7 +257,7 @@ export function buildThing(
  * Take note of the final call to `.build()` to obtain the actual Thing.
  *
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(): ThingBuilder<ThingLocal>;
 /**
@@ -274,7 +274,7 @@ export function buildThing(): ThingBuilder<ThingLocal>;
  *
  * @param init Optionally pass an existing [[Thing]] to modify the properties of. If left empty, `buildThing` will initialise a new Thing.
  * @returns a [[ThingBuilder]], a Fluent API that allows you to set multiple properties in a single expression.
- * @since Not released yet.
+ * @since 1.9.0
  */
 export function buildThing(
   init: Thing | CreateThingOptions = createThing()
