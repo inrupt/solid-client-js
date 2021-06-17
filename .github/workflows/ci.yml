@@ -164,28 +164,28 @@ jobs:
     - run: npx npm-force-resolutions@0.0.10 && npm audit --audit-level=moderate
       if: github.event_name != 'schedule'
     - name: Archive browser-based end-to-end test failure screenshots, if any
-      uses: actions/upload-artifact@v2.2.3
+      uses: actions/upload-artifact@v2.2.4
       continue-on-error: true
       if: failure() && github.event_name != 'schedule'
       with:
         name: e2e-browser-failures
         path: e2e-browser-failures
     - name: Archive browser-based end-to-end test request logs
-      uses: actions/upload-artifact@v2.2.3
+      uses: actions/upload-artifact@v2.2.4
       continue-on-error: true
       if: (failure() || success()) && matrix.node-version != '14.x' && matrix.node-version != '12.x' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
       with:
         name: testcafe-requests
         path: src/e2e-browser/testcafe-requests
     - name: Archive code coverage results
-      uses: actions/upload-artifact@v2.2.3
+      uses: actions/upload-artifact@v2.2.4
       continue-on-error: true
       if: github.event_name != 'schedule'
       with:
         name: code-coverage-report
         path: coverage
     - name: Archive production artifacts
-      uses: actions/upload-artifact@v2.2.3
+      uses: actions/upload-artifact@v2.2.4
       continue-on-error: true
       if: github.event_name != 'schedule'
       with:
