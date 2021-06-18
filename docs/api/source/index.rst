@@ -5,11 +5,34 @@ solid-client API
 ================
 
 
+Modules
+=======
+
 .. toctree::
    :glob:
    :titlesonly:
 
    /modules/**
+
+Interfaces
+==========
+
+.. toctree::
+   :glob:
+   :titlesonly:
+
    /interfaces/**
+
+Classes
+=======
+
+.. toctree::
+   :glob:
+   :titlesonly:
+
    /classes/**
 
+.. toctree::
+   :titlesonly:
+
+   Modules Index <modules>

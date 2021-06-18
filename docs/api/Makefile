@@ -36,15 +36,15 @@ migrate: clean
 
    # Copying to SOURCECOPYDIR instead of copying source dir to BUILDDIR
    # in case someone forgets to backslash after build/
-   # Copying source/api/modules -> build/source/modules
-   # Copying source/api/classes -> build/source/classes
-   # Otherwise, after building the docs, the url is dev-tools/api/js/solid-client/api/modules or such.
+   # Copying source/api/* to BUILDDIR. (But will remove index.md since using bespoke index.rst instead)
+
 
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
-	cp -R $(SOURCEDIR)/api/modules/ $(SOURCECOPYDIR)/modules/
-	cp -R $(SOURCEDIR)/api/classes/ $(SOURCECOPYDIR)/classes/
-	cp -R $(SOURCEDIR)/api/interfaces/ $(SOURCECOPYDIR)/interfaces/
-	
+	cp -R $(SOURCEDIR)/api/* $(SOURCECOPYDIR)
+
+  # Remove the typedoc generated index.md so that we can use our custom index.rst
+	rm $(SOURCECOPYDIR)index.md
+
 html: Makefile migrate
 
 # To clean up cross-reference links in markdown (foo.md#somesection) 
