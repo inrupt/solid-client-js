@@ -33,6 +33,7 @@ export const xmlSchemaTypes = {
   boolean: "http://www.w3.org/2001/XMLSchema#boolean",
   dateTime: "http://www.w3.org/2001/XMLSchema#dateTime",
   date: "http://www.w3.org/2001/XMLSchema#date",
+  time: "http://www.w3.org/2001/XMLSchema#time",
   decimal: "http://www.w3.org/2001/XMLSchema#decimal",
   integer: "http://www.w3.org/2001/XMLSchema#integer",
   string: "http://www.w3.org/2001/XMLSchema#string",
@@ -65,6 +66,131 @@ export function deserializeBoolean(value: string): boolean | null {
   } else {
     return null;
   }
+}
+
+/**
+ * Time type for time data type attributes
+ */
+export type Time = {
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond?: number;
+  timezoneHourOffset?: number;
+  timezoneMinuteOffset?: number;
+};
+
+/**
+ * @internal
+ * @param value Value to serialise.
+ * @returns String representation of `value` in UTC.
+ * @see https://www.w3.org/TR/xmlschema-2/#time-lexical-repr
+ */
+export function serializeTime(value: Time): string {
+  let millisecondString;
+  let timezoneString;
+
+  if (value.millisecond) {
+    if (value.millisecond < 10) {
+      millisecondString = "00" + value.millisecond;
+    } else if (value.millisecond < 100) {
+      millisecondString = "0" + value.millisecond;
+    } else {
+      millisecondString = value.millisecond;
+    }
+  }
+
+  if (typeof value.timezoneHourOffset === "number") {
+    const timezoneFormatted =
+      Math.abs(value.timezoneHourOffset) < 10
+        ? "0" + Math.abs(value.timezoneHourOffset)
+        : Math.abs(value.timezoneHourOffset);
+
+    timezoneString =
+      value.timezoneHourOffset >= 0
+        ? "+" + timezoneFormatted
+        : "-" + timezoneFormatted;
+
+    if (value.timezoneMinuteOffset) {
+      timezoneString =
+        timezoneString +
+        ":" +
+        (value.timezoneMinuteOffset < 10
+          ? "0" + value.timezoneMinuteOffset
+          : value.timezoneMinuteOffset);
+    } else {
+      timezoneString = timezoneString + ":00";
+    }
+  }
+
+  return (
+    (value.hour < 10 ? "0" + value.hour : value.hour) +
+    ":" +
+    (value.minute < 10 ? "0" + value.minute : value.minute) +
+    ":" +
+    (value.second < 10 ? "0" + value.second : value.second) +
+    (value.millisecond ? "." + millisecondString : "") +
+    (timezoneString ? timezoneString : "")
+  );
+}
+
+/**
+ * @internal
+ * @param literalString Value to deserialise.
+ * @returns Deserialized time, or null if the given value is not a valid serialised datetime.
+ * @see https://www.w3.org/TR/xmlschema-2/#time-lexical-repr
+ */
+export function deserializeTime(literalString: string): Time | null {
+  // Time in the format described at
+  // https://www.w3.org/TR/xmlschema-2/#time-lexical-repr
+  // \d\d:\d\d:\d\d - Two digits for the hour, minute and second, respectively, separated by a `:`.
+  //                  Example: "13:37:42".
+  // (\.\d+)? - Optionally a `.` followed by one or more digits representing milliseconds.
+  //            Example: ".1337".
+  // (Z|(\+|-)\d\d:\d\d) - The letter Z indicating UTC, or a `+` or `-` followed by two digits for
+  //                       the hour offset and two for the minute offset, separated by a `:`.
+  //                       Example: "+13:37".
+  const timeRegEx = /\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)?/;
+  if (!timeRegEx.test(literalString)) {
+    return null;
+  }
+  const [timeString, timezoneString] = splitTimeFromTimezone(literalString);
+  const [hourString, minuteString, timeRest] = timeString.split(":");
+  let utcHours = Number.parseInt(hourString, 10);
+  let utcMinutes = Number.parseInt(minuteString, 10);
+  const [secondString, optionalMillisecondString] = timeRest.split(".");
+  const utcSeconds = Number.parseInt(secondString, 10);
+  const utcMilliseconds = optionalMillisecondString
+    ? Number.parseInt(optionalMillisecondString, 10)
+    : undefined;
+
+  if (utcMinutes >= 60) {
+    utcHours = utcHours + 1;
+    utcMinutes = utcMinutes - 60;
+  }
+
+  const deserializedTime: Time = {
+    hour: utcHours,
+    minute: utcMinutes,
+    second: utcSeconds,
+  };
+  if (typeof utcMilliseconds === "number") {
+    deserializedTime.millisecond = utcMilliseconds;
+  }
+  if (typeof timezoneString === "string") {
+    const [hourOffset, minuteOffset] = getTimezoneOffsets(timezoneString);
+    if (
+      typeof hourOffset !== "number" ||
+      hourOffset > 24 ||
+      typeof minuteOffset !== "number" ||
+      minuteOffset > 59
+    ) {
+      return null;
+    }
+    deserializedTime.timezoneHourOffset = hourOffset;
+    deserializedTime.timezoneMinuteOffset = minuteOffset;
+  }
+  return deserializedTime;
 }
 
 /**
@@ -121,7 +247,10 @@ export function deserializeDatetime(literalString: string): Date | null {
   const utcMonth = Number.parseInt(monthString, 10) - 1;
   const utcDate = Number.parseInt(dayString, 10);
   const [timeString, timezoneString] = splitTimeFromTimezone(rest);
-  const [hourOffset, minuteOffset] = getTimezoneOffsets(timezoneString);
+  const [hourOffset, minuteOffset] =
+    typeof timezoneString === "string"
+      ? getTimezoneOffsets(timezoneString)
+      : [0, 0];
   const [hourString, minuteString, timeRest] = timeString.split(":");
   const utcHours = Number.parseInt(hourString, 10) + hourOffset;
   const utcMinutes = Number.parseInt(minuteString, 10) + minuteOffset;

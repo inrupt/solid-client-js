@@ -30,6 +30,7 @@ import {
   removeBoolean,
   removeDatetime,
   removeDate,
+  removeTime,
   removeDecimal,
   removeInteger,
   removeStringWithLocale,
@@ -54,6 +55,7 @@ function getMockThingWithLiteralFor(
     | "boolean"
     | "dateTime"
     | "date"
+    | "time"
 ): Thing {
   return {
     type: "Subject",
@@ -1315,6 +1317,314 @@ describe("removeDate", () => {
   });
 });
 
+describe("removeTime", () => {
+  it("removes the given time value for the given Predicate", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    const updatedThing = removeTime(
+      thingWithTime,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("removes equivalent times with different serialisations", () => {
+    const thingWithRoundedTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    const thingWithSpecificTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "12:37:42+01:00",
+      "time"
+    );
+
+    const updatedThingWithoutRoundedTime = removeTime(
+      thingWithRoundedTime,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+    const updatedThingWithoutSpecificTime = removeTime(
+      thingWithSpecificTime,
+      "https://some.vocab/predicate",
+      {
+        hour: 12,
+        minute: 37,
+        second: 42,
+        timezoneHourOffset: 1,
+        timezoneMinuteOffset: 0,
+      }
+    );
+
+    expect(
+      updatedThingWithoutRoundedTime.predicates["https://some.vocab/predicate"]
+        .literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+    expect(
+      updatedThingWithoutSpecificTime.predicates["https://some.vocab/predicate"]
+        .literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    const updatedThing = removeTime(
+      thingWithTime,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("does not modify the input Thing", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    const updatedThing = removeTime(
+      thingWithTime,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(thingWithTime).not.toStrictEqual(updatedThing);
+    expect(
+      thingWithTime.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}arbitrary-subject-name`;
+
+    const updatedThing = removeTime(
+      thingLocal,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("removes multiple instances of the same time for the same Predicate", () => {
+    const thingWithDuplicateTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    (
+      thingWithDuplicateTime.predicates["https://some.vocab/predicate"]
+        .literals!["http://www.w3.org/2001/XMLSchema#time"] as string[]
+    ).push("13:37:42");
+
+    const updatedThing = removeTime(
+      thingWithDuplicateTime,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+    });
+  });
+
+  it("does not remove Quads with different Predicates or Objects", () => {
+    const thingWithOtherQuads = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    // A different Object:
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ] as string[]
+    ).push("14:37:42");
+    // An invalid object
+    (
+      thingWithOtherQuads.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ] as string[]
+    ).push("not-a-time");
+    // A different predicate
+    (thingWithOtherQuads.predicates[
+      "https://some-other.vocab/predicate"
+    ] as any) = {
+      literals: {
+        "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+      },
+    };
+
+    const updatedThing = removeTime(
+      thingWithOtherQuads,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(updatedThing.predicates).toStrictEqual({
+      "https://some.vocab/predicate": {
+        literals: {
+          "http://www.w3.org/2001/XMLSchema#time": ["14:37:42", "not-a-time"],
+        },
+      },
+      "https://some-other.vocab/predicate": {
+        literals: {
+          "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+        },
+      },
+    });
+  });
+
+  it("does not remove Quads with non-time Objects", () => {
+    const thingWithString = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    (thingWithString.predicates["https://some.vocab/predicate"].literals![
+      "http://www.w3.org/2001/XMLSchema#string"
+    ] as string[]) = ["Some string value"];
+
+    const updatedThing = removeTime(
+      thingWithString,
+      "https://some.vocab/predicate",
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string value"],
+    });
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      removeTime(
+        null as unknown as Thing,
+        "https://arbitrary.vocab/predicate",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
+      )
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      removeTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      removeTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
 describe("removeDecimal", () => {
   it("removes the given decimal value for the given Predicate", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
@@ -2538,6 +2848,29 @@ describe("removeLiteral", () => {
       updatedThing.predicates["https://some.vocab/predicate"].literals
     ).toStrictEqual({
       "http://www.w3.org/2001/XMLSchema#boolean": [],
+    });
+  });
+
+  it("accepts time as Literal", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    const updatedThing = removeLiteral(
+      thingWithTime,
+      "https://some.vocab/predicate",
+      DataFactory.literal(
+        "13:37:42",
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#time")
+      )
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": [],
     });
   });
 

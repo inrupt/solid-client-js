@@ -28,6 +28,7 @@ import {
   addBoolean,
   addDatetime,
   addDate,
+  addTime,
   addDecimal,
   addInteger,
   addStringWithLocale,
@@ -765,6 +766,200 @@ describe("addDate", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         new Date(Date.UTC(1990, 10, 12))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("addTime", () => {
+  it("adds the given time value for the given predicate", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42"]);
+  });
+
+  it("accepts milliseconds", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+      millisecond: 367,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42.367"]);
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addTime(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42"]);
+  });
+
+  it("does not modify the input Thing", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(thing.predicates["https://some.vocab/predicate"]).toBeUndefined();
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42"]);
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
+
+    const updatedThing = addTime(thingLocal, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42"]);
+  });
+
+  it("preserves existing values for the same Predicate", () => {
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://some.pod/resource#subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          literals: {
+            "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+          },
+        },
+      },
+    };
+
+    const updatedThing = addTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 40,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42", "13:40:42"]);
+  });
+
+  it("preserves existing Quads with different Predicates", () => {
+    const thing: Thing = {
+      type: "Subject",
+      url: "https://some.pod/resource#subject",
+      predicates: {
+        "https://some-other.vocab/predicate": {
+          literals: {
+            "http://www.w3.org/2001/XMLSchema#string": ["Some other value"],
+          },
+        },
+      },
+    };
+
+    const updatedThing = addTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some-other.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#string"
+      ]
+    ).toStrictEqual(["Some other value"]);
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals![
+        "http://www.w3.org/2001/XMLSchema#time"
+      ]
+    ).toStrictEqual(["13:37:42"]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      addTime(null as unknown as Thing, "https://arbitrary.vocab/predicate", {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      })
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      addTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      addTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
       );
     } catch (e) {
       thrownError = e;

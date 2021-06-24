@@ -30,6 +30,7 @@ import {
   setBoolean,
   setDatetime,
   setDate,
+  setTime,
   setDecimal,
   setInteger,
   setStringWithLocale,
@@ -48,7 +49,13 @@ import { localNodeSkolemPrefix } from "../rdf.internal";
 function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
-  literalType: "string" | "integer" | "decimal" | "boolean" | "dateTime"
+  literalType:
+    | "string"
+    | "integer"
+    | "decimal"
+    | "boolean"
+    | "dateTime"
+    | "time"
 ): Thing {
   return {
     type: "Subject",
@@ -715,6 +722,171 @@ describe("setDate", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         new Date(Date.UTC(1990, 10, 12))
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("setTime", () => {
+  it("replaces existing values with the given time for the given Predicate", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setTime(thing, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setTime(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+  });
+
+  it("does not modify the input Thing", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const updatedThing = setTime(
+      thing,
+      DataFactory.namedNode("https://some.vocab/predicate"),
+      {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      }
+    );
+
+    expect(thing).not.toStrictEqual(updatedThing);
+    expect(
+      thing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+  });
+
+  it("also works on ThingLocals", () => {
+    const thingLocal = mockThingFrom(
+      "https://arbitrary.pod/will-be-replaced-by-local-url"
+    );
+    (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
+
+    const updatedThing = setTime(thingLocal, "https://some.vocab/predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+  });
+
+  it("preserves existing Quads with different Predicates", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Some string",
+      "string"
+    );
+
+    const updatedThing = setTime(thing, "https://some.vocab/other-predicate", {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    });
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+    });
+    expect(
+      updatedThing.predicates["https://some.vocab/other-predicate"].literals
+    ).toStrictEqual({
+      "http://www.w3.org/2001/XMLSchema#time": ["13:37:42"],
+    });
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      setTime(null as unknown as Thing, "https://arbitrary.vocab/predicate", {
+        hour: 13,
+        minute: 37,
+        second: 42,
+      })
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      setTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      setTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+        {
+          hour: 13,
+          minute: 37,
+          second: 42,
+        }
       );
     } catch (e) {
       thrownError = e;

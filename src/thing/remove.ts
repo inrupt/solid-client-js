@@ -32,6 +32,8 @@ import {
   deserializeInteger,
   internal_isValidUrl,
   deserializeDate,
+  deserializeTime,
+  Time,
 } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import {
@@ -193,6 +195,40 @@ export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
           deserializedDate.getFullYear() === value.getFullYear() &&
           deserializedDate.getMonth() === value.getMonth() &&
           deserializedDate.getDate() === value.getDate()
+        );
+      } else {
+        return false;
+      }
+    }
+  );
+};
+
+/**
+ * Create a new Thing with the given datetime removed for the given Property.
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to remove a datetime value from.
+ * @param property Property for which to remove the given datetime value.
+ * @param value Time to remove from `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
+ */
+export const removeTime: RemoveOfType<Time> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return removeLiteralMatching(
+    thing,
+    property,
+    xmlSchemaTypes.time,
+    function (foundTime) {
+      const deserializedTime = deserializeTime(foundTime);
+      if (deserializedTime) {
+        return (
+          deserializedTime.hour === value.hour &&
+          deserializedTime.minute === value.minute &&
+          deserializedTime.second === value.second &&
+          deserializedTime.millisecond === value.millisecond &&
+          deserializedTime.timezoneHourOffset === value.timezoneHourOffset &&
+          deserializedTime.timezoneMinuteOffset === value.timezoneMinuteOffset
         );
       } else {
         return false;

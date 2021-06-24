@@ -41,6 +41,8 @@ import {
   ValidUrlExpectedError,
   serializeDate,
   deserializeDate,
+  deserializeTime,
+  serializeTime,
 } from "./datatypes";
 import { LocalNode } from "./interfaces";
 import { localNodeSkolemPrefix } from "./rdf.internal";
@@ -310,6 +312,236 @@ describe("deserializeDate", () => {
   });
 });
 
+describe("serializeTime", () => {
+  it("properly serialises a given time", () => {
+    expect(
+      serializeTime({
+        hour: 2,
+        minute: 37,
+        second: 5,
+      })
+    ).toBe("02:37:05");
+
+    expect(
+      serializeTime({
+        hour: 2,
+        minute: 37,
+        second: 5,
+        timezoneHourOffset: 2,
+      })
+    ).toBe("02:37:05+02:00");
+
+    expect(
+      serializeTime({
+        hour: 2,
+        minute: 37,
+        second: 5,
+        timezoneHourOffset: 10,
+      })
+    ).toBe("02:37:05+10:00");
+
+    expect(
+      serializeTime({
+        hour: 2,
+        minute: 37,
+        second: 5,
+        timezoneHourOffset: -2,
+      })
+    ).toBe("02:37:05-02:00");
+
+    expect(
+      serializeTime({
+        hour: 13,
+        minute: 1,
+        second: 42,
+        millisecond: 42,
+      })
+    ).toBe("13:01:42.042");
+
+    expect(
+      serializeTime({
+        hour: 13,
+        minute: 1,
+        second: 42,
+        millisecond: 0,
+      })
+    ).toBe("13:01:42");
+
+    expect(
+      serializeTime({
+        hour: 13,
+        minute: 1,
+        second: 42,
+        millisecond: 9,
+      })
+    ).toBe("13:01:42.009");
+
+    expect(
+      serializeTime({
+        hour: 13,
+        minute: 1,
+        second: 42,
+        timezoneHourOffset: 5,
+        timezoneMinuteOffset: 30,
+      })
+    ).toBe("13:01:42+05:30");
+
+    expect(
+      serializeTime({
+        hour: 13,
+        minute: 1,
+        second: 42,
+        timezoneHourOffset: 0,
+        timezoneMinuteOffset: 5,
+      })
+    ).toBe("13:01:42+00:05");
+  });
+});
+describe("deserializeTime", () => {
+  it("properly parses a serialised time", () => {
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+    expect(deserializeTime("13:37:42")).toStrictEqual(expectedTime);
+
+    const expectedTimeWithAll = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+      millisecond: 20,
+      timezoneHourOffset: 2,
+      timezoneMinuteOffset: 30,
+    };
+    expect(deserializeTime("13:37:42.020+02:30")).toStrictEqual(
+      expectedTimeWithAll
+    );
+
+    const expectedTimeWithAllNoMinutes = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+      millisecond: 20,
+      timezoneHourOffset: 2,
+      timezoneMinuteOffset: 0,
+    };
+    expect(deserializeTime("13:37:42.020+02:00")).toStrictEqual(
+      expectedTimeWithAllNoMinutes
+    );
+
+    const expectedTimeWithHour24 = {
+      hour: 0,
+      minute: 0,
+      second: 0,
+    };
+    expect(deserializeTime("00:00:00")).toStrictEqual(expectedTimeWithHour24);
+
+    const expectedTimeWithFractionalSeconds = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+      millisecond: 42,
+    };
+    expect(deserializeTime("13:37:42.42")).toStrictEqual(
+      expectedTimeWithFractionalSeconds
+    );
+
+    const expectedTimeWithPositive0Timezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: 0,
+      timezoneMinuteOffset: 0,
+    };
+    expect(deserializeTime("10:00:00+00:00")).toStrictEqual(
+      expectedTimeWithPositive0Timezone
+    );
+
+    const expectedTimeWithNegative0Timezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: -0,
+      timezoneMinuteOffset: -0,
+    };
+    expect(deserializeTime("10:00:00-00:00")).toStrictEqual(
+      expectedTimeWithNegative0Timezone
+    );
+
+    const expectedTimeWithNegativeTimezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: -1,
+      timezoneMinuteOffset: -30,
+    };
+    expect(deserializeTime("10:00:00-01:30")).toStrictEqual(
+      expectedTimeWithNegativeTimezone
+    );
+
+    const expectedTimeWithMaxNegativeTimezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: -14,
+      timezoneMinuteOffset: -0,
+    };
+    expect(deserializeTime("10:00:00-14:00")).toStrictEqual(
+      expectedTimeWithMaxNegativeTimezone
+    );
+
+    const expectedTimeWithPositiveTimezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: 1,
+      timezoneMinuteOffset: 30,
+    };
+    expect(deserializeTime("10:00:00+01:30")).toStrictEqual(
+      expectedTimeWithPositiveTimezone
+    );
+
+    const expectedTimeWithMaxPositiveTimezone = {
+      hour: 10,
+      minute: 0,
+      second: 0,
+      timezoneHourOffset: 14,
+      timezoneMinuteOffset: 0,
+    };
+    expect(deserializeTime("10:00:00+14:00")).toStrictEqual(
+      expectedTimeWithMaxPositiveTimezone
+    );
+
+    const expectedTimeWithMinuteOverload = {
+      hour: 10,
+      minute: 30,
+      second: 0,
+      timezoneHourOffset: 0,
+      timezoneMinuteOffset: 35,
+    };
+    expect(deserializeTime("10:30:00+00:35")).toStrictEqual(
+      expectedTimeWithMinuteOverload
+    );
+
+    const expectedTimeWithMinuteGreaterThanSixty = {
+      hour: 11,
+      minute: 30,
+      second: 0,
+    };
+    expect(deserializeTime("10:90:00")).toStrictEqual(
+      expectedTimeWithMinuteGreaterThanSixty
+    );
+
+    expect(deserializeTime("10:00:00+10:60")).toBeNull();
+  });
+
+  it("returns null if a value is not a serialised time", () => {
+    expect(deserializeTime("1990-11-12")).toBeNull();
+    expect(deserializeTime("Not a serialised datetime")).toBeNull();
+  });
+});
+
 describe("serializeDecimal", () => {
   it("properly serialises a given decimal", () => {
     expect(serializeDecimal(13.37)).toBe("13.37");
@@ -423,7 +655,7 @@ describe("asNamedNode", () => {
       "https://some.pod/resource#node"
     );
     const newNode = asNamedNode(originalNode);
-    expect(newNode).toEqual(originalNode);
+    expect(newNode).toStrictEqual(originalNode);
   });
 
   it("throws an error on invalid IRIs", () => {

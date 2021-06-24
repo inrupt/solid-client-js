@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Time } from "../datatypes";
 import {
   Thing,
   ThingLocal,
@@ -30,6 +31,7 @@ import {
   addBoolean,
   addDate,
   addDatetime,
+  addTime,
   addDecimal,
   addInteger,
   addIri,
@@ -46,6 +48,7 @@ import {
   removeBoolean,
   removeDate,
   removeDatetime,
+  removeTime,
   removeDecimal,
   removeInteger,
   removeIri,
@@ -60,6 +63,7 @@ import {
   setBoolean,
   setDate,
   setDatetime,
+  setTime,
   setDecimal,
   setInteger,
   setIri,
@@ -109,6 +113,7 @@ export type ThingBuilder<T extends Thing> = {
   addBoolean: Adder<boolean, T>;
   addDatetime: Adder<Date, T>;
   addDate: Adder<Date, T>;
+  addTime: Adder<Time, T>;
   addDecimal: Adder<number, T>;
   addInteger: Adder<number, T>;
   addStringNoLocale: Adder<string, T>;
@@ -134,6 +139,7 @@ export type ThingBuilder<T extends Thing> = {
   setBoolean: Setter<boolean, T>;
   setDatetime: Setter<Date, T>;
   setDate: Setter<Date, T>;
+  setTime: Setter<Time, T>;
   setDecimal: Setter<number, T>;
   setInteger: Setter<number, T>;
   setStringNoLocale: Setter<string, T>;
@@ -160,6 +166,7 @@ export type ThingBuilder<T extends Thing> = {
   removeBoolean: Remover<boolean, T>;
   removeDatetime: Remover<Date, T>;
   removeDate: Remover<Date, T>;
+  removeTime: Remover<Time, T>;
   removeDecimal: Remover<number, T>;
   removeInteger: Remover<number, T>;
   removeStringNoLocale: Remover<string, T>;
@@ -293,6 +300,7 @@ export function buildThing(
     addBoolean: getAdder(thing, addBoolean),
     addDatetime: getAdder(thing, addDatetime),
     addDate: getAdder(thing, addDate),
+    addTime: getAdder(thing, addTime),
     addDecimal: getAdder(thing, addDecimal),
     addInteger: getAdder(thing, addInteger),
     addStringNoLocale: getAdder(thing, addStringNoLocale),
@@ -309,6 +317,7 @@ export function buildThing(
     setBoolean: getSetter(thing, setBoolean),
     setDatetime: getSetter(thing, setDatetime),
     setDate: getSetter(thing, setDate),
+    setTime: getSetter(thing, setTime),
     setDecimal: getSetter(thing, setDecimal),
     setInteger: getSetter(thing, setInteger),
     setStringNoLocale: getSetter(thing, setStringNoLocale),
@@ -327,6 +336,7 @@ export function buildThing(
     removeBoolean: getRemover(thing, removeBoolean),
     removeDatetime: getRemover(thing, removeDatetime),
     removeDate: getRemover(thing, removeDate),
+    removeTime: getRemover(thing, removeTime),
     removeDecimal: getRemover(thing, removeDecimal),
     removeInteger: getRemover(thing, removeInteger),
     removeStringNoLocale: getRemover(thing, removeStringNoLocale),

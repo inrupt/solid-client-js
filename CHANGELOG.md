@@ -8,6 +8,26 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### New features
+
+- We now offer support for the `Date` data type and `Time` data type.
+  This includes all `set`, `get`, `add` and `remove` methods to modify the Time
+  or Date of a Thing.
+  `Time` is a custom data type following the format:
+
+```typescript
+type Time = {
+  hour: number;
+  minute: number;
+  second: number;
+  timezoneHourOffset?: number;
+  timezoneMinuteOffset?: number;
+};
+```
+
+The added methods are: `setDate`, `setTime`, `getDate`, `getDateAll`,
+`getTime`, `getTimeAll`, `addDate`, `addTime`, `removeDate`, `removeTime`.
+
 ## [1.9.0] - 2021-06-15
 
 ### New features
