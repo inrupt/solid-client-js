@@ -29,6 +29,7 @@ import {
   getBoolean,
   getDatetime,
   getDate,
+  getTime,
   getDecimal,
   getInteger,
   getStringWithLocale,
@@ -39,6 +40,7 @@ import {
   getBooleanAll,
   getDatetimeAll,
   getDateAll,
+  getTimeAll,
   getDecimalAll,
   getIntegerAll,
   getStringWithLocaleAll,
@@ -71,6 +73,7 @@ function getMockThingWithLiteralFor(
     | "boolean"
     | "dateTime"
     | "date"
+    | "time"
 ): Thing {
   return {
     type: "Subject",
@@ -95,6 +98,7 @@ function getMockThingWithLiteralsFor(
     | "boolean"
     | "dateTime"
     | "date"
+    | "time"
 ): Thing {
   return {
     type: "Subject",
@@ -755,123 +759,6 @@ describe("getDatetime", () => {
   });
 });
 
-describe("getDate", () => {
-  it("returns the date value for the given Predicate", () => {
-    const thingWithDate = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "1990-11-12Z",
-      "date"
-    );
-    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
-
-    expect(getDate(thingWithDate, "https://some.vocab/predicate")).toEqual(
-      expectedDate
-    );
-  });
-
-  it("accepts Properties as Named Nodes", () => {
-    const thingWithDate = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "1990-11-12Z",
-      "date"
-    );
-    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
-
-    expect(
-      getDate(
-        thingWithDate,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
-    ).toEqual(expectedDate);
-  });
-
-  it("returns null if no date value was found", () => {
-    const thingWithoutDate = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "42",
-      "integer"
-    );
-
-    expect(
-      getDate(thingWithoutDate, "https://some.vocab/predicate")
-    ).toBeNull();
-  });
-
-  it("does not return non-date values", () => {
-    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Arbitrary value",
-      "string"
-    );
-    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
-      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
-    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
-      .literals!["http://www.w3.org/2001/XMLSchema#date"] as string[]) = [
-      "1990-11-12Z",
-    ];
-    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
-
-    expect(
-      getDate(thingWithDifferentDatatypes, "https://some.vocab/predicate")
-    ).toEqual(expectedDate);
-  });
-
-  it("returns null if no date value was found for the given Predicate", () => {
-    const thingWithDate = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "1990-11-12",
-      "date"
-    );
-
-    expect(
-      getDate(thingWithDate, "https://some-other.vocab/predicate")
-    ).toBeNull();
-  });
-
-  it("returns null if an invalid value, marked as date, was found for the given Predicate", () => {
-    const thingWithNonDate = getMockThingWithLiteralFor(
-      "https://some.vocab/predicate",
-      "Not a date",
-      "date"
-    );
-
-    expect(
-      getDate(thingWithNonDate, "https://some.vocab/predicate")
-    ).toBeNull();
-  });
-
-  it("throws an error when passed something other than a Thing", () => {
-    expect(() =>
-      getDate(null as unknown as Thing, "https://arbitrary.vocab/predicate")
-    ).toThrow("Expected a Thing, but received: [null].");
-  });
-
-  it("throws an error when passed an invalid property URL", () => {
-    expect(() =>
-      getDate(
-        mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
-    ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
-    );
-  });
-
-  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
-    let thrownError;
-
-    try {
-      getDate(
-        mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      );
-    } catch (e) {
-      thrownError = e;
-    }
-    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
-  });
-});
-
 describe("getDatetimeAll", () => {
   it("returns the datetime values for the given Predicate", () => {
     const thingWithDatetimes = getMockThingWithLiteralsFor(
@@ -1002,6 +889,123 @@ describe("getDatetimeAll", () => {
   });
 });
 
+describe("getDate", () => {
+  it("returns the date value for the given Predicate", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
+
+    expect(getDate(thingWithDate, "https://some.vocab/predicate")).toEqual(
+      expectedDate
+    );
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12Z",
+      "date"
+    );
+    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
+
+    expect(
+      getDate(
+        thingWithDate,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toEqual(expectedDate);
+  });
+
+  it("returns null if no date value was found", () => {
+    const thingWithoutDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getDate(thingWithoutDate, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-date values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#date"] as string[]) = [
+      "1990-11-12Z",
+    ];
+    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
+
+    expect(
+      getDate(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toEqual(expectedDate);
+  });
+
+  it("returns null if no date value was found for the given Predicate", () => {
+    const thingWithDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "1990-11-12",
+      "date"
+    );
+
+    expect(
+      getDate(thingWithDate, "https://some-other.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("returns null if an invalid value, marked as date, was found for the given Predicate", () => {
+    const thingWithNonDate = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Not a date",
+      "date"
+    );
+
+    expect(
+      getDate(thingWithNonDate, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getDate(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getDate(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
 describe("getDateAll", () => {
   it("returns the date values for the given Predicate", () => {
     const thingWithDates = getMockThingWithLiteralsFor(
@@ -1117,6 +1121,283 @@ describe("getDateAll", () => {
 
     try {
       getDateAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("getTime", () => {
+  it("returns the time value for the given Predicate", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTime(thingWithTime, "https://some.vocab/predicate")
+    ).toStrictEqual(expectedTime);
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTime(
+        thingWithTime,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toStrictEqual(expectedTime);
+  });
+
+  it("returns null if no time value was found", () => {
+    const thingWithoutTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getTime(thingWithoutTime, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("does not return non-time values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#time"] as string[]) = [
+      "13:37:42",
+    ];
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTime(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toStrictEqual(expectedTime);
+  });
+
+  it("returns null if no time value was found for the given Predicate", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    expect(
+      getTime(thingWithTime, "https://some-other.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("returns null if an invalid value, marked as time, was found for the given Predicate", () => {
+    const thingWithNonTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Not a time",
+      "time"
+    );
+
+    expect(
+      getTime(thingWithNonTime, "https://some.vocab/predicate")
+    ).toBeNull();
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getTime(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getTime(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      );
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("getTimeAll", () => {
+  it("returns the time values for the given Predicate", () => {
+    const thingWithTimes = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "14:37:42",
+      "13:37:42",
+      "time"
+    );
+    const expectedTime1 = {
+      hour: 14,
+      minute: 37,
+      second: 42,
+    };
+    const expectedTime2 = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTimeAll(thingWithTimes, "https://some.vocab/predicate")
+    ).toStrictEqual([expectedTime1, expectedTime2]);
+  });
+
+  it("accepts Properties as Named Nodes", () => {
+    const thingWithTimes = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "14:37:42",
+      "13:37:42",
+      "time"
+    );
+    const expectedTime1 = {
+      hour: 14,
+      minute: 37,
+      second: 42,
+    };
+    const expectedTime2 = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTimeAll(
+        thingWithTimes,
+        DataFactory.namedNode("https://some.vocab/predicate")
+      )
+    ).toStrictEqual([expectedTime1, expectedTime2]);
+  });
+
+  it("returns an empty array if no time values were found", () => {
+    const thingWithoutTimes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "42",
+      "integer"
+    );
+
+    expect(
+      getTimeAll(thingWithoutTimes, "https://some.vocab/predicate")
+    ).toStrictEqual([]);
+  });
+
+  it("does not return non-time values", () => {
+    const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary value",
+      "string"
+    );
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
+    (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
+      .literals!["http://www.w3.org/2001/XMLSchema#time"] as string[]) = [
+      "13:37:42",
+    ];
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTimeAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+    ).toStrictEqual([expectedTime]);
+  });
+
+  it("returns an empty array if no time values were found for the given Predicate", () => {
+    const thingWithTime = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "13:37:42",
+      "time"
+    );
+
+    expect(
+      getTimeAll(thingWithTime, "https://some-other.vocab/predicate")
+    ).toStrictEqual([]);
+  });
+
+  it("does not return invalid values marked as time", () => {
+    const thingWithNonTime = getMockThingWithLiteralsFor(
+      "https://some.vocab/predicate",
+      "Not a time",
+      "13:37:42",
+      "time"
+    );
+
+    const expectedTime = {
+      hour: 13,
+      minute: 37,
+      second: 42,
+    };
+
+    expect(
+      getTimeAll(thingWithNonTime, "https://some.vocab/predicate")
+    ).toStrictEqual([expectedTime]);
+  });
+
+  it("throws an error when passed something other than a Thing", () => {
+    expect(() =>
+      getTimeAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+    ).toThrow("Expected a Thing, but received: [null].");
+  });
+
+  it("throws an error when passed an invalid property URL", () => {
+    expect(() =>
+      getTimeAll(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url"
+      )
+    ).toThrow(
+      "Expected a valid URL to identify a property, but received: [not-a-url]."
+    );
+  });
+
+  it("throws an instance of ValidPropertyUrlExpectedError when passed an invalid property URL", () => {
+    let thrownError;
+
+    try {
+      getTimeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url"
       );

@@ -25,11 +25,13 @@ import {
   deserializeBoolean,
   deserializeDatetime,
   deserializeDate,
+  deserializeTime,
   deserializeDecimal,
   deserializeInteger,
   xmlSchemaTypes,
   XmlSchemaTypeIri,
   internal_isValidUrl,
+  Time,
 } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { ValidPropertyUrlExpectedError } from "./thing";
@@ -189,27 +191,6 @@ export function getDatetime(
 }
 
 /**
- * Returns the date value of the specified Property from a [[Thing]].
- * If the Property is not present or its value is not of type date, returns null.
- * If the Property has multiple date values, returns one of its values.
- *
- * @param thing The [[Thing]] to read a date value from.
- * @param property The Property whose date value to return.
- * @returns A date value for the given Property if present, or null if the Property is not present or the value is not of type date.
- */
-export function getDate(thing: Thing, property: Url | UrlString): Date | null {
-  internal_throwIfNotThing(thing);
-
-  const literalString = getLiteralOfType(thing, property, xmlSchemaTypes.date);
-
-  if (literalString === null) {
-    return null;
-  }
-
-  return deserializeDate(literalString);
-}
-
-/**
  * Returns the datetime values of the specified Property from a [[Thing]].
  * If the Property is not present, returns an empty array.
  * If the Property's value is not of type datetime, omits that value in the array.
@@ -235,6 +216,27 @@ export function getDatetimeAll(
 }
 
 /**
+ * Returns the date value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type date, returns null.
+ * If the Property has multiple date values, returns one of its values.
+ *
+ * @param thing The [[Thing]] to read a date value from.
+ * @param property The Property whose date value to return.
+ * @returns A date value for the given Property if present, or null if the Property is not present or the value is not of type date.
+ */
+export function getDate(thing: Thing, property: Url | UrlString): Date | null {
+  internal_throwIfNotThing(thing);
+
+  const literalString = getLiteralOfType(thing, property, xmlSchemaTypes.date);
+
+  if (literalString === null) {
+    return null;
+  }
+
+  return deserializeDate(literalString);
+}
+
+/**
  * Returns the date values of the specified Property from a [[Thing]].
  * If the Property is not present, returns an empty array.
  * If the Property's value is not of type date, omits that value in the array.
@@ -254,6 +256,48 @@ export function getDateAll(thing: Thing, property: Url | UrlString): Date[] {
   return literalStrings
     .map(deserializeDate)
     .filter((potentialDate) => potentialDate !== null) as Date[];
+}
+
+/**
+ * Returns the time value of the specified Property from a [[Thing]].
+ * If the Property is not present or its value is not of type time, returns null.
+ * If the Property has multiple time values, returns one of its values.
+ *
+ * @param thing The [[Thing]] to read a time value from.
+ * @param property The Property whose time value to return.
+ * @returns A time value for the given Property if present, or null if the Property is not present or the value is not of type time.
+ */
+export function getTime(thing: Thing, property: Url | UrlString): Time | null {
+  internal_throwIfNotThing(thing);
+  const literalString = getLiteralOfType(thing, property, xmlSchemaTypes.time);
+
+  if (literalString === null) {
+    return null;
+  }
+
+  return deserializeTime(literalString);
+}
+
+/**
+ * Returns the time values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not of type time, omits that value in the array.
+ *
+ * @param thing The [[Thing]] to read the time values from.
+ * @param property The Property whose time values to return.
+ * @returns An array of time values for the given Property.
+ */
+export function getTimeAll(thing: Thing, property: Url | UrlString): Time[] {
+  internal_throwIfNotThing(thing);
+  const literalStrings = getLiteralAllOfType(
+    thing,
+    property,
+    xmlSchemaTypes.time
+  );
+
+  return literalStrings
+    .map(deserializeTime)
+    .filter((potentialTime) => potentialTime !== null) as Time[];
 }
 
 /**

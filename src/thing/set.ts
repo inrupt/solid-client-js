@@ -21,7 +21,7 @@
 
 import { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
 import { Thing, Url, UrlString } from "../interfaces";
-import { internal_isValidUrl } from "../datatypes";
+import { internal_isValidUrl, Time } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 import {
@@ -40,6 +40,7 @@ import {
   addStringNoLocale,
   addStringWithLocale,
   addTerm,
+  addTime,
   addUrl,
 } from "./add";
 
@@ -122,6 +123,23 @@ export const setDatetime: SetOfType<Date> = (thing, property, value) => {
 export const setDate: SetOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
   return addDate(removeAll(thing, property), property, value);
+};
+
+/**
+ * Create a new Thing with existing values replaced by the given time for the given Property.
+ *
+ * To preserve existing values, see [[addTime]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to set an time value on.
+ * @param property Property for which to set the given time value.
+ * @param value time to set on `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ */
+export const setTime: SetOfType<Time> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return addTime(removeAll(thing, property), property, value);
 };
 
 /**

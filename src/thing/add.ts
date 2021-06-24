@@ -33,6 +33,8 @@ import {
   xmlSchemaTypes,
   internal_isValidUrl,
   isNamedNode,
+  serializeTime,
+  Time,
 } from "../datatypes";
 import {
   asIri,
@@ -169,6 +171,28 @@ export const addDate: AddOfType<Date> = (thing, property, value) => {
     property,
     serializeDate(value),
     xmlSchemaTypes.date
+  );
+};
+
+/**
+ * Create a new Thing with a time added for a Property.
+ *
+ * This preserves existing values for the given Property. To replace them, see [[setDatetime]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to add a datetime value to.
+ * @param property Property for which to add the given datetime value.
+ * @param value time to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ */
+export const addTime: AddOfType<Time> = (thing, property, value) => {
+  internal_throwIfNotThing(thing);
+  return addLiteralOfType(
+    thing,
+    property,
+    serializeTime(value),
+    xmlSchemaTypes.time
   );
 };
 

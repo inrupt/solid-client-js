@@ -81,6 +81,7 @@ export {
   getBoolean,
   getDatetime,
   getDate,
+  getTime,
   getDecimal,
   getInteger,
   getStringWithLocale,
@@ -90,6 +91,7 @@ export {
   getBooleanAll,
   getDatetimeAll,
   getDateAll,
+  getTimeAll,
   getDecimalAll,
   getIntegerAll,
   getStringWithLocaleAll,
@@ -108,6 +110,7 @@ export {
   addBoolean,
   addDatetime,
   addDate,
+  addTime,
   addDecimal,
   addInteger,
   addStringWithLocale,
@@ -122,6 +125,7 @@ export {
   setBoolean,
   setDatetime,
   setDate,
+  setTime,
   setDecimal,
   setInteger,
   setStringWithLocale,
@@ -137,6 +141,7 @@ export {
   removeBoolean,
   removeDatetime,
   removeDate,
+  removeTime,
   removeDecimal,
   removeInteger,
   removeStringWithLocale,
@@ -217,6 +222,7 @@ export {
   SolidClientError,
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
+export { Time } from "./datatypes.js";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
