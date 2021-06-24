@@ -31,8 +31,3 @@ Classes
    :titlesonly:
 
    /classes/**
-
-.. toctree::
-   :titlesonly:
-
-   Modules Index <modules>
