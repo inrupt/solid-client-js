@@ -123,7 +123,7 @@ export async function getFile(
  * await deleteFile( "https://pod.example.com/some/file", { fetch: fetch });
  * ```
  *
- * For additional example, see
+ * For additional examples, see
  * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#delete-a-file).
  *
  * @param file The URL of the file to delete
