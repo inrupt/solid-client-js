@@ -93,19 +93,19 @@ html_theme_options = {
     "navbar_align": "left",
     "icon_links": [
         {
-            "name": "Inrupt on Twitter",
-            "url": "https://twitter.com/inrupt",
-            "icon": "fab fa-twitter-square",
-        },
-        {
-            "name": "Inrupt on LinkedIn",
-            "url": "https://www.linkedin.com/company/inrupt/",
-            "icon": "fab fa-linkedin",
+            "name": "Support Desk",
+            "url": "https://inrupt.atlassian.net/servicedesk",
+            "icon": "fas fa-tools",
         },
         {
             "name": "Solid forum",
             "url": "https://forum.solidproject.org/",
             "icon": "fas fa-users",
+        },
+        {
+            "name": "Inrupt Blog",
+            "url": "https://inrupt.com/blog",
+            "icon": "fas fa-blog",
         },
     ],
     "favicons": [
