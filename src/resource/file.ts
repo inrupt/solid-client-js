@@ -193,7 +193,7 @@ type SaveFileOptions = WriteFileOptions & {
  * - You can suggest a file name in the `slug` field.  However, the Solid
  *   Server may or may not use the suggested `slug` as the file name.
  *
- * - *Recommended.* You can specify the [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)
+ * - *Recommended:* You can specify the [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)
  *   of the file in the `contentType`.  If unspecified, the function uses the default type of
  *   `application/octet-stream`, indicating a binary data file.
  *
