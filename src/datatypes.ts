@@ -104,7 +104,7 @@ export function deserializeDatetime(literalString: string): Date | null {
   //                       the hour offset and two for the minute offset, separated by a `:`.
   //                       Example: "+13:37".
   const datetimeRegEx =
-    /-?\d{4,}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)/;
+    /-?\d{4,}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|(\+|-)\d\d:\d\d)?/;
   if (!datetimeRegEx.test(literalString)) {
     return null;
   }
@@ -230,12 +230,17 @@ export function deserializeDate(literalString: string): Date | null {
  * @returns A tuple [timeString, timezoneString].
  * @see https://www.w3.org/TR/xmlschema-2/#time-lexical-repr
  */
-function splitTimeFromTimezone(timeString: string): [string, string] {
+function splitTimeFromTimezone(timeString: string): [string, string?] {
   if (timeString.endsWith("Z")) {
     return [timeString.substring(0, timeString.length - 1), "Z"];
   }
   const splitOnPlus = timeString.split("+");
   const splitOnMinus = timeString.split("-");
+
+  if (splitOnPlus.length === 1 && splitOnMinus.length === 1) {
+    return [splitOnPlus[0], undefined];
+  }
+
   return splitOnPlus.length > splitOnMinus.length
     ? [splitOnPlus[0], "+" + splitOnPlus[1]]
     : [splitOnMinus[0], "-" + splitOnMinus[1]];

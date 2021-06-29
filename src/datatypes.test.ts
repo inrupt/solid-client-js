@@ -226,6 +226,13 @@ describe("deserializeDatetime", () => {
       expectedDateWithMaxPositiveTimezone
     );
 
+    const expectedDateWithoutTimezone = new Date(
+      Date.UTC(1990, 10, 12, 13, 37, 42, 0)
+    );
+    expect(deserializeDatetime("1990-11-12T13:37:42.000")).toEqual(
+      expectedDateWithoutTimezone
+    );
+
     const dateBeforeTheYear100 = new Date(-59042995200000);
     expect(deserializeDatetime("0099-01-01T00:00:00.000Z")).toEqual(
       dateBeforeTheYear100
