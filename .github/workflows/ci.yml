@@ -67,6 +67,7 @@ jobs:
         # Run the end-to-end tests against the code in this branch specifically:
         npm install ../../
         cd ../..
+      if: matrix.node-version != '14.x' && matrix.node-version != '12.x' && github.actor != 'dependabot[bot]'
     - name: Run browser-based end-to-end tests (Linux)
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
