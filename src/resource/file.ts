@@ -77,7 +77,7 @@ function containsReserved(header: Record<string, string>): boolean {
  * const fileBlob = await getFile("https://pod.example.com/some/file", { fetch: fetch });
  * ```
  *
- * For additional example, see
+ * For additional examples, see
  * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#retrieve-a-file).
  *
  * @param url The URL of the file to return
