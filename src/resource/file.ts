@@ -288,7 +288,7 @@ export type WriteFileOptions = GetFileOptions & {
  * const savedFile = await overwriteFile(
  *   "https://pod.example.com/some/container/myFile.txt",
  *   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
- *   { contentType: "plain/text", fetch: fetch }
+ *   { contentType: "text/plain", fetch: fetch }
  * );
  * ```
  *
