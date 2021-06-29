@@ -181,7 +181,7 @@ type SaveFileOptions = WriteFileOptions & {
  * const savedFile = await saveFileInContainer(
  *   "https://pod.example.com/some/existing/container/",
  *   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
- *   { slug: "suggestedFileName.txt", contentType: "plain/text", fetch: fetch }
+ *   { slug: "suggestedFileName.txt", contentType: "text/plain", fetch: fetch }
  * );
  * ```
  *
