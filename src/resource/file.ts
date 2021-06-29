@@ -295,7 +295,7 @@ export type WriteFileOptions = GetFileOptions & {
  * For additional example, see
  * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#write-a-file-to-a-specific-url).
  *
- * *Recommended.* In the `options` parameter, you can specify the
+ * *Recommended:* In the `options` parameter, you can specify the
  * [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)
  * of the file in the `contentType`.  If unspecified, the function uses the default type of
  * `application/octet-stream`, indicating a binary data file.
