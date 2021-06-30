@@ -81,8 +81,63 @@ export function createSolidDataset(): SolidDataset {
 }
 
 /**
- * @hidden This interface is not exposed yet; we'll first have to put it through
- *         its paces by trying it out with other parsers than n3 as well.
+ * A Parser takes a string and generates {@link https://rdf.js.org/data-model-spec/|RDF/JS Quads}.
+ *
+ * By providing an object conforming to the `Parser` interface, you can handle
+ * RDF serialisations other than `text/turtle`, which `@inrupt/solid-client`
+ * supports by default. This can be useful to retrieve RDF data from sources
+ * other than a Solid Pod.
+ *
+ * A Parser has the following properties:
+ * - `onQuad`: Registers the callback with which parsed
+ * {@link https://rdf.js.org/data-model-spec/|RDF/JS Quads} can be provided to
+ * `@inrupt/solid-client`.
+ * - `onError`: Registers the callback with which `@inrupt/solid-client` can be
+ * notified of errors parsing the input.
+ * - `onComplete`: Registers the callback with which `@inrupt/solid-client` can
+ * be notified that parsing is complete.
+ * - `parse`: Accepts the serialised input string and an object containing the
+ * input Resource's metadata.
+ * The input metadata can be read using functions like [[getSourceUrl]] and
+ * [[getContentType]].
+ *
+ * For example, the following defines a parser that reads an RDFa serialisation
+ * using the
+ * [rdfa-streaming-parser](https://www.npmjs.com/package/rdfa-streaming-parser)
+ * library:
+ *
+ * ```javascript
+ * import { RdfaParser } from "rdfa-streaming-parser";
+ *
+ * // ...
+ *
+ * const getRdfaParser = () => {
+ *   const onQuadCallbacks = [];
+ *   const onCompleteCallbacks = [];
+ *   const onErrorCallbacks = [];
+ *
+ *   return {
+ *     onQuad: (callback) => onQuadCallbacks.push(callback),
+ *     onError: (callback) => onErrorCallbacks.push(callback),
+ *     onComplete: (callback) => onCompleteCallbacks.push(callback),
+ *     parse: async (source, resourceInfo) => {
+ *       const parser = new RdfaParser({
+ *         baseIRI: getSourceUrl(resourceInfo),
+ *         contentType: getContentType(resourceInfo) ?? "text/html",
+ *       });
+ *       parser.on("data", (quad) => {
+ *         onQuadCallbacks.forEach((callback) => callback(quad));
+ *       });
+ *       parser.on("error", (error) => {
+ *         onErrorCallbacks.forEach((callback) => callback(error));
+ *       });
+ *       parser.write(source);
+ *       parser.end();
+ *       onCompleteCallbacks.forEach((callback) => callback());
+ *     },
+ *   };
+ * };
+ * ```
  */
 export type Parser = {
   onQuad: (onQuadCallback: (quad: Quad) => void) => void;
@@ -92,8 +147,11 @@ export type Parser = {
 };
 type ContentType = string;
 /**
- * @hidden This interface is not exposed yet; we'll first have to put it through
- *         its paces by trying it out with other parsers than n3 as well.
+ * Custom parsers to load [[SolidDataset]]s serialised in different RDF formats.
+ *
+ * Provide your own parsers by providing an object on the `parsers` property
+ * with the supported content type as the key, and the parser as a value.
+ * For documentation on how to provide a parser, see [[Parser]].
  */
 export type ParseOptions = {
   parsers: Record<ContentType, Parser>;
