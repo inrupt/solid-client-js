@@ -19,9 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DatasetCore } from "@rdfjs/types";
 import RdfJsDataFactory from "@rdfjs/data-model";
-import rdfjsDatasetModule from "@rdfjs/dataset";
 import * as RdfJs from "@rdfjs/types";
 import {
   BlankNodeId,
@@ -39,16 +37,7 @@ import { ToRdfJsOptions } from "./rdfjs";
 import { IriString } from "./interfaces";
 import { xmlSchemaTypes } from "./datatypes";
 
-const { quad, literal, namedNode, blankNode, defaultGraph } =
-  rdfjsDatasetModule;
-
-export const DataFactory = {
-  quad,
-  literal,
-  namedNode,
-  blankNode,
-  defaultGraph,
-};
+export const DataFactory = RdfJsDataFactory;
 
 type QuadParseOptions = Partial<{
   otherQuads: RdfJs.Quad[];
