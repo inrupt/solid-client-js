@@ -28,6 +28,12 @@ type Time = {
 The added methods are: `setDate`, `setTime`, `getDate`, `getDateAll`,
 `getTime`, `getTimeAll`, `addDate`, `addTime`, `removeDate`, `removeTime`.
 
+### Bugs fixed
+
+- An update to one of our transitive dependencies (`@rdfjs/data-model`) caused
+  the functions to get data from a Thing (`getInteger`, `getUrl`, etc.) to
+  break when used in Node.
+
 ## [1.9.0] - 2021-06-15
 
 ### New features
