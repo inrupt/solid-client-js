@@ -223,6 +223,7 @@ export function getDatetimeAll(
  * @param thing The [[Thing]] to read a date value from.
  * @param property The Property whose date value to return.
  * @returns A date value for the given Property if present, or null if the Property is not present or the value is not of type date.
+ * @since 1.10.0
  */
 export function getDate(thing: Thing, property: Url | UrlString): Date | null {
   internal_throwIfNotThing(thing);
@@ -244,6 +245,7 @@ export function getDate(thing: Thing, property: Url | UrlString): Date | null {
  * @param thing The [[Thing]] to read the date values from.
  * @param property The Property whose date values to return.
  * @returns An array of date values for the given Property.
+ * @since 1.10.0
  */
 export function getDateAll(thing: Thing, property: Url | UrlString): Date[] {
   internal_throwIfNotThing(thing);
@@ -266,6 +268,7 @@ export function getDateAll(thing: Thing, property: Url | UrlString): Date[] {
  * @param thing The [[Thing]] to read a time value from.
  * @param property The Property whose time value to return.
  * @returns A time value for the given Property if present, or null if the Property is not present or the value is not of type time.
+ * @since 1.10.0
  */
 export function getTime(thing: Thing, property: Url | UrlString): Time | null {
   internal_throwIfNotThing(thing);
@@ -286,6 +289,7 @@ export function getTime(thing: Thing, property: Url | UrlString): Time | null {
  * @param thing The [[Thing]] to read the time values from.
  * @param property The Property whose time values to return.
  * @returns An array of time values for the given Property.
+ * @since 1.10.0
  */
 export function getTimeAll(thing: Thing, property: Url | UrlString): Time[] {
   internal_throwIfNotThing(thing);

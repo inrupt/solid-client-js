@@ -181,6 +181,7 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
  * @param property Property for which to remove the given date value.
  * @param value Date to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
+ * @since 1.10.0
  */
 export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
@@ -212,6 +213,7 @@ export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
  * @param property Property for which to remove the given datetime value.
  * @param value Time to remove from `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
+ * @since 1.10.0
  */
 export const removeTime: RemoveOfType<Time> = (thing, property, value) => {
   internal_throwIfNotThing(thing);

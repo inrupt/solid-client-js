@@ -119,6 +119,7 @@ export const setDatetime: SetOfType<Date> = (thing, property, value) => {
  * @param property Property for which to set the given date value.
  * @param value Date to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ * @since 1.10.0
  */
 export const setDate: SetOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
@@ -136,6 +137,7 @@ export const setDate: SetOfType<Date> = (thing, property, value) => {
  * @param property Property for which to set the given time value.
  * @param value time to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ * @since 1.10.0
  */
 export const setTime: SetOfType<Time> = (thing, property, value) => {
   internal_throwIfNotThing(thing);

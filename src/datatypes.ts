@@ -70,6 +70,8 @@ export function deserializeBoolean(value: string): boolean | null {
 
 /**
  * Time type for time data type attributes
+ *
+ * @since 1.10.0
  */
 export type Time = {
   hour: number;

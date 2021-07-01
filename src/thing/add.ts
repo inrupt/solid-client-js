@@ -163,6 +163,7 @@ export const addDatetime: AddOfType<Date> = (thing, property, value) => {
  * @param property Property for which to add the given date value.
  * @param value Date to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ * @since 1.10.0
  */
 export const addDate: AddOfType<Date> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
@@ -185,6 +186,7 @@ export const addDate: AddOfType<Date> = (thing, property, value) => {
  * @param property Property for which to add the given datetime value.
  * @param value time to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ * @since 1.10.0
  */
 export const addTime: AddOfType<Time> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
