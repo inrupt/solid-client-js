@@ -20,11 +20,13 @@
  */
 
 import { acp } from "../constants";
-import { getSourceIri } from "../resource/resource";
+import {
+  getSourceIri,
+  internal_defaultFetchOptions,
+} from "../resource/resource";
 import { asIri, getThing, setThing } from "../thing/thing";
 import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "../acp/acp";
 import {
-  AccessControlResource,
   addAcrPolicyUrl,
   addPolicyUrl,
   getAcrPolicyUrlAll,
@@ -35,11 +37,13 @@ import {
 import { internal_getAcr, internal_setAcr } from "../acp/control.internal";
 import {
   createPolicy,
+  createResourcePolicyFor,
   getAllowModes,
   getDenyModes,
-  getPolicy,
   Policy,
   setAllowModes,
+  setResourceAcrPolicy,
+  setResourcePolicy,
 } from "../acp/policy";
 import {
   createRule,
@@ -48,67 +52,23 @@ import {
   getAllOfRuleUrlAll,
   getRule,
   Rule,
+  createResourceRuleFor,
+  setResourceRule,
 } from "../acp/rule";
 import {
   IriString,
   SolidDataset,
+  Thing,
   UrlString,
   WebId,
   WithResourceInfo,
+  WithServerResourceInfo,
 } from "../interfaces";
 import { Access } from "./universal";
 import { getIri, getIriAll } from "../thing/get";
 import { addIri } from "../thing/add";
 import { setIri } from "../thing/set";
-
-function getActiveRuleAll(
-  resource: WithAccessibleAcr & WithResourceInfo,
-  policyUrlAll: UrlString[]
-): UrlString[] {
-  // Collect all the rules referenced by the active policies.
-  const ruleUrls: string[] = [];
-  policyUrlAll.forEach((policyUrl) => {
-    const acr = internal_getAcr(resource);
-    const policyThing = getThing(acr, policyUrl);
-    if (policyThing !== null) {
-      getIriAll(policyThing, acp.anyOf).forEach((activeRuleUrl) =>
-        ruleUrls.push(activeRuleUrl)
-      );
-      getIriAll(policyThing, acp.allOf).forEach((activeRuleUrl) =>
-        ruleUrls.push(activeRuleUrl)
-      );
-      getIriAll(policyThing, acp.noneOf).forEach((activeRuleUrl) =>
-        ruleUrls.push(activeRuleUrl)
-      );
-    }
-  });
-  return ruleUrls;
-}
-
-export function internal_hasInaccessiblePolicies(
-  resource: WithAccessibleAcr & WithResourceInfo
-): boolean {
-  const sourceIri = getSourceIri(resource);
-
-  // Collect all policies that apply to the resource or its ACR (aka active)
-  const activePolicyUrls = getPolicyUrlAll(resource).concat(
-    getAcrPolicyUrlAll(resource)
-  );
-  const ruleUrls: string[] = getActiveRuleAll(resource, activePolicyUrls);
-
-  // If either an active policy or rule are not defined in the ACR, return false
-  return (
-    activePolicyUrls
-      .concat(ruleUrls)
-      // The call to `isDefaultEssPolicyUrl` is a workaround for an ESS bug.
-      // When that workaround can be removed, remove the `&&` leg that calls it.
-      .some(
-        (url) =>
-          url.substring(0, sourceIri.length) !== sourceIri &&
-          !isDefaultEssPolicyUrl(url, sourceIri)
-      )
-  );
-}
+import { getSolidDataset } from "../resource/solidDataset";
 
 const knownActorRelations = [acp.agent, acp.group];
 /**
@@ -136,39 +96,28 @@ type ActorRelation = typeof knownActorRelations extends Array<infer E>
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setActorAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to get the access for.
  * @param actor Which instance of the given actor type you want to get the access for.
  * @returns What Access modes are granted to the given actor explicitly, or null if it could not be determined.
  */
 export function internal_getActorAccess(
-  resource: WithResourceInfo & WithAcp,
+  acpData: internal_AcpData,
   actorRelation: ActorRelation,
   actor: IriString
 ): Access | null {
-  if (
-    !hasAccessibleAcr(resource) ||
-    internal_hasInaccessiblePolicies(resource)
-  ) {
+  if (acpData.inaccessibleUrls.length > 0) {
+    // If we can't see all access data,
+    // we can't reliably determine what access the given actor has:
     return null;
   }
 
-  const acr = internal_getAcr(resource);
-
-  const acrPolicyUrls = getAcrPolicyUrlAll(resource);
-  const acrPolicies = acrPolicyUrls
-    .map((policyUrl) => getPolicy(acr, policyUrl))
-    .filter((policy) => policy !== null) as Policy[];
-  const applicableAcrPolicies = acrPolicies.filter((policy) =>
-    policyAppliesTo(policy, actorRelation, actor, acr)
+  const applicableAcrPolicies = acpData.acrPolicies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acpData)
   );
 
-  const policyUrls = getPolicyUrlAll(resource);
-  const policies = policyUrls
-    .map((policyUrl) => getPolicy(acr, policyUrl))
-    .filter((policy) => policy !== null) as Policy[];
-  const applicablePolicies = policies.filter((policy) =>
-    policyAppliesTo(policy, actorRelation, actor, acr)
+  const applicablePolicies = acpData.policies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acpData)
   );
 
   const initialAccess: Access = {
@@ -256,15 +205,15 @@ export function internal_getActorAccess(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setAgentAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param webId WebID of the Agent you want to get the access for.
  * @returns What Access modes are granted to the given Agent explicitly, or null if it could not be determined.
  */
 export function internal_getAgentAccess(
-  resource: WithResourceInfo & WithAcp,
+  acpData: internal_AcpData,
   webId: WebId
 ): Access | null {
-  return internal_getActorAccess(resource, acp.agent, webId);
+  return internal_getActorAccess(acpData, acp.agent, webId);
 }
 
 /**
@@ -280,15 +229,15 @@ export function internal_getAgentAccess(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setGroupAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param groupUrl URL of the Group you want to get the access for.
  * @returns What Access modes are granted to the given Group explicitly, or null if it could not be determined.
  */
 export function internal_getGroupAccess(
-  resource: WithResourceInfo & WithAcp,
+  acpData: internal_AcpData,
   groupUrl: UrlString
 ): Access | null {
-  return internal_getActorAccess(resource, acp.group, groupUrl);
+  return internal_getActorAccess(acpData, acp.group, groupUrl);
 }
 
 /**
@@ -304,13 +253,13 @@ export function internal_getGroupAccess(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setPublicAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @returns What Access modes are granted to everyone explicitly, or null if it could not be determined.
  */
 export function internal_getPublicAccess(
-  resource: WithResourceInfo & WithAcp
+  acpData: internal_AcpData
 ): Access | null {
-  return internal_getActorAccess(resource, acp.agent, acp.PublicAgent);
+  return internal_getActorAccess(acpData, acp.agent, acp.PublicAgent);
 }
 
 /**
@@ -327,20 +276,20 @@ export function internal_getPublicAccess(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setAuthenticatedAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @returns What Access modes are granted to authenticated users explicitly, or null if it could not be determined.
  */
 export function internal_getAuthenticatedAccess(
-  resource: WithResourceInfo & WithAcp
+  acpData: internal_AcpData
 ): Access | null {
-  return internal_getActorAccess(resource, acp.agent, acp.AuthenticatedAgent);
+  return internal_getActorAccess(acpData, acp.agent, acp.AuthenticatedAgent);
 }
 
 function policyAppliesTo(
   policy: Policy,
   actorRelation: ActorRelation,
   actor: IriString,
-  acr: AccessControlResource
+  acpData: internal_AcpData
 ) {
   const allowModes = getIriAll(policy, acp.allow);
   const denyModes = getIriAll(policy, acp.deny);
@@ -349,15 +298,19 @@ function policyAppliesTo(
     return false;
   }
 
-  const allOfRules = getAllOfRuleUrlAll(policy)
-    .map((ruleUrl) => getRule(acr, ruleUrl))
-    .filter(isNotNull);
-  const anyOfRules = getAnyOfRuleUrlAll(policy)
-    .map((ruleUrl) => getRule(acr, ruleUrl))
-    .filter(isNotNull);
-  const noneOfRules = getNoneOfRuleUrlAll(policy)
-    .map((ruleUrl) => getRule(acr, ruleUrl))
-    .filter(isNotNull);
+  // Note: the non-null assertions (`!`) here should be valid because
+  //       the caller of `policyAppliesTo` should already have validated that
+  //       the return value of internal_getPoliciesAndRules() did not have any
+  //       inaccessible URLs, so we should be able to find every Rule.
+  const allOfRules = getAllOfRuleUrlAll(policy).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
+  );
+  const anyOfRules = getAnyOfRuleUrlAll(policy).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
+  );
+  const noneOfRules = getNoneOfRuleUrlAll(policy).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
+  );
 
   // We assume that this Policy applies if this specific actor is mentioned
   // and no further restrictions are in place.
@@ -421,26 +374,18 @@ function ruleAppliesTo(
  * referenced by Policies referenced by the ACR Control, and therefore that
  * effectively apply).
  *
- * @param resource The resource with the ACR we want to inspect
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param actorRelation
  */
 function internal_findActorAll(
-  resource: WithAccessibleAcr & WithResourceInfo,
+  acpData: internal_AcpData,
   actorRelation: ActorRelation
 ): Set<WebId> {
   const actors: Set<WebId> = new Set();
-  // Collect all policies that apply to the resource or its ACR (aka active)
-  const activePolicyUrls = getPolicyUrlAll(resource).concat(
-    getAcrPolicyUrlAll(resource)
-  );
-  const rules = getActiveRuleAll(resource, activePolicyUrls);
   // This code could be prettier using flat(), which isn't supported by nodeJS 10.
   // If you read this comment after April 2021, feel free to refactor.
-  rules.forEach((ruleUrl) => {
-    // The rules URL being extracted from the dataset, it is safe to assume
-    // that getThing cannot return undefined.
-    const ruleThing = getThing(internal_getAcr(resource), ruleUrl)!;
-    getIriAll(ruleThing, actorRelation)
+  acpData.rules.forEach((rule) => {
+    getIriAll(rule, actorRelation)
       .filter(
         (iri) =>
           !(
@@ -458,28 +403,28 @@ function internal_findActorAll(
 
 /**
  * Iterate through all the actors active for an ACR, and list all of their access.
- * @param resource The resource for which we want to list the access
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param actorRelation The type of actor we want to list access for
  * @returns A map with each actor access indexed by their URL, or null if some
  * external policies are referenced.
  */
 export function internal_getActorAccessAll(
-  resource: WithResourceInfo & WithAcp,
+  acpData: internal_AcpData,
   actorRelation: ActorRelation
 ): Record<string, Access> | null {
-  if (
-    !hasAccessibleAcr(resource) ||
-    internal_hasInaccessiblePolicies(resource)
-  ) {
+  if (acpData.inaccessibleUrls.length > 0) {
+    // If we can't see all access data,
+    // we can't reliably determine what access actors of the given type have:
     return null;
   }
+
   const result: Record<UrlString, Access> = {};
-  const actors = internal_findActorAll(resource, actorRelation);
+  const actors = internal_findActorAll(acpData, actorRelation);
   actors.forEach((iri) => {
     // The type assertion holds, because if internal_getActorAccess were null,
     // we would have returned {} already.
     const access = internal_getActorAccess(
-      resource,
+      acpData,
       actorRelation,
       iri
     ) as Access;
@@ -502,14 +447,14 @@ export function internal_getActorAccessAll(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setAgentAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @returns A map with each Group's access indexed by their URL, or null if some
  * external policies are referenced.
  */
 export function internal_getGroupAccessAll(
-  resource: WithResourceInfo & WithAcp
+  acpData: internal_AcpData
 ): Record<UrlString, Access> | null {
-  return internal_getActorAccessAll(resource, acp.group);
+  return internal_getActorAccessAll(acpData, acp.group);
 }
 
 /**
@@ -526,14 +471,14 @@ export function internal_getGroupAccessAll(
  * In other words, this function will generally understand and return the access as set by
  * [[internal_setAgentAccess]], but not understand more convoluted Policies.
  *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @returns A map with each Agent's access indexed by their WebID, or null if some
  * external policies are referenced.
  */
 export function internal_getAgentAccessAll(
-  resource: WithResourceInfo & WithAcp
+  acpData: internal_AcpData
 ): Record<WebId, Access> | null {
-  return internal_getActorAccessAll(resource, acp.agent);
+  return internal_getActorAccessAll(acpData, acp.agent);
 }
 
 /**
@@ -563,6 +508,7 @@ export function internal_getAgentAccessAll(
  * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to set the access for.
  * @param actor Which instance of the given actor type you want to set the access for.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for the given actor. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
@@ -572,23 +518,17 @@ export function internal_setActorAccess<
   ResourceExt extends WithResourceInfo & WithAcp
 >(
   resource: ResourceExt,
+  acpData: internal_AcpData,
   actorRelation: ActorRelation,
   actor: UrlString,
   access: Partial<Access>
 ): ResourceExt | null {
-  if (
-    !hasAccessibleAcr(resource) ||
-    internal_hasInaccessiblePolicies(resource)
-  ) {
+  if (!hasAccessibleAcr(resource) || acpData.inaccessibleUrls.length > 0) {
     return null;
   }
 
   // Get the access that currently applies to the given actor
-  const existingAccess = internal_getActorAccess(
-    resource,
-    actorRelation,
-    actor
-  );
+  const existingAccess = internal_getActorAccess(acpData, actorRelation, actor);
 
   /* istanbul ignore if: It returns null if the ACR has inaccessible Policies, which should happen since we already check for that above. */
   if (existingAccess === null) {
@@ -596,30 +536,12 @@ export function internal_setActorAccess<
   }
 
   // Get all Policies that apply specifically to the given actor
-  const acr = internal_getAcr(resource);
-
-  const acrPolicyUrls = getAcrPolicyUrlAll(resource);
-  const acrPolicies = acrPolicyUrls
-    // This is a temporary workaround until ESS removes its default Policy references:
-    .filter(
-      (policyUrl) => !isDefaultEssPolicyUrl(policyUrl, getSourceIri(resource))
-    )
-    .map((policyUrl) => getPolicy(acr, policyUrl))
-    .filter((policy) => policy !== null) as Policy[];
-  const applicableAcrPolicies = acrPolicies.filter((policy) =>
-    policyAppliesTo(policy, actorRelation, actor, acr)
+  const applicableAcrPolicies = acpData.acrPolicies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acpData)
   );
 
-  const policyUrls = getPolicyUrlAll(resource);
-  const policies = policyUrls
-    // This is a temporary workaround until ESS removes its default Policy references:
-    .filter(
-      (policyUrl) => !isDefaultEssPolicyUrl(policyUrl, getSourceIri(resource))
-    )
-    .map((policyUrl) => getPolicy(acr, policyUrl))
-    .filter((policy) => policy !== null) as Policy[];
-  const applicablePolicies = policies.filter((policy) =>
-    policyAppliesTo(policy, actorRelation, actor, acr)
+  const applicablePolicies = acpData.policies.filter((policy) =>
+    policyAppliesTo(policy, actorRelation, actor, acpData)
   );
 
   // We only need to override Policies that define access other than what we want:
@@ -641,29 +563,24 @@ export function internal_setActorAccess<
   // to another actor (i.e. that applies using an anyOf Rule, or a Rule that
   // mentions both the given and another actor)...
   const otherActorAcrPolicies = conflictingAcrPolicies.filter((acrPolicy) =>
-    policyHasOtherActors(acrPolicy, actorRelation, actor, acr)
+    policyHasOtherActors(acrPolicy, actorRelation, actor, acpData)
   );
   const otherActorPolicies = conflictingPolicies.filter((policy) =>
-    policyHasOtherActors(policy, actorRelation, actor, acr)
+    policyHasOtherActors(policy, actorRelation, actor, acpData)
   );
 
   // ...check what access the current actor would have if we removed them...
-  const otherActorAcrPolicyUrls = otherActorAcrPolicies.map((acrPolicy) =>
-    asIri(acrPolicy)
-  );
-  const otherActorPolicyUrls = otherActorPolicies.map((policy) =>
-    asIri(policy)
-  );
-  let resourceWithPoliciesExcluded = otherActorAcrPolicyUrls.reduce(
-    removeAcrPolicyUrl,
-    resource
-  );
-  resourceWithPoliciesExcluded = otherActorPolicyUrls.reduce(
-    removePolicyUrl,
-    resourceWithPoliciesExcluded
-  );
+  const acpDataWithPoliciesExcluded: internal_AcpData = {
+    ...acpData,
+    acrPolicies: acpData.acrPolicies.filter(
+      (acrPolicy) => !otherActorAcrPolicies.includes(acrPolicy)
+    ),
+    policies: acpData.policies.filter(
+      (policy) => !otherActorPolicies.includes(policy)
+    ),
+  };
   const remainingAccess = internal_getActorAccess(
-    resourceWithPoliciesExcluded,
+    acpDataWithPoliciesExcluded,
     actorRelation,
     actor
   );
@@ -674,38 +591,34 @@ export function internal_setActorAccess<
   }
 
   // ...add copies of those Policies and their Rules, but excluding the given actor...
-  let updatedAcr = acr;
-  const newAcrPolicyUrls: IriString[] = [];
+  let updatedResource = resource;
   otherActorAcrPolicies.forEach((acrPolicy) => {
     const [policyCopy, ruleCopies] = copyPolicyExcludingActor(
       acrPolicy,
-      acr,
+      resource,
+      acpData,
       actorRelation,
       actor
     );
-    updatedAcr = setThing(updatedAcr, policyCopy);
-    updatedAcr = ruleCopies.reduce(setThing, updatedAcr);
-    newAcrPolicyUrls.push(asIri(policyCopy));
+    updatedResource = setResourceAcrPolicy(updatedResource, policyCopy);
+    updatedResource = ruleCopies.reduce(setResourceRule, updatedResource);
   });
-  const newPolicyUrls: IriString[] = [];
   otherActorPolicies.forEach((policy) => {
     const [policyCopy, ruleCopies] = copyPolicyExcludingActor(
       policy,
-      acr,
+      resource,
+      acpData,
       actorRelation,
       actor
     );
-    updatedAcr = setThing(updatedAcr, policyCopy);
-    updatedAcr = ruleCopies.reduce(setThing, updatedAcr);
-    newPolicyUrls.push(asIri(policyCopy));
+    updatedResource = setResourcePolicy(updatedResource, policyCopy);
+    updatedResource = ruleCopies.reduce(setResourceRule, updatedResource);
   });
 
   // ...add a new Policy that applies the given access,
   // and the previously applying access for access modes that were undefined...
-  const newRuleIri =
-    getSourceIri(acr) +
-    `#rule_${encodeURIComponent(`${actorRelation}_${actor}`)}`;
-  let newRule = createRule(newRuleIri);
+  const newRuleName = `rule_${encodeURIComponent(`${actorRelation}_${actor}`)}`;
+  let newRule = createResourceRuleFor(resource, newRuleName);
   newRule = setIri(newRule, actorRelation, actor);
 
   const newControlReadAccess = access.controlRead ?? existingAccess.controlRead;
@@ -717,25 +630,23 @@ export function internal_setActorAccess<
     newControlReadAccess !== remainingAccess.controlRead ||
     newControlWriteAccess !== remainingAccess.controlWrite
   ) {
-    const newAcrPolicyIri =
-      getSourceIri(acr) +
-      `#acr_policy` +
+    const newAcrPolicyName =
+      `acr_policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
-    let newAcrPolicy = createPolicy(newAcrPolicyIri);
+    let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
     newAcrPolicy = setAllowModes(newAcrPolicy, {
       read: newControlReadAccess === true,
       append: false,
       write: newControlWriteAccess === true,
     });
     newAcrPolicy = addIri(newAcrPolicy, acp.allOf, newRule);
-    updatedAcr = setThing(updatedAcr, newAcrPolicy);
-    updatedAcr = setThing(updatedAcr, newRule);
-    newAcrPolicyUrls.push(newAcrPolicyIri);
+    updatedResource = setResourceAcrPolicy(updatedResource, newAcrPolicy);
+    updatedResource = setResourceRule(updatedResource, newRule);
     // If we don't have to set new access, we only need to unapply the
     // ACR Policies that applied to both the given actor and other actors
     // (because they have been replaced by clones not mentioning the given
-    // actor). Hence `policiesToUnApply` is initialied to `otherActorPolicies`.
+    // actor). Hence `policiesToUnApply` is initialised to `otherActorPolicies`.
     // However, if we're in this if branch, that means we also had to replace
     // Policies that defined access for just this actor, so we'll have to remove
     // all Policies mentioning this actor:
@@ -752,25 +663,23 @@ export function internal_setActorAccess<
     newAppendAccess !== remainingAccess.append ||
     newWriteAccess !== remainingAccess.write
   ) {
-    const newPolicyIri =
-      getSourceIri(acr) +
-      `#policy` +
+    const newPolicyName =
+      `policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
-    let newPolicy = createPolicy(newPolicyIri);
+    let newPolicy = createResourcePolicyFor(resource, newPolicyName);
     newPolicy = setAllowModes(newPolicy, {
       read: newReadAccess === true,
       append: newAppendAccess === true,
       write: newWriteAccess === true,
     });
     newPolicy = addIri(newPolicy, acp.allOf, newRule);
-    updatedAcr = setThing(updatedAcr, newPolicy);
-    updatedAcr = setThing(updatedAcr, newRule);
-    newPolicyUrls.push(newPolicyIri);
+    updatedResource = setResourcePolicy(updatedResource, newPolicy);
+    updatedResource = setResourceRule(updatedResource, newRule);
     // If we don't have to set new access, we only need to unapply the
     // Policies that applied to both the given actor and other actors (because
     // they have been replaced by clones not mentioning the given actor). Hence
-    // `policiesToUnApply` is initialied to `otherActorPolicies`.
+    // `policiesToUnApply` is initialised to `otherActorPolicies`.
     // However, if we're in this if branch, that means we also had to replace
     // Policies that defined access for just this actor, so we'll have to remove
     // all Policies mentioning this actor:
@@ -780,24 +689,17 @@ export function internal_setActorAccess<
   // ...then remove existing Policy URLs that mentioned both the given actor
   // and other actors from the given Resource and apply the new ones (but do not
   // remove the actual old Policies - they might still apply to other Resources!).
-  let updatedResource = internal_setAcr(resource, updatedAcr);
   acrPoliciesToUnapply.forEach((previouslyApplicableAcrPolicy) => {
     updatedResource = removeAcrPolicyUrl(
       updatedResource,
       asIri(previouslyApplicableAcrPolicy)
     );
   });
-  newAcrPolicyUrls.forEach((newAcrPolicyUrl) => {
-    updatedResource = addAcrPolicyUrl(updatedResource, newAcrPolicyUrl);
-  });
   policiesToUnapply.forEach((previouslyApplicablePolicy) => {
     updatedResource = removePolicyUrl(
       updatedResource,
       asIri(previouslyApplicablePolicy)
     );
-  });
-  newPolicyUrls.forEach((newPolicyUrl) => {
-    updatedResource = addPolicyUrl(updatedResource, newPolicyUrl);
   });
 
   return updatedResource;
@@ -830,6 +732,7 @@ export function internal_setActorAccess<
  * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param webId Which Agent you want to set the access for.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for the given Agent. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
@@ -838,10 +741,11 @@ export function internal_setAgentAccess<
   ResourceExt extends WithResourceInfo & WithAcp
 >(
   resource: ResourceExt,
+  acpData: internal_AcpData,
   webId: WebId,
   access: Partial<Access>
 ): ResourceExt | null {
-  return internal_setActorAccess(resource, acp.agent, webId, access);
+  return internal_setActorAccess(resource, acpData, acp.agent, webId, access);
 }
 
 /**
@@ -871,6 +775,7 @@ export function internal_setAgentAccess<
  * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param groupUrl Which Group you want to set the access for.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for the given Group. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
@@ -879,10 +784,17 @@ export function internal_setGroupAccess<
   ResourceExt extends WithResourceInfo & WithAcp
 >(
   resource: ResourceExt,
+  acpData: internal_AcpData,
   groupUrl: WebId,
   access: Partial<Access>
 ): ResourceExt | null {
-  return internal_setActorAccess(resource, acp.group, groupUrl, access);
+  return internal_setActorAccess(
+    resource,
+    acpData,
+    acp.group,
+    groupUrl,
+    access
+  );
 }
 
 /**
@@ -912,13 +824,24 @@ export function internal_setGroupAccess<
  * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for everybody. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
  */
 export function internal_setPublicAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, access: Partial<Access>): ResourceExt | null {
-  return internal_setActorAccess(resource, acp.agent, acp.PublicAgent, access);
+>(
+  resource: ResourceExt,
+  acpData: internal_AcpData,
+  access: Partial<Access>
+): ResourceExt | null {
+  return internal_setActorAccess(
+    resource,
+    acpData,
+    acp.agent,
+    acp.PublicAgent,
+    access
+  );
 }
 
 /**
@@ -948,14 +871,20 @@ export function internal_setPublicAccess<
  * for its contained Resources independently.
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
+ * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for authenticated Agents. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
  */
 export function internal_setAuthenticatedAccess<
   ResourceExt extends WithResourceInfo & WithAcp
->(resource: ResourceExt, access: Partial<Access>): ResourceExt | null {
+>(
+  resource: ResourceExt,
+  acpData: internal_AcpData,
+  access: Partial<Access>
+): ResourceExt | null {
   return internal_setActorAccess(
     resource,
+    acpData,
     acp.agent,
     acp.AuthenticatedAgent,
     access
@@ -966,38 +895,32 @@ function policyHasOtherActors(
   policy: Policy,
   actorRelation: ActorRelation,
   actor: IriString,
-  policyAndRuleResource: SolidDataset
+  acpData: internal_AcpData
 ): boolean {
-  const allOfRulesHaveOtherActors = getIriAll(policy, acp.allOf).some(
-    (ruleUrl) => {
-      const rule = getRule(policyAndRuleResource, ruleUrl);
-      /* istanbul ignore if This function only gets called after policyAppliesTo, which already filters out non-existent Rules. */
-      if (rule === null) {
-        return false;
-      }
-      return ruleHasOtherActors(rule, actorRelation, actor);
-    }
+  // Note: the non-null assertions (`!`) here should be valid because
+  //       the caller of `policyHasOtherActors` should already have validated
+  //       that the return value of internal_getPoliciesAndRules() did not have
+  //       any inaccessible URLs, so we should be able to find every Rule.
+  const allOfRules = getIriAll(policy, acp.allOf).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
   );
-  const anyOfRulesHaveOtherActors = getIriAll(policy, acp.anyOf).some(
-    (ruleUrl) => {
-      const rule = getRule(policyAndRuleResource, ruleUrl);
-      /* istanbul ignore if This function only gets called after policyAppliesTo, which already filters out non-existent Rules. */
-      if (rule === null) {
-        return false;
-      }
-      return ruleHasOtherActors(rule, actorRelation, actor);
-    }
+  const allOfRulesHaveOtherActors = allOfRules.some((rule) => {
+    return ruleHasOtherActors(rule, actorRelation, actor);
+  });
+  const anyOfRules = getIriAll(policy, acp.anyOf).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
+  );
+  const anyOfRulesHaveOtherActors = anyOfRules.some((rule) => {
+    return ruleHasOtherActors(rule, actorRelation, actor);
+  });
+  /* istanbul ignore next This function only gets called after policyAppliesTo, which already filters out all noneOf Rules */
+  const noneOfRules = getIriAll(policy, acp.noneOf).map(
+    (ruleUrl) => acpData.rules.find((rule) => asIri(rule) === ruleUrl)!
   );
   /* istanbul ignore next This function only gets called after policyAppliesTo, which already filters out all noneOf Rules */
-  const noneOfRulesHaveOtherActors = getIriAll(policy, acp.noneOf).some(
-    (ruleUrl) => {
-      const rule = getRule(policyAndRuleResource, ruleUrl);
-      if (rule === null) {
-        return false;
-      }
-      return ruleHasOtherActors(rule, actorRelation, actor);
-    }
-  );
+  const noneOfRulesHaveOtherActors = noneOfRules.some((rule) => {
+    return ruleHasOtherActors(rule, actorRelation, actor);
+  });
 
   return (
     allOfRulesHaveOtherActors ||
@@ -1029,7 +952,8 @@ function ruleHasOtherActors(
 
 function copyPolicyExcludingActor(
   inputPolicy: Policy,
-  policyAndRuleDataset: SolidDataset,
+  resourceWithAcr: WithAccessibleAcr,
+  acpData: internal_AcpData,
   actorRelationToExclude: ActorRelation,
   actorToExclude: IriString
 ): [Policy, Rule[]] {
@@ -1041,28 +965,34 @@ function copyPolicyExcludingActor(
   // Create new Rules for the Policy, excluding the given Actor
   const newAllOfRules = copyRulesExcludingActor(
     getIriAll(inputPolicy, acp.allOf),
-    policyAndRuleDataset,
+    resourceWithAcr,
+    acpData,
     newIriSuffix,
     actorRelationToExclude,
     actorToExclude
   );
   const newAnyOfRules = copyRulesExcludingActor(
     getIriAll(inputPolicy, acp.anyOf),
-    policyAndRuleDataset,
+    resourceWithAcr,
+    acpData,
     newIriSuffix,
     actorRelationToExclude,
     actorToExclude
   );
   const newNoneOfRules = copyRulesExcludingActor(
     getIriAll(inputPolicy, acp.noneOf),
-    policyAndRuleDataset,
+    resourceWithAcr,
+    acpData,
     newIriSuffix,
     actorRelationToExclude,
     actorToExclude
   );
 
   // Create a new Policy with the new Rules
-  let newPolicy = createPolicy(asIri(inputPolicy) + newIriSuffix);
+  let newPolicy = createResourcePolicyFor(
+    resourceWithAcr,
+    encodeURI(asIri(inputPolicy)) + newIriSuffix
+  );
   getIriAll(inputPolicy, acp.allow).forEach((allowMode) => {
     newPolicy = addIri(newPolicy, acp.allow, allowMode);
   });
@@ -1086,22 +1016,27 @@ function copyPolicyExcludingActor(
   ];
 }
 
-/** Creates clones of all the Rules identified by `ruleIris` in `ruleDataset`, excluding the given Actor */
+/** Creates clones of all the Rules identified by `ruleIris` in `acpData`, excluding the given Actor */
 function copyRulesExcludingActor(
   ruleIris: IriString[],
-  ruleDataset: SolidDataset,
+  resourceWithAcr: WithAccessibleAcr,
+  acpData: internal_AcpData,
   iriSuffix: IriString,
   actorRelationToExclude: ActorRelation,
   actorToExclude: IriString
 ): Rule[] {
   return ruleIris
     .map((ruleIri) => {
-      const rule = getRule(ruleDataset, ruleIri);
-      if (rule === null) {
+      const rule = acpData.rules.find((rule) => asIri(rule) === ruleIri);
+      /* istanbul ignore if: getPoliciesAndRules should already have fetched all referenced Rules, so this should never be true: */
+      if (typeof rule === "undefined") {
         return null;
       }
 
-      let newRule = createRule(asIri(rule) + iriSuffix);
+      let newRule = createResourceRuleFor(
+        resourceWithAcr,
+        encodeURI(asIri(rule)) + iriSuffix
+      );
       let listsOtherActors = false;
       knownActorRelations.forEach((knownActorRelation) => {
         getIriAll(rule, knownActorRelation).forEach((targetActor) => {
@@ -1124,48 +1059,132 @@ function isNotNull<T>(value: T | null): value is T {
   return value !== null;
 }
 
-/**
- * Work around ESS adding references to external Policies to ACRs by default.
- *
- * Inrupt's Enterprise Solid Server by default adds a reference to a Policy in
- * every ACR that is not local to that ACR. This will be removed in the near
- * future: they only reflect access that holds anyway (i.e. the Pod Owner's
- * access), and removing them does not actually change that access.
- *
- * However, until that is implemented, we manually ignore those Policies as a
- * workaround, rather than always returning `null` because we cannot read them
- * in the ACR itself.
- *
- * When ESS is updated, delete this function and remove references to it to
- * remove the workaround.
- *
- * @param policyUrl URL of a Policy.
- * @param resourceUrl Resource in whose ACR that URL is referenced.
- * @returns Whether the given Policy URL is a URL the Inrupt's Enterprise Solid Server has added by default for the given Resource.
- */
-function isDefaultEssPolicyUrl(
-  policyUrl: UrlString,
-  resourceUrl: UrlString
-): boolean {
-  const essServers = [
-    "https://pod.inrupt.com",
-    "https://demo-ess.inrupt.com",
-    "https://dev-ess.inrupt.com",
-  ];
-  return essServers.some((essServer) => {
-    if (!resourceUrl.startsWith(essServer)) {
-      return false;
-    }
-    // ESS Pods are of the form <origin>/<username>/,
-    // and resource URLs are subpaths of that.
-    // Hence, we can get the Pod root by getting everything up to and including
-    // the first slash after the origin's trailing slash:
-    const resourcePath = resourceUrl.substring(essServer.length + "/".length);
-    const podRoot = resourceUrl.substring(
-      0,
-      essServer.length + "/".length + resourcePath.indexOf("/") + "/".length
-    );
+export type internal_AcpData = {
+  acrPolicies: Policy[];
+  policies: Policy[];
+  rules: Rule[];
+  inaccessibleUrls: UrlString[];
+};
 
-    return policyUrl === podRoot + "policies/#Owner";
+export async function internal_getPoliciesAndRules(
+  resource: WithResourceInfo & WithAccessibleAcr,
+  options = internal_defaultFetchOptions
+): Promise<internal_AcpData> {
+  const acrPolicyUrls = getAcrPolicyUrlAll(resource);
+  const policyUrls = getPolicyUrlAll(resource);
+  const allPolicyResourceUrls = getResourceUrls(acrPolicyUrls).concat(
+    getResourceUrls(policyUrls)
+  );
+
+  const policyResources = await getResources(allPolicyResourceUrls, options);
+
+  const acrPolicies = getThingsFromResources(
+    acrPolicyUrls,
+    policyResources
+  ).filter(isNotNull);
+  const policies = getThingsFromResources(policyUrls, policyResources).filter(
+    isNotNull
+  );
+
+  const ruleUrlSet: Set<UrlString> = new Set();
+  acrPolicies.forEach((acrPolicy) => {
+    const referencedRuleUrls = getReferencedRuleUrls(acrPolicy);
+    referencedRuleUrls.forEach((ruleUrl) => {
+      ruleUrlSet.add(ruleUrl);
+    });
   });
+  policies.forEach((policy) => {
+    const referencedRuleUrls = getReferencedRuleUrls(policy);
+    referencedRuleUrls.forEach((ruleUrl) => {
+      ruleUrlSet.add(ruleUrl);
+    });
+  });
+
+  const ruleUrls = Array.from(ruleUrlSet);
+  const ruleResourceUrls = ruleUrls.map((ruleUrl) => getResourceUrl(ruleUrl));
+  const unfetchedRuleResourceUrls = ruleResourceUrls.filter(
+    (ruleResourceUrl) => !allPolicyResourceUrls.includes(ruleResourceUrl)
+  );
+  const ruleResources = await getResources(unfetchedRuleResourceUrls, options);
+  const allResources = {
+    ...policyResources,
+    ...ruleResources,
+  };
+
+  const rules = getThingsFromResources(ruleUrls, allResources).filter(
+    isNotNull
+  );
+
+  const inaccessibleUrls = Object.keys(allResources).filter(
+    (resourceUrl) => allResources[resourceUrl] === null
+  );
+
+  return {
+    inaccessibleUrls: inaccessibleUrls,
+    acrPolicies: acrPolicies,
+    policies: policies,
+    rules: rules,
+  };
+}
+
+function getResourceUrl(thingUrl: UrlString): UrlString {
+  const thingUrlObject = new URL(thingUrl);
+  thingUrlObject.hash = "";
+  return thingUrlObject.href;
+}
+
+function getResourceUrls(thingUrls: UrlString[]): UrlString[] {
+  const resourceUrls: UrlString[] = [];
+  thingUrls.forEach((thingUrl) => {
+    const resourceUrl = getResourceUrl(thingUrl);
+    if (!resourceUrls.includes(resourceUrl)) {
+      resourceUrls.push(resourceUrl);
+    }
+  });
+
+  return resourceUrls;
+}
+
+async function getResources(
+  resourceUrls: UrlString[],
+  options: typeof internal_defaultFetchOptions
+): Promise<Record<UrlString, (SolidDataset & WithServerResourceInfo) | null>> {
+  const uniqueResourceUrls = Array.from(new Set(resourceUrls));
+  const resources: Record<
+    UrlString,
+    (SolidDataset & WithServerResourceInfo) | null
+  > = {};
+
+  await Promise.all(
+    uniqueResourceUrls.map(async (resourceUrl) => {
+      try {
+        const resource = await getSolidDataset(resourceUrl, options);
+        resources[resourceUrl] = resource;
+      } catch (e) {
+        resources[resourceUrl] = null;
+      }
+    })
+  );
+
+  return resources;
+}
+
+function getThingsFromResources(
+  thingUrls: UrlString[],
+  resources: Record<UrlString, SolidDataset | null>
+): Array<Thing | null> {
+  return thingUrls.map((thingUrl) => {
+    const resourceUrl = getResourceUrl(thingUrl);
+    const resource = resources[resourceUrl];
+    if (!resource) {
+      return null;
+    }
+    return getThing(resource, thingUrl);
+  });
+}
+
+function getReferencedRuleUrls(policy: Policy): UrlString[] {
+  return getAllOfRuleUrlAll(policy)
+    .concat(getAnyOfRuleUrlAll(policy))
+    .concat(getNoneOfRuleUrlAll(policy));
 }
