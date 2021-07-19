@@ -6,6 +6,16 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- In some cases where the Universal Access API's would previously bail out, they
+  can now correctly read and change access (at the cost of potentially making
+  more HTTP requests). It will now also work on instances of Inrupt's
+  Enterprise Solid Server not located on inrupt.com, and can now also return the
+  Pod Owner's access on inrupt.com.
+  It will still be unable to report access settings that the current user is not
+  allowed to see.
+
 The following sections document changes that have been released already:
 
 ## [1.10.0] - 2021-07-01

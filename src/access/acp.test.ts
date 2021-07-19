@@ -19,11 +19,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 import * as fc from "fast-check";
+import { Response } from "cross-fetch";
 import { WithAccessibleAcr } from "../acp/acp";
 import {
   AccessControlResource,
+  addAcrPolicyUrl,
   addPolicyUrl,
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
@@ -35,28 +37,29 @@ import {
 import { addMockAcrTo } from "../acp/mock";
 import {
   createPolicy,
+  getAllowModes,
+  getDenyModes,
   getPolicy,
-  removePolicy,
+  Policy,
   setAllowModes,
   setDenyModes,
   setPolicy,
 } from "../acp/policy";
 import {
-  addNoneOfRuleUrl,
-  addAnyOfRuleUrl,
   addAllOfRuleUrl,
   createRule,
   getRule,
   Rule,
+  setRule,
 } from "../acp/rule";
-import { acp } from "../constants";
+import { acp, rdf } from "../constants";
 import {
-  IriString,
   ThingPersisted,
   UrlString,
   WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
+import * as solidDatasetModule from "../resource/solidDataset";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addIri, addUrl } from "../thing/add";
 import { getIri, getIriAll, getUrl, getUrlAll } from "../thing/get";
@@ -68,7 +71,6 @@ import {
   internal_getAuthenticatedAccess,
   internal_getGroupAccess,
   internal_getPublicAccess,
-  internal_hasInaccessiblePolicies,
   internal_getGroupAccessAll,
   internal_getAgentAccessAll,
   internal_setActorAccess,
@@ -76,6 +78,8 @@ import {
   internal_setGroupAccess,
   internal_setPublicAccess,
   internal_setAuthenticatedAccess,
+  internal_AcpData,
+  internal_getPoliciesAndRules,
 } from "./acp";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
@@ -133,54 +137,52 @@ function mockAcr(
     ...mockSolidDatasetFrom(mockAcrUrl),
     accessTo: accessTo,
   };
-  let control = internal_createControl({ url: mockAcrUrl });
 
-  function getRule(mockRuleUrl: UrlString, mockRule: MockRule): Rule {
-    let rule = createRule(mockRuleUrl);
+  const mockedRules: Record<UrlString, Rule> = {};
+  function generateRule(mockRuleUrl: UrlString, mockRule: MockRule): Rule {
+    let rule = mockedRules[mockRuleUrl] ?? createRule(mockRuleUrl);
     Object.entries(mockRule).forEach(([mockActorRelation, mockActors]) => {
       mockActors?.forEach((mockActor) => {
         rule = addIri(rule, mockActorRelation, mockActor);
       });
     });
+    mockedRules[mockRuleUrl] = rule;
     return rule;
   }
-  function addPolicy(
-    policyType: IriString,
+  const mockedPolicies: Record<UrlString, Policy> = {};
+  function generatePolicy(
     policyUrl: UrlString,
     mockPolicy: Partial<MockPolicy>
   ) {
-    let policy = createPolicy(policyUrl);
+    let policy = mockedPolicies[policyUrl] ?? createPolicy(policyUrl);
     const allOfRules = mockPolicy.allOf
       ? Object.entries(mockPolicy.allOf).map(([mockRuleUrl, mockRule]) =>
-          getRule(mockRuleUrl, mockRule)
+          generateRule(mockRuleUrl, mockRule)
         )
       : [];
     const anyOfRules = mockPolicy.anyOf
       ? Object.entries(mockPolicy.anyOf).map(([mockRuleUrl, mockRule]) =>
-          getRule(mockRuleUrl, mockRule)
+          generateRule(mockRuleUrl, mockRule)
         )
       : [];
     const noneOfRules = mockPolicy.noneOf
       ? Object.entries(mockPolicy.noneOf).map(([mockRuleUrl, mockRule]) =>
-          getRule(mockRuleUrl, mockRule)
+          generateRule(mockRuleUrl, mockRule)
         )
       : [];
-    acr = allOfRules.reduce(setThing, acr);
-    acr = anyOfRules.reduce(setThing, acr);
-    acr = noneOfRules.reduce(setThing, acr);
 
     if (mockPolicy.allow) {
+      const existingAllowModes = getAllowModes(policy);
       policy = setAllowModes(policy, {
-        read: mockPolicy.allow.read === true,
-        append: mockPolicy.allow.append === true,
-        write: mockPolicy.allow.write === true,
+        ...existingAllowModes,
+        ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
+      const existingDenyModes = getDenyModes(policy);
       policy = setDenyModes(policy, {
-        read: mockPolicy.deny.read === true,
-        append: mockPolicy.deny.append === true,
-        write: mockPolicy.deny.write === true,
+        ...existingDenyModes,
+        ...mockPolicy.deny,
       });
     }
 
@@ -196,30 +198,49 @@ function mockAcr(
       (policy, rule) => addIri(policy, acp.noneOf, rule),
       policy
     );
-    acr = setThing(acr, policy);
-    control = addUrl(control, policyType, policy);
+    mockedPolicies[policyUrl] = policy;
   }
 
-  Object.entries(allMockPolicies.policies).forEach(
-    ([policyUrl, mockPolicy]) => {
-      addPolicy(acp.apply, policyUrl, mockPolicy);
-    }
-  );
-  Object.entries(allMockPolicies.memberPolicies).forEach(
-    ([policyUrl, mockPolicy]) => {
-      addPolicy(acp.applyMembers, policyUrl, mockPolicy);
-    }
-  );
   Object.entries(allMockPolicies.acrPolicies).forEach(
     ([policyUrl, mockPolicy]) => {
-      addPolicy(acp.access, policyUrl, mockPolicy);
+      generatePolicy(policyUrl, mockPolicy);
     }
   );
   Object.entries(allMockPolicies.memberAcrPolicies).forEach(
     ([policyUrl, mockPolicy]) => {
-      addPolicy(acp.accessMembers, policyUrl, mockPolicy);
+      generatePolicy(policyUrl, mockPolicy);
     }
   );
+  Object.entries(allMockPolicies.policies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      generatePolicy(policyUrl, mockPolicy);
+    }
+  );
+  Object.entries(allMockPolicies.memberPolicies).forEach(
+    ([policyUrl, mockPolicy]) => {
+      generatePolicy(policyUrl, mockPolicy);
+    }
+  );
+
+  acr = Object.values(mockedRules).reduce(setThing, acr);
+  let control = internal_createControl({ url: mockAcrUrl });
+
+  Object.keys(allMockPolicies.policies).forEach((policyUrl) => {
+    acr = setThing(acr, mockedPolicies[policyUrl]);
+    control = addUrl(control, acp.apply, policyUrl);
+  });
+  Object.keys(allMockPolicies.memberPolicies).forEach((policyUrl) => {
+    acr = setThing(acr, mockedPolicies[policyUrl]);
+    control = addUrl(control, acp.applyMembers, policyUrl);
+  });
+  Object.keys(allMockPolicies.acrPolicies).forEach((policyUrl) => {
+    acr = setThing(acr, mockedPolicies[policyUrl]);
+    control = addUrl(control, acp.access, policyUrl);
+  });
+  Object.keys(allMockPolicies.memberAcrPolicies).forEach((policyUrl) => {
+    acr = setThing(acr, mockedPolicies[policyUrl]);
+    control = addUrl(control, acp.accessMembers, policyUrl);
+  });
 
   acr = setThing(acr, control);
 
@@ -235,250 +256,105 @@ function mockResourceWithAcr(
   const plainResource = mockSolidDatasetFrom(accessTo);
   return addMockAcrTo(plainResource, acr);
 }
+function mockAcpData(
+  mockPolicies: Partial<MockPolicies> = {}
+): internal_AcpData {
+  const rulesByUrl: Record<UrlString, Rule> = {};
+  function generateMockRule(mockRuleUrl: UrlString, mockRule: MockRule) {
+    let rule = rulesByUrl[mockRuleUrl] ?? createRule(mockRuleUrl);
+    Object.entries(mockRule).forEach(([mockActorRelation, mockActors]) => {
+      mockActors?.forEach((mockActor) => {
+        rule = addIri(rule, mockActorRelation, mockActor);
+      });
+    });
+    rulesByUrl[mockRuleUrl] = rule;
+    return rule;
+  }
+  const mockedPolicies: Record<UrlString, Policy> = {};
+  function generateMockPolicy(
+    mockPolicyUrl: UrlString,
+    mockPolicy: Partial<MockPolicy>
+  ) {
+    let policy = mockedPolicies[mockPolicyUrl] ?? createPolicy(mockPolicyUrl);
+    if (mockPolicy.allow) {
+      const existingAllowModes = getAllowModes(policy);
+      policy = setAllowModes(policy, {
+        ...existingAllowModes,
+        ...mockPolicy.allow,
+      });
+    }
+    if (mockPolicy.deny) {
+      const existingDenyModes = getDenyModes(policy);
+      policy = setDenyModes(policy, {
+        ...existingDenyModes,
+        ...mockPolicy.deny,
+      });
+    }
 
-describe("hasInaccessiblePolicies", () => {
-  it("returns false if the ACR contains no reference to either Policies or Rules", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/policies",
-      {
-        policies: {},
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
+    if (mockPolicy.allOf) {
+      Object.entries(mockPolicy.allOf).forEach(([mockRuleUrl, mockRule]) => {
+        const rule = generateMockRule(mockRuleUrl, mockRule);
+        policy = addIri(policy, acp.allOf, rule);
+      });
+    }
+    if (mockPolicy.anyOf) {
+      Object.entries(mockPolicy.anyOf).forEach(([mockRuleUrl, mockRule]) => {
+        const rule = generateMockRule(mockRuleUrl, mockRule);
+        policy = addIri(policy, acp.anyOf, rule);
+      });
+    }
+    if (mockPolicy.noneOf) {
+      Object.entries(mockPolicy.noneOf).forEach(([mockRuleUrl, mockRule]) => {
+        const rule = generateMockRule(mockRuleUrl, mockRule);
+        policy = addIri(policy, acp.noneOf, rule);
+      });
+    }
+    mockedPolicies[mockPolicyUrl] = policy;
+  }
 
-  it("returns false if the ACR only contains references to Policies within the ACR", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: { "https://some.pod/resource?ext=acr#policy": {} },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
+  const allMockPolicies = {
+    ...defaultMockPolicies,
+    ...mockPolicies,
+  };
 
-  it("returns true if the ACR references a Policy in a different Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: { "https://some.pod/another-resource?ext=acr#policy": {} },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
+  Object.entries(allMockPolicies.acrPolicies).forEach(
+    ([mockAcrPolicyUrl, mockAcrPolicy]) => {
+      generateMockPolicy(mockAcrPolicyUrl, mockAcrPolicy);
+    }
+  );
+  Object.entries(allMockPolicies.policies).forEach(
+    ([mockPolicyUrl, mockPolicy]) => {
+      generateMockPolicy(mockPolicyUrl, mockPolicy);
+    }
+  );
 
-  it("returns true if the ACR references a Policy in a different Resource, and the Policy is not defined in the ACR itself too", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    let mockedAcr = mockAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: { "https://some.pod/another-resource?ext=acr#policy": {} },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
-    );
-    mockedAcr = removePolicy(
-      mockedAcr,
-      "https://some.pod/another-resource?ext=acr#policy"
-    );
-    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
+  const acrPolicies = Object.keys(allMockPolicies.acrPolicies).map(
+    (mockAcrPolicyUrl) => mockedPolicies[mockAcrPolicyUrl]
+  );
+  const policies = Object.keys(allMockPolicies.policies).map(
+    (mockPolicyUrl) => mockedPolicies[mockPolicyUrl]
+  );
 
-  it("returns true if the ACR references an ACR Policy in a different Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberAcrPolicies: {},
-        acrPolicies: { "https://some.pod/another-resource?ext=acr#policy": {} },
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
-
-  it("returns false if the ACR includes an unreferenced Policy with a different Resource's URL", () => {
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const policyInOtherResource = createPolicy(
-      "https://some.pod/some-other-resource?ext=acr#inactive-policy"
-    );
-    let mockedAcr = mockAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      { policies: {} }
-    );
-    mockedAcr = setPolicy(mockedAcr, policyInOtherResource);
-    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-
-  it("returns false if the ACR only references Rules in the same Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {},
-            },
-          },
-        },
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-
-  it("returns true if the ACR references an allOf Rule in a different Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberAcrPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/other-rule-resource#rule": {},
-            },
-          },
-        },
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
-
-  it("returns true if the ACR references an anyOf Rule in a different Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberAcrPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            anyOf: {
-              "https://some.pod/other-rule-resource#rule": {},
-            },
-          },
-        },
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
-
-  it("returns true if the ACR references an active noneOf Rule in a different Resource", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberAcrPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            noneOf: {
-              "https://some.pod/other-rule-resource#rule": {},
-            },
-          },
-        },
-        memberPolicies: {},
-      }
-    );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
-
-  it("returns false if the ACR includes an unreferenced Policy that references an allOf Rule in a different Resource", () => {
-    let policyReferencingRuleInDifferentResource = createPolicy(
-      "https://some.pod/resource?ext=acr#policy"
-    );
-    policyReferencingRuleInDifferentResource = addAllOfRuleUrl(
-      policyReferencingRuleInDifferentResource,
-      "https://some.pod/other-resource#rule"
-    );
-    const mockedAcr = setPolicy(
-      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
-        policies: {},
-      }),
-      policyReferencingRuleInDifferentResource
-    );
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-
-  it("returns false if the ACR includes an unreferenced Policy that references an anyOf Rule in a different Resource", () => {
-    let policyReferencingRuleInDifferentResource = createPolicy(
-      "https://some.pod/resource?ext=acr#policy"
-    );
-    policyReferencingRuleInDifferentResource = addAnyOfRuleUrl(
-      policyReferencingRuleInDifferentResource,
-      "https://some.pod/other-resource#rule"
-    );
-    const mockedAcr = setPolicy(
-      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
-        policies: {},
-      }),
-      policyReferencingRuleInDifferentResource
-    );
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-
-  it("returns false if the ACR includes an unreferenced Policy that references a noneOf Rule in a different Resource", () => {
-    let policyReferencingRuleInDifferentResource = createPolicy(
-      "https://some.pod/resource?ext=acr#policy"
-    );
-    policyReferencingRuleInDifferentResource = addNoneOfRuleUrl(
-      policyReferencingRuleInDifferentResource,
-      "https://some.pod/other-resource#rule"
-    );
-    const mockedAcr = setPolicy(
-      mockAcr("https://some.pod/resource", "https://some.pod/resource", {
-        policies: {},
-      }),
-      policyReferencingRuleInDifferentResource
-    );
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(plainResource, mockedAcr);
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
-  });
-});
+  return {
+    acrPolicies: acrPolicies,
+    policies: policies,
+    rules: Object.values(rulesByUrl),
+    inaccessibleUrls: [],
+  };
+}
 
 describe("getActorAccess", () => {
   const webId = "https://some.pod/profile#me";
 
   it("returns false for all access if no access was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://arbitrary.pod/resource",
-      "https://arbitrary.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -490,27 +366,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns true for Read access if that was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: true,
@@ -522,27 +394,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns true for Append access if that was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { append: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -554,27 +422,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns true for Write access if that was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -586,27 +450,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns true for ControlRead access if that was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -618,27 +478,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns true for ControlWrite access if that was granted to the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -650,27 +506,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Read access if that was denied for the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -682,27 +534,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Append access if that was denied for the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { append: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -714,27 +562,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Write access if that was denied for the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -746,27 +590,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlRead access if that was denied for the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -778,27 +618,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlWrite access if that was denied for the given actor", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -810,27 +646,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Read access if that was granted to the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -842,27 +674,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Append access if that was granted to the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { append: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -874,27 +702,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Write access if that was granted to the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -906,27 +730,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlRead access if that was granted to the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-      }
-    );
+      },
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -938,27 +758,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlWrite access if that was granted to the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-      }
-    );
+      },
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -970,27 +786,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Read access if that was denied for the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1002,27 +814,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Append access if that was denied for the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { append: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1034,27 +842,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for Write access if that was denied for the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1066,27 +870,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlRead access if that was denied for the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-      }
-    );
+      },
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1098,27 +898,23 @@ describe("getActorAccess", () => {
   });
 
   it("returns false for ControlWrite access if that was denied for the given actor for child Resources only", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            deny: { write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {},
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          deny: { write: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-      }
-    );
+      },
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1130,26 +926,22 @@ describe("getActorAccess", () => {
   });
 
   it("does not apply a Policy that does not specify any access modes", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
             },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: false,
@@ -1161,22 +953,18 @@ describe("getActorAccess", () => {
   });
 
   it("applies a Policy that does not specify any Rules at all", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-          },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: true,
@@ -1188,25 +976,21 @@ describe("getActorAccess", () => {
   });
 
   it("applies a Policy that also specifies empty Rules", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#emptyRule": {},
-            },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#emptyRule": {},
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: true,
@@ -1218,40 +1002,28 @@ describe("getActorAccess", () => {
   });
 
   it("applies a Policy that only specifies non-existent Rules", () => {
-    let mockedAcr = mockAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#emptyRule": {},
-            },
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#emptyRule": {},
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
-    let policyReferencingNonExistentRules = getPolicy(
-      mockedAcr,
-      "https://some.pod/resource?ext=acr#policy"
-    )!;
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+    let policyReferencingNonExistentRules = acpData.policies[0];
     policyReferencingNonExistentRules = addIri(
       policyReferencingNonExistentRules,
       acp.allOf,
       "https://some.pod/resource?ext=acr#emptyRule"
     );
-    mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentRules);
-    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
-    const resourceWithAcr = addPolicyUrl(
-      addMockAcrTo(plainResource, mockedAcr),
-      "https://some.pod/resource?ext=acr#policy"
-    );
+    acpData.policies[0] = policyReferencingNonExistentRules;
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
       read: true,
@@ -1262,50 +1034,85 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("returns null if some access is defined in separate Resources", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/other-resource?ext=acr#policy": {
-            allow: { read: true },
+  it("can also determine access if it is defined in separate Resources", () => {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
+            },
           },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+        "https://some.pod/other-resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: true,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("returns null if the current user does not have sufficient access to see all access data", () => {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { append: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
+            },
+          },
+        },
+        "https://some.pod/other-resource?ext=acr#policy": {},
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+    acpData.inaccessibleUrls = ["https://some.pod/other-resource?ext=acr"];
+
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toBeNull();
   });
 
   describe("A Policy that references just the given actor in a single Rule", () => {
     it("applies for an allOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1317,27 +1124,23 @@ describe("getActorAccess", () => {
     });
 
     it("applies for an anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
-              allow: { append: true },
             },
+            allow: { append: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1349,27 +1152,23 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              noneOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            noneOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
-              allow: { append: true },
             },
+            allow: { append: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1383,27 +1182,23 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references a Rule that applies to multiple actors, including the given one", () => {
     it("does apply for an allOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId, "https://some.pod/other-profile#me"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1415,27 +1210,23 @@ describe("getActorAccess", () => {
     });
 
     it("does apply for an anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId, "https://some.pod/other-profile#me"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1447,27 +1238,23 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId, "https://some.pod/other-profile#me"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1481,27 +1268,23 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references a Rule that does not include the given actor", () => {
     it("does not apply for an allOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1513,27 +1296,23 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1545,27 +1324,23 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              noneOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            noneOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              allow: { read: true },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1579,30 +1354,26 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references multiple of the same type of Rules, not all of which reference the given actor", () => {
     it("does not apply for allOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#unapplicable-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1614,30 +1385,26 @@ describe("getActorAccess", () => {
     });
 
     it("does apply for anyOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#unapplicable-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1649,30 +1416,26 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for noneOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#unapplicable-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1686,30 +1449,26 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references multiple of the same type of Rules, all of which reference the given actor", () => {
     it("does apply for allOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-applicable-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#non-applicable-rule": {
+                [acp.agent]: [webId],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1721,30 +1480,26 @@ describe("getActorAccess", () => {
     });
 
     it("does apply for anyOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-applicable-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#non-applicable-rule": {
+                [acp.agent]: [webId],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1756,30 +1511,26 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for noneOf Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-applicable-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-rule": {
+                [acp.agent]: [webId],
               },
-              allow: { read: true },
+              "https://some.pod/resource?ext=acr#non-applicable-rule": {
+                [acp.agent]: [webId],
+              },
             },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1793,32 +1544,28 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references multiple Rules of a different type, all of which reference the given actor", () => {
     it("does apply for an allOf and an anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -1830,32 +1577,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf and a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1867,32 +1610,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf and a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1904,37 +1643,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf, an anyOf and a noneOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1948,32 +1683,28 @@ describe("getActorAccess", () => {
 
   describe("A Policy that references multiple Rules of a different type, only some of which reference the given actor", () => {
     it("does not apply for an allOf Rule with the given actor and an anyOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-anyOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-anyOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -1985,32 +1716,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf Rule with the given actor and a noneOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2022,32 +1749,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf Rule with the given actor and a noneOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2059,37 +1782,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf Rule with the given actor and an anyOf and a noneOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2101,37 +1820,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf Rule with the given actor and an allOf and a noneOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2143,37 +1858,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for a noneOf Rule with the given actor and an allOf and an anyOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2185,32 +1896,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf Rule with the given actor and an allOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2222,32 +1929,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an noneOf Rule with the given actor and an allOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2259,32 +1962,28 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an noneOf Rule with the given actor and an anyOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2296,37 +1995,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf and an anyOf Rule with the given actor and a noneOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2338,37 +2033,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an allOf and a noneOf Rule with the given actor and an anyOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2380,37 +2071,33 @@ describe("getActorAccess", () => {
     });
 
     it("does not apply for an anyOf and a noneOf Rule with the given actor and an allOf Rule without", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: { read: true },
             },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2424,66 +2111,62 @@ describe("getActorAccess", () => {
 
   describe("A pair of Policies that define the same Access", () => {
     it("returns the defined access for all access modes", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2495,60 +2178,56 @@ describe("getActorAccess", () => {
     });
 
     it("marks undefined access modes as `false`", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2560,60 +2239,56 @@ describe("getActorAccess", () => {
     });
 
     it("preserves access modes from Policies using different types of Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2627,61 +2302,57 @@ describe("getActorAccess", () => {
 
   describe("A pair of Policies that define complementary Access", () => {
     it("returns the defined access for all access modes", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                append: true,
-                write: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                write: true,
-              },
+            allow: {
+              append: true,
+              write: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2693,60 +2364,56 @@ describe("getActorAccess", () => {
     });
 
     it("marks undefined access modes as `false`", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                append: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              append: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2758,60 +2425,56 @@ describe("getActorAccess", () => {
     });
 
     it("preserves access modes from Policies using different types of Rules", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                append: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
+            allow: {
+              append: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -2825,66 +2488,62 @@ describe("getActorAccess", () => {
 
   describe("A pair of Policies that define contradictory Access", () => {
     it("can override all access", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-                append: true,
-                write: true,
-              },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-                write: true,
-              },
+            deny: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            deny: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2896,66 +2555,62 @@ describe("getActorAccess", () => {
     });
 
     it("has deny statements override allow statements, even if defined before them", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-                append: true,
-                write: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
+            deny: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-                write: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            deny: {
+              read: true,
+              write: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -2967,60 +2622,56 @@ describe("getActorAccess", () => {
     });
 
     it("marks undefined access modes as false", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-              },
+            allow: {
+              read: true,
             },
           },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+          "https://some.pod/resource?ext=acr#another-policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
-            "https://some.pod/resource?ext=acr#another-acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              deny: {
-                read: true,
-              },
+            deny: {
+              read: true,
             },
           },
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+          "https://some.pod/resource?ext=acr#another-acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            deny: {
+              read: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getActorAccess(resourceWithAcr, acp.agent, webId);
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3034,29 +2685,25 @@ describe("getActorAccess", () => {
 
   describe("getAgentAccess", () => {
     it("returns access set for the given Agent", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAgentAccess(resourceWithAcr, webId);
+      const access = internal_getAgentAccess(acpData, webId);
 
       expect(access).toStrictEqual({
         read: true,
@@ -3068,29 +2715,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a different Agent", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAgentAccess(resourceWithAcr, webId);
+      const access = internal_getAgentAccess(acpData, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3102,29 +2745,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a group", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: [webId],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAgentAccess(resourceWithAcr, webId);
+      const access = internal_getAgentAccess(acpData, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3136,29 +2775,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAgentAccess(resourceWithAcr, webId);
+      const access = internal_getAgentAccess(acpData, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3170,29 +2805,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for just 'all authenticated Agents' (we have getAuthenticatedAccess for that)", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAgentAccess(resourceWithAcr, webId);
+      const access = internal_getAgentAccess(acpData, webId);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3208,29 +2839,25 @@ describe("getActorAccess", () => {
     const groupUrl = "https://some.pod/groups#group";
 
     it("returns access set for the given Group", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: [groupUrl],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: [groupUrl],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getGroupAccess(resourceWithAcr, groupUrl);
+      const access = internal_getGroupAccess(acpData, groupUrl);
 
       expect(access).toStrictEqual({
         read: true,
@@ -3242,29 +2869,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a different Group", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getGroupAccess(resourceWithAcr, groupUrl);
+      const access = internal_getGroupAccess(acpData, groupUrl);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3276,29 +2899,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for an agent", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [groupUrl],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [groupUrl],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getGroupAccess(resourceWithAcr, groupUrl);
+      const access = internal_getGroupAccess(acpData, groupUrl);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3312,29 +2931,25 @@ describe("getActorAccess", () => {
 
   describe("getPublicAccess", () => {
     it("returns access set for the general public", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getPublicAccess(resourceWithAcr);
+      const access = internal_getPublicAccess(acpData);
 
       expect(access).toStrictEqual({
         read: true,
@@ -3346,29 +2961,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a specific Agent", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getPublicAccess(resourceWithAcr);
+      const access = internal_getPublicAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3380,29 +2991,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a group", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: [acp.PublicAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getPublicAccess(resourceWithAcr);
+      const access = internal_getPublicAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3414,29 +3021,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for just 'all authenticated Agents' (we have getAuthenticatedAccess for that)", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getPublicAccess(resourceWithAcr);
+      const access = internal_getPublicAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3450,29 +3053,25 @@ describe("getActorAccess", () => {
 
   describe("getAuthenticatedAccess", () => {
     it("returns access set for the authenticated Agents", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAuthenticatedAccess(resourceWithAcr);
+      const access = internal_getAuthenticatedAccess(acpData);
 
       expect(access).toStrictEqual({
         read: true,
@@ -3484,29 +3083,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a specific Agent", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: ["https://arbitrary.pod/profile#me"],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: ["https://arbitrary.pod/profile#me"],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAuthenticatedAccess(resourceWithAcr);
+      const access = internal_getAuthenticatedAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3518,29 +3113,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for a group", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: [acp.AuthenticatedAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAuthenticatedAccess(resourceWithAcr);
+      const access = internal_getAuthenticatedAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3552,29 +3143,25 @@ describe("getActorAccess", () => {
     });
 
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      const access = internal_getAuthenticatedAccess(resourceWithAcr);
+      const access = internal_getAuthenticatedAccess(acpData);
 
       expect(access).toStrictEqual({
         read: false,
@@ -3591,60 +3178,68 @@ describe("getActorAccessAll", () => {
   it.each([acp.agent, acp.group])(
     "returns an empty map if no individual %s is given access",
     (actor) => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      const acpData = mockAcpData({
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+      expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
     }
   );
 
   it("does not return access given to individual agents for groups", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acr",
-      {
-        policies: {
-          "https://some.pod/resource.acr#policy": {
-            anyOf: {
-              "https://some.pod/resource.acr#rule": {
-                [acp.agent]: ["https://some.pod/profile#agent"],
-              },
-            },
-            allow: {
-              append: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource.acr#policy": {
+          anyOf: {
+            "https://some.pod/resource.acr#rule": {
+              [acp.agent]: ["https://some.pod/profile#agent"],
             },
           },
+          allow: {
+            append: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(
-      internal_getActorAccessAll(resourceWithAcr, acp.group)
-    ).toStrictEqual({});
+    expect(internal_getActorAccessAll(acpData, acp.group)).toStrictEqual({});
   });
 
   it("does not return access given to groups for agents", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acr",
-      {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource.acr#policy": {
+          anyOf: {
+            "https://some.pod/resource.acr#rule": {
+              [acp.group]: ["https://some.pod/profile#group"],
+            },
+          },
+          allow: {
+            read: true,
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+    expect(internal_getActorAccessAll(acpData, acp.agent)).toStrictEqual({});
+  });
+
+  it.each([acp.agent, acp.group])(
+    "does not return access given to the general public for %s",
+    (actor) => {
+      const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
               "https://some.pod/resource.acr#rule": {
-                [acp.group]: ["https://some.pod/profile#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: {
@@ -3655,131 +3250,127 @@ describe("getActorAccessAll", () => {
         memberPolicies: {},
         acrPolicies: {},
         memberAcrPolicies: {},
-      }
-    );
-    expect(
-      internal_getActorAccessAll(resourceWithAcr, acp.agent)
-    ).toStrictEqual({});
-  });
+      });
 
-  it.each([acp.agent, acp.group])(
-    "does not return access given to the general public for %s",
-    (actor) => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource.acr",
-        {
-          policies: {
-            "https://some.pod/resource.acr#policy": {
-              anyOf: {
-                "https://some.pod/resource.acr#rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
-
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
     }
   );
 
   it.each([acp.agent, acp.group])(
     "does not return access given to the Creator agent for %s",
     (actor) => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource.acr",
-        {
-          policies: {
-            "https://some.pod/resource.acr#policy": {
-              anyOf: {
-                "https://some.pod/resource.acr#rule": {
-                  [acp.agent]: [acp.CreatorAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.CreatorAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
     }
   );
 
   it.each([acp.agent, acp.group])(
     "does not return access given to the Authenticated agent for %s",
     (actor) => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource.acr",
-        {
-          policies: {
-            "https://some.pod/resource.acr#policy": {
-              anyOf: {
-                "https://some.pod/resource.acr#rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
+            allow: {
+              read: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
 
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toStrictEqual(
-        {}
-      );
+      expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
     }
   );
 
   it.each([acp.agent, acp.group])(
-    "returns null if an external policy is present",
+    "also returns access data if an external policy is present",
     (actor) => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource.acr",
-        {
-          policies: {
-            "https://some.pod/another-resource.acr#policy": {
-              anyOf: {
-                "https://some.pod/resource.acr#rule": {
-                  [actor]: ["https://some.pod/some-actor"],
-                },
-              },
-              allow: {
-                read: true,
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [actor]: ["https://some.pod/some-actor"],
               },
             },
+            allow: {
+              append: true,
+            },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
-      );
-      expect(internal_getActorAccessAll(resourceWithAcr, actor)).toBeNull();
+          "https://some.pod/another-resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [actor]: ["https://some.pod/some-actor"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+      expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
+        "https://some.pod/some-actor": {
+          read: true,
+          append: true,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
+        },
+      });
+    }
+  );
+
+  it.each([acp.agent, acp.group])(
+    "returns null if the current user does not have sufficient access to see all access data",
+    (actor) => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource.acr#policy": {
+            anyOf: {
+              "https://some.pod/resource.acr#rule": {
+                [actor]: ["https://some.pod/some-actor"],
+              },
+            },
+            allow: {
+              append: true,
+            },
+          },
+          "https://some.pod/another-resource.acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+      acpData.inaccessibleUrls = ["https://some.pod/another-resource.acr"];
+      expect(internal_getActorAccessAll(acpData, actor)).toBeNull();
     }
   );
 
@@ -3787,43 +3378,37 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns access for all the %s that are individually given access across multiple policies",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource?ext=acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#policy-a": {
-                anyOf: {
-                  "https://some.pod/resource.acr#rule-a": {
-                    [actor]: ["https://some.pod/profile#actor-a"],
-                  },
-                },
-                allow: {
-                  read: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#policy-a": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule-a": {
+                  [actor]: ["https://some.pod/profile#actor-a"],
                 },
               },
-              "https://some.pod/resource.acr#policy-b": {
-                anyOf: {
-                  "https://some.pod/resource.acr#rule-b": {
-                    [actor]: ["https://some.pod/profile#actor-b"],
-                  },
-                },
-                allow: {
-                  read: true,
-                  write: true,
-                  append: true,
-                },
+              allow: {
+                read: true,
               },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+            "https://some.pod/resource.acr#policy-b": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule-b": {
+                  [actor]: ["https://some.pod/profile#actor-b"],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+                append: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#actor-a": {
             read: true,
             append: false,
@@ -3845,34 +3430,28 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns access for all the %s that are individually given access for a single policy",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource?ext=acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#policy-a": {
-                anyOf: {
-                  "https://some.pod/resource.acr#rule-a": {
-                    [actor]: [
-                      "https://some.pod/profile#actor-a",
-                      "https://some.pod/profile#actor-b",
-                    ],
-                  },
-                },
-                allow: {
-                  read: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#policy-a": {
+              anyOf: {
+                "https://some.pod/resource.acr#rule-a": {
+                  [actor]: [
+                    "https://some.pod/profile#actor-a",
+                    "https://some.pod/profile#actor-b",
+                  ],
                 },
               },
+              allow: {
+                read: true,
+              },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#actor-a": {
             read: true,
             append: false,
@@ -3896,36 +3475,30 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns no access for Policies with a noneOf rule",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#policy": {
-                allOf: {
-                  "https://some.pod/resource.acr#allof-rule": {
-                    [actor]: ["https://some.pod/profile#included-actor"],
-                  },
-                },
-                noneOf: {
-                  "https://some.pod/resource.acr#noneof-rule": {
-                    [actor]: ["https://some.pod/profile#excluded-actor"],
-                  },
-                },
-                allow: {
-                  read: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#policy": {
+              allOf: {
+                "https://some.pod/resource.acr#allof-rule": {
+                  [actor]: ["https://some.pod/profile#included-actor"],
                 },
               },
+              noneOf: {
+                "https://some.pod/resource.acr#noneof-rule": {
+                  [actor]: ["https://some.pod/profile#excluded-actor"],
+                },
+              },
+              allow: {
+                read: true,
+              },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#excluded-actor": {
             read: false,
             append: false,
@@ -3947,37 +3520,31 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns no access for %s missing from an allOf rule",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#policy": {
-                allOf: {
-                  "https://some.pod/resource.acr#rule": {
-                    [actor]: ["https://some.pod/profile#included-actor"],
-                  },
-                  "https://some.pod/resource.acr#another-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#excluded-actor",
-                      "https://some.pod/profile#included-actor",
-                    ],
-                  },
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#policy": {
+              allOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [actor]: ["https://some.pod/profile#included-actor"],
                 },
-                allow: {
-                  append: true,
+                "https://some.pod/resource.acr#another-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#excluded-actor",
+                    "https://some.pod/profile#included-actor",
+                  ],
                 },
               },
+              allow: {
+                append: true,
+              },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#included-actor": {
             read: false,
             append: true,
@@ -3999,48 +3566,42 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns no access for %s in an anyOf rule if they are missing from an allOf rule",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#policy": {
-                allOf: {
-                  "https://some.pod/resource.acr#rule": {
-                    [actor]: [
-                      "https://some.pod/profile#actor",
-                      "https://some.pod/profile#a-third-actor",
-                    ],
-                  },
-                  "https://some.pod/resource.acr#another-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#another-actor",
-                      "https://some.pod/profile#a-third-actor",
-                    ],
-                  },
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#policy": {
+              allOf: {
+                "https://some.pod/resource.acr#rule": {
+                  [actor]: [
+                    "https://some.pod/profile#actor",
+                    "https://some.pod/profile#a-third-actor",
+                  ],
                 },
-                anyOf: {
-                  "https://some.pod/resource.acr#a-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#actor",
-                      "https://some.pod/profile#a-third-actor",
-                    ],
-                  },
-                },
-                allow: {
-                  read: true,
+                "https://some.pod/resource.acr#another-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#another-actor",
+                    "https://some.pod/profile#a-third-actor",
+                  ],
                 },
               },
+              anyOf: {
+                "https://some.pod/resource.acr#a-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#actor",
+                    "https://some.pod/profile#a-third-actor",
+                  ],
+                },
+              },
+              allow: {
+                read: true,
+              },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#actor": {
             read: false,
             append: false,
@@ -4071,43 +3632,37 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "returns false for access being denied to the %s",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#deny-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#deny-rule": {
-                    [actor]: ["https://some.pod/profile#denied-actor"],
-                  },
-                },
-                deny: {
-                  read: true,
-                  write: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#deny-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#deny-rule": {
+                  [actor]: ["https://some.pod/profile#denied-actor"],
                 },
               },
-              "https://some.pod/resource.acr#allow-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#allow-rule": {
-                    [actor]: ["https://some.pod/profile#allowed-actor"],
-                  },
-                },
-                allow: {
-                  read: true,
-                  write: true,
-                },
+              deny: {
+                read: true,
+                write: true,
               },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+            "https://some.pod/resource.acr#allow-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#allow-rule": {
+                  [actor]: ["https://some.pod/profile#allowed-actor"],
+                },
+              },
+              allow: {
+                read: true,
+                write: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#denied-actor": {
             read: false,
             append: false,
@@ -4129,48 +3684,42 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "combines allowed and denied modes when multiple policies apply to the %s",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#deny-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#deny-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#an-actor",
-                      "https://some.pod/profile#another-actor",
-                    ],
-                  },
-                },
-                deny: {
-                  read: true,
-                  write: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#deny-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#deny-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#an-actor",
+                    "https://some.pod/profile#another-actor",
+                  ],
                 },
               },
-              "https://some.pod/resource.acr#allow-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#allow-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#an-actor",
-                      "https://some.pod/profile#another-actor",
-                    ],
-                  },
-                },
-                allow: {
-                  append: true,
-                },
+              deny: {
+                read: true,
+                write: true,
               },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+            "https://some.pod/resource.acr#allow-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#allow-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#an-actor",
+                    "https://some.pod/profile#another-actor",
+                  ],
+                },
+              },
+              allow: {
+                append: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#an-actor": {
             read: false,
             append: true,
@@ -4192,44 +3741,38 @@ describe("getActorAccessAll", () => {
     it.each([acp.agent, acp.group])(
       "overrides allowed modes when %s is denied in another policy",
       (actor) => {
-        const resourceWithAcr = mockResourceWithAcr(
-          "https://some.pod/resource",
-          "https://some.pod/resource.acr",
-          {
-            policies: {
-              "https://some.pod/resource.acr#deny-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#deny-rule": {
-                    [actor]: ["https://some.pod/profile#denied-actor"],
-                  },
-                },
-                deny: {
-                  append: true,
+        const acpData = mockAcpData({
+          policies: {
+            "https://some.pod/resource.acr#deny-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#deny-rule": {
+                  [actor]: ["https://some.pod/profile#denied-actor"],
                 },
               },
-              "https://some.pod/resource.acr#allow-policy": {
-                anyOf: {
-                  "https://some.pod/resource.acr#allow-rule": {
-                    [actor]: [
-                      "https://some.pod/profile#denied-actor",
-                      "https://some.pod/profile#allowed-actor",
-                    ],
-                  },
-                },
-                allow: {
-                  append: true,
-                },
+              deny: {
+                append: true,
               },
             },
-            memberPolicies: {},
-            acrPolicies: {},
-            memberAcrPolicies: {},
-          }
-        );
+            "https://some.pod/resource.acr#allow-policy": {
+              anyOf: {
+                "https://some.pod/resource.acr#allow-rule": {
+                  [actor]: [
+                    "https://some.pod/profile#denied-actor",
+                    "https://some.pod/profile#allowed-actor",
+                  ],
+                },
+              },
+              allow: {
+                append: true,
+              },
+            },
+          },
+          memberPolicies: {},
+          acrPolicies: {},
+          memberAcrPolicies: {},
+        });
 
-        expect(
-          internal_getActorAccessAll(resourceWithAcr, actor)
-        ).toStrictEqual({
+        expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({
           "https://some.pod/profile#denied-actor": {
             read: false,
             append: false,
@@ -4254,29 +3797,25 @@ describe("getGroupAccessAll", () => {
   const groupAUrl = "https://some.pod/groups#groupA";
   const groupBUrl = "https://some.pod/groups#groupB";
   it("returns access set for any Group referenced in the ACR", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [groupAUrl, groupBUrl],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.group]: [groupAUrl, groupBUrl],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({
+    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({
       [groupAUrl]: {
         read: true,
         append: false,
@@ -4295,107 +3834,91 @@ describe("getGroupAccessAll", () => {
   });
 
   it("does not return access set for an agent", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: ["https://some.pod/profile#agent"],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: ["https://some.pod/profile#agent"],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not include access set for everyone", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.PublicAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.PublicAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not return access set for any authenticated Agent", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.AuthenticatedAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.AuthenticatedAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not return access set for the Creator Agent", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.CreatorAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.CreatorAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getGroupAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
   });
 });
 
@@ -4404,29 +3927,25 @@ describe("getAgentAccessAll", () => {
   const agentBUrl = "https://some.pod/profiles#agentB";
 
   it("returns access set for any Agent referenced in the ACR", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [agentAUrl, agentBUrl],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [agentAUrl, agentBUrl],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({
+    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({
       [agentAUrl]: {
         read: true,
         append: false,
@@ -4445,131 +3964,118 @@ describe("getAgentAccessAll", () => {
   });
 
   it("does not return access set for a group", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/group#some-group"],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.group]: ["https://some.pod/group#some-group"],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not include access set for everyone", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.PublicAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.PublicAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not return access set for any authenticated Agent", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.AuthenticatedAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.AuthenticatedAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not return access set for the Creator Agent", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [acp.CreatorAgent],
-              },
-            },
-            allow: {
-              read: true,
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allOf: {
+            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              [acp.agent]: [acp.CreatorAgent],
             },
           },
+          allow: {
+            read: true,
+          },
         },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
-    );
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
 
-    expect(internal_getAgentAccessAll(resourceWithAcr)).toStrictEqual({});
+    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
   });
 });
 
 describe("setActorAccess", () => {
   const webId = "https://some.pod/profile#me";
 
-  it("returns null if the ACR refers to Policies defined in other Resources", () => {
+  it("can set access even if the ACR refers to Policies defined in other Resources", () => {
+    const mockSetup = {
+      policies: {
+        "https://some.pod/other-resource?ext=acr#policy": {
+          allow: { read: true },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    };
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/other-resource?ext=acr#policy": {
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
+      mockSetup
     );
+    const acpData = mockAcpData(mockSetup);
 
     const updatedResourceWithAcr = internal_setActorAccess(
       resourceWithAcr,
+      acpData,
       acp.agent,
       webId,
       {
@@ -4577,30 +4083,33 @@ describe("setActorAccess", () => {
       }
     );
 
-    expect(updatedResourceWithAcr).toBeNull();
+    expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
   });
 
-  it("returns null if the ACR refers to Rules defined in other Resources", () => {
+  it("can set access even if the ACR refers to Rules defined in other Resources", () => {
+    const mockSetup = {
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/other-resource?ext=acr#rule": {},
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    };
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/other-resource?ext=acr#rule": {},
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      }
+      mockSetup
     );
+    const acpData = mockAcpData(mockSetup);
 
     const updatedResourceWithAcr = internal_setActorAccess(
       resourceWithAcr,
+      acpData,
       acp.agent,
       webId,
       {
@@ -4608,41 +4117,44 @@ describe("setActorAccess", () => {
       }
     );
 
-    expect(updatedResourceWithAcr).toBeNull();
+    expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
   });
 
   it("properly encodes hashes in actor URLs when used as identifiers in Policy/Rule URLs", () => {
+    const mockSetup = {
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#rule": {
+              [acp.agent]: [webId],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {
+        "https://some.pod/resource?ext=acr#acrPolicy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#acrRule": {
+              [acp.agent]: [webId],
+            },
+          },
+        },
+      },
+      memberAcrPolicies: {},
+    };
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
-      {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.agent]: [webId],
-              },
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#acrPolicy": {
-            allow: { read: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
-                [acp.agent]: [webId],
-              },
-            },
-          },
-        },
-        memberAcrPolicies: {},
-      }
+      mockSetup
     );
+    const acpData = mockAcpData(mockSetup);
 
     const updatedResourceWithAcr = internal_setActorAccess(
       resourceWithAcr,
+      acpData,
       acp.agent,
       webId,
       {
@@ -4765,14 +4277,20 @@ describe("setActorAccess", () => {
               "https://some.pod/resource?ext=acr",
               acrConfig as any
             );
+            const acpData = mockAcpData(acrConfig);
             const updatedResource = internal_setActorAccess(
               resourceWithAcr,
+              acpData,
               actorRelation,
               actorUrl,
               accessToSet
             );
             expect(
-              internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+              internal_getActorAccess(
+                getLocalAcpData(updatedResource!),
+                actorRelation,
+                actorUrl
+              )
             ).toStrictEqual(accessToSet);
           }
         ),
@@ -4819,14 +4337,20 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         acrConfig
       );
+      const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         actorRelation,
         actorUrl,
         accessToSet
       );
       expect(
-        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResource!),
+          actorRelation,
+          actorUrl
+        )
       ).toStrictEqual(accessToSet);
     });
 
@@ -4868,14 +4392,20 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         acrConfig
       );
+      const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         actorRelation,
         actorUrl,
         accessToSet
       );
       expect(
-        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResource!),
+          actorRelation,
+          actorUrl
+        )
       ).toStrictEqual(accessToSet);
     });
 
@@ -4924,14 +4454,20 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         acrConfig
       );
+      const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         actorRelation,
         actorUrl,
         accessToSet
       );
       expect(
-        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResource!),
+          actorRelation,
+          actorUrl
+        )
       ).toStrictEqual(accessToSet);
     });
 
@@ -4974,33 +4510,42 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         acrConfig
       );
+      const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         actorRelation,
         actorUrl,
         accessToSet
       );
       expect(
-        internal_getActorAccess(updatedResource!, actorRelation, actorUrl)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResource!),
+          actorRelation,
+          actorUrl
+        )
       ).toStrictEqual(accessToSet);
     });
   });
 
   describe("giving an Actor access", () => {
     it("adds the relevant ACP data when no access has been defined yet", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5053,30 +4598,33 @@ describe("setActorAccess", () => {
     });
 
     it("adds the relevant ACP data when unrelated access has already been defined", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5085,7 +4633,7 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getAgentAccess(updatedResourceWithAcr!, webId)
+        internal_getAgentAccess(getLocalAcpData(updatedResourceWithAcr!), webId)
       ).toStrictEqual({
         read: true,
         append: true,
@@ -5096,28 +4644,31 @@ describe("setActorAccess", () => {
     });
 
     it("does nothing when the same access already applies", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5140,37 +4691,40 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting allowed read access that already applies", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5180,7 +4734,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5189,7 +4747,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5200,37 +4762,40 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting denied read access that already applies", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5240,7 +4805,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5249,7 +4818,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5260,28 +4833,31 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting allowed append access that already applies", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { append: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { append: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5290,7 +4866,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: true,
@@ -5299,7 +4879,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5310,28 +4894,31 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting denied append access that already applies", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { append: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { append: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5340,7 +4927,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5349,7 +4940,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: true,
@@ -5360,37 +4955,40 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting allowed write access that already applies", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5400,7 +4998,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5409,7 +5011,11 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5420,37 +5026,40 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting denied write access that already applies", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            deny: { write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              deny: { write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5460,7 +5069,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5469,7 +5082,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5480,39 +5097,42 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting access that also refers to a non-existent Rule", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#non-existent_rule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            deny: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-existent_rule": {},
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              deny: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5525,7 +5145,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5534,7 +5158,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -5545,37 +5173,40 @@ describe("setActorAccess", () => {
     });
 
     it("preserves existing Control access that was not overwritten", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            deny: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              deny: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5584,7 +5215,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5593,7 +5228,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5604,37 +5243,40 @@ describe("setActorAccess", () => {
     });
 
     it("preserves existing regular access that was not overwritten", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            deny: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              deny: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5643,7 +5285,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5652,7 +5298,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5663,31 +5313,31 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5697,7 +5347,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          resourceWithAcr,
+          getLocalAcpData(resourceWithAcr),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -5709,7 +5359,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5720,32 +5374,32 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allow: { append: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allow: { append: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5755,7 +5409,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          resourceWithAcr,
+          getLocalAcpData(resourceWithAcr),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -5767,7 +5421,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -5778,28 +5436,26 @@ describe("setActorAccess", () => {
     });
 
     it("does not copy references to non-existent Rules when preserving conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      let mockedAcr = mockAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allow: { append: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allow: { append: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      let mockedAcr = mockAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
       let policyReferencingNonExistentRules = getPolicy(
         mockedAcr,
@@ -5816,9 +5472,11 @@ describe("setActorAccess", () => {
         addMockAcrTo(plainResource, mockedAcr),
         "https://some.pod/resource?ext=acr#policy"
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5843,31 +5501,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.agent]: ["https://some-other.pod/other-profile#me"],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5877,7 +5538,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          updatedResourceWithAcr!,
+          getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -5889,7 +5550,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5900,31 +5565,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.agent]: ["https://some-other.pod/other-profile#me"],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5934,7 +5602,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          updatedResourceWithAcr!,
+          getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -5946,7 +5614,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5957,31 +5629,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -5991,7 +5666,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6021,31 +5700,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6055,7 +5737,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6085,33 +5771,36 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for the given actor if a noneOf Rule also exists", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6121,7 +5810,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6153,33 +5846,36 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for the given actor if a noneOf Rule also exists", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6189,7 +5885,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6222,30 +5922,33 @@ describe("setActorAccess", () => {
 
     it("does not affect other actor's access", () => {
       const otherWebId = "https://arbitrary-other.pod/profile#other-actor";
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [otherWebId],
+              },
+            },
+            deny: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [otherWebId],
-                },
-              },
-              deny: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6254,7 +5957,10 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getAgentAccess(updatedResourceWithAcr!, otherWebId)
+        internal_getAgentAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          otherWebId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6265,28 +5971,31 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove existing Policies that no longer apply to this Resource, but might still apply to others", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6301,23 +6010,26 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove references to Policies that do not exist in this ACR", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {},
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {},
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6326,7 +6038,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6343,37 +6059,40 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove references to Rules that do not exist in this ACR", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#allOf_rule": {},
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#anyOf_rule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#allOf_acrRule": {},
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#allOf_rule": {},
-              },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#anyOf_rule": {},
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#allOf_acrRule": {},
-              },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6382,7 +6101,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6413,19 +6136,22 @@ describe("setActorAccess", () => {
 
   describe("removing access for an Actor", () => {
     it("adds no data when no access has been defined yet", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6448,30 +6174,33 @@ describe("setActorAccess", () => {
     });
 
     it("removes the relevant ACP data when unrelated access has already been defined", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6480,7 +6209,7 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getAgentAccess(updatedResourceWithAcr!, webId)
+        internal_getAgentAccess(getLocalAcpData(updatedResourceWithAcr!), webId)
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6491,28 +6220,31 @@ describe("setActorAccess", () => {
     });
 
     it("does nothing when the same access already applies", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6535,37 +6267,40 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting access that already applies", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6578,7 +6313,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6587,7 +6326,11 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6598,39 +6341,42 @@ describe("setActorAccess", () => {
     });
 
     it("overwrites conflicting access that also refers to a non-existent Rule", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#non-existent_rule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-existent_rule": {},
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6643,7 +6389,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6652,7 +6402,11 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6663,37 +6417,40 @@ describe("setActorAccess", () => {
     });
 
     it("preserves existing Control access that was not overwritten", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6702,7 +6459,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6711,7 +6472,11 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: true,
@@ -6722,37 +6487,40 @@ describe("setActorAccess", () => {
     });
 
     it("preserves existing regular access that was not overwritten", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true, append: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allow: { read: true, write: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#acrRule": {
+                [acp.agent]: [webId],
+              },
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true, append: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allow: { read: true, write: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#acrRule": {
-                  [acp.agent]: [webId],
-                },
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6761,7 +6529,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(resourceWithAcr, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(resourceWithAcr),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6770,7 +6542,11 @@ describe("setActorAccess", () => {
         controlWrite: true,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6781,31 +6557,31 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6815,7 +6591,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          resourceWithAcr,
+          getLocalAcpData(resourceWithAcr),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -6827,7 +6603,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6838,32 +6618,32 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { append: true },
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { append: true },
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6873,7 +6653,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          resourceWithAcr,
+          getLocalAcpData(resourceWithAcr),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -6885,7 +6665,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6896,28 +6680,26 @@ describe("setActorAccess", () => {
     });
 
     it("does not copy references to non-existent Rules when preserving conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
-      let mockedAcr = mockAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              deny: { append: true },
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [
-                    webId,
-                    "https://some-other.pod/other-profile#me",
-                  ],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            deny: { append: true },
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      let mockedAcr = mockAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
       let policyReferencingNonExistentRules = getPolicy(
         mockedAcr,
@@ -6934,9 +6716,11 @@ describe("setActorAccess", () => {
         addMockAcrTo(plainResource, mockedAcr),
         "https://some.pod/resource?ext=acr#policy"
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6961,31 +6745,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.agent]: ["https://some-other.pod/other-profile#me"],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -6995,7 +6782,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          updatedResourceWithAcr!,
+          getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -7007,7 +6794,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7018,31 +6809,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.agent]: ["https://some-other.pod/other-profile#me"],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7052,7 +6846,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getActorAccess(
-          updatedResourceWithAcr!,
+          getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
           "https://some-other.pod/other-profile#me"
         )
@@ -7064,7 +6858,11 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7075,31 +6873,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7109,7 +6910,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7139,31 +6944,34 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
+              },
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7173,7 +6981,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7203,33 +7015,36 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting Control access defined for the given actor if a noneOf Rule also exists", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberAcrPolicies: {},
-        }
+        },
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7239,7 +7054,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7271,33 +7090,36 @@ describe("setActorAccess", () => {
     });
 
     it("preserves conflicting access defined for the given actor if a noneOf Rule also exists", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#own-rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#own-rule": {
+                [acp.agent]: [webId],
               },
-              noneOf: {
-                "https://some.pod/resource?ext=acr#other-rule": {
-                  [acp.group]: ["https://some.pod/groups#group"],
-                },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#other-rule": {
+                [acp.group]: ["https://some.pod/groups#group"],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7307,7 +7129,11 @@ describe("setActorAccess", () => {
 
       // The new access should be applied:
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7340,30 +7166,33 @@ describe("setActorAccess", () => {
 
     it("does not affect other actor's access", () => {
       const otherWebId = "https://arbitrary-other.pod/profile#other-actor";
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: [otherWebId],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: [otherWebId],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7372,7 +7201,10 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getAgentAccess(updatedResourceWithAcr!, otherWebId)
+        internal_getAgentAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          otherWebId
+        )
       ).toStrictEqual({
         read: true,
         append: false,
@@ -7383,28 +7215,31 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove existing Policies that no longer apply to this Resource, but might still apply to others", () => {
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allow: { read: true },
-              allOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allow: { read: true },
+            allOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
               },
             },
           },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
+      const resourceWithAcr = mockResourceWithAcr(
+        "https://some.pod/resource",
+        "https://some.pod/resource?ext=acr",
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7419,23 +7254,26 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove references to Policies that do not exist in this ACR", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {},
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {},
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7444,7 +7282,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7461,37 +7303,40 @@ describe("setActorAccess", () => {
     });
 
     it("does not remove references to Rules that do not exist in this ACR", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#allOf_rule": {},
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#anyOf_rule": {},
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#allOf_acrRule": {},
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#allOf_rule": {},
-              },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#anyOf_rule": {},
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#allOf_acrRule": {},
-              },
-              anyOf: {
-                "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResourceWithAcr = internal_setActorAccess(
         resourceWithAcr,
+        acpData,
         acp.agent,
         webId,
         {
@@ -7500,7 +7345,11 @@ describe("setActorAccess", () => {
       );
 
       expect(
-        internal_getActorAccess(updatedResourceWithAcr!, acp.agent, webId)
+        internal_getActorAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          acp.agent,
+          webId
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7531,26 +7380,35 @@ describe("setActorAccess", () => {
 
   describe("setAgentAccess", () => {
     it("sets access for the given Agent", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getAgentAccess(updatedResource!, webId)).toStrictEqual({
+      expect(
+        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId)
+      ).toStrictEqual({
         read: true,
         append: true,
         write: true,
@@ -7560,51 +7418,60 @@ describe("setActorAccess", () => {
     });
 
     it("removes access for the given Agent", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [webId],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
-            },
-          },
-          memberAcrPolicies: {},
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-
-      expect(internal_getAgentAccess(updatedResource!, webId)).toStrictEqual({
+      expect(
+        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId)
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -7613,61 +7480,78 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+    it("returns null if the ACR could not be updated (e.g. because it referenced inaccessible Policies)", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/other-resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+      acpData.inaccessibleUrls = [
+        "https://arbitrary.pod/inaccessible-policy-resource",
+      ];
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {
-            "https://some.pod/other-resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
         }
       );
-
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-      });
 
       expect(updatedResource).toBeNull();
     });
 
     it("does not set access for a different Agent", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
       expect(
         internal_getAgentAccess(
-          updatedResource!,
+          getLocalAcpData(updatedResource!),
           "https://arbitrary.pod/other-profile#me"
         )
       ).toStrictEqual({
@@ -7680,26 +7564,35 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for a Group", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getGroupAccess(updatedResource!, webId)).toStrictEqual({
+      expect(
+        internal_getGroupAccess(getLocalAcpData(updatedResource!), webId)
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -7709,26 +7602,35 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for everybody", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -7738,26 +7640,35 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAgentAccess(
+        resourceWithAcr,
+        acpData,
+        webId,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAgentAccess(resourceWithAcr, webId, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -7770,19 +7681,22 @@ describe("setActorAccess", () => {
   describe("setGroupAccess", () => {
     const groupIri = "https://some.pod/groups#group";
     it("sets access for the given Group", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -7793,56 +7707,59 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getGroupAccess(updatedResource!, groupIri)).toStrictEqual(
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
+      expect(
+        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
+      ).toStrictEqual({
+        read: true,
+        append: true,
+        write: true,
+        controlRead: true,
+        controlWrite: true,
+      });
     });
 
     it("removes access for the given Group", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.group]: [groupIri],
+              },
+            },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.group]: [groupIri],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.group]: [groupIri],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.group]: [groupIri],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
-            },
-          },
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: false,
@@ -7853,33 +7770,39 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getGroupAccess(updatedResource!, groupIri)).toStrictEqual(
-        {
-          read: false,
-          append: false,
-          write: false,
-          controlRead: false,
-          controlWrite: false,
-        }
-      );
+      expect(
+        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/other-resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/other-resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
+      acpData.inaccessibleUrls = [
+        "https://arbitrary.pod/inaccessible-policy-resource",
+      ];
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -7890,30 +7813,33 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for a different Group", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
+              },
+            },
+            allow: {
+              read: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              allOf: {
-                "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                  [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-                },
-              },
-              allow: {
-                read: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -7926,7 +7852,7 @@ describe("setActorAccess", () => {
 
       expect(
         internal_getGroupAccess(
-          updatedResource!,
+          getLocalAcpData(updatedResource!),
           "https://arbitrary.pod/groups#other-group"
         )
       ).toStrictEqual({
@@ -7939,19 +7865,22 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for an Agent", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -7962,31 +7891,34 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getAgentAccess(updatedResource!, groupIri)).toStrictEqual(
-        {
-          read: false,
-          append: false,
-          write: false,
-          controlRead: false,
-          controlWrite: false,
-        }
-      );
+      expect(
+        internal_getAgentAccess(getLocalAcpData(updatedResource!), groupIri)
+      ).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
     });
 
     it("does not set access for everybody", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -7997,7 +7929,9 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8007,19 +7941,22 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
-        }
+        mockSetup
       );
+      const acpData = mockAcpData(mockSetup);
 
       const updatedResource = internal_setGroupAccess(
         resourceWithAcr,
+        acpData,
         groupIri,
         {
           read: true,
@@ -8030,7 +7967,9 @@ describe("setActorAccess", () => {
         }
       );
 
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8042,26 +7981,34 @@ describe("setActorAccess", () => {
 
   describe("setPublicAccess", () => {
     it("sets access for everybody", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setPublicAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: true,
         append: true,
         write: true,
@@ -8071,51 +8018,59 @@ describe("setActorAccess", () => {
     });
 
     it("removes access for everybody", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setPublicAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [acp.PublicAgent],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
-            },
-          },
-          memberAcrPolicies: {},
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         }
       );
 
-      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8125,48 +8080,66 @@ describe("setActorAccess", () => {
     });
 
     it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/other-resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+      acpData.inaccessibleUrls = [
+        "https://arbitrary.pod/inaccessible-policy-resource",
+      ];
+
+      const updatedResource = internal_setPublicAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {
-            "https://some.pod/other-resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
         }
       );
-
-      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
-        read: true,
-      });
 
       expect(updatedResource).toBeNull();
     });
 
     it("does not set access for a Group", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setPublicAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
       expect(
-        internal_getGroupAccess(updatedResource!, acp.PublicAgent)
+        internal_getGroupAccess(
+          getLocalAcpData(updatedResource!),
+          acp.PublicAgent
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -8177,26 +8150,34 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setPublicAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setPublicAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8208,26 +8189,34 @@ describe("setActorAccess", () => {
 
   describe("setAuthenticatedAccess", () => {
     it("sets access for authenticated Agents", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAuthenticatedAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: true,
         append: true,
         write: true,
@@ -8237,51 +8226,59 @@ describe("setActorAccess", () => {
     });
 
     it("removes access for authenticated Agents", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
+              },
+            },
+            allow: {
+              read: true,
+              append: true,
+              write: true,
+            },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {
+          "https://some.pod/resource?ext=acr#acrPolicy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#rule": {
+                [acp.agent]: [acp.AuthenticatedAgent],
+              },
+            },
+            allow: {
+              read: true,
+              write: true,
+            },
+          },
+        },
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAuthenticatedAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {
-            "https://some.pod/resource?ext=acr#policy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
-                append: true,
-                write: true,
-              },
-            },
-          },
-          memberPolicies: {},
-          acrPolicies: {
-            "https://some.pod/resource?ext=acr#acrPolicy": {
-              anyOf: {
-                "https://some.pod/resource?ext=acr#rule": {
-                  [acp.agent]: [acp.AuthenticatedAgent],
-                },
-              },
-              allow: {
-                read: true,
-                write: true,
-              },
-            },
-          },
-          memberAcrPolicies: {},
+          read: false,
+          append: false,
+          write: false,
+          controlRead: false,
+          controlWrite: false,
         }
       );
 
-      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-
-      expect(internal_getAuthenticatedAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8291,48 +8288,66 @@ describe("setActorAccess", () => {
     });
 
     it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
+      const mockSetup = {
+        policies: {
+          "https://some.pod/other-resource?ext=acr#policy": {},
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+      acpData.inaccessibleUrls = [
+        "https://arbitrary.pod/inaccessible-policy-resource",
+      ];
+
+      const updatedResource = internal_setAuthenticatedAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {
-            "https://some.pod/other-resource?ext=acr#policy": {},
-          },
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
         }
       );
-
-      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
-        read: true,
-      });
 
       expect(updatedResource).toBeNull();
     });
 
     it("does not set access for a Group", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAuthenticatedAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
       expect(
-        internal_getGroupAccess(updatedResource!, acp.AuthenticatedAgent)
+        internal_getGroupAccess(
+          getLocalAcpData(updatedResource!),
+          acp.AuthenticatedAgent
+        )
       ).toStrictEqual({
         read: false,
         append: false,
@@ -8343,26 +8358,34 @@ describe("setActorAccess", () => {
     });
 
     it("does not set access for everybody", () => {
+      const mockSetup = {
+        policies: {},
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      };
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
+        mockSetup
+      );
+      const acpData = mockAcpData(mockSetup);
+
+      const updatedResource = internal_setAuthenticatedAccess(
+        resourceWithAcr,
+        acpData,
         {
-          policies: {},
-          memberPolicies: {},
-          acrPolicies: {},
-          memberAcrPolicies: {},
+          read: true,
+          append: true,
+          write: true,
+          controlRead: true,
+          controlWrite: true,
         }
       );
 
-      const updatedResource = internal_setAuthenticatedAccess(resourceWithAcr, {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-
-      expect(internal_getPublicAccess(updatedResource!)).toStrictEqual({
+      expect(
+        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+      ).toStrictEqual({
         read: false,
         append: false,
         write: false,
@@ -8373,100 +8396,194 @@ describe("setActorAccess", () => {
   });
 });
 
-describe("Workaround for ESS's default Policies", () => {
-  // Inrupt's Enterprise Solid Server currently includes a reference to an
-  // external Policy in ACRs by default. This Policy represents permissions that
-  // always apply, and thus are not needed and in fact, removing them does not
-  // actually remove the access they apply. Therefore, they will be removing
-  // them from the ACR in the future.
-  // Until then, however, we can't inspect the contents of those Policies since
-  // they're in a different Resource than the ACR. We therefore explicitly
-  // ignore them to pretend they have been removed already.
-  it("does not consider ESS's default Policies as external to the ACR", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://pod.inrupt.com/example/resource",
-      "https://pod.inrupt.com/example/resource?ext=acr",
-      {
-        policies: {
-          "https://pod.inrupt.com/example/policies/#Owner": {},
-        },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
+describe("getPoliciesAndRules", () => {
+  it("fetches Policies and Rules defined in different Resources", async () => {
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const acr: AccessControlResource & WithServerResourceInfo = {
+      ...mockSolidDatasetFrom("https://some.pod/resource?ext=acr"),
+      accessTo: "https://some.pod/resource",
+    };
+    const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
+    let mockResourceWithExternalPolicy = addPolicyUrl(
+      mockResourceWithAcr,
+      "https://some.pod/policy-resource#policy"
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(false);
+    mockResourceWithExternalPolicy = addAcrPolicyUrl(
+      mockResourceWithExternalPolicy,
+      "https://some.pod/policy-resource#policy"
+    );
+    mockResourceWithExternalPolicy = addAcrPolicyUrl(
+      mockResourceWithExternalPolicy,
+      "https://some.pod/policy-resource#acrPolicy"
+    );
+    const externalPolicy = addAllOfRuleUrl(
+      createPolicy("https://some.pod/policy-resource#policy"),
+      "https://some.pod/rule-resource#rule"
+    );
+    const externalAcrPolicy = addAllOfRuleUrl(
+      createPolicy("https://some.pod/policy-resource#acrPolicy"),
+      "https://some.pod/rule-resource#rule"
+    );
+    let externalPolicyDataset = setPolicy(
+      mockSolidDatasetFrom("https://some.pod/policy-resource"),
+      externalPolicy
+    );
+    externalPolicyDataset = setPolicy(externalPolicyDataset, externalAcrPolicy);
+    const externalRule = createRule("https://some.pod/rule-resource#rule");
+    const externalRuleDataset = setRule(
+      mockSolidDatasetFrom("https://some.pod/rule-resource"),
+      externalRule
+    );
+    jest
+      .spyOn(solidDatasetModule, "getSolidDataset")
+      .mockResolvedValueOnce(externalPolicyDataset)
+      .mockResolvedValueOnce(externalRuleDataset);
+
+    const acpData = await internal_getPoliciesAndRules(
+      mockResourceWithExternalPolicy
+    );
+
+    expect(acpData).toStrictEqual({
+      acrPolicies: [externalPolicy, externalAcrPolicy],
+      policies: [externalPolicy],
+      rules: [externalRule],
+      inaccessibleUrls: [],
+    });
+    expect(solidDatasetModule.getSolidDataset).toHaveBeenCalledTimes(2);
+    expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
+      1,
+      "https://some.pod/policy-resource",
+      expect.anything()
+    );
+    expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
+      2,
+      "https://some.pod/rule-resource",
+      expect.anything()
+    );
   });
 
-  it("does consider ESS's default Policies from different Pods as external to the ACR", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://pod.inrupt.com/example/resource",
-      "https://pod.inrupt.com/example/resource?ext=acr",
-      {
-        policies: {
-          "https://pod.inrupt.com/other-example/policies/#Owner": {},
-        },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
+  it("uses a custom fetch function if given", async () => {
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const acr: AccessControlResource & WithServerResourceInfo = {
+      ...mockSolidDatasetFrom("https://some.pod/resource?ext=acr"),
+      accessTo: "https://some.pod/resource",
+    };
+    const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
+    const mockResourceWithExternalPolicy = addPolicyUrl(
+      mockResourceWithAcr,
+      "https://some.pod/policy-resource#policy"
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
+    const externalPolicy = addAllOfRuleUrl(
+      createPolicy("https://some.pod/policy-resource#policy"),
+      "https://some.pod/rule-resource#rule"
+    );
+    const externalPolicyDataset = setPolicy(
+      mockSolidDatasetFrom("https://some.pod/policy-resource"),
+      externalPolicy
+    );
+    const externalRule = createRule("https://some.pod/rule-resource#rule");
+    const externalRuleDataset = setRule(
+      mockSolidDatasetFrom("https://some.pod/rule-resource"),
+      externalRule
+    );
+    jest
+      .spyOn(solidDatasetModule, "getSolidDataset")
+      .mockResolvedValueOnce(externalPolicyDataset)
+      .mockResolvedValueOnce(externalRuleDataset);
+    const mockedFetch = jest.fn();
+
+    await internal_getPoliciesAndRules(mockResourceWithExternalPolicy, {
+      fetch: mockedFetch as any,
+    });
+
+    expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
+      1,
+      "https://some.pod/policy-resource",
+      { fetch: mockedFetch }
+    );
+    expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
+      2,
+      "https://some.pod/rule-resource",
+      { fetch: mockedFetch }
+    );
   });
 
-  it("does not get confused by similarly-named non-default Policy references", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://pod.inrupt.com/example/resource",
-      "https://pod.inrupt.com/example/resource?ext=acr",
-      {
-        policies: {
-          "https://pod.inrupt.com/example/policies/#OwnerNotDefault": {},
-        },
-        memberAcrPolicies: {},
-        acrPolicies: {},
-        memberPolicies: {},
-      }
+  it("keeps track of inaccessible Resources", async () => {
+    const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
+    const acr: AccessControlResource & WithServerResourceInfo = {
+      ...mockSolidDatasetFrom("https://some.pod/resource?ext=acr"),
+      accessTo: "https://some.pod/resource",
+    };
+    const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
+    let mockResourceWithExternalPolicy = addPolicyUrl(
+      mockResourceWithAcr,
+      "https://some.pod/policy-resource#policy"
     );
-    expect(internal_hasInaccessiblePolicies(resourceWithAcr)).toBe(true);
-  });
+    mockResourceWithExternalPolicy = addPolicyUrl(
+      mockResourceWithExternalPolicy,
+      "https://some.pod/inaccessible-policy-resource#policy"
+    );
+    const externalPolicy = addAllOfRuleUrl(
+      createPolicy("https://some.pod/policy-resource#policy"),
+      "https://some.pod/inaccessible-rule-resource#rule"
+    );
+    const externalPolicyDataset = setPolicy(
+      mockSolidDatasetFrom("https://some.pod/policy-resource"),
+      externalPolicy
+    );
+    jest
+      .spyOn(solidDatasetModule, "getSolidDataset")
+      .mockResolvedValueOnce(externalPolicyDataset)
+      .mockRejectedValueOnce(
+        new Response("Policy Resource not accessible to the current user", {
+          status: 403,
+        })
+      )
+      .mockRejectedValueOnce(
+        new Response("Rule Resource not accessible to the current user", {
+          status: 403,
+        })
+      );
 
-  it("can set access in an ACR that contains references to ESS's default non-local Policies", () => {
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://pod.inrupt.com/example/resource",
-      "https://pod.inrupt.com/example/resource?ext=acr",
-      {
-        policies: {
-          "https://pod.inrupt.com/example/policies/#Owner": {},
-        },
-        memberPolicies: {},
-        acrPolicies: {
-          "https://pod.inrupt.com/example/policies/#Owner": {},
-        },
-        memberAcrPolicies: {},
-      }
+    const acpData = await internal_getPoliciesAndRules(
+      mockResourceWithExternalPolicy
     );
 
-    const updatedResourceWithAcr = internal_setActorAccess(
-      resourceWithAcr,
-      acp.agent,
-      "https://some.pod/profile#me",
-      {
-        read: true,
-      }
-    );
-
-    expect(updatedResourceWithAcr).not.toBeNull();
-    const updatedAccess = internal_getActorAccess(
-      updatedResourceWithAcr!,
-      acp.agent,
-      "https://some.pod/profile#me"
-    );
-    expect(updatedAccess).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
+    expect(acpData).toStrictEqual({
+      acrPolicies: [],
+      policies: [externalPolicy],
+      rules: [],
+      inaccessibleUrls: [
+        "https://some.pod/inaccessible-policy-resource",
+        "https://some.pod/inaccessible-rule-resource",
+      ],
     });
   });
 });
+
+/**
+ * This function allows getting ACP data in a synchronous call.
+ *
+ * We can avoid asynchonicity in tests when all Policies and Rules are defined
+ * within a Resource's Access Control Resource. In that case, no HTTP requests
+ * are necessary to get a full picture of everything that together comprises the
+ * effective access for a Resource. Thus, with this function we can collect all
+ * the data necessary for `getActorAccess` to determine what access a particular
+ * actor has, which is useful for assertions in the `setActorAccess` tests.
+ */
+function getLocalAcpData(resourceWithAcr: WithAccessibleAcr): internal_AcpData {
+  const acrPolicyUrls = getAcrPolicyUrlAll(resourceWithAcr);
+  const policyUrls = getPolicyUrlAll(resourceWithAcr);
+  const acr = internal_getAcr(resourceWithAcr);
+  const acpData: internal_AcpData = {
+    acrPolicies: acrPolicyUrls.map(
+      (acrPolicyUrl) => getThing(acr, acrPolicyUrl)!
+    ),
+    policies: policyUrls.map((policyUrl) => getThing(acr, policyUrl)!),
+    rules: getThingAll(acr).filter((thing) =>
+      getIriAll(thing, rdf.type).includes(acp.Rule)
+    ),
+    inaccessibleUrls: [],
+  };
+  return acpData;
+}

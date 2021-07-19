@@ -39,6 +39,7 @@ import {
   internal_setGroupAccess as setGroupAccessAcp,
   internal_getPublicAccess as getPublicAccessAcp,
   internal_setPublicAccess as setPublicAccessAcp,
+  internal_getPoliciesAndRules,
 } from "./acp";
 import {
   getAgentAccess as getAgentAccessWac,
@@ -97,7 +98,8 @@ export async function getAgentAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    return getAgentAccessAcp(resourceInfo, webId);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    return getAgentAccessAcp(acpData, webId);
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getAgentAccessWac(resourceInfo, webId, options);
@@ -147,11 +149,17 @@ export async function setAgentAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    const updatedResource = setAgentAccessAcp(resourceInfo, webId, access);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    const updatedResource = setAgentAccessAcp(
+      resourceInfo,
+      acpData,
+      webId,
+      access
+    );
     if (updatedResource) {
       try {
         await saveAcrFor(updatedResource, options);
-        return getAgentAccessAcp(updatedResource, webId);
+        return await getAgentAccess(resourceUrl, webId, options);
       } catch (e) {
         return null;
       }
@@ -204,7 +212,8 @@ export async function getAgentAccessAll(
 ): Promise<Record<WebId, Access> | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    return getAgentAccessAllAcp(resourceInfo);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    return getAgentAccessAllAcp(acpData);
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getAgentAccessAllWac(resourceInfo, options);
@@ -243,7 +252,8 @@ export async function getGroupAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    return getGroupAccessAcp(resourceInfo, webId);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    return getGroupAccessAcp(acpData, webId);
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getGroupAccessWac(resourceInfo, webId, options);
@@ -282,7 +292,8 @@ export async function getGroupAccessAll(
 ): Promise<Record<UrlString, Access> | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    return getGroupAccessAllAcp(resourceInfo);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    return getGroupAccessAllAcp(acpData);
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getGroupAccessAllWac(resourceInfo, options);
@@ -332,11 +343,17 @@ export async function setGroupAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    const updatedResource = setGroupAccessAcp(resourceInfo, groupUrl, access);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    const updatedResource = setGroupAccessAcp(
+      resourceInfo,
+      acpData,
+      groupUrl,
+      access
+    );
     if (updatedResource) {
       try {
         await saveAcrFor(updatedResource, options);
-        return getGroupAccessAcp(updatedResource, groupUrl);
+        return getGroupAccess(resourceUrl, groupUrl, options);
       } catch (e) {
         return null;
       }
@@ -387,7 +404,8 @@ export async function getPublicAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    return getPublicAccessAcp(resourceInfo);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    return getPublicAccessAcp(acpData);
   }
   if (hasAccessibleAcl(resourceInfo)) {
     return await getPublicAccessWac(resourceInfo, options);
@@ -435,11 +453,12 @@ export async function setPublicAccess(
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
-    const updatedResource = setPublicAccessAcp(resourceInfo, access);
+    const acpData = await internal_getPoliciesAndRules(resourceInfo, options);
+    const updatedResource = setPublicAccessAcp(resourceInfo, acpData, access);
     if (updatedResource) {
       try {
         await saveAcrFor(updatedResource, options);
-        return getPublicAccessAcp(updatedResource);
+        return getPublicAccess(resourceUrl, options);
       } catch (e) {
         return null;
       }

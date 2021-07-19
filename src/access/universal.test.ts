@@ -23,7 +23,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { addMockAcrTo, mockAcrFor } from "../acp/mock";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import {
-  Access,
   getAgentAccess,
   getAgentAccessAll,
   getGroupAccess,
@@ -183,7 +182,20 @@ describe("setAgentAccess", () => {
     );
     const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
-    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
+    getResourceInfoWithAcr
+      // Called twice: when setting access (to determine that it's governed by
+      // an ACR rather than an ACL), and then when reading the new effective
+      // access after changing it:
+      .mockResolvedValueOnce(mockedResourceWithAcr)
+      .mockResolvedValueOnce(mockedResourceWithAcr);
+    jest
+      .spyOn(acpModule, "internal_getPoliciesAndRules")
+      // This is only passed as input to the mocked setAgentAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any)
+      // This is only passed as input to the mocked getAgentAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any);
     jest
       .spyOn(acpModule, "internal_setAgentAccess")
       .mockReturnValueOnce(mockedResourceWithAcr);
@@ -548,7 +560,20 @@ describe("setGroupAccess", () => {
     );
     const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
-    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
+    getResourceInfoWithAcr
+      // Called twice: when setting access (to determine that it's governed by
+      // an ACR rather than an ACL), and then when reading the new effective
+      // access after changing it:
+      .mockResolvedValueOnce(mockedResourceWithAcr)
+      .mockResolvedValueOnce(mockedResourceWithAcr);
+    jest
+      .spyOn(acpModule, "internal_getPoliciesAndRules")
+      // This is only passed as input to the mocked setGroupAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any)
+      // This is only passed as input to the mocked getGroupAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any);
     jest
       .spyOn(acpModule, "internal_setGroupAccess")
       .mockReturnValueOnce(mockedResourceWithAcr);
@@ -887,7 +912,20 @@ describe("setPublicAccess", () => {
     );
     const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
-    getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
+    getResourceInfoWithAcr
+      // Called twice: when setting access (to determine that it's governed by
+      // an ACR rather than an ACL), and then when reading the new effective
+      // access after changing it:
+      .mockResolvedValueOnce(mockedResourceWithAcr)
+      .mockResolvedValueOnce(mockedResourceWithAcr);
+    jest
+      .spyOn(acpModule, "internal_getPoliciesAndRules")
+      // This is only passed as input to the mocked setPublicAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any)
+      // This is only passed as input to the mocked getPublicAccess below,
+      // so the actual value does not matter:
+      .mockResolvedValueOnce(undefined as any);
     jest
       .spyOn(acpModule, "internal_setPublicAccess")
       .mockReturnValueOnce(mockedResourceWithAcr);
