@@ -70,7 +70,7 @@ jobs:
         mediaType: '{"previews": ["flash", "ant-man"]}'
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - uses: actions/setup-node@v2.2.0
+    - uses: actions/setup-node@v2.3.0
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
@@ -160,7 +160,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.2.0
+    - uses: actions/setup-node@v2.3.0
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
@@ -196,7 +196,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.2.0
+    - uses: actions/setup-node@v2.3.0
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -229,7 +229,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.2.0
+    - uses: actions/setup-node@v2.3.0
       with:
         node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
@@ -266,7 +266,7 @@ jobs:
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.3.4
-    - uses: actions/setup-node@v2.2.0
+    - uses: actions/setup-node@v2.3.0
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
