@@ -638,6 +638,7 @@ export function removeAgent(rule: Rule, agent: WebId): Rule {
  * @param rule The rule from which groups are read.
  * @returns A list of the [[URL]]'s of groups included in the rule.
  * @since 1.6.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. You can re-use a Rule listing multiple Agents to get the same functionality.
  */
 export function getGroupAll(rule: Rule): UrlString[] {
   return getIriAll(rule, acp.group);
@@ -654,6 +655,7 @@ export function getGroupAll(rule: Rule): UrlString[] {
  * @param group The group the rule should apply to.
  * @returns A copy of the input rule, applying to a different set of groups.
  * @since 1.6.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. You can re-use a Rule listing multiple Agents to get the same functionality.
  */
 export function setGroup(rule: Rule, group: UrlString): Rule {
   return setIri(rule, acp.group, group);
@@ -670,6 +672,7 @@ export function setGroup(rule: Rule, group: UrlString): Rule {
  * @param agent The group the [[Rule]] should apply to.
  * @returns A copy of the [[Rule]], applying to an additional group.
  * @since 1.6.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. You can re-use a Rule listing multiple Agents to get the same functionality.
  */
 export function addGroup(rule: Rule, group: UrlString): Rule {
   return addIri(rule, acp.group, group);
@@ -686,6 +689,7 @@ export function addGroup(rule: Rule, group: UrlString): Rule {
  * @param agent The group the rule should no longer apply to.
  * @returns A copy of the rule, not applying to the given group.
  * @since 1.6.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. You can re-use a Rule listing multiple Agents to get the same functionality.
  */
 export function removeGroup(rule: Rule, group: UrlString): Rule {
   return removeIri(rule, acp.group, group);
