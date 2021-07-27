@@ -6,9 +6,16 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Deprecations
+
+- Access Control Policies will no longer support adding a `vcard:Group` to a
+  Rule. Therefore, the low-level ACPs APIs as well as the Universal Access APIs
+  no longer support defining access for a `vcard:Group`. To define access for
+  multiple agents at the same time, use the mechanism-specific APIs.
+
 ### Bugs fixed
 
-- In some cases where the Universal Access API's would previously bail out, they
+- In some cases where the Universal Access APIs would previously bail out, they
   can now correctly read and change access (at the cost of potentially making
   more HTTP requests). It will now also work on instances of Inrupt's
   Enterprise Solid Server not located on inrupt.com, and can now also return the

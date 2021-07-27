@@ -244,6 +244,7 @@ export async function getAgentAccessAll(
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param webId WebID of the Group you want to get the access for.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function getGroupAccess(
   resourceUrl: UrlString,
@@ -285,6 +286,7 @@ export async function getGroupAccess(
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @returns The access information to the Resource, sorted by Group.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function getGroupAccessAll(
   resourceUrl: UrlString,
@@ -334,6 +336,7 @@ export async function getGroupAccessAll(
  * @param access What access permissions you want to set for the given Group to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for the given Group explicitly.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function setGroupAccess(
   resourceUrl: UrlString,
