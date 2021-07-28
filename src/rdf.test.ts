@@ -587,7 +587,7 @@ describe("fromRdfJsDataset", () => {
       );
     });
 
-    it("can parse chained Blank Nodes with a single lnk that end in a dangling Blank Node", () => {
+    it("can parse chained Blank Nodes with a single link that end in a dangling Blank Node", () => {
       const mockDataset: ImmutableDataset = {
         type: "Dataset",
         graphs: { default: {} },

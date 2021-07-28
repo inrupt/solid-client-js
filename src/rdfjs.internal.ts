@@ -502,9 +502,11 @@ function getCycleBlankNodes(
     )
     .map((quad) => quad.object as RdfJs.BlankNode);
 
-  // If no Blank Nodes are connected to `currentNode`, we're done:
+  // If no Blank Nodes are connected to `currentNode`, and `currentNode` is not
+  // part of a cycle, we're done; the currently traversed Nodes do not form a
+  // cycle:
   if (blankNodeObjects.length === 0) {
-    return traversedBlankNodes;
+    return [];
   }
 
   // Store that we've traversed `currentNode`, then move on to all the Blank
