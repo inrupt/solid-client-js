@@ -276,6 +276,46 @@ describe("responseToSolidDataset", () => {
     });
   });
 
+  it("does not attempt to detect chains when there are many Blank Nodes, to avoid performance bottlenecks", async () => {
+    function getChainedBlankNode(iteration: number): string {
+      if (iteration === 1000) {
+        return `<https://some.predicate/${iteration}> "Base case"`;
+      }
+      return `<https://some.predicate/${iteration}> [${getChainedBlankNode(
+        iteration + 1
+      )}]`;
+    }
+    const turtle = `
+      @prefix : <#>.
+      @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+
+      :me vcard:fn [${getChainedBlankNode(0)}].
+    `;
+
+    const response = new Response(turtle, {
+      headers: {
+        "Content-Type": "text/turtle",
+      },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+
+    const t0 = performance.now();
+    const solidDataset = await responseToSolidDataset(response);
+    const t1 = performance.now();
+
+    // Parsing a document with over 1000 statements will always be somewhat slow
+    // (hence allowing it to take a second), but if it attempts to detect
+    // chains, it will take on the order of >20 seconds.
+    expect(t1 - t0).toBeLessThan(1000);
+    // Blank Nodes should be listed explicitly, rather than as properties on
+    // https://some.pod/resource#me:
+    expect(Object.keys(solidDataset.graphs.default)).not.toStrictEqual([
+      "https://some.pod/resource#me",
+    ]);
+  });
+
   it("throws a meaningful error when the server returned a 403", async () => {
     const response = new Response("Not allowed", { status: 403 });
     jest
