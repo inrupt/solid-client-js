@@ -167,6 +167,115 @@ describe("responseToSolidDataset", () => {
     });
   });
 
+  it("does not include non-deterministic identifiers when it detects non-cyclic chains of Blank Nodes", async () => {
+    const turtle = `
+      @prefix : <#>.
+      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+      @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+      @prefix acl: <http://www.w3.org/ns/auth/acl#>.
+
+      <> a foaf:PersonalProfileDocument; foaf:maker :me; foaf:primaryTopic :me.
+
+      :me
+        a foaf:Person;
+        vcard:fn "Vincent";
+        acl:trustedApp
+          [
+            acl:mode acl:Append, acl:Control, acl:Read, acl:Write;
+            acl:origin <http://localhost:3000>
+          ],
+          [
+            acl:mode acl:Append, acl:Control, acl:Read, acl:Write;
+            acl:origin <https://penny.vincenttunru.com>
+          ].
+    `;
+
+    const response = new Response(turtle, {
+      headers: {
+        "Content-Type": "text/turtle",
+      },
+    });
+    jest
+      .spyOn(response, "url", "get")
+      .mockReturnValue("https://some.pod/resource");
+    const solidDataset = await responseToSolidDataset(response);
+
+    expect(solidDataset).toStrictEqual({
+      graphs: {
+        default: {
+          "https://some.pod/resource": {
+            predicates: {
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                namedNodes: [
+                  "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+                ],
+              },
+              "http://xmlns.com/foaf/0.1/maker": {
+                namedNodes: ["https://some.pod/resource#me"],
+              },
+              "http://xmlns.com/foaf/0.1/primaryTopic": {
+                namedNodes: ["https://some.pod/resource#me"],
+              },
+            },
+            type: "Subject",
+            url: "https://some.pod/resource",
+          },
+          "https://some.pod/resource#me": {
+            predicates: {
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
+              },
+              "http://www.w3.org/2006/vcard/ns#fn": {
+                literals: {
+                  "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+                },
+              },
+              "http://www.w3.org/ns/auth/acl#trustedApp": {
+                blankNodes: [
+                  {
+                    "http://www.w3.org/ns/auth/acl#mode": {
+                      namedNodes: [
+                        "http://www.w3.org/ns/auth/acl#Append",
+                        "http://www.w3.org/ns/auth/acl#Control",
+                        "http://www.w3.org/ns/auth/acl#Read",
+                        "http://www.w3.org/ns/auth/acl#Write",
+                      ],
+                    },
+                    "http://www.w3.org/ns/auth/acl#origin": {
+                      namedNodes: ["http://localhost:3000"],
+                    },
+                  },
+                  {
+                    "http://www.w3.org/ns/auth/acl#mode": {
+                      namedNodes: [
+                        "http://www.w3.org/ns/auth/acl#Append",
+                        "http://www.w3.org/ns/auth/acl#Control",
+                        "http://www.w3.org/ns/auth/acl#Read",
+                        "http://www.w3.org/ns/auth/acl#Write",
+                      ],
+                    },
+                    "http://www.w3.org/ns/auth/acl#origin": {
+                      namedNodes: ["https://penny.vincenttunru.com"],
+                    },
+                  },
+                ],
+              },
+            },
+            type: "Subject",
+            url: "https://some.pod/resource#me",
+          },
+        },
+      },
+      internal_resourceInfo: {
+        contentType: "text/turtle",
+        isRawData: false,
+        linkedResources: {},
+        sourceIri: "https://some.pod/resource",
+      },
+      type: "Dataset",
+    });
+  });
+
   it("throws a meaningful error when the server returned a 403", async () => {
     const response = new Response("Not allowed", { status: 403 });
     jest
