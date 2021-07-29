@@ -48,6 +48,7 @@ import {
 } from "./control";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
 import { normalizeServerSideIri } from "../resource/iri.internal";
+import { isAcr } from "./acp.internal";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -321,7 +322,31 @@ async function fetchAcr(
   resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<WithAcp> {
-  if (!hasLinkedAcr(resource)) {
+  let acrUrl: UrlString | undefined = undefined;
+  if (hasLinkedAcr(resource)) {
+    // Whereas a Resource can generally have multiple linked Resources for the same relation,
+    // it can only have one Access Control Resource for that ACR to be valid.
+    // Hence the accessing of [0] directly:
+    acrUrl =
+      resource.internal_resourceInfo.linkedResources[acp.accessControl][0];
+  } else if (hasAccessibleAcl(resource)) {
+    // The ACP proposal will be updated to expose the Access Control Resource
+    // via a Link header with rel="acl", just like WAC. That means that if
+    // an ACL is advertised, we can still fetch its metadata — if that indicates
+    // that it's actually an ACP Access Control Resource, then we can fetch that
+    // instead.
+    const aclResourceInfo = await getResourceInfo(
+      resource.internal_resourceInfo.aclUrl,
+      options
+    );
+    if (isAcr(aclResourceInfo)) {
+      acrUrl = getSourceUrl(aclResourceInfo);
+    }
+  }
+  // If the Resource doesn't advertise an ACR via the old Link header,
+  // nor via a rel="acl" header, then return, indicating that no ACR could be
+  // fetched:
+  if (typeof acrUrl !== "string") {
     return {
       internal_acp: {
         acr: null,
@@ -330,13 +355,7 @@ async function fetchAcr(
   }
   let acr: SolidDataset & WithResourceInfo;
   try {
-    acr = await getSolidDataset(
-      // Whereas a Resource can generally have multiple linked Resources for the same relation,
-      // it can only have one Access Control Resource for that ACR to be valid.
-      // Hence the accessing of [0] directly:
-      resource.internal_resourceInfo.linkedResources[acp.accessControl][0],
-      options
-    );
+    acr = await getSolidDataset(acrUrl, options);
   } catch (e: unknown) {
     return {
       internal_acp: {
