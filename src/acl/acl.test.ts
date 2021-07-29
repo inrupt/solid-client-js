@@ -163,6 +163,50 @@ describe("fetchAcl", () => {
     );
   });
 
+  it("returns null for both ACLs if the Resource points to an ACR instead", async () => {
+    const mockFetch = jest.fn((url) => {
+      if (url === "https://some.pod/resource.acl") {
+        return Promise.resolve(
+          mockResponse(undefined, {
+            url: "https://some.pod/resource.acl",
+            headers: {
+              Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+              "Content-Type": "text/turtle",
+            },
+          })
+        );
+      }
+
+      return Promise.resolve(
+        mockResponse(undefined, {
+          headers: {
+            "Content-Type": "text/turtle",
+            Link: '<resource.acl>; rel="acl"',
+          },
+          url: url as string,
+        })
+      );
+    });
+
+    const mockResourceInfo: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: false,
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
+      },
+    };
+
+    const fetchedAcl = await internal_fetchAcl(mockResourceInfo, {
+      fetch: mockFetch,
+    });
+
+    expect(fetchedAcl.resourceAcl).toBeNull();
+    expect(fetchedAcl.fallbackAcl).toBeNull();
+  });
+
   it("returns the fallback ACL even if the Resource's own ACL could not be found", async () => {
     const mockFetch = jest.fn((url) => {
       if (url === "https://some.pod/resource.acl") {
@@ -309,6 +353,66 @@ describe("fetchResourceAcl", () => {
     expect(fetchedAcl).toBeNull();
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource.acl");
+  });
+
+  it("throws an error if the linked Resource is an ACP ACR", async () => {
+    const sourceDataset: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: false,
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
+      },
+    };
+    const mockFetch = jest.fn(window.fetch).mockResolvedValueOnce(
+      mockResponse(undefined, {
+        url: "https://some.pod/resource?ext=acr",
+        headers: {
+          "Content-Type": "text/turtle",
+          Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+        },
+      })
+    );
+
+    await expect(
+      internal_fetchResourceAcl(sourceDataset, {
+        fetch: mockFetch,
+      })
+    ).rejects.toThrow(
+      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control."
+    );
+  });
+
+  it("throws an error if the linked Resource identifies itself as an ACP ACR and thus is unlikely to be a WAC ACL", async () => {
+    const sourceDataset: WithServerResourceInfo = {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: false,
+        aclUrl: "https://some.pod/resource.acl",
+        linkedResources: {
+          acl: ["https://some.pod/resource.acl"],
+        },
+      },
+    };
+    const mockFetch = jest.fn(window.fetch).mockResolvedValueOnce(
+      mockResponse(undefined, {
+        url: "https://some.pod/resource?ext=acr",
+        headers: {
+          "Content-Type": "text/turtle",
+          Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+        },
+      })
+    );
+
+    await expect(
+      internal_fetchResourceAcl(sourceDataset, {
+        fetch: mockFetch,
+      })
+    ).rejects.toThrow(
+      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control."
+    );
   });
 });
 
