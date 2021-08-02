@@ -356,7 +356,7 @@ const serversUnderTest: AuthDetails[] = [
 // how to authenticate against it now that refresh tokens are rotated after
 // every request:
 // eslint-disable-next-line jest/no-disabled-tests
-describe.skip.each(serversUnderTest)(
+describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
   (rootContainer, oidcIssuer, clientId, clientSecret) => {
     // Re-add `https://` at the start of these URLs, which we trimmed above
