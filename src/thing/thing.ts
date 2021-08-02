@@ -47,6 +47,7 @@ import {
   freeze,
   getLocalNodeIri,
   getLocalNodeName,
+  isBlankNodeId,
   isLocalNodeIri,
   LocalNodeIri,
 } from "../rdf.internal";
@@ -128,7 +129,9 @@ export function getThingAll(
       ? internal_toIriString(options.scope)
       : "default";
   const thingsByIri = solidDataset.graphs[graph] ?? {};
-  return Object.values(thingsByIri);
+  return Object.values(thingsByIri).filter(
+    (thing) => !isBlankNodeId(thing.url)
+  );
 }
 
 /**
