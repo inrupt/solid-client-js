@@ -54,11 +54,6 @@ jobs:
         E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
         E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
         E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
-        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
-        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
-        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
-        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
-        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}
     # Ideally, we'd autodetect installed browsers and run them headlessly.
     # See https://github.com/DevExpress/testcafe/issues/5641
     - name: Prepare browser-based end-to-end tests
@@ -185,7 +180,7 @@ jobs:
         name: dist
         path: dist
     - name: Send a notification that the test has failed
-      run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com, pod-compat.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+      run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
       if: failure() && github.event_name == 'schedule'
       env:
         WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"

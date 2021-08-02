@@ -336,16 +336,6 @@ const serversUnderTest: AuthDetails[] = [
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
   ],
-  // pod-compat.inrupt.com:
-  [
-    // Cumbersome workaround, but:
-    // Trim `https://` from the start of these URLs,
-    // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_ESS_COMPAT_POD!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_COMPAT_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_COMPAT_CLIENT_ID!,
-    process.env.E2E_TEST_ESS_COMPAT_CLIENT_SECRET!,
-  ],
   // inrupt.net
   // Unfortunately we cannot authenticate against Node Solid Server yet, due to this issue:
   // https://github.com/solid/node-solid-server/issues/1533
@@ -365,7 +355,6 @@ describe.each(serversUnderTest)(
     oidcIssuer = "https://" + oidcIssuer;
     function supportsWac() {
       return (
-        rootContainer.includes("pod-compat.inrupt.com") ||
         rootContainer.includes("inrupt.net") ||
         rootContainer.includes("solidcommunity.net")
       );
@@ -383,13 +372,6 @@ describe.each(serversUnderTest)(
         clientSecret: clientSecret,
       });
       return session;
-    }
-
-    if (rootContainer.includes("pod-compat.inrupt.com")) {
-      // pod-compat.inrupt.com seems to be experiencing some slowdowns processing POST requests,
-      // so temporarily increase the timeouts for it:
-      jest.setTimeout(30000);
-      openidClient.custom.setHttpOptionsDefaults({ timeout: 5000 });
     }
 
     it("can create, read, update and delete data", async () => {
@@ -621,10 +603,7 @@ describe.each(serversUnderTest)(
     });
 
     describe("Access Control Policies", () => {
-      if (
-        rootContainer.includes("inrupt.net") ||
-        rootContainer.includes("pod-compat.inrupt.com")
-      ) {
+      if (!supportsAcps()) {
         // These servers do not support Access Control Policies,
         // so ACP tests can be skipped for them:
         return;
