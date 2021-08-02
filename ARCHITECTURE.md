@@ -1,0 +1,339 @@
+This document describes the general design principles and modules of solid-client,
+to help contributors make sure their and others' work is coherent with what's
+there.
+
+For more information, be sure to use `git blame` liberally. We've generally kept
+fairly good Git hygiene, so reading the commit that introduced some code can be
+helpful in understanding how it relates to the rest of the codebase.
+
+# Design principles
+
+## Avoidance of side effects
+
+Generally, our API's tend to avoid side effects whenever possible. That means
+that we have a number of functions that only perform the side effects we cannot
+avoid (fetching data, storing data, ...), and all the rest just take some data
+as input and return modified copies of that data as output.
+
+The reason for this is that the front-end world has mostly converged to
+a model in which the relevant parts of the view are updated in response to
+changes in the data, and to verify whether that data has changed using
+referential equality (in other words, not comparing the content of the data,
+but whether it is a new instance) to avoid costly comparisons — e.g. Virtual
+DOM. Since Solid is all about the data, we avoid modifying the data in place to
+support this common use case.
+
+## Lumping ACLs and Resources together
+
+Although it currently is only possible to fetch the data contained within a
+Resource in a single request, that Resource _is_ affected by other Resources.
+For example, an Access Control List is defined in a separate Resource, but does
+affect whether and how someone can access that Resource.
+
+With this model, it is not possible to modify both a Resource and the Access
+Control List in an atomic update, that is, it requires two separate HTTP
+requests. This can lead to inconsistent data, e.g. if the network connection
+drops between the two requests and one of them fails.
+
+Although there has been no movement in this direction in the year and a half
+that solid-client has now existed, it could be that the Solid specifications
+at some point get updated to support fetching and updating both a Resource and
+its linked Resources in a single request, e.g. by making the linked Resource
+available in a different RDF Graph (i.e. using the fourth element of an RDF
+Quad). To anticipate such a future, linked Resources are stored in the same
+object as the Resource they are linked from. This enables that at some point, a
+function like `saveSolidDatasetAt` might update not just the data in the
+Resource itself, but also that in one or more linked Resources.
+
+This concern was mainly brought up by @pmcb55, so further questions regarding
+this can be directed to him.
+
+# Concepts
+
+## Resources, Files and SolidDatasets
+
+solid-client refers to everything that can be fetched from a URL as a Resource.
+There are two types of Resources: those containing RDF in a serialisation that
+the server understands ("SolidDatasets"), and those that do not ("Files").
+
+The main difference between the two is that, by virtue of the server
+understanding the structure of the former, we can do partial updates (i.e.
+PATCH requests) and retrieve the data in different formats (currently, the
+spec mandates that servers can serve such data as at least Turtle and JSON-LD).
+
+Thus, data stored as Turtle or JSON-LD can be fetched as a SolidDataset; the
+rest are just treated as regular Files: while might be parsed and manipulated by
+other libraries, solid-client just allows downloads and uploads. This applies to
+binary file types like JPEG, WebM and `.txt`, but also to files containing
+structured data in a non-RDF format, like JSON, XML or OpenDocument, or even
+to files containing structured data in an RDF format not understood by the
+server, such as RDFa or RDF-XML.
+
+## `With*` types
+
+Although SolidDatasets and Files (see previous section) are different types of
+Resources, there is certain data that is common to all Resources. This data is
+set on properties for either type of Resource, which is specified in a `With*`
+type.
+
+For example, there is some metadata determining where a particular Resource is
+fetched from; this is set on the property `internal_resourceInfo` for both
+SolidDatasets and Files, as specified by the `WithResourceInfo` type. Whether
+a SolidDataset or a File has that metadata available is then available using a
+Union Type, e.g. `SolidDataset & WithResourceInfo`.
+
+This means that we can define a function like `getContentType` that doesn't
+really care whether its argument is a SolidDataset or a File, as long as its
+parameter has that metadata available:
+
+function getContentType(resource: WithResourceInfo)
+
+Note that in our API documentation, we explicitly reserve the right to change
+the implementation of these data structures. If developers want to access the
+data contained in them, they should use the functions we provide for them, such
+as `getContentType`. We can, of course, use those internally as well.
+
+# Module map
+
+## `src/resource/*`
+
+Everything related to fetching and storing data. `file.ts` has everything
+related to fetching Files, which is mostly a thin wrapper around a regular
+`fetch`, adding some metadata. `solidDataset.ts` is similar, but attempts to
+parse the fetched data as RDF in order to turn it into a SolidDataset. And
+finally `resource.ts` has functions that apply regardless of whether a Resource
+can be parsed as RDF or is a File, e.g. to fetch metadata without the contents
+(in a `HEAD` request).
+
+There is also `mock.ts`, a couple of functions that help developers simulate
+SolidDatasets with the appropriate meta data in their unit tests. This helps
+avoiding developers from attempting to recreate our metadata data structures,
+and then breaking in a non-major version.
+
+## `src/thing/*`
+
+Everything related to reading and manipulating data in a SolidDataset.
+
+## `src/formats/*`
+
+We currently just support parsing Turtle natively (though developers can pass in
+their own parsers), since the spec mandates that all servers should be able to
+serialise RDF to that, and since we already have a Turtle library to produce
+serialisations for PATCH requests.
+
+## `src/access/*`, `src/acl/*` and `src/acp/*`
+
+At first, there was Web Access Control. And although people often referred to it
+as Access Control Lists, He saw it was Good.
+
+Or at least, it was OK. It was a pretty flexible system that allows for quite a
+few different access use cases, although that meant simple use cases like "allow
+this person to view this Resource" were relatively cumbersome to define: after
+all, you'd have to take into account all kinds of access that could be defined
+earlier. But that's OK: `src/acl/*` contains code that does all that nasty
+stuff.
+
+But then Inrupt ate from the tree of knowledge, and proposed a new mechanism:
+Access Control Policies. Which, in the end, is also just a bunch of data written
+to a particular bunch of Resources. `src/acp/*` contains APIs that are
+essentially wrappers around our existing APIs for reading and writing data, but
+using ACP terminology.
+
+However, the ACP proposal is even more flexible then WAC, making simple use
+cases even more cumbersome to define. And to make matters worse, it had to
+co-exist next to WAC, which doesn't seem to be going anywhere anytime soon.
+
+But not to worry. Like for WAC, solid-client includes code to achieve some
+simple, yet common, use cases in `src/access/acp.ts`, taking care of all the
+hairy details of dealing with the vast range of potential existing access
+configurations. Additionally, it includes the "Universal Access API" in
+`src/access/universal.ts`. This supports the common, simple use cases that are
+supported in both WAC and ACP, and automatically adjusts to the access mechanism
+in use by the user's Pod, at the cost of being less flexible, and not
+providing a way for developers to recover from the myriad of different and
+non-overlapping error conditions that may occur in both access control
+mechanisms (e.g. no fallback ACL available in WAC, no access to a Resource
+defining Policies in ACPs, etc.).
+
+## `src/e2e-browser` and `src/e2e-node`
+
+solid-client can run in both Node and in the browser. To ensure that everything
+works as intended, we have a suite of tests that attempts to use its APIs to
+manipulate data on a real server.
+
+However, because controlling tests running inside a browser is rather
+cumbersome, and more importantly, because tests firing up a full browser
+are generally flakier
+(https://testing.googleblog.com/2017/04/where-do-our-flaky-tests-come-from.html),
+the browser tests are mostly smoke tests: is it possible to import code from the
+library and successfully send requests to a Pod server?
+
+The Node-based end-to-end test suite is the more extensive one. It verifies not
+just that the library works in Node, but also that e.g. manipulating access
+correctly prevents or allows the right people access _in practice_.
+
+# Opportunities for improvement
+
+Given that the code base has existed for more than a day, some parts of the code
+have evolved in a certain way that would have been done differently if they had
+been implemented from scratch. These aren't major issues and so it hasn't been
+worth it to go back and rework it, but they're good to know about if you come
+across them and start wondering whether there's a good reason for things to be
+that way. In the spirit of [Chesterton's Fence](https://en.wikipedia.org/wiki/Wikipedia:Chesterton%27s_fence),
+if I tell you why they are the way they are, you can feel safe to change them!
+
+## Using the solid-client-authn-browser default session
+
+Currently, developers wanting to make authenticated requests will have to make
+sure they pass in an authenticated `fetch` function. However, in the browser,
+by default there's just a single session active.
+`@inrupt/solid-client-authn-browser` now supports a "default" session; it would
+be nice if we could autodetect if that package is present in the developer's
+dependency tree and, if so, default to that session's fetch if none is provided
+by the developer. There is some code already in `src/fetcher.ts` to support that
+use case, but since the "default" session did not exist back then, it was not
+implemented yet.
+
+The interaction with bundlers here can be pretty tricky so, when implementing
+this, be sure to test it well.
+
+## The entire low-level Access Control Policies API
+
+(i.e. `/src/acp/*`)
+
+This API was very hastily put together ("it's just a one-on-one mapping of the
+ACP spec to JavaScript, we need it now, and how hard could it be?") without
+actually trying to use it in a real app, so there are bound to be lots of
+idiosyncracies there. _Especially_ given that the ACP proposal still is in heavy
+flux.
+
+One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
+Back when there was no talk of there being alternative access mechanisms other
+than Web Access Control (also known as "Access Control Lists"), and JavaScript
+did not have a way to expose submodules to consumers, the WAC APIs were exported
+from the top level directly. However, some of the ACP APIs have the same names
+as WAC APIs. For that reason, and to avoid having to introduce breaking changes
+while iterating on the ACP APIs, we chose to add all those APIs as properties on
+an `acp_v1` object and export _that_, forgoing tree-shaking. That way, we could
+keep old versions available (but deprecated) while iterating on the new ones.
+
+Likewise, we initially thought there would be more Access Control
+Policies-related data we would store for a given Resource, hence the
+`WithAcp` type adding an `internal_acp` property. However, in the end it turned
+out that that object would only contain a single `acr` property. Thus, it could
+be either flattened some more, of even removed altogether if adding a standard
+mechanism to attach linked Resources in general. (Keep in mind that that will
+not work for Web Access Control, since that might require fetching a Resource
+linked to a Resource higher up in the Container hierarchy.)
+
+## `WithServerResourceInfo["aclUrl"]`
+
+When the `aclUrl` property was added to the `WithServerResourceInfo` interface,
+it was not clear to us that linked resources (i.e. those linked in the HTTP
+Link header) would be a commonly-used mechanism to expose related data.
+We later added the `WithServerResourceInfo["linkedResources"] property, which
+_also_ exposes the ACL URL, but didn't bother to update the old code to make
+use of that instead.
+
+## `src/interfaces.ts`
+
+The interfaces defined here would probably make more sense defined in the
+relevant modules. It might not even be necessary to add aliases from the old
+module to the new one, as long as TypeScript does not support exports maps
+yet. (Though adding them just to be sure probably isn't a bad idea.)
+
+## ChangeLog
+
+The ChangeLog currently consists of two arrays of RDF/JS Quads. This can be
+problematic since those are instantiated classes, conflicting with e.g. [Vue's
+desire to keep [data] plain](https://vuex.vuejs.org/guide/state.html#single-state-tree)
+or [SWR only considering own properties](https://swr.vercel.app/advanced/performance#deep-comparison).
+In practice this is probably not much of a problem, since the ChangeLog is only
+updated when the SolidDataset itself is as well. However, if it turns out
+problematic after all, it could be considered transforming them into plain
+objects.
+
+Or alternatively...
+
+## PATCH and 412 conflicts
+
+...it could be considered to remove the ChangeLog functionality altogether. One
+of the most recurring problems people run into is not using the return value
+from `saveSolidDatasetAt` to make further changes, but to keep building on top
+of the SolidDataset passed to it as an argument. This eventually results in a
+412 error as the ChangeLog is not reset, and thus a new call to
+`saveSolidDataset` will try to delete data that has been deleted before.
+
+Instead of attempting to do a `PATCH` with _just_ the requested changes, we
+could simply `PUT` the entire SolidDataset just like we do for Files when
+calling `overwriteFile`. This might more often do what the developer expects,
+at the cost of sending bigger payloads and bigger risk of overwriting data that
+was inserted in parallel on a different device or by a different user.
+
+## `File`
+
+`File` is a bit awkward now for two reasons:
+
+1. it's not a plain object. It might be easier to transform it into something
+   like `type File = { blob: Blob | Buffer }` for functions like `isRawData`.
+   This will probably break for people expecting to be able to just pass it to
+   third-party API's that accept `Blob`s though.
+2. there's already a `File` type, used for `<input type="file">`:
+   https://github.com/microsoft/TypeScript/blob/afe9cf5307e3e34c86c3bc6d3a5be5f9033be528/lib/lib.dom.d.ts#L5211-L5216
+   This means that developers using TypeScript with the `dom` typings on will
+   not get auto-imports from solid-client.
+   This too, is hard to change without being breaking, although of course an
+   alias could be added.
+
+## ThingBuilder
+
+`ThingBuilder` was created after the observation that this was a common pattern:
+
+```typescript
+let someThing = createThing();
+someThing = addStringNoLocale(someThing, foaf.name, "Vincent");
+someThing = addStringNoLocale(someThing, foaf.gender, "male");
+```
+
+The ThingBuilder allows doing that in a single statement without reassignment:
+
+```typescript
+const someThing = buildThing()
+  .addStringNoLocale(foaf.name, "Vincent")
+  .addStringNoLocale(foaf.gender, "male")
+  .build();
+```
+
+This is nice, but it doesn't yet quite make it easy to conditionally set
+properties without reassignment:
+
+```typescript
+const userBuilder = buildThing().addStringNoLocale(foaf.name, nameFromForm);
+
+if (typeof genderFromForm !== "undefined") {
+  // Does not currently modify `userBuilder`:
+  userBuilder.addStringNoLocale(foaf.gender, genderFromForm);
+}
+
+const user = userBuilder.build();
+```
+
+Given that ThingBuilders are usually limited to a local scope, making it
+stateful could be a nice quality of life improvement, and can be implemented
+without breaking anything.
+
+## `*StringNoLocale`
+
+It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
+functions, rather than just `*String` functions with an optional `locale`
+parameter. This was a lengthy discussion where nobody left happy, but the
+reasons had to do with forcing people to make a conscious choice not to set a
+locale.
+
+Note that the two are not interchangeable: RDF has different types for strings
+with and without locales, and strings in different locales or without locales
+are considered completely separate things. This means that when a developer
+looks for a string with the locale `en`, they will not get strings with locales
+of `nl`, or even `en-GB`, nor will they get strings without a locale. Likewise,
+if they look for a string without a locale, they will not automatically get a
+string that _does_ have a locale defined.
