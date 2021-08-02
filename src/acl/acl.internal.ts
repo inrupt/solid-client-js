@@ -30,6 +30,7 @@ import {
   getSourceUrl,
   internal_defaultFetchOptions,
   getResourceInfo,
+  getSourceIri,
 } from "../resource/resource";
 import { acl, rdf } from "../constants";
 import { Quad } from "@rdfjs/types";
@@ -56,6 +57,7 @@ import {
 import { removeAll, removeIri } from "../thing/remove";
 import { freeze } from "../rdf.internal";
 import { internal_cloneResource } from "../resource/resource.internal";
+import { isAcr } from "../acp/acp.internal";
 
 /**
  * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
@@ -77,17 +79,29 @@ export async function internal_fetchAcl(
       fallbackAcl: null,
     };
   }
-  const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
+  try {
+    const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
 
-  const acl =
-    resourceAcl === null
-      ? {
-          resourceAcl: null,
-          fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
-        }
-      : { resourceAcl: resourceAcl, fallbackAcl: null };
+    const acl =
+      resourceAcl === null
+        ? {
+            resourceAcl: null,
+            fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
+          }
+        : { resourceAcl: resourceAcl, fallbackAcl: null };
 
-  return acl;
+    return acl;
+  } catch (e: unknown) {
+    /* istanbul ignore else: fetchResourceAcl swallows all non-AclIsAcrErrors */
+    if (e instanceof AclIsAcrError) {
+      return {
+        resourceAcl: null,
+        fallbackAcl: null,
+      };
+    }
+    /* istanbul ignore next: fetchResourceAcl swallows all non-AclIsAcrErrors */
+    throw e;
+  }
 }
 
 /** @internal */
@@ -106,11 +120,17 @@ export async function internal_fetchResourceAcl(
       dataset.internal_resourceInfo.aclUrl,
       options
     );
+    if (isAcr(aclSolidDataset)) {
+      throw new AclIsAcrError(dataset, aclSolidDataset);
+    }
     return freeze({
       ...aclSolidDataset,
       internal_accessTo: getSourceUrl(dataset),
     });
   } catch (e) {
+    if (e instanceof AclIsAcrError) {
+      throw e;
+    }
     // Since a Solid server adds a `Link` header to an ACL even if that ACL does not exist,
     // failure to fetch the ACL is expected to happen - we just return `null` and let callers deal
     // with it.
@@ -667,4 +687,23 @@ export function internal_getResourceAcl(
   resource: WithServerResourceInfo & WithResourceAcl
 ): AclDataset {
   return resource.internal_acl.resourceAcl;
+}
+
+/**
+ * This error indicates that, if we're following a Link with rel="acl",
+ * it does not result in a WAC ACL, but in an ACP ACR.
+ */
+class AclIsAcrError extends Error {
+  constructor(
+    sourceResource: WithServerResourceInfo,
+    aclResource: WithServerResourceInfo
+  ) {
+    super(
+      `[${getSourceIri(
+        sourceResource
+      )}] is governed by Access Control Policies in [${getSourceIri(
+        aclResource
+      )}] rather than by Web Access Control.`
+    );
+  }
 }

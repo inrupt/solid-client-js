@@ -56,6 +56,7 @@ export const foaf = {
 
 /** @hidden */
 export const acp = {
+  AccessControlResource: "http://www.w3.org/ns/solid/acp#AccessControlResource",
   Policy: "http://www.w3.org/ns/solid/acp#Policy",
   AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
   Read: "http://www.w3.org/ns/solid/acp#Read",

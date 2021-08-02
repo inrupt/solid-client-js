@@ -173,6 +173,69 @@ describe("getSolidDatasetWithAcr", () => {
 
     expect(fetchedDataset.internal_acp.acr).toStrictEqual(mockedAcr);
   });
+
+  it('returns the ACR even if it is exposed via a rel="acl" Link header on the given Resource', async () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acr";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [acrUrl],
+    };
+    mockedSolidDataset.internal_resourceInfo.aclUrl = acrUrl;
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
+    });
+    mockedAcr.internal_resourceInfo.linkedResources = {
+      type: ["http://www.w3.org/ns/solid/acp#AccessControlResource"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset
+      .mockResolvedValueOnce(mockedSolidDataset)
+      .mockResolvedValueOnce(mockedAcr);
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockedAcr);
+
+    const fetchedDataset = await getSolidDatasetWithAcr(
+      "https://some.pod/resource"
+    );
+
+    expect(fetchedDataset.internal_acp.acr).toStrictEqual(mockedAcr);
+  });
+
+  it("returns nothing if the linked ACL is not an ACP ACR", async () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acr";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [acrUrl],
+    };
+    mockedSolidDataset.internal_resourceInfo.aclUrl = acrUrl;
+    // This is not an ACL, because it is linked with rel="acl",
+    // but does not have a type of
+    // http://www.w3.org/ns/solid/acp#AccessControlResource.
+    const mockedNonAcr = mockSolidDatasetFrom("https://arbitrary.pod/resource");
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockedSolidDataset);
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo.mockResolvedValueOnce(mockedNonAcr);
+
+    const fetchedDataset = await getSolidDatasetWithAcr(
+      "https://some.pod/resource"
+    );
+
+    expect(fetchedDataset.internal_acp.acr).toBeNull();
+  });
 });
 
 describe("getFileWithAcr", () => {
