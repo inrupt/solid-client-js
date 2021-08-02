@@ -233,11 +233,19 @@ export async function responseToSolidDataset(
           solidDataset = addRdfJsQuadToDataset(solidDataset, quad);
         }
       });
-      parser.onComplete(() => {
+      parser.onComplete(async () => {
+        // If a Resource contains more than this number of Blank Nodes,
+        // we consider the detection of chains (O(n^2), I think) to be too
+        // expensive, and just incorporate them as regular Blank Nodes with
+        // non-deterministic, ad-hoc identifiers into the SolidDataset:
+        const maxBlankNodesToDetectChainsFor = 20;
         // Some Blank Nodes only serve to use a set of Quads as the Object for a
         // single Subject. Those Quads will be added to the SolidDataset when
         // their Subject's Blank Node is encountered in the Object position.
-        const chainBlankNodes = getChainBlankNodes(quadsWithBlankNodes);
+        const chainBlankNodes =
+          quadsWithBlankNodes.length <= maxBlankNodesToDetectChainsFor
+            ? getChainBlankNodes(quadsWithBlankNodes)
+            : [];
         const quadsWithoutChainBlankNodeSubjects = quadsWithBlankNodes.filter(
           (quad) =>
             chainBlankNodes.every(
