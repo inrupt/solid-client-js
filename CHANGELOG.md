@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.10.1] - 2021-08-03
+
 ### Deprecations
 
 - Access Control Policies will no longer support adding a `vcard:Group` to a
@@ -22,8 +26,6 @@ The following changes have been implemented but not released yet:
   Pod Owner's access on inrupt.com.
   It will still be unable to report access settings that the current user is not
   allowed to see.
-
-The following sections document changes that have been released already:
 
 ## [1.10.0] - 2021-07-01
 
