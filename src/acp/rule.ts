@@ -704,7 +704,7 @@ export function removeGroup(rule: Rule, group: UrlString): Rule {
  *
  * @param rule The rule checked for public access.
  * @returns Whether the rule applies to any agent or not.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function hasPublic(rule: Rule): boolean {
   return (
@@ -722,7 +722,7 @@ export function hasPublic(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to any agent.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function setPublic(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -745,7 +745,7 @@ export function setPublic(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to no longer apply to any agent.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function removePublic(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.PublicAgent);
@@ -760,7 +760,7 @@ export function removePublic(rule: Rule): Rule {
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to any authenticated agent or not.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function hasAuthenticated(rule: Rule): boolean {
   return (
@@ -779,7 +779,7 @@ export function hasAuthenticated(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to any authenticated Agent.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function setAuthenticated(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -802,7 +802,7 @@ export function setAuthenticated(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply/not apply to any authenticated agent.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function removeAuthenticated(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.AuthenticatedAgent);
@@ -817,7 +817,7 @@ export function removeAuthenticated(rule: Rule): Rule {
  *
  * @param rule The rule checked for authenticated access.
  * @returns Whether the rule applies to the creator of the Resource or not.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function hasCreator(rule: Rule): boolean {
   return (
@@ -835,7 +835,7 @@ export function hasCreator(rule: Rule): boolean {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply to the creator of a Resource.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function setCreator(rule: Rule): Rule {
   // The second argument should not be part of the function signature,
@@ -858,7 +858,7 @@ export function setCreator(rule: Rule): Rule {
  *
  * @param rule The rule being modified.
  * @returns A copy of the rule, updated to apply/not apply to the creator of a Resource.
- * @status 1.6.0
+ * @since 1.6.0
  */
 export function removeCreator(rule: Rule): Rule {
   return removeIri(rule, acp.agent, acp.CreatorAgent);

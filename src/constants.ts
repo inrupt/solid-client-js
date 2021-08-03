@@ -62,7 +62,9 @@ export const acp = {
   Read: "http://www.w3.org/ns/solid/acp#Read",
   Append: "http://www.w3.org/ns/solid/acp#Append",
   Write: "http://www.w3.org/ns/solid/acp#Write",
+  /** @deprecated Removed from the ACP proposal, to be replaced by Matchers. */
   Rule: "http://www.w3.org/ns/solid/acp#Rule",
+  Matcher: "http://www.w3.org/ns/solid/acp#Matcher",
   accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
   apply: "http://www.w3.org/ns/solid/acp#apply",
   applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
