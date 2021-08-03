@@ -37,12 +37,12 @@ import {
 import { addMockAcrTo } from "../acp/mock";
 import {
   createPolicy,
-  getAllowModes,
-  getDenyModes,
+  getAllowModesV1,
+  getDenyModesV1,
   getPolicy,
   Policy,
-  setAllowModes,
-  setDenyModes,
+  setAllowModesV1,
+  setDenyModesV1,
   setPolicy,
 } from "../acp/policy";
 import {
@@ -172,15 +172,15 @@ function mockAcr(
       : [];
 
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModes(policy);
-      policy = setAllowModes(policy, {
+      const existingAllowModes = getAllowModesV1(policy);
+      policy = setAllowModesV1(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModes(policy);
-      policy = setDenyModes(policy, {
+      const existingDenyModes = getDenyModesV1(policy);
+      policy = setDenyModesV1(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });
@@ -277,15 +277,15 @@ function mockAcpData(
   ) {
     let policy = mockedPolicies[mockPolicyUrl] ?? createPolicy(mockPolicyUrl);
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModes(policy);
-      policy = setAllowModes(policy, {
+      const existingAllowModes = getAllowModesV1(policy);
+      policy = setAllowModesV1(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModes(policy);
-      policy = setDenyModes(policy, {
+      const existingDenyModes = getDenyModesV1(policy);
+      policy = setDenyModesV1(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });

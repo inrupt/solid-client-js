@@ -33,14 +33,14 @@ import {
 } from "./acp";
 import {
   createPolicy,
-  getAllowModes,
-  getDenyModes,
+  getAllowModesV1,
+  getDenyModesV1,
   getPolicy,
   getPolicyAll,
   policyAsMarkdown,
   removePolicy,
-  setAllowModes,
-  setDenyModes,
+  setAllowModesV1,
+  setDenyModesV1,
   setPolicy,
 } from "./policy";
 import {
@@ -126,14 +126,14 @@ const v1AcpFunctions = {
 
 const v1PolicyFunctions = {
   createPolicy,
-  getAllowModes,
-  getDenyModes,
+  getAllowModes: getAllowModesV1,
+  getDenyModes: getDenyModesV1,
   getPolicy,
   getPolicyAll,
   policyAsMarkdown,
   removePolicy,
-  setAllowModes,
-  setDenyModes,
+  setAllowModes: setAllowModesV1,
+  setDenyModes: setDenyModesV1,
   setPolicy,
 };
 

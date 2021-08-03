@@ -32,6 +32,7 @@ jest.mock("../fetcher.ts", () => ({
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
+import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { rdf, acp } from "../constants";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { getSourceUrl } from "../resource/resource";
@@ -59,8 +60,10 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 import {
   createPolicy,
   createResourcePolicyFor,
-  getAllowModes,
-  getDenyModes,
+  getAllowModesV1,
+  getAllowModesV2,
+  getDenyModesV1,
+  getDenyModesV2,
   getPolicy,
   getPolicyAll,
   getResourceAcrPolicy,
@@ -71,8 +74,10 @@ import {
   removePolicy,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setAllowModes,
-  setDenyModes,
+  setAllowModesV1,
+  setAllowModesV2,
+  setDenyModesV1,
+  setDenyModesV2,
   setPolicy,
   setResourceAcrPolicy,
   setResourcePolicy,
@@ -1111,62 +1116,143 @@ describe("setAllowModes", () => {
       "https://arbitrary.pod/policy-resource#policy"
     );
 
-    const updatedPolicy = setAllowModes(policy, {
+    const updatedPolicy = setAllowModesV2(policy, {
       read: false,
       append: true,
       write: true,
     });
 
     expect(getIriAll(updatedPolicy, acp.allow)).toEqual([
-      acp.Append,
-      acp.Write,
+      internal_accessModeIriStrings.append,
+      internal_accessModeIriStrings.write,
     ]);
   });
 
   it("replaces existing modes set on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.allow, acp.Append);
+    policy = addIri(policy, acp.allow, internal_accessModeIriStrings.append);
 
-    const updatedPolicy = setAllowModes(policy, {
+    const updatedPolicy = setAllowModesV2(policy, {
       read: true,
       append: false,
       write: false,
     });
 
-    expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Read]);
+    expect(getIriAll(updatedPolicy, acp.allow)).toEqual([
+      internal_accessModeIriStrings.read,
+    ]);
   });
 
   it("does not affect denied modes", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.deny, acp.Append);
+    policy = addIri(policy, acp.deny, internal_accessModeIriStrings.append);
 
-    const updatedPolicy = setAllowModes(policy, {
+    const updatedPolicy = setAllowModesV2(policy, {
       read: true,
       append: false,
       write: false,
     });
 
-    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Append]);
+    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([
+      internal_accessModeIriStrings.append,
+    ]);
+  });
+
+  describe("using the deprecated, ACP-specific vocabulary", () => {
+    it("sets the given modes on the Policy", () => {
+      const policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+
+      const updatedPolicy = setAllowModesV1(policy, {
+        read: false,
+        append: true,
+        write: true,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([
+        acp.Append,
+        acp.Write,
+      ]);
+    });
+
+    it("replaces existing modes set on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.allow, acp.Append);
+
+      const updatedPolicy = setAllowModesV1(policy, {
+        read: true,
+        append: false,
+        write: false,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Read]);
+    });
+
+    it("does not affect denied modes", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.deny, acp.Append);
+
+      const updatedPolicy = setAllowModesV1(policy, {
+        read: true,
+        append: false,
+        write: false,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Append]);
+    });
   });
 });
 
 describe("getAllowModes", () => {
   it("returns all modes that are allowed on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.allow, acp.Append);
+    policy = addIri(policy, acp.allow, internal_accessModeIriStrings.append);
 
-    const allowedModes = getAllowModes(policy);
+    const allowedModes = getAllowModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: true, write: false });
   });
 
   it("does not return modes that are denied on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.deny, acp.Append);
+    policy = addIri(policy, acp.deny, internal_accessModeIriStrings.append);
 
-    const allowedModes = getAllowModes(policy);
+    const allowedModes = getAllowModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
+  });
+
+  describe("using the deprecated, ACP-specific vocabulary", () => {
+    it("returns all modes that are allowed on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.allow, acp.Append);
+
+      const allowedModes = getAllowModesV1(policy);
+
+      expect(allowedModes).toEqual({ read: false, append: true, write: false });
+    });
+
+    it("does not return modes that are denied on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.deny, acp.Append);
+
+      const allowedModes = getAllowModesV1(policy);
+
+      expect(allowedModes).toEqual({
+        read: false,
+        append: false,
+        write: false,
+      });
+    });
   });
 });
 
@@ -1176,67 +1262,159 @@ describe("setDenyModes", () => {
       "https://arbitrary.pod/policy-resource#policy"
     );
 
-    const updatedPolicy = setDenyModes(policy, {
+    const updatedPolicy = setDenyModesV2(policy, {
       read: false,
       append: true,
       write: true,
     });
 
-    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Append, acp.Write]);
+    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([
+      internal_accessModeIriStrings.append,
+      internal_accessModeIriStrings.write,
+    ]);
   });
 
   it("replaces existing modes set on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.deny, acp.Append);
+    policy = addIri(policy, acp.deny, internal_accessModeIriStrings.append);
 
-    const updatedPolicy = setDenyModes(policy, {
+    const updatedPolicy = setDenyModesV2(policy, {
       read: true,
       append: false,
       write: false,
     });
 
-    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Read]);
+    expect(getIriAll(updatedPolicy, acp.deny)).toEqual([
+      internal_accessModeIriStrings.read,
+    ]);
   });
 
   it("does not affect allowed modes", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.allow, acp.Append);
+    policy = addIri(policy, acp.allow, internal_accessModeIriStrings.append);
 
-    const updatedPolicy = setDenyModes(policy, {
+    const updatedPolicy = setDenyModesV2(policy, {
       read: true,
       append: false,
       write: false,
     });
 
-    expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Append]);
+    expect(getIriAll(updatedPolicy, acp.allow)).toEqual([
+      internal_accessModeIriStrings.append,
+    ]);
+  });
+
+  describe("using the deprecated, ACP-specific vocabulary", () => {
+    it("sets the given modes on the Policy", () => {
+      const policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+
+      const updatedPolicy = setDenyModesV1(policy, {
+        read: false,
+        append: true,
+        write: true,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([
+        acp.Append,
+        acp.Write,
+      ]);
+    });
+
+    it("replaces existing modes set on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.deny, acp.Append);
+
+      const updatedPolicy = setDenyModesV1(policy, {
+        read: true,
+        append: false,
+        write: false,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Read]);
+    });
+
+    it("does not affect allowed modes", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.allow, acp.Append);
+
+      const updatedPolicy = setDenyModesV1(policy, {
+        read: true,
+        append: false,
+        write: false,
+      });
+
+      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Append]);
+    });
   });
 });
 
 describe("getDenyModes", () => {
   it("returns all modes that are denied on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.deny, acp.Append);
+    policy = addIri(policy, acp.deny, internal_accessModeIriStrings.append);
 
-    const allowedModes = getDenyModes(policy);
+    const allowedModes = getDenyModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: true, write: false });
   });
 
   it("does not return modes that are allowed on the Policy", () => {
     let policy = mockThingFrom("https://arbitrary.pod/policy-resource#policy");
-    policy = addIri(policy, acp.allow, acp.Append);
+    policy = addIri(policy, acp.allow, internal_accessModeIriStrings.append);
 
-    const allowedModes = getDenyModes(policy);
+    const allowedModes = getDenyModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
+  });
+
+  describe("using the deprecated, ACP-specific vocabulary", () => {
+    it("returns all modes that are denied on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.deny, acp.Append);
+
+      const allowedModes = getDenyModesV1(policy);
+
+      expect(allowedModes).toEqual({ read: false, append: true, write: false });
+    });
+
+    it("does not return modes that are allowed on the Policy", () => {
+      let policy = mockThingFrom(
+        "https://arbitrary.pod/policy-resource#policy"
+      );
+      policy = addIri(policy, acp.allow, acp.Append);
+
+      const allowedModes = getDenyModesV1(policy);
+
+      expect(allowedModes).toEqual({
+        read: false,
+        append: false,
+        write: false,
+      });
+    });
   });
 });
 
 describe("policyAsMarkdown", () => {
   it("lists which access modes are allowed, denied or unspecified", () => {
     let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = setAllowModes(policy, { read: true, append: false, write: false });
-    policy = setDenyModes(policy, { read: false, append: false, write: true });
+    policy = setAllowModesV1(policy, {
+      read: true,
+      append: false,
+      write: false,
+    });
+    policy = setDenyModesV1(policy, {
+      read: false,
+      append: false,
+      write: true,
+    });
 
     expect(policyAsMarkdown(policy)).toBe(
       "## Policy: https://some.pod/policyResource#policy\n" +
