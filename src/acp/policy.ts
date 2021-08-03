@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
 import { isNamedNode } from "../datatypes";
 import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
@@ -187,9 +188,52 @@ export function setPolicy<Dataset extends SolidDataset>(
  *
  * @param policy The Policy on which to set the modes to allow.
  * @param modes Modes to allow for this Policy.
- * @since 1.6.0
+ * @since Not released yet.
  */
-export function setAllowModes<P extends Policy | ResourcePolicy>(
+export function setAllowModesV2<P extends Policy | ResourcePolicy>(
+  policy: P,
+  modes: AccessModes
+): P {
+  let newPolicy = removeAll(policy, acp.allow);
+
+  if (modes.read === true) {
+    newPolicy = addIri(
+      newPolicy,
+      acp.allow,
+      internal_accessModeIriStrings.read
+    );
+  }
+  if (modes.append === true) {
+    newPolicy = addIri(
+      newPolicy,
+      acp.allow,
+      internal_accessModeIriStrings.append
+    );
+  }
+  if (modes.write === true) {
+    newPolicy = addIri(
+      newPolicy,
+      acp.allow,
+      internal_accessModeIriStrings.write
+    );
+  }
+
+  return newPolicy;
+}
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
+ * Policy, but with the given Access Modes allowed on it.
+ *
+ * @param policy The Policy on which to set the modes to allow.
+ * @param modes Modes to allow for this Policy.
+ * @since 1.6.0
+ * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[setAllowModesV2]].
+ */
+export function setAllowModesV1<P extends Policy | ResourcePolicy>(
   policy: P,
   modes: AccessModes
 ): P {
@@ -208,6 +252,30 @@ export function setAllowModes<P extends Policy | ResourcePolicy>(
   return newPolicy;
 }
 /**
+ * See [[setAllowModesV1]]. Will be updated to point to [[setAllowModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
+ */
+export const setAllowModes = setAllowModesV1;
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]], return which [[AccessModes]] it allows.
+ *
+ * @param policy The Policy for which you want to know the Access Modes it allows.
+ * @since Not released yet.
+ */
+export function getAllowModesV2<P extends Policy | ResourcePolicy>(
+  policy: P
+): AccessModes {
+  const allowedModes = getIriAll(policy, acp.allow);
+  return {
+    read: allowedModes.includes(internal_accessModeIriStrings.read),
+    append: allowedModes.includes(internal_accessModeIriStrings.append),
+    write: allowedModes.includes(internal_accessModeIriStrings.write),
+  };
+}
+/**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
@@ -216,8 +284,9 @@ export function setAllowModes<P extends Policy | ResourcePolicy>(
  *
  * @param policy The Policy for which you want to know the Access Modes it allows.
  * @since 1.6.0
+ * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getAllowModesV2]].
  */
-export function getAllowModes<P extends Policy | ResourcePolicy>(
+export function getAllowModesV1<P extends Policy | ResourcePolicy>(
   policy: P
 ): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
@@ -226,6 +295,48 @@ export function getAllowModes<P extends Policy | ResourcePolicy>(
     append: allowedModes.includes(acp.Append),
     write: allowedModes.includes(acp.Write),
   };
+}
+/**
+ * See [[getAllowModesV1]]. Will be updated to point to [[getAllowModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
+ */
+export const getAllowModes = getAllowModesV1;
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
+ * Policy, but with the given Access Modes disallowed on it.
+ *
+ * @param policy The Policy on which to set the modes to disallow.
+ * @param modes Modes to disallow for this Policy.
+ * @since Not released yet.
+ */
+export function setDenyModesV2<P extends Policy | ResourcePolicy>(
+  policy: P,
+  modes: AccessModes
+): P {
+  let newPolicy = removeAll(policy, acp.deny);
+
+  if (modes.read === true) {
+    newPolicy = addIri(newPolicy, acp.deny, internal_accessModeIriStrings.read);
+  }
+  if (modes.append === true) {
+    newPolicy = addIri(
+      newPolicy,
+      acp.deny,
+      internal_accessModeIriStrings.append
+    );
+  }
+  if (modes.write === true) {
+    newPolicy = addIri(
+      newPolicy,
+      acp.deny,
+      internal_accessModeIriStrings.write
+    );
+  }
+
+  return newPolicy;
 }
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -238,8 +349,9 @@ export function getAllowModes<P extends Policy | ResourcePolicy>(
  * @param policy The Policy on which to set the modes to disallow.
  * @param modes Modes to disallow for this Policy.
  * @since 1.6.0
+ * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[setDenyModesV2]].
  */
-export function setDenyModes<P extends Policy | ResourcePolicy>(
+export function setDenyModesV1<P extends Policy | ResourcePolicy>(
   policy: P,
   modes: AccessModes
 ): P {
@@ -258,6 +370,30 @@ export function setDenyModes<P extends Policy | ResourcePolicy>(
   return newPolicy;
 }
 /**
+ * See [[setDenyModesV1]]. Will be updated to point to [[setDenyModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
+ */
+export const setDenyModes = setDenyModesV1;
+/**
+ * ```{note} There is no Access Control Policies specification yet. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a [[Policy]], return which [[AccessModes]] it disallows.
+ *
+ * @param policy The Policy on which you want to know the Access Modes it disallows.
+ * @since Not released yet.
+ */
+export function getDenyModesV2<P extends Policy | ResourcePolicy>(
+  policy: P
+): AccessModes {
+  const deniedModes = getIriAll(policy, acp.deny);
+  return {
+    read: deniedModes.includes(internal_accessModeIriStrings.read),
+    append: deniedModes.includes(internal_accessModeIriStrings.append),
+    write: deniedModes.includes(internal_accessModeIriStrings.write),
+  };
+}
+/**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
  * ```
@@ -266,8 +402,9 @@ export function setDenyModes<P extends Policy | ResourcePolicy>(
  *
  * @param policy The Policy on which you want to know the Access Modes it disallows.
  * @since 1.6.0
+ * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getDenyModesV2]].
  */
-export function getDenyModes<P extends Policy | ResourcePolicy>(
+export function getDenyModesV1<P extends Policy | ResourcePolicy>(
   policy: P
 ): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
@@ -277,6 +414,10 @@ export function getDenyModes<P extends Policy | ResourcePolicy>(
     write: deniedModes.includes(acp.Write),
   };
 }
+/**
+ * See [[getDenyModesV1]]. Will be updated to point to [[getDenyModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
+ */
+export const getDenyModes = getDenyModesV1;
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -593,8 +734,8 @@ export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
     }
     return "unspecified";
   }
-  const allowModes = getAllowModes(policy);
-  const denyModes = getDenyModes(policy);
+  const allowModes = getAllowModesV1(policy);
+  const denyModes = getDenyModesV1(policy);
   let markdown = `## Policy: ${asUrl(policy)}\n\n`;
   markdown += `- Read: ${getStatus(allowModes.read, denyModes.read)}\n`;
   markdown += `- Append: ${getStatus(allowModes.append, denyModes.append)}\n`;
