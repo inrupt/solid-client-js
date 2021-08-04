@@ -1,8 +1,15 @@
 This document describes the general design principles and modules of solid-client,
 to help contributors make sure their and others' work is coherent with what's
-there.
+there. It assumes that you are already familiar with the external API and
+general concepts in solid-client; documentation about those can be found at the
+following Resources:
 
-For more information, be sure to use `git blame` liberally. We've generally kept
+- General documentation:
+  https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/
+- Glossary:
+  https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/glossary/
+
+It can also be insightful to use `git blame` liberally. We've generally kept
 fairly good Git hygiene, so reading the commit that introduced some code can be
 helpful in understanding how it relates to the rest of the codebase.
 
