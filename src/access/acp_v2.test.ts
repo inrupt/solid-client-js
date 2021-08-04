@@ -37,12 +37,12 @@ import {
 import { addMockAcrTo } from "../acp/mock";
 import {
   createPolicy,
-  getAllowModesV1,
-  getDenyModesV1,
+  getAllowModesV2,
+  getDenyModesV2,
   getPolicy,
   Policy,
-  setAllowModesV1,
-  setDenyModesV1,
+  setAllowModesV2,
+  setDenyModesV2,
   setPolicy,
 } from "../acp/policy";
 import {
@@ -78,6 +78,7 @@ import {
   internal_AcpData,
   internal_getPoliciesAndRules,
 } from "./acp_v2";
+import { internal_accessModeIriStrings } from "../acl/acl.internal";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
 type MockRule = Partial<Record<typeof acp.agent, UrlString[]>>;
@@ -167,15 +168,15 @@ function mockAcr(
       : [];
 
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModesV1(policy);
-      policy = setAllowModesV1(policy, {
+      const existingAllowModes = getAllowModesV2(policy);
+      policy = setAllowModesV2(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModesV1(policy);
-      policy = setDenyModesV1(policy, {
+      const existingDenyModes = getDenyModesV2(policy);
+      policy = setDenyModesV2(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });
@@ -272,15 +273,15 @@ function mockAcpData(
   ) {
     let policy = mockedPolicies[mockPolicyUrl] ?? createPolicy(mockPolicyUrl);
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModesV1(policy);
-      policy = setAllowModesV1(policy, {
+      const existingAllowModes = getAllowModesV2(policy);
+      policy = setAllowModesV2(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModesV1(policy);
-      policy = setDenyModesV1(policy, {
+      const existingDenyModes = getDenyModesV2(policy);
+      policy = setDenyModesV2(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });
@@ -4205,12 +4206,12 @@ describe("setActorAccess", () => {
       const acrAllowed = getUrlAll(acrPolicy!, acp.allow);
       const allowed = getUrlAll(policy!, acp.allow);
       expect(acrAllowed).toHaveLength(2);
-      expect(acrAllowed).toContain(acp.Read);
-      expect(acrAllowed).toContain(acp.Write);
+      expect(acrAllowed).toContain(internal_accessModeIriStrings.read);
+      expect(acrAllowed).toContain(internal_accessModeIriStrings.write);
       expect(allowed).toHaveLength(3);
-      expect(allowed).toContain(acp.Read);
-      expect(allowed).toContain(acp.Append);
-      expect(allowed).toContain(acp.Write);
+      expect(allowed).toContain(internal_accessModeIriStrings.read);
+      expect(allowed).toContain(internal_accessModeIriStrings.append);
+      expect(allowed).toContain(internal_accessModeIriStrings.write);
 
       const acrRuleUrls = getUrlAll(acrPolicy!, acp.allOf).concat(
         getUrlAll(acrPolicy!, acp.anyOf)
