@@ -61,7 +61,7 @@ import { addIri } from "../thing/add";
 import { setIri } from "../thing/set";
 import { getSolidDataset } from "../resource/solidDataset";
 
-const knownActorRelations = [acp.agent, acp.group];
+const knownActorRelations = [acp.agent];
 /**
  * Union type of all relations defined in `knownActorRelations`.
  *
@@ -88,7 +88,7 @@ type ActorRelation = typeof knownActorRelations extends Array<infer E>
  * [[internal_setActorAccess]], but not understand more convoluted Policies.
  *
  * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
- * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to get the access for.
+ * @param actorRelation What type of actor (e.g. acp:agent) you want to get the access for.
  * @param actor Which instance of the given actor type you want to get the access for.
  * @returns What Access modes are granted to the given actor explicitly, or null if it could not be determined.
  */
@@ -205,30 +205,6 @@ export function internal_getAgentAccess(
   webId: WebId
 ): Access | null {
   return internal_getActorAccess(acpData, acp.agent, webId);
-}
-
-/**
- * Get an overview of what access is defined for a given Group in a Resource's Access Control Resource.
- *
- * This will only return a value if all relevant access is defined in just the Resource's Access
- * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
- * other Resources, this function will not be able to determine the access relevant to this Group.
- *
- * Additionally, this only considers access given _explicitly_ to the given Group, i.e. without
- * additional conditions.
- *
- * In other words, this function will generally understand and return the access as set by
- * [[internal_setGroupAccess]], but not understand more convoluted Policies.
- *
- * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
- * @param groupUrl URL of the Group you want to get the access for.
- * @returns What Access modes are granted to the given Group explicitly, or null if it could not be determined.
- */
-export function internal_getGroupAccess(
-  acpData: internal_AcpData,
-  groupUrl: UrlString
-): Access | null {
-  return internal_getActorAccess(acpData, acp.group, groupUrl);
 }
 
 /**
@@ -425,30 +401,6 @@ export function internal_getActorAccessAll(
 }
 
 /**
- * Get an overview of what access are defined for all Groups in a Resource's Access Control Resource.
- *
- * This will only return a value if all relevant access is defined in just the Resource's Access
- * Control Resource; in other words, if an Access Policy or Access Rule applies that is re-used for
- * other Resources, this function will not be able to determine the access relevant to the mentionned
- * Groups.
- *
- * Additionally, this only considers access given _explicitly_ to individual Groups, i.e. without
- * additional conditions.
- *
- * In other words, this function will generally understand and return the access as set by
- * [[internal_setAgentAccess]], but not understand more convoluted Policies.
- *
- * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
- * @returns A map with each Group's access indexed by their URL, or null if some
- * external policies are referenced.
- */
-export function internal_getGroupAccessAll(
-  acpData: internal_AcpData
-): Record<UrlString, Access> | null {
-  return internal_getActorAccessAll(acpData, acp.group);
-}
-
-/**
  * Get an overview of what access are defined for all Agents in a Resource's Access Control Resource.
  *
  * This will only return a value if all relevant access is defined in just the Resource's Access
@@ -478,9 +430,9 @@ export function internal_getAgentAccessAll(
  * This function adds the relevant Access Control Policies and Rules to a
  * Resource's Access Control Resource to define the given access for the given
  * actor specifically. In other words, it can, for example, add Policies that
- * give a particular Group Read access to the Resource. However, if other
- * Policies specify that everyone in that Group is *denied* Read access *except*
- * for a particular Agent, then that will be left intact.
+ * give the general Public Read access to the Resource. However, if other
+ * Policies specify that everyone is *denied* Read access *except* for a
+ * particular Agent, then that will be left intact.
  * This means that, unless *only* this module's functions are used to manipulate
  * access to this Resource, the set access might not be equal to the effective
  * access for an agent matching the given actor.
@@ -500,7 +452,7 @@ export function internal_getAgentAccessAll(
  *
  * @param resource Resource that was fetched together with its linked Access Control Resource.
  * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
- * @param actorRelation What type of actor (e.g. acp:agent or acp:group) you want to set the access for.
+ * @param actorRelation What type of actor (e.g. acp:agent) you want to set the access for.
  * @param actor Which instance of the given actor type you want to set the access for.
  * @param access What access (read, append, write, controlRead, controlWrite) to set for the given actor. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
  * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
@@ -703,8 +655,8 @@ export function internal_setActorAccess<
  * Resource's Access Control Resource to define the given access for the given
  * Agent specifically. In other words, it can, for example, add Policies that
  * give a particular Agent Read access to the Resource. However, if other
- * Policies specify that that Agent is *denied* Read access *except* if they're
- * in a particular Group, then that will be left intact.
+ * Policies specify that that Agent is *denied* Read access *except* if they
+ * match on some other characteristic, then that will be left intact.
  * This means that, unless *only* this function is used to manipulate access to
  * this Resource, the set access might not be equal to the effective access for
  * the given Agent.
@@ -740,55 +692,6 @@ export function internal_setAgentAccess<
 }
 
 /**
- * Set access to a Resource for a specific Group.
- *
- * This function adds the relevant Access Control Policies and Rules to a
- * Resource's Access Control Resource to define the given access for the given
- * Group specifically. In other words, it can, for example, add Policies that
- * give a particular Group Read access to the Resource. However, if other
- * Policies specify that it is *denied* Read access *except* if they're a
- * particular Agent, then that will be left intact.
- * This means that, unless *only* this module's functions are used to manipulate
- * access to this Resource, the set access might not be equal to the effective
- * access for Agents in the given Group.
- *
- * There are a number of preconditions that have to be fulfilled for this
- * function to work:
- * - Access to the Resource is determined via an Access Control Resource.
- * - The Resource's Access Control Resource does not refer to (Policies or Rules
- *   in) other Resources.
- * - The current user has access to the Resource's Access Control Resource.
- *
- * If those conditions do not hold, this function will return `null`.
- *
- * Additionally, take note that the given access will only be applied to the
- * given Resource; if that Resource is a Container, access will have to be set
- * for its contained Resources independently.
- *
- * @param resource Resource that was fetched together with its linked Access Control Resource.
- * @param acpData All Access Control Policies and Rules that apply to a particular Resource.
- * @param groupUrl Which Group you want to set the access for.
- * @param access What access (read, append, write, controlRead, controlWrite) to set for the given Group. `true` to allow, `false` to deny, and `undefined` to leave unchanged.
- * @returns The Resource with the updated Access Control Resource attached, if updated successfully, or `null` if not.
- */
-export function internal_setGroupAccess<
-  ResourceExt extends WithResourceInfo & WithAcp
->(
-  resource: ResourceExt,
-  acpData: internal_AcpData,
-  groupUrl: WebId,
-  access: Partial<Access>
-): ResourceExt | null {
-  return internal_setActorAccess(
-    resource,
-    acpData,
-    acp.group,
-    groupUrl,
-    access
-  );
-}
-
-/**
  * Set access to a Resource for everybody.
  *
  * This function adds the relevant Access Control Policies and Rules to a
@@ -796,7 +699,7 @@ export function internal_setGroupAccess<
  * specifically. In other words, it can, for example, add Policies that
  * give everybody Read access to the Resource. However, if other
  * Policies specify that everybody is *denied* Read access *except* if they're
- * in a particular Group, then that will be left intact.
+ * a particular Agent, then that will be left intact.
  * This means that, unless *only* this module's functions are used to manipulate
  * access to this Resource, the set access might not be equal to the effective
  * access for a particular Agent.
@@ -843,7 +746,7 @@ export function internal_setPublicAccess<
  * authenticated Agents specifically. In other words, it can, for example, add
  * Policies that give authenticated Agents Read access to the Resource. However,
  * if other Policies specify that authenaticated Agents are *denied* Read access
- * *except* if they're in a particular Group, then that will be left intact.
+ * *except* if they're a particular Agent, then that will be left intact.
  * This means that, unless *only* this module's functions are used to manipulate
  * access to this Resource, the set access might not be equal to the effective
  * access for a particular Agent.
