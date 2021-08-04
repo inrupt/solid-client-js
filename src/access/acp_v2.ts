@@ -31,10 +31,10 @@ import {
 } from "../acp/control";
 import {
   createResourcePolicyFor,
-  getAllowModesV1,
-  getDenyModesV1,
+  getAllowModesV2,
+  getDenyModesV2,
   Policy,
-  setAllowModesV1,
+  setAllowModesV2,
   setResourceAcrPolicy,
   setResourcePolicy,
 } from "../acp/policy";
@@ -55,11 +55,12 @@ import {
   WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
-import { Access } from "./universal_v1";
+import { Access } from "./universal";
 import { getIri, getIriAll } from "../thing/get";
 import { addIri } from "../thing/add";
 import { setIri } from "../thing/set";
 import { getSolidDataset } from "../resource/solidDataset";
+import { internal_accessModeIriStrings } from "../acl/acl.internal";
 
 const knownActorRelations = [acp.agent];
 /**
@@ -122,7 +123,7 @@ export function internal_getActorAccess(
   // determines whether the `controlRead` and `controlWrite` statuses are `true`.
   const allowedAcrAccess = applicableAcrPolicies.reduce((acc, policy) => {
     const allAllowedAccess = { ...acc };
-    const allowModes = getAllowModesV1(policy);
+    const allowModes = getAllowModesV2(policy);
     if (allowModes.read) {
       allAllowedAccess.controlRead = true;
     }
@@ -135,7 +136,7 @@ export function internal_getActorAccess(
   // determines whether the respective status is `true`.
   const withAllowedAccess = applicablePolicies.reduce((acc, policy) => {
     const allAllowedAccess = { ...acc };
-    const allowModes = getAllowModesV1(policy);
+    const allowModes = getAllowModesV2(policy);
     if (allowModes.read) {
       allAllowedAccess.read = true;
     }
@@ -154,7 +155,7 @@ export function internal_getActorAccess(
   // by inspecting denied reading and writing defined in the ACR policies.
   const withAcrDeniedAccess = applicableAcrPolicies.reduce((acc, policy) => {
     const allDeniedAccess = { ...acc };
-    const denyModes = getDenyModesV1(policy);
+    const denyModes = getDenyModesV2(policy);
     if (denyModes.read === true) {
       allDeniedAccess.controlRead = false;
     }
@@ -167,7 +168,7 @@ export function internal_getActorAccess(
   // in the regular policies:
   const withDeniedAccess = applicablePolicies.reduce((acc, policy) => {
     const allDeniedAccess = { ...acc };
-    const denyModes = getDenyModesV1(policy);
+    const denyModes = getDenyModesV2(policy);
     if (denyModes.read === true) {
       allDeniedAccess.read = false;
     }
@@ -308,18 +309,21 @@ function policyConflictsWith(
   const allowModes = getIriAll(policy, acp.allow);
   const denyModes = getIriAll(policy, acp.deny);
   return (
-    (otherAccess.read === true && denyModes.includes(acp.Read)) ||
+    (otherAccess.read === true &&
+      denyModes.includes(internal_accessModeIriStrings.read)) ||
     (otherAccess.read === false &&
-      allowModes.includes(acp.Read) &&
-      !denyModes.includes(acp.Read)) ||
-    (otherAccess.append === true && denyModes.includes(acp.Append)) ||
+      allowModes.includes(internal_accessModeIriStrings.read) &&
+      !denyModes.includes(internal_accessModeIriStrings.read)) ||
+    (otherAccess.append === true &&
+      denyModes.includes(internal_accessModeIriStrings.append)) ||
     (otherAccess.append === false &&
-      allowModes.includes(acp.Append) &&
-      !denyModes.includes(acp.Append)) ||
-    (otherAccess.write === true && denyModes.includes(acp.Write)) ||
+      allowModes.includes(internal_accessModeIriStrings.append) &&
+      !denyModes.includes(internal_accessModeIriStrings.append)) ||
+    (otherAccess.write === true &&
+      denyModes.includes(internal_accessModeIriStrings.write)) ||
     (otherAccess.write === false &&
-      allowModes.includes(acp.Write) &&
-      !denyModes.includes(acp.Write))
+      allowModes.includes(internal_accessModeIriStrings.write) &&
+      !denyModes.includes(internal_accessModeIriStrings.write))
   );
 }
 
@@ -578,7 +582,7 @@ export function internal_setActorAccess<
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
     let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
-    newAcrPolicy = setAllowModesV1(newAcrPolicy, {
+    newAcrPolicy = setAllowModesV2(newAcrPolicy, {
       read: newControlReadAccess === true,
       append: false,
       write: newControlWriteAccess === true,
@@ -611,7 +615,7 @@ export function internal_setActorAccess<
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
       `_${Date.now()}_${Math.random()}`;
     let newPolicy = createResourcePolicyFor(resource, newPolicyName);
-    newPolicy = setAllowModesV1(newPolicy, {
+    newPolicy = setAllowModesV2(newPolicy, {
       read: newReadAccess === true,
       append: newAppendAccess === true,
       write: newWriteAccess === true,
