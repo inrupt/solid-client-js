@@ -62,12 +62,13 @@ PATCH requests) and retrieve the data in different formats (currently, the
 spec mandates that servers can serve such data as at least Turtle and JSON-LD).
 
 Thus, data stored as Turtle or JSON-LD can be fetched as a SolidDataset; the
-rest are just treated as regular Files: while might be parsed and manipulated by
-other libraries, solid-client just allows downloads and uploads. This applies to
-binary file types like JPEG, WebM and `.txt`, but also to files containing
-structured data in a non-RDF format, like JSON, XML or OpenDocument, or even
-to files containing structured data in an RDF format not understood by the
-server, such as RDFa or RDF-XML.
+rest are just treated as regular Files: while it might be possible to parse and
+manipulate them using other libraries, solid-client just allows downloads and
+uploads, and not more specific operations like reading values for a given
+property. This applies to binary file types like JPEG, WebM and `.txt`, but also
+to files containing structured data in a non-RDF format, like JSON, XML or
+OpenDocument, or even to files containing structured data in an RDF format not
+understood by the server, such as RDFa or RDF-XML.
 
 ## `With*` types
 
