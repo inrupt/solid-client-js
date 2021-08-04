@@ -25,23 +25,23 @@ support this common use case.
 
 ## Lumping ACLs and Resources together
 
-Although it currently is only possible to fetch the data contained within a
-Resource in a single request, that Resource _is_ affected by other Resources.
-For example, an Access Control List is defined in a separate Resource, but does
-affect whether and how someone can access that Resource.
+Linked Resources, such as an Access Control Lists, are currently attached to the
+same object that represents the Resource they are linked to. The reason for this
+is to anticipate a possible future in which a Resource and its Linked Resources
+might be updateable in a single, atomic HTTP request.
 
-With this model, it is not possible to modify both a Resource and the Access
-Control List in an atomic update, that is, it requires two separate HTTP
-requests. This can lead to inconsistent data, e.g. if the network connection
-drops between the two requests and one of them fails.
+The reason for that would be to avoid issues with inconsistent data, where data
+in a Resource and in one or more of its Linked Resources need to be updated
+together: if this happens in separate HTTP requests, one of those might fail
+while the other might succeed, e.g. because a network connection dropped in
+between.
 
 Although there has been no movement in this direction in the year and a half
 that solid-client has now existed, it could be that the Solid specifications
 at some point get updated to support fetching and updating both a Resource and
 its linked Resources in a single request, e.g. by making the linked Resource
 available in a different RDF Graph (i.e. using the fourth element of an RDF
-Quad). To anticipate such a future, linked Resources are stored in the same
-object as the Resource they are linked from. This enables that at some point, a
+Quad). solid-client anticipates such a future so that, at some point, a
 function like `saveSolidDatasetAt` might update not just the data in the
 Resource itself, but also that in one or more linked Resources.
 
