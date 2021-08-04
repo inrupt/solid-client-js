@@ -281,4 +281,24 @@ export { acp_v3 } from "./acp/v3";
  * functions directly from @inrupt/solid-client/access/universal.
  * @deprecated Please import directly from the "access/universal" module.
  */
-export * as access from "./access/universal";
+export * as access_v1 from "./access/universal_v1";
+/**
+ * This API is still experimental, and subject to change. It builds on top of both
+ * ACP and ACL, aiming at being adaptable to any Access Control system that may be
+ * implemented in Solid. That is why it is purely Resource-centric: the library
+ * discovers metadata associated to the Resource itself, and calls the appropriate
+ * underlying API to deal with the Access Control in place for the target Resource.
+ *
+ * As it is still under development, the following export is *only* intended for experimentation
+ * by early adopters, and is not recommended yet for production applications. Because
+ * of this, all of the Access-related API's are exported on a single object, which does
+ * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
+ * included in your bundle.
+ *
+ * Note that the following object is exposed to be available for environments not
+ * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
+ * or environment with support for export maps, we recommend you import these
+ * functions directly from @inrupt/solid-client/access/universal.
+ * @deprecated Please import directly from the "access/universal" module.
+ */
+export * as access from "./access/universal_v1";

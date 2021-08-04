@@ -34,9 +34,9 @@ import {
   getAccessFor as reexport_getAccessFor,
   getAccessForAll as reexport_getAccessForAll,
   setAccessFor as reexport_setAccessFor,
-} from "./universal";
+} from "./universal_v1";
 import * as acpLowLevel from "../acp/acp";
-import * as acpModule from "./acp";
+import * as acpModule from "./acp_v1";
 import * as wacModule from "./wac";
 import { addMockResourceAclTo } from "../acl/mock";
 

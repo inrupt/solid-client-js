@@ -80,7 +80,7 @@ import {
   internal_setAuthenticatedAccess,
   internal_AcpData,
   internal_getPoliciesAndRules,
-} from "./acp";
+} from "./acp_v1";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
 type MockRule = Partial<
