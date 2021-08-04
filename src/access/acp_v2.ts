@@ -299,6 +299,8 @@ function policyAppliesTo(
       anyOfMatchers.some((matcher) =>
         matcherAppliesTo(matcher, actorRelation, actor)
       )) &&
+    // There is at least one allOf or anyOf Matcher:
+    allOfMatchers.length + anyOfMatchers.length > 0 &&
     // No further restrictions are in place that make this sometimes not apply
     // to the given actor:
     noneOfMatchers.length === 0
@@ -339,12 +341,7 @@ function matcherAppliesTo(
   actorRelation: ActorRelation,
   actor: IriString
 ): boolean {
-  // A Matcher that does not list *any* actor matches for everyone:
-  let isEmpty = true;
-  knownActorRelations.forEach((knownActorRelation) => {
-    isEmpty &&= getIri(matcher, knownActorRelation) === null;
-  });
-  return isEmpty || getIriAll(matcher, actorRelation).includes(actor);
+  return getIriAll(matcher, actorRelation).includes(actor);
 }
 
 /**
