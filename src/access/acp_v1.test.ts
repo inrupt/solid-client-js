@@ -1034,6 +1034,38 @@ describe("getActorAccess", () => {
     });
   });
 
+  // This test currently fails; however, since the ACP proposal will be updated
+  // in a way that means this _should_ fail (i.e. noneOf Rules alone shouldn't
+  // be enough for a Policy to apply), it's not worth the effort to fix it:
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("applies a Policy that only specifies noneOf Rules", () => {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          noneOf: {
+            "https://some.pod/resource?ext=acr#noneOfRule": {
+              [acp.agent]: ["https://some.pod/other#agent"],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
   it("can also determine access if a Policy is defined in a separate Resource", () => {
     const acpData = mockAcpData({
       policies: {

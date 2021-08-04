@@ -962,7 +962,7 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that does not specify any Matchers at all", () => {
+  it("does not apply a Policy that does not specify any Matchers at all", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
@@ -977,7 +977,7 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -985,7 +985,7 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that also specifies empty Matchers", () => {
+  it("does not apply a Policy that only specifies empty Matchers", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
@@ -1003,7 +1003,7 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -1011,7 +1011,7 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that only specifies non-existent Matchers", () => {
+  it("does not apply a Policy that only specifies non-existent Matchers", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
@@ -1036,7 +1036,35 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("does not apply a Policy that only specifies None Of Matchers", () => {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          noneOf: {
+            "https://some.pod/resource?ext=acr#noneOfMatcher": {
+              [acp.agent]: ["https://some.pod/not-the-applicable-agent"],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -3720,6 +3748,11 @@ describe("setActorAccess", () => {
       policies: {
         "https://some.pod/other-resource?ext=acr#policy": {
           allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#matcher": {
+              [acp.agent]: [webId],
+            },
+          },
         },
       },
       memberPolicies: {},
@@ -3752,7 +3785,9 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/other-resource?ext=acr#matcher": {},
+            "https://some.pod/other-resource?ext=acr#matcher": {
+              [acp.agent]: [webId],
+            },
           },
         },
       },
@@ -5992,7 +6027,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true, append: true, write: true },
-            allOf: {
+            anyOf: {
               "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
@@ -6004,7 +6039,7 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true, write: true },
-            allOf: {
+            anyOf: {
               "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
