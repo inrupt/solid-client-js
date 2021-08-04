@@ -28,7 +28,9 @@ changes in the data, and to verify whether that data has changed using
 referential equality (in other words, not comparing the content of the data,
 but whether it is a new instance) to avoid costly comparisons — e.g. Virtual
 DOM. Since Solid is all about the data, we avoid modifying the data in place to
-support this common use case.
+support this common use case. (SolidDatasets used to be built on top of
+[RDF/JS Datasets](https://rdf.js.org/dataset-spec/), but we moved away from that
+to avoid its mutability and lack of serialisability because of the above.)
 
 ## Lumping ACLs and Resources together
 
