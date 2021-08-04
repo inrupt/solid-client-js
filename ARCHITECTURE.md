@@ -101,10 +101,10 @@ as `getContentType`. We can, of course, use those internally as well.
 Everything related to fetching and storing data. `file.ts` has everything
 related to fetching Files, which is mostly a thin wrapper around a regular
 `fetch`, adding some metadata. `solidDataset.ts` is similar, but attempts to
-parse the fetched data as RDF in order to turn it into a SolidDataset. And
-finally `resource.ts` has functions that apply regardless of whether a Resource
-can be parsed as RDF or is a File, e.g. to fetch metadata without the contents
-(in a `HEAD` request).
+parse the fetched data as RDF in order to turn it into a SolidDataset (see also
+`/src/formats/*` below). And finally `resource.ts` has functions that apply
+regardless of whether a Resource can be parsed as RDF or is a File, e.g. to
+fetch metadata without the contents (in a `HEAD` request).
 
 There is also `mock.ts`, a couple of functions that help developers simulate
 SolidDatasets with the appropriate meta data in their unit tests. This helps
