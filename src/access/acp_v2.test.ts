@@ -69,13 +69,10 @@ import {
   internal_getActorAccess,
   internal_getAgentAccess,
   internal_getAuthenticatedAccess,
-  internal_getGroupAccess,
   internal_getPublicAccess,
-  internal_getGroupAccessAll,
   internal_getAgentAccessAll,
   internal_setActorAccess,
   internal_setAgentAccess,
-  internal_setGroupAccess,
   internal_setPublicAccess,
   internal_setAuthenticatedAccess,
   internal_AcpData,
@@ -83,9 +80,7 @@ import {
 } from "./acp_v2";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
-type MockRule = Partial<
-  Record<typeof acp.agent | typeof acp.group, UrlString[]>
->;
+type MockRule = Partial<Record<typeof acp.agent, UrlString[]>>;
 
 interface MockAccess {
   read: boolean;
@@ -1301,7 +1296,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1329,7 +1324,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1357,7 +1352,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
               "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1390,7 +1385,7 @@ describe("getActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1421,7 +1416,7 @@ describe("getActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1452,7 +1447,7 @@ describe("getActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1721,7 +1716,7 @@ describe("getActorAccess", () => {
             },
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-anyOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1754,7 +1749,7 @@ describe("getActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1787,7 +1782,7 @@ describe("getActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1820,12 +1815,12 @@ describe("getActorAccess", () => {
             },
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1853,7 +1848,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
@@ -1863,7 +1858,7 @@ describe("getActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1891,12 +1886,12 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
@@ -1929,7 +1924,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
@@ -1962,7 +1957,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
@@ -1995,7 +1990,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
@@ -2038,7 +2033,7 @@ describe("getActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -2071,7 +2066,7 @@ describe("getActorAccess", () => {
             },
             anyOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
@@ -2104,7 +2099,7 @@ describe("getActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
               "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
@@ -2772,36 +2767,6 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [webId],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getAgentAccess(acpData, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
       const acpData = mockAcpData({
         policies: {
@@ -2863,100 +2828,6 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("getGroupAccess", () => {
-    const groupUrl = "https://some.pod/groups#group";
-
-    it("returns access set for the given Group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [groupUrl],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a different Group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for an agent", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [groupUrl],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-  });
-
   describe("getPublicAccess", () => {
     it("returns access set for the general public", () => {
       const acpData = mockAcpData({
@@ -2995,36 +2866,6 @@ describe("getActorAccess", () => {
             allOf: {
               "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
                 [acp.agent]: [webId],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getPublicAccess(acpData);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [acp.PublicAgent],
               },
             },
             allow: {
@@ -3140,36 +2981,6 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [acp.AuthenticatedAgent],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getAuthenticatedAccess(acpData);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
     it("does not return access set for just 'everybody' (we have getPublicAccess for that)", () => {
       const acpData = mockAcpData({
         policies: {
@@ -3203,7 +3014,7 @@ describe("getActorAccess", () => {
 });
 
 describe("getActorAccessAll", () => {
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "returns an empty map if no individual %s is given access",
     (actor) => {
       const acpData = mockAcpData({
@@ -3216,50 +3027,7 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it("does not return access given to individual agents for groups", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: {
-            "https://some.pod/resource.acr#rule": {
-              [acp.agent]: ["https://some.pod/profile#agent"],
-            },
-          },
-          allow: {
-            append: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getActorAccessAll(acpData, acp.group)).toStrictEqual({});
-  });
-
-  it("does not return access given to groups for agents", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: {
-            "https://some.pod/resource.acr#rule": {
-              [acp.group]: ["https://some.pod/profile#group"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-    expect(internal_getActorAccessAll(acpData, acp.agent)).toStrictEqual({});
-  });
-
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the general public for %s",
     (actor) => {
       const acpData = mockAcpData({
@@ -3284,7 +3052,7 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the Creator agent for %s",
     (actor) => {
       const acpData = mockAcpData({
@@ -3309,7 +3077,7 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the Authenticated agent for %s",
     (actor) => {
       const acpData = mockAcpData({
@@ -3334,7 +3102,7 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "also returns access data if an external policy is present",
     (actor) => {
       const acpData = mockAcpData({
@@ -3376,7 +3144,7 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "returns null if the current user does not have sufficient access to see all access data",
     (actor) => {
       const acpData = mockAcpData({
@@ -3403,7 +3171,7 @@ describe("getActorAccessAll", () => {
   );
 
   describe("One or several Policies that apply to multiple agents", () => {
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns access for all the %s that are individually given access across multiple policies",
       (actor) => {
         const acpData = mockAcpData({
@@ -3455,7 +3223,7 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns access for all the %s that are individually given access for a single policy",
       (actor) => {
         const acpData = mockAcpData({
@@ -3500,7 +3268,7 @@ describe("getActorAccessAll", () => {
   });
 
   describe("One or several policies applying to one agent and not to another", () => {
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns no access for Policies with a noneOf rule",
       (actor) => {
         const acpData = mockAcpData({
@@ -3545,7 +3313,7 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns no access for %s missing from an allOf rule",
       (actor) => {
         const acpData = mockAcpData({
@@ -3591,7 +3359,7 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns no access for %s in an anyOf rule if they are missing from an allOf rule",
       (actor) => {
         const acpData = mockAcpData({
@@ -3657,7 +3425,7 @@ describe("getActorAccessAll", () => {
   });
 
   describe("One or several policies, some giving access and some denying access to agents", () => {
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns false for access being denied to the %s",
       (actor) => {
         const acpData = mockAcpData({
@@ -3709,7 +3477,7 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "combines allowed and denied modes when multiple policies apply to the %s",
       (actor) => {
         const acpData = mockAcpData({
@@ -3766,7 +3534,7 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "overrides allowed modes when %s is denied in another policy",
       (actor) => {
         const acpData = mockAcpData({
@@ -3821,135 +3589,6 @@ describe("getActorAccessAll", () => {
   });
 });
 
-describe("getGroupAccessAll", () => {
-  const groupAUrl = "https://some.pod/groups#groupA";
-  const groupBUrl = "https://some.pod/groups#groupB";
-  it("returns access set for any Group referenced in the ACR", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.group]: [groupAUrl, groupBUrl],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({
-      [groupAUrl]: {
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
-      [groupBUrl]: {
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
-    });
-  });
-
-  it("does not return access set for an agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: ["https://some.pod/profile#agent"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not include access set for everyone", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.PublicAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not return access set for any authenticated Agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.AuthenticatedAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not return access set for the Creator Agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.CreatorAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-});
-
 describe("getAgentAccessAll", () => {
   const agentAUrl = "https://some.pod/profiles#agentA";
   const agentBUrl = "https://some.pod/profiles#agentB";
@@ -3989,28 +3628,6 @@ describe("getAgentAccessAll", () => {
         controlWrite: false,
       },
     });
-  });
-
-  it("does not return access set for a group", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.group]: ["https://some.pod/group#some-group"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
   });
 
   it("does not include access set for everyone", () => {
@@ -4246,16 +3863,8 @@ describe("setActorAccess", () => {
         fc.constant(acp.AuthenticatedAgent),
         fc.constant(acp.CreatorAgent)
       );
-      const groupUrlArbitrary = fc.oneof(
-        fc.constant("https://some.pod/groups#group1"),
-        fc.constant("https://some.pod/groups#group2"),
-        fc.constant("https://some.pod/groups#group3")
-      );
       const ruleArbitrary = fc.record({
         [acp.agent]: fc.option(fc.array(agentUrlArbitrary, { maxLength: 6 }), {
-          nil: undefined,
-        }),
-        [acp.group]: fc.option(fc.array(groupUrlArbitrary, { maxLength: 3 }), {
           nil: undefined,
         }),
       });
@@ -4286,10 +3895,7 @@ describe("setActorAccess", () => {
         ),
         memberAcrPolicies: fc.constant({}),
       });
-      const actorRelationArbitrary = fc.oneof(
-        fc.constant(acp.agent),
-        fc.constant(acp.group)
-      );
+      const actorRelationArbitrary = fc.oneof(fc.constant(acp.agent));
       const fcInput = fc.tuple(
         acrArbitrary,
         setAccessArbitrary,
@@ -4341,9 +3947,7 @@ describe("setActorAccess", () => {
             deny: { append: true, write: true },
             anyOf: {
               "https://some.pod/resource?ext=acl#rule2": {
-                "http://www.w3.org/ns/solid/acp#group": [
-                  "https://some.pod/groups#group2",
-                ],
+                "http://www.w3.org/ns/solid/acp#agent": [acp.PublicAgent],
               },
               "https://some.pod/resource?ext=acl#rule3": {},
             },
@@ -4511,9 +4115,7 @@ describe("setActorAccess", () => {
             anyOf: {
               "https://some.pod/resource?ext=acl#rule1": {},
               "https://some.pod/resource?ext=acl#rule3": {
-                "http://www.w3.org/ns/solid/acp#group": [
-                  "https://some.pod/groups#group2",
-                ],
+                "http://www.w3.org/ns/solid/acp#agent": [acp.PublicAgent],
               },
             },
           },
@@ -5668,7 +5270,7 @@ describe("setActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5708,7 +5310,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5737,7 +5339,7 @@ describe("setActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5779,7 +5381,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5812,7 +5414,7 @@ describe("setActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5852,7 +5454,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5885,7 +5487,7 @@ describe("setActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5927,7 +5529,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -6912,7 +6514,7 @@ describe("setActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -6952,7 +6554,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -6981,7 +6583,7 @@ describe("setActorAccess", () => {
                 [acp.agent]: [webId],
               },
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7023,7 +6625,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7056,7 +6658,7 @@ describe("setActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7096,7 +6698,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7129,7 +6731,7 @@ describe("setActorAccess", () => {
             },
             noneOf: {
               "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7171,7 +6773,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7591,44 +7193,6 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setAgentAccess(
-        resourceWithAcr,
-        acpData,
-        webId,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), webId)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
     it("does not set access for everybody", () => {
       const mockSetup = {
         policies: {},
@@ -7685,307 +7249,6 @@ describe("setActorAccess", () => {
         resourceWithAcr,
         acpData,
         webId,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-  });
-
-  describe("setGroupAccess", () => {
-    const groupIri = "https://some.pod/groups#group";
-    it("sets access for the given Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-    });
-
-    it("removes access for the given Group", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: [groupIri],
-              },
-            },
-            allow: {
-              read: true,
-              append: true,
-              write: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#acrPolicy": {
-            anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: [groupIri],
-              },
-            },
-            allow: {
-              read: true,
-              write: true,
-            },
-          },
-        },
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: false,
-          append: false,
-          write: false,
-          controlRead: false,
-          controlWrite: false,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/other-resource?ext=acr#policy": {},
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-      acpData.inaccessibleUrls = [
-        "https://arbitrary.pod/inaccessible-policy-resource",
-      ];
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-        }
-      );
-
-      expect(updatedResource).toBeNull();
-    });
-
-    it("does not set access for a different Group", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          "https://arbitrary.pod/groups#other-group"
-        )
-      ).toStrictEqual({
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for an Agent", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for everybody", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for 'all authenticated Agents'", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
         {
           read: true,
           append: true,
@@ -8135,46 +7398,6 @@ describe("setActorAccess", () => {
       );
 
       expect(updatedResource).toBeNull();
-    });
-
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setPublicAccess(
-        resourceWithAcr,
-        acpData,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          acp.PublicAgent
-        )
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
@@ -8343,46 +7566,6 @@ describe("setActorAccess", () => {
       );
 
       expect(updatedResource).toBeNull();
-    });
-
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setAuthenticatedAccess(
-        resourceWithAcr,
-        acpData,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          acp.AuthenticatedAgent
-        )
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
     });
 
     it("does not set access for everybody", () => {
