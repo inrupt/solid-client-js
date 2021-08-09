@@ -25,21 +25,18 @@ import {
   Access,
   getAgentAccess,
   getAgentAccessAll,
-  getGroupAccess,
-  getGroupAccessAll,
   getPublicAccess,
   setAgentAccess,
-  setGroupAccess,
   setPublicAccess,
 } from "./universal";
 
 // Note: The module's name is "for", because it exports "*AccessFor" methods, and
 // it is imported as "access/for".
 
-export type Actor = "agent" | "group" | "public";
+export type Actor = "agent" | "public";
 
 /**
- * Get an overview of what access is defined for a given actor (Agent or Group).
+ * Get an overview of what access is defined for a given actor (Agent).
  *
  * This function works with Solid Pods that implement either the Web Access
  * Control spec or the Access Control Policies proposal, with some caveats:
@@ -48,8 +45,8 @@ export type Actor = "agent" | "group" | "public";
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably reading access, in which case it will
  *   resolve to `null`.
- * - It will only return access specified explicitly for the given Agent or Group. If
- *   additional restrictions are set up to apply to the given Agent or Group in a
+ * - It will only return access specified explicitly for the given Agent. If
+ *   additional restrictions are set up to apply to the given Agent in a
  *   particular situation, those will not be reflected in the return value of
  *   this function.
  * - It will only return access specified explicitly for the given Resource.
@@ -59,15 +56,15 @@ export type Actor = "agent" | "group" | "public";
  *   Resource, this function will resolve to `null`.
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
- * @param actorType type of actor whose access is being read: Agent or Group.
- * @param actor Identifier of the individual Agent or Group whose access being read.
+ * @param actorType type of actor whose access is being read: only Agent, at the moment.
+ * @param actor Identifier of the individual Agent whose access being read.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns What access the given Agent or Group has.
+ * @returns What access the given Agent has.
  * @since 1.5.0
  */
 export async function getAccessFor(
   resourceUrl: UrlString,
-  actorType: "agent" | "group",
+  actorType: "agent",
   actor: UrlString | WebId,
   options?: typeof internal_defaultFetchOptions
 ): Promise<Access | null>;
@@ -83,7 +80,7 @@ export async function getAccessFor(
  *   resolve to `null`.
  * - It will only return access specified explicitly for specifically everyone.
  *   If additional restrictions are set up to apply to some actors in a particular
- *   situation (e.g. individual Agents or Groups), those will not be reflected
+ *   situation (e.g. individual Agents), those will not be reflected
  *   in the return value of this function.
  * - It will only return access specified explicitly for the given Resource.
  *   In other words, if the Resource is a Container, the returned Access may not
@@ -125,14 +122,6 @@ export async function getAccessFor(
     }
     return await getAgentAccess(resourceUrl, actor, options);
   }
-  if (actorType === "group") {
-    if (typeof actor !== "string") {
-      throw new Error(
-        "When reading Group-specific access, the given group cannot be left undefined."
-      );
-    }
-    return await getGroupAccess(resourceUrl, actor, options);
-  }
   if (actorType === "public") {
     if (typeof actor === "string") {
       throw new Error(
@@ -145,8 +134,7 @@ export async function getAccessFor(
 }
 
 /**
- * Get an overview of what access is defined for a given set of actors: all Agents
- * or all Groups.
+ * Get an overview of what access is defined for a given set of actors: all Agents.
  *
  * This function works with Solid Pods that implement either the Web Access
  * Control spec or the Access Control Policies proposal, with some caveats:
@@ -155,8 +143,8 @@ export async function getAccessFor(
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably reading access, in which case it will
  *   resolve to `null`.
- * - It will only return access specified explicitly for the given actor (Agent
- *   or Group). If additional restrictions are set up to apply to the given Agent
+ * - It will only return access specified explicitly for the given actor (Agent).
+ *   If additional restrictions are set up to apply to the given Agent
  *   in a particular situation, those will not be reflected in the return value
  *   of this function.
  * - It will only return access specified explicitly for the given Resource.
@@ -167,7 +155,7 @@ export async function getAccessFor(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param actorType type of actor whose access is being read.
- * @returns What access is set for the given resource, grouped by resp. Agent or Group.
+ * @returns What access is set for the given resource, grouped by Agent.
  * @since 1.5.0
  */
 export async function getAccessForAll(
@@ -178,14 +166,11 @@ export async function getAccessForAll(
   if (actorType === "agent") {
     return await getAgentAccessAll(resourceUrl, options);
   }
-  if (actorType === "group") {
-    return await getGroupAccessAll(resourceUrl, options);
-  }
   return null as never;
 }
 
 /**
- * Set access to a Resource for a specific Actor (Agent or Group).
+ * Set access to a Resource for a specific Actor (Agent).
  *
  * This function works with Solid Pods that implement either the Web Access
  * Control spec or the Access Control Policies proposal, with some caveats:
@@ -194,7 +179,7 @@ export async function getAccessForAll(
  *   functions in this module, it is possible that it has been set in a way that
  *   prevents this function from reliably setting access, in which case it will
  *   resolve to `null`.
- * - It will only set access explicitly for the given Actor (Agent or Group).
+ * - It will only set access explicitly for the given Actor (Agent).
  *   In other words, additional restrictions could be present that further
  *   restrict or loosen what access the given Actor has in particular
  *   circumstances.
@@ -216,14 +201,14 @@ export async function getAccessForAll(
  * @param resourceUrl URL of the Resource you want to change the Agent's access to.
  * @param actorType type of actor whose access is being read.
  * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
- * @param actor Actor (Agent or Group) you want to set access for.
+ * @param actor Actor (Agent) you want to set access for.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access has been set for the given Agent explicitly.
  * @since 1.5.0
  */
 export async function setAccessFor(
   resourceUrl: UrlString,
-  actorType: "agent" | "group",
+  actorType: "agent",
   access: Partial<Access>,
   actor: UrlString | WebId,
   options?: typeof internal_defaultFetchOptions
@@ -294,14 +279,6 @@ export async function setAccessFor(
       );
     }
     return await setAgentAccess(resourceUrl, actor, access, options);
-  }
-  if (actorType === "group") {
-    if (typeof actor !== "string") {
-      throw new Error(
-        "When writing Group-specific access, the given group cannot be left undefined."
-      );
-    }
-    return await setGroupAccess(resourceUrl, actor, access, options);
   }
   if (actorType === "public") {
     if (typeof actor === "string") {

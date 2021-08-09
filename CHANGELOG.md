@@ -6,6 +6,21 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Breaking changes
+
+- The Access Control Policies proposal has been updated in a
+  backwards-incompatible way. This release aligns solid-client with those
+  changes. Older versions of solid-client will not be compatible with servers
+  that have applied these changes, and this and newer versions of solid-client
+  will not be compatible with servers that have not.
+  In practice, pod.inrupt.com is the only widely available server that
+  implements the ACP proposal, and it has implemented these changes. To remain
+  compatible with pod.inrupt.com, please update solid-client.
+  If you are using the Universal Access API, no further changes are necessary.
+  If you are using the low-level Access Control Policies API, make sure to
+  familiarise yourself with the changes in the proposal, and to switch use of
+  `acp_v1`, `acp_v2` and/or `acp_v3` to `acp_v4`.
+
 The following sections document changes that have been released already:
 
 ## [1.10.1] - 2021-08-03

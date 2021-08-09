@@ -19,7 +19,4 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// This file exists to maintain backwards compatibility with the old API as long
-// as possible. Once pod.inrupt.com implements the breaking changes to Access
-// Control Policies, this will be updated to point to _v2.
-export * from "./universal_v1";
+export * from "./universal_v2";

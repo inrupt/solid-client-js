@@ -61,34 +61,6 @@ describe("getAccessFor", () => {
     );
   });
 
-  it("calls to getGroupAccess with the appropriate parameters", async () => {
-    const universalModule = jest.requireMock("./universal") as {
-      getGroupAccess: () => Promise<Access | null>;
-    };
-    const options = {
-      fetch: jest.fn() as typeof fetch,
-    };
-    await getAccessFor(
-      "https://some.resource",
-      "group",
-      "https://some.pod/groups#group",
-      options
-    );
-    expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
-      "https://some.resource",
-      "https://some.pod/groups#group",
-      options
-    );
-  });
-
-  it("throws if the group has been omitted", async () => {
-    await expect(
-      getAccessFor("https://some.resource", "group" as unknown as "public")
-    ).rejects.toThrow(
-      "When reading Group-specific access, the given group cannot be left undefined."
-    );
-  });
-
   it("throws if an actor is specified for public", async () => {
     await expect(
       getAccessFor(
@@ -141,20 +113,6 @@ describe("getAccessForAll", () => {
     );
   });
 
-  it("calls getGroupAccessAll with the correct parameters", async () => {
-    const universalModule = jest.requireMock("./universal") as {
-      getGroupAccessAll: () => Promise<Access | null>;
-    };
-    const options = {
-      fetch: jest.fn() as typeof fetch,
-    };
-    await getAccessForAll("https://some.resource", "group", options);
-    expect(universalModule.getGroupAccessAll).toHaveBeenCalledWith(
-      "https://some.resource",
-      options
-    );
-  });
-
   it("returns null for unknown actor types", async () => {
     await expect(
       getAccessForAll(
@@ -199,42 +157,6 @@ describe("setAccessFor", () => {
       })
     ).rejects.toThrow(
       "When writing Agent-specific access, the given agent cannot be left undefined."
-    );
-  });
-
-  it("calls to getGroupAccess with the appropriate parameters", async () => {
-    const universalModule = jest.requireMock("./universal") as {
-      setGroupAccess: () => Promise<Access | null>;
-    };
-    const options = {
-      fetch: jest.fn() as typeof fetch,
-    };
-    await setAccessFor(
-      "https://some.resource",
-      "group",
-      {
-        read: true,
-      },
-      "https://some.pod/groups#group",
-      options
-    );
-    expect(universalModule.setGroupAccess).toHaveBeenCalledWith(
-      "https://some.resource",
-      "https://some.pod/groups#group",
-      {
-        read: true,
-      },
-      options
-    );
-  });
-
-  it("throws if the group is missing", async () => {
-    await expect(
-      setAccessFor("https://some.resource", "group" as unknown as "public", {
-        read: true,
-      })
-    ).rejects.toThrow(
-      "When writing Group-specific access, the given group cannot be left undefined."
     );
   });
 

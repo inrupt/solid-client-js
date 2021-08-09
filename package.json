@@ -52,6 +52,7 @@
     "./acp/acp": "./dist/acp/acp.mjs",
     "./acp/control": "./dist/acp/control.mjs",
     "./acp/policy": "./dist/acp/policy.mjs",
+    "./acp/matcher": "./dist/acp/matcher.mjs",
     "./acp/rule": "./dist/acp/rule.mjs",
     "./acp/mock": "./dist/acp/mock.mjs",
     "./access/universal": "./dist/access/universal.mjs",
