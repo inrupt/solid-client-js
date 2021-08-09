@@ -65,6 +65,15 @@ jobs:
         cd ../..
       if: matrix.node-version == env.DEFAULT_NODE_VERSION && github.actor != 'dependabot[bot]'
     - name: Run browser-based end-to-end tests (Linux)
+      # TODO: These tests started consistently failing on 2021-08-04.
+      #       Possibly related to the new Release Candidate of Parcel 2, although
+      #       a downgrade did not fix it.
+      #       This CI run succeeded on 2021-08-03, but failed when retrying a
+      #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
+      #       This is the first CI run that started failing (not terminating):
+      #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
+      timeout-minutes: 5
+      continue-on-error: true
       # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
       # That also requires adding `--hostname localhost` to run over HTTPS:
@@ -83,6 +92,18 @@ jobs:
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (Windows)
+      # TODO: These tests started consistently failing on 2021-08-04.
+      #       Possibly related to the new Release Candidate of Parcel 2, although
+      #       a downgrade did not fix it.
+      #       This CI run succeeded on 2021-08-03, but failed when retrying a
+      #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
+      #       This is the first CI run that started failing (not terminating):
+      #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
+      #       Note that continue-on-error was still set to true for Windows
+      #       before that, because tests running there were pretty flaky in the
+      #       first place — they job had to be manually inspected when code with
+      #       a high risk of breaking in the browser was added.
+      timeout-minutes: 5
       continue-on-error: true
       # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
       # That also requires adding `--hostname localhost` to run over HTTPS:
@@ -100,7 +121,12 @@ jobs:
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (MacOS)
-      continue-on-error: true
+      # TODO: continue-on-error was set to true because browser-based end-to-end
+      #       tests on MacOS are pretty flaky, so this job had to be manually
+      #       inspected when code with a high risk of breaking in the browser
+      #       was added. However, with the tests on Linux currently consistently
+      #       failing, we're only relying on the MacOS tests again for now.
+      # continue-on-error: true
       # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
       # enabled, which results in TestCafe needing screen recording permission, which it cannot
       # obtain programmatically. Thus, we have to run the browser as a remote as a workaround.
