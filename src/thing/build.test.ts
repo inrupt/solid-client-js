@@ -26,6 +26,7 @@ import * as setters from "./set";
 import * as removers from "./remove";
 import { asIri, createThing, isThing } from "./thing";
 import { ThingLocal } from "../interfaces";
+import { getInteger, getStringWithLocale } from "./get";
 
 describe("Thing Builder API", () => {
   it("adds the same properties as non-fluent functions", () => {
@@ -234,5 +235,21 @@ describe("Thing Builder API", () => {
         "function"
       );
     });
+  });
+
+  it("has methods that need not be chained", () => {
+    const builder = buildThing().addInteger("https://some.vocab/predicate", 42);
+    builder.addStringWithLocale(
+      "https://some.vocab/predicate",
+      "Some string",
+      "nl-nl"
+    );
+
+    const thing = builder.build();
+
+    expect(getInteger(thing, "https://some.vocab/predicate")).toBe(42);
+    expect(
+      getStringWithLocale(thing, "https://some.vocab/predicate", "nl-nl")
+    ).toBe("Some string");
   });
 });
