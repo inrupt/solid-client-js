@@ -292,90 +292,101 @@ export function buildThing(): ThingBuilder<ThingLocal>;
 export function buildThing(
   init: Thing | CreateThingOptions = createThing()
 ): ThingBuilder<Thing> {
-  const thing = isThing(init) ? init : createThing(init);
-  return {
+  let thing = isThing(init) ? init : createThing(init);
+
+  function getAdder<Type>(adder: AddOfType<Type>) {
+    return (
+      property: Parameters<typeof adder>[1],
+      value: Parameters<typeof adder>[2]
+    ) => {
+      thing = adder(thing, property, value);
+      return builder;
+    };
+  }
+
+  function getSetter<Type>(setter: SetOfType<Type>) {
+    return (
+      property: Parameters<typeof setter>[1],
+      value: Parameters<typeof setter>[2]
+    ) => {
+      thing = setter(thing, property, value);
+      return builder;
+    };
+  }
+
+  function getRemover<Type>(remover: RemoveOfType<Type>) {
+    return (
+      property: Parameters<typeof remover>[1],
+      value: Parameters<typeof remover>[2]
+    ) => {
+      thing = remover(thing, property, value);
+      return builder;
+    };
+  }
+
+  const builder: ThingBuilder<Thing> = {
     build: () => thing,
-    addUrl: getAdder(thing, addUrl),
-    addIri: getAdder(thing, addIri),
-    addBoolean: getAdder(thing, addBoolean),
-    addDatetime: getAdder(thing, addDatetime),
-    addDate: getAdder(thing, addDate),
-    addTime: getAdder(thing, addTime),
-    addDecimal: getAdder(thing, addDecimal),
-    addInteger: getAdder(thing, addInteger),
-    addStringNoLocale: getAdder(thing, addStringNoLocale),
+    addUrl: getAdder(addUrl),
+    addIri: getAdder(addIri),
+    addBoolean: getAdder(addBoolean),
+    addDatetime: getAdder(addDatetime),
+    addDate: getAdder(addDate),
+    addTime: getAdder(addTime),
+    addDecimal: getAdder(addDecimal),
+    addInteger: getAdder(addInteger),
+    addStringNoLocale: getAdder(addStringNoLocale),
     addStringWithLocale: (
       property: Parameters<typeof addStringWithLocale>[1],
       value: Parameters<typeof addStringWithLocale>[2],
       locale: Parameters<typeof addStringWithLocale>[3]
-    ) => buildThing(addStringWithLocale(thing, property, value, locale)),
-    addNamedNode: getAdder(thing, addNamedNode),
-    addLiteral: getAdder(thing, addLiteral),
-    addTerm: getAdder(thing, addTerm),
-    setUrl: getSetter(thing, setUrl),
-    setIri: getSetter(thing, setIri),
-    setBoolean: getSetter(thing, setBoolean),
-    setDatetime: getSetter(thing, setDatetime),
-    setDate: getSetter(thing, setDate),
-    setTime: getSetter(thing, setTime),
-    setDecimal: getSetter(thing, setDecimal),
-    setInteger: getSetter(thing, setInteger),
-    setStringNoLocale: getSetter(thing, setStringNoLocale),
+    ) => {
+      thing = addStringWithLocale(thing, property, value, locale);
+      return builder;
+    },
+    addNamedNode: getAdder(addNamedNode),
+    addLiteral: getAdder(addLiteral),
+    addTerm: getAdder(addTerm),
+    setUrl: getSetter(setUrl),
+    setIri: getSetter(setIri),
+    setBoolean: getSetter(setBoolean),
+    setDatetime: getSetter(setDatetime),
+    setDate: getSetter(setDate),
+    setTime: getSetter(setTime),
+    setDecimal: getSetter(setDecimal),
+    setInteger: getSetter(setInteger),
+    setStringNoLocale: getSetter(setStringNoLocale),
     setStringWithLocale: (
       property: Parameters<typeof setStringWithLocale>[1],
       value: Parameters<typeof setStringWithLocale>[2],
       locale: Parameters<typeof setStringWithLocale>[3]
-    ) => buildThing(setStringWithLocale(thing, property, value, locale)),
-    setNamedNode: getSetter(thing, setNamedNode),
-    setLiteral: getSetter(thing, setLiteral),
-    setTerm: getSetter(thing, setTerm),
-    removeAll: (property: Parameters<typeof removeAll>[1]) =>
-      buildThing(removeAll(thing, property)),
-    removeUrl: getRemover(thing, removeUrl),
-    removeIri: getRemover(thing, removeIri),
-    removeBoolean: getRemover(thing, removeBoolean),
-    removeDatetime: getRemover(thing, removeDatetime),
-    removeDate: getRemover(thing, removeDate),
-    removeTime: getRemover(thing, removeTime),
-    removeDecimal: getRemover(thing, removeDecimal),
-    removeInteger: getRemover(thing, removeInteger),
-    removeStringNoLocale: getRemover(thing, removeStringNoLocale),
+    ) => {
+      thing = setStringWithLocale(thing, property, value, locale);
+      return builder;
+    },
+    setNamedNode: getSetter(setNamedNode),
+    setLiteral: getSetter(setLiteral),
+    setTerm: getSetter(setTerm),
+    removeAll: (property: Parameters<typeof removeAll>[1]) => {
+      thing = removeAll(thing, property);
+      return builder;
+    },
+    removeUrl: getRemover(removeUrl),
+    removeIri: getRemover(removeIri),
+    removeBoolean: getRemover(removeBoolean),
+    removeDatetime: getRemover(removeDatetime),
+    removeDate: getRemover(removeDate),
+    removeTime: getRemover(removeTime),
+    removeDecimal: getRemover(removeDecimal),
+    removeInteger: getRemover(removeInteger),
+    removeStringNoLocale: getRemover(removeStringNoLocale),
     removeStringWithLocale: (
       property: Parameters<typeof removeStringWithLocale>[1],
       value: Parameters<typeof removeStringWithLocale>[2],
       locale: Parameters<typeof removeStringWithLocale>[3]
     ) => buildThing(removeStringWithLocale(thing, property, value, locale)),
-    removeNamedNode: getRemover(thing, removeNamedNode),
-    removeLiteral: getRemover(thing, removeLiteral),
+    removeNamedNode: getRemover(removeNamedNode),
+    removeLiteral: getRemover(removeLiteral),
   };
-}
 
-function getAdder<Type, T extends Thing>(thing: T, adder: AddOfType<Type>) {
-  return (
-    property: Parameters<typeof adder>[1],
-    value: Parameters<typeof adder>[2]
-  ) => {
-    return buildThing(adder(thing, property, value));
-  };
-}
-
-function getSetter<Type, T extends Thing>(thing: T, setter: SetOfType<Type>) {
-  return (
-    property: Parameters<typeof setter>[1],
-    value: Parameters<typeof setter>[2]
-  ) => {
-    return buildThing(setter(thing, property, value));
-  };
-}
-
-function getRemover<Type, T extends Thing>(
-  thing: T,
-  remover: RemoveOfType<Type>
-) {
-  return (
-    property: Parameters<typeof remover>[1],
-    value: Parameters<typeof remover>[2]
-  ) => {
-    return buildThing(remover(thing, property, value));
-  };
+  return builder;
 }
