@@ -39,26 +39,26 @@ listeners. These helpers are then stored on the global variable `E2eHelpers` in
 
 ## The test code
 
-We use [TestCafe](https://devexpress.github.io/testcafe/) to run our
-browser-based end-to-end tests. It is configured in `.testcaferc.json` in the
-root of this repository, where it is setup to run all tests defined in files
-suffixed with `.testcafe.ts` inside of /src/testcafe. This file is also the
-place where it is told how to start the system under test before running the
-test, waiting a couple of seconds for it to come up.
+We use [Playwright](https://playwright.dev) to run our
+browser-based end-to-end tests. It is configured in `playwright.config.ts` in
+the root of this repository, where it is setup to run all tests defined in files
+suffixed with `.playwright.ts` inside of /src/e2e-browser. It also points to
+`/src/e2e-browser/globalSetup.ts`, where it is told how to start the system
+under test before running the test.
 
 Essentially, the tests open the system under test in a browser, go through the
 login procedure if they intend to make authenticated requests, and then call the
 helpers mentioned above. However, this last step is somewhat involved. The
 helpers are available in the browser, whereas the test scripts are running in
 Node. To communicate between the two, we wrap our calls to the helpers in
-TestCafe's `ClientFunction`. Now although it looks as if those functions are
-part of the test code, what actually happens is that TestCafe injects them into
+Playwright's `page.evaluate`. Now although it looks as if those functions are
+part of the test code, what actually happens is that Playwright injects them into
 the browser page, executes them, serialises their return values, and passes
 those back to our test code.
 
-That means that code inside `ClientFunction` can access globals available on the
+That means that code inside `page.evalute` can access globals available on the
 page, such as `E2eHelpers`, defined above. But since as far as TypeScript can
-see, the code inside `ClientFunction` is part of the test code, we define an
+see, the code inside `page.evaluate` is part of the test code, we define an
 empty object `E2eHelpers` in the context of that test code, and just tell
 TypeScript that it contains the test helpers.
 
@@ -71,7 +71,9 @@ These can be set via environment variables, or by creating a file
 To run the tests, run:
 
 1. `npm install` at the root to install the test runner.
-2. `npm install` in `.codesandbox/sandbox` to install the dependencies of the
+2. `npx playwright install` to download the latest versions of all browsers the
+   tests run in.
+3. `npm install` in `.codesandbox/sandbox` to install the dependencies of the
    application under test.
 
 You can then run the tests using `npm run test:e2e:browser` at the root.
@@ -82,6 +84,12 @@ before running the above command, run:
 1. `npm run build` at the root.
 2. `npm install ../../` in `.codesandbox/sandbox`.
 
-If you want to actually see the interactive parts, remove `:headless` in
-`.testcaferc.json`. That said, most of the tests involve running code without a
-UI component.
+If you want to actually see the interactive parts, set `headless: false` in
+`playwright.config.ts`. That said, most of the tests involve running code
+without a UI component.
+
+To only run tests in a specific browser, run one of:
+
+    npm run e2e-test-browser -- --project=firefox
+    npm run e2e-test-browser -- --project=chromium
+    npm run e2e-test-browser -- --project=webkit

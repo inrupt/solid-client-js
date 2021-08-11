@@ -1,8 +1,10 @@
-name: E2E tests
+name: End-to-end node tests
 
 on:
   push:
 
+env:
+  CI: true
 jobs:
   test:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
