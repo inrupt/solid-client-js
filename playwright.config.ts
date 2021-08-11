@@ -51,15 +51,28 @@ const config: PlaywrightTestConfig = {
         }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
       },
     },
-    {
-      name: "WebKit",
-      use: {
-        browserName: "webkit",
-        userAgent: `Browser-based solid-client end-to-end tests running ${
-          process.env.CI === "true" ? "in CI" : "locally"
-        }. Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1`,
-      },
-    },
   ],
 };
+
+// Unfortunately WebKit on MacOS is, at the time of writing, encountering
+// the following error after signing in to pod.inrupt.com in GitHub Actions:
+//
+//     TypeError: Key must be one of type CryptoKey or Uint8Array. Received an instance of CryptoKey
+//
+// (The error can be seen by downloading the `playwright-output` artifact
+// from the CI job, then using the Playwright Trace Viewer to inspect the
+// test trace.)
+// It's not clear what the cause is; hence the tests being disabled for now.
+if (!(process.env.CI === "true" && process.env.RUNNER_OS === "macOS")) {
+  config.projects.push({
+    name: "WebKit",
+    use: {
+      browserName: "webkit",
+      userAgent: `Browser-based solid-client end-to-end tests running ${
+        process.env.CI === "true" ? "in CI" : "locally"
+      }. Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1`,
+    },
+  });
+}
+
 export default config;
