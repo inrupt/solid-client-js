@@ -19,24 +19,16 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { t, ClientFunction, Selector } from "testcafe";
-import { screen } from "@testing-library/testcafe";
+import { Page } from "@playwright/test";
 
 export class BrokerPage {
-  authoriseButton: Selector;
-  denyButton: Selector;
+  page: Page;
 
-  constructor() {
-    this.authoriseButton = screen.getByText("Allow");
-    this.denyButton = screen.getByText("Cancel");
+  constructor(page: Page) {
+    this.page = page;
   }
 
   async authoriseOnce() {
-    await onAuthorisePage();
-    await t.click(this.authoriseButton);
+    await this.page.click("text=Allow");
   }
-}
-
-export async function onAuthorisePage() {
-  await t.expect(Selector("form#approve").exists).ok();
 }
