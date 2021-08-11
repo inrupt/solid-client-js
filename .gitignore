@@ -12,3 +12,4 @@ docs/dist/
 .env*.local
 src/e2e-browser/testcafe-requests/
 .codesandbox/sandbox/.parcel-cache/
+test-results/

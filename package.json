@@ -15,7 +15,7 @@
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
-    "test:e2e:browser": "testcafe",
+    "test:e2e:browser": "playwright test",
     "test:e2e:node": "jest --config=jest.e2e.config.js"
   },
   "keywords": [
@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@inrupt/solid-client-authn-node": "^1.10.1",
+    "@playwright/test": "^1.13.1",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.2.3",
     "@types/dotenv-flow": "^3.1.0",
