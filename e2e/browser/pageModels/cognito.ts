@@ -19,31 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { t, ClientFunction, Selector } from "testcafe";
-import { screen } from "@testing-library/testcafe";
+import { Page } from "@playwright/test";
 
 export class CognitoPage {
-  usernameInput;
-  passwordInput;
-  submitButton;
+  page: Page;
 
-  constructor() {
-    // The Cognito sign-in page contains the sign-in form twice and is basically confusing
-    // TestCafe/testing-library, hence the cumbersome selectors rather than selecting by label text.
-    this.usernameInput = screen.getByRole("textbox");
-    this.passwordInput = Selector(".visible-lg input[type=password]");
-    this.submitButton = Selector(".visible-lg input[type=submit]");
+  constructor(page: Page) {
+    this.page = page;
   }
 
   async login(username: string, password: string) {
-    await onCognitoPage();
-    await t
-      .typeText(this.usernameInput, username)
-      .typeText(this.passwordInput, password)
-      .click(this.submitButton);
+    await this.page.fill(".visible-lg [type=text]", username);
+    await this.page.fill(".visible-lg [type=password]", password);
+    await this.page.click(".visible-lg [aria-label=submit]");
   }
-}
-
-export async function onCognitoPage() {
-  await t.expect(Selector("form[name=cognitoSignInForm]").exists).ok();
 }

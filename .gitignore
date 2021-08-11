@@ -10,6 +10,5 @@ docs/api/build/
 docs/api/source/api/
 docs/dist/
 .env*.local
-src/e2e-browser/testcafe-requests/
 .codesandbox/sandbox/.parcel-cache/
 test-results/

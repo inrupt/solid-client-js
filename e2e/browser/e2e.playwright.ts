@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -29,7 +29,7 @@ import { config } from "dotenv-flow";
 // one 'rootDir'.
 // @ts-ignore
 import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
-import { essUserLogin } from "./roles-playwright";
+import { essUserLogin } from "./roles";
 
 // E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
 // Since code inside of page.evaluate is executed in that context in the browser,
