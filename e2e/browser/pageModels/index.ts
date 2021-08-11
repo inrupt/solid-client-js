@@ -19,51 +19,25 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { t, ClientFunction, Selector } from "testcafe";
-import { screen } from "@testing-library/testcafe";
+import { Page } from "@playwright/test";
 
 export class IndexPage {
-  idpInput;
-  submitButton;
+  page;
 
-  constructor() {
-    this.idpInput = screen.getByLabelText("Identity provider:");
-    this.submitButton = screen.getByText("Log in");
+  constructor(page: Page) {
+    this.page = page;
   }
 
   async startLogin(idp = "https://broker.pod.inrupt.com") {
-    await t
-      .selectText(this.idpInput)
-      .pressKey("delete")
-      .typeText(this.idpInput, idp)
-      .click(this.submitButton)
-      // For some reason the login process does not seem to kicked off
-      // directly in response to the form submission, but after a timeout or something.
-      // Thus, we have to explicitly wait for it to start navigating:
-      .wait(500);
+    await this.page.fill("input[type=url]", idp);
+    await this.page.click("button");
+    // The page appears stable while
+    // solid-client-authn-browser initiates the login process,
+    // so we have to explicitly wait for the redirect to the Identity Provider:
+    await this.page.waitForNavigation();
   }
 
   async handleRedirect() {
-    // It looks like testing-library selectors do not allow us to wait for the element to appear,
-    // hence the use of TestCafe's native Selector:
-    // const initialisationNotification = screen.getByText("End-to-end test helpers initialised.");
-    const initialisationNotification = Selector("[role=alert]");
-    await t
-      .expect(initialisationNotification.exists)
-      .ok(
-        "solid-client-authn took too long to verify the query parameters after redirection.",
-        { timeout: 30000 }
-      );
+    await this.page.waitForSelector("[role=alert]");
   }
-}
-
-export async function isIndexPage() {
-  // Pretend that `window` actually is defined (even though the `window`
-  // referred to in the ClientFunction is actually in a different runtime),
-  // so static analysis does not stumble over this:
-  const window: any = undefined;
-  return (
-    (await ClientFunction(() => window.location.origin)()) ===
-    "http://localhost:1234"
-  );
 }
