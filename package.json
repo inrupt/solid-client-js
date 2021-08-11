@@ -6,7 +6,8 @@
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/\" --ext .js,.jsx,.ts,.tsx && jest",
     "e2e-test-node": "jest --config=jest.e2e.config.js",
-    "e2e-test-browser": "testcafe",
+    "e2e-test-browser": "playwright test",
+    "e2e-test-testcafe": "testcafe",
     "build": "rollup --config rollup.config.js",
     "prepublishOnly": "npm run build",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
@@ -69,6 +70,7 @@
   },
   "devDependencies": {
     "@inrupt/solid-client-authn-node": "^1.10.1",
+    "@playwright/test": "^1.13.1",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.2.3",
     "@types/dotenv-flow": "^3.1.0",
