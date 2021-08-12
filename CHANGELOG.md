@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.11.0] - 2021-08-12
+
 ### New features
 
 - The builder returned by `buildThing()` is now stateful. This means you can now
@@ -29,8 +33,6 @@ The following changes have been implemented but not released yet:
 
   const bookmark = bookmarkBuilder.build();
   ```
-
-The following sections document changes that have been released already:
 
 ## [1.10.1] - 2021-08-03
 
