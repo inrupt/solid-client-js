@@ -37,21 +37,21 @@ import {
 import { addMockAcrTo } from "../acp/mock";
 import {
   createPolicy,
-  getAllowModes,
-  getDenyModes,
+  getAllowModesV2,
+  getDenyModesV2,
   getPolicy,
   Policy,
-  setAllowModes,
-  setDenyModes,
+  setAllowModesV2,
+  setDenyModesV2,
   setPolicy,
 } from "../acp/policy";
 import {
-  addAllOfRuleUrl,
-  createRule,
-  getRule,
-  Rule,
-  setRule,
-} from "../acp/rule";
+  addAllOfMatcherUrl,
+  createMatcher,
+  getMatcher,
+  Matcher,
+  setMatcher,
+} from "../acp/matcher";
 import { acp, rdf } from "../constants";
 import {
   ThingPersisted,
@@ -69,23 +69,19 @@ import {
   internal_getActorAccess,
   internal_getAgentAccess,
   internal_getAuthenticatedAccess,
-  internal_getGroupAccess,
   internal_getPublicAccess,
-  internal_getGroupAccessAll,
   internal_getAgentAccessAll,
   internal_setActorAccess,
   internal_setAgentAccess,
-  internal_setGroupAccess,
   internal_setPublicAccess,
   internal_setAuthenticatedAccess,
   internal_AcpData,
-  internal_getPoliciesAndRules,
-} from "./acp";
+  internal_getPoliciesAndMatchers,
+} from "./acp_v2";
+import { internal_accessModeIriStrings } from "../acl/acl.internal";
 
 // Key: actor relation (e.g. agent), value: actor (e.g. a WebID)
-type MockRule = Partial<
-  Record<typeof acp.agent | typeof acp.group, UrlString[]>
->;
+type MockMatcher = Partial<Record<typeof acp.agent, UrlString[]>>;
 
 interface MockAccess {
   read: boolean;
@@ -94,9 +90,9 @@ interface MockAccess {
 }
 
 type MockPolicy = {
-  allOf: Record<UrlString, MockRule>;
-  anyOf: Record<UrlString, MockRule>;
-  noneOf: Record<UrlString, MockRule>;
+  allOf: Record<UrlString, MockMatcher>;
+  anyOf: Record<UrlString, MockMatcher>;
+  noneOf: Record<UrlString, MockMatcher>;
   allow: Partial<MockAccess>;
   deny: Partial<MockAccess>;
 };
@@ -138,16 +134,20 @@ function mockAcr(
     accessTo: accessTo,
   };
 
-  const mockedRules: Record<UrlString, Rule> = {};
-  function generateRule(mockRuleUrl: UrlString, mockRule: MockRule): Rule {
-    let rule = mockedRules[mockRuleUrl] ?? createRule(mockRuleUrl);
-    Object.entries(mockRule).forEach(([mockActorRelation, mockActors]) => {
+  const mockedMatchers: Record<UrlString, Matcher> = {};
+  function generateMatcher(
+    mockMatcherUrl: UrlString,
+    mockMatcher: MockMatcher
+  ): Matcher {
+    let matcher =
+      mockedMatchers[mockMatcherUrl] ?? createMatcher(mockMatcherUrl);
+    Object.entries(mockMatcher).forEach(([mockActorRelation, mockActors]) => {
       mockActors?.forEach((mockActor) => {
-        rule = addIri(rule, mockActorRelation, mockActor);
+        matcher = addIri(matcher, mockActorRelation, mockActor);
       });
     });
-    mockedRules[mockRuleUrl] = rule;
-    return rule;
+    mockedMatchers[mockMatcherUrl] = matcher;
+    return matcher;
   }
   const mockedPolicies: Record<UrlString, Policy> = {};
   function generatePolicy(
@@ -155,47 +155,47 @@ function mockAcr(
     mockPolicy: Partial<MockPolicy>
   ) {
     let policy = mockedPolicies[policyUrl] ?? createPolicy(policyUrl);
-    const allOfRules = mockPolicy.allOf
-      ? Object.entries(mockPolicy.allOf).map(([mockRuleUrl, mockRule]) =>
-          generateRule(mockRuleUrl, mockRule)
+    const allOfMatchers = mockPolicy.allOf
+      ? Object.entries(mockPolicy.allOf).map(([mockMatcherUrl, mockMatcher]) =>
+          generateMatcher(mockMatcherUrl, mockMatcher)
         )
       : [];
-    const anyOfRules = mockPolicy.anyOf
-      ? Object.entries(mockPolicy.anyOf).map(([mockRuleUrl, mockRule]) =>
-          generateRule(mockRuleUrl, mockRule)
+    const anyOfMatchers = mockPolicy.anyOf
+      ? Object.entries(mockPolicy.anyOf).map(([mockMatcherUrl, mockMatcher]) =>
+          generateMatcher(mockMatcherUrl, mockMatcher)
         )
       : [];
-    const noneOfRules = mockPolicy.noneOf
-      ? Object.entries(mockPolicy.noneOf).map(([mockRuleUrl, mockRule]) =>
-          generateRule(mockRuleUrl, mockRule)
+    const noneOfMatchers = mockPolicy.noneOf
+      ? Object.entries(mockPolicy.noneOf).map(([mockMatcherUrl, mockMatcher]) =>
+          generateMatcher(mockMatcherUrl, mockMatcher)
         )
       : [];
 
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModes(policy);
-      policy = setAllowModes(policy, {
+      const existingAllowModes = getAllowModesV2(policy);
+      policy = setAllowModesV2(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModes(policy);
-      policy = setDenyModes(policy, {
+      const existingDenyModes = getDenyModesV2(policy);
+      policy = setDenyModesV2(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });
     }
 
-    policy = allOfRules.reduce(
-      (policy, rule) => addIri(policy, acp.allOf, rule),
+    policy = allOfMatchers.reduce(
+      (policy, matcher) => addIri(policy, acp.allOf, matcher),
       policy
     );
-    policy = anyOfRules.reduce(
-      (policy, rule) => addIri(policy, acp.anyOf, rule),
+    policy = anyOfMatchers.reduce(
+      (policy, matcher) => addIri(policy, acp.anyOf, matcher),
       policy
     );
-    policy = noneOfRules.reduce(
-      (policy, rule) => addIri(policy, acp.noneOf, rule),
+    policy = noneOfMatchers.reduce(
+      (policy, matcher) => addIri(policy, acp.noneOf, matcher),
       policy
     );
     mockedPolicies[policyUrl] = policy;
@@ -222,7 +222,7 @@ function mockAcr(
     }
   );
 
-  acr = Object.values(mockedRules).reduce(setThing, acr);
+  acr = Object.values(mockedMatchers).reduce(setThing, acr);
   let control = internal_createControl({ url: mockAcrUrl });
 
   Object.keys(allMockPolicies.policies).forEach((policyUrl) => {
@@ -259,16 +259,20 @@ function mockResourceWithAcr(
 function mockAcpData(
   mockPolicies: Partial<MockPolicies> = {}
 ): internal_AcpData {
-  const rulesByUrl: Record<UrlString, Rule> = {};
-  function generateMockRule(mockRuleUrl: UrlString, mockRule: MockRule) {
-    let rule = rulesByUrl[mockRuleUrl] ?? createRule(mockRuleUrl);
-    Object.entries(mockRule).forEach(([mockActorRelation, mockActors]) => {
+  const matchersByUrl: Record<UrlString, Matcher> = {};
+  function generateMockMatcher(
+    mockMatcherUrl: UrlString,
+    mockMatcher: MockMatcher
+  ) {
+    let matcher =
+      matchersByUrl[mockMatcherUrl] ?? createMatcher(mockMatcherUrl);
+    Object.entries(mockMatcher).forEach(([mockActorRelation, mockActors]) => {
       mockActors?.forEach((mockActor) => {
-        rule = addIri(rule, mockActorRelation, mockActor);
+        matcher = addIri(matcher, mockActorRelation, mockActor);
       });
     });
-    rulesByUrl[mockRuleUrl] = rule;
-    return rule;
+    matchersByUrl[mockMatcherUrl] = matcher;
+    return matcher;
   }
   const mockedPolicies: Record<UrlString, Policy> = {};
   function generateMockPolicy(
@@ -277,37 +281,43 @@ function mockAcpData(
   ) {
     let policy = mockedPolicies[mockPolicyUrl] ?? createPolicy(mockPolicyUrl);
     if (mockPolicy.allow) {
-      const existingAllowModes = getAllowModes(policy);
-      policy = setAllowModes(policy, {
+      const existingAllowModes = getAllowModesV2(policy);
+      policy = setAllowModesV2(policy, {
         ...existingAllowModes,
         ...mockPolicy.allow,
       });
     }
     if (mockPolicy.deny) {
-      const existingDenyModes = getDenyModes(policy);
-      policy = setDenyModes(policy, {
+      const existingDenyModes = getDenyModesV2(policy);
+      policy = setDenyModesV2(policy, {
         ...existingDenyModes,
         ...mockPolicy.deny,
       });
     }
 
     if (mockPolicy.allOf) {
-      Object.entries(mockPolicy.allOf).forEach(([mockRuleUrl, mockRule]) => {
-        const rule = generateMockRule(mockRuleUrl, mockRule);
-        policy = addIri(policy, acp.allOf, rule);
-      });
+      Object.entries(mockPolicy.allOf).forEach(
+        ([mockMatcherUrl, mockMatcher]) => {
+          const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
+          policy = addIri(policy, acp.allOf, matcher);
+        }
+      );
     }
     if (mockPolicy.anyOf) {
-      Object.entries(mockPolicy.anyOf).forEach(([mockRuleUrl, mockRule]) => {
-        const rule = generateMockRule(mockRuleUrl, mockRule);
-        policy = addIri(policy, acp.anyOf, rule);
-      });
+      Object.entries(mockPolicy.anyOf).forEach(
+        ([mockMatcherUrl, mockMatcher]) => {
+          const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
+          policy = addIri(policy, acp.anyOf, matcher);
+        }
+      );
     }
     if (mockPolicy.noneOf) {
-      Object.entries(mockPolicy.noneOf).forEach(([mockRuleUrl, mockRule]) => {
-        const rule = generateMockRule(mockRuleUrl, mockRule);
-        policy = addIri(policy, acp.noneOf, rule);
-      });
+      Object.entries(mockPolicy.noneOf).forEach(
+        ([mockMatcherUrl, mockMatcher]) => {
+          const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
+          policy = addIri(policy, acp.noneOf, matcher);
+        }
+      );
     }
     mockedPolicies[mockPolicyUrl] = policy;
   }
@@ -338,7 +348,7 @@ function mockAcpData(
   return {
     acrPolicies: acrPolicies,
     policies: policies,
-    rules: Object.values(rulesByUrl),
+    matchers: Object.values(matchersByUrl),
     inaccessibleUrls: [],
   };
 }
@@ -371,7 +381,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -399,7 +409,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -427,7 +437,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -457,7 +467,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -485,7 +495,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -511,7 +521,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -539,7 +549,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -567,7 +577,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -597,7 +607,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -625,7 +635,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -652,7 +662,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -680,7 +690,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -708,7 +718,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -738,7 +748,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -766,7 +776,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -792,7 +802,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -820,7 +830,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -848,7 +858,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -878,7 +888,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -906,7 +916,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           deny: { write: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -930,7 +940,7 @@ describe("getActorAccess", () => {
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -952,7 +962,7 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that does not specify any Rules at all", () => {
+  it("does not apply a Policy that does not specify any Matchers at all", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
@@ -967,7 +977,7 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -975,13 +985,13 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that also specifies empty Rules", () => {
+  it("does not apply a Policy that only specifies empty Matchers", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#emptyRule": {},
+            "https://some.pod/resource?ext=acr#emptyMatcher": {},
           },
         },
       },
@@ -993,7 +1003,7 @@ describe("getActorAccess", () => {
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -1001,13 +1011,13 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("applies a Policy that only specifies non-existent Rules", () => {
+  it("does not apply a Policy that only specifies non-existent Matchers", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#emptyRule": {},
+            "https://some.pod/resource?ext=acr#emptyMatcher": {},
           },
         },
       },
@@ -1015,18 +1025,46 @@ describe("getActorAccess", () => {
       acrPolicies: {},
       memberAcrPolicies: {},
     });
-    let policyReferencingNonExistentRules = acpData.policies[0];
-    policyReferencingNonExistentRules = addIri(
-      policyReferencingNonExistentRules,
+    let policyReferencingNonExistentMatchers = acpData.policies[0];
+    policyReferencingNonExistentMatchers = addIri(
+      policyReferencingNonExistentMatchers,
       acp.allOf,
-      "https://some.pod/resource?ext=acr#emptyRule"
+      "https://some.pod/resource?ext=acr#emptyMatcher"
     );
-    acpData.policies[0] = policyReferencingNonExistentRules;
+    acpData.policies[0] = policyReferencingNonExistentMatchers;
 
     const access = internal_getActorAccess(acpData, acp.agent, webId);
 
     expect(access).toStrictEqual({
-      read: true,
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("does not apply a Policy that only specifies None Of Matchers", () => {
+    const acpData = mockAcpData({
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          noneOf: {
+            "https://some.pod/resource?ext=acr#noneOfMatcher": {
+              [acp.agent]: ["https://some.pod/not-the-applicable-agent"],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    });
+
+    const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+    expect(access).toStrictEqual({
+      read: false,
       append: false,
       write: false,
       controlRead: false,
@@ -1040,7 +1078,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -1048,7 +1086,7 @@ describe("getActorAccess", () => {
         "https://some.pod/other-resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -1070,13 +1108,13 @@ describe("getActorAccess", () => {
     });
   });
 
-  it("can also determine access if a Rule is defined in a separate Resource", () => {
+  it("can also determine access if a Matcher is defined in a separate Resource", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/other-resource?ext=acr#rule": {
+            "https://some.pod/other-resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -1104,7 +1142,7 @@ describe("getActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { append: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -1122,13 +1160,13 @@ describe("getActorAccess", () => {
     expect(access).toBeNull();
   });
 
-  describe("A Policy that references just the given actor in a single Rule", () => {
-    it("applies for an allOf Rule", () => {
+  describe("A Policy that references just the given actor in a single Matcher", () => {
+    it("applies for an allOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1151,12 +1189,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("applies for an anyOf Rule", () => {
+    it("applies for an anyOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1179,12 +1217,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for a noneOf Rule", () => {
+    it("does not apply for a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1208,13 +1246,13 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("A Policy that references a Rule that applies to multiple actors, including the given one", () => {
-    it("does apply for an allOf Rule", () => {
+  describe("A Policy that references a Matcher that applies to multiple actors, including the given one", () => {
+    it("does apply for an allOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
             },
@@ -1237,12 +1275,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does apply for an anyOf Rule", () => {
+    it("does apply for an anyOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
             },
@@ -1265,12 +1303,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for a noneOf Rule", () => {
+    it("does not apply for a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId, "https://some.pod/other-profile#me"],
               },
             },
@@ -1294,14 +1332,14 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("A Policy that references a Rule that does not include the given actor", () => {
-    it("does not apply for an allOf Rule", () => {
+  describe("A Policy that references a Matcher that does not include the given actor", () => {
+    it("does not apply for an allOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1323,13 +1361,13 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an anyOf Rule", () => {
+    it("does not apply for an anyOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1351,13 +1389,13 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for a noneOf Rule", () => {
+    it("does not apply for a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1380,17 +1418,17 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("A Policy that references multiple of the same type of Rules, not all of which reference the given actor", () => {
-    it("does not apply for allOf Rules", () => {
+  describe("A Policy that references multiple of the same type of Matchers, not all of which reference the given actor", () => {
+    it("does not apply for allOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1412,16 +1450,16 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does apply for anyOf Rules", () => {
+    it("does apply for anyOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1443,16 +1481,16 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for noneOf Rules", () => {
+    it("does not apply for noneOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#unapplicable-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1475,16 +1513,16 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("A Policy that references multiple of the same type of Rules, all of which reference the given actor", () => {
-    it("does apply for allOf Rules", () => {
+  describe("A Policy that references multiple of the same type of Matchers, all of which reference the given actor", () => {
+    it("does apply for allOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-applicable-rule": {
+              "https://some.pod/resource?ext=acr#non-applicable-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1507,15 +1545,15 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does apply for anyOf Rules", () => {
+    it("does apply for anyOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-applicable-rule": {
+              "https://some.pod/resource?ext=acr#non-applicable-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1538,154 +1576,15 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for noneOf Rules", () => {
+    it("does not apply for noneOf Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-rule": {
+              "https://some.pod/resource?ext=acr#applicable-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-applicable-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-  });
-
-  describe("A Policy that references multiple Rules of a different type, all of which reference the given actor", () => {
-    it("does apply for an allOf and an anyOf Rule", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not apply for an allOf and a noneOf Rule", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not apply for an anyOf and a noneOf Rule", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not apply for an allOf, an anyOf and a noneOf Rule", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+              "https://some.pod/resource?ext=acr#non-applicable-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -1709,19 +1608,19 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("A Policy that references multiple Rules of a different type, only some of which reference the given actor", () => {
-    it("does not apply for an allOf Rule with the given actor and an anyOf Rule without", () => {
+  describe("A Policy that references multiple Matchers of a different type, all of which reference the given actor", () => {
+    it("does apply for an allOf and an anyOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-anyOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             allow: { read: true },
@@ -1735,7 +1634,7 @@ describe("getActorAccess", () => {
       const access = internal_getActorAccess(acpData, acp.agent, webId);
 
       expect(access).toStrictEqual({
-        read: false,
+        read: true,
         append: false,
         write: false,
         controlRead: false,
@@ -1743,18 +1642,18 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an allOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for an allOf and a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             allow: { read: true },
@@ -1776,18 +1675,18 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an anyOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for an anyOf and a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             allow: { read: true },
@@ -1809,23 +1708,23 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an allOf Rule with the given actor and an anyOf and a noneOf Rule without", () => {
+    it("does not apply for an allOf, an anyOf and a noneOf Matcher", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             allow: { read: true },
@@ -1846,24 +1745,21 @@ describe("getActorAccess", () => {
         controlWrite: false,
       });
     });
+  });
 
-    it("does not apply for an anyOf Rule with the given actor and an allOf and a noneOf Rule without", () => {
+  describe("A Policy that references multiple Matchers of a different type, only some of which reference the given actor", () => {
+    it("does not apply for an allOf Matcher with the given actor and an anyOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
-              },
-            },
-            anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-anyOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1885,23 +1781,18 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for a noneOf Rule with the given actor and an allOf and an anyOf Rule without", () => {
+    it("does not apply for an allOf Matcher with the given actor and a noneOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
-              },
-            },
-            anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1923,18 +1814,56 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an anyOf Rule with the given actor and an allOf Rule without", () => {
+    it("does not apply for an anyOf Matcher with the given actor and a noneOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an allOf Matcher with the given actor and an anyOf and a noneOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -1956,51 +1885,23 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an noneOf Rule with the given actor and an allOf Rule without", () => {
+    it("does not apply for an anyOf Matcher with the given actor and an allOf and a noneOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not apply for an noneOf Rule with the given actor and an anyOf Rule without", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
-                [acp.agent]: [webId],
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             allow: { read: true },
@@ -2022,60 +1923,22 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an allOf and an anyOf Rule with the given actor and a noneOf Rule without", () => {
+    it("does not apply for a noneOf Matcher with the given actor and an allOf and an anyOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-noneOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
-              },
-            },
-            allow: { read: true },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getActorAccess(acpData, acp.agent, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not apply for an allOf and a noneOf Rule with the given actor and an anyOf Rule without", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [webId],
-              },
-            },
-            anyOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
-              },
-            },
-            noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2098,22 +1961,197 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("does not apply for an anyOf and a noneOf Rule with the given actor and an allOf Rule without", () => {
+    it("does not apply for an anyOf Matcher with the given actor and an allOf Matcher without", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#unapplicable-allOf-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an noneOf Matcher with the given actor and an allOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an noneOf Matcher with the given actor and an anyOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an allOf and an anyOf Matcher with the given actor and a noneOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#applicable-noneOf-rule": {
+              "https://some.pod/resource?ext=acr#unapplicable-noneOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an allOf and a noneOf Matcher with the given actor and an anyOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            allow: { read: true },
+          },
+        },
+        memberPolicies: {},
+        acrPolicies: {},
+        memberAcrPolicies: {},
+      });
+
+      const access = internal_getActorAccess(acpData, acp.agent, webId);
+
+      expect(access).toStrictEqual({
+        read: false,
+        append: false,
+        write: false,
+        controlRead: false,
+        controlWrite: false,
+      });
+    });
+
+    it("does not apply for an anyOf and a noneOf Matcher with the given actor and an allOf Matcher without", () => {
+      const acpData = mockAcpData({
+        policies: {
+          "https://some.pod/resource?ext=acr#policy": {
+            allOf: {
+              "https://some.pod/resource?ext=acr#unapplicable-allOf-matcher": {
+                [acp.agent]: [acp.PublicAgent],
+              },
+            },
+            anyOf: {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
+                [acp.agent]: [webId],
+              },
+            },
+            noneOf: {
+              "https://some.pod/resource?ext=acr#applicable-noneOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2143,7 +2181,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2155,7 +2193,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2170,7 +2208,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2181,7 +2219,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2210,7 +2248,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2220,7 +2258,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2233,7 +2271,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2243,7 +2281,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2266,12 +2304,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("preserves access modes from Policies using different types of Rules", () => {
+    it("preserves access modes from Policies using different types of Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2281,7 +2319,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2294,7 +2332,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2304,7 +2342,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2334,7 +2372,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2344,7 +2382,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2358,7 +2396,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2368,7 +2406,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2396,7 +2434,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2406,7 +2444,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2419,7 +2457,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2429,7 +2467,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2452,12 +2490,12 @@ describe("getActorAccess", () => {
       });
     });
 
-    it("preserves access modes from Policies using different types of Rules", () => {
+    it("preserves access modes from Policies using different types of Matchers", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2467,7 +2505,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2480,7 +2518,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2490,7 +2528,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#applicable-anyOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-anyOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2520,7 +2558,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2532,7 +2570,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2547,7 +2585,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2558,7 +2596,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2587,7 +2625,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2599,7 +2637,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2614,7 +2652,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2625,7 +2663,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2654,7 +2692,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2664,7 +2702,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2677,7 +2715,7 @@ describe("getActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2687,7 +2725,7 @@ describe("getActorAccess", () => {
           },
           "https://some.pod/resource?ext=acr#another-acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2717,7 +2755,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -2747,38 +2785,8 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getAgentAccess(acpData, webId);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [webId],
               },
             },
             allow: {
@@ -2807,7 +2815,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -2837,7 +2845,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -2863,107 +2871,13 @@ describe("getActorAccess", () => {
     });
   });
 
-  describe("getGroupAccess", () => {
-    const groupUrl = "https://some.pod/groups#group";
-
-    it("returns access set for the given Group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [groupUrl],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a different Group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for an agent", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.agent]: [groupUrl],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getGroupAccess(acpData, groupUrl);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-  });
-
   describe("getPublicAccess", () => {
     it("returns access set for the general public", () => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -2993,38 +2907,8 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getPublicAccess(acpData);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [acp.PublicAgent],
               },
             },
             allow: {
@@ -3053,7 +2937,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -3085,7 +2969,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -3115,38 +2999,8 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: ["https://arbitrary.pod/profile#me"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      });
-
-      const access = internal_getAuthenticatedAccess(acpData);
-
-      expect(access).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not return access set for a group", () => {
-      const acpData = mockAcpData({
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: [acp.AuthenticatedAgent],
               },
             },
             allow: {
@@ -3175,7 +3029,7 @@ describe("getActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -3203,7 +3057,7 @@ describe("getActorAccess", () => {
 });
 
 describe("getActorAccessAll", () => {
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "returns an empty map if no individual %s is given access",
     (actor) => {
       const acpData = mockAcpData({
@@ -3216,57 +3070,14 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it("does not return access given to individual agents for groups", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: {
-            "https://some.pod/resource.acr#rule": {
-              [acp.agent]: ["https://some.pod/profile#agent"],
-            },
-          },
-          allow: {
-            append: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getActorAccessAll(acpData, acp.group)).toStrictEqual({});
-  });
-
-  it("does not return access given to groups for agents", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource.acr#policy": {
-          anyOf: {
-            "https://some.pod/resource.acr#rule": {
-              [acp.group]: ["https://some.pod/profile#group"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-    expect(internal_getActorAccessAll(acpData, acp.agent)).toStrictEqual({});
-  });
-
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the general public for %s",
     (actor) => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -3284,14 +3095,14 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the Creator agent for %s",
     (actor) => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [acp.agent]: [acp.CreatorAgent],
               },
             },
@@ -3309,14 +3120,14 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "does not return access given to the Authenticated agent for %s",
     (actor) => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -3334,14 +3145,14 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "also returns access data if an external policy is present",
     (actor) => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [actor]: ["https://some.pod/some-actor"],
               },
             },
@@ -3351,7 +3162,7 @@ describe("getActorAccessAll", () => {
           },
           "https://some.pod/another-resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [actor]: ["https://some.pod/some-actor"],
               },
             },
@@ -3376,14 +3187,14 @@ describe("getActorAccessAll", () => {
     }
   );
 
-  it.each([acp.agent, acp.group])(
+  it.each([acp.agent])(
     "returns null if the current user does not have sufficient access to see all access data",
     (actor) => {
       const acpData = mockAcpData({
         policies: {
           "https://some.pod/resource.acr#policy": {
             anyOf: {
-              "https://some.pod/resource.acr#rule": {
+              "https://some.pod/resource.acr#matcher": {
                 [actor]: ["https://some.pod/some-actor"],
               },
             },
@@ -3403,14 +3214,14 @@ describe("getActorAccessAll", () => {
   );
 
   describe("One or several Policies that apply to multiple agents", () => {
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns access for all the %s that are individually given access across multiple policies",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#policy-a": {
               anyOf: {
-                "https://some.pod/resource.acr#rule-a": {
+                "https://some.pod/resource.acr#matcher-a": {
                   [actor]: ["https://some.pod/profile#actor-a"],
                 },
               },
@@ -3420,7 +3231,7 @@ describe("getActorAccessAll", () => {
             },
             "https://some.pod/resource.acr#policy-b": {
               anyOf: {
-                "https://some.pod/resource.acr#rule-b": {
+                "https://some.pod/resource.acr#matcher-b": {
                   [actor]: ["https://some.pod/profile#actor-b"],
                 },
               },
@@ -3455,14 +3266,14 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns access for all the %s that are individually given access for a single policy",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#policy-a": {
               anyOf: {
-                "https://some.pod/resource.acr#rule-a": {
+                "https://some.pod/resource.acr#matcher-a": {
                   [actor]: [
                     "https://some.pod/profile#actor-a",
                     "https://some.pod/profile#actor-b",
@@ -3500,19 +3311,19 @@ describe("getActorAccessAll", () => {
   });
 
   describe("One or several policies applying to one agent and not to another", () => {
-    it.each([acp.agent, acp.group])(
-      "returns no access for Policies with a noneOf rule",
+    it.each([acp.agent])(
+      "returns no access for Policies with a noneOf matcher",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#policy": {
               allOf: {
-                "https://some.pod/resource.acr#allof-rule": {
+                "https://some.pod/resource.acr#allof-matcher": {
                   [actor]: ["https://some.pod/profile#included-actor"],
                 },
               },
               noneOf: {
-                "https://some.pod/resource.acr#noneof-rule": {
+                "https://some.pod/resource.acr#noneof-matcher": {
                   [actor]: ["https://some.pod/profile#excluded-actor"],
                 },
               },
@@ -3545,17 +3356,17 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
-      "returns no access for %s missing from an allOf rule",
+    it.each([acp.agent])(
+      "returns no access for %s missing from an allOf matcher",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#policy": {
               allOf: {
-                "https://some.pod/resource.acr#rule": {
+                "https://some.pod/resource.acr#matcher": {
                   [actor]: ["https://some.pod/profile#included-actor"],
                 },
-                "https://some.pod/resource.acr#another-rule": {
+                "https://some.pod/resource.acr#another-matcher": {
                   [actor]: [
                     "https://some.pod/profile#excluded-actor",
                     "https://some.pod/profile#included-actor",
@@ -3591,20 +3402,20 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
-      "returns no access for %s in an anyOf rule if they are missing from an allOf rule",
+    it.each([acp.agent])(
+      "returns no access for %s in an anyOf matcher if they are missing from an allOf matcher",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#policy": {
               allOf: {
-                "https://some.pod/resource.acr#rule": {
+                "https://some.pod/resource.acr#matcher": {
                   [actor]: [
                     "https://some.pod/profile#actor",
                     "https://some.pod/profile#a-third-actor",
                   ],
                 },
-                "https://some.pod/resource.acr#another-rule": {
+                "https://some.pod/resource.acr#another-matcher": {
                   [actor]: [
                     "https://some.pod/profile#another-actor",
                     "https://some.pod/profile#a-third-actor",
@@ -3612,7 +3423,7 @@ describe("getActorAccessAll", () => {
                 },
               },
               anyOf: {
-                "https://some.pod/resource.acr#a-rule": {
+                "https://some.pod/resource.acr#a-matcher": {
                   [actor]: [
                     "https://some.pod/profile#actor",
                     "https://some.pod/profile#a-third-actor",
@@ -3657,14 +3468,14 @@ describe("getActorAccessAll", () => {
   });
 
   describe("One or several policies, some giving access and some denying access to agents", () => {
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "returns false for access being denied to the %s",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#deny-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#deny-rule": {
+                "https://some.pod/resource.acr#deny-matcher": {
                   [actor]: ["https://some.pod/profile#denied-actor"],
                 },
               },
@@ -3675,7 +3486,7 @@ describe("getActorAccessAll", () => {
             },
             "https://some.pod/resource.acr#allow-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#allow-rule": {
+                "https://some.pod/resource.acr#allow-matcher": {
                   [actor]: ["https://some.pod/profile#allowed-actor"],
                 },
               },
@@ -3709,14 +3520,14 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "combines allowed and denied modes when multiple policies apply to the %s",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#deny-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#deny-rule": {
+                "https://some.pod/resource.acr#deny-matcher": {
                   [actor]: [
                     "https://some.pod/profile#an-actor",
                     "https://some.pod/profile#another-actor",
@@ -3730,7 +3541,7 @@ describe("getActorAccessAll", () => {
             },
             "https://some.pod/resource.acr#allow-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#allow-rule": {
+                "https://some.pod/resource.acr#allow-matcher": {
                   [actor]: [
                     "https://some.pod/profile#an-actor",
                     "https://some.pod/profile#another-actor",
@@ -3766,14 +3577,14 @@ describe("getActorAccessAll", () => {
       }
     );
 
-    it.each([acp.agent, acp.group])(
+    it.each([acp.agent])(
       "overrides allowed modes when %s is denied in another policy",
       (actor) => {
         const acpData = mockAcpData({
           policies: {
             "https://some.pod/resource.acr#deny-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#deny-rule": {
+                "https://some.pod/resource.acr#deny-matcher": {
                   [actor]: ["https://some.pod/profile#denied-actor"],
                 },
               },
@@ -3783,7 +3594,7 @@ describe("getActorAccessAll", () => {
             },
             "https://some.pod/resource.acr#allow-policy": {
               anyOf: {
-                "https://some.pod/resource.acr#allow-rule": {
+                "https://some.pod/resource.acr#allow-matcher": {
                   [actor]: [
                     "https://some.pod/profile#denied-actor",
                     "https://some.pod/profile#allowed-actor",
@@ -3821,135 +3632,6 @@ describe("getActorAccessAll", () => {
   });
 });
 
-describe("getGroupAccessAll", () => {
-  const groupAUrl = "https://some.pod/groups#groupA";
-  const groupBUrl = "https://some.pod/groups#groupB";
-  it("returns access set for any Group referenced in the ACR", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.group]: [groupAUrl, groupBUrl],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({
-      [groupAUrl]: {
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
-      [groupBUrl]: {
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
-    });
-  });
-
-  it("does not return access set for an agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: ["https://some.pod/profile#agent"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not include access set for everyone", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.PublicAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not return access set for any authenticated Agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.AuthenticatedAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-
-  it("does not return access set for the Creator Agent", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.agent]: [acp.CreatorAgent],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getGroupAccessAll(acpData)).toStrictEqual({});
-  });
-});
-
 describe("getAgentAccessAll", () => {
   const agentAUrl = "https://some.pod/profiles#agentA";
   const agentBUrl = "https://some.pod/profiles#agentB";
@@ -3959,7 +3641,7 @@ describe("getAgentAccessAll", () => {
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+            "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
               [acp.agent]: [agentAUrl, agentBUrl],
             },
           },
@@ -3991,34 +3673,12 @@ describe("getAgentAccessAll", () => {
     });
   });
 
-  it("does not return access set for a group", () => {
-    const acpData = mockAcpData({
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-              [acp.group]: ["https://some.pod/group#some-group"],
-            },
-          },
-          allow: {
-            read: true,
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    });
-
-    expect(internal_getAgentAccessAll(acpData)).toStrictEqual({});
-  });
-
   it("does not include access set for everyone", () => {
     const acpData = mockAcpData({
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+            "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
               [acp.agent]: [acp.PublicAgent],
             },
           },
@@ -4040,7 +3700,7 @@ describe("getAgentAccessAll", () => {
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+            "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
               [acp.agent]: [acp.AuthenticatedAgent],
             },
           },
@@ -4062,7 +3722,7 @@ describe("getAgentAccessAll", () => {
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allOf: {
-            "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+            "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
               [acp.agent]: [acp.CreatorAgent],
             },
           },
@@ -4088,39 +3748,10 @@ describe("setActorAccess", () => {
       policies: {
         "https://some.pod/other-resource?ext=acr#policy": {
           allow: { read: true },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {},
-      memberAcrPolicies: {},
-    };
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      mockSetup
-    );
-    const acpData = mockAcpData(mockSetup);
-
-    const updatedResourceWithAcr = internal_setActorAccess(
-      resourceWithAcr,
-      acpData,
-      acp.agent,
-      webId,
-      {
-        read: true,
-      }
-    );
-
-    expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
-  });
-
-  it("can set access even if the ACR refers to Rules defined in other Resources", () => {
-    const mockSetup = {
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allow: { read: true },
           allOf: {
-            "https://some.pod/other-resource?ext=acr#rule": {},
+            "https://some.pod/resource?ext=acr#matcher": {
+              [acp.agent]: [webId],
+            },
           },
         },
       },
@@ -4148,13 +3779,49 @@ describe("setActorAccess", () => {
     expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
   });
 
-  it("properly encodes hashes in actor URLs when used as identifiers in Policy/Rule URLs", () => {
+  it("can set access even if the ACR refers to Matchers defined in other Resources", () => {
     const mockSetup = {
       policies: {
         "https://some.pod/resource?ext=acr#policy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
+            "https://some.pod/other-resource?ext=acr#matcher": {
+              [acp.agent]: [webId],
+            },
+          },
+        },
+      },
+      memberPolicies: {},
+      acrPolicies: {},
+      memberAcrPolicies: {},
+    };
+    const resourceWithAcr = mockResourceWithAcr(
+      "https://some.pod/resource",
+      "https://some.pod/resource?ext=acr",
+      mockSetup
+    );
+    const acpData = mockAcpData(mockSetup);
+
+    const updatedResourceWithAcr = internal_setActorAccess(
+      resourceWithAcr,
+      acpData,
+      acp.agent,
+      webId,
+      {
+        read: true,
+      }
+    );
+
+    expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
+  });
+
+  it("properly encodes hashes in actor URLs when used as identifiers in Policy/Matcher URLs", () => {
+    const mockSetup = {
+      policies: {
+        "https://some.pod/resource?ext=acr#policy": {
+          allow: { read: true },
+          allOf: {
+            "https://some.pod/resource?ext=acr#matcher": {
               [acp.agent]: [webId],
             },
           },
@@ -4165,7 +3832,7 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#acrPolicy": {
           allow: { read: true },
           allOf: {
-            "https://some.pod/resource?ext=acr#acrRule": {
+            "https://some.pod/resource?ext=acr#acrMatcher": {
               [acp.agent]: [webId],
             },
           },
@@ -4192,19 +3859,21 @@ describe("setActorAccess", () => {
     );
 
     const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
-    const policyAndRuleUrls = getThingAll(updatedAcr).map((policyOrRule) =>
-      asIri(policyOrRule)
+    const policyAndMatcherUrls = getThingAll(updatedAcr).map(
+      (policyOrMatcher) => asIri(policyOrMatcher)
     );
-    // No Policy or Rule URL should contain the plain actor URL:
-    expect(policyAndRuleUrls.filter((url) => url.includes(webId))).toHaveLength(
-      0
-    );
+    // No Policy or Matcher URL should contain the plain actor URL:
+    expect(
+      policyAndMatcherUrls.filter((url) => url.includes(webId))
+    ).toHaveLength(0);
     // There should be three with the encoded one though:
     // 1. The new ACR Policy.
     // 2. The new Policy.
-    // 3. The new Rule.
+    // 3. The new Matcher.
     expect(
-      policyAndRuleUrls.filter((url) => url.includes(encodeURIComponent(webId)))
+      policyAndMatcherUrls.filter((url) =>
+        url.includes(encodeURIComponent(webId))
+      )
     ).toHaveLength(3);
   });
 
@@ -4233,10 +3902,10 @@ describe("setActorAccess", () => {
         fc.constant("https://some.pod/resource?ext=acl#policy2"),
         fc.constant("https://some.pod/resource?ext=acl#policy3")
       );
-      const ruleUrlArbitrary = fc.oneof(
-        fc.constant("https://some.pod/resource?ext=acl#rule1"),
-        fc.constant("https://some.pod/resource?ext=acl#rule2"),
-        fc.constant("https://some.pod/resource?ext=acl#rule3")
+      const matcherUrlArbitrary = fc.oneof(
+        fc.constant("https://some.pod/resource?ext=acl#matcher"),
+        fc.constant("https://some.pod/resource?ext=acl#matcher"),
+        fc.constant("https://some.pod/resource?ext=acl#matcher")
       );
       const agentUrlArbitrary = fc.oneof(
         fc.constant("https://some.pod/profiles#agent1"),
@@ -4246,16 +3915,8 @@ describe("setActorAccess", () => {
         fc.constant(acp.AuthenticatedAgent),
         fc.constant(acp.CreatorAgent)
       );
-      const groupUrlArbitrary = fc.oneof(
-        fc.constant("https://some.pod/groups#group1"),
-        fc.constant("https://some.pod/groups#group2"),
-        fc.constant("https://some.pod/groups#group3")
-      );
-      const ruleArbitrary = fc.record({
+      const matcherArbitrary = fc.record({
         [acp.agent]: fc.option(fc.array(agentUrlArbitrary, { maxLength: 6 }), {
-          nil: undefined,
-        }),
-        [acp.group]: fc.option(fc.array(groupUrlArbitrary, { maxLength: 3 }), {
           nil: undefined,
         }),
       });
@@ -4263,17 +3924,17 @@ describe("setActorAccess", () => {
         fc.oneof(fc.constant("allow"), fc.constant("deny")),
         mockAccessArbitrary
       );
-      const policyRulesArbitrary = fc.dictionary(
+      const policyMatchersArbitrary = fc.dictionary(
         fc.oneof(
           fc.constant("allOf"),
           fc.constant("anyOf"),
           fc.constant("noneOf")
         ),
-        fc.dictionary(ruleUrlArbitrary, ruleArbitrary)
+        fc.dictionary(matcherUrlArbitrary, matcherArbitrary)
       );
       const policyArbitrary = fc
-        .tuple(policyAccessArbitrary, policyRulesArbitrary)
-        .map(([access, rules]) => ({ ...access, ...rules }));
+        .tuple(policyAccessArbitrary, policyMatchersArbitrary)
+        .map(([access, matcher]) => ({ ...access, ...matcher }));
       const acrArbitrary = fc.record({
         policies: fc.oneof(
           fc.constant({}),
@@ -4286,10 +3947,7 @@ describe("setActorAccess", () => {
         ),
         memberAcrPolicies: fc.constant({}),
       });
-      const actorRelationArbitrary = fc.oneof(
-        fc.constant(acp.agent),
-        fc.constant(acp.group)
-      );
+      const actorRelationArbitrary = fc.oneof(fc.constant(acp.agent));
       const fcInput = fc.tuple(
         acrArbitrary,
         setAccessArbitrary,
@@ -4340,12 +3998,10 @@ describe("setActorAccess", () => {
             allow: { read: true },
             deny: { append: true, write: true },
             anyOf: {
-              "https://some.pod/resource?ext=acl#rule2": {
-                "http://www.w3.org/ns/solid/acp#group": [
-                  "https://some.pod/groups#group2",
-                ],
+              "https://some.pod/resource?ext=acl#matcher2": {
+                "http://www.w3.org/ns/solid/acp#agent": [acp.PublicAgent],
               },
-              "https://some.pod/resource?ext=acl#rule3": {},
+              "https://some.pod/resource?ext=acl#matcher3": {},
             },
           },
         },
@@ -4395,7 +4051,7 @@ describe("setActorAccess", () => {
             allow: { write: true },
             deny: { write: true },
             anyOf: {
-              "https://some.pod/resource?ext=acl#rule1": {
+              "https://some.pod/resource?ext=acl#matcher": {
                 "http://www.w3.org/ns/solid/acp#agent": [
                   "https://some.pod/profiles#agent2",
                   "http://www.w3.org/ns/solid/acp#PublicAgent",
@@ -4443,7 +4099,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acl#policy1": {
             allow: { read: true, write: true },
             anyOf: {
-              "https://some.pod/resource?ext=acl#rule2": {
+              "https://some.pod/resource?ext=acl#matcher": {
                 "http://www.w3.org/ns/solid/acp#agent": [
                   "http://www.w3.org/ns/solid/acp#PublicAgent",
                   "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
@@ -4454,7 +4110,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acl#policy2": { deny: { read: true } },
           "https://some.pod/resource?ext=acl#policy3": {
             noneOf: {
-              "https://some.pod/resource?ext=acl#rule2": {
+              "https://some.pod/resource?ext=acl#matcher": {
                 "http://www.w3.org/ns/solid/acp#agent": [
                   "http://www.w3.org/ns/solid/acp#PublicAgent",
                   "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
@@ -4509,11 +4165,9 @@ describe("setActorAccess", () => {
             allow: { read: true },
             deny: { append: true },
             anyOf: {
-              "https://some.pod/resource?ext=acl#rule1": {},
-              "https://some.pod/resource?ext=acl#rule3": {
-                "http://www.w3.org/ns/solid/acp#group": [
-                  "https://some.pod/groups#group2",
-                ],
+              "https://some.pod/resource?ext=acl#matcher1": {},
+              "https://some.pod/resource?ext=acl#matcher3": {
+                "http://www.w3.org/ns/solid/acp#agent": [acp.PublicAgent],
               },
             },
           },
@@ -4603,26 +4257,26 @@ describe("setActorAccess", () => {
       const acrAllowed = getUrlAll(acrPolicy!, acp.allow);
       const allowed = getUrlAll(policy!, acp.allow);
       expect(acrAllowed).toHaveLength(2);
-      expect(acrAllowed).toContain(acp.Read);
-      expect(acrAllowed).toContain(acp.Write);
+      expect(acrAllowed).toContain(internal_accessModeIriStrings.read);
+      expect(acrAllowed).toContain(internal_accessModeIriStrings.write);
       expect(allowed).toHaveLength(3);
-      expect(allowed).toContain(acp.Read);
-      expect(allowed).toContain(acp.Append);
-      expect(allowed).toContain(acp.Write);
+      expect(allowed).toContain(internal_accessModeIriStrings.read);
+      expect(allowed).toContain(internal_accessModeIriStrings.append);
+      expect(allowed).toContain(internal_accessModeIriStrings.write);
 
-      const acrRuleUrls = getUrlAll(acrPolicy!, acp.allOf).concat(
+      const acrMatcherUrls = getUrlAll(acrPolicy!, acp.allOf).concat(
         getUrlAll(acrPolicy!, acp.anyOf)
       );
-      const ruleUrls = getUrlAll(policy!, acp.allOf).concat(
+      const matcherUrls = getUrlAll(policy!, acp.allOf).concat(
         getUrlAll(policy!, acp.anyOf)
       );
-      expect(ruleUrls).toHaveLength(1);
-      expect(ruleUrls).toStrictEqual(acrRuleUrls);
+      expect(matcherUrls).toHaveLength(1);
+      expect(matcherUrls).toStrictEqual(acrMatcherUrls);
 
-      const rule = getThing(updatedAcr, ruleUrls[0]);
-      expect(rule).not.toBeNull();
+      const matcher = getThing(updatedAcr, matcherUrls[0]);
+      expect(matcher).not.toBeNull();
 
-      expect(getUrl(rule!, acp.agent)).toBe(webId);
+      expect(getUrl(matcher!, acp.agent)).toBe(webId);
     });
 
     it("adds the relevant ACP data when unrelated access has already been defined", () => {
@@ -4630,7 +4284,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4677,7 +4331,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4704,7 +4358,7 @@ describe("setActorAccess", () => {
         }
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
-      // The original Control, Policiy and Rule are still present:
+      // The original Control, Policiy and Matcher are still present:
       const thingUrlsInAcr = (getThingAll(updatedAcr) as ThingPersisted[]).map(
         asIri
       );
@@ -4714,7 +4368,7 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       );
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#rule"
+        "https://some.pod/resource?ext=acr#matcher"
       );
     });
 
@@ -4724,7 +4378,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4735,7 +4389,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4795,7 +4449,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4806,7 +4460,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4866,7 +4520,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { append: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4927,7 +4581,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { append: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4988,7 +4642,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -4999,7 +4653,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5059,7 +4713,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5070,7 +4724,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             deny: { write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5124,16 +4778,16 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("overwrites conflicting access that also refers to a non-existent Rule", () => {
+    it("overwrites conflicting access that also refers to a non-existent Matcher", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-existent_rule": {},
+              "https://some.pod/resource?ext=acr#non-existent_matcher": {},
             },
           },
         },
@@ -5142,10 +4796,10 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             deny: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
+              "https://some.pod/resource?ext=acr#non-existent_acrMatcher": {},
             },
           },
         },
@@ -5206,7 +4860,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5217,7 +4871,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             deny: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5276,7 +4930,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5287,7 +4941,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             deny: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -5340,7 +4994,7 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting Control access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("preserves conflicting Control access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -5348,7 +5002,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -5401,14 +5055,14 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("preserves conflicting access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allow: { append: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -5463,14 +5117,14 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("does not copy references to non-existent Rules when preserving conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("does not copy references to non-existent Matchers when preserving conflicting access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allow: { append: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -5485,16 +5139,16 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         mockSetup
       );
-      let policyReferencingNonExistentRules = getPolicy(
+      let policyReferencingNonExistentMatchers = getPolicy(
         mockedAcr,
         "https://some.pod/resource?ext=acr#policy"
       )!;
-      policyReferencingNonExistentRules = addIri(
-        policyReferencingNonExistentRules,
+      policyReferencingNonExistentMatchers = addIri(
+        policyReferencingNonExistentMatchers,
         acp.allOf,
-        "https://some.pod/resource?ext=acr#nonExistentRule"
+        "https://some.pod/resource?ext=acr#nonExistentMatcher"
       );
-      mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentRules);
+      mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentMatchers);
       const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
       const resourceWithAcr = addPolicyUrl(
         addMockAcrTo(plainResource, mockedAcr),
@@ -5520,15 +5174,15 @@ describe("setActorAccess", () => {
           if (policy === null) {
             return false;
           }
-          const allOfRuleIris = getIriAll(policy, acp.allOf);
-          return allOfRuleIris.every(
-            (ruleIri) => getRule(updatedAcr, ruleIri) !== null
+          const allOfMatcherIris = getIriAll(policy, acp.allOf);
+          return allOfMatcherIris.every(
+            (matcher) => getMatcher(updatedAcr, matcher) !== null
           );
         })
       ).toBe(true);
     });
 
-    it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
+    it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Matcher", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -5536,10 +5190,10 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             anyOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
+              "https://some.pod/resource?ext=acr#other-matcher": {
                 [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
@@ -5592,16 +5246,16 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
+    it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Matcher", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             anyOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
+              "https://some.pod/resource?ext=acr#other-matcher": {
                 [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
@@ -5656,7 +5310,7 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting Control access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
+    it("preserves conflicting Control access defined for the given actor if another allOf Matcher mentioning a different actor is also referenced", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -5664,11 +5318,11 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5708,7 +5362,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5717,27 +5371,27 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
+    it("preserves conflicting access defined for the given actor if another allOf Matcher mentioning a different actor is also referenced", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5779,7 +5433,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5788,17 +5442,17 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting Control access defined for the given actor if a noneOf Rule also exists", () => {
+    it("preserves conflicting Control access defined for the given actor if a noneOf Matcher also exists", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -5806,13 +5460,13 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5852,7 +5506,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5861,31 +5515,31 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
       ]);
       expect(getIriAll(existingPolicy, acp.noneOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting access defined for the given actor if a noneOf Rule also exists", () => {
+    it("preserves conflicting access defined for the given actor if a noneOf Matcher also exists", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -5927,7 +5581,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5936,16 +5590,16 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
       ]);
       expect(getIriAll(existingPolicy, acp.noneOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
     it("does not affect other actor's access", () => {
@@ -5954,7 +5608,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [otherWebId],
               },
             },
@@ -6004,7 +5658,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6086,15 +5740,15 @@ describe("setActorAccess", () => {
       );
     });
 
-    it("does not remove references to Rules that do not exist in this ACR", () => {
+    it("does not remove references to Matchers that do not exist in this ACR", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#allOf_rule": {},
+              "https://some.pod/resource?ext=acr#allOf_matcher": {},
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#anyOf_rule": {},
+              "https://some.pod/resource?ext=acr#anyOf_matcher": {},
             },
           },
         },
@@ -6102,10 +5756,10 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#allOf_acrRule": {},
+              "https://some.pod/resource?ext=acr#allOf_acrMatcher": {},
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
+              "https://some.pod/resource?ext=acr#anyOf_acrMatcher": {},
             },
           },
         },
@@ -6144,20 +5798,20 @@ describe("setActorAccess", () => {
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_rule"
+        "https://some.pod/resource?ext=acr#allOf_matcher"
       );
       expect(getIri(policy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_rule"
+        "https://some.pod/resource?ext=acr#anyOf_matcher"
       );
       const acrPolicy = getThing(
         acr,
         "https://some.pod/resource?ext=acr#acrPolicy"
       )!;
       expect(getIri(acrPolicy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_acrRule"
+        "https://some.pod/resource?ext=acr#allOf_acrMatcher"
       );
       expect(getIri(acrPolicy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_acrRule"
+        "https://some.pod/resource?ext=acr#anyOf_acrMatcher"
       );
     });
   });
@@ -6206,7 +5860,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6253,7 +5907,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6280,7 +5934,7 @@ describe("setActorAccess", () => {
         }
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
-      // The original Control, Policiy and Rule are still present:
+      // The original Control, Policiy and Matcher are still present:
       const thingUrlsInAcr = (getThingAll(updatedAcr) as ThingPersisted[]).map(
         asIri
       );
@@ -6290,7 +5944,7 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       );
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#rule"
+        "https://some.pod/resource?ext=acr#matcher"
       );
     });
 
@@ -6300,7 +5954,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6311,7 +5965,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6368,16 +6022,16 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("overwrites conflicting access that also refers to a non-existent Rule", () => {
+    it("overwrites conflicting access that also refers to a non-existent Matcher", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true, append: true, write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-existent_rule": {},
+              "https://some.pod/resource?ext=acr#non-existent_matcher": {},
             },
           },
         },
@@ -6385,11 +6039,11 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true, write: true },
-            allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+            anyOf: {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#non-existent_acrRule": {},
+              "https://some.pod/resource?ext=acr#non-existent_acrMatcher": {},
             },
           },
         },
@@ -6450,7 +6104,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6461,7 +6115,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6520,7 +6174,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true, append: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6531,7 +6185,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allow: { read: true, write: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#acrRule": {
+              "https://some.pod/resource?ext=acr#acrMatcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -6584,7 +6238,7 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting Control access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("preserves conflicting Control access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -6592,7 +6246,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -6645,14 +6299,14 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("preserves conflicting access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { append: true },
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -6707,14 +6361,14 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("does not copy references to non-existent Rules when preserving conflicting access defined for a different actor that is defined with the same Rule as applies to the given actor", () => {
+    it("does not copy references to non-existent Matchers when preserving conflicting access defined for a different actor that is defined with the same Matcher as applies to the given actor", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             deny: { append: true },
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId, "https://some-other.pod/other-profile#me"],
               },
             },
@@ -6729,16 +6383,16 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr",
         mockSetup
       );
-      let policyReferencingNonExistentRules = getPolicy(
+      let policyReferencingNonExistentMatchers = getPolicy(
         mockedAcr,
         "https://some.pod/resource?ext=acr#policy"
       )!;
-      policyReferencingNonExistentRules = addIri(
-        policyReferencingNonExistentRules,
+      policyReferencingNonExistentMatchers = addIri(
+        policyReferencingNonExistentMatchers,
         acp.allOf,
-        "https://some.pod/resource?ext=acr#nonExistentRule"
+        "https://some.pod/resource?ext=acr#nonExistentMatcher"
       );
-      mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentRules);
+      mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentMatchers);
       const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
       const resourceWithAcr = addPolicyUrl(
         addMockAcrTo(plainResource, mockedAcr),
@@ -6764,15 +6418,15 @@ describe("setActorAccess", () => {
           if (policy === null) {
             return false;
           }
-          const allOfRuleIris = getIriAll(policy, acp.allOf);
-          return allOfRuleIris.every(
-            (ruleIri) => getRule(updatedAcr, ruleIri) !== null
+          const allOfMatcherIris = getIriAll(policy, acp.allOf);
+          return allOfMatcherIris.every(
+            (matcher) => getMatcher(updatedAcr, matcher) !== null
           );
         })
       ).toBe(true);
     });
 
-    it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
+    it("preserves conflicting Control access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Matcher", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -6780,10 +6434,10 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             anyOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
+              "https://some.pod/resource?ext=acr#other-matcher": {
                 [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
@@ -6836,16 +6490,16 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Rule", () => {
+    it("preserves conflicting access defined for a different actor that is defined with the same Policy as applies to the given actor, but with a different anyOf Matcher", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             anyOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
+              "https://some.pod/resource?ext=acr#other-matcher": {
                 [acp.agent]: ["https://some-other.pod/other-profile#me"],
               },
             },
@@ -6900,7 +6554,7 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("preserves conflicting Control access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
+    it("preserves conflicting Control access defined for the given actor if another allOf Matcher mentioning a different actor is also referenced", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -6908,11 +6562,11 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -6952,7 +6606,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -6961,27 +6615,27 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting access defined for the given actor if another allOf Rule mentioning a different actor is also referenced", () => {
+    it("preserves conflicting access defined for the given actor if another allOf Matcher mentioning a different actor is also referenced", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7023,7 +6677,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // the Group should still apply:
+      // the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7032,17 +6686,17 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting Control access defined for the given actor if a noneOf Rule also exists", () => {
+    it("preserves conflicting Control access defined for the given actor if a noneOf Matcher also exists", () => {
       const mockSetup = {
         policies: {},
         memberPolicies: {},
@@ -7050,13 +6704,13 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7096,7 +6750,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getAcrPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7105,31 +6759,31 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
       ]);
       expect(getIriAll(existingPolicy, acp.noneOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
-    it("preserves conflicting access defined for the given actor if a noneOf Rule also exists", () => {
+    it("preserves conflicting access defined for the given actor if a noneOf Matcher also exists", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#own-rule": {
+              "https://some.pod/resource?ext=acr#own-matcher": {
                 [acp.agent]: [webId],
               },
             },
             noneOf: {
-              "https://some.pod/resource?ext=acr#other-rule": {
-                [acp.group]: ["https://some.pod/groups#group"],
+              "https://some.pod/resource?ext=acr#other-matcher": {
+                [acp.agent]: [acp.PublicAgent],
               },
             },
           },
@@ -7171,7 +6825,7 @@ describe("setActorAccess", () => {
       });
 
       // But also the access defined for the the combination of the Agent and
-      // not the Group should still apply:
+      // not the general public should still apply:
       const policyUrls = getPolicyUrlAll(updatedResourceWithAcr!);
       expect(policyUrls).toContain("https://some.pod/resource?ext=acr#policy");
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -7180,16 +6834,16 @@ describe("setActorAccess", () => {
         "https://some.pod/resource?ext=acr#policy"
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#own-rule",
+        "https://some.pod/resource?ext=acr#own-matcher",
       ]);
       expect(getIriAll(existingPolicy, acp.noneOf)).toStrictEqual([
-        "https://some.pod/resource?ext=acr#other-rule",
+        "https://some.pod/resource?ext=acr#other-matcher",
       ]);
-      const existingRule = getRule(
+      const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-rule"
+        "https://some.pod/resource?ext=acr#own-matcher"
       )!;
-      expect(getIri(existingRule, acp.agent)).toBe(webId);
+      expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
 
     it("does not affect other actor's access", () => {
@@ -7198,7 +6852,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: [otherWebId],
               },
             },
@@ -7248,7 +6902,7 @@ describe("setActorAccess", () => {
           "https://some.pod/resource?ext=acr#policy": {
             allow: { read: true },
             allOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -7330,15 +6984,15 @@ describe("setActorAccess", () => {
       );
     });
 
-    it("does not remove references to Rules that do not exist in this ACR", () => {
+    it("does not remove references to Matchers that do not exist in this ACR", () => {
       const mockSetup = {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#allOf_rule": {},
+              "https://some.pod/resource?ext=acr#allOf_matcher": {},
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#anyOf_rule": {},
+              "https://some.pod/resource?ext=acr#anyOf_matcher": {},
             },
           },
         },
@@ -7346,10 +7000,10 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#allOf_acrRule": {},
+              "https://some.pod/resource?ext=acr#allOf_acrMatcher": {},
             },
             anyOf: {
-              "https://some.pod/resource?ext=acr#anyOf_acrRule": {},
+              "https://some.pod/resource?ext=acr#anyOf_acrMatcher": {},
             },
           },
         },
@@ -7388,20 +7042,20 @@ describe("setActorAccess", () => {
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_rule"
+        "https://some.pod/resource?ext=acr#allOf_matcher"
       );
       expect(getIri(policy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_rule"
+        "https://some.pod/resource?ext=acr#anyOf_matcher"
       );
       const acrPolicy = getThing(
         acr,
         "https://some.pod/resource?ext=acr#acrPolicy"
       )!;
       expect(getIri(acrPolicy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_acrRule"
+        "https://some.pod/resource?ext=acr#allOf_acrMatcher"
       );
       expect(getIri(acrPolicy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_acrRule"
+        "https://some.pod/resource?ext=acr#anyOf_acrMatcher"
       );
     });
   });
@@ -7450,7 +7104,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -7465,7 +7119,7 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [webId],
               },
             },
@@ -7544,7 +7198,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
+              "https://some.pod/resource?ext=acr#applicable-allOf-matcher": {
                 [acp.agent]: ["https://arbitrary.pod/other-profile#me"],
               },
             },
@@ -7591,44 +7245,6 @@ describe("setActorAccess", () => {
       });
     });
 
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setAgentAccess(
-        resourceWithAcr,
-        acpData,
-        webId,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), webId)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
     it("does not set access for everybody", () => {
       const mockSetup = {
         policies: {},
@@ -7685,307 +7301,6 @@ describe("setActorAccess", () => {
         resourceWithAcr,
         acpData,
         webId,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-  });
-
-  describe("setGroupAccess", () => {
-    const groupIri = "https://some.pod/groups#group";
-    it("sets access for the given Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      });
-    });
-
-    it("removes access for the given Group", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: [groupIri],
-              },
-            },
-            allow: {
-              read: true,
-              append: true,
-              write: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {
-          "https://some.pod/resource?ext=acr#acrPolicy": {
-            anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
-                [acp.group]: [groupIri],
-              },
-            },
-            allow: {
-              read: true,
-              write: true,
-            },
-          },
-        },
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: false,
-          append: false,
-          write: false,
-          controlRead: false,
-          controlWrite: false,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("returns null if the ACR could not be updated (e.g. because it referenced external Policies)", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/other-resource?ext=acr#policy": {},
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-      acpData.inaccessibleUrls = [
-        "https://arbitrary.pod/inaccessible-policy-resource",
-      ];
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-        }
-      );
-
-      expect(updatedResource).toBeNull();
-    });
-
-    it("does not set access for a different Group", () => {
-      const mockSetup = {
-        policies: {
-          "https://some.pod/resource?ext=acr#policy": {
-            allOf: {
-              "https://some.pod/resource?ext=acr#applicable-allOf-rule": {
-                [acp.group]: ["https://arbitrary.pod/groups#other-group"],
-              },
-            },
-            allow: {
-              read: true,
-            },
-          },
-        },
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          "https://arbitrary.pod/groups#other-group"
-        )
-      ).toStrictEqual({
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for an Agent", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResource!), groupIri)
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for everybody", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
-    it("does not set access for 'all authenticated Agents'", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setGroupAccess(
-        resourceWithAcr,
-        acpData,
-        groupIri,
         {
           read: true,
           append: true,
@@ -8050,7 +7365,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -8065,7 +7380,7 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [acp.PublicAgent],
               },
             },
@@ -8135,46 +7450,6 @@ describe("setActorAccess", () => {
       );
 
       expect(updatedResource).toBeNull();
-    });
-
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setPublicAccess(
-        resourceWithAcr,
-        acpData,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          acp.PublicAgent
-        )
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
     });
 
     it("does not set access for 'all authenticated Agents'", () => {
@@ -8258,7 +7533,7 @@ describe("setActorAccess", () => {
         policies: {
           "https://some.pod/resource?ext=acr#policy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -8273,7 +7548,7 @@ describe("setActorAccess", () => {
         acrPolicies: {
           "https://some.pod/resource?ext=acr#acrPolicy": {
             anyOf: {
-              "https://some.pod/resource?ext=acr#rule": {
+              "https://some.pod/resource?ext=acr#matcher": {
                 [acp.agent]: [acp.AuthenticatedAgent],
               },
             },
@@ -8345,46 +7620,6 @@ describe("setActorAccess", () => {
       expect(updatedResource).toBeNull();
     });
 
-    it("does not set access for a Group", () => {
-      const mockSetup = {
-        policies: {},
-        memberPolicies: {},
-        acrPolicies: {},
-        memberAcrPolicies: {},
-      };
-      const resourceWithAcr = mockResourceWithAcr(
-        "https://some.pod/resource",
-        "https://some.pod/resource?ext=acr",
-        mockSetup
-      );
-      const acpData = mockAcpData(mockSetup);
-
-      const updatedResource = internal_setAuthenticatedAccess(
-        resourceWithAcr,
-        acpData,
-        {
-          read: true,
-          append: true,
-          write: true,
-          controlRead: true,
-          controlWrite: true,
-        }
-      );
-
-      expect(
-        internal_getGroupAccess(
-          getLocalAcpData(updatedResource!),
-          acp.AuthenticatedAgent
-        )
-      ).toStrictEqual({
-        read: false,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      });
-    });
-
     it("does not set access for everybody", () => {
       const mockSetup = {
         policies: {},
@@ -8424,8 +7659,8 @@ describe("setActorAccess", () => {
   });
 });
 
-describe("getPoliciesAndRules", () => {
-  it("fetches Policies and Rules defined in different Resources", async () => {
+describe("getPoliciesAndMatchers", () => {
+  it("fetches Policies and Matchers defined in different Resources", async () => {
     const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
     const acr: AccessControlResource & WithServerResourceInfo = {
       ...mockSolidDatasetFrom("https://some.pod/resource?ext=acr"),
@@ -8444,37 +7679,39 @@ describe("getPoliciesAndRules", () => {
       mockResourceWithExternalPolicy,
       "https://some.pod/policy-resource#acrPolicy"
     );
-    const externalPolicy = addAllOfRuleUrl(
+    const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/rule-resource#rule"
+      "https://some.pod/matcher-resource#matcher"
     );
-    const externalAcrPolicy = addAllOfRuleUrl(
+    const externalAcrPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#acrPolicy"),
-      "https://some.pod/rule-resource#rule"
+      "https://some.pod/matcher-resource#matcher"
     );
     let externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
       externalPolicy
     );
     externalPolicyDataset = setPolicy(externalPolicyDataset, externalAcrPolicy);
-    const externalRule = createRule("https://some.pod/rule-resource#rule");
-    const externalRuleDataset = setRule(
-      mockSolidDatasetFrom("https://some.pod/rule-resource"),
-      externalRule
+    const externalMatcher = createMatcher(
+      "https://some.pod/matcher-resource#matcher"
+    );
+    const externalMatcherDataset = setMatcher(
+      mockSolidDatasetFrom("https://some.pod/matcher-resource"),
+      externalMatcher
     );
     jest
       .spyOn(solidDatasetModule, "getSolidDataset")
       .mockResolvedValueOnce(externalPolicyDataset)
-      .mockResolvedValueOnce(externalRuleDataset);
+      .mockResolvedValueOnce(externalMatcherDataset);
 
-    const acpData = await internal_getPoliciesAndRules(
+    const acpData = await internal_getPoliciesAndMatchers(
       mockResourceWithExternalPolicy
     );
 
     expect(acpData).toStrictEqual({
       acrPolicies: [externalPolicy, externalAcrPolicy],
       policies: [externalPolicy],
-      rules: [externalRule],
+      matchers: [externalMatcher],
       inaccessibleUrls: [],
     });
     expect(solidDatasetModule.getSolidDataset).toHaveBeenCalledTimes(2);
@@ -8485,7 +7722,7 @@ describe("getPoliciesAndRules", () => {
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
-      "https://some.pod/rule-resource",
+      "https://some.pod/matcher-resource",
       expect.anything()
     );
   });
@@ -8501,26 +7738,28 @@ describe("getPoliciesAndRules", () => {
       mockResourceWithAcr,
       "https://some.pod/policy-resource#policy"
     );
-    const externalPolicy = addAllOfRuleUrl(
+    const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/rule-resource#rule"
+      "https://some.pod/matcher-resource#matcher"
     );
     const externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
       externalPolicy
     );
-    const externalRule = createRule("https://some.pod/rule-resource#rule");
-    const externalRuleDataset = setRule(
-      mockSolidDatasetFrom("https://some.pod/rule-resource"),
-      externalRule
+    const externalMatcher = createMatcher(
+      "https://some.pod/matcher-resource#matcher"
+    );
+    const externalMatcherDataset = setMatcher(
+      mockSolidDatasetFrom("https://some.pod/matcher-resource"),
+      externalMatcher
     );
     jest
       .spyOn(solidDatasetModule, "getSolidDataset")
       .mockResolvedValueOnce(externalPolicyDataset)
-      .mockResolvedValueOnce(externalRuleDataset);
+      .mockResolvedValueOnce(externalMatcherDataset);
     const mockedFetch = jest.fn();
 
-    await internal_getPoliciesAndRules(mockResourceWithExternalPolicy, {
+    await internal_getPoliciesAndMatchers(mockResourceWithExternalPolicy, {
       fetch: mockedFetch as any,
     });
 
@@ -8531,7 +7770,7 @@ describe("getPoliciesAndRules", () => {
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
-      "https://some.pod/rule-resource",
+      "https://some.pod/matcher-resource",
       { fetch: mockedFetch }
     );
   });
@@ -8551,9 +7790,9 @@ describe("getPoliciesAndRules", () => {
       mockResourceWithExternalPolicy,
       "https://some.pod/inaccessible-policy-resource#policy"
     );
-    const externalPolicy = addAllOfRuleUrl(
+    const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/inaccessible-rule-resource#rule"
+      "https://some.pod/inaccessible-matcher-resource#matcher"
     );
     const externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
@@ -8568,22 +7807,22 @@ describe("getPoliciesAndRules", () => {
         })
       )
       .mockRejectedValueOnce(
-        new Response("Rule Resource not accessible to the current user", {
+        new Response("Matcher Resource not accessible to the current user", {
           status: 403,
         })
       );
 
-    const acpData = await internal_getPoliciesAndRules(
+    const acpData = await internal_getPoliciesAndMatchers(
       mockResourceWithExternalPolicy
     );
 
     expect(acpData).toStrictEqual({
       acrPolicies: [],
       policies: [externalPolicy],
-      rules: [],
+      matchers: [],
       inaccessibleUrls: [
         "https://some.pod/inaccessible-policy-resource",
-        "https://some.pod/inaccessible-rule-resource",
+        "https://some.pod/inaccessible-matcher-resource",
       ],
     });
   });
@@ -8592,7 +7831,7 @@ describe("getPoliciesAndRules", () => {
 /**
  * This function allows getting ACP data in a synchronous call.
  *
- * We can avoid asynchonicity in tests when all Policies and Rules are defined
+ * We can avoid asynchonicity in tests when all Policies and Matchers are defined
  * within a Resource's Access Control Resource. In that case, no HTTP requests
  * are necessary to get a full picture of everything that together comprises the
  * effective access for a Resource. Thus, with this function we can collect all
@@ -8608,8 +7847,8 @@ function getLocalAcpData(resourceWithAcr: WithAccessibleAcr): internal_AcpData {
       (acrPolicyUrl) => getThing(acr, acrPolicyUrl)!
     ),
     policies: policyUrls.map((policyUrl) => getThing(acr, policyUrl)!),
-    rules: getThingAll(acr).filter((thing) =>
-      getIriAll(thing, rdf.type).includes(acp.Rule)
+    matchers: getThingAll(acr).filter((thing) =>
+      getIriAll(thing, rdf.type).includes(acp.Matcher)
     ),
     inaccessibleUrls: [],
   };

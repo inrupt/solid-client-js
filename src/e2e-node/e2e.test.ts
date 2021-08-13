@@ -321,9 +321,8 @@ config({
 type OidcIssuer = string;
 type ClientId = string;
 type ClientSecret = string;
-type RefreshToken = string;
 type Pod = string;
-type AuthDetails = [Pod, OidcIssuer, ClientId, ClientSecret, RefreshToken];
+type AuthDetails = [Pod, OidcIssuer, ClientId, ClientSecret];
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
@@ -336,18 +335,6 @@ const serversUnderTest: AuthDetails[] = [
     process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
-    process.env.E2E_TEST_ESS_REFRESH_TOKEN!,
-  ],
-  // pod-compat.inrupt.com:
-  [
-    // Cumbersome workaround, but:
-    // Trim `https://` from the start of these URLs,
-    // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_ESS_COMPAT_POD!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_COMPAT_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_COMPAT_CLIENT_ID!,
-    process.env.E2E_TEST_ESS_COMPAT_CLIENT_SECRET!,
-    process.env.E2E_TEST_ESS_COMPAT_REFRESH_TOKEN!,
   ],
   // inrupt.net
   // Unfortunately we cannot authenticate against Node Solid Server yet, due to this issue:
@@ -359,16 +346,15 @@ const serversUnderTest: AuthDetails[] = [
 // how to authenticate against it now that refresh tokens are rotated after
 // every request:
 // eslint-disable-next-line jest/no-disabled-tests
-describe.skip.each(serversUnderTest)(
+describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
-  (rootContainer, oidcIssuer, clientId, clientSecret, refreshToken) => {
+  (rootContainer, oidcIssuer, clientId, clientSecret) => {
     // Re-add `https://` at the start of these URLs, which we trimmed above
     // so that GitHub Actions doesn't replace them with *** in the logs.
     rootContainer = "https://" + rootContainer;
     oidcIssuer = "https://" + oidcIssuer;
     function supportsWac() {
       return (
-        rootContainer.includes("pod-compat.inrupt.com") ||
         rootContainer.includes("inrupt.net") ||
         rootContainer.includes("solidcommunity.net")
       );
@@ -384,16 +370,8 @@ describe.skip.each(serversUnderTest)(
         clientId: clientId,
         clientName: "Solid Client End-2-End Test Client App - Node.js",
         clientSecret: clientSecret,
-        refreshToken: refreshToken,
       });
       return session;
-    }
-
-    if (rootContainer.includes("pod-compat.inrupt.com")) {
-      // pod-compat.inrupt.com seems to be experiencing some slowdowns processing POST requests,
-      // so temporarily increase the timeouts for it:
-      jest.setTimeout(30000);
-      openidClient.custom.setHttpOptionsDefaults({ timeout: 5000 });
     }
 
     it("can create, read, update and delete data", async () => {
@@ -625,10 +603,7 @@ describe.skip.each(serversUnderTest)(
     });
 
     describe("Access Control Policies", () => {
-      if (
-        rootContainer.includes("inrupt.net") ||
-        rootContainer.includes("pod-compat.inrupt.com")
-      ) {
+      if (!supportsAcps()) {
         // These servers do not support Access Control Policies,
         // so ACP tests can be skipped for them:
         return;

@@ -6,6 +6,36 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.11.0] - 2021-08-12
+
+### New features
+
+- The builder returned by `buildThing()` is now stateful. This means you can now
+  do something like this:
+
+  ```javascript
+  const bookmarkBuilder = buildThing()
+    .addUrl(
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://www.w3.org/2002/01/bookmark#Bookmark"
+    )
+    .addUrl("http://www.w3.org/2002/01/bookmark#recalls", form.url);
+
+  if (typeof form.title !== "undefined") {
+    // In earlier versions, this would be discarded:
+    bookmarkBuilder.addStringNoLocale(
+      "http://purl.org/dc/terms/title",
+      form.title
+    );
+  }
+
+  const bookmark = bookmarkBuilder.build();
+  ```
+
+## [1.10.1] - 2021-08-03
+
 ### Deprecations
 
 - Access Control Policies will no longer support adding a `vcard:Group` to a
@@ -22,8 +52,6 @@ The following changes have been implemented but not released yet:
   Pod Owner's access on inrupt.com.
   It will still be unable to report access settings that the current user is not
   allowed to see.
-
-The following sections document changes that have been released already:
 
 ## [1.10.0] - 2021-07-01
 

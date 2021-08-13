@@ -52,57 +52,73 @@ import {
 } from "./control";
 import {
   createPolicy,
-  getAllowModesV1,
-  getDenyModesV1,
   getPolicy,
   getPolicyAll,
   policyAsMarkdown,
   removePolicy,
-  setAllowModesV1,
-  setDenyModesV1,
   setPolicy,
+  createResourcePolicyFor,
+  getResourceAcrPolicy,
+  getResourceAcrPolicyAll,
+  getResourcePolicy,
+  getResourcePolicyAll,
+  removeResourceAcrPolicy,
+  removeResourcePolicy,
+  setResourceAcrPolicy,
+  setResourcePolicy,
+  getAllowModesV2,
+  getDenyModesV2,
+  setAllowModesV2,
+  setDenyModesV2,
 } from "./policy";
 import {
   addAgent,
-  addNoneOfRuleUrl,
-  addGroup,
-  addAnyOfRuleUrl,
-  addAllOfRuleUrl,
-  createRule,
+  addNoneOfMatcherUrl,
+  addAnyOfMatcherUrl,
+  addAllOfMatcherUrl,
+  createMatcher,
   getAgentAll,
-  getNoneOfRuleUrlAll,
-  getGroupAll,
-  getAnyOfRuleUrlAll,
-  getAllOfRuleUrlAll,
-  getRule,
-  getRuleAll,
+  getNoneOfMatcherUrlAll,
+  getAnyOfMatcherUrlAll,
+  getAllOfMatcherUrlAll,
+  getMatcher,
+  getMatcherAll,
   hasAuthenticated,
   hasCreator,
   hasPublic,
   removeAgent,
-  removeAuthenticated,
-  removeCreator,
-  removeNoneOfRuleUrl,
-  removeGroup,
-  removeAnyOfRuleUrl,
-  removePublic,
-  removeAllOfRuleUrl,
-  removeRule,
-  Rule,
-  ruleAsMarkdown,
+  removeNoneOfMatcherUrl,
+  removeAnyOfMatcherUrl,
+  removeAllOfMatcherUrl,
+  removeMatcher,
+  matcherAsMarkdown,
   setAgent,
   setAuthenticated,
   setCreator,
-  setNoneOfRuleUrl,
-  setGroup,
-  setAnyOfRuleUrl,
+  setNoneOfMatcherUrl,
+  setAnyOfMatcherUrl,
   setPublic,
-  setAllOfRuleUrl,
-  setRule,
-} from "./rule";
+  setAllOfMatcherUrl,
+  setMatcher,
+  addClient,
+  getClientAll,
+  hasAnyClient,
+  removeClient,
+  setAnyClient,
+  setClient,
+  removeAnyClient,
+  removeAuthenticated,
+  removeCreator,
+  removePublic,
+  createResourceMatcherFor,
+  getResourceMatcher,
+  getResourceMatcherAll,
+  removeResourceMatcher,
+  setResourceMatcher,
+} from "./matcher";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 
-const v2AcpFunctions = {
+const v4AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
   getReferencedPolicyUrlAll,
@@ -114,7 +130,7 @@ const v2AcpFunctions = {
   saveAcrFor,
 };
 
-const v2ControlFunctions = {
+const v4ControlFunctions = {
   acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
@@ -135,92 +151,87 @@ const v2ControlFunctions = {
   removePolicyUrlAll,
 };
 
-const v2PolicyFunctions = {
+const v4PolicyFunctions = {
   createPolicy,
-  getAllowModes: getAllowModesV1,
-  getDenyModes: getDenyModesV1,
+  getAllowModes: getAllowModesV2,
+  getDenyModes: getDenyModesV2,
   getPolicy,
   getPolicyAll,
   policyAsMarkdown,
   removePolicy,
-  setAllowModes: setAllowModesV1,
-  setDenyModes: setDenyModesV1,
+  setAllowModes: setAllowModesV2,
+  setDenyModes: setDenyModesV2,
   setPolicy,
+  createResourcePolicyFor,
+  getResourceAcrPolicy,
+  getResourceAcrPolicyAll,
+  getResourcePolicy,
+  getResourcePolicyAll,
+  removeResourceAcrPolicy,
+  removeResourcePolicy,
+  setResourceAcrPolicy,
+  setResourcePolicy,
 };
 
-const v2RuleFunctions = {
+const v4MatcherFunctions = {
   addAgent,
-  addForbiddenRuleUrl: addNoneOfRuleUrl,
-  addGroup,
-  addOptionalRuleUrl: addAnyOfRuleUrl,
-  addRequiredRuleUrl: addAllOfRuleUrl,
-  createRule,
+  createMatcher,
   getAgentAll,
-  getForbiddenRuleUrlAll: getNoneOfRuleUrlAll,
-  getGroupAll,
-  getOptionalRuleUrlAll: getAnyOfRuleUrlAll,
-  getRequiredRuleUrlAll: getAllOfRuleUrlAll,
-  getRule,
-  getRuleAll,
+  getMatcher,
+  getMatcherAll,
+  removeAgent,
+  removeMatcher,
+  matcherAsMarkdown,
+  setAgent,
+  setMatcher,
+  addClient,
+  getClientAll,
+  hasAnyClient,
+  removeClient,
+  setAnyClient,
+  setClient,
+  removeAnyClient,
   hasAuthenticated,
   hasCreator,
   hasPublic,
-  removeAgent,
-  removeForbiddenRuleUrl: removeNoneOfRuleUrl,
-  removeGroup,
-  removeOptionalRuleUrl: removeAnyOfRuleUrl,
-  removeRequiredRuleUrl: removeAllOfRuleUrl,
-  removeRule,
-  ruleAsMarkdown,
-  setAgent,
-  setForbiddenRuleUrl: setNoneOfRuleUrl,
-  setGroup,
-  setOptionalRuleUrl: setAnyOfRuleUrl,
-  setRequiredRuleUrl: setAllOfRuleUrl,
-  setRule,
+  setAuthenticated,
+  setCreator,
+  setPublic,
+  removeAuthenticated,
+  removeCreator,
+  removePublic,
+  getAnyOfMatcherUrlAll,
+  addAnyOfMatcherUrl,
+  removeAnyOfMatcherUrl,
+  setAnyOfMatcherUrl,
+  getAllOfMatcherUrlAll,
+  addAllOfMatcherUrl,
+  removeAllOfMatcherUrl,
+  setAllOfMatcherUrl,
+  getNoneOfMatcherUrlAll,
+  addNoneOfMatcherUrl,
+  removeNoneOfMatcherUrl,
+  setNoneOfMatcherUrl,
+  createResourceMatcherFor,
+  getResourceMatcher,
+  getResourceMatcherAll,
+  removeResourceMatcher,
+  setResourceMatcher,
 };
 
-const v2MockFunctions = {
+const v4MockFunctions = {
   addMockAcrTo,
   mockAcrFor,
 };
 
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setPublic]] */
-export function previousSetPublicSignature(rule: Rule, enable: boolean): Rule {
-  return enable ? setPublic(rule) : removePublic(rule);
-}
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setAuthenticated]] */
-export function previousSetAuthenticatedSignature(
-  rule: Rule,
-  enable: boolean
-): Rule {
-  return enable ? setAuthenticated(rule) : removeAuthenticated(rule);
-}
-/* istanbul ignore next Not a supported public API: */
-/** @deprecated Replaced by [[setCreator]] */
-export function previousSetCreatorSignature(rule: Rule, enable: boolean): Rule {
-  return enable ? setCreator(rule) : removeCreator(rule);
-}
-
-const deprecatedFunctions = {
-  /** @deprecated This misspelling was included accidentally. The correct function is [[getForbiddenRuleUrlAll]]. */
-  getForbiddenRuleurlAll: getNoneOfRuleUrlAll,
-  setPublic: previousSetPublicSignature,
-  setAuthenticated: previousSetAuthenticatedSignature,
-  setCreator: previousSetCreatorSignature,
-};
-
 /**
  * @hidden
- * @deprecated Replaced by [[acp_v3]].
+ * @deprecated Please import directly from the "acp/*" modules.
  */
-export const acp_v2 = {
-  ...v2AcpFunctions,
-  ...v2ControlFunctions,
-  ...v2PolicyFunctions,
-  ...v2RuleFunctions,
-  ...v2MockFunctions,
-  ...deprecatedFunctions,
+export const acp_v4 = {
+  ...v4AcpFunctions,
+  ...v4ControlFunctions,
+  ...v4PolicyFunctions,
+  ...v4MatcherFunctions,
+  ...v4MockFunctions,
 };

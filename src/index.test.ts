@@ -177,7 +177,10 @@ import {
   acp_v1,
   acp_v2,
   acp_v3,
+  acp_v4,
   access,
+  access_v1,
+  access_v2,
   responseToSolidDataset,
   responseToResourceInfo,
   // Deprecated functions still exported for backwards compatibility:
@@ -347,7 +350,10 @@ it("exports preview API's for early adopters", () => {
   expect(acp_v1).toBeDefined();
   expect(acp_v2).toBeDefined();
   expect(acp_v3).toBeDefined();
+  expect(acp_v4).toBeDefined();
   expect(access).toBeDefined();
+  expect(access_v1).toBeDefined();
+  expect(access_v2).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();
 });
