@@ -68,16 +68,19 @@ the server understands ("SolidDatasets"), and those that do not ("Files").
 The main difference between the two is that, by virtue of the server
 understanding the structure of the former, we can do partial updates (i.e.
 PATCH requests) and retrieve the data in different formats (currently, the
-spec mandates that servers can serve such data as at least Turtle and JSON-LD).
+spec mandates that servers can receive/return such data as at least Turtle and JSON-LD).
 
-Thus, data stored as Turtle or JSON-LD can be fetched as a SolidDataset; the
+Thus, data requested as Turtle or JSON-LD can be fetched as a SolidDataset; the
 rest are just treated as regular Files: while it might be possible to parse and
 manipulate them using other libraries, solid-client just allows downloads and
 uploads, and not more specific operations like reading values for a given
-property. This applies to binary file types like JPEG, WebM and `.txt`, but also
-to files containing structured data in a non-RDF format, like JSON, XML or
-OpenDocument, or even to files containing structured data in an RDF format not
-understood by the server, such as RDFa or RDF-XML.
+property. This applies to binary file types like JPEG, WebM and `.txt`.
+When it comes to files containing structured data in a non-RDF format (e.g.: JSON, 
+XML or OpenDocument) or files containing structured data in an RDF format not
+understood by the server (e.g.: RDFa or RDF-XML) is up to the server to accept 
+a payload of RDF/XML and treat it as a binary resource (as is being alluded to here), 
+or it could choose to reject it completely with an error saying something like
+"Unsupported RDF serialization".
 
 ## `With*` types
 
@@ -133,25 +136,27 @@ serialisations for PATCH requests.
 
 ## `src/access/*`, `src/acl/*` and `src/acp/*`
 
-At first, there was Web Access Control. And although people often referred to it
-as Access Control Lists, He saw it was Good.
+At first, there was one [Solid authorization mechanism](https://solidproject.org/TR/protocol#authorization), 
+Web Access Control ([WAC](https://solidproject.org/TR/wac)), and people often 
+referred to it as Access Control Lists.
 
-Or at least, it was OK. It was a pretty flexible system that allows for quite a
-few different access use cases, although that meant simple use cases like "allow
-this person to view this Resource" were relatively cumbersome to define: after
-all, you'd have to take into account all kinds of access that could be defined
-earlier. But that's OK: `src/acl/*` contains code that does all that nasty
-stuff.
+WAC is an access control system to set authorization conditions on HTTP resources 
+using the Access Control List (ACL) model. It allows for quite a few different use 
+cases, although simple use cases like "allow this person to view this 
+Resource" were relatively cumbersome to define given the reliance on inheritance
+to effective establish the access control for a given agent: you'd have to take into 
+account all kinds of access that could be defined earlier. But that's OK: `src/acl/*` 
+contains code that does all that nasty stuff.
 
-But then Inrupt ate from the tree of knowledge, and proposed a new mechanism:
-Access Control Policies. Which, in the end, is also just a bunch of data written
-to a particular bunch of Resources. `src/acp/*` contains APIs that are
-essentially wrappers around our existing APIs for reading and writing data, but
-using ACP terminology.
+In order to solve these (and other) intrinsic limitations of WAC, Inrupt proposed 
+a new mechanism: Access Control Policies ([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
+ACP is more flexible and stores authorization information across a particular set 
+of Resources. `src/acp/*` contains APIs that are essentially wrappers around our 
+existing APIs for reading and writing data, but using ACP terminology.
 
-However, the ACP proposal is even more flexible then WAC, making simple use
-cases even more cumbersome to define. And to make matters worse, it had to
-co-exist next to WAC, which doesn't seem to be going anywhere anytime soon.
+However, the ACP proposal has to co-exist next to WAC for the time being, which does
+not make developer's life any easier. Since developer don't control the access control
+model that will be used by their users, they need to support both.
 
 But not to worry. Like for WAC, solid-client includes code to achieve some
 simple, yet common, use cases in `src/access/acp.ts`, taking care of all the
@@ -159,11 +164,10 @@ hairy details of dealing with the vast range of potential existing access
 configurations. Additionally, it includes the "Universal Access API" in
 `src/access/universal.ts`. This supports the common, simple use cases that are
 supported in both WAC and ACP, and automatically adjusts to the access mechanism
-in use by the user's Pod, at the cost of being less flexible, and not
-providing a way for developers to recover from the myriad of different and
-non-overlapping error conditions that may occur in both access control
-mechanisms (e.g. no fallback ACL available in WAC, no access to a Resource
-defining Policies in ACPs, etc.).
+in use by the user's Pod, at the cost of being less flexible, and relying
+on developers to recover from the different and non-overlapping error conditions 
+that may occur in both access control mechanisms (e.g. no fallback ACL available 
+in WAC, no access to a Resource defining Policies in ACPs, etc.).
 
 ## `src/e2e-browser` and `src/e2e-node`
 
@@ -211,11 +215,8 @@ this, be sure to test it well.
 
 (i.e. `/src/acp/*`)
 
-This API was very hastily put together ("it's just a one-on-one mapping of the
-ACP spec to JavaScript, we need it now, and how hard could it be?") without
-actually trying to use it in a real app, so there are bound to be lots of
-idiosyncracies there. _Especially_ given that the ACP proposal still is in heavy
-flux.
+This API was put together in a very short timeframe so there are bound to be lots of
+idiosyncracies there. _Especially_ given that the ACP model is still a proposal.
 
 One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
 Back when there was no talk of there being alternative access mechanisms other
@@ -336,9 +337,8 @@ without breaking anything.
 
 It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
 functions, rather than just `*String` functions with an optional `locale`
-parameter. This was a lengthy discussion where nobody left happy, but the
-reasons had to do with forcing people to make a conscious choice not to set a
-locale.
+parameter. This was a lengthy internal discussion where the desicion was to nudge 
+developers to make a conscious choice whether or not to set a locale.
 
 Note that the two are not interchangeable: RDF has different types for strings
 with and without locales, and strings in different locales or without locales
