@@ -215,7 +215,7 @@ this, be sure to test it well.
 
 (i.e. `/src/acp/*`)
 
-This API was put together in a very short timeframe so there are bound to be lots of
+This API was put together in a relatively short timeframe so there are bound to be
 idiosyncracies there. _Especially_ given that the ACP model is still a proposal.
 
 One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
