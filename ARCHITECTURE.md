@@ -337,7 +337,7 @@ without breaking anything.
 
 It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
 functions, rather than just `*String` functions with an optional `locale`
-parameter. This was a lengthy internal discussion where the desicion was to nudge 
+parameter. This was a lengthy internal discussion where the decision was to nudge 
 developers to make a conscious choice whether or not to set a locale.
 
 Note that the two are not interchangeable: RDF has different types for strings
