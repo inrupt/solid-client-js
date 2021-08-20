@@ -78,7 +78,7 @@ property. This applies to binary file types like JPEG, WebM and `.txt`.
 When it comes to files containing structured data in a non-RDF format (e.g.: JSON, 
 XML or OpenDocument) or files containing structured data in an RDF format not
 understood by the server (e.g.: RDFa or RDF-XML) is up to the server to accept 
-a payload of RDF/XML and treat it as a binary resource (as is being alluded to here), 
+that payload of RDF/XML and treat it as a binary resource, 
 or it could choose to reject it completely with an error saying something like
 "Unsupported RDF serialization".
 
