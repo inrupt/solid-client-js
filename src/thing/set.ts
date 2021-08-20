@@ -20,12 +20,14 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
-import { Thing, Url, UrlString } from "../interfaces";
+import { JWK, Thing, Url, UrlString } from "../interfaces";
 import { internal_isValidUrl, Time } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 import {
+  getThing,
   isThing,
+  setThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
@@ -43,6 +45,8 @@ import {
   addTime,
   addUrl,
 } from "./add";
+import { getSolidDataset, saveSolidDatasetAt, WebId } from "..";
+import { internal_defaultFetchOptions } from "../resource/resource";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -296,6 +300,40 @@ export function setTerm<T extends Thing>(
   }
 
   return addTerm(removeAll(thing, property), property, value);
+}
+
+
+/**
+ * Adds a public key to a public WebID profile.
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param publicKey The public key value to set.
+ * @param webId The WebID of the profile to add the public key.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ */
+export async function setPublicKeyToProfile(
+  publicKey: JWK,
+  webId: WebId,
+  options: Partial<
+  typeof internal_defaultFetchOptions
+> = internal_defaultFetchOptions
+): Promise<void> {
+  const profileDataset = await getSolidDataset(webId, {
+    fetch: options.fetch
+  });
+  // get profile data "Thing" in the profile dataset.
+  const profile = getThing(profileDataset, webId);
+  if (profile) {
+    // add a public key with sec:publicKey
+    const updatedProfile = addStringNoLocale(profile, "https://w3c-ccg.github.io/security-vocab/#publicKey", JSON.stringify(publicKey));
+    const updatedProfileDataset = setThing(profileDataset, updatedProfile);
+    await saveSolidDatasetAt(webId, updatedProfileDataset, {
+      fetch: options.fetch
+    });
+  } else {
+    throw new Error("Could not find public profile at url : " + webId);
+  }
 }
 
 /**

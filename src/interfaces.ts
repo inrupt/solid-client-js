@@ -51,6 +51,11 @@ export type SolidDataset = ImmutableDataset;
 export type File = Blob;
 
 /**
+ * A JSON data structure that represents a set of public keys as a JSON object.
+ */
+export type JWK = JSON;
+
+/**
  * A Resource is something that can be fetched from a Pod - either structured data in a [[SolidDataset]], or any other [[File]].
  */
 export type Resource = SolidDataset | File;

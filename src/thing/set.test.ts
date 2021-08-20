@@ -38,6 +38,7 @@ import {
   setNamedNode,
   setLiteral,
   setTerm,
+  setPublicKeyToProfile,
 } from "./set";
 import { mockThingFrom } from "./mock";
 import {
@@ -45,6 +46,7 @@ import {
   ValidValueUrlExpectedError,
 } from "./thing";
 import { localNodeSkolemPrefix } from "../rdf.internal";
+import { getSolidDataset } from "../resource/solidDataset";
 
 function getMockThingWithLiteralFor(
   predicate: IriString,
@@ -1940,5 +1942,34 @@ describe("setTerm", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("setPublicKeyToProfile", () => {
+
+  const publicKey = JSON.parse('{"publicKey": "121465147643"}');
+
+  it("Adds a public key to public profile", () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
+
+    const publicProfile = setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch });
+  });
+
+  it("Allows multiple keys to be set", () => {
+  });
+
+  it("Throws if caller has incorrect credentials", () => {
+  });
+
+  it("throws an error when passed something other than a public key", () => {
+  });
+
+  it("throws an error when passed an invalid WebID", () => {
   });
 });
