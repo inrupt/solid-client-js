@@ -138,7 +138,7 @@ serialisations for PATCH requests.
 
 At first, there was one [Solid authorization mechanism](https://solidproject.org/TR/protocol#authorization), 
 Web Access Control ([WAC](https://solidproject.org/TR/wac)), and people often 
-referred to it as Access Control Lists.
+referred to it as Access Control Lists, or ACLs.
 
 WAC is an access control system to set authorization conditions on HTTP resources 
 using the Access Control List (ACL) model. It allows for quite a few different use 
