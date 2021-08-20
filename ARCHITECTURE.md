@@ -166,7 +166,7 @@ configurations. Additionally, it includes the "Universal Access API" in
 supported in both WAC and ACP, and automatically adjusts to the access mechanism
 in use by the user's Pod, at the cost of being less flexible, and relying
 on developers to recover from the different and non-overlapping error conditions 
-that may occur in both access control mechanisms (e.g. no fallback ACL available 
+that may occur in both access control mechanisms (e.g., no fallback ACL available 
 in WAC, no access to a Resource defining Policies in ACPs, etc.).
 
 ## `src/e2e-browser` and `src/e2e-node`
