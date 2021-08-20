@@ -146,7 +146,7 @@ cases, although simple use cases like "allow this person to view this
 Resource" were relatively cumbersome to define given the reliance on inheritance
 to effective establish the access control for a given agent: you'd have to take into 
 account all kinds of access that could be defined earlier. But that's OK: `src/acl/*` 
-contains code that does all that nasty stuff.
+contains code that takes care of all that nasty stuff.
 
 In order to solve these (and other) intrinsic limitations of WAC, Inrupt proposed 
 a new mechanism: Access Control Policies ([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
