@@ -154,7 +154,7 @@ ACP is more flexible and stores authorization information across a particular se
 of Resources. `src/acp/*` contains APIs that are essentially wrappers around our 
 existing APIs for reading and writing data, but using ACP terminology.
 
-However, the ACP proposal has to co-exist next to WAC for the time being, which does
+However, the ACP proposal has to co-exist with WAC for the time being, which does
 not make developer's life any easier. Since developers don't control the access control
 model that will be used by their users, they need to support both.
 
