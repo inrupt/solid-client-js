@@ -27,6 +27,7 @@ import {
   toRdfJsQuads,
 } from "../rdfjs.internal";
 import { ldp } from "../constants";
+import { getJsonLdParser } from "../formats/jsonLd";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
 import {
@@ -174,6 +175,7 @@ export async function responseToSolidDataset(
 
   const parsers: Record<ContentType, Parser> = {
     "text/turtle": getTurtleParser(),
+    "application/ld+json": getJsonLdParser(),
     ...parseOptions.parsers,
   };
   const contentType = getContentType(resourceInfo);
@@ -298,7 +300,7 @@ export async function getSolidDataset(
   const acceptedContentTypes =
     parserContentTypes.length > 0
       ? parserContentTypes.join(", ")
-      : "text/turtle";
+      : "text/turtle, application/ld+json";
   const response = await config.fetch(url, {
     headers: {
       Accept: acceptedContentTypes,

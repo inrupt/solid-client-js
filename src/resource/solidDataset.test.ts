@@ -360,7 +360,7 @@ describe("responseToSolidDataset", () => {
 
     await expect(parsePromise).rejects.toThrow(
       new Error(
-        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle]."
+        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle, application/ld+json]."
       )
     );
   });
@@ -434,7 +434,7 @@ describe("getSolidDataset", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
-  it("adds an Accept header accepting turtle by default", async () => {
+  it("adds an Accept header accepting turtle and json-ld by default", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
@@ -447,7 +447,7 @@ describe("getSolidDataset", () => {
 
     expect(mockFetch.mock.calls[0][1]).toEqual({
       headers: {
-        Accept: "text/turtle",
+        Accept: "text/turtle, application/ld+json",
       },
     });
   });
