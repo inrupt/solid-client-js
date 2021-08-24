@@ -26,7 +26,7 @@ import {
   getChainBlankNodes,
   toRdfJsQuads,
 } from "../rdfjs.internal";
-import { ldp } from "../constants";
+import { ldp, pim } from "../constants";
 import { getJsonLdParser } from "../formats/jsonLd";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
@@ -1156,8 +1156,7 @@ export async function getWellKnownSolid(
   const urlString = internal_toIriString(url);
   const resourceMetadata = await getResourceInfo(urlString, options);
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
-  const rootResources =
-    linkedResources["http://www.w3.org/ns/pim/space#storage"];
+  const rootResources = linkedResources[pim.storage];
   const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
   if (!rootResource) {
     throw new SolidClientError(
