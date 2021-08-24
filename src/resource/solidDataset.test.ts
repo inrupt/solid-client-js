@@ -3376,28 +3376,40 @@ describe("changeLogAsMarkdown", () => {
 });
 
 describe("getWellKnownSolid", () => {
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit?]
+  >;
+  function setMockResourceResponseOnFetch(
+    fetch: MockFetch,
+    response = mockResponse(undefined, {
+      url: "https://some.pod/resource",
+      headers: {
+        "Content-Type": "text/turtle",
+        link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+      },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(response);
+    return fetch;
+  }
+  function setMockWellKnownSolidResponseOnFetch(
+    fetch: MockFetch,
+    response = mockResponse(undefined, {
+      url: "https://some.pod/resource",
+      headers: { "Content-Type": "application/ld+json" },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(response);
+    return fetch;
+  }
+
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      fetch: MockFetch;
     };
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource",
-        headers: {
-          "Content-Type": "text/turtle",
-          link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
-        },
-      })
-    );
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource",
-        headers: { "Content-Type": "application/ld+json" },
-      })
-    );
+    setMockResourceResponseOnFetch(mockedFetcher.fetch);
+    setMockWellKnownSolidResponseOnFetch(mockedFetcher.fetch);
 
     await getWellKnownSolid("https://some.pod/resource");
 
@@ -3407,25 +3419,9 @@ describe("getWellKnownSolid", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
-          },
-        })
-      )
-    );
-    mockFetch.mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: { "Content-Type": "application/ld+json" },
-        })
-      )
-    );
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
 
     await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
 
@@ -3433,13 +3429,12 @@ describe("getWellKnownSolid", () => {
   });
 
   it("throws a meaningful error if no root resource linked", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: { "Content-Type": "text/turtle" },
-        })
-      )
+    const mockFetch = setMockResourceResponseOnFetch(
+      jest.fn(window.fetch),
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "text/turtle" },
+      })
     );
 
     const fetchPromise = getWellKnownSolid("https://some.pod/resource", {
@@ -3454,25 +3449,10 @@ describe("getWellKnownSolid", () => {
   });
 
   it("forms the .well-known/solid endpoint from the root resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
-          },
-        })
-      )
-    );
-    mockFetch.mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: { "Content-Type": "application/ld+json" },
-        })
-      )
-    );
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
     await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
 
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
@@ -3490,25 +3470,16 @@ describe("getWellKnownSolid", () => {
       "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
       "storage":"https://pod.inrupt.com/username/"
     }`;
-    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
-          },
-        })
-      )
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(
+      mockFetch,
+      mockResponse(wellKnownSolidResponseBody, {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "application/ld+json" },
+      })
     );
-    mockFetch.mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(wellKnownSolidResponseBody, {
-          url: "https://some.pod/resource",
-          headers: { "Content-Type": "application/ld+json" },
-        })
-      )
-    );
+
     const wellKnownSolidResponse = await getWellKnownSolid(
       "https://some.pod/resource",
       { fetch: mockFetch }
