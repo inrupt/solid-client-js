@@ -19,8 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
-
+import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import { Quad } from "@rdfjs/types";
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
@@ -42,11 +42,29 @@ import {
 } from "./set";
 import { mockThingFrom } from "./mock";
 import {
+  createThing,
+  getThing,
+  setThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
 import { localNodeSkolemPrefix } from "../rdf.internal";
-import { getSolidDataset } from "../resource/solidDataset";
+import { createSolidDataset, getSolidDataset } from "../resource/solidDataset";
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { getStringNoLocale } from "./get";
+
+jest.mock("../resource/solidDataset", () => {
+  const actualResourceModule = jest.requireActual(
+    "../resource/solidDataset"
+  ) as any;
+  return {
+    // We only want to fetch specific functions that result in a network fetch,
+    // but the rest of the module (e.g. the storage utilities) can be used unmocked.
+    ...actualResourceModule,
+    getSolidDataset: jest.fn(),
+    saveSolidDatasetAt: jest.fn(),
+  }
+});
 
 function getMockThingWithLiteralFor(
   predicate: IriString,
@@ -1949,27 +1967,73 @@ describe("setPublicKeyToProfile", () => {
 
   const publicKey = JSON.parse('{"publicKey": "121465147643"}');
 
-  it("Adds a public key to public profile", () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        })
-      )
+  // it("Adds a public key to public profile", () => {
+  //   const mockFetch = jest.fn(window.fetch).mockReturnValue(
+  //     Promise.resolve(
+  //       new Response(undefined, {
+  //         headers: { "Content-Type": "text/turtle" },
+  //       })
+  //     )
+  //   );
+
+  //   const publicProfile = setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch });
+
+
+  //   expect(
+  //     publicProfile.predicates["https://some.vocab/predicate"].literals
+  //   ).toStrictEqual({
+  //     "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
+  //   });
+  // });
+
+
+  it("fetches the correct profile", async () => {
+    // mock getSolidDataset
+    const mockModule = jest.requireMock("../resource/solidDataset") as {
+      getSolidDataset:jest.Mock<typeof getSolidDataset>
+    };
+
+    // initialise local dataset
+    let mockDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    // create locally dataset with subject as WebID
+    mockDataset = setThing(mockDataset, createThing({url: "https://some.pod/resource#webID"}));
+
+    // set up mock that this is the returned dataset
+    mockModule.getSolidDataset.mockResolvedValueOnce(
+      mockDataset as never
     );
 
-    const publicProfile = setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch });
+    await setPublicKeyToProfile(publicKey, "https://some.pod/resource#webID");
+    const updatedMockDataset = await getSolidDataset("https://some.pod/resource");
+    const thing = getThing(updatedMockDataset, "https://some.pod/resource#webID");
+    
+    // check public key matches
+    expect(getStringNoLocale(thing!, "https://w3c-ccg.github.io/security-vocab/#publicKey")).toEqual(publicKey);
   });
 
-  it("Allows multiple keys to be set", () => {
-  });
+  // it("Throws error if webID is not a solidDataset", async () => {
+  //   const mockFetch = jest.fn(window.fetch).mockReturnValue(
+  //     Promise.resolve(
+  //       new Response(undefined, {
+  //         headers: { "Content-Type": "text/turtle" },
+  //       })
+  //     )
+  //   );
 
-  it("Throws if caller has incorrect credentials", () => {
-  });
+  //   expect(
+  //     await setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch })
+  //   ).toThrow("Could not find public profile at url : https://some.pod/resource");
+  // });
 
-  it("throws an error when passed something other than a public key", () => {
-  });
+  // it("Allows multiple keys to be set", () => {
+  // });
 
-  it("throws an error when passed an invalid WebID", () => {
-  });
+  // it("Throws if caller has incorrect credentials", () => {
+  // });
+
+  // it("throws an error when passed something other than a public key", () => {
+  // });
+
+  // it("throws an error when passed an invalid WebID", () => {
+  // });
 });
