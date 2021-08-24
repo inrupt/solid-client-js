@@ -44,13 +44,13 @@ export const getJsonLdParser = (): Parser => {
       const parser = await getParser(getSourceUrl(resourceInfo));
       const parserPromise = new Promise<void>((resolve) => {
         parser.on("data", (quad) => {
-          onQuadCallbacks.every((callback) => callback(quad));
+          onQuadCallbacks.forEach((callback) => callback(quad));
         });
         parser.on("error", (error) => {
           onErrorCallbacks.forEach((callback) => callback(error));
         });
         parser.on("end", () => {
-          onCompleteCallbacks.every((callback) => callback());
+          onCompleteCallbacks.forEach((callback) => callback());
           resolve();
         });
         parser.write(source);

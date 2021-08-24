@@ -46,9 +46,9 @@ export const getTurtleParser = (): Parser => {
         if (error) {
           onErrorCallbacks.forEach((callback) => callback(error));
         } else if (quad) {
-          onQuadCallbacks.every((callback) => callback(quad));
+          onQuadCallbacks.forEach((callback) => callback(quad));
         } else {
-          onCompleteCallbacks.every((callback) => callback());
+          onCompleteCallbacks.forEach((callback) => callback());
         }
       });
     },
