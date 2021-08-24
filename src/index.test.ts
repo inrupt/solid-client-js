@@ -173,6 +173,7 @@ import {
   addPublicKeyToProfileJwks,
   getProfileJwksIri,
   setProfileJwks,
+  getWellKnownSolid,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -346,6 +347,7 @@ it("exports the public API from the entry file", () => {
   expect(addPublicKeyToProfileJwks).toBeDefined();
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
+  expect(getWellKnownSolid).toBeDefined();
 });
 
 it("exports error classes", () => {
