@@ -49,6 +49,7 @@ import {
   internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
   responseToSolidDataset,
   Parser,
+  getWellKnownSolid,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -3371,5 +3372,148 @@ describe("changeLogAsMarkdown", () => {
         "- Added:\n" +
         '  - "Some string" (string)\n'
     );
+  });
+});
+
+describe("getWellKnownSolid", () => {
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedFetcher.fetch.mockResolvedValueOnce(
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: {
+          "Content-Type": "text/turtle",
+          link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
+    );
+    mockedFetcher.fetch.mockResolvedValueOnce(
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "application/ld+json" },
+      })
+    );
+
+    await getWellKnownSolid("https://some.pod/resource");
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource"
+    );
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: {
+            "Content-Type": "text/turtle",
+            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+          },
+        })
+      )
+    );
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: { "Content-Type": "application/ld+json" },
+        })
+      )
+    );
+
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+  });
+
+  it("throws a meaningful error if no root resource linked", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: { "Content-Type": "text/turtle" },
+        })
+      )
+    );
+
+    const fetchPromise = getWellKnownSolid("https://some.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toThrow(
+      new Error(
+        "Unable to determine root resource for Resource at [https://some.pod/resource]."
+      )
+    );
+  });
+
+  it("forms the .well-known/solid endpoint from the root resource", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: {
+            "Content-Type": "text/turtle",
+            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+          },
+        })
+      )
+    );
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: { "Content-Type": "application/ld+json" },
+        })
+      )
+    );
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/username/.well-known/solid"
+    );
+  });
+
+  it("returns the contents of .well-known/solid for the given resource", async () => {
+    const wellKnownSolidResponseBody = `
+    {
+      "@context":"https://pod.inrupt.com/solid/v1",
+      "consent":"https://consent.pod.inrupt.com",
+      "notificationGateway":"https://notification.pod.inrupt.com",
+      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+      "storage":"https://pod.inrupt.com/username/"
+    }`;
+    const mockFetch = jest.fn(window.fetch).mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(undefined, {
+          url: "https://some.pod/resource",
+          headers: {
+            "Content-Type": "text/turtle",
+            link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+          },
+        })
+      )
+    );
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(wellKnownSolidResponseBody, {
+          url: "https://some.pod/resource",
+          headers: { "Content-Type": "application/ld+json" },
+        })
+      )
+    );
+    const wellKnownSolidResponse = await getWellKnownSolid(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(wellKnownSolidResponse).toMatchSnapshot();
   });
 });

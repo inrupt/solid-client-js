@@ -43,6 +43,7 @@ import {
   WithChangeLog,
   hasChangelog,
   LocalNode,
+  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
@@ -53,6 +54,7 @@ import {
   FetchError,
   responseToResourceInfo,
   getContentType,
+  getLinkedResourceUrlAll,
 } from "./resource";
 import {
   internal_isUnsuccessfulResponse,
@@ -1136,4 +1138,38 @@ function resolveLocalIrisInThing(
       ? `${baseIri}#${getLocalNodeName(thing.url)}`
       : thing.url,
   });
+}
+
+/**
+ * Fetch the contents of '.well-known/solid' for a given resource URL.
+ *
+ * @param url URL of a Resource.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Promise resolving to a [[SolidDataset]] containing the data at '.well-known/solid' for the given Resource, or rejecting if fetching it failed.
+ */
+export async function getWellKnownSolid(
+  url: UrlString | Url,
+  options: Partial<
+    typeof internal_defaultFetchOptions & ParseOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset & WithServerResourceInfo> {
+  const urlString = internal_toIriString(url);
+  const resourceMetadata = await getResourceInfo(urlString, options);
+  const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
+  const rootResources =
+    linkedResources["http://www.w3.org/ns/pim/space#storage"];
+  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
+  if (!rootResource) {
+    throw new SolidClientError(
+      `Unable to determine root resource for Resource at [${url}].`
+    );
+  }
+  const wellKnownSolidUrl = `${rootResource}.well-known/solid`;
+
+  const wellKnownSolidDataset = await getSolidDataset(
+    wellKnownSolidUrl,
+    options
+  );
+
+  return wellKnownSolidDataset;
 }
