@@ -57,5 +57,11 @@ export default {
       },
     }),
   ],
-  external: ["cross-fetch", "http-link-header", "@rdfjs/dataset", "n3"],
+  external: [
+    "cross-fetch",
+    "http-link-header",
+    "@rdfjs/dataset",
+    "n3",
+    "jsonld-streaming-parser",
+  ],
 };
