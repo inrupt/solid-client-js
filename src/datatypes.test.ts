@@ -275,14 +275,14 @@ describe("deserializeDatetime", () => {
 
 describe("serializeDate", () => {
   it("properly serialises a given date", () => {
-    expect(serializeDate(new Date(Date.UTC(1990, 10, 12)))).toBe("1990-11-12Z");
+    expect(serializeDate(new Date(Date.UTC(1990, 1, 3)))).toBe("1990-02-03Z");
   });
 });
 
 describe("deserializeDate", () => {
   it("properly parses a serialised date", () => {
-    const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
-    expect(deserializeDate("1990-11-12Z")).toEqual(expectedDate);
+    const expectedDate = new Date(Date.UTC(1990, 1, 3, 12));
+    expect(deserializeDate("1990-02-03Z")).toEqual(expectedDate);
 
     const expectedDateWithNegativeYear = new Date(Date.UTC(-42, 10, 12, 12));
     expect(deserializeDate("-0042-11-12Z")).toEqual(
