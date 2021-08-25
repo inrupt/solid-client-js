@@ -52,18 +52,19 @@ import { localNodeSkolemPrefix } from "../rdf.internal";
 import { createSolidDataset, getSolidDataset } from "../resource/solidDataset";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { getStringNoLocale } from "./get";
+import { buildThing } from "./build";
+import { rdf } from "../constants";
+import { SolidDataset } from "..";
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
     "../resource/solidDataset"
   ) as any;
   return {
-    // We only want to fetch specific functions that result in a network fetch,
-    // but the rest of the module (e.g. the storage utilities) can be used unmocked.
     ...actualResourceModule,
     getSolidDataset: jest.fn(),
     saveSolidDatasetAt: jest.fn(),
-  }
+  };
 });
 
 function getMockThingWithLiteralFor(
@@ -1964,7 +1965,6 @@ describe("setTerm", () => {
 });
 
 describe("setPublicKeyToProfile", () => {
-
   const publicKey = JSON.parse('{"publicKey": "121465147643"}');
 
   // it("Adds a public key to public profile", () => {
@@ -1978,7 +1978,6 @@ describe("setPublicKeyToProfile", () => {
 
   //   const publicProfile = setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch });
 
-
   //   expect(
   //     publicProfile.predicates["https://some.vocab/predicate"].literals
   //   ).toStrictEqual({
@@ -1986,29 +1985,36 @@ describe("setPublicKeyToProfile", () => {
   //   });
   // });
 
+  it("sets the public key appropriately", async () => {
+    let mockedDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const profile = buildThing({ name: "webId" })
+      .addUrl(rdf.type, "https://example.org/ns/Person")
+      .build();
+    mockedDataset = setThing(mockedDataset, profile);
 
-  it("fetches the correct profile", async () => {
-    // mock getSolidDataset
-    const mockModule = jest.requireMock("../resource/solidDataset") as {
-      getSolidDataset:jest.Mock<typeof getSolidDataset>
-    };
-
-    // initialise local dataset
-    let mockDataset = mockSolidDatasetFrom("https://some.pod/resource");
-    // create locally dataset with subject as WebID
-    mockDataset = setThing(mockDataset, createThing({url: "https://some.pod/resource#webID"}));
-
-    // set up mock that this is the returned dataset
-    mockModule.getSolidDataset.mockResolvedValueOnce(
-      mockDataset as never
+    const mockedDatasetModule = jest.requireMock(
+      "../resource/solidDataset"
+    ) as any;
+    mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
+    const mockedSave = mockedDatasetModule.saveSolidDatasetAt;
+    const profileWithKey = await setPublicKeyToProfile(
+      publicKey,
+      "https://some.pod/resource#webId"
     );
-
-    await setPublicKeyToProfile(publicKey, "https://some.pod/resource#webID");
-    const updatedMockDataset = await getSolidDataset("https://some.pod/resource");
-    const thing = getThing(updatedMockDataset, "https://some.pod/resource#webID");
-    
+    const thing = getThing(profileWithKey, "https://some.pod/resource#webId");
+    // Intercept the saved dataset
+    const savedProfileDocument = mockedSave.mock.calls[0][1] as SolidDataset;
+    const savedProfile = getThing(
+      savedProfileDocument,
+      "https://some.pod/resource#webId"
+    );
     // check public key matches
-    expect(getStringNoLocale(thing!, "https://w3c-ccg.github.io/security-vocab/#publicKey")).toEqual(publicKey);
+    expect(
+      getStringNoLocale(
+        savedProfile!,
+        "https://w3c-ccg.github.io/security-vocab/#publicKey"
+      )
+    ).toEqual(JSON.stringify(publicKey));
   });
 
   // it("Throws error if webID is not a solidDataset", async () => {

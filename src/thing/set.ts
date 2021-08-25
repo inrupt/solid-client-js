@@ -45,7 +45,7 @@ import {
   addTime,
   addUrl,
 } from "./add";
-import { getSolidDataset, saveSolidDatasetAt, WebId } from "..";
+import { getSolidDataset, saveSolidDatasetAt, SolidDataset, WebId } from "..";
 import { internal_defaultFetchOptions } from "../resource/resource";
 
 /**
@@ -302,7 +302,6 @@ export function setTerm<T extends Thing>(
   return addTerm(removeAll(thing, property), property, value);
 }
 
-
 /**
  * Adds a public key to a public WebID profile.
  *
@@ -316,24 +315,28 @@ export async function setPublicKeyToProfile(
   publicKey: JWK,
   webId: WebId,
   options: Partial<
-  typeof internal_defaultFetchOptions
-> = internal_defaultFetchOptions
-): Promise<void> {
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset> {
   const profileDataset = await getSolidDataset(webId, {
-    fetch: options.fetch
+    fetch: options.fetch,
   });
   // get profile data "Thing" in the profile dataset.
   const profile = getThing(profileDataset, webId);
-  if (profile) {
-    // add a public key with sec:publicKey
-    const updatedProfile = addStringNoLocale(profile, "https://w3c-ccg.github.io/security-vocab/#publicKey", JSON.stringify(publicKey));
-    const updatedProfileDataset = setThing(profileDataset, updatedProfile);
-    await saveSolidDatasetAt(webId, updatedProfileDataset, {
-      fetch: options.fetch
-    });
-  } else {
-    throw new Error("Could not find public profile at url : " + webId);
+  if (profile === null) {
+    throw new Error(`Could not find public profile at url [${webId}]`);
   }
+  // add a public key with sec:publicKey
+  const updatedProfile = addStringNoLocale(
+    profile,
+    "https://w3c-ccg.github.io/security-vocab/#publicKey",
+    JSON.stringify(publicKey)
+  );
+  const updatedProfileDataset = setThing(profileDataset, updatedProfile);
+  await saveSolidDatasetAt(webId, updatedProfileDataset, {
+    fetch: options.fetch,
+  });
+  return updatedProfileDataset;
 }
 
 /**
