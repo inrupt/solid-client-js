@@ -1143,6 +1143,9 @@ function resolveLocalIrisInThing(
 /**
  * Fetch the contents of '.well-known/solid' for a given resource URL.
  *
+ * The contents of the '.well-known/solid' endpoint define the capabilities of the server, and provide their associated endpoints/locations.
+ * This behaves similarly to the use of '.well-known' endpoints in e.g. (OIDC servers)[https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig]
+ *
  * @param url URL of a Resource.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a [[SolidDataset]] containing the data at '.well-known/solid' for the given Resource, or rejecting if fetching it failed.
