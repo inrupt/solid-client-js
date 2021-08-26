@@ -275,6 +275,7 @@ describe("deserializeDatetime", () => {
 
 describe("serializeDate", () => {
   it("properly serialises a given date", () => {
+    expect(serializeDate(new Date(Date.UTC(1990, 10, 12)))).toBe("1990-11-12Z");
     expect(serializeDate(new Date(Date.UTC(1990, 1, 3)))).toBe("1990-02-03Z");
   });
 });

@@ -298,16 +298,10 @@ export function serializeDate(value: Date): string {
   const day = value.getDate();
   const [_, timezone] = splitTimeFromTimezone(value.toISOString());
 
-  return (
-    year +
-    "-" +
-    (month < 10 ? "0" : "") +
-    month +
-    "-" +
-    (day < 10 ? "0" : "") +
-    day +
-    timezone
-  );
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+    2,
+    "0"
+  )}${timezone}`;
 }
 
 /**
