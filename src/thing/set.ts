@@ -20,7 +20,7 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
-import { JWK, Thing, Url, UrlString } from "../interfaces";
+import { JWK, LinkedResourceUrlAll, Thing, Url, UrlString } from "../interfaces";
 import { internal_isValidUrl, Time } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
@@ -45,10 +45,10 @@ import {
   addTime,
   addUrl,
 } from "./add";
-import { getSolidDataset, Iri, saveSolidDatasetAt, SolidDataset, WebId } from "..";
+import { getSolidDataset, Iri, saveSolidDatasetAt, SolidDataset, WebId, WithResourceInfo, WithServerResourceInfo } from "..";
 import { internal_defaultFetchOptions } from "../resource/resource";
-import { getStringNoLocale } from "./get";
-import { json } from "fast-check";
+import { getUrl } from "./get";
+import { getFile, overwriteFile } from "../resource/file";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -320,9 +320,9 @@ export async function setPublicKeyToProfile(
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
-): Promise<SolidDataset> {
+): Promise<Blob & WithResourceInfo> {
 
-  let profileDataset = await getSolidDataset(webId, {
+  const profileDataset = await getSolidDataset(webId, {
     fetch: options.fetch,
   });
   if (profileDataset === null) {
@@ -336,62 +336,46 @@ export async function setPublicKeyToProfile(
   }
 
   // check for triple <webid, sec:publicKey, jwksIri>
-  const triple = getStringNoLocale(
+  const iri = getUrl(
     profile,
-    "https://w3c-ccg.github.io/security-vocab/#publicKey"
+    "https://w3id.org/security#publicKey"
   );
 
   // if none or different IRI - create triple, save
-  if (triple === null || !triple.includes(jwksIri.toString())){
+  if (iri === null || iri !== jwksIri.toString()){
     const updatedProfile = addStringNoLocale(
       profile,
-      "https://w3c-ccg.github.io/security-vocab/#publicKey",
+      "https://w3id.org/security#publicKey",
       jwksIri.toString()
     );
     const updatedProfileDataset = setThing(profileDataset, updatedProfile);
   
-    profileDataset = await saveSolidDatasetAt(webId, updatedProfileDataset, {
+    await saveSolidDatasetAt(webId, updatedProfileDataset, {
       fetch: options.fetch,
     });
   }
 
-  // fetch JWKS (LOCATIONS MAY NOT BE CORRECT, CONFIRM.)
-  const jwksIriDataset = await getSolidDataset(jwksIri, {
+  // fetch JWKS
+  const jwksIriFile = await getFile(jwksIri, {
     fetch: options.fetch,
   });
-  if (jwksIriDataset === null){
-    throw new Error(`Could not find JWKS at IRI [${jwksIri}]`);
-  }
-  const jwksThing = getThing(jwksIriDataset, jwksIri);
-  if (jwksThing === null){
+  if (jwksIriFile === null){
     throw new Error(`Could not find JWKS at IRI [${jwksIri}]`);
   }
 
-  // get JWKS from "Thing"
-  let jwks = getStringNoLocale(
-    jwksThing,
-    "https://datatracker.ietf.org/doc/html/rfc7517#section-5"
-  );
-  // initialise JWKS if it doesn't exist already
-  if (jwks === null){
-    jwks = "{ JWKS: [] }"
-  }
+  // read file
+  const jwks = await jwksIriFile.text();
 
-  // dereference the JWKs, add new JWK
+  // dereference the JWKS, add new JWK
   const updatedJwks = JSON.parse(jwks);
-  updatedJwks.JWKS.append(publicKey);
+  updatedJwks.keys.append(publicKey);
 
   // save
-  const updatedJwksIriDataset = setStringNoLocale(
-    jwksThing,
-    "https://datatracker.ietf.org/doc/html/rfc7517#section-5",
-    JSON.stringify(updatedJwks)
+  return overwriteFile(  
+    jwksIri,    
+    new Blob([JSON.stringify(updatedJwks)], {type : 'application/json'}),      
+    { contentType: "text/plain", fetch: options.fetch } 
   );
-  const updatedJwksDataset = setThing(profileDataset, updatedJwksIriDataset);
-  await saveSolidDatasetAt(webId, updatedJwksDataset, {
-    fetch: options.fetch,
-  });
-  return profileDataset;
 }
 
 /**
