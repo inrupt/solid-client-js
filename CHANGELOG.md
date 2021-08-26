@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugs fixed
+
+- In some cases, Thing.getDate() would return null while Thing.setDate() had been
+  called prior. Thanks to a contribution from @AJamesPhillips, this is now fixed.
+
 The following sections document changes that have been released already:
 
 ## [1.11.0] - 2021-08-12
