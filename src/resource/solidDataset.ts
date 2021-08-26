@@ -457,6 +457,8 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 /**
  * Deletes the SolidDataset at a given URL.
  *
+ * If operating on a container, the container must be empty otherwise a 409 CONFLICT will be raised.
+ *
  * @param file The (URL of the) SolidDataset to delete
  * @since 0.6.0
  */
