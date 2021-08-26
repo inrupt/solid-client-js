@@ -294,11 +294,14 @@ export function deserializeDatetime(literalString: string): Date | null {
  */
 export function serializeDate(value: Date): string {
   const year = value.getFullYear();
-  const month = value.getMonth();
+  const month = value.getMonth() + 1;
   const day = value.getDate();
   const [_, timezone] = splitTimeFromTimezone(value.toISOString());
 
-  return year + "-" + (month + 1) + "-" + day + timezone;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+    2,
+    "0"
+  )}${timezone}`;
 }
 
 /**
