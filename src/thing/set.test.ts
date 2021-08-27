@@ -50,11 +50,12 @@ import {
 } from "./thing";
 import { localNodeSkolemPrefix } from "../rdf.internal";
 import { createSolidDataset, getSolidDataset } from "../resource/solidDataset";
-import { mockSolidDatasetFrom } from "../resource/mock";
-import { getStringNoLocale } from "./get";
+import { mockFileFrom, mockSolidDatasetFrom } from "../resource/mock";
+import { getStringNoLocale, getUrl } from "./get";
+import { getFile } from "../resource/file";
 import { buildThing } from "./build";
 import { rdf } from "../constants";
-import { SolidDataset } from "..";
+import { addUrl, SolidDataset } from "..";
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
@@ -66,6 +67,18 @@ jest.mock("../resource/solidDataset", () => {
     saveSolidDatasetAt: jest.fn(),
   };
 });
+
+jest.mock("../resource/file", () => {
+  const actualResourceModule = jest.requireActual(
+    "../resource/file"
+  ) as any;
+  return {
+    ...actualResourceModule,
+    getFile: jest.fn(),
+  };
+});
+
+
 
 function getMockThingWithLiteralFor(
   predicate: IriString,
@@ -1967,28 +1980,56 @@ describe("setTerm", () => {
 describe("setPublicKeyToProfile", () => {
   const publicKey = JSON.parse('{"publicKey": "121465147643"}');
 
-  // it("Adds a public key to public profile", () => {
-  //   const mockFetch = jest.fn(window.fetch).mockReturnValue(
-  //     Promise.resolve(
-  //       new Response(undefined, {
-  //         headers: { "Content-Type": "text/turtle" },
-  //       })
-  //     )
-  //   );
-
-  //   const publicProfile = setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch });
-
-  //   expect(
-  //     publicProfile.predicates["https://some.vocab/predicate"].literals
-  //   ).toStrictEqual({
-  //     "http://www.w3.org/2001/XMLSchema#string": ["Some string"],
-  //   });
-  // });
-
-  it("sets the public key appropriately", async () => {
+  it("Adds JWK IRI if there is not one already", async () => {
     let mockedDataset = mockSolidDatasetFrom("https://some.pod/resource");
     const profile = buildThing({ name: "webId" })
       .addUrl(rdf.type, "https://example.org/ns/Person")
+      .build();
+    mockedDataset = setThing(mockedDataset, profile);
+
+
+    const mockedDatasetModule = jest.requireMock(
+      "../resource/solidDataset"
+    ) as any;
+    mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
+    const mockedSave = mockedDatasetModule.saveSolidDatasetAt;
+    
+    const mockedFileModule = jest.requireMock(
+      "../resource/file"
+    ) as any;
+    const file = new Blob([JSON.stringify({keys: []})], {type : 'application/json'})
+    mockedFileModule.getFile.mockResolvedValueOnce(file);
+    
+    await setPublicKeyToProfile(
+      publicKey,
+      "https://some.pod/resource#webId",
+      "https://some.resource/jwks.json"
+    );
+
+    // Intercept the saved dataset
+    const savedProfileDocument = mockedSave.mock.calls[0][1] as SolidDataset;
+    const savedProfile = getThing(
+      savedProfileDocument,
+      "https://some.pod/resource#webId"
+    );
+
+    // check public key matches
+    expect(
+      getUrl(
+        savedProfile!,
+        "https://w3id.org/security#publicKey"
+      )
+    ).toEqual("https://some.resource/jwks.json");
+  });
+
+  it("Adds JWK IRI if it is different to existing IRI", async () => {
+    let mockedDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const profile = buildThing({ name: "webId" })
+      .addUrl(rdf.type, "https://example.org/ns/Person")
+      .addUrl(      
+        "https://w3id.org/security#publicKey",
+        "https://some.resource/jwks.json"
+      )
       .build();
     mockedDataset = setThing(mockedDataset, profile);
 
@@ -1997,11 +2038,19 @@ describe("setPublicKeyToProfile", () => {
     ) as any;
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
     const mockedSave = mockedDatasetModule.saveSolidDatasetAt;
-    const profileWithKey = await setPublicKeyToProfile(
+
+    const mockedFileModule = jest.requireMock(
+      "../resource/file"
+    ) as any;
+    const file = new Blob([JSON.stringify({keys: []})], {type : 'application/json'})
+    mockedFileModule.getFile.mockResolvedValueOnce(file);
+    
+    await setPublicKeyToProfile(
       publicKey,
-      "https://some.pod/resource#webId"
+      "https://some.pod/resource#webId",
+      "https://some.different.resource/jwks.json"
     );
-    const thing = getThing(profileWithKey, "https://some.pod/resource#webId");
+
     // Intercept the saved dataset
     const savedProfileDocument = mockedSave.mock.calls[0][1] as SolidDataset;
     const savedProfile = getThing(
@@ -2010,36 +2059,56 @@ describe("setPublicKeyToProfile", () => {
     );
     // check public key matches
     expect(
-      getStringNoLocale(
+      getUrl(
         savedProfile!,
-        "https://w3c-ccg.github.io/security-vocab/#publicKey"
+        "https://w3id.org/security#publicKey"
       )
-    ).toEqual(JSON.stringify(publicKey));
+    ).toEqual("https://some.different.resource/jwks.json");
   });
 
-  // it("Throws error if webID is not a solidDataset", async () => {
-  //   const mockFetch = jest.fn(window.fetch).mockReturnValue(
-  //     Promise.resolve(
-  //       new Response(undefined, {
-  //         headers: { "Content-Type": "text/turtle" },
-  //       })
-  //     )
-  //   );
 
-  //   expect(
-  //     await setPublicKeyToProfile(publicKey, "https://some.pod/resource", { fetch: mockFetch })
-  //   ).toThrow("Could not find public profile at url : https://some.pod/resource");
-  // });
 
-  // it("Allows multiple keys to be set", () => {
-  // });
+  it("adds the public key to JWKS file", async () => {
+    let mockedDataset = mockSolidDatasetFrom("https://some.pod/resource");
+    const profile = buildThing({ name: "webId" })
+      .addUrl(rdf.type, "https://example.org/ns/Person")
+      .build();
+    mockedDataset = setThing(mockedDataset, profile);
+    const jwksIri = addUrl(      
+      profile,
+      "https://w3id.org/security#publicKey",
+      "https://some.resource/jwks.json"
+    );
 
-  // it("Throws if caller has incorrect credentials", () => {
-  // });
+    const mockedDatasetModule = jest.requireMock(
+      "../resource/solidDataset"
+    ) as any;
+    mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
+    const mockedSave = mockedDatasetModule.saveSolidDatasetAt;
 
-  // it("throws an error when passed something other than a public key", () => {
-  // });
+    const mockedFileModule = jest.requireMock(
+      "../resource/file"
+    ) as any;
+    const file = new Blob([JSON.stringify({keys: []})], {type : 'application/json'})
+    mockedFileModule.getFile.mockResolvedValueOnce(file);
+    
+    const jwksWithKey = await setPublicKeyToProfile(
+      publicKey,
+      "https://some.pod/resource#webId",
+      "https://some.resource/jwks.json"
+    );
 
-  // it("throws an error when passed an invalid WebID", () => {
-  // });
+    const updatedFile = await getFile(
+      "https://some.resource/jwks.json"
+    )
+    const updatedJwks = updatedFile.text();
+    // check public key matches
+    expect(
+      updatedJwks
+    ).toEqual(JSON.stringify(publicKey));
+    // modify this json to match JWKS format
+  });
+
+  it("throws an error when passed an invalid WebID", () => {
+  });
 });

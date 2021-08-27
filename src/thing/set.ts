@@ -45,10 +45,11 @@ import {
   addTime,
   addUrl,
 } from "./add";
-import { getSolidDataset, Iri, saveSolidDatasetAt, SolidDataset, WebId, WithResourceInfo, WithServerResourceInfo } from "..";
-import { internal_defaultFetchOptions } from "../resource/resource";
+import { getSolidDataset, Iri, IriString, saveSolidDatasetAt, SolidDataset, WebId, WithResourceInfo, WithServerResourceInfo } from "..";
+import { getContentType, internal_defaultFetchOptions } from "../resource/resource";
 import { getUrl } from "./get";
 import { getFile, overwriteFile } from "../resource/file";
+import { internal_toIriString } from "../interfaces.internal";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -316,11 +317,15 @@ export function setTerm<T extends Thing>(
 export async function setPublicKeyToProfile(
   publicKey: JWK,
   webId: WebId,
-  jwksIri: Iri,
+  jwksIri: Iri | IriString,
   options: Partial<
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<Blob & WithResourceInfo> {
+  if (!internal_isValidUrl(jwksIri)) {
+    throw new ValidPropertyUrlExpectedError(jwksIri);
+  }
+  jwksIri = internal_toIriString(jwksIri);
 
   const profileDataset = await getSolidDataset(webId, {
     fetch: options.fetch,
@@ -342,11 +347,11 @@ export async function setPublicKeyToProfile(
   );
 
   // if none or different IRI - create triple, save
-  if (iri === null || iri !== jwksIri.toString()){
-    const updatedProfile = addStringNoLocale(
+  if (iri === null || iri !== jwksIri){
+    const updatedProfile = addUrl(
       profile,
       "https://w3id.org/security#publicKey",
-      jwksIri.toString()
+      jwksIri
     );
     const updatedProfileDataset = setThing(profileDataset, updatedProfile);
   
@@ -362,6 +367,7 @@ export async function setPublicKeyToProfile(
   if (jwksIriFile === null){
     throw new Error(`Could not find JWKS at IRI [${jwksIri}]`);
   }
+  console.log(getContentType(jwksIriFile));
 
   // read file
   const jwks = await jwksIriFile.text();
