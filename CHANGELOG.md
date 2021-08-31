@@ -10,6 +10,7 @@ The following changes have been implemented but not released yet:
 
 - In some cases, Thing.getDate() would return null while Thing.setDate() had been
   called prior. Thanks to a contribution from @AJamesPhillips, this is now fixed.
+- The submodule export for `./access/universal` was broken.
 
 The following sections document changes that have been released already:
 
