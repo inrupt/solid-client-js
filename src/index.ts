@@ -340,4 +340,4 @@ export * as access_v1 from "./access/universal_v1";
  * functions directly from @inrupt/solid-client/access/universal.
  * @deprecated Please import directly from the "access/universal" module.
  */
-export * as access from "./access/universal_v1";
+export * as access from "./access/universal";
