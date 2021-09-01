@@ -20,14 +20,12 @@
  */
 
 import { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
-import { JWK, LinkedResourceUrlAll, Thing, Url, UrlString } from "../interfaces";
+import { Thing, Url, UrlString } from "../interfaces";
 import { internal_isValidUrl, Time } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 import {
-  getThing,
   isThing,
-  setThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
 } from "./thing";
@@ -45,11 +43,6 @@ import {
   addTime,
   addUrl,
 } from "./add";
-import { getSolidDataset, Iri, IriString, saveSolidDatasetAt, SolidDataset, WebId, WithResourceInfo, WithServerResourceInfo } from "..";
-import { getContentType, internal_defaultFetchOptions } from "../resource/resource";
-import { getUrl } from "./get";
-import { getFile, overwriteFile } from "../resource/file";
-import { internal_toIriString } from "../interfaces.internal";
 
 /**
  * Create a new Thing with existing values replaced by the given URL for the given Property.
@@ -303,85 +296,6 @@ export function setTerm<T extends Thing>(
   }
 
   return addTerm(removeAll(thing, property), property, value);
-}
-
-/**
- * Adds a public key to a public WebID profile.
- *
- * The original `thing` is not modified; this function returns a cloned Thing with updated values.
- *
- * @param publicKey The public key value to set.
- * @param webId The WebID of the profile to add the public key.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- */
-export async function setPublicKeyToProfile(
-  publicKey: JWK,
-  webId: WebId,
-  jwksIri: Iri | IriString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
-): Promise<Blob & WithResourceInfo> {
-  if (!internal_isValidUrl(jwksIri)) {
-    throw new ValidPropertyUrlExpectedError(jwksIri);
-  }
-  jwksIri = internal_toIriString(jwksIri);
-
-  const profileDataset = await getSolidDataset(webId, {
-    fetch: options.fetch,
-  });
-  if (profileDataset === null) {
-    throw new Error(`Could not find public profile at url [${webId}]`);
-  }
-
-  // get profile data "Thing" in the profile dataset.
-  const profile = getThing(profileDataset, webId);
-  if (profile === null) {
-    throw new Error(`Could not find public profile at url [${webId}]`);
-  }
-
-  // check for triple <webid, sec:publicKey, jwksIri>
-  const iri = getUrl(
-    profile,
-    "https://w3id.org/security#publicKey"
-  );
-
-  // if none or different IRI - create triple, save
-  if (iri === null || iri !== jwksIri){
-    const updatedProfile = addUrl(
-      profile,
-      "https://w3id.org/security#publicKey",
-      jwksIri
-    );
-    const updatedProfileDataset = setThing(profileDataset, updatedProfile);
-  
-    await saveSolidDatasetAt(webId, updatedProfileDataset, {
-      fetch: options.fetch,
-    });
-  }
-
-  // fetch JWKS
-  const jwksIriFile = await getFile(jwksIri, {
-    fetch: options.fetch,
-  });
-  if (jwksIriFile === null){
-    throw new Error(`Could not find JWKS at IRI [${jwksIri}]`);
-  }
-  console.log(getContentType(jwksIriFile));
-
-  // read file
-  const jwks = await jwksIriFile.text();
-
-  // dereference the JWKS, add new JWK
-  const updatedJwks = JSON.parse(jwks);
-  updatedJwks.keys.append(publicKey);
-
-  // save
-  return overwriteFile(  
-    jwksIri,    
-    new Blob([JSON.stringify(updatedJwks)], {type : 'application/json'}),      
-    { contentType: "text/plain", fetch: options.fetch } 
-  );
 }
 
 /**
