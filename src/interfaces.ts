@@ -52,8 +52,16 @@ export type File = Blob;
 
 /**
  * A JSON data structure that represents a set of public keys as a JSON object.
+ * See https://datatracker.ietf.org/doc/html/rfc7517 for details.
  */
-export type JWK = JSON;
+export type Jwk = Record<string, string>;
+
+/**
+ * A JSON data structure holding a list of JWK.
+ */
+export type Jwks = {
+  keys: Jwk[];
+};
 
 /**
  * A Resource is something that can be fetched from a Pod - either structured data in a [[SolidDataset]], or any other [[File]].
