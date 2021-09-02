@@ -6,13 +6,15 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.11.1] - 2021-09-02
+
 ### Bugs fixed
 
 - In some cases, Thing.getDate() would return null while Thing.setDate() had been
   called prior. Thanks to a contribution from @AJamesPhillips, this is now fixed.
 - The submodule export for `./access/universal` was broken.
-
-The following sections document changes that have been released already:
 
 ## [1.11.0] - 2021-08-12
 
