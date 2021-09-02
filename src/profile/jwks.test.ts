@@ -183,7 +183,7 @@ describe("addPublicKeyToProfileJwks", () => {
         { kid: "..." },
         "https://some.pod/resource#webId"
       )
-    ).rejects.toThrow(/profile document.*webId.*found/);
+    ).rejects.toThrow(/profile document.*webId.*retrieved/);
   });
 
   it("throws if the profile does not have a JWKS", async () => {
