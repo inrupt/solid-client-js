@@ -20,9 +20,6 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-
-import { Quad } from "@rdfjs/types";
-import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import { IriString, Thing } from "../interfaces";
 import {

@@ -87,3 +87,8 @@ export const acp = {
 export const solid = {
   PublicOidcClient: "http://www.w3.org/ns/solid/terms#PublicOidcClient",
 } as const;
+
+/** @hidden */
+export const security = {
+  publicKey: "https://w3id.org/security#publicKey",
+} as const;
