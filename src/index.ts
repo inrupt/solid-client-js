@@ -223,6 +223,12 @@ export {
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 export { Time } from "./datatypes.js";
+export {
+  addJwkToJwks,
+  addPublicKeyToProfileJwks,
+  getProfileJwksIri,
+  setProfileJwks,
+} from "./profile/jwks";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.

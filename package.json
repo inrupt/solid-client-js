@@ -55,7 +55,8 @@
     "./acp/rule": "./dist/acp/rule.mjs",
     "./acp/mock": "./dist/acp/mock.mjs",
     "./access/universal": "./dist/access/universal.mjs",
-    "./rdfjs": "./dist/rdfjs.mjs"
+    "./rdfjs": "./dist/rdfjs.mjs",
+    "./profile/jwks": "./dist/profile/jwks.mjs"
   },
   "files": [
     "dist",
