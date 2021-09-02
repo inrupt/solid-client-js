@@ -58,10 +58,10 @@ function getProfileFromProfileDoc(
 }
 
 /**
- * Set a JWKS IRI associated to a WebID in a profile document.
+ * Set a JWKS IRI associated with a WebID in a profile document.
  *
  * @param profileDocument The profile document dataset.
- * @param webId The WebID associated to the profile document.
+ * @param webId The WebID associated with the profile document.
  * @param jwksIri The JWKS IRI to be set.
  * @returns A modified copy of the profile document, with the JWKS IRI set.
  */
@@ -85,7 +85,7 @@ export function setProfileJwks<Dataset extends SolidDataset>(
  *
  * @param profileDocument The profile document.
  * @param webId The WebID featured in the profile document.
- * @returns The JWKS IRI associated to the WebID, if
+ * @returns The JWKS IRI associated with the WebID, if
  */
 export function getProfileJwksIri(
   profileDocument: SolidDataset,

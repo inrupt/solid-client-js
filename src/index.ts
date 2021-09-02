@@ -287,7 +287,7 @@ export { acp_v4 } from "./acp/v4";
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
@@ -311,7 +311,7 @@ export * as access_v2 from "./access/universal_v2";
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
@@ -331,7 +331,7 @@ export * as access_v1 from "./access/universal_v1";
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
