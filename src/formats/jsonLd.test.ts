@@ -116,25 +116,23 @@ describe("The Parser", () => {
     }
   `;
 
-    jest
-      .spyOn(jsonld, "toRDF")
-      .mockResolvedValueOnce([
-        {
-          subject: {
-            termType: "FakeTermType",
-            value: "https://example.com/some-path#someSubject",
-          },
-          predicate: {
-            termType: "NamedNode",
-            value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          },
-          object: {
-            termType: "NamedNode",
-            value: "http://xmlns.com/foaf/0.1/Person",
-          },
-          graph: { termType: "DefaultGraph", value: "" },
+    jest.spyOn(jsonld, "toRDF").mockResolvedValueOnce([
+      {
+        subject: {
+          termType: "FakeTermType",
+          value: "https://example.com/some-path#someSubject",
         },
-      ]);
+        predicate: {
+          termType: "NamedNode",
+          value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "http://xmlns.com/foaf/0.1/Person",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+    ]);
     await parser.parse(jsonLd, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
