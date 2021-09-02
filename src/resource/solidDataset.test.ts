@@ -33,6 +33,7 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
+import * as jsonld from "jsonld";
 import { DataFactory } from "n3";
 import {
   getSolidDataset,
@@ -67,6 +68,61 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+
+jest.mock("jsonld", () => ({
+  toRDF: jest.fn().mockImplementation(() =>
+    Promise.resolve([
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#consentIssuer",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://consent.pod.inrupt.com",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#notificationGatewayEndpoint",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://notification.pod.inrupt.com",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#powerSwitchEndpoint",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://pod.inrupt.com/powerswitch/username",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://www.w3.org/ns/pim/space#storage",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://pod.inrupt.com/username/",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+    ])
+  ),
+}));
 
 function mockResponse(
   body?: BodyInit | null,
@@ -361,7 +417,7 @@ describe("responseToSolidDataset", () => {
 
     await expect(parsePromise).rejects.toThrow(
       new Error(
-        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle, application/ld+json]."
+        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle]."
       )
     );
   });
@@ -435,7 +491,7 @@ describe("getSolidDataset", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
-  it("adds an Accept header accepting turtle and json-ld by default", async () => {
+  it("adds an Accept header accepting turtle by default", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
@@ -448,7 +504,7 @@ describe("getSolidDataset", () => {
 
     expect(mockFetch.mock.calls[0][1]).toEqual({
       headers: {
-        Accept: "text/turtle, application/ld+json",
+        Accept: "text/turtle",
       },
     });
   });
@@ -3395,10 +3451,20 @@ describe("getWellKnownSolid", () => {
   }
   function setMockWellKnownSolidResponseOnFetch(
     fetch: MockFetch,
-    response = mockResponse(undefined, {
-      url: "https://some.pod/resource",
-      headers: { "Content-Type": "application/ld+json" },
-    })
+    response = mockResponse(
+      `
+    {
+      "@context":"https://pod.inrupt.com/solid/v1",
+      "consent":"https://consent.pod.inrupt.com",
+      "notificationGateway":"https://notification.pod.inrupt.com",
+      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+      "storage":"https://pod.inrupt.com/username/"
+    }`,
+      {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "application/ld+json" },
+      }
+    )
   ): MockFetch {
     fetch.mockResolvedValueOnce(response);
     return fetch;
@@ -3481,6 +3547,7 @@ describe("getWellKnownSolid", () => {
     );
 
     const wellKnownSolidResponse = await getWellKnownSolid(
+      // "https://pod.inrupt.com/andydavison/public"
       "https://some.pod/resource",
       { fetch: mockFetch }
     );

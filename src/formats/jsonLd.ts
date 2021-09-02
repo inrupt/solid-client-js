@@ -19,8 +19,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { JsonLdParser } from "jsonld-streaming-parser";
-import { IriString } from "../interfaces";
+import * as jsonld from "jsonld";
+import {
+  Quad,
+  Quad_Graph,
+  Quad_Object,
+  Quad_Predicate,
+  Quad_Subject,
+} from "@rdfjs/types";
 import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
@@ -41,30 +47,50 @@ export const getJsonLdParser = (): Parser => {
       onCompleteCallbacks.push(callback);
     },
     parse: async (source, resourceInfo) => {
-      const parser = await getParser(getSourceUrl(resourceInfo));
-      const parserPromise = new Promise<void>((resolve) => {
-        parser.on("data", (quad) => {
-          onQuadCallbacks.forEach((callback) => callback(quad));
-        });
-        parser.on("error", (error) => {
-          onErrorCallbacks.forEach((callback) => callback(error));
-        });
-        parser.on("end", () => {
-          onCompleteCallbacks.forEach((callback) => callback());
-          resolve();
-        });
-        parser.write(source);
-        parser.end();
+      let quads = [] as Quad[];
+      try {
+        const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
+          base: getSourceUrl(resourceInfo),
+        })) as [];
+        quads = fixQuads(plainQuads);
+      } catch (error) {
+        onErrorCallbacks.forEach((callback) => callback(error));
+      }
+      quads.forEach((quad) => {
+        onQuadCallbacks.forEach((callback) => callback(quad));
       });
-      await parserPromise;
+      onCompleteCallbacks.forEach((callback) => callback());
     },
   };
 };
 
-async function getParser(baseIri: IriString) {
-  return new JsonLdParser({
-    baseIRI: baseIri,
-    processingMode: "1.1",
-    dataFactory: DataFactory,
-  });
+/* Quads returned by jsonld parser are not spec-compliant
+ * see https://github.com/digitalbazaar/jsonld.js/issues/243
+ * Also, no specific type for these 'quads' is exposed by the library
+ */
+function fixQuads(plainQuads: any[]): Quad[] {
+  const fixedQuads = plainQuads.map((plainQuad) =>
+    DataFactory.quad(
+      term(plainQuad.subject) as Quad_Subject,
+      term(plainQuad.predicate) as Quad_Predicate,
+      term(plainQuad.object) as Quad_Object,
+      term(plainQuad.graph) as Quad_Graph
+    )
+  );
+  return fixedQuads;
+}
+
+function term(term: any) {
+  switch (term.termType) {
+    case "NamedNode":
+      return DataFactory.namedNode(term.value);
+    case "BlankNode":
+      return DataFactory.blankNode(term.value.substr(2)); // Remove the '_:' prefix. see https://github.com/digitalbazaar/jsonld.js/issues/244
+    case "Literal":
+      return DataFactory.literal(term.value, term.language || term.datatype);
+    case "DefaultGraph":
+      return DataFactory.defaultGraph();
+    default:
+      throw Error("unknown termType: " + term.termType);
+  }
 }

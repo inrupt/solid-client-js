@@ -59,7 +59,7 @@ exports[`getWellKnownSolid returns the contents of .well-known/solid for the giv
 Object {
   "graphs": Object {
     "default": Object {
-      "_:b1": Object {
+      "_:b0": Object {
         "predicates": Object {
           "http://inrupt.com/ns/ess#consentIssuer": Object {
             "namedNodes": Array [
@@ -83,7 +83,7 @@ Object {
           },
         },
         "type": "Subject",
-        "url": "_:b1",
+        "url": "_:b0",
       },
     },
   },

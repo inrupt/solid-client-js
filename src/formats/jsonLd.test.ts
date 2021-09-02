@@ -21,7 +21,8 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { foaf, rdf } from "rdf-namespaces";
-import { DataFactory } from "../rdfjs.internal";
+import { DataFactory } from "n3";
+import jsonld from "jsonld";
 import { getJsonLdParser } from "./jsonLd";
 
 describe("The Parser", () => {
@@ -52,14 +53,14 @@ describe("The Parser", () => {
 
     const expectedTriple1 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(foaf.name),
-      DataFactory.literal("Some name"),
+      DataFactory.namedNode(rdf.type),
+      DataFactory.namedNode(foaf.Person),
       undefined
     );
     const expectedTriple2 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(rdf.type),
-      DataFactory.namedNode(foaf.Person),
+      DataFactory.namedNode(foaf.name),
+      DataFactory.literal("Some name"),
       undefined
     );
 
@@ -88,6 +89,52 @@ describe("The Parser", () => {
       "http://xmlns.com/foaf/0.1/name":“A literal with invalid quotes”
     }
   `;
+    await parser.parse(jsonLd, {
+      internal_resourceInfo: {
+        sourceIri: "https://example.com/some-path",
+        isRawData: false,
+        linkedResources: {},
+      },
+    });
+
+    expect(onErrorCallback).toHaveBeenCalledTimes(1);
+    expect(onErrorCallback.mock.calls[0][0]).toBeInstanceOf(Error);
+  });
+
+  it("should throw an error if jsonld returns unknown termType", async () => {
+    const parser = getJsonLdParser();
+    const onErrorCallback = jest.fn();
+    const onCompleteCallback = jest.fn();
+
+    parser.onError(onErrorCallback);
+    parser.onComplete(onCompleteCallback);
+    const jsonLd = `
+    {
+      "@id":"https://example.com/some-path#someSubject",
+      "@type":"http://xmlns.com/foaf/0.1/Person",
+      "http://xmlns.com/foaf/0.1/name":"Some name"
+    }
+  `;
+
+    jest
+      .spyOn(jsonld, "toRDF")
+      .mockResolvedValueOnce([
+        {
+          subject: {
+            termType: "FakeTermType",
+            value: "https://example.com/some-path#someSubject",
+          },
+          predicate: {
+            termType: "NamedNode",
+            value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          },
+          object: {
+            termType: "NamedNode",
+            value: "http://xmlns.com/foaf/0.1/Person",
+          },
+          graph: { termType: "DefaultGraph", value: "" },
+        },
+      ]);
     await parser.parse(jsonLd, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",

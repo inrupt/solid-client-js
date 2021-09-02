@@ -177,7 +177,6 @@ export async function responseToSolidDataset(
 
   const parsers: Record<ContentType, Parser> = {
     "text/turtle": getTurtleParser(),
-    "application/ld+json": getJsonLdParser(),
     ...parseOptions.parsers,
   };
   const contentType = getContentType(resourceInfo);
@@ -302,7 +301,7 @@ export async function getSolidDataset(
   const acceptedContentTypes =
     parserContentTypes.length > 0
       ? parserContentTypes.join(", ")
-      : "text/turtle, application/ld+json";
+      : "text/turtle";
   const response = await config.fetch(url, {
     headers: {
       Accept: acceptedContentTypes,
@@ -1168,10 +1167,12 @@ export async function getWellKnownSolid(
   }
   const wellKnownSolidUrl = new URL(".well-known/solid", rootResource).href;
 
-  const wellKnownSolidDataset = await getSolidDataset(
-    wellKnownSolidUrl,
-    options
-  );
+  const wellKnownSolidDataset = await getSolidDataset(wellKnownSolidUrl, {
+    ...options,
+    parsers: {
+      "application/ld+json": getJsonLdParser(),
+    },
+  });
 
   return wellKnownSolidDataset;
 }

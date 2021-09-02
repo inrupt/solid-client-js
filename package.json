@@ -75,6 +75,7 @@
     "@types/dotenv-flow": "^3.1.0",
     "@types/http-link-header": "^1.0.1",
     "@types/jest": "^27.0.0",
+    "@types/jsonld": "^1.5.6",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
     "dotenv-flow": "^3.2.0",
@@ -103,7 +104,7 @@
     "@types/rdfjs__dataset": "^1.0.4",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
-    "jsonld-streaming-parser": "^2.4.0",
+    "jsonld": "^5.2.0",
     "n3": "^1.10.0"
   },
   "lint-staged": {
