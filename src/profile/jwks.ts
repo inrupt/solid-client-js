@@ -130,7 +130,7 @@ export async function addJwkToJwks(
     const jwksDocument = await jwksResponse.json();
     if (!isJwks(jwksDocument)) {
       throw new Error(
-        `${jwksIri} did not dereference to a valid JWKS: ${JSON.stringify(
+        `[${jwksIri}] does not dereference to a valid JWKS: ${JSON.stringify(
           jwksDocument
         )}`
       );
@@ -145,13 +145,13 @@ export async function addJwkToJwks(
 
 /**
  * Adds a public key to the JWKS listed in the profile associated to the given WebID.
- * After having looked up the profile document thanks to the WebID, the associated
- * JWKS, and having added the given key to the JWKS, this function overwrites the
+ * Retrieves the profile document for the specified WebID and looks up the associated
+ * JWKS. Having added the given key to the JWKS, this function overwrites the
  * previous JWKS so that the new version is saved. This assumes the JWKS is hosted
- * at a read-write IRI, such as a Solid pod.
+ * at a read-write IRI, such as in a Solid Pod.
  *
  * @param publicKey The public key value to set.
- * @param webId The WebID of the profile to add the public key.
+ * @param webId The WebID whose profile document references the key set to which we wish to add the specified public key.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  */
 export async function addPublicKeyToProfileJwks(
@@ -166,7 +166,7 @@ export async function addPublicKeyToProfileJwks(
   });
   if (profileDataset === null) {
     throw new Error(
-      `The profile document associated to [${webId}] could not be found.`
+      `The profile document associated with WebID [${webId}] could not be found.`
     );
   }
 
