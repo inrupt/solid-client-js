@@ -169,6 +169,10 @@ import {
   addMockFallbackAclTo,
   fromRdfJsDataset,
   toRdfJsDataset,
+  addJwkToJwks,
+  addPublicKeyToProfileJwks,
+  getProfileJwksIri,
+  setProfileJwks,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -338,6 +342,10 @@ it("exports the public API from the entry file", () => {
   expect(addMockFallbackAclTo).toBeDefined();
   expect(fromRdfJsDataset).toBeDefined();
   expect(toRdfJsDataset).toBeDefined();
+  expect(addJwkToJwks).toBeDefined();
+  expect(addPublicKeyToProfileJwks).toBeDefined();
+  expect(getProfileJwksIri).toBeDefined();
+  expect(setProfileJwks).toBeDefined();
 });
 
 it("exports error classes", () => {
