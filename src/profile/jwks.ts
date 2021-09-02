@@ -173,7 +173,9 @@ export async function addPublicKeyToProfileJwks(
   const jwksIri = getProfileJwksIri(profileDataset, webId);
 
   if (jwksIri === null) {
-    throw new Error(`No key set is declared in the profile of [${webId}]`);
+    throw new Error(
+      `No key set is declared for the property [${security.publicKey}] in the profile of [${webId}]`
+    );
   }
 
   const updatedJwks = await addJwkToJwks(publicKey, jwksIri, options);
