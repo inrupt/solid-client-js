@@ -166,7 +166,7 @@ export async function addPublicKeyToProfileJwks(
   });
   if (profileDataset === null) {
     throw new Error(
-      `The profile document associated with WebID [${webId}] could not be found.`
+      `The profile document associated with WebID [${webId}] could not be retrieved.`
     );
   }
 
