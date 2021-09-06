@@ -363,9 +363,9 @@ describe("responseToSolidDataset", () => {
     const t1 = performance.now();
 
     // Parsing a document with over 1000 statements will always be somewhat slow
-    // (hence allowing it to take a second), but if it attempts to detect
+    // (hence allowing it to take 1.5 seconds), but if it attempts to detect
     // chains, it will take on the order of >20 seconds.
-    expect(t1 - t0).toBeLessThan(1000);
+    expect(t1 - t0).toBeLessThan(1500);
     // Blank Nodes should be listed explicitly, rather than as properties on
     // https://some.pod/resource#me:
     expect(Object.keys(solidDataset.graphs.default)).not.toStrictEqual([
