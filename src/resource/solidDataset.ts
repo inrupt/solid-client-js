@@ -1160,7 +1160,7 @@ export async function getWellKnownSolid(
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
   const rootResources = linkedResources[pim.storage];
   const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
-  if (!rootResource) {
+  if (rootResource === null) {
     throw new SolidClientError(
       `Unable to determine root resource for Resource at [${url}].`
     );
