@@ -1167,12 +1167,10 @@ export async function getWellKnownSolid(
   }
   const wellKnownSolidUrl = new URL(".well-known/solid", rootResource).href;
 
-  const wellKnownSolidDataset = await getSolidDataset(wellKnownSolidUrl, {
+  return getSolidDataset(wellKnownSolidUrl, {
     ...options,
     parsers: {
       "application/ld+json": getJsonLdParser(),
     },
   });
-
-  return wellKnownSolidDataset;
 }
