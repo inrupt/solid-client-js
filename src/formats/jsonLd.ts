@@ -51,7 +51,7 @@ export const getJsonLdParser = (): Parser => {
       try {
         const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
           base: getSourceUrl(resourceInfo),
-        })) as [];
+        })) as any[];
         quads = fixQuads(plainQuads);
       } catch (error) {
         onErrorCallbacks.forEach((callback) => callback(error));
