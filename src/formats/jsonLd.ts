@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { toRDF } from "jsonld";
+import * as jsonld from "jsonld";
 import {
   Quad,
   Quad_Graph,
@@ -49,7 +49,7 @@ export const getJsonLdParser = (): Parser => {
     parse: async (source, resourceInfo) => {
       let quads = [] as Quad[];
       try {
-        const plainQuads = (await toRDF(JSON.parse(source), {
+        const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
           base: getSourceUrl(resourceInfo),
         })) as any[];
         quads = fixQuads(plainQuads);
