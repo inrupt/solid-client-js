@@ -62,6 +62,6 @@ export default {
     "http-link-header",
     "@rdfjs/dataset",
     "n3",
-    "jsonld-streaming-parser",
+    "jsonld",
   ],
 };
