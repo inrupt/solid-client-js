@@ -11,6 +11,8 @@ The following changes have been implemented but not released yet:
 - Manage public keys attached to your profile with the functions `addJwkToJwks`,
   `addPublicKeyToProfileJwks`, `getProfileJwksIri` and `setProfileJwks`, from the
   `@inrupt/solid-client/profile/jwks` module.
+- Add `getWellKnownSolid`, to return the contents of the `.well-known/solid`
+  endpoint for a given resource url.
 
 The following sections document changes that have been released already:
 

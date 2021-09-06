@@ -54,6 +54,7 @@ export {
   Parser,
   ParseOptions,
   responseToSolidDataset,
+  getWellKnownSolid,
 } from "./resource/solidDataset";
 export {
   mockSolidDatasetFrom,

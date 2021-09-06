@@ -92,3 +92,8 @@ export const solid = {
 export const security = {
   publicKey: "https://w3id.org/security#publicKey",
 } as const;
+
+/** @hidden */
+export const pim = {
+  storage: "http://www.w3.org/ns/pim/space#storage",
+} as const;
