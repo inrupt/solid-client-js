@@ -3547,7 +3547,6 @@ describe("getWellKnownSolid", () => {
     );
 
     const wellKnownSolidResponse = await getWellKnownSolid(
-      // "https://pod.inrupt.com/andydavison/public"
       "https://some.pod/resource",
       { fetch: mockFetch }
     );
