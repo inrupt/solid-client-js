@@ -1148,6 +1148,7 @@ function resolveLocalIrisInThing(
  * @param url URL of a Resource.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a [[SolidDataset]] containing the data at '.well-known/solid' for the given Resource, or rejecting if fetching it failed.
+ * @since 1.12.0
  */
 export async function getWellKnownSolid(
   url: UrlString | Url,
