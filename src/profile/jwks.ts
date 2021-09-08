@@ -64,6 +64,7 @@ function getProfileFromProfileDoc(
  * @param webId The WebID associated with the profile document.
  * @param jwksIri The JWKS IRI to be set.
  * @returns A modified copy of the profile document, with the JWKS IRI set.
+ * @since 1.12.0
  */
 export function setProfileJwks<Dataset extends SolidDataset>(
   profileDocument: Dataset,
@@ -85,7 +86,8 @@ export function setProfileJwks<Dataset extends SolidDataset>(
  *
  * @param profileDocument The profile document.
  * @param webId The WebID featured in the profile document.
- * @returns The JWKS IRI associated with the WebID, if
+ * @returns The JWKS IRI associated with the WebID, if any.
+ * @since 1.12.0
  */
 export function getProfileJwksIri(
   profileDocument: SolidDataset,
@@ -108,6 +110,7 @@ const isJwks = (jwksDocument: Jwks | unknown): jwksDocument is Jwks => {
  * @param jwksIri The IRI where the key set should be looked up.
  * @param options @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a JWKS where the given key has been added.
+ * @since 1.12.0
  */
 export async function addJwkToJwks(
   jwk: Jwk,
@@ -153,6 +156,7 @@ export async function addJwkToJwks(
  * @param publicKey The public key value to set.
  * @param webId The WebID whose profile document references the key set to which we wish to add the specified public key.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @since 1.12.0
  */
 export async function addPublicKeyToProfileJwks(
   publicKey: Jwk,
