@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.12.0] - 2021-09-08
+
 ### New features
 
 - Manage public keys attached to your profile with the functions `addJwkToJwks`,
@@ -13,8 +17,6 @@ The following changes have been implemented but not released yet:
   `@inrupt/solid-client/profile/jwks` module.
 - Add `getWellKnownSolid`, to return the contents of the `.well-known/solid`
   endpoint for a given resource url.
-
-The following sections document changes that have been released already:
 
 ## [1.11.1] - 2021-09-02
 
