@@ -19,9 +19,7 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-20.04, windows-2019, macos-10.15]
-        # node-version: [16.x, 14.x, 12.x]
-        # FIXME: find out why Node 16 crashes.
-        node-version: [14.x, 12.x]
+        node-version: [16.x, 14.x, 12.x]
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Use Node.js ${{ matrix.node-version }}
