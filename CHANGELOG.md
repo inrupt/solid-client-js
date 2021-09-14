@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+- Added convenience functions 'getStringEnglish()' and 'getStringEnglishAll()'. We're still
+  gently expressing the impossible-to-ignore relevance of locales in the underlying RDF
+  (and 'cos trying to 'hide' that critical RDF-ness (e.g., via an implicitly-acting function like
+  addString()) would lead to all sorts of confusion later (i.e., would it add an English language
+  tag, or a NoLocale string literal?)).
+
 The following sections document changes that have been released already:
 
 ## [1.12.0] - 2021-09-08

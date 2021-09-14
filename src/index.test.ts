@@ -67,6 +67,7 @@ import {
   getTime,
   getDecimal,
   getInteger,
+  getStringEnglish,
   getStringWithLocale,
   getStringNoLocale,
   getUrlAll,
@@ -77,6 +78,7 @@ import {
   getTimeAll,
   getDecimalAll,
   getIntegerAll,
+  getStringEnglishAll,
   getStringWithLocaleAll,
   getStringByLocaleAll,
   getStringNoLocaleAll,
@@ -240,8 +242,10 @@ it("exports the public API from the entry file", () => {
   expect(getTime).toBeDefined();
   expect(getDecimal).toBeDefined();
   expect(getInteger).toBeDefined();
+  expect(getStringEnglish).toBeDefined();
   expect(getStringWithLocale).toBeDefined();
   expect(getStringNoLocale).toBeDefined();
+  expect(getStringEnglishAll).toBeDefined();
   expect(getStringByLocaleAll).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
