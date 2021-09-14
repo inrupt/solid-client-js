@@ -38,6 +38,7 @@ import {
   addLiteral,
   addNamedNode,
   AddOfType,
+  addStringEnglish,
   addStringNoLocale,
   addStringWithLocale,
   addTerm,
@@ -56,6 +57,7 @@ import {
   removeNamedNode,
   RemoveOfType,
   removeStringNoLocale,
+  removeStringEnglish,
   removeStringWithLocale,
   removeUrl,
 } from "./remove";
@@ -70,6 +72,7 @@ import {
   setLiteral,
   setNamedNode,
   SetOfType,
+  setStringEnglish,
   setStringNoLocale,
   setStringWithLocale,
   setTerm,
@@ -117,6 +120,10 @@ export type ThingBuilder<T extends Thing> = {
   addDecimal: Adder<number, T>;
   addInteger: Adder<number, T>;
   addStringNoLocale: Adder<string, T>;
+  addStringEnglish: (
+    property: Parameters<typeof addStringWithLocale>[1],
+    value: Parameters<typeof addStringWithLocale>[2]
+  ) => ThingBuilder<T>;
   addStringWithLocale: (
     property: Parameters<typeof addStringWithLocale>[1],
     value: Parameters<typeof addStringWithLocale>[2],
@@ -143,6 +150,10 @@ export type ThingBuilder<T extends Thing> = {
   setDecimal: Setter<number, T>;
   setInteger: Setter<number, T>;
   setStringNoLocale: Setter<string, T>;
+  setStringEnglish: (
+    property: Parameters<typeof setStringWithLocale>[1],
+    value: Parameters<typeof setStringWithLocale>[2]
+  ) => ThingBuilder<T>;
   setStringWithLocale: (
     property: Parameters<typeof setStringWithLocale>[1],
     value: Parameters<typeof setStringWithLocale>[2],
@@ -170,6 +181,10 @@ export type ThingBuilder<T extends Thing> = {
   removeDecimal: Remover<number, T>;
   removeInteger: Remover<number, T>;
   removeStringNoLocale: Remover<string, T>;
+  removeStringEnglish: (
+    property: Parameters<typeof removeStringWithLocale>[1],
+    value: Parameters<typeof removeStringWithLocale>[2]
+  ) => ThingBuilder<T>;
   removeStringWithLocale: (
     property: Parameters<typeof removeStringWithLocale>[1],
     value: Parameters<typeof removeStringWithLocale>[2],
@@ -335,6 +350,13 @@ export function buildThing(
     addDecimal: getAdder(addDecimal),
     addInteger: getAdder(addInteger),
     addStringNoLocale: getAdder(addStringNoLocale),
+    addStringEnglish: (
+      property: Parameters<typeof addStringWithLocale>[1],
+      value: Parameters<typeof addStringWithLocale>[2]
+    ) => {
+      thing = addStringWithLocale(thing, property, value, "en");
+      return builder;
+    },
     addStringWithLocale: (
       property: Parameters<typeof addStringWithLocale>[1],
       value: Parameters<typeof addStringWithLocale>[2],
@@ -355,6 +377,13 @@ export function buildThing(
     setDecimal: getSetter(setDecimal),
     setInteger: getSetter(setInteger),
     setStringNoLocale: getSetter(setStringNoLocale),
+    setStringEnglish: (
+      property: Parameters<typeof setStringWithLocale>[1],
+      value: Parameters<typeof setStringWithLocale>[2]
+    ) => {
+      thing = setStringWithLocale(thing, property, value, "en");
+      return builder;
+    },
     setStringWithLocale: (
       property: Parameters<typeof setStringWithLocale>[1],
       value: Parameters<typeof setStringWithLocale>[2],
@@ -379,6 +408,10 @@ export function buildThing(
     removeDecimal: getRemover(removeDecimal),
     removeInteger: getRemover(removeInteger),
     removeStringNoLocale: getRemover(removeStringNoLocale),
+    removeStringEnglish: (
+      property: Parameters<typeof removeStringWithLocale>[1],
+      value: Parameters<typeof removeStringWithLocale>[2]
+    ) => buildThing(removeStringWithLocale(thing, property, value, "en")),
     removeStringWithLocale: (
       property: Parameters<typeof removeStringWithLocale>[1],
       value: Parameters<typeof removeStringWithLocale>[2],
