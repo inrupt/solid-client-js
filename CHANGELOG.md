@@ -7,7 +7,7 @@ The following changes have been implemented but not released yet:
 ## [Unreleased]
 
 - Added convenience functions 'add/get/set/removeStringEnglish()' and
-  'add/get/set/removeStringEnglishAll()'.g
+  'add/get/set/removeStringEnglishAll()'.
   We're still gently expressing the impossible-to-ignore relevance of locales in the underlying RDF
   (and 'cos trying to 'hide' that critical RDF-ness (e.g., via an implicitly-acting function like
   addString()) would lead to all sorts of confusion later (i.e., would it add an English language
