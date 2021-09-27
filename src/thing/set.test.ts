@@ -30,6 +30,7 @@ import {
   setTime,
   setDecimal,
   setInteger,
+  setStringEnglish,
   setStringWithLocale,
   setStringNoLocale,
   setNamedNode,
@@ -1183,6 +1184,31 @@ describe("setInteger", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("setStringEnglish", () => {
+  it("replaces existing values with the given English string for the given Predicate", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setStringEnglish(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string value"
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toBeUndefined();
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      en: ["Some string value"],
+    });
   });
 });
 

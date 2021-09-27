@@ -409,6 +409,22 @@ export function getIntegerAll(
 }
 
 /**
+ * Returns the English (language tag "en") string value of the specified Property from a [[Thing]].
+ * If the Property is not present as a string in English, returns null.
+ * If the Property has multiple English string values, returns one of its values.
+ *
+ * @param thing The [[Thing]] to read a localised string value from.
+ * @param property The Property whose localised string value to return.
+ * @returns An English string value for the given Property if present, or null otherwise.
+ */
+export function getStringEnglish(
+  thing: Thing,
+  property: Url | UrlString
+): string | null {
+  return getStringWithLocale(thing, property, "en");
+}
+
+/**
  * Returns the localized string value of the specified Property from a [[Thing]].
  * If the Property is not present as a string in the specified locale, returns null.
  * If the Property has multiple string values for the specified locale, returns one of its values.
@@ -439,6 +455,22 @@ export function getStringWithLocale(
   return typeof matchingLocale === "string"
     ? langStrings[matchingLocale][0]
     : null;
+}
+
+/**
+ * Returns the English (language tag "en") string values of the specified Property from a [[Thing]].
+ * If the Property is not present, returns an empty array.
+ * If the Property's value is not an English string, omits that value in the array.
+ *
+ * @param thing The [[Thing]] to read a localised string value from.
+ * @param property The Property whose localised string value to return.
+ * @returns An array of English string values for the given Property.
+ */
+export function getStringEnglishAll(
+  thing: Thing,
+  property: Url | UrlString
+): string[] {
+  return getStringWithLocaleAll(thing, property, "en");
 }
 
 /**

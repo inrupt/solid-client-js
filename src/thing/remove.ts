@@ -280,6 +280,24 @@ export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
 };
 
 /**
+ * Create a new Thing with the given English string removed for the given Property.
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to remove a localised string value from.
+ * @param property Property for which to remove the given localised string value.
+ * @param value String to remove from `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value removed for the given Property.
+ */
+export function removeStringEnglish<T extends Thing>(
+  thing: T,
+  property: Url | UrlString,
+  value: string
+): T {
+  return removeStringWithLocale(thing, property, value, "en");
+}
+
+/**
  * Create a new Thing with the given localised string removed for the given Property.
  *
  * The original `thing` is not modified; this function returns a cloned Thing with updated values.

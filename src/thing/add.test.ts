@@ -31,6 +31,7 @@ import {
   addTime,
   addDecimal,
   addInteger,
+  addStringEnglish,
   addStringWithLocale,
   addStringNoLocale,
   addNamedNode,
@@ -1275,6 +1276,24 @@ describe("addInteger", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("addStringEnglish", () => {
+  it("adds the given value as an English string for the given predicate", () => {
+    const thing = mockThingFrom("https://some.pod/resource#subject");
+
+    const updatedThing = addStringEnglish(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string"
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      en: ["Some string"],
+    });
   });
 });
 

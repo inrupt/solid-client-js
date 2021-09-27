@@ -67,6 +67,7 @@ import {
   getTime,
   getDecimal,
   getInteger,
+  getStringEnglish,
   getStringWithLocale,
   getStringNoLocale,
   getUrlAll,
@@ -77,6 +78,7 @@ import {
   getTimeAll,
   getDecimalAll,
   getIntegerAll,
+  getStringEnglishAll,
   getStringWithLocaleAll,
   getStringByLocaleAll,
   getStringNoLocaleAll,
@@ -121,6 +123,7 @@ import {
   removeTime,
   removeDecimal,
   removeInteger,
+  removeStringEnglish,
   removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
@@ -188,6 +191,7 @@ import {
   access_v2,
   responseToSolidDataset,
   responseToResourceInfo,
+  addStringEnglish,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -240,8 +244,10 @@ it("exports the public API from the entry file", () => {
   expect(getTime).toBeDefined();
   expect(getDecimal).toBeDefined();
   expect(getInteger).toBeDefined();
+  expect(getStringEnglish).toBeDefined();
   expect(getStringWithLocale).toBeDefined();
   expect(getStringNoLocale).toBeDefined();
+  expect(getStringEnglishAll).toBeDefined();
   expect(getStringByLocaleAll).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
@@ -267,6 +273,7 @@ it("exports the public API from the entry file", () => {
   expect(addTime).toBeDefined();
   expect(addDecimal).toBeDefined();
   expect(addInteger).toBeDefined();
+  expect(addStringEnglish).toBeDefined();
   expect(addStringWithLocale).toBeDefined();
   expect(addStringNoLocale).toBeDefined();
   expect(addLiteral).toBeDefined();
@@ -294,6 +301,7 @@ it("exports the public API from the entry file", () => {
   expect(removeTime).toBeDefined();
   expect(removeDecimal).toBeDefined();
   expect(removeInteger).toBeDefined();
+  expect(removeStringEnglish).toBeDefined();
   expect(removeStringWithLocale).toBeDefined();
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
