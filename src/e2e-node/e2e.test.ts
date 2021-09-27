@@ -336,6 +336,16 @@ const serversUnderTest: AuthDetails[] = [
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
   ],
+  // dev-next.inrupt.com:
+  [
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    process.env.E2E_TEST_DEV_NEXT_POD!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_IDP_URL!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_CLIENT_ID!,
+    process.env.E2E_TEST_DEV_NEXT_CLIENT_SECRET!,
+  ],
   // inrupt.net
   // Unfortunately we cannot authenticate against Node Solid Server yet, due to this issue:
   // https://github.com/solid/node-solid-server/issues/1533
@@ -426,6 +436,8 @@ describe.each(serversUnderTest)(
           statusCode: 404,
         })
       );
+      // Clean up remaining callbacks.
+      await session.logout();
     });
 
     it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
@@ -447,6 +459,8 @@ describe.each(serversUnderTest)(
 
       await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
       await deleteFile(fileUrl, { fetch: session.fetch });
+      // Clean up remaining callbacks.
+      await session.logout();
     });
 
     it("can create and remove Containers", async () => {
@@ -469,6 +483,8 @@ describe.each(serversUnderTest)(
 
       await deleteFile(containerUrl, { fetch: session.fetch });
       await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
+      // Clean up remaining callbacks.
+      await session.logout();
     });
 
     it("can read and update ACLs", async () => {
@@ -550,6 +566,8 @@ describe.each(serversUnderTest)(
       });
       await saveAclFor(datasetWithAcl, cleanedAcl, { fetch: session.fetch });
       await deleteSolidDataset(datasetWithoutAclUrl, { fetch: session.fetch });
+      // Clean up remaining callbacks.
+      await session.logout();
     });
 
     it("can update Things containing Blank Nodes in different instances of the same SolidDataset", async () => {
@@ -599,6 +617,8 @@ describe.each(serversUnderTest)(
       } finally {
         // Clean up after ourselves
         await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+        // Clean up remaining callbacks.
+        await session.logout();
       }
     });
 
@@ -719,6 +739,8 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
 
       it("can allow public Read access", async () => {
@@ -753,6 +775,8 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
 
       it("can set Access from a Resource's ACR", async () => {
@@ -815,6 +839,8 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteFile(resourceUrl, { fetch: session.fetch });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
     });
 
@@ -835,6 +861,8 @@ describe.each(serversUnderTest)(
           controlRead: true,
           controlWrite: true,
         });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
 
       it("can read and change access", async () => {
@@ -887,6 +915,8 @@ describe.each(serversUnderTest)(
         await deleteSolidDataset(datasetUrl, {
           fetch: session.fetch,
         });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
 
       it("throws an error when trying to set different values for controlRead and controlWrite on a WAC-powered Pod", async () => {
@@ -914,6 +944,8 @@ describe.each(serversUnderTest)(
         await deleteSolidDataset(datasetUrl, {
           fetch: session.fetch,
         });
+        // Clean up remaining callbacks.
+        await session.logout();
       });
     });
   }
