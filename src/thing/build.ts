@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Literal, Quad_Object, NamedNode } from "@rdfjs/types";
 import { Time } from "../datatypes";
 import {
   Thing,
@@ -120,27 +121,15 @@ export type ThingBuilder<T extends Thing> = {
   addDecimal: Adder<number, T>;
   addInteger: Adder<number, T>;
   addStringNoLocale: Adder<string, T>;
-  addStringEnglish: (
-    property: Parameters<typeof addStringWithLocale>[1],
-    value: Parameters<typeof addStringWithLocale>[2]
-  ) => ThingBuilder<T>;
+  addStringEnglish: Adder<string, T>;
   addStringWithLocale: (
     property: Parameters<typeof addStringWithLocale>[1],
     value: Parameters<typeof addStringWithLocale>[2],
     locale: Parameters<typeof addStringWithLocale>[3]
   ) => ThingBuilder<T>;
-  addNamedNode: (
-    property: Parameters<typeof addNamedNode>[1],
-    value: Parameters<typeof addNamedNode>[2]
-  ) => ThingBuilder<T>;
-  addLiteral: (
-    property: Parameters<typeof addLiteral>[1],
-    value: Parameters<typeof addLiteral>[2]
-  ) => ThingBuilder<T>;
-  addTerm: (
-    property: Parameters<typeof addTerm>[1],
-    value: Parameters<typeof addTerm>[2]
-  ) => ThingBuilder<T>;
+  addNamedNode: Adder<NamedNode, T>;
+  addLiteral: Adder<Literal, T>;
+  addTerm: Adder<Quad_Object, T>;
   setUrl: Setter<Url | UrlString | Thing, T>;
   setIri: Setter<Url | UrlString | Thing, T>;
   setBoolean: Setter<boolean, T>;
@@ -150,27 +139,15 @@ export type ThingBuilder<T extends Thing> = {
   setDecimal: Setter<number, T>;
   setInteger: Setter<number, T>;
   setStringNoLocale: Setter<string, T>;
-  setStringEnglish: (
-    property: Parameters<typeof setStringWithLocale>[1],
-    value: Parameters<typeof setStringWithLocale>[2]
-  ) => ThingBuilder<T>;
+  setStringEnglish: Setter<string, T>;
   setStringWithLocale: (
     property: Parameters<typeof setStringWithLocale>[1],
     value: Parameters<typeof setStringWithLocale>[2],
     locale: Parameters<typeof setStringWithLocale>[3]
   ) => ThingBuilder<T>;
-  setNamedNode: (
-    property: Parameters<typeof setNamedNode>[1],
-    value: Parameters<typeof setNamedNode>[2]
-  ) => ThingBuilder<T>;
-  setLiteral: (
-    property: Parameters<typeof setLiteral>[1],
-    value: Parameters<typeof setLiteral>[2]
-  ) => ThingBuilder<T>;
-  setTerm: (
-    property: Parameters<typeof setTerm>[1],
-    value: Parameters<typeof setTerm>[2]
-  ) => ThingBuilder<T>;
+  setNamedNode: Setter<NamedNode, T>;
+  setLiteral: Setter<Literal, T>;
+  setTerm: Setter<Quad_Object, T>;
   removeAll: (property: Parameters<typeof removeLiteral>[1]) => ThingBuilder<T>;
   removeUrl: Remover<Url | UrlString | Thing, T>;
   removeIri: Remover<Url | UrlString | Thing, T>;
@@ -181,23 +158,14 @@ export type ThingBuilder<T extends Thing> = {
   removeDecimal: Remover<number, T>;
   removeInteger: Remover<number, T>;
   removeStringNoLocale: Remover<string, T>;
-  removeStringEnglish: (
-    property: Parameters<typeof removeStringWithLocale>[1],
-    value: Parameters<typeof removeStringWithLocale>[2]
-  ) => ThingBuilder<T>;
+  removeStringEnglish: Remover<string, T>;
   removeStringWithLocale: (
     property: Parameters<typeof removeStringWithLocale>[1],
     value: Parameters<typeof removeStringWithLocale>[2],
     locale: Parameters<typeof removeStringWithLocale>[3]
   ) => ThingBuilder<T>;
-  removeNamedNode: (
-    property: Parameters<typeof removeNamedNode>[1],
-    value: Parameters<typeof removeNamedNode>[2]
-  ) => ThingBuilder<T>;
-  removeLiteral: (
-    property: Parameters<typeof removeLiteral>[1],
-    value: Parameters<typeof removeLiteral>[2]
-  ) => ThingBuilder<T>;
+  removeNamedNode: Remover<NamedNode, T>;
+  removeLiteral: Remover<Literal, T>;
 };
 
 /**
