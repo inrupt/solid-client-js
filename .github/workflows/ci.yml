@@ -96,6 +96,9 @@ jobs:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (Windows)
       # TODO: These tests started consistently failing on 2021-08-04.
       #       Possibly related to the new Release Candidate of Parcel 2, although

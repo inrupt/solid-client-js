@@ -25,7 +25,8 @@ import { BrokerPage } from "./pageModels/broker";
 import { CognitoPage } from "./pageModels/cognito";
 
 export const essUser = Role("http://localhost:1234", async (t) => {
-  return await essUserLogin(t);
+  throw new Error("Currently unimplemented");
+  // return await essUserLogin(t);
 });
 
 /**
@@ -38,15 +39,17 @@ export const essUser = Role("http://localhost:1234", async (t) => {
  * Move this function into `essUser` and replace uses of it with uses of the Role
  * once this issue is resolved: https://github.com/inrupt/solid-client-authn-js/issues/423
  */
-export const essUserLogin = async (_t: TestController) => {
+export const essUserLogin = async (
+  _t: TestController,
+  idp: string,
+  username: string,
+  password: string
+) => {
   const indexPage = new IndexPage();
-  await indexPage.startLogin(process.env.E2E_TEST_ESS_IDP_URL);
+  await indexPage.startLogin(idp);
 
   const cognitoPage = new CognitoPage();
-  await cognitoPage.login(
-    process.env.E2E_TEST_ESS_COGNITO_USER!,
-    process.env.E2E_TEST_ESS_COGNITO_PASSWORD!
-  );
+  await cognitoPage.login(username, password);
 
   const authorisePage = new BrokerPage();
   await authorisePage.authoriseOnce();

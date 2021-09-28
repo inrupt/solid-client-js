@@ -73,13 +73,48 @@ fixture("End-to-end tests")
     );
   });
 
-// eslint-disable-next-line jest/expect-expect, jest/no-done-callback
-test("Creating and removing empty Containers", async (t: TestController) => {
-  const createContainer = ClientFunction(() => E2eHelpers.createContainer());
-  const deleteContainer = ClientFunction(() => E2eHelpers.deleteContainer());
+const serversUnderTest: {
+  identityProvider: string;
+  username: string;
+  password: string;
+}[] = [
+  // pod.inrupt.com:
+  {
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    identityProvider: process.env.E2E_TEST_ESS_IDP_URL!.replace(
+      /^https:\/\//,
+      ""
+    ),
+    username: process.env.E2E_TEST_ESS_COGNITO_USER!,
+    password: process.env.E2E_TEST_ESS_COGNITO_PASSWORD!,
+  },
+  // dev-next.inrupt.com:
+  {
+    //   // Cumbersome workaround, but:
+    //   // Trim `https://` from the start of these URLs,
+    //   // so that GitHub Actions doesn't replace them with *** in the logs.
+    identityProvider: process.env.E2E_TEST_DEV_NEXT_IDP_URL!.replace(
+      /^https:\/\//,
+      ""
+    ),
+    username: process.env.E2E_TEST_DEV_NEXT_COGNITO_USER!,
+    password: process.env.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD!,
+  },
+];
 
-  await essUserLogin(t);
-  const createdContainer = await createContainer();
-  await t.expect(createdContainer).notTypeOf("null");
-  await deleteContainer();
+serversUnderTest.forEach((server) => {
+  const { identityProvider, username, password } = server;
+  // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
+  test(`Creating and removing empty Containers authenticated to ${identityProvider}`, async (t: TestController) => {
+    const createContainer = ClientFunction(() => E2eHelpers.createContainer());
+    const deleteContainer = ClientFunction(() => E2eHelpers.deleteContainer());
+
+    await essUserLogin(t, "https://" + identityProvider, username, password);
+    // The Pod root is discovered from the WebID document, looking up the pim:storage predicate.
+    const createdContainer = await createContainer();
+    await t.expect(createdContainer).notTypeOf("null");
+    await deleteContainer();
+  });
 });
