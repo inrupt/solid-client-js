@@ -96,6 +96,7 @@ jobs:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
         E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
         E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
         E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
@@ -128,6 +129,10 @@ jobs:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
     - name: Run browser-based end-to-end tests (MacOS)
       # TODO: continue-on-error was set to true because browser-based end-to-end
       #       tests on MacOS are pretty flaky, so this job had to be manually
@@ -168,6 +173,10 @@ jobs:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
         E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
         GITHUB_OS: ${{ runner.os }}
     - run: npx prettier --check "src/**"
       if: github.event_name != 'schedule'
