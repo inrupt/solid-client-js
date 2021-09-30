@@ -337,9 +337,9 @@ describe("getThingAll", () => {
     expect(things).toStrictEqual([mockThing1, mockThing2]);
   });
 
-  it("does not return Things with a Blank Node as the Subject", () => {
+  it("returns Things with a Blank Node as the Subject", () => {
     const mockDataset = getMockDataset([mockThing1]);
-    (mockDataset.graphs.default["_:blankNodeId"] as any) = {
+    const blankNode = {
       predicates: {
         ["https://arbitrary.predicate"]: {
           namedNodes: ["https://arbitrary.value"],
@@ -348,10 +348,11 @@ describe("getThingAll", () => {
       type: "Subject",
       url: "_:blankNodeId",
     };
+    (mockDataset.graphs.default["_:blankNodeId"] as any) = blankNode;
     const things = getThingAll(mockDataset);
 
-    expect(things).toHaveLength(1);
-    expect(things).toStrictEqual([mockThing1]);
+    expect(things).toHaveLength(2);
+    expect(things).toStrictEqual([mockThing1, blankNode]);
   });
 
   it("returns Quads from the default Graphs if no scope was specified", () => {

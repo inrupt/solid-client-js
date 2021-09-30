@@ -129,9 +129,7 @@ export function getThingAll(
       ? internal_toIriString(options.scope)
       : "default";
   const thingsByIri = solidDataset.graphs[graph] ?? {};
-  return Object.values(thingsByIri).filter(
-    (thing) => !isBlankNodeId(thing.url)
-  );
+  return Object.values(thingsByIri);
 }
 
 /**
