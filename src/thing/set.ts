@@ -190,6 +190,7 @@ export const setInteger: SetOfType<number> = (thing, property, value) => {
  * @param property Property for which to set the given localised string value.
  * @param value Localised string to set on `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ * @since 1.13.0
  */
 export function setStringEnglish<T extends Thing>(
   thing: T,

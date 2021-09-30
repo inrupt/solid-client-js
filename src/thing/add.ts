@@ -253,6 +253,7 @@ export const addInteger: AddOfType<number> = (thing, property, value) => {
  * @param property Property for which to add the given string value.
  * @param value String to add to `thing` for the given `property`.
  * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ * @since 1.13.0
  */
 export function addStringEnglish<T extends Thing>(
   thing: T,
