@@ -416,6 +416,7 @@ export function getIntegerAll(
  * @param thing The [[Thing]] to read a localised string value from.
  * @param property The Property whose localised string value to return.
  * @returns An English string value for the given Property if present, or null otherwise.
+ * @since 1.13.0
  */
 export function getStringEnglish(
   thing: Thing,

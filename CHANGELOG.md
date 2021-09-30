@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.13.0] - 2021-09-30
+
 ### New features
 
 - Added convenience functions 'add/get/set/removeStringEnglish()' and
@@ -20,8 +24,6 @@ The following changes have been implemented but not released yet:
 - `getThingAll` used to only return Things that had an IRI, and to ignore Things
   with a blank node as a subject. This prevents some legitimate use cases, such as
   parsing the `.well-known/solid` document (which only contains one blank node).
-
-The following sections document changes that have been released already:
 
 ## [1.12.0] - 2021-09-08
 
