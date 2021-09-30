@@ -6,12 +6,20 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
 - Added convenience functions 'add/get/set/removeStringEnglish()' and
   'add/get/set/removeStringEnglishAll()'.
   We're still gently expressing the impossible-to-ignore relevance of locales in the underlying RDF
   (and 'cos trying to 'hide' that critical RDF-ness (e.g., via an implicitly-acting function like
   addString()) would lead to all sorts of confusion later (i.e., would it add an English language
   tag, or a NoLocale string literal?)).
+
+### Bugfixes
+
+- `getThingAll` used to only return Things that had an IRI, and to ignore Things
+  with a blank node as a subject. This prevents some legitimate use cases, such as
+  parsing the `.well-known/solid` document (which only contains one blank node).
 
 The following sections document changes that have been released already:
 
