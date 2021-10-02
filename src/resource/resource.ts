@@ -35,6 +35,7 @@ import {
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";
 import {
+  internal_isAuthenticationFailureResponse,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
@@ -57,8 +58,10 @@ export const internal_defaultFetchOptions = {
 export async function getResourceInfo(
   url: UrlString,
   options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      ignoreAuthenticationErrors: boolean;
+    }
+  > = { ...internal_defaultFetchOptions, ignoreAuthenticationErrors: false }
 ): Promise<WithServerResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -66,7 +69,9 @@ export async function getResourceInfo(
   };
 
   const response = await config.fetch(url, { method: "HEAD" });
-  return responseToResourceInfo(response);
+  return responseToResourceInfo(response, {
+    ignoreAuthenticationErrors: options.ignoreAuthenticationErrors ?? false,
+  });
 }
 
 /**
@@ -77,9 +82,16 @@ export async function getResourceInfo(
  * @hidden This interface is not exposed yet until we've tried it out in practice.
  */
 export function responseToResourceInfo(
-  response: Response
+  response: Response,
+  options: {
+    ignoreAuthenticationErrors: boolean;
+  } = { ignoreAuthenticationErrors: false }
 ): WithServerResourceInfo {
-  if (internal_isUnsuccessfulResponse(response)) {
+  if (
+    internal_isUnsuccessfulResponse(response) &&
+    (!internal_isAuthenticationFailureResponse(response) ||
+      !options.ignoreAuthenticationErrors)
+  ) {
     throw new FetchError(
       `Fetching the metadata of the Resource at [${response.url}] failed: [${response.status}] [${response.statusText}].`,
       response

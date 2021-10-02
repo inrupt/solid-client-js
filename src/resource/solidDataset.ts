@@ -1157,7 +1157,12 @@ export async function getWellKnownSolid(
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
-  const resourceMetadata = await getResourceInfo(urlString, options);
+  const resourceMetadata = await getResourceInfo(urlString, {
+    fetch: options.fetch,
+    // Discovering the .well-known/solid document is useful even for resources
+    // we don't have access to.
+    ignoreAuthenticationErrors: true,
+  });
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
   const rootResources = linkedResources[pim.storage];
   const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
