@@ -122,14 +122,21 @@ export function getThing(
  */
 export function getThingAll(
   solidDataset: SolidDataset,
-  options: GetThingOptions = {}
+  options: GetThingOptions & {
+    /**
+     * Can Things local to the current dataset, and having no IRI, be returned ?
+     */
+    acceptBlankNodes?: boolean;
+  } = { acceptBlankNodes: false }
 ): Thing[] {
   const graph =
     typeof options.scope !== "undefined"
       ? internal_toIriString(options.scope)
       : "default";
   const thingsByIri = solidDataset.graphs[graph] ?? {};
-  return Object.values(thingsByIri);
+  return Object.values(thingsByIri).filter(
+    (thing) => !isBlankNodeId(thing.url) || options.acceptBlankNodes
+  );
 }
 
 /**
