@@ -150,3 +150,9 @@ export function internal_isUnsuccessfulResponse(
 ): response is Response & { ok: false } {
   return !response.ok;
 }
+
+export function internal_isAuthenticationFailureResponse(
+  response: Response
+): response is Response & { status: 401 | 403 } {
+  return response.status === 401 || response.status === 403;
+}
