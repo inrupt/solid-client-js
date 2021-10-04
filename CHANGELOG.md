@@ -14,6 +14,13 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+## [1.13.1] - 2021-10-04
+
+### Bugfix
+
+- The change on `getThingAll` introduced in 1.13.0 was actually breaking for some
+  users, so this makes it opt-in rather than default.
+
 ## [1.13.0] - 2021-09-30
 
 ### New features
