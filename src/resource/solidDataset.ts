@@ -1171,7 +1171,10 @@ export async function getWellKnownSolid(
       `Unable to determine root resource for Resource at [${url}].`
     );
   }
-  const wellKnownSolidUrl = new URL(".well-known/solid", rootResource).href;
+  const wellKnownSolidUrl = new URL(
+    ".well-known/solid",
+    rootResource.endsWith("/") ? rootResource : rootResource + "/"
+  ).href;
 
   return getSolidDataset(wellKnownSolidUrl, {
     ...options,
