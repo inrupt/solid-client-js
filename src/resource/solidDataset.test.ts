@@ -3527,6 +3527,29 @@ describe("getWellKnownSolid", () => {
     );
   });
 
+  it("appends a / to the Pod root if missing before appending .well-known/solid", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(
+      mockFetch,
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: {
+          "Content-Type": "text/turtle",
+          // Note that the link to the Pod root has no trailing slash
+          link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
+    );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/username/.well-known/solid"
+    );
+  });
+
   it("returns the contents of .well-known/solid for the given resource", async () => {
     const wellKnownSolidResponseBody = `
     {
