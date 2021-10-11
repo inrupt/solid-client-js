@@ -6,12 +6,14 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.13.3] - 2021-10-11
+
 ### Bugfixes
 
 - The discovery of the `.well-known/solid` document failed if the Pod server
   returned a Link to the Pod root missing the trailing slash.
-
-The following sections document changes that have been released already:
 
 ## [1.13.2] - 2021-10-07
 
