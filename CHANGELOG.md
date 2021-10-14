@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New feature
+
+- `isAcpControlled` is a function verifying whether a given resource is controlled
+  using ACP. This is useful for apps not yet migrated to the universal API.
+
 The following sections document changes that have been released already:
 
 ## [1.13.3] - 2021-10-11
