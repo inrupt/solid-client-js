@@ -404,3 +404,27 @@ export function getReferencedPolicyUrlAll(
   const uniqueUrls = Array.from(new Set(policyUrls));
   return uniqueUrls;
 }
+
+/**
+ * Verify whether the access to the given resource is controlled using the ACP
+ * system.
+ * @param resource The target resource
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns True if the access to the resource is controlled using ACP, false otherwise.
+ * @since Unreleased.
+ */
+export async function isAcpControlled(
+  resource: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<boolean> {
+  const urlString = internal_toIriString(resource);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const resourceInfo = await getResourceInfo(urlString, config);
+  return hasAccessibleAcr(await fetchAcr(resourceInfo, config));
+}

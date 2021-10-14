@@ -29,6 +29,7 @@ import {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
 } from "./acp";
 import {
   acrAsMarkdown,
@@ -128,6 +129,7 @@ const v4AcpFunctions = {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
 };
 
 const v4ControlFunctions = {
