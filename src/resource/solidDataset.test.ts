@@ -3494,7 +3494,7 @@ describe("getWellKnownSolid", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
-  it("throws a meaningful error if no root resource linked", async () => {
+  it("assumes the discovery resource is at the server's origin if no root resource is linked", async () => {
     const mockFetch = setMockResourceResponseOnFetch(
       jest.fn(window.fetch),
       mockResponse(undefined, {
@@ -3502,15 +3502,39 @@ describe("getWellKnownSolid", () => {
         headers: { "Content-Type": "text/turtle" },
       })
     );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
 
-    const fetchPromise = getWellKnownSolid("https://some.pod/resource", {
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
       fetch: mockFetch,
     });
 
-    await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Unable to determine root resource for Resource at [https://some.pod/resource]."
-      )
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource/x/y/z"
+    );
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/.well-known/solid"
+    );
+  });
+
+  it("assumes the discovery resource is at the server's origin if the resource is not found", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch).mockResolvedValueOnce(
+      new Response("", {
+        status: 404,
+        statusText: "Not found",
+      })
+    );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource/x/y/z"
+    );
+    expect(mockFetch.mock.calls[2][0]).toEqual(
+      "https://some.pod/.well-known/solid"
     );
   });
 
