@@ -8,7 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### Bugfixes
 
-- The discovery ot the `.well-known/solid` document now supports Pod servers where
+- The discovery of the `.well-known/solid` document now supports Pod servers where
   it is directly available at the domain root, rather than being specific to individual
   Pod roots.
 

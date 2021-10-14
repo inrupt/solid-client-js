@@ -3494,7 +3494,7 @@ describe("getWellKnownSolid", () => {
     expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
   });
 
-  it("assumes the discovery resource is at the server's origin if no root resource linked", async () => {
+  it("assumes the discovery resource is at the server's origin if no root resource is linked", async () => {
     const mockFetch = setMockResourceResponseOnFetch(
       jest.fn(window.fetch),
       mockResponse(undefined, {
@@ -3514,7 +3514,7 @@ describe("getWellKnownSolid", () => {
     );
   });
 
-  it("assumes the discovery resource is at the server's origin looking it up at the Pod root failed", async () => {
+  it("assumes the discovery resource is at the server's origin if the resource is not found", async () => {
     const mockFetch = jest.fn(window.fetch);
     setMockResourceResponseOnFetch(mockFetch).mockResolvedValueOnce(
       new Response("", {
