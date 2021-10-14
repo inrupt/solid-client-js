@@ -1165,13 +1165,12 @@ export async function getWellKnownSolid(
   });
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
   const rootResources = linkedResources[pim.storage];
-  const rootResource = rootResources?.length === 1 ? rootResources[0] : null; //new URL(urlString).origin;
+  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
   if (rootResource !== null) {
     const wellKnownSolidUrl = new URL(
       ".well-known/solid",
       rootResource.endsWith("/") ? rootResource : rootResource + "/"
     ).href;
-    let wellKnownDataset;
     try {
       return await getSolidDataset(wellKnownSolidUrl, {
         ...options,
