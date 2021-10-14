@@ -1165,17 +1165,29 @@ export async function getWellKnownSolid(
   });
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
   const rootResources = linkedResources[pim.storage];
-  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
-  if (rootResource === null) {
-    throw new SolidClientError(
-      `Unable to determine root resource for Resource at [${url}].`
-    );
+  const rootResource = rootResources?.length === 1 ? rootResources[0] : null; //new URL(urlString).origin;
+  if (rootResource !== null) {
+    const wellKnownSolidUrl = new URL(
+      ".well-known/solid",
+      rootResource.endsWith("/") ? rootResource : rootResource + "/"
+    ).href;
+    let wellKnownDataset;
+    try {
+      return await getSolidDataset(wellKnownSolidUrl, {
+        ...options,
+        parsers: {
+          "application/ld+json": getJsonLdParser(),
+        },
+      });
+    } catch (e) {
+      // In case of error, do nothing and try to discover the .well-known
+      // at the root of the domain.
+    }
   }
   const wellKnownSolidUrl = new URL(
-    ".well-known/solid",
-    rootResource.endsWith("/") ? rootResource : rootResource + "/"
+    "/.well-known/solid",
+    new URL(urlString).origin
   ).href;
-
   return getSolidDataset(wellKnownSolidUrl, {
     ...options,
     parsers: {
