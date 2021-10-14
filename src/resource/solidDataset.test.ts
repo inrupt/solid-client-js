@@ -3504,11 +3504,11 @@ describe("getWellKnownSolid", () => {
     );
     setMockWellKnownSolidResponseOnFetch(mockFetch);
 
-    await getWellKnownSolid("https://some.pod/resource", {
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource/x/y/z");
     expect(mockFetch.mock.calls[1][0]).toEqual(
       "https://some.pod/.well-known/solid"
     );
@@ -3524,11 +3524,11 @@ describe("getWellKnownSolid", () => {
     );
     setMockWellKnownSolidResponseOnFetch(mockFetch);
 
-    await getWellKnownSolid("https://some.pod/resource", {
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource/x/y/z");
     expect(mockFetch.mock.calls[2][0]).toEqual(
       "https://some.pod/.well-known/solid"
     );
