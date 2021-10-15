@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## [1.14.0] - 2021-10-15
+
 ### Bugfixes
 
 - The discovery of the `.well-known/solid` document now supports Pod servers where
@@ -16,8 +20,6 @@ The following changes have been implemented but not released yet:
 
 - `isAcpControlled` is a function verifying whether a given resource is controlled
   using ACP. This is useful for apps not yet migrated to the universal API.
-
-The following sections document changes that have been released already:
 
 ## [1.13.3] - 2021-10-11
 

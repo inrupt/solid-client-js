@@ -411,7 +411,7 @@ export function getReferencedPolicyUrlAll(
  * @param resource The target resource
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns True if the access to the resource is controlled using ACP, false otherwise.
- * @since Unreleased.
+ * @since 1.14.0.
  */
 export async function isAcpControlled(
   resource: Url | UrlString,
