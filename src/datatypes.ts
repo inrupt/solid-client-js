@@ -27,7 +27,6 @@ import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 
 /**
  * IRIs of the XML Schema data types we support
- * @internal
  */
 export const xmlSchemaTypes = {
   boolean: "http://www.w3.org/2001/XMLSchema#boolean",
@@ -39,7 +38,7 @@ export const xmlSchemaTypes = {
   string: "http://www.w3.org/2001/XMLSchema#string",
   langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
 } as const;
-/** @internal */
+
 export type XmlSchemaTypeIri =
   typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
 
