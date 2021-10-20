@@ -1040,6 +1040,7 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
+          outputDiagnosticsOnError: true,
         }
       );
 
@@ -1061,6 +1062,7 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
+          outputDiagnosticsOnError: true,
         }
       );
 
@@ -1543,6 +1545,7 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
+          outputDiagnosticsOnError: true,
         }
       );
 
@@ -1586,6 +1589,7 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
+          outputDiagnosticsOnError: true,
         }
       );
 
@@ -1594,6 +1598,50 @@ describe("saveSolidDatasetAt", () => {
           "The changes that were sent to the Pod are listed below.\n\n"
       );
     });
+
+    it("returns a meaningful error when the server returns a 404 without diagnostics", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(new Response("Not found", { status: 404 }))
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some-other.vocab/subject"),
+              DataFactory.namedNode("https://some-other.vocab/predicate"),
+              DataFactory.namedNode("https://some-other.vocab/object"),
+              undefined
+            ),
+          ],
+        },
+        "https://some.pod/resource"
+      );
+
+      const fetchPromise = saveSolidDatasetAt(
+        "https://some.pod/resource",
+        mockDataset,
+        {
+          fetch: mockFetch,
+          outputDiagnosticsOnError: false,
+        }
+      );
+
+      await expect(fetchPromise).rejects.toThrow(
+        "Storing the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
+      );
+    });
+
     it("includes the status code and status message when a request failed", async () => {
       const mockFetch = jest.fn(window.fetch).mockReturnValue(
         Promise.resolve(
@@ -2350,6 +2398,30 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
+        outputDiagnosticsOnError: true,
+      }
+    );
+
+    await expect(fetchPromise).rejects.toThrow(
+      "Storing the Resource in the Container at [https://some.pod/container/] failed: [403] [Forbidden]."
+    );
+  });
+
+  it("returns a meaningful error when the server returns a 403 (without diagnostics)", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      mockResponse("Not allowed", {
+        status: 403,
+        url: "https://some.pod/container/",
+      })
+    );
+
+    const fetchPromise = saveSolidDatasetInContainer(
+      "https://some.pod/container/",
+      createSolidDataset(),
+      {
+        fetch: mockFetch,
+        outputDiagnosticsOnError: false,
       }
     );
 

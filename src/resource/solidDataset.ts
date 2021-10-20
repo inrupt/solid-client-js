@@ -288,8 +288,10 @@ export async function responseToSolidDataset(
 export async function getSolidDataset(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions & ParseOptions
-  > = internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      outputDiagnosticsOnError?: boolean;
+    } & ParseOptions
+  > = { ...internal_defaultFetchOptions, outputDiagnosticsOnError: true }
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   const config = {
@@ -409,9 +411,14 @@ async function prepareSolidDatasetCreation(
 export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   url: UrlString | Url,
   solidDataset: Dataset,
+  // options: Partial<
+  //   typeof internal_defaultFetchOptions
+  // > = internal_defaultFetchOptions
   options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      outputDiagnosticsOnError?: boolean;
+    }
+  > = { ...internal_defaultFetchOptions, outputDiagnosticsOnError: true }
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
   const config = {
@@ -428,13 +435,15 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   const response = await config.fetch(url, requestInit);
 
   if (internal_isUnsuccessfulResponse(response)) {
-    const diagnostics = isUpdate(datasetWithChangelog, url)
-      ? "The changes that were sent to the Pod are listed below.\n\n" +
-        changeLogAsMarkdown(datasetWithChangelog)
-      : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(datasetWithChangelog);
+    const diagnostics = options.outputDiagnosticsOnError
+      ? isUpdate(datasetWithChangelog, url)
+        ? "\n\nThe changes that were sent to the Pod are listed below.\n\n" +
+          changeLogAsMarkdown(datasetWithChangelog)
+        : "\n\nThe SolidDataset that was sent to the Pod is listed below.\n\n" +
+          solidDatasetAsMarkdown(datasetWithChangelog)
+      : "";
     throw new FetchError(
-      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n` +
+      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].` +
         diagnostics,
       response
     );
@@ -505,8 +514,10 @@ export async function deleteSolidDataset(
 export async function createContainerAt(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      outputDiagnosticsOnError?: boolean;
+    }
+  > = { ...internal_defaultFetchOptions, outputDiagnosticsOnError: true }
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : url + "/";
@@ -688,7 +699,9 @@ type SaveInContainerOptions = Partial<
 export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
   solidDataset: SolidDataset,
-  options: SaveInContainerOptions = internal_defaultFetchOptions
+  options: SaveInContainerOptions & {
+    outputDiagnosticsOnError?: boolean;
+  } = { ...internal_defaultFetchOptions, outputDiagnosticsOnError: true }
 ): Promise<SolidDataset & WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -713,10 +726,13 @@ export async function saveSolidDatasetInContainer(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const diagnostics = options.outputDiagnosticsOnError
+      ? `\n\nThe SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
+          solidDataset
+        )}`
+      : "";
     throw new FetchError(
-      `Storing the Resource in the Container at [${containerUrl}] failed: [${response.status}] [${response.statusText}].\n\n` +
-        "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(solidDataset),
+      `Storing the Resource in the Container at [${containerUrl}] failed: [${response.status}] [${response.statusText}].${diagnostics}`,
       response
     );
   }

@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New feature
+
+- Added flag to control diagnostic output on errors.
+
 The following sections document changes that have been released already:
 
 ## [1.14.0] - 2021-10-15
