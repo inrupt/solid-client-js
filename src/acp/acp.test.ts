@@ -39,6 +39,7 @@ import * as ResourceModule from "../resource/resource";
 import {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
@@ -53,6 +54,7 @@ import { addIri } from "../thing/add";
 import { AccessControlResource } from "./control";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
+import { createSolidDataset } from "../resource/solidDataset";
 
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
@@ -1139,5 +1141,36 @@ describe("isAcpControlled", () => {
     await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
       false
     );
+  });
+});
+
+describe("getLinkedAcrUrl", () => {
+  it("returns the IRI of an ACR linked with the ACP vocab predicate", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acl";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      [acp.accessControl]: [acrUrl],
+    };
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBe(acrUrl);
+  });
+
+  it("returns the IRI of an ACR linked with the 'acl' link rel", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acl";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [acrUrl],
+    };
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBe(acrUrl);
+  });
+
+  it("returns undefined if no ACR is linked", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBeUndefined();
   });
 });

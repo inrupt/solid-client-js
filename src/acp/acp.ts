@@ -27,6 +27,7 @@ import {
   UrlString,
   WithServerResourceInfo,
   WithResourceInfo,
+  hasServerResourceInfo,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getFile } from "../resource/file";
@@ -427,4 +428,30 @@ export async function isAcpControlled(
 
   const resourceInfo = await getResourceInfo(urlString, config);
   return hasAccessibleAcr(await fetchAcr(resourceInfo, config));
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a Resource, find out the URL of its governing Access Control Resource.
+ *
+ * @param resource Resource which should be governed by Access Policies.
+ * @returns The URL of the Access Control Resource, or undefined if not ACR is found.
+ * @since unreleased
+ */
+export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
+  resource: Resource
+): UrlString | undefined {
+  // Two rels types are acceptable to indicate a link to an ACR.
+  const acrLinks = [acp.accessControl, "acl"].map((rel) => {
+    if (
+      Array.isArray(resource.internal_resourceInfo.linkedResources[rel]) &&
+      resource.internal_resourceInfo.linkedResources[rel].length === 1
+    ) {
+      return resource.internal_resourceInfo.linkedResources[rel][0];
+    }
+  });
+  return acrLinks.find((x) => x !== undefined);
 }

@@ -22,6 +22,7 @@
 import {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
@@ -126,6 +127,7 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 const v3AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
