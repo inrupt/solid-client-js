@@ -61,7 +61,13 @@ import {
 import { acp, rdf } from "../constants";
 import { WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll, getUrl, getUrlAll } from "../thing/get";
-import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { addIri, addUrl } from "../thing/add";
@@ -209,6 +215,30 @@ describe("getControlAll", () => {
     const foundControls = internal_getControlAll(resourceWithAcr);
 
     expect(foundControls).toHaveLength(1);
+  });
+
+  it("returns an Access Control if linked to with the acp:accessControl predicate even if not explicitly typed", () => {
+    const controlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const acr = mockAcrFor("https://some.pod/resource");
+    const acrThing = setIri(
+      createThing({ url: getSourceUrl(acr) }),
+      acp.accessControl,
+      controlUrl
+    );
+
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      acrThing
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
+
+    const foundControl = internal_getControlAll(resourceWithAcr);
+    expect(foundControl).toHaveLength(1);
+    expect(foundControl.map(asIri)).toContain(controlUrl);
   });
 
   it("ignores Things that are not Access Controls", () => {
