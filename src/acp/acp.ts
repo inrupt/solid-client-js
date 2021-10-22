@@ -444,6 +444,9 @@ export async function isAcpControlled(
 export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
   resource: Resource
 ): UrlString | undefined {
+  if (!hasServerResourceInfo(resource)) {
+    return undefined;
+  }
   // Two rels types are acceptable to indicate a link to an ACR.
   const acrLinks = [acp.accessControl, "acl"].map((rel) => {
     if (

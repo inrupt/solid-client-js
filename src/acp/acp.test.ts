@@ -1173,4 +1173,10 @@ describe("getLinkedAcrUrl", () => {
     );
     expect(getLinkedAcrUrl(mockedSolidDataset)).toBeUndefined();
   });
+
+  it("returns undefined if the given resource has no server information", () => {
+    expect(
+      getLinkedAcrUrl(undefined as unknown as WithServerResourceInfo)
+    ).toBeUndefined();
+  });
 });
