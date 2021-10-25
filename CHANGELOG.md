@@ -13,6 +13,11 @@ The following sections document changes that have been released already:
 - `getLinkedAcrUrl` returns the URL of an Access Control Resource from the
   server-managed metadata associated to a given resource.
 
+### Bugfixes
+
+- In some cases, the ACP functions failed to find the Access Control node within
+  an Access Control Resource, leading to policies being unapplied.
+
 ## [1.14.0] - 2021-10-15
 
 ### Bugfixes
