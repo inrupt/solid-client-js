@@ -117,15 +117,12 @@ export function internal_getControlAll(
   const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
+
   const explicitAccessControl = foundThings.filter((foundThing) =>
     getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
   );
-  if (explicitAccessControl.length > 0) {
-    return explicitAccessControl;
-  }
-  // If no subject is explicitly typed as an AccessControl, it means the AccessControl
-  // node is object of the `acp:accessControl` predicate.
-  return foundThings
+
+  const implicitAccessControl = foundThings
     .filter((foundThing) => getIriAll(foundThing, acp.accessControl).length > 0)
     .map((thingWithAccessControl) => {
       // The initial filter ensures that at least one AccessControl will be found.
@@ -137,6 +134,8 @@ export function internal_getControlAll(
       // associated thing in order to possibly make it a subject.
       return createThing({ url: controlIri });
     });
+
+  return explicitAccessControl.concat(implicitAccessControl);
 }
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
