@@ -241,6 +241,39 @@ describe("getControlAll", () => {
     expect(foundControl.map(asIri)).toContain(controlUrl);
   });
 
+  it("returns both explicitly and implicitly typed Access Control", () => {
+    const implicitControlIri =
+      "https://some.pod/access-control-resource.ttl#implicit-access-control";
+    const acr = mockAcrFor("https://some.pod/resource");
+    const acrThing = setIri(
+      createThing({ url: getSourceUrl(acr) }),
+      acp.accessControl,
+      implicitControlIri
+    );
+
+    let accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      acrThing
+    );
+    const explicitControlIri =
+      "https://some.pod/access-control-resource.ttl#explicit-access-control";
+    const explicitControl = setUrl(
+      createThing({ url: explicitControlIri }),
+      rdf.type,
+      acp.AccessControl
+    );
+    accessControlResource = setThing(accessControlResource, explicitControl);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
+
+    const foundControl = internal_getControlAll(resourceWithAcr);
+    expect(foundControl).toHaveLength(2);
+    expect(foundControl.map(asIri)).toContain(implicitControlIri);
+    expect(foundControl.map(asIri)).toContain(explicitControlIri);
+  });
+
   it("ignores Things that are not Access Controls", () => {
     const control = setUrl(createThing(), rdf.type, acp.AccessControl);
     const notAControl = setUrl(
