@@ -30,33 +30,109 @@
   "exports": {
     ".": {
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
     },
-    "./interfaces": "./dist/interfaces.mjs",
-    "./resource/resource": "./dist/resource/resource.mjs",
-    "./resource/solidDataset": "./dist/resource/solidDataset.mjs",
-    "./resource/file": "./dist/resource/file.mjs",
-    "./resource/mock": "./dist/resource/mock.mjs",
-    "./thing/thing": "./dist/thing/thing.mjs",
-    "./thing/get": "./dist/thing/get.mjs",
-    "./thing/add": "./dist/thing/add.mjs",
-    "./thing/set": "./dist/thing/set.mjs",
-    "./thing/remove": "./dist/thing/remove.mjs",
-    "./thing/build": "./dist/thing/build.mjs",
-    "./thing/mock": "./dist/thing/mock.mjs",
-    "./acl/acl": "./dist/acl/acl.mjs",
-    "./acl/agent": "./dist/acl/agent.mjs",
-    "./acl/group": "./dist/acl/group.mjs",
-    "./acl/class": "./dist/acl/class.mjs",
-    "./acl/mock": "./dist/acl/mock.mjs",
-    "./acp/acp": "./dist/acp/acp.mjs",
-    "./acp/control": "./dist/acp/control.mjs",
-    "./acp/policy": "./dist/acp/policy.mjs",
-    "./acp/rule": "./dist/acp/rule.mjs",
-    "./acp/mock": "./dist/acp/mock.mjs",
-    "./access/universal": "./dist/access/universal.mjs",
-    "./rdfjs": "./dist/rdfjs.mjs",
-    "./profile/jwks": "./dist/profile/jwks.mjs"
+    "./interfaces": {
+      "import": "./dist/interfaces.mjs",
+      "types": "./dist/interfaces.d.ts"
+    },
+    "./resource/resource": {
+      "import": "./dist/resource/resource.mjs",
+      "types": "./dist/resource/resource.d.ts"
+    },
+    "./resource/solidDataset": {
+      "import": "./dist/resource/solidDataset.mjs",
+      "types": "./dist/resource/solidDataset.d.ts"
+    },
+    "./resource/file": {
+      "import": "./dist/resource/file.mjs",
+      "types": "./dist/resource/file.d.ts"
+    },
+    "./resource/mock": {
+      "import": "./dist/resource/mock.mjs",
+      "types": "./dist/resource/mock.d.ts"
+    },
+    "./thing/thing": {
+      "import": "./dist/thing/thing.mjs",
+      "types": "./dist/thing/thing.d.ts"
+    },
+    "./thing/get": {
+      "import": "./dist/thing/get.mjs",
+      "types": "./dist/thing/get.d.ts"
+    },
+    "./thing/add": {
+      "import": "./dist/thing/add.mjs",
+      "types": "./dist/thing/add.d.ts"
+    },
+    "./thing/set": {
+      "import": "./dist/thing/set.mjs",
+      "types": "./dist/thing/set.d.ts"
+    },
+    "./thing/remove": {
+      "import": "./dist/thing/remove.mjs",
+      "types": "./dist/thing/remove.d.ts"
+    },
+    "./thing/build": {
+      "import": "./dist/thing/build.mjs",
+      "types": "./dist/thing/build.d.ts"
+    },
+    "./thing/mock": {
+      "import": "./dist/thing/mock.mjs",
+      "types": "./dist/thing/mock.d.ts"
+    },
+    "./acl/acl": {
+      "import": "./dist/acl/acl.mjs",
+      "types": "./dist/acl/acl.d.ts"
+    },
+    "./acl/agent": {
+      "import": "./dist/acl/agent.mjs",
+      "types": "./dist/acl/agent.d.ts"
+    },
+    "./acl/group": {
+      "import": "./dist/acl/group.mjs",
+      "types": "./dist/acl/group.d.ts"
+    },
+    "./acl/class": {
+      "import": "./dist/acl/class.mjs",
+      "types": "./dist/acl/class.d.ts"
+    },
+    "./acl/mock": {
+      "import": "./dist/acl/mock.mjs",
+      "types": "./dist/acl/mock.d.ts"
+    },
+    "./acp/acp": {
+      "import": "./dist/acp/acp.mjs",
+      "types": "./dist/acp/acp.d.ts"
+    },
+    "./acp/control": {
+      "import": "./dist/acp/control.mjs",
+      "types": "./dist/acp/control.d.ts"
+    },
+    "./acp/policy": {
+      "import": "./dist/acp/policy.mjs",
+      "types": "./dist/acp/policy.d.ts"
+    },
+    "./acp/rule": {
+      "import": "./dist/acp/rule.mjs",
+      "types": "./dist/acp/rule.d.ts"
+    },
+    "./acp/mock": {
+      "import": "./dist/acp/mock.mjs",
+      "types": "./dist/acp/mock.d.ts"
+    },
+    "./access/universal": {
+      "import": "./dist/access/universal.mjs",
+      "types": "./dist/access/universal.d.ts"
+    },
+    "./rdfjs": {
+      "import": "./dist/rdfjs.mjs",
+      "types": "./dist/rdfjs.d.ts"
+    },
+    "./profile/jwks": {
+      "import": "./dist/profile/jwks.mjs",
+      "types": "./dist/profile/jwks.d.ts"
+    }
   },
   "files": [
     "dist",
