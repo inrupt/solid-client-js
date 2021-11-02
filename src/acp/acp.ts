@@ -439,7 +439,7 @@ export async function isAcpControlled(
  *
  * @param resource Resource which should be governed by Access Policies.
  * @returns The URL of the Access Control Resource, or undefined if not ACR is found.
- * @since unreleased
+ * @since 1.15.0
  */
 export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
   resource: Resource
