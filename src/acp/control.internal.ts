@@ -117,7 +117,6 @@ export function internal_getControlAll(
   const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
-
   const explicitAccessControl = foundThings.filter((foundThing) =>
     getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
   );
