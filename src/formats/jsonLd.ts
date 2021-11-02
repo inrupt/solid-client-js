@@ -31,6 +31,15 @@ import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
 
+/**
+ * ```{note} This function is still experimental and subject to change, even
+ * in a non-major release.
+ * ```
+ * This returns a parser that transforms a JSON-LD string into a set of RDFJS quads.
+ *
+ * @returns A Parser object.
+ * @since unreleased
+ */
 export const getJsonLdParser = (): Parser => {
   const onQuadCallbacks: Array<Parameters<Parser["onQuad"]>[0]> = [];
   const onCompleteCallbacks: Array<Parameters<Parser["onComplete"]>[0]> = [];

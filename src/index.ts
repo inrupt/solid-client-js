@@ -234,6 +234,7 @@ export {
   getProfileJwksIri,
   setProfileJwks,
 } from "./profile/jwks";
+export { getJsonLdParser, getTurtleParser } from "./formats/index";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.

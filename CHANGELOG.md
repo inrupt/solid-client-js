@@ -12,6 +12,8 @@ The following sections document changes that have been released already:
 
 - `getLinkedAcrUrl` returns the URL of an Access Control Resource from the
   server-managed metadata associated to a given resource.
+- `getJsonLdParser` and `getTurtleParser` are experimental functions to explicitly
+  control the RDF serialization of the target of `getSolidDataset`.
 
 ### Bugfixes
 

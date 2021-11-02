@@ -92,7 +92,8 @@
       "src/acp/mock.ts",
       "src/access/universal.ts",
       "src/rdfjs.ts",
-      "src/profile/jwks.ts"
+      "src/profile/jwks.ts",
+      "src/formats/index.ts"
     ],
     "exclude": [
       "node_modules/**",
