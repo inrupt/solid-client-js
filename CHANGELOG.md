@@ -8,6 +8,8 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+## [1.15.0] - 2021-11-02
+
 ### New features
 
 - `getLinkedAcrUrl` returns the URL of an Access Control Resource from the
