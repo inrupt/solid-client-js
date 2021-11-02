@@ -177,6 +177,8 @@ import {
   getProfileJwksIri,
   setProfileJwks,
   getWellKnownSolid,
+  getJsonLdParser,
+  getTurtleParser,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -356,6 +358,8 @@ it("exports the public API from the entry file", () => {
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
   expect(getWellKnownSolid).toBeDefined();
+  expect(getJsonLdParser).toBeDefined();
+  expect(getTurtleParser).toBeDefined();
 });
 
 it("exports error classes", () => {
