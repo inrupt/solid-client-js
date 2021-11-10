@@ -66,7 +66,9 @@ export const acp = {
   Rule: "http://www.w3.org/ns/solid/acp#Rule",
   Matcher: "http://www.w3.org/ns/solid/acp#Matcher",
   accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
+  memberAccessControl: "http://www.w3.org/ns/solid/acp#memberAccessControl",
   apply: "http://www.w3.org/ns/solid/acp#apply",
+  /** @deprecated Removed from the ACP proposal, to be replaced by memberAccessControls. */
   applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
   allow: "http://www.w3.org/ns/solid/acp#allow",
   deny: "http://www.w3.org/ns/solid/acp#deny",
@@ -74,6 +76,7 @@ export const acp = {
   anyOf: "http://www.w3.org/ns/solid/acp#anyOf",
   noneOf: "http://www.w3.org/ns/solid/acp#noneOf",
   access: "http://www.w3.org/ns/solid/acp#access",
+  /** @deprecated Removed from the ACP proposal, to be replaced by memberAccessControls. */
   accessMembers: "http://www.w3.org/ns/solid/acp#accessMembers",
   agent: "http://www.w3.org/ns/solid/acp#agent",
   group: "http://www.w3.org/ns/solid/acp#group",
