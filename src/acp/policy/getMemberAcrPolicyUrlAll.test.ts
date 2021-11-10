@@ -35,7 +35,7 @@ describe("getMemberAcrPolicyUrlAll()", () => {
     expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([]);
   });
 
-  it("Returns an access control URL when present", async () => {
+  it("Returns policy URL when present", async () => {
     const resource = createAccessControlledResource(
       createAccessControlResourceDataset()
     );
