@@ -20,43 +20,55 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { createAccessControlledResourceFromAccessControlUrls } from "../mock/createAccessControlledResourceFromControls";
+import { acp } from "../../constants";
+import {
+  DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+  TEST_URL,
+} from "../mock/constants";
+import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
+import { createDatasetFromSubjects } from "../mock/dataset";
 import { getMemberAccessControlUrlAll } from "./getMemberAccessControlUrlAll";
 
 describe("getMemberAccessControlUrlAll()", () => {
   it("Returns empty array for empty Access Control Resource", async () => {
-    const resource = createAccessControlledResourceFromAccessControlUrls();
+    const resource = mockAccessControlledResource();
 
     expect(getMemberAccessControlUrlAll(resource)).toStrictEqual([]);
   });
 
-  it("Returns an access control URL when present", async () => {
-    const ACCESS_CONTROL_ARRAY = ["https://example.org/ac1"];
+  it("Returns a member access control URL when present", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[acp.memberAccessControl, [TEST_URL.memberAccessControl1]]],
+        ],
+      ])
+    );
 
-    expect(
-      getMemberAccessControlUrlAll(
-        createAccessControlledResourceFromAccessControlUrls(
-          [],
-          ACCESS_CONTROL_ARRAY
-        )
-      )
-    ).toStrictEqual(ACCESS_CONTROL_ARRAY);
+    expect(getMemberAccessControlUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1,
+    ]);
   });
 
-  it("Returns all access control URLs when present", async () => {
-    const ACCESS_CONTROL_ARRAY = [
-      "https://example.org/ac1",
-      "https://example.org/ac2",
-    ];
+  it("Returns all member access control URLs when present", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              acp.memberAccessControl,
+              [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
+            ],
+          ],
+        ],
+      ])
+    );
 
-    expect(
-      getMemberAccessControlUrlAll(
-        createAccessControlledResourceFromAccessControlUrls(
-          [],
-          ACCESS_CONTROL_ARRAY
-        )
-      )
-    ).toStrictEqual(ACCESS_CONTROL_ARRAY);
+    expect(getMemberAccessControlUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1,
+      TEST_URL.memberAccessControl2,
+    ]);
   });
 });

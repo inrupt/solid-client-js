@@ -20,41 +20,80 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { createAccessControlledResourceFromAccessControlUrls } from "../mock/createAccessControlledResourceFromControls";
+import { acp } from "../../constants";
+import {
+  DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+  TEST_URL,
+} from "../mock/constants";
+import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
+import { createDatasetFromSubjects } from "../mock/dataset";
 import { getAccessControlUrlAll } from "./getAccessControlUrlAll";
 
 describe("getAccessControlUrlAll()", () => {
   it("Returns empty array for empty Access Control Resource", async () => {
-    const resource = createAccessControlledResourceFromAccessControlUrls();
+    const resource = mockAccessControlledResource();
 
     expect(getAccessControlUrlAll(resource)).toStrictEqual([]);
   });
 
   it("Returns an access control URL when present", async () => {
-    const ACCESS_CONTROL_ARRAY = ["https://example.org/ac1"];
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[acp.accessControl, [TEST_URL.accessControl1]]],
+        ],
+      ])
+    );
 
-    expect(
-      getAccessControlUrlAll(
-        createAccessControlledResourceFromAccessControlUrls(
-          ACCESS_CONTROL_ARRAY
-        )
-      )
-    ).toStrictEqual(ACCESS_CONTROL_ARRAY);
+    expect(getAccessControlUrlAll(resource)).toStrictEqual([
+      TEST_URL.accessControl1,
+    ]);
   });
 
   it("Returns all access control URLs when present", async () => {
-    const ACCESS_CONTROL_ARRAY = [
-      "https://example.org/ac1",
-      "https://example.org/ac2",
-    ];
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              acp.accessControl,
+              [TEST_URL.accessControl1, TEST_URL.accessControl2],
+            ],
+          ],
+        ],
+      ])
+    );
 
-    expect(
-      getAccessControlUrlAll(
-        createAccessControlledResourceFromAccessControlUrls(
-          ACCESS_CONTROL_ARRAY
-        )
-      )
-    ).toStrictEqual(ACCESS_CONTROL_ARRAY);
+    expect(getAccessControlUrlAll(resource)).toStrictEqual([
+      TEST_URL.accessControl1,
+      TEST_URL.accessControl2,
+    ]);
+  });
+
+  it("Doesn't pick up on member access controls", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              acp.accessControl,
+              [TEST_URL.accessControl1, TEST_URL.accessControl2],
+            ],
+            [
+              acp.memberAccessControl,
+              [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
+            ],
+          ],
+        ],
+      ])
+    );
+
+    expect(getAccessControlUrlAll(resource)).toStrictEqual([
+      TEST_URL.accessControl1,
+      TEST_URL.accessControl2,
+    ]);
   });
 });

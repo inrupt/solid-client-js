@@ -19,25 +19,29 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import type { SolidDataset } from "../../interfaces";
 import type { WithAccessibleAcr } from "../acp";
-import { addAccessControl } from "./addAccessControl";
-import { createDatasetFromThingArray } from "./createDatasetFromThingArray";
+import { createSolidDataset } from "../../resource/solidDataset";
 import {
-  createAccessControlledResource,
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-} from "./createAccessControlledResource";
+  DEFAULT_RESOURCE_URL,
+} from "./constants";
 
 /** @hidden */
-export function createAccessControlledResourceFromAccessControlUrls(
-  accessControls: string[] = [],
-  memberAccessControls: string[] = []
+export function mockAccessControlledResource(
+  dataset: SolidDataset = createSolidDataset()
 ): WithAccessibleAcr {
-  let thing = addAccessControl(
-    DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-    accessControls
-  );
-  thing = addAccessControl(thing, memberAccessControls, true);
-  const dataset = createDatasetFromThingArray([thing]);
-
-  return createAccessControlledResource(dataset);
+  return {
+    ...createSolidDataset(),
+    internal_acp: {
+      acr: {
+        ...dataset,
+        internal_resourceInfo: {
+          isRawData: false,
+          sourceIri: DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+        },
+        accessTo: DEFAULT_RESOURCE_URL,
+      },
+    },
+  };
 }

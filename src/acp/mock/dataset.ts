@@ -20,19 +20,50 @@
  */
 
 import type { SolidDataset, ThingPersisted } from "../../interfaces";
-import { createSolidDataset } from "../../resource/solidDataset";
-import { setThing } from "../../thing/thing";
+import {
+  buildThing,
+  createSolidDataset,
+  createThing,
+  getThing,
+  setThing,
+} from "../..";
 
 /** @hidden */
-export function createDatasetFromThingArray(
-  thing: ThingPersisted[],
-  dataset?: SolidDataset
+export type SubjectPredicateObjectTuple = [string, [string, string[]][]];
+
+/** @hidden */
+export function addSubject(
+  dataset: SolidDataset,
+  subject: SubjectPredicateObjectTuple
 ): SolidDataset {
-  let solidDataset = dataset ?? createSolidDataset();
+  let thing = getThing(dataset, subject[0]);
+  if (thing === null || typeof thing === "undefined") {
+    thing = createThing({ url: subject[0] });
+  }
+  for (const predicate of subject[1]) {
+    let thingBuilder = buildThing(thing);
+    for (const object of predicate[1]) {
+      thingBuilder = thingBuilder.addUrl(predicate[0], object);
+    }
+    thing = thingBuilder.build() as ThingPersisted;
+  }
+  return setThing(dataset, thing);
+}
 
-  thing.forEach((x) => {
-    solidDataset = setThing(solidDataset, x);
-  });
+/** @hidden */
+export function addSubjects(
+  dataset: SolidDataset,
+  subjects: SubjectPredicateObjectTuple[]
+): SolidDataset {
+  for (const subject of subjects) {
+    dataset = addSubject(dataset, subject);
+  }
+  return dataset;
+}
 
-  return solidDataset;
+/** @hidden */
+export function createDatasetFromSubjects(
+  data: SubjectPredicateObjectTuple[]
+): SolidDataset {
+  return addSubjects(createSolidDataset(), data);
 }

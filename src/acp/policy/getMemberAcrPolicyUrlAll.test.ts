@@ -20,27 +20,125 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { createAccessControlledResource } from "../mock/createAccessControlledResource";
-
+import { acp } from "../../constants";
 import {
-  createAccessControlResourceDataset,
+  DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   TEST_URL,
-} from "../mock/createAccessControlResourceDataset";
+} from "../mock/constants";
+import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
+import { createDatasetFromSubjects } from "../mock/dataset";
 import { getMemberAcrPolicyUrlAll } from "./getMemberAcrPolicyUrlAll";
 
 describe("getMemberAcrPolicyUrlAll()", () => {
   it("Returns empty array for empty Access Control Resource", async () => {
-    const resource = createAccessControlledResource();
+    const resource = mockAccessControlledResource();
 
     expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([]);
   });
 
-  it("Returns policy URL when present", async () => {
-    const resource = createAccessControlledResource(
-      createAccessControlResourceDataset()
+  it("Returns a member ACR policy URL when present", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[acp.memberAccessControl, [TEST_URL.memberAccessControl1]]],
+        ],
+        [
+          TEST_URL.memberAccessControl1,
+          [[acp.access, [TEST_URL.memberAccessControl1Policy1]]],
+        ],
+      ])
     );
+
+    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1Policy1,
+    ]);
+  });
+
+  it("Returns all member ACR policy URLs when present", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              acp.memberAccessControl,
+              [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.memberAccessControl1,
+          [[acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
+        ],
+        [
+          TEST_URL.memberAccessControl2,
+          [
+            [
+              acp.access,
+              [
+                TEST_URL.memberAccessControl2AccessPolicy1,
+                TEST_URL.memberAccessControl2AccessPolicy2,
+              ],
+            ],
+          ],
+        ],
+      ])
+    );
+
     expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
       TEST_URL.memberAccessControl1AccessPolicy1,
+      TEST_URL.memberAccessControl2AccessPolicy1,
+      TEST_URL.memberAccessControl2AccessPolicy2,
+    ]);
+  });
+
+  it("Doesn't pick up non member ACR policy URLs", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              acp.memberAccessControl,
+              [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
+            ],
+            [acp.accessControl, [TEST_URL.accessControl1]],
+          ],
+        ],
+        [
+          TEST_URL.memberAccessControl1,
+          [
+            [acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]],
+            [acp.apply, [TEST_URL.memberAccessControl1Policy1]],
+          ],
+        ],
+        [
+          TEST_URL.memberAccessControl2,
+          [
+            [
+              acp.access,
+              [
+                TEST_URL.memberAccessControl2AccessPolicy1,
+                TEST_URL.memberAccessControl2AccessPolicy2,
+              ],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.accessControl1,
+          [
+            [acp.access, [TEST_URL.accessControl1AccessPolicy1]],
+            [acp.apply, [TEST_URL.accessControl1Policy1]],
+          ],
+        ],
+      ])
+    );
+
+    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1AccessPolicy1,
+      TEST_URL.memberAccessControl2AccessPolicy1,
+      TEST_URL.memberAccessControl2AccessPolicy2,
     ]);
   });
 });
