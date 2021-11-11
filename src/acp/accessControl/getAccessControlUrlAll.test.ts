@@ -71,29 +71,4 @@ describe("getAccessControlUrlAll()", () => {
       TEST_URL.accessControl2,
     ]);
   });
-
-  it("Doesn't pick up on member access controls", async () => {
-    const resource = mockAccessControlledResource(
-      createDatasetFromSubjects([
-        [
-          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-          [
-            [
-              acp.accessControl,
-              [TEST_URL.accessControl1, TEST_URL.accessControl2],
-            ],
-            [
-              acp.memberAccessControl,
-              [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
-            ],
-          ],
-        ],
-      ])
-    );
-
-    expect(getAccessControlUrlAll(resource)).toStrictEqual([
-      TEST_URL.accessControl1,
-      TEST_URL.accessControl2,
-    ]);
-  });
 });
