@@ -19,35 +19,40 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import type { WithAccessibleAcr } from "../acp";
 import { acp } from "../../constants";
-import type { UrlString } from "../../interfaces";
 import { getIriAll } from "../../thing/get";
 import { getThing } from "../../thing/thing";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import type { WithAccessibleAcr } from "../acp";
-import { getAccessControlResource } from "../internal/getAccessControlResource";
-import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
+import { getAccessControlResource } from "./getAccessControlResource";
 
-/**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
- *
- * Access Control Policies allow or deny access modes over resources.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs of access
- * control policies applying to the ACR.
- * @returns Policy URL array
- * @since 1.6.0
- */
-export function getMemberAcrPolicyUrlAll(
-  resourceWithAcr: WithAccessibleAcr
-): UrlString[] {
-  return getUniquePolicyUrl(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    acp.access
-  );
+/** @hidden */
+type PolicyType = typeof acp.apply | typeof acp.access;
+
+/** @hidden */
+export function getUniquePolicyUrl(
+  resourceWithAcr: WithAccessibleAcr,
+  accessControlUrls: string[],
+  type: PolicyType
+): string[] {
+  const acr = getAccessControlResource(resourceWithAcr);
+
+  return [
+    ...new Set(
+      accessControlUrls
+        .map((accessControlUrl) => {
+          const accessControlThing = getThing(acr, accessControlUrl);
+          if (accessControlThing !== null) {
+            return getIriAll(
+              accessControlThing,
+              type === acp.apply ? acp.apply : acp.access
+            );
+          }
+          return [];
+        })
+        .reduce(
+          (previousValue, currentValue) => previousValue.concat(currentValue),
+          []
+        )
+    ),
+  ];
 }

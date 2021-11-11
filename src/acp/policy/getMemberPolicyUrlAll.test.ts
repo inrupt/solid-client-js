@@ -27,16 +27,16 @@ import {
 } from "../mock/constants";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { createDatasetFromSubjects } from "../mock/dataset";
-import { getMemberAcrPolicyUrlAll } from "./getMemberAcrPolicyUrlAll";
+import { getMemberPolicyUrlAll } from "./getMemberPolicyUrlAll";
 
-describe("getMemberAcrPolicyUrlAll()", () => {
+describe("getMemberPolicyUrlAll()", () => {
   it("Returns empty array for empty Access Control Resource", async () => {
     const resource = mockAccessControlledResource();
 
-    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([]);
+    expect(getMemberPolicyUrlAll(resource)).toStrictEqual([]);
   });
 
-  it("Returns a member ACR policy URL when present", async () => {
+  it("Returns a member policy URL when present", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -45,17 +45,17 @@ describe("getMemberAcrPolicyUrlAll()", () => {
         ],
         [
           TEST_URL.memberAccessControl1,
-          [[acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
+          [[acp.apply, [TEST_URL.memberAccessControl1Policy1]]],
         ],
       ])
     );
 
-    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
-      TEST_URL.memberAccessControl1AccessPolicy1,
+    expect(getMemberPolicyUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1Policy1,
     ]);
   });
 
-  it("Returns all member ACR policy URLs when present", async () => {
+  it("Returns all member policy URLs when present", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -69,16 +69,16 @@ describe("getMemberAcrPolicyUrlAll()", () => {
         ],
         [
           TEST_URL.memberAccessControl1,
-          [[acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
+          [[acp.apply, [TEST_URL.memberAccessControl1Policy1]]],
         ],
         [
           TEST_URL.memberAccessControl2,
           [
             [
-              acp.access,
+              acp.apply,
               [
-                TEST_URL.memberAccessControl2AccessPolicy1,
-                TEST_URL.memberAccessControl2AccessPolicy2,
+                TEST_URL.memberAccessControl2Policy1,
+                TEST_URL.memberAccessControl2Policy2,
               ],
             ],
           ],
@@ -86,14 +86,14 @@ describe("getMemberAcrPolicyUrlAll()", () => {
       ])
     );
 
-    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
-      TEST_URL.memberAccessControl1AccessPolicy1,
-      TEST_URL.memberAccessControl2AccessPolicy1,
-      TEST_URL.memberAccessControl2AccessPolicy2,
+    expect(getMemberPolicyUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1Policy1,
+      TEST_URL.memberAccessControl2Policy1,
+      TEST_URL.memberAccessControl2Policy2,
     ]);
   });
 
-  it("Doesn't pick up non member ACR policy URLs", async () => {
+  it("Doesn't pick up non member policy URLs", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -117,10 +117,10 @@ describe("getMemberAcrPolicyUrlAll()", () => {
           TEST_URL.memberAccessControl2,
           [
             [
-              acp.access,
+              acp.apply,
               [
-                TEST_URL.memberAccessControl2AccessPolicy1,
-                TEST_URL.memberAccessControl2AccessPolicy2,
+                TEST_URL.memberAccessControl2Policy1,
+                TEST_URL.memberAccessControl2Policy2,
               ],
             ],
           ],
@@ -135,10 +135,10 @@ describe("getMemberAcrPolicyUrlAll()", () => {
       ])
     );
 
-    expect(getMemberAcrPolicyUrlAll(resource)).toStrictEqual([
-      TEST_URL.memberAccessControl1AccessPolicy1,
-      TEST_URL.memberAccessControl2AccessPolicy1,
-      TEST_URL.memberAccessControl2AccessPolicy2,
+    expect(getMemberPolicyUrlAll(resource)).toStrictEqual([
+      TEST_URL.memberAccessControl1Policy1,
+      TEST_URL.memberAccessControl2Policy1,
+      TEST_URL.memberAccessControl2Policy2,
     ]);
   });
 });

@@ -21,11 +21,8 @@
 
 import { acp } from "../../constants";
 import type { UrlString } from "../../interfaces";
-import { getIriAll } from "../../thing/get";
-import { getThing } from "../../thing/thing";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
+import { getAccessControlUrlAll } from "../accessControl/getAccessControlUrlAll";
 import type { WithAccessibleAcr } from "../acp";
-import { getAccessControlResource } from "../internal/getAccessControlResource";
 import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
 
 /**
@@ -37,17 +34,17 @@ import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
  *
  * Access Control Policies allow or deny access modes over resources.
  *
- * @param resourceWithAcr The resource for which to retrieve URLs of access
- * control policies applying to the ACR.
+ * @param resourceWithAcr The resource for which to retrieve URLs of policies
+ * applying to the resource.
  * @returns Policy URL array
  * @since 1.6.0
  */
-export function getMemberAcrPolicyUrlAll(
+export function getPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr
 ): UrlString[] {
   return getUniquePolicyUrl(
     resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    acp.access
+    getAccessControlUrlAll(resourceWithAcr),
+    acp.apply
   );
 }
