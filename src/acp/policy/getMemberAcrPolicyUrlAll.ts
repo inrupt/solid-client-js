@@ -45,17 +45,24 @@ export function getMemberAcrPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr
 ): UrlString[] {
   const acr = getAccessControlResource(resourceWithAcr);
-  const memberAccessControlUrls = getMemberAccessControlUrlAll(resourceWithAcr);
-  let memberAcrPolicyUrls: string[] = [];
 
-  for (const memberAccessControlUrl of memberAccessControlUrls) {
-    const memberAccessControlThing = getThing(acr, memberAccessControlUrl);
-    if (memberAccessControlThing !== null) {
-      memberAcrPolicyUrls = memberAcrPolicyUrls.concat(
-        getIriAll(memberAccessControlThing, acp.access)
-      );
-    }
-  }
-
-  return [...new Set(memberAcrPolicyUrls)];
+  return [
+    ...new Set(
+      getMemberAccessControlUrlAll(resourceWithAcr)
+        .map((memberAccessControlUrl) => {
+          const memberAccessControlThing = getThing(
+            acr,
+            memberAccessControlUrl
+          );
+          if (memberAccessControlThing !== null) {
+            return getIriAll(memberAccessControlThing, acp.access);
+          }
+          return [];
+        })
+        .reduce(
+          (previousValue, currentValue) => previousValue.concat(currentValue),
+          []
+        )
+    ),
+  ];
 }
