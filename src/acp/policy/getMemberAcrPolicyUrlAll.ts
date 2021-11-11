@@ -26,7 +26,7 @@ import { getThing } from "../../thing/thing";
 import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
 import type { WithAccessibleAcr } from "../acp";
 import { getAccessControlResource } from "../internal/getAccessControlResource";
-import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
+import { getUniquePolicyUrlsFromResource } from "../internal/getUniquePolicyUrlsFromResource";
 
 /**
  * ```{note}
@@ -45,7 +45,7 @@ import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
 export function getMemberAcrPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr
 ): UrlString[] {
-  return getUniquePolicyUrl(
+  return getUniquePolicyUrlsFromResource(
     resourceWithAcr,
     getMemberAccessControlUrlAll(resourceWithAcr),
     acp.access

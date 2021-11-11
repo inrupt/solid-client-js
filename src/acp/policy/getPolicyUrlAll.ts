@@ -23,7 +23,7 @@ import { acp } from "../../constants";
 import type { UrlString } from "../../interfaces";
 import { getAccessControlUrlAll } from "../accessControl/getAccessControlUrlAll";
 import type { WithAccessibleAcr } from "../acp";
-import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
+import { getUniquePolicyUrlsFromResource } from "../internal/getUniquePolicyUrlsFromResource";
 
 /**
  * ```{note}
@@ -42,7 +42,7 @@ import { getUniquePolicyUrl } from "../internal/getUniquePolicyUrl";
 export function getPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr
 ): UrlString[] {
-  return getUniquePolicyUrl(
+  return getUniquePolicyUrlsFromResource(
     resourceWithAcr,
     getAccessControlUrlAll(resourceWithAcr),
     acp.apply

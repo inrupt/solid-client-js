@@ -29,7 +29,7 @@ import { getAccessControlResource } from "./getAccessControlResource";
 type PolicyType = typeof acp.apply | typeof acp.access;
 
 /** @hidden */
-export function getUniquePolicyUrl(
+export function getUniquePolicyUrlsFromResource(
   resourceWithAcr: WithAccessibleAcr,
   accessControlUrls: string[],
   type: PolicyType
