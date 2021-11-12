@@ -176,6 +176,8 @@ import {
   addPublicKeyToProfileJwks,
   getProfileJwksIri,
   setProfileJwks,
+  getWebIdProfile,
+  getWebIdProfileAll,
   getWellKnownSolid,
   getJsonLdParser,
   getTurtleParser,
@@ -357,6 +359,8 @@ it("exports the public API from the entry file", () => {
   expect(addPublicKeyToProfileJwks).toBeDefined();
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
+  expect(getWebIdProfile).toBeDefined();
+  expect(getWebIdProfileAll).toBeDefined();
   expect(getWellKnownSolid).toBeDefined();
   expect(getJsonLdParser).toBeDefined();
   expect(getTurtleParser).toBeDefined();

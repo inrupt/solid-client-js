@@ -52,6 +52,7 @@ export const ldp = {
 /** @hidden */
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
+  primaryTopic: "http://xmlns.com/foaf/0.1/primaryTopic",
 } as const;
 
 /** @hidden */

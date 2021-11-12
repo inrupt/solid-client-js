@@ -57,6 +57,7 @@
     "./access/universal": "./dist/access/universal.mjs",
     "./rdfjs": "./dist/rdfjs.mjs",
     "./profile/jwks": "./dist/profile/jwks.mjs",
+    "./profile/webId": "./dist/profile/webId.mjs",
     "./formats": "./dist/formats/index.mjs"
   },
   "files": [
