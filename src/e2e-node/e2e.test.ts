@@ -19,7 +19,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { jest, describe, it, expect } from "@jest/globals";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
 import { Session } from "@inrupt/solid-client-authn-node";
@@ -373,19 +380,23 @@ describe.each(serversUnderTest)(
       return rootContainer.includes("pod.inrupt.com");
     }
 
-    async function getSession() {
-      const session = new Session();
+    let session: Session;
+
+    beforeEach(async () => {
+      session = new Session();
       await session.login({
         oidcIssuer: oidcIssuer,
-        clientId: clientId,
+        clientId,
         clientName: "Solid Client End-2-End Test Client App - Node.js",
-        clientSecret: clientSecret,
+        clientSecret,
       });
-      return session;
-    }
+    });
+
+    afterEach(async () => {
+      await session.logout();
+    });
 
     it("can create, read, update and delete data", async () => {
-      const session = await getSession();
       const arbitraryPredicate = "https://arbitrary.vocab/predicate";
 
       let newThing = createThing({ name: "e2e-test-thing" });
@@ -436,12 +447,9 @@ describe.each(serversUnderTest)(
           statusCode: 404,
         })
       );
-      // Clean up remaining callbacks.
-      await session.logout();
     });
 
     it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
-      const session = await getSession();
       const datasetUrl = `${rootContainer}solid-client-tests/node/dataset-${session.info.sessionId}.ttl`;
       const fileUrl = `${rootContainer}solid-client-tests/node/file-${session.info.sessionId}.txt`;
 
@@ -459,12 +467,9 @@ describe.each(serversUnderTest)(
 
       await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
       await deleteFile(fileUrl, { fetch: session.fetch });
-      // Clean up remaining callbacks.
-      await session.logout();
     });
 
     it("can create and remove Containers", async () => {
-      const session = await getSession();
       const containerUrl = `${rootContainer}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
       const containerContainerUrl = `${rootContainer}solid-client-tests/node/container-test/`;
       const containerName = `container2-${session.info.sessionId}`;
@@ -483,8 +488,6 @@ describe.each(serversUnderTest)(
 
       await deleteFile(containerUrl, { fetch: session.fetch });
       await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
-      // Clean up remaining callbacks.
-      await session.logout();
     });
 
     it("can read and update ACLs", async () => {
@@ -492,7 +495,6 @@ describe.each(serversUnderTest)(
         // pod.inrupt.com does not support WAC, so skip this test there.
         return;
       }
-      const session = await getSession();
       const fakeWebId =
         "https://example.com/fake-webid#" + session.info.sessionId;
       const datasetWithoutAclUrl = `${rootContainer}solid-client-tests/node/acl-test-${session.info.sessionId}.ttl`;
@@ -566,12 +568,9 @@ describe.each(serversUnderTest)(
       });
       await saveAclFor(datasetWithAcl, cleanedAcl, { fetch: session.fetch });
       await deleteSolidDataset(datasetWithoutAclUrl, { fetch: session.fetch });
-      // Clean up remaining callbacks.
-      await session.logout();
     });
 
     it("can update Things containing Blank Nodes in different instances of the same SolidDataset", async () => {
-      const session = await getSession();
       const regularPredicate = "https://arbitrary.vocab/regular-predicate";
       const blankNodePredicate = "https://arbitrary.vocab/blank-node-predicate";
 
@@ -617,8 +616,6 @@ describe.each(serversUnderTest)(
       } finally {
         // Clean up after ourselves
         await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
-        // Clean up remaining callbacks.
-        await session.logout();
       }
     });
 
@@ -707,7 +704,6 @@ describe.each(serversUnderTest)(
       }
 
       it("can deny Read access", async () => {
-        const session = await getSession();
         const policyResourceUrl =
           rootContainer +
           `solid-client-tests/node/acp/policy-deny-agent-read-${session.info.sessionId}.ttl`;
@@ -739,12 +735,9 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
 
       it("can allow public Read access", async () => {
-        const session = await getSession();
         const policyResourceUrl =
           rootContainer +
           `solid-client-tests/node/acp/policy-allow-public-read-${session.info.sessionId}.ttl`;
@@ -775,12 +768,9 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteSolidDataset(policyResourceUrl, { fetch: session.fetch });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
 
       it("can set Access from a Resource's ACR", async () => {
-        const session = await getSession();
         const resourceUrl =
           rootContainer +
           `solid-client-tests/node/acp/resource-policies-and-rules-${session.info.sessionId}.ttl`;
@@ -839,8 +829,6 @@ describe.each(serversUnderTest)(
 
         // Clean up:
         await deleteFile(resourceUrl, { fetch: session.fetch });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
     });
 
@@ -849,7 +837,6 @@ describe.each(serversUnderTest)(
         if (!supportsWac()) {
           return;
         }
-        const session = await getSession();
         const webId = session.info.webId!;
         const agentAccess = await getAgentAccessUniversal(webId, webId, {
           fetch: session.fetch,
@@ -861,12 +848,9 @@ describe.each(serversUnderTest)(
           controlRead: true,
           controlWrite: true,
         });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
 
       it("can read and change access", async () => {
-        const session = await getSession();
         const datasetUrl = `${rootContainer}solid-client-tests/node/access-wrapper/access-test-${session.info.sessionId}.ttl`;
         await saveSolidDatasetAt(datasetUrl, createSolidDataset(), {
           fetch: session.fetch,
@@ -915,8 +899,6 @@ describe.each(serversUnderTest)(
         await deleteSolidDataset(datasetUrl, {
           fetch: session.fetch,
         });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
 
       it("throws an error when trying to set different values for controlRead and controlWrite on a WAC-powered Pod", async () => {
@@ -924,7 +906,6 @@ describe.each(serversUnderTest)(
           return false;
         }
 
-        const session = await getSession();
         const datasetUrl = `${rootContainer}solid-client-tests/node/access-wrapper/different-control-values-${session.info.sessionId}.ttl`;
         await saveSolidDatasetAt(datasetUrl, createSolidDataset(), {
           fetch: session.fetch,
@@ -944,8 +925,6 @@ describe.each(serversUnderTest)(
         await deleteSolidDataset(datasetUrl, {
           fetch: session.fetch,
         });
-        // Clean up remaining callbacks.
-        await session.logout();
       });
     });
   }
