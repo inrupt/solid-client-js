@@ -71,6 +71,7 @@ import {
   UrlString,
   acp_v3 as acp,
   FetchError,
+  getEffectiveAccess,
 } from "../index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
@@ -890,6 +891,18 @@ describe.each(serversUnderTest)(
           console.error(
             "Unauthenticated fetch is not supported even for public resources"
           );
+
+          // FIXME: The following should work.
+          // const publicDataset = await getSolidDataset(datasetUrl, {
+          //   fetch: session.fetch
+          // });
+
+          // // eslint-disable-next-line jest/no-conditional-expect, jest/no-try-expect
+          // expect(getEffectiveAccess(publicDataset).public).toStrictEqual({
+          //   read: true,
+          //   append: false,
+          //   write: false
+          // });
         }
 
         await expect(
