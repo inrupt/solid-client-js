@@ -2017,6 +2017,146 @@ describe("createContainerAt", () => {
     });
   });
 
+  describe("Creating non-empty container", () => {
+    function getMockUpdatedDataset(
+      changeLog: WithChangeLog["internal_changeLog"],
+      fromUrl: IriString
+    ): SolidDataset & WithChangeLog & WithResourceInfo {
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      let mockDataset = setThing(createSolidDataset(), mockThing);
+
+      changeLog.additions.forEach((tripleToAdd) => {
+        let additionThing =
+          getThing(mockDataset, tripleToAdd.subject.value) ??
+          createThing({ url: tripleToAdd.subject.value });
+        additionThing = addUrl(
+          additionThing,
+          tripleToAdd.predicate.value,
+          tripleToAdd.object.value
+        );
+        mockDataset = setThing(mockDataset, additionThing);
+      });
+
+      const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
+        sourceIri: fromUrl,
+        isRawData: false,
+      };
+
+      return {
+        ...mockDataset,
+        internal_changeLog: changeLog,
+        internal_resourceInfo: resourceInfo,
+      };
+    }
+
+    it("throws if container SolidDataset has updates", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(
+            mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
+          )
+        );
+
+      const mockDataset = getMockUpdatedDataset(
+        {
+          additions: [
+            DataFactory.quad(
+              DataFactory.namedNode("https://some.vocab/subject"),
+              DataFactory.namedNode("https://some.vocab/predicate"),
+              DataFactory.namedNode("https://some.vocab/object"),
+              undefined
+            ),
+          ],
+          deletions: [],
+        },
+        "https://arbitrary.pod/container/"
+      );
+
+      await expect(
+        createContainerAt(
+          "https://arbitrary.pod/container/",
+          {
+            fetch: mockFetch,
+          },
+          mockDataset
+        )
+      ).rejects.toThrow("dataset that contains updates");
+    });
+
+    it("returns an non-empty SolidDataset if one is provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(
+            mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
+          )
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      const solidDataset = await createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+        },
+        mockDataset
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toEqual(
+        "https://arbitrary.pod/container/"
+      );
+      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+      expect(
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
+          "Content-Type"
+        ]
+      ).toBe("text/turtle");
+      expect(
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
+      ).toBe('<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
+        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+      );
+    });
+
+    it("reports HTTP error when an non-empty SolidDataset provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Mock an error response to the request.
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Forbidden", { status: 403 }))
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      await expect(
+        createContainerAt(
+          "https://arbitrary.pod/container/",
+          {
+            fetch: mockFetch,
+          },
+          mockDataset
+        )
+      ).rejects.toThrow("Creating the non-empty Container");
+    });
+  });
+
   describe("using the workaround for Node Solid Server", () => {
     it("creates and deletes a dummy file inside the Container when encountering NSS's exact error message", async () => {
       const mockFetch = jest

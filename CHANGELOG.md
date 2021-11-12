@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+- Allow 'createContainerAt()' to take an optional SolidDataset parameter to
+  use as the body of the HTTP request to the server. This is really useful
+  when we wish to include meta-data for a new container, things like a textual
+  label or comment.
+
 The following sections document changes that have been released already:
 
 ## [1.15.0] - 2021-11-02
