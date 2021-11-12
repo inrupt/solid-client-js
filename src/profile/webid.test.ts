@@ -33,7 +33,7 @@ import {
 import { foaf } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
-import { getWebIdProfile, getWebIdProfileAll } from "./webid";
+import { getProfile, getProfileAll } from "./webid";
 
 // jest.mock("../fetcher.ts");
 jest.mock("../fetcher.ts", () => ({
@@ -75,7 +75,7 @@ describe("getWebIdProfileAll", () => {
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
     const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
-    await getWebIdProfileAll(profile);
+    await getProfileAll(profile);
     expect(mockedFetcher.fetch).toHaveBeenCalledWith(
       "https://some.profile",
       expect.anything()
@@ -94,7 +94,7 @@ describe("getWebIdProfileAll", () => {
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
     const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
-    await getWebIdProfileAll(profile, { fetch: mockedFetch });
+    await getProfileAll(profile, { fetch: mockedFetch });
     expect(mockedFetch).toHaveBeenCalled();
   });
 
@@ -108,7 +108,7 @@ describe("getWebIdProfileAll", () => {
     );
     const profile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
-      getWebIdProfileAll(profile, { fetch: mockedFetch })
+      getProfileAll(profile, { fetch: mockedFetch })
     ).resolves.toStrictEqual([profile]);
     expect(mockedFetch).not.toHaveBeenCalled();
   });
@@ -142,7 +142,7 @@ describe("getWebIdProfileAll", () => {
       (prev, cur) => setThing(prev, cur),
       mockSolidDatasetFrom(MOCK_WEBID)
     );
-    const result = await getWebIdProfileAll(profile, { fetch: mockedFetch });
+    const result = await getProfileAll(profile, { fetch: mockedFetch });
     expect(result).toHaveLength(2);
     expect(getThingAll(result[0])).toStrictEqual(getThingAll(MOCK_PROFILE));
     expect(getThingAll(result[1])).toStrictEqual(getThingAll(MOCK_PROFILE));
@@ -166,7 +166,7 @@ describe("getWebIdProfileAll", () => {
       (prev, cur) => setThing(prev, cur),
       mockSolidDatasetFrom(MOCK_WEBID)
     );
-    const result = await getWebIdProfileAll(profile, { fetch: mockedFetch });
+    const result = await getProfileAll(profile, { fetch: mockedFetch });
     expect(result).toHaveLength(1);
     expect(getThingAll(result[0])).toStrictEqual(getThingAll(MOCK_PROFILE));
   });
@@ -188,7 +188,7 @@ describe("getWebIdProfile", () => {
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
     const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
-    await getWebIdProfile(profile);
+    await getProfile(profile);
     expect(mockedFetcher.fetch).toHaveBeenCalledWith(
       "https://some.profile",
       expect.anything()
@@ -207,7 +207,7 @@ describe("getWebIdProfile", () => {
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
     const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
-    await getWebIdProfile(profile, { fetch: mockedFetch });
+    await getProfile(profile, { fetch: mockedFetch });
     expect(mockedFetch).toHaveBeenCalled();
   });
 
@@ -221,7 +221,7 @@ describe("getWebIdProfile", () => {
     );
     const profile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
-      getWebIdProfile(profile, { fetch: mockedFetch })
+      getProfile(profile, { fetch: mockedFetch })
     ).resolves.toStrictEqual(profile);
     expect(mockedFetch).not.toHaveBeenCalled();
   });
@@ -247,7 +247,7 @@ describe("getWebIdProfile", () => {
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
     const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
-    const result = await getWebIdProfile(profile, { fetch: mockedFetch });
+    const result = await getProfile(profile, { fetch: mockedFetch });
     expect(getThingAll(result)).toStrictEqual(getThingAll(MOCK_PROFILE));
   });
 
@@ -269,7 +269,7 @@ describe("getWebIdProfile", () => {
       (prev, cur) => setThing(prev, cur),
       mockSolidDatasetFrom(MOCK_WEBID)
     );
-    const result = await getWebIdProfile(profile, { fetch: mockedFetch });
+    const result = await getProfile(profile, { fetch: mockedFetch });
     expect(getThingAll(result)).toStrictEqual(getThingAll(MOCK_PROFILE));
   });
 });
