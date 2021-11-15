@@ -19,35 +19,37 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  buildThing,
-  createThing,
-  getIriAll,
-  getSourceUrl,
-  getThing,
-  ThingPersisted,
-} from "../..";
-import { acp } from "../../constants";
+import { buildThing, createThing, getIriAll, getSourceUrl } from "../..";
+import { ACP } from "../constants";
 import type { WithAccessibleAcr } from "../acp";
 import { getAccessControlResource } from "./getAccessControlResource";
 import { getAccessControlResourceThing } from "./getAccessControlResourceThing";
 import {
-  AccessControlType,
-  DEFAULT_ACCESS_CONTROL_NAME,
-  DEFAULT_MEMBER_ACCESS_CONTROL_NAME,
+  DefaultAccessControlName,
   getDefaultAccessControlUrl,
 } from "./getDefaultAccessControlUrl";
 import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
 
+function getTypeFromDefaultAccessControlName(
+  name: DefaultAccessControlName
+): string {
+  if (name.includes("Member")) {
+    return ACP.memberAccessControl;
+  }
+  return ACP.accessControl;
+}
+
 /** @hidden */
 export function setDefaultAccessControlThingIfNotExist<
   T extends WithAccessibleAcr
->(resource: T, type: AccessControlType): T {
+>(resource: T, name: DefaultAccessControlName): T {
   const defaultAccessControlThingUrl = getDefaultAccessControlUrl(
     resource,
-    type
+    name
   );
   const acr = getAccessControlResource(resource);
+
+  // Get the Access Control Resource Thing or create it
   let accessControlResourceThing = getAccessControlResourceThing(resource);
   if (
     accessControlResourceThing === null ||
@@ -55,12 +57,24 @@ export function setDefaultAccessControlThingIfNotExist<
   ) {
     accessControlResourceThing = createThing({ url: getSourceUrl(acr) });
   }
-  const accessControlUrlAll = getIriAll(accessControlResourceThing, type);
+
+  // Get the Default Access Control Thing or create it and return
+  const accessControlUrlAll = getIriAll(
+    accessControlResourceThing,
+    getTypeFromDefaultAccessControlName(name)
+  );
+
   if (!accessControlUrlAll.includes(defaultAccessControlThingUrl)) {
     accessControlResourceThing = buildThing(accessControlResourceThing)
-      .addUrl(type, defaultAccessControlThingUrl)
+      .addUrl(
+        getTypeFromDefaultAccessControlName(name),
+        defaultAccessControlThingUrl
+      )
       .build();
+
     return setAccessControlResourceThing(resource, accessControlResourceThing);
   }
+
+  // Return the original resource if the ACR and Default AC exist
   return resource;
 }

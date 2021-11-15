@@ -20,33 +20,35 @@
  */
 
 import { getSourceUrl } from "../..";
-import { acp } from "../../constants";
 import type { WithAccessibleAcr } from "../acp";
 import { getAccessControlResource } from "./getAccessControlResource";
 
 /** @hidden */
-export type AccessControlType =
-  | typeof acp.accessControl
-  | typeof acp.memberAccessControl;
+export type DefaultAccessControlName =
+  | typeof DEFAULT_ACCESS_CONTROL
+  | typeof DEFAULT_ACR_ACCESS_CONTROL
+  | typeof DEFAULT_MEMBER_ACCESS_CONTROL
+  | typeof DEFAULT_MEMBER_ACR_ACCESS_CONTROL;
 
 /** @hidden */
-export const DEFAULT_ACCESS_CONTROL_NAME = "defaultAccessControl";
+export const DEFAULT_ACCESS_CONTROL = "defaultAccessControl";
 
 /** @hidden */
-export const DEFAULT_MEMBER_ACCESS_CONTROL_NAME = "defaultMemberAccessControl";
+export const DEFAULT_ACR_ACCESS_CONTROL = "defaultAcrAccessControl";
+
+/** @hidden */
+export const DEFAULT_MEMBER_ACCESS_CONTROL = "defaultMemberAccessControl";
+
+/** @hidden */
+export const DEFAULT_MEMBER_ACR_ACCESS_CONTROL =
+  "defaultMemberAcrAccessControl";
 
 /** @hidden */
 export function getDefaultAccessControlUrl(
   resource: WithAccessibleAcr,
-  type: AccessControlType
+  name: DefaultAccessControlName
 ): string {
   const acr = getAccessControlResource(resource);
   const acrUrl = getSourceUrl(acr);
-  return acrUrl
-    .concat("#")
-    .concat(
-      type === acp.accessControl
-        ? DEFAULT_ACCESS_CONTROL_NAME
-        : DEFAULT_MEMBER_ACCESS_CONTROL_NAME
-    );
+  return acrUrl.concat("#").concat(name);
 }

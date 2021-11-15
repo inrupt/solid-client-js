@@ -20,8 +20,10 @@
  */
 
 import {
-  DEFAULT_ACCESS_CONTROL_NAME,
-  DEFAULT_MEMBER_ACCESS_CONTROL_NAME,
+  DEFAULT_ACCESS_CONTROL,
+  DEFAULT_ACR_ACCESS_CONTROL,
+  DEFAULT_MEMBER_ACCESS_CONTROL,
+  DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
 } from "../internal/getDefaultAccessControlUrl";
 
 export const DEFAULT_DOMAIN = "https://example.org/";
@@ -53,13 +55,23 @@ export const TEST_URL = {
   memberAccessControl2AccessPolicy1: DEFAULT_DOMAIN.concat("mac2ap1"),
   memberAccessControl2AccessPolicy2: DEFAULT_DOMAIN.concat("mac2ap2"),
   defaultAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat("#").concat(
-    DEFAULT_ACCESS_CONTROL_NAME
+    DEFAULT_ACCESS_CONTROL
   ),
   defaultAccessControlPolicy1: DEFAULT_DOMAIN.concat("dacp1"),
   defaultAccessControlPolicy2: DEFAULT_DOMAIN.concat("dacp2"),
+  defaultAcrAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#"
+  ).concat(DEFAULT_ACR_ACCESS_CONTROL),
+  defaultAcrAccessControlPolicy1: DEFAULT_DOMAIN.concat("dacracp1"),
+  defaultAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dacracp2"),
   defaultMemberAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
     "#"
-  ).concat(DEFAULT_MEMBER_ACCESS_CONTROL_NAME),
+  ).concat(DEFAULT_MEMBER_ACCESS_CONTROL),
   defaultMemberAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacp1"),
   defaultMemberAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacp2"),
+  defaultMemberAcrAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#"
+  ).concat(DEFAULT_MEMBER_ACR_ACCESS_CONTROL),
+  defaultMemberAcrAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacracp1"),
+  defaultMemberAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacracp2"),
 };

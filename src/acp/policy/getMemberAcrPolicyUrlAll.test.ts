@@ -20,7 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   TEST_URL,
@@ -41,11 +41,11 @@ describe("getMemberAcrPolicyUrlAll()", () => {
       createDatasetFromSubjects([
         [
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-          [[acp.memberAccessControl, [TEST_URL.memberAccessControl1]]],
+          [[ACP.memberAccessControl, [TEST_URL.memberAccessControl1]]],
         ],
         [
           TEST_URL.memberAccessControl1,
-          [[acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
+          [[ACP.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
         ],
       ])
     );
@@ -62,20 +62,20 @@ describe("getMemberAcrPolicyUrlAll()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [
             [
-              acp.memberAccessControl,
+              ACP.memberAccessControl,
               [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
             ],
           ],
         ],
         [
           TEST_URL.memberAccessControl1,
-          [[acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
+          [[ACP.access, [TEST_URL.memberAccessControl1AccessPolicy1]]],
         ],
         [
           TEST_URL.memberAccessControl2,
           [
             [
-              acp.access,
+              ACP.access,
               [
                 TEST_URL.memberAccessControl2AccessPolicy1,
                 TEST_URL.memberAccessControl2AccessPolicy2,
@@ -100,24 +100,24 @@ describe("getMemberAcrPolicyUrlAll()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [
             [
-              acp.memberAccessControl,
+              ACP.memberAccessControl,
               [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
             ],
-            [acp.accessControl, [TEST_URL.accessControl1]],
+            [ACP.accessControl, [TEST_URL.accessControl1]],
           ],
         ],
         [
           TEST_URL.memberAccessControl1,
           [
-            [acp.access, [TEST_URL.memberAccessControl1AccessPolicy1]],
-            [acp.apply, [TEST_URL.memberAccessControl1Policy1]],
+            [ACP.access, [TEST_URL.memberAccessControl1AccessPolicy1]],
+            [ACP.apply, [TEST_URL.memberAccessControl1Policy1]],
           ],
         ],
         [
           TEST_URL.memberAccessControl2,
           [
             [
-              acp.access,
+              ACP.access,
               [
                 TEST_URL.memberAccessControl2AccessPolicy1,
                 TEST_URL.memberAccessControl2AccessPolicy2,
@@ -128,8 +128,8 @@ describe("getMemberAcrPolicyUrlAll()", () => {
         [
           TEST_URL.accessControl1,
           [
-            [acp.access, [TEST_URL.accessControl1AccessPolicy1]],
-            [acp.apply, [TEST_URL.accessControl1Policy1]],
+            [ACP.access, [TEST_URL.accessControl1AccessPolicy1]],
+            [ACP.apply, [TEST_URL.accessControl1Policy1]],
           ],
         ],
       ])

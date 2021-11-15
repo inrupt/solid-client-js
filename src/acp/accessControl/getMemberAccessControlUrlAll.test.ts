@@ -20,7 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   TEST_URL,
@@ -41,7 +41,7 @@ describe("getMemberAccessControlUrlAll()", () => {
       createDatasetFromSubjects([
         [
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-          [[acp.memberAccessControl, [TEST_URL.memberAccessControl1]]],
+          [[ACP.memberAccessControl, [TEST_URL.memberAccessControl1]]],
         ],
       ])
     );
@@ -58,7 +58,7 @@ describe("getMemberAccessControlUrlAll()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [
             [
-              acp.memberAccessControl,
+              ACP.memberAccessControl,
               [TEST_URL.memberAccessControl1, TEST_URL.memberAccessControl2],
             ],
           ],

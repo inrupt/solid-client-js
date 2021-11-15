@@ -19,30 +19,27 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { createThing, getThing, ThingPersisted } from "../..";
-import type { WithAccessibleAcr } from "../acp";
-import { getAccessControlResource } from "./getAccessControlResource";
-import {
-  DefaultAccessControlName,
-  getDefaultAccessControlUrl,
-} from "./getDefaultAccessControlUrl";
+/** @hidden */
+export const ACP_NAMESPACE = "http://www.w3.org/ns/solid/acp#";
 
 /** @hidden */
-export function getDefaultAccessControlThing(
-  resource: WithAccessibleAcr,
-  name: DefaultAccessControlName
-): ThingPersisted {
-  const acr = getAccessControlResource(resource);
-  const defaultAccessControlUrl = getDefaultAccessControlUrl(resource, name);
-
-  const accessControlThing = getThing(acr, defaultAccessControlUrl);
-
-  if (
-    accessControlThing === null ||
-    typeof accessControlThing === "undefined"
-  ) {
-    return createThing({ url: defaultAccessControlUrl });
-  }
-
-  return accessControlThing;
-}
+export const ACP = {
+  AccessControl: ACP_NAMESPACE.concat("AccessControl"),
+  AccessControlResource: ACP_NAMESPACE.concat("AccessControlResource"),
+  AuthenticatedAgent: ACP_NAMESPACE.concat("AuthenticatedAgent"),
+  CreatorAgent: ACP_NAMESPACE.concat("CreatorAgent"),
+  Matcher: ACP_NAMESPACE.concat("Matcher"),
+  Policy: ACP_NAMESPACE.concat("Policy"),
+  PublicAgent: ACP_NAMESPACE.concat("PublicAgent"),
+  access: ACP_NAMESPACE.concat("access"),
+  accessControl: ACP_NAMESPACE.concat("accessControl"),
+  agent: ACP_NAMESPACE.concat("agent"),
+  allOf: ACP_NAMESPACE.concat("allOf"),
+  allow: ACP_NAMESPACE.concat("allow"),
+  anyOf: ACP_NAMESPACE.concat("anyOf"),
+  apply: ACP_NAMESPACE.concat("apply"),
+  client: ACP_NAMESPACE.concat("client"),
+  deny: ACP_NAMESPACE.concat("deny"),
+  memberAccessControl: ACP_NAMESPACE.concat("memberAccessControl"),
+  noneOf: ACP_NAMESPACE.concat("noneOf"),
+} as const;

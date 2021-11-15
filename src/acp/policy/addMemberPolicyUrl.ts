@@ -24,6 +24,7 @@ import type { Url, UrlString } from "../../interfaces";
 import { buildThing } from "../../thing/build";
 import type { WithAccessibleAcr } from "../acp";
 import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
+import { DEFAULT_MEMBER_ACCESS_CONTROL } from "../internal/getDefaultAccessControlUrl";
 import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
 import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAccessControlThingIfNotExist";
 
@@ -47,11 +48,11 @@ export function addMemberPolicyUrl<T extends WithAccessibleAcr>(
   const resourceWithAcrContainingDefaultMemberAccessControl =
     setDefaultAccessControlThingIfNotExist(
       resourceWithAcr,
-      acp.memberAccessControl
+      DEFAULT_MEMBER_ACCESS_CONTROL
     );
   const defaultMemberAccessControlThing = getDefaultAccessControlThing(
     resourceWithAcrContainingDefaultMemberAccessControl,
-    acp.memberAccessControl
+    DEFAULT_MEMBER_ACCESS_CONTROL
   );
 
   return setAccessControlResourceThing(

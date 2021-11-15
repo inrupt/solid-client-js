@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import type { UrlString } from "../../interfaces";
 import { getIriAll } from "../../thing/get";
 import type { WithAccessibleAcr } from "../acp";
@@ -47,5 +47,5 @@ export function getAccessControlUrlAll(
     return [];
   }
 
-  return getIriAll(acrThing, acp.accessControl);
+  return getIriAll(acrThing, ACP.accessControl);
 }
