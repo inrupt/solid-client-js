@@ -19,6 +19,11 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import {
+  DEFAULT_ACCESS_CONTROL_NAME,
+  DEFAULT_MEMBER_ACCESS_CONTROL_NAME,
+} from "../internal/getDefaultAccessControlUrl";
+
 export const DEFAULT_DOMAIN = "https://example.org/";
 
 export const DEFAULT_RESOURCE_URL = DEFAULT_DOMAIN.concat("r");
@@ -47,4 +52,14 @@ export const TEST_URL = {
   memberAccessControl2Policy2: DEFAULT_DOMAIN.concat("mac2p2"),
   memberAccessControl2AccessPolicy1: DEFAULT_DOMAIN.concat("mac2ap1"),
   memberAccessControl2AccessPolicy2: DEFAULT_DOMAIN.concat("mac2ap2"),
+  defaultAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat("#").concat(
+    DEFAULT_ACCESS_CONTROL_NAME
+  ),
+  defaultAccessControlPolicy1: DEFAULT_DOMAIN.concat("dacp1"),
+  defaultAccessControlPolicy2: DEFAULT_DOMAIN.concat("dacp2"),
+  defaultMemberAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#"
+  ).concat(DEFAULT_MEMBER_ACCESS_CONTROL_NAME),
+  defaultMemberAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacp1"),
+  defaultMemberAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacp2"),
 };
