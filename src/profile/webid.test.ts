@@ -34,7 +34,7 @@ import {
 import { foaf } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
-import { getProfile, getProfileAll } from "./webid";
+import { getProfileAll } from "./webid";
 
 // jest.mock("../fetcher.ts");
 jest.mock("../fetcher.ts", () => ({
@@ -60,7 +60,7 @@ const MOCK_PROFILE = setThing(
   )
 );
 
-describe("getWebIdProfileAll", () => {
+describe("getProfileAll", () => {
   it("defaults to the embeded fetch if available", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
@@ -193,127 +193,5 @@ describe("getWebIdProfileAll", () => {
     expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
       getThingAll(MOCK_PROFILE)
     );
-  });
-});
-
-describe("getWebIdProfile", () => {
-  it("defaults to the embeded fetch if available", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
-    };
-
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
-    );
-    await getProfile(MOCK_WEBID);
-    expect(mockedFetcher.fetch).toHaveBeenCalledWith(
-      MOCK_WEBID,
-      expect.anything()
-    );
-  });
-
-  it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
-      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-        headers: {
-          "Content-Type": "text/turtle",
-        },
-      })
-    );
-    const profileContent = buildThing({ url: "https://some.profile" })
-      .addIri(foaf.primaryTopic, MOCK_WEBID)
-      .build();
-    const webIdProfile = setThing(
-      mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
-    );
-    await getProfile(MOCK_WEBID, { fetch: mockedFetch, webIdProfile });
-    expect(mockedFetch).toHaveBeenCalled();
-  });
-
-  it("returns no alt profiles if the WebID profile contains no triples with the foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
-    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
-      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-        headers: {
-          "Content-Type": "text/turtle",
-        },
-      })
-    );
-    const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
-    await expect(
-      getProfile(MOCK_WEBID, { fetch: mockedFetch, webIdProfile })
-    ).resolves.toStrictEqual({ webIdProfile, altProfile: undefined });
-    expect(mockedFetch).not.toHaveBeenCalled();
-  });
-
-  it("returns an arbitrary subject of triples of the WebID doc with the foaf:primaryTopic predicate not matching the WebID", async () => {
-    const mockedFetch = jest
-      .fn(fetch)
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        })
-      )
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        })
-      );
-    const profileContent = buildThing({ url: "https://some.profile" })
-      .addIri(foaf.primaryTopic, MOCK_WEBID)
-      .build();
-    const webIdProfile = setThing(
-      mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
-    );
-    const result = await getProfile(MOCK_WEBID, {
-      fetch: mockedFetch,
-      webIdProfile,
-    });
-    expect(getThingAll(result.altProfile!)).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
-    );
-    expect(result.webIdProfile).toBe(webIdProfile);
-  });
-
-  it("returns an arbitrary object of triples of the WebID doc matching <webid, foaf:isPrimaryTopicOf, ?o>", async () => {
-    const mockedFetch = jest
-      .fn(fetch)
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        })
-      )
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        })
-      );
-    const profileContent = buildThing({ url: MOCK_WEBID })
-      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
-      .build();
-    const webIdProfile = setThing(
-      mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
-    );
-    const result = await getProfile(MOCK_WEBID, {
-      fetch: mockedFetch,
-      webIdProfile,
-    });
-    expect(getThingAll(result.altProfile!)).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
-    );
-    expect(result.webIdProfile).toBe(webIdProfile);
   });
 });
