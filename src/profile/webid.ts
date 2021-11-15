@@ -37,14 +37,14 @@ import {
   internal_defaultFetchOptions,
 } from "../resource/resource";
 
-type Profile = {
-  webIdProfile: SolidDataset;
-  altProfile?: SolidDataset;
+type Profile<T extends SolidDataset> = {
+  webIdProfile: T | (SolidDataset & WithResourceInfo);
+  altProfile?: SolidDataset & WithResourceInfo;
 };
 
-type ProfileAll = {
-  webIdProfile: SolidDataset;
-  altProfileAll: SolidDataset[];
+type ProfileAll<T extends SolidDataset> = {
+  webIdProfile: T | (SolidDataset & WithResourceInfo);
+  altProfileAll: Array<SolidDataset & WithResourceInfo>;
 };
 
 /**
@@ -65,14 +65,14 @@ type ProfileAll = {
  *  to a personal profile document discoverable from the WebID Profile Document.
  *  If none are found, the WebID profile document itself is returned.
  */
-export async function getProfileAll(
+export async function getProfileAll<T extends SolidDataset>(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
-      webIdProfile: SolidDataset & WithResourceInfo;
+      webIdProfile: T;
     }
   > = internal_defaultFetchOptions
-): Promise<ProfileAll> {
+): Promise<ProfileAll<T>> {
   const profileDocument =
     options.webIdProfile ??
     (await getSolidDataset(webId, {
@@ -87,7 +87,7 @@ export async function getProfileAll(
       getSolidDataset(asIri(primaryThing), { fetch: options.fetch })
     );
 
-  let profilesLinkedTo: Array<Promise<SolidDataset>> = [];
+  let profilesLinkedTo: Array<Promise<SolidDataset & WithResourceInfo>> = [];
   const webIdThing = getThing(profileDocument, webId);
   if (webIdThing !== null) {
     profilesLinkedTo = getIriAll(webIdThing, foaf.isPrimaryTopicOf)
@@ -123,14 +123,14 @@ export async function getProfileAll(
  *  one is arbitrarily chosen.
  *  If none are found, the WebID profile document itself is returned.
  */
-export async function getProfile(
+export async function getProfile<T extends SolidDataset>(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
-      webIdProfile: SolidDataset & WithResourceInfo;
+      webIdProfile: T;
     }
   > = internal_defaultFetchOptions
-): Promise<Profile> {
+): Promise<Profile<T>> {
   const profileDocument =
     options.webIdProfile ??
     (await getSolidDataset(webId, {
