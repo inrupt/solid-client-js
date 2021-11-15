@@ -26,7 +26,9 @@ import {
   getSolidDataset,
   getThing,
   getThingAll,
+  getUrlAll,
   SolidDataset,
+  WebId,
   WithResourceInfo,
 } from "..";
 import { foaf } from "../constants";
@@ -34,6 +36,16 @@ import {
   getSourceIri,
   internal_defaultFetchOptions,
 } from "../resource/resource";
+
+type Profile = {
+  webIdProfile: SolidDataset;
+  altProfile?: SolidDataset;
+};
+
+type ProfileAll = {
+  webIdProfile: SolidDataset;
+  altProfileAll: SolidDataset[];
+};
 
 /**
  * Get all the Profile Resources discoverable from a WebID Profile.
@@ -43,46 +55,55 @@ import {
  * of their profile, some WebID profiles link to a Profile Resource, which may
  * be a Solid resource.
  *
- * @param webIdProfile data from the WebID profile document
- * @param options Optional parameter `options.fetch`: An alternative `fetch`
- *  function to make the HTTP request, compatible with the browser-native
- *  [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @param webId WebID of the agent you want the profile of.
+ * @param options Optional parameter
+ *  - `options.webIdProfile`: The data retrieved when looking up the WebID. This
+ *    will be fetched if not provided.
+ *  - `options.fetch`: An alternative `fetch` function to make the HTTP request,
+ *    compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to an array of [[SolidDataset]], each corresponding
  *  to a personal profile document discoverable from the WebID Profile Document.
  *  If none are found, the WebID profile document itself is returned.
  */
 export async function getProfileAll(
-  webIdProfile: SolidDataset & WithResourceInfo,
+  webId: WebId,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: SolidDataset & WithResourceInfo;
+    }
   > = internal_defaultFetchOptions
-): Promise<SolidDataset[]> {
-  const profilesLinkedFrom = getThingAll(webIdProfile)
+): Promise<ProfileAll> {
+  const profileDocument =
+    options.webIdProfile ??
+    (await getSolidDataset(webId, {
+      fetch: options.fetch,
+    }));
+  const profilesLinkedFrom = getThingAll(profileDocument)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
-    // This assumes that getSourceIri returns the IRI which has been fetched to
-    // get the profile document, i.e. the WebID
-    .filter((thing) => asIri(thing) !== getSourceIri(webIdProfile))
+    // This assumes that getSourceIri returns the IRI where the profile document
+    // has actually been fetched, which may differ from the WebID.
+    .filter((thing) => asIri(thing) !== getSourceIri(profileDocument))
     .map((primaryThing) =>
       getSolidDataset(asIri(primaryThing), { fetch: options.fetch })
     );
+
   let profilesLinkedTo: Array<Promise<SolidDataset>> = [];
-  // This assumes that getSourceIri returns the IRI which has been fetched to
-  // get the profile document, i.e. the WebID
-  const webIdThing = getThing(webIdProfile, getSourceIri(webIdProfile));
+  const webIdThing = getThing(profileDocument, webId);
   if (webIdThing !== null) {
     profilesLinkedTo = getIriAll(webIdThing, foaf.isPrimaryTopicOf)
-      // FIXME: Using getSourceIri is incorrect here, what we want is the actual
-      // profile document IRI.
       .filter(
-        (candidateProfile) => candidateProfile !== getSourceIri(webIdProfile)
+        (candidateProfile) => candidateProfile !== getSourceIri(profileDocument)
       )
       .map((profile) => getSolidDataset(profile, { fetch: options.fetch }));
   }
-  const foundProfiles = await Promise.all([
-    ...profilesLinkedFrom,
-    ...profilesLinkedTo,
-  ]);
-  return foundProfiles.length > 0 ? foundProfiles : [webIdProfile];
+
+  return {
+    webIdProfile: profileDocument,
+    altProfileAll: await Promise.all([
+      ...profilesLinkedFrom,
+      ...profilesLinkedTo,
+    ]),
+  };
 }
 
 /**
@@ -103,18 +124,47 @@ export async function getProfileAll(
  *  If none are found, the WebID profile document itself is returned.
  */
 export async function getProfile(
-  webIdProfile: SolidDataset & WithResourceInfo,
+  webId: WebId,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: SolidDataset & WithResourceInfo;
+    }
   > = internal_defaultFetchOptions
-): Promise<SolidDataset> {
+): Promise<Profile> {
+  const profileDocument =
+    options.webIdProfile ??
+    (await getSolidDataset(webId, {
+      fetch: options.fetch,
+    }));
+
+  // Arbitrarily pick an object of a triple <webid, foaf:isPrimaryTopicOf, o>
+  const webIdThing = getThing(profileDocument, webId);
+  const [profileLinkedTo] =
+    webIdThing !== null ? getUrlAll(webIdThing, foaf.isPrimaryTopicOf) : [];
+
+  if (profileLinkedTo !== undefined) {
+    return {
+      webIdProfile: profileDocument,
+      altProfile: await getSolidDataset(profileLinkedTo, {
+        fetch: options.fetch,
+      }),
+    };
+  }
+
   // Arbitrarily pick a subject of a triple <s, foaf:primaryTopic, o>
-  const [primaryThing] = getThingAll(webIdProfile)
+  const [profileLinkedFrom] = getThingAll(profileDocument)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
     // This assumes that getSourceIri returns the IRI which has been fetched to
     // get the profile document.
-    .filter((thing) => asIri(thing) !== getSourceIri(webIdProfile));
-  return primaryThing === undefined
-    ? webIdProfile
-    : getSolidDataset(asIri(primaryThing), { fetch: options.fetch });
+    .filter((thing) => asIri(thing) !== getSourceIri(profileDocument));
+
+  return {
+    webIdProfile: profileDocument,
+    altProfile:
+      profileLinkedFrom !== undefined
+        ? await getSolidDataset(asIri(profileLinkedFrom), {
+            fetch: options.fetch,
+          })
+        : undefined,
+  };
 }
