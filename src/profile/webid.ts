@@ -19,10 +19,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { candidate } from "rdf-namespaces/dist/schema";
 import {
   asIri,
   getIriAll,
   getSolidDataset,
+  getThing,
   getThingAll,
   SolidDataset,
   WithResourceInfo,
@@ -55,17 +57,31 @@ export async function getProfileAll(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset[]> {
-  const foundProfiles = await Promise.all(
-    getThingAll(webIdProfile)
-      .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
-      // This assumes that getSourceIri returns the IRI which has been fetched to
-      // get the profile document.
-      .filter((thing) => asIri(thing) !== getSourceIri(webIdProfile))
-      .map(
-        async (primaryThing) =>
-          await getSolidDataset(asIri(primaryThing), { fetch: options.fetch })
+  const profilesLinkedFrom = getThingAll(webIdProfile)
+    .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
+    // This assumes that getSourceIri returns the IRI which has been fetched to
+    // get the profile document, i.e. the WebID
+    .filter((thing) => asIri(thing) !== getSourceIri(webIdProfile))
+    .map((primaryThing) =>
+      getSolidDataset(asIri(primaryThing), { fetch: options.fetch })
+    );
+  let profilesLinkedTo: Array<Promise<SolidDataset>> = [];
+  // This assumes that getSourceIri returns the IRI which has been fetched to
+  // get the profile document, i.e. the WebID
+  const webIdThing = getThing(webIdProfile, getSourceIri(webIdProfile));
+  if (webIdThing !== null) {
+    profilesLinkedTo = getIriAll(webIdThing, foaf.isPrimaryTopicOf)
+      // FIXME: Using getSourceIri is incorrect here, what we want is the actual
+      // profile document IRI.
+      .filter(
+        (candidateProfile) => candidateProfile !== getSourceIri(webIdProfile)
       )
-  );
+      .map((profile) => getSolidDataset(profile, { fetch: options.fetch }));
+  }
+  const foundProfiles = await Promise.all([
+    ...profilesLinkedFrom,
+    ...profilesLinkedTo,
+  ]);
   return foundProfiles.length > 0 ? foundProfiles : [webIdProfile];
 }
 
