@@ -19,10 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ACP } from "../constants";
 import type { UrlString } from "../../interfaces";
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import { ACP } from "../constants";
 import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import type { WithAccessibleAcr } from "../acp";
 import { getPolicyUrls } from "../internal/getPolicyUrls";
 
 /**

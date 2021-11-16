@@ -19,14 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { Url, UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { ThingPersisted } from "../../interfaces";
+import type { AccessModes } from "../type/AccessModes";
 import { ACP } from "../constants";
-import { buildThing } from "../../thing/build";
-import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
-import { DEFAULT_MEMBER_ACR_ACCESS_CONTROL } from "../internal/getDefaultAccessControlUrl";
-import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
-import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAccessControlThingIfNotExist";
+import { getModes } from "../internal/getModes";
 
 /**
  * ```{note}
@@ -38,29 +34,12 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  * Policies allow or deny access modes over resources and their associated
  * access control resource.
  *
- * @param resourceWithAcr The resource for which to add the URL of a policy
- * applying to its children's access control resources.
- * @param policyUrl A Policy URL.
- * @returns The resource with its ammended access control resource.
+ * @param policy The Policy Thing which allows retrieved access modes.
+ * @returns Policy URL array.
  * @since 1.16.0
  */
-export function addMemberAcrPolicyUrl<T extends WithAccessibleAcr>(
-  resourceWithAcr: T,
-  policyUrl: Url | UrlString
-): T {
-  const resourceWithAcrContainingDefaultAccessControl =
-    setDefaultAccessControlThingIfNotExist(
-      resourceWithAcr,
-      DEFAULT_MEMBER_ACR_ACCESS_CONTROL
-    );
-
-  const defaultAccessControlThing = getDefaultAccessControlThing(
-    resourceWithAcrContainingDefaultAccessControl,
-    DEFAULT_MEMBER_ACR_ACCESS_CONTROL
-  );
-
-  return setAccessControlResourceThing(
-    resourceWithAcrContainingDefaultAccessControl,
-    buildThing(defaultAccessControlThing).addUrl(ACP.access, policyUrl).build()
-  );
+export function getAllowModes<T extends ThingPersisted>(
+  policy: T
+): AccessModes {
+  return getModes(policy, ACP.allow);
 }

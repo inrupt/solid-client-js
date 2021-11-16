@@ -19,33 +19,24 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
-import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
+import type { ThingPersisted } from "../../interfaces";
+import type { AccessModes } from "../type/AccessModes";
+import { ACL, ACP } from "../constants";
+import { getIriAll } from "../../thing/get";
 
-/**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
- *
- * Policies allow or deny access modes over resources and their associated
- * access control resource.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs of policies
- * applying to its children's access control resources.
- * @returns Policy URL array.
- * @since 1.16.0
- */
-export function getMemberAcrPolicyUrlAll(
-  resourceWithAcr: WithAccessibleAcr
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.access
-  );
+/** @hidden */
+export type ModeType = typeof ACP.allow | typeof ACP.deny;
+
+/** @hidden */
+export function getModes<T extends ThingPersisted>(
+  policy: T,
+  type: ModeType
+): AccessModes {
+  const modes = getIriAll(policy, type);
+
+  return {
+    read: modes.includes(ACL.Read),
+    append: modes.includes(ACL.Append),
+    write: modes.includes(ACL.Write),
+  };
 }

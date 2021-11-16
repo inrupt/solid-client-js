@@ -42,4 +42,15 @@ export const ACP = {
   deny: ACP_NAMESPACE.concat("deny"),
   memberAccessControl: ACP_NAMESPACE.concat("memberAccessControl"),
   noneOf: ACP_NAMESPACE.concat("noneOf"),
-} as const;
+};
+
+/** @hidden */
+export const ACL_NAMESPACE = "http://www.w3.org/ns/auth/acl#";
+
+/** @hidden */
+export const ACL = {
+  Append: ACL_NAMESPACE.concat("Append"),
+  Control: ACL_NAMESPACE.concat("Control"),
+  Read: ACL_NAMESPACE.concat("Read"),
+  Write: ACL_NAMESPACE.concat("Write"),
+};
