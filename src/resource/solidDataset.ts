@@ -489,7 +489,8 @@ export async function deleteSolidDataset(
 }
 
 /**
- * Create a Container at the given URL (which optionally can have it's only meta-data).
+ * Create a Container at the given URL. Some content may optionally be specified,
+ * e.g. to add metadata describing the container.
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to, or because the Container already exists.
@@ -506,9 +507,10 @@ export async function deleteSolidDataset(
 export async function createContainerAt(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
-  solidDataset?: SolidDataset
+    typeof internal_defaultFetchOptions & {
+      initialContent: SolidDataset;
+    }
+  > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : url + "/";
@@ -517,55 +519,22 @@ export async function createContainerAt(
     ...options,
   };
 
-  let response;
-  let datasetToReturn;
-
-  if (solidDataset === undefined) {
-    response = await config.fetch(url, {
-      method: "PUT",
-      headers: {
-        Accept: "text/turtle",
-        "Content-Type": "text/turtle",
-        "If-None-Match": "*",
-        // This header should not be required to create a Container,
-        // but ESS currently expects it:
-        Link: `<${ldp.BasicContainer}>; rel="type"`,
-      },
-    });
-
-    datasetToReturn = createSolidDataset();
-  } else {
-    const datasetWithChangelog = internal_withChangeLog(solidDataset);
-
-    // If we are creating a new container, then it can't have existed before,
-    // so we can't be doing an 'update' to it. So if the provided dataset has
-    // updates then we assume there was a programmer error. (This may require
-    // changing based on user feedback (e.g., perhaps the dataset was read
-    // from a different container, we augmented that, and now want to use it
-    // as meta-data for our new container)).
-    if (isUpdate(datasetWithChangelog, url)) {
-      throw new Error(
-        `Attempting to create a new container with a dataset that contains updates!`
-      );
-    }
-
-    response = await config.fetch(url, {
-      method: "PUT",
-      body: await triplesToTurtle(
-        toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
-      ),
-      headers: {
-        Accept: "text/turtle",
-        "Content-Type": "text/turtle",
-        "If-None-Match": "*",
-        // This header should not be required to create a Container,
-        // but ESS currently expects it:
-        Link: `<${ldp.BasicContainer}>; rel="type"`,
-      },
-    });
-
-    datasetToReturn = solidDataset;
-  }
+  const response = await config.fetch(url, {
+    method: "PUT",
+    body: config.initialContent
+      ? await triplesToTurtle(
+          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes)
+        )
+      : undefined,
+    headers: {
+      Accept: "text/turtle",
+      "Content-Type": "text/turtle",
+      "If-None-Match": "*",
+      // This header should not be required to create a Container,
+      // but ESS currently expects it:
+      Link: `<${ldp.BasicContainer}>; rel="type"`,
+    },
+  });
 
   if (internal_isUnsuccessfulResponse(response)) {
     if (
@@ -577,7 +546,8 @@ export async function createContainerAt(
       return createContainerWithNssWorkaroundAt(url, options);
     }
 
-    const containerType = solidDataset === undefined ? "empty" : "non-empty";
+    const containerType =
+      config.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
       `Creating the ${containerType} Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
       response
@@ -588,7 +558,7 @@ export async function createContainerAt(
   const containerDataset: SolidDataset &
     WithChangeLog &
     WithServerResourceInfo = freeze({
-    ...datasetToReturn,
+    ...(options.initialContent ?? createSolidDataset()),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });

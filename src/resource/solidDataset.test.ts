@@ -61,7 +61,13 @@ import {
   UrlString,
 } from "../interfaces";
 import { mockContainerFrom, mockSolidDatasetFrom } from "./mock";
-import { createThing, getThing, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { mockThingFrom } from "../thing/mock";
 import { addInteger, addStringNoLocale, addUrl } from "../thing/add";
 import { removeStringNoLocale } from "../thing/remove";
@@ -2018,76 +2024,6 @@ describe("createContainerAt", () => {
   });
 
   describe("Creating non-empty container", () => {
-    function getMockUpdatedDataset(
-      changeLog: WithChangeLog["internal_changeLog"],
-      fromUrl: IriString
-    ): SolidDataset & WithChangeLog & WithResourceInfo {
-      const mockThing = addUrl(
-        createThing({ url: "https://arbitrary.vocab/subject" }),
-        "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
-      );
-      let mockDataset = setThing(createSolidDataset(), mockThing);
-
-      changeLog.additions.forEach((tripleToAdd) => {
-        let additionThing =
-          getThing(mockDataset, tripleToAdd.subject.value) ??
-          createThing({ url: tripleToAdd.subject.value });
-        additionThing = addUrl(
-          additionThing,
-          tripleToAdd.predicate.value,
-          tripleToAdd.object.value
-        );
-        mockDataset = setThing(mockDataset, additionThing);
-      });
-
-      const resourceInfo: WithResourceInfo["internal_resourceInfo"] = {
-        sourceIri: fromUrl,
-        isRawData: false,
-      };
-
-      return {
-        ...mockDataset,
-        internal_changeLog: changeLog,
-        internal_resourceInfo: resourceInfo,
-      };
-    }
-
-    it("throws if container SolidDataset has updates", async () => {
-      const mockFetch = jest
-        .fn(window.fetch)
-        .mockReturnValue(
-          Promise.resolve(
-            mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
-          )
-        );
-
-      const mockDataset = getMockUpdatedDataset(
-        {
-          additions: [
-            DataFactory.quad(
-              DataFactory.namedNode("https://some.vocab/subject"),
-              DataFactory.namedNode("https://some.vocab/predicate"),
-              DataFactory.namedNode("https://some.vocab/object"),
-              undefined
-            ),
-          ],
-          deletions: [],
-        },
-        "https://arbitrary.pod/container/"
-      );
-
-      await expect(
-        createContainerAt(
-          "https://arbitrary.pod/container/",
-          {
-            fetch: mockFetch,
-          },
-          mockDataset
-        )
-      ).rejects.toThrow("dataset that contains updates");
-    });
-
     it("returns an non-empty SolidDataset if one is provided", async () => {
       const mockFetch = jest
         .fn(window.fetch)
@@ -2104,27 +2040,20 @@ describe("createContainerAt", () => {
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
-      const solidDataset = await createContainerAt(
+      const returnedContainer = await createContainerAt(
         "https://arbitrary.pod/container/",
         {
           fetch: mockFetch,
-        },
-        mockDataset
+          initialContent: mockDataset,
+        }
       );
-
-      expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual(
-        "https://arbitrary.pod/container/"
-      );
-      expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
+      // All the things in the initial content should be in the returned dataset.
       expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
-          "Content-Type"
-        ]
-      ).toBe("text/turtle");
-      expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
-      ).toBe('<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
+        getThingAll(mockDataset).every(
+          (thing) => getThing(returnedContainer, asIri(thing)) !== null
+        )
+      ).toBe(true);
+      // The initial content should be sent when creating the container
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
       );
@@ -2146,13 +2075,10 @@ describe("createContainerAt", () => {
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
       await expect(
-        createContainerAt(
-          "https://arbitrary.pod/container/",
-          {
-            fetch: mockFetch,
-          },
-          mockDataset
-        )
+        createContainerAt("https://arbitrary.pod/container/", {
+          fetch: mockFetch,
+          initialContent: mockDataset,
+        })
       ).rejects.toThrow("Creating the non-empty Container");
     });
   });
