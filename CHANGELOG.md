@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- `getProfileAll`: function to discover the WebID Profile Document and its associated
+  FOAF Profile Document resources from the WebID URI. Note that Profile documents
+  may or not be Solid Resources
+
 - Allow 'createContainerAt()' to take an optional SolidDataset parameter to
   use as the body of the HTTP request to the server. This is really useful
   when we wish to include meta-data for a new container, things like a textual
