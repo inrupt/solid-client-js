@@ -19,14 +19,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { candidate } from "rdf-namespaces/dist/schema";
 import {
   asIri,
   getIriAll,
   getSolidDataset,
   getThing,
   getThingAll,
-  getUrlAll,
   SolidDataset,
   WebId,
   WithResourceInfo,
@@ -37,8 +35,8 @@ import {
   internal_defaultFetchOptions,
 } from "../resource/resource";
 
-export type ProfileAll<T extends SolidDataset> = {
-  webIdProfile: T | (SolidDataset & WithResourceInfo);
+export type ProfileAll<T extends SolidDataset & WithResourceInfo> = {
+  webIdProfile: T;
   altProfileAll: Array<SolidDataset & WithResourceInfo>;
 };
 
@@ -60,7 +58,7 @@ export type ProfileAll<T extends SolidDataset> = {
  *  to a personal profile document discoverable from the WebID Profile Document.
  *  If none are found, the WebID profile document itself is returned.
  */
-export async function getProfileAll<T extends SolidDataset>(
+export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
@@ -70,9 +68,9 @@ export async function getProfileAll<T extends SolidDataset>(
 ): Promise<ProfileAll<T>> {
   const profileDocument =
     options.webIdProfile ??
-    (await getSolidDataset(webId, {
+    ((await getSolidDataset(webId, {
       fetch: options.fetch,
-    }));
+    })) as T);
   const profilesLinkedFrom = getThingAll(profileDocument)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
     // This assumes that getSourceIri returns the IRI where the profile document
