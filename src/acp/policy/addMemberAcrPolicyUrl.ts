@@ -40,6 +40,7 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  *
  * @param resourceWithAcr The resource for which to add the URL of a policy
  * applying to its children's access control resources.
+ * @param policyUrl A Policy URL.
  * @returns The resource with its ammended access control resource.
  * @since 1.16.0
  */
