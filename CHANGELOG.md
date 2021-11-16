@@ -8,9 +8,9 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
-- `getWebIdProfileAll` and `getWebIdProfileAll`: functions to discover one's personal
-  profile (which may be a Solid resource) if discoverable from their WebID profile
-  document (which may NOT be a Solid resource).
+- `getProfileAll`: functions to discover one's personal profile (which may be a
+  Solid resource) if discoverable from their WebID profile document (which may NOT
+  be a Solid resource).
 
 - Allow 'createContainerAt()' to take an optional SolidDataset parameter to
   use as the body of the HTTP request to the server. This is really useful
