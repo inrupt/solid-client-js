@@ -37,12 +37,7 @@ import {
   internal_defaultFetchOptions,
 } from "../resource/resource";
 
-type Profile<T extends SolidDataset> = {
-  webIdProfile: T | (SolidDataset & WithResourceInfo);
-  altProfile?: SolidDataset & WithResourceInfo;
-};
-
-type ProfileAll<T extends SolidDataset> = {
+export type ProfileAll<T extends SolidDataset> = {
   webIdProfile: T | (SolidDataset & WithResourceInfo);
   altProfileAll: Array<SolidDataset & WithResourceInfo>;
 };
