@@ -386,7 +386,7 @@ describe.each(serversUnderTest)(
     beforeEach(async () => {
       session = new Session();
       await session.login({
-        oidcIssuer: oidcIssuer,
+        oidcIssuer,
         clientId,
         clientName: "Solid Client End-2-End Test Client App - Node.js",
         clientSecret,
