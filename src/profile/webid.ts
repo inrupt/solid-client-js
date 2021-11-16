@@ -57,6 +57,7 @@ export type ProfileAll<T extends SolidDataset & WithResourceInfo> = {
  * @returns Promise resolving to an array of [[SolidDataset]], each corresponding
  *  to a personal profile document discoverable from the WebID Profile Document.
  *  If none are found, the WebID profile document itself is returned.
+ * @since 1.16.0
  */
 export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
   webId: WebId,
