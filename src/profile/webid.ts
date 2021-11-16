@@ -95,12 +95,4 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
       ...profilesLinkedTo,
     ]),
   };
-
-  return {
-    webIdProfile: profileDocument,
-    altProfileAll: await Promise.all([
-      ...profilesLinkedFrom,
-      ...profilesLinkedTo,
-    ]),
-  };
 }
