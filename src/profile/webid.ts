@@ -66,19 +66,19 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
     }
   > = internal_defaultFetchOptions
 ): Promise<ProfileAll<T>> {
+
+  const { fetch, webIdProfile } = { ...options };
+
   const profileDocument =
-    options.webIdProfile ??
-    ((await getSolidDataset(webId, {
-      fetch: options.fetch,
-    })) as T);
+    webIdProfile ??
+    await getSolidDataset(webId, { fetch }) as T;
+
   const profilesLinkedFrom = getThingAll(profileDocument)
-    .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
+    .filter(thing => getIriAll(thing, foaf.primaryTopic).length > 0)
     // This assumes that getSourceIri returns the IRI where the profile document
     // has actually been fetched, which may differ from the WebID.
-    .filter((thing) => asIri(thing) !== getSourceIri(profileDocument))
-    .map((primaryThing) =>
-      getSolidDataset(asIri(primaryThing), { fetch: options.fetch })
-    );
+    .filter(thing => asIri(thing) !== getSourceIri(profileDocument))
+    .map(primaryThing => getSolidDataset(asIri(primaryThing), { fetch }));
 
   let profilesLinkedTo: Array<Promise<SolidDataset & WithResourceInfo>> = [];
   const webIdThing = getThing(profileDocument, webId);
@@ -87,8 +87,16 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
       .filter(
         (candidateProfile) => candidateProfile !== getSourceIri(profileDocument)
       )
-      .map((profile) => getSolidDataset(profile, { fetch: options.fetch }));
+      .map(profile => getSolidDataset(profile, { fetch }));
   }
+
+  return {
+    webIdProfile: profileDocument,
+    altProfileAll: await Promise.all([
+      ...profilesLinkedFrom,
+      ...profilesLinkedTo,
+    ]),
+  };
 
   return {
     webIdProfile: profileDocument,
