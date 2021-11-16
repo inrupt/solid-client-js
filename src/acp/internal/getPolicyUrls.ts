@@ -20,13 +20,13 @@
  */
 
 import type { WithAccessibleAcr } from "../acp";
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import { getIriAll } from "../../thing/get";
 import { getThing } from "../../thing/thing";
 import { getAccessControlResource } from "./getAccessControlResource";
 
 /** @hidden */
-type PolicyType = typeof acp.apply | typeof acp.access;
+type PolicyType = typeof ACP.apply | typeof ACP.access;
 
 /** @hidden */
 export function getPolicyUrls(
@@ -42,10 +42,7 @@ export function getPolicyUrls(
         .map((accessControlUrl) => {
           const accessControlThing = getThing(acr, accessControlUrl);
           if (accessControlThing !== null) {
-            return getIriAll(
-              accessControlThing,
-              type === acp.apply ? acp.apply : acp.access
-            );
+            return getIriAll(accessControlThing, type);
           }
           return [];
         })

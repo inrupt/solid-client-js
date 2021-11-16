@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import type { UrlString } from "../../interfaces";
 import { getAccessControlUrlAll } from "../accessControl/getAccessControlUrlAll";
 import type { WithAccessibleAcr } from "../acp";
@@ -32,12 +32,13 @@ import { getPolicyUrls } from "../internal/getPolicyUrls";
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Access Control Policies allow or deny access modes over resources.
+ * Policies allow or deny access modes over resources and their associated
+ * access control resource.
  *
  * @param resourceWithAcr The resource for which to retrieve URLs of policies
- * applying to the resource.
- * @returns Policy URL array
- * @since 1.6.0
+ * applying to it.
+ * @returns Policy URL array.
+ * @since 1.16.0
  */
 export function getPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr
@@ -45,6 +46,6 @@ export function getPolicyUrlAll(
   return getPolicyUrls(
     resourceWithAcr,
     getAccessControlUrlAll(resourceWithAcr),
-    acp.apply
+    ACP.apply
   );
 }

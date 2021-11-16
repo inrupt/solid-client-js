@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp } from "../../constants";
+import { ACP } from "../constants";
 import type { Url, UrlString } from "../../interfaces";
 import { buildThing } from "../../thing/build";
 import type { WithAccessibleAcr } from "../acp";
@@ -35,11 +35,13 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Member Access Control Policies allow or deny access modes over children of resources.
+ * Policies allow or deny access modes over resources and their associated
+ * access control resource.
  *
- * @param resourceWithAcr The resource for which to add a member policy URL.
- * @returns Policy URL array
- * @since 1.6.0
+ * @param resourceWithAcr The resource for which to add the URL of a policy
+ * applying to its children.
+ * @returns The resource with its ammended access control resource.
+ * @since 1.16.0
  */
 export function addMemberPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
@@ -58,7 +60,7 @@ export function addMemberPolicyUrl<T extends WithAccessibleAcr>(
   return setAccessControlResourceThing(
     resourceWithAcrContainingDefaultMemberAccessControl,
     buildThing(defaultMemberAccessControlThing)
-      .addUrl(acp.apply, policyUrl)
+      .addUrl(ACP.apply, policyUrl)
       .build()
   );
 }
