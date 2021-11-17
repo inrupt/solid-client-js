@@ -21,13 +21,13 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import {
+  asIri,
   buildThing,
   createSolidDataset,
   createThing,
   getSourceIri,
   getThingAll,
   mockSolidDatasetFrom,
-  setIri,
   setStringNoLocale,
   setThing,
 } from "..";
@@ -35,6 +35,7 @@ import { foaf } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import { getProfileAll } from "./webid";
+import { Response } from "cross-fetch";
 
 // jest.mock("../fetcher.ts");
 jest.mock("../fetcher.ts", () => ({
@@ -72,10 +73,6 @@ describe("getProfileAll", () => {
     mockedFetcher.fetch.mockResolvedValueOnce(
       new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
     );
-    const profileContent = buildThing({ url: "https://some.profile" })
-      .addIri(foaf.primaryTopic, MOCK_WEBID)
-      .build();
-    const profile = setThing(mockSolidDatasetFrom(MOCK_WEBID), profileContent);
     await getProfileAll(MOCK_WEBID);
     expect(mockedFetcher.fetch).toHaveBeenCalled();
   });
@@ -122,14 +119,16 @@ describe("getProfileAll", () => {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
+          url: "https://some.profile",
+        } as ResponseInit)
       )
       .mockResolvedValueOnce(
         new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
+          url: "https://some.other.profile",
+        } as ResponseInit)
       );
     const profileContent = buildThing({ url: "https://some.profile" })
       .addIri(foaf.primaryTopic, MOCK_WEBID)
@@ -139,10 +138,11 @@ describe("getProfileAll", () => {
     })
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
-    const webIdProfile = [profileContent, otherProfileContent].reduce(
-      (prev, cur) => setThing(prev, cur),
-      mockSolidDatasetFrom(MOCK_WEBID)
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
     );
+    webIdProfile = setThing(webIdProfile, otherProfileContent);
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
       webIdProfile,
@@ -164,14 +164,16 @@ describe("getProfileAll", () => {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
+          url: "https://some.profile",
+        } as ResponseInit)
       )
       .mockResolvedValueOnce(
         new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
+          url: "https://some.other.profile",
+        } as ResponseInit)
       );
     const profileContent = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
@@ -193,5 +195,36 @@ describe("getProfileAll", () => {
     expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
       getThingAll(MOCK_PROFILE)
     );
+  });
+
+  it("deduplicates profile values", async () => {
+    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: "https://some.profile",
+      } as ResponseInit)
+    );
+    // The profile document will have two triples <profile, foaf:primaryTopic, webid>...
+    const profileContent = buildThing({ url: "https://some.profile" })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+    // and <webid, foaf:isPrimaryTopicOf, profile>.
+    const webidData = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .build();
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    webIdProfile = setThing(webIdProfile, webidData);
+    const result = await getProfileAll(MOCK_WEBID, {
+      fetch: mockedFetch,
+      webIdProfile,
+    });
+    // 'profile' should appear only once in the result set.
+    expect(result.altProfileAll).toHaveLength(1);
+    expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
 });

@@ -67,33 +67,28 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
     }
   > = internal_defaultFetchOptions
 ): Promise<ProfileAll<T>> {
-  const { fetch, webIdProfile } = options;
+  const {
+    fetch,
+    webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
+  } = options;
 
-  const profileDocument =
-    webIdProfile ?? ((await getSolidDataset(webId, { fetch })) as T);
+  const webIdThing = getThing(webIdProfile, webId);
 
-  const profilesLinkedFrom = getThingAll(profileDocument)
+  const altProfilesIri = getThingAll(webIdProfile)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
-    // This assumes that getSourceIri returns the IRI where the profile document
-    // has actually been fetched, which may differ from the WebID.
-    .filter((thing) => asIri(thing) !== getSourceIri(profileDocument))
-    .map((primaryThing) => getSolidDataset(asIri(primaryThing), { fetch }));
+    .map(asIri)
+    .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
+    .filter((profileIri) => profileIri !== getSourceIri(webIdProfile));
 
-  let profilesLinkedTo: Array<Promise<SolidDataset & WithResourceInfo>> = [];
-  const webIdThing = getThing(profileDocument, webId);
-  if (webIdThing !== null) {
-    profilesLinkedTo = getIriAll(webIdThing, foaf.isPrimaryTopicOf)
-      .filter(
-        (candidateProfile) => candidateProfile !== getSourceIri(profileDocument)
-      )
-      .map((profile) => getSolidDataset(profile, { fetch }));
-  }
+  // Ensure that each given profile only appears once.
+  const altProfileAll = await Promise.all(
+    Array.from(new Set(altProfilesIri)).map((uniqueProfileIri) =>
+      getSolidDataset(uniqueProfileIri, { fetch })
+    )
+  );
 
   return {
-    webIdProfile: profileDocument,
-    altProfileAll: await Promise.all([
-      ...profilesLinkedFrom,
-      ...profilesLinkedTo,
-    ]),
+    webIdProfile,
+    altProfileAll,
   };
 }
