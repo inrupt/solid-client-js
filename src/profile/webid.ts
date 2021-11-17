@@ -67,18 +67,18 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
     }
   > = internal_defaultFetchOptions
 ): Promise<ProfileAll<T>> {
-  const { fetch, webIdProfile } = options;
+  const {
+    fetch,
+    webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
+  } = options;
 
-  const profileDocument =
-    webIdProfile ?? ((await getSolidDataset(webId, { fetch })) as T);
+  const webIdThing = getThing(webIdProfile, webId);
 
-  const webIdThing = getThing(profileDocument, webId);
-
-  const altProfilesIri = getThingAll(profileDocument)
+  const altProfilesIri = getThingAll(webIdProfile)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
     .map(asIri)
     .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
-    .filter((profileIri) => profileIri !== getSourceIri(profileDocument));
+    .filter((profileIri) => profileIri !== getSourceIri(webIdProfile));
 
   // Ensure that each given profile only appears once.
   const altProfileAll = await Promise.all(
@@ -88,7 +88,7 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
   );
 
   return {
-    webIdProfile: profileDocument,
+    webIdProfile,
     altProfileAll,
   };
 }
