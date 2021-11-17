@@ -72,38 +72,23 @@ export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
   const profileDocument =
     webIdProfile ?? ((await getSolidDataset(webId, { fetch })) as T);
 
-  const profilesLinkedFrom = await Promise.all(
-    getThingAll(profileDocument)
-      .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
-      // This assumes that getSourceIri returns the IRI where the profile document
-      // has actually been fetched, which may differ from the WebID.
-      .filter((thing) => asIri(thing) !== getSourceIri(profileDocument))
-      .map((primaryThing) => getSolidDataset(asIri(primaryThing), { fetch }))
-  );
-
-  const fetchedProfilesIri = profilesLinkedFrom.map(getSourceIri);
-
-  let profilesLinkedTo: Array<Promise<SolidDataset & WithResourceInfo>> = [];
   const webIdThing = getThing(profileDocument, webId);
-  if (webIdThing !== null) {
-    profilesLinkedTo = getIriAll(webIdThing, foaf.isPrimaryTopicOf)
-      .filter(
-        (candidateProfile) =>
-          candidateProfile !== getSourceIri(profileDocument) &&
-          // Exclude profiles which have been fetched already.
-          !fetchedProfilesIri.includes(candidateProfile)
-      )
-      .map((profile) => getSolidDataset(profile, { fetch }));
-  }
 
-  const foundProfiles = await Promise.all([
-    ...profilesLinkedFrom,
-    ...profilesLinkedTo,
-  ]);
+  const altProfilesIri = getThingAll(profileDocument)
+    .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
+    .map(asIri)
+    .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
+    .filter((profileIri) => profileIri !== getSourceIri(profileDocument));
+
+  // Ensure that each given profile only appears once.
+  const altProfileAll = await Promise.all(
+    Array.from(new Set(altProfilesIri)).map((uniqueProfileIri) =>
+      getSolidDataset(uniqueProfileIri, { fetch })
+    )
+  );
 
   return {
     webIdProfile: profileDocument,
-    // Ensure that each given profile only appears once.
-    altProfileAll: foundProfiles,
+    altProfileAll,
   };
 }
