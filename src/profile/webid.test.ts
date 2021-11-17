@@ -138,10 +138,11 @@ describe("getProfileAll", () => {
     })
       .addIri(foaf.primaryTopic, MOCK_WEBID)
       .build();
-    const webIdProfile = [profileContent, otherProfileContent].reduce(
-      (prev, cur) => setThing(prev, cur),
-      mockSolidDatasetFrom(MOCK_WEBID)
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
     );
+    webIdProfile = setThing(webIdProfile, otherProfileContent);
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
       webIdProfile,
@@ -213,10 +214,11 @@ describe("getProfileAll", () => {
     const webidData = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
       .build();
-    const webIdProfile = [profileContent, webidData].reduce(
-      (prev, cur) => setThing(prev, cur),
-      mockSolidDatasetFrom(MOCK_WEBID)
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
     );
+    webIdProfile = setThing(webIdProfile, webidData);
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
       webIdProfile,
