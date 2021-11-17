@@ -33,24 +33,37 @@ import {
 } from "./acp";
 import {
   acrAsMarkdown,
-  addAcrPolicyUrl,
-  addMemberAcrPolicyUrl,
-  addMemberPolicyUrl,
-  addPolicyUrl,
-  getAcrPolicyUrlAll,
-  getMemberAcrPolicyUrlAll,
-  getMemberPolicyUrlAll,
-  getPolicyUrlAll,
+  //addAcrPolicyUrl,
+  //addMemberAcrPolicyUrl,
+  //addMemberPolicyUrl,
+  //addPolicyUrl,
+  //getAcrPolicyUrlAll,
+  //getMemberAcrPolicyUrlAll,
+  //getMemberPolicyUrlAll,
+  //getPolicyUrlAll,
   hasLinkedAcr,
-  removeAcrPolicyUrl,
+  //removeAcrPolicyUrl,
   removeAcrPolicyUrlAll,
-  removeMemberAcrPolicyUrl,
+  //removeMemberAcrPolicyUrl,
   removeMemberAcrPolicyUrlAll,
-  removeMemberPolicyUrl,
+  //removeMemberPolicyUrl,
   removeMemberPolicyUrlAll,
-  removePolicyUrl,
+  //removePolicyUrl,
   removePolicyUrlAll,
 } from "./control";
+import { addAcrPolicyUrl } from "./policy/addAcrPolicyUrl";
+import { addMemberAcrPolicyUrl } from "./policy/addMemberAcrPolicyUrl";
+import { addMemberPolicyUrl } from "./policy/addMemberPolicyUrl";
+import { addPolicyUrl } from "./policy/addPolicyUrl";
+import { getAcrPolicyUrlAll } from "./policy/getAcrPolicyUrlAll";
+import { getMemberAcrPolicyUrlAll } from "./policy/getMemberAcrPolicyUrlAll";
+import { getMemberPolicyUrlAll } from "./policy/getMemberPolicyUrlAll";
+import { getPolicyUrlAll } from "./policy/getPolicyUrlAll";
+import { removeAcrPolicyUrl } from "./policy/removeAcrPolicyUrl";
+import { removeMemberAcrPolicyUrl } from "./policy/removeMemberAcrPolicyUrl";
+import { removeMemberPolicyUrl } from "./policy/removeMemberPolicyUrl";
+import { removePolicyUrl } from "./policy/removePolicyUrl";
+
 import {
   createPolicy,
   getPolicy,
