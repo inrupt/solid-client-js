@@ -27,7 +27,7 @@ import {
   getThingAll,
   SolidDataset,
   WebId,
-  WithResourceInfo,
+  WithServerResourceInfo,
 } from "..";
 import { foaf } from "../constants";
 import {
@@ -35,9 +35,9 @@ import {
   internal_defaultFetchOptions,
 } from "../resource/resource";
 
-export type ProfileAll<T extends SolidDataset & WithResourceInfo> = {
+export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
   webIdProfile: T;
-  altProfileAll: Array<SolidDataset & WithResourceInfo>;
+  altProfileAll: Array<SolidDataset & WithServerResourceInfo>;
 };
 
 /**
@@ -59,7 +59,9 @@ export type ProfileAll<T extends SolidDataset & WithResourceInfo> = {
  *  If none are found, the WebID profile document itself is returned.
  * @since 1.16.0
  */
-export async function getProfileAll<T extends SolidDataset & WithResourceInfo>(
+export async function getProfileAll<
+  T extends SolidDataset & WithServerResourceInfo
+>(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
