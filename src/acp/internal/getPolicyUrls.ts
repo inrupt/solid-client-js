@@ -31,7 +31,7 @@ type PolicyType = typeof ACP.apply | typeof ACP.access;
 /** @hidden */
 export function getPolicyUrls(
   resource: WithAccessibleAcr,
-  accessControlUrls: string[],
+  accessControlUrls: UrlString[],
   type: PolicyType
 ): string[] {
   const acr = getAccessControlResource(resource);
