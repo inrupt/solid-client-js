@@ -20,13 +20,15 @@
  */
 
 import type { SolidDataset, WithResourceInfo } from "../../interfaces";
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
 import { getSourceUrl } from "../../resource/resource";
-import { hasAccessibleAcr, WithAccessibleAcr } from "../acp";
+import { hasAccessibleAcr } from "../acp";
 
 /** @hidden */
 export function getAccessControlResource(
   resource: WithAccessibleAcr
 ): SolidDataset & WithResourceInfo {
+  // istanbul ignore next
   if (!hasAccessibleAcr(resource)) {
     throw new Error(
       `An Access Control Resource for [${getSourceUrl(

@@ -20,9 +20,9 @@
  */
 
 import type { ThingPersisted } from "../../interfaces";
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
 import { getSourceUrl } from "../../resource/resource";
 import { getThing } from "../../thing/thing";
-import type { WithAccessibleAcr } from "../acp";
 import { getAccessControlResource } from "./getAccessControlResource";
 
 /** @hidden */

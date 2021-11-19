@@ -19,9 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
 import { buildThing, createThing, getIriAll, getSourceUrl } from "../..";
 import { ACP } from "../constants";
-import type { WithAccessibleAcr } from "../acp";
 import { getAccessControlResource } from "./getAccessControlResource";
 import { getAccessControlResourceThing } from "./getAccessControlResourceThing";
 import {

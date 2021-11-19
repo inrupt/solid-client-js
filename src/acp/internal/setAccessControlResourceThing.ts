@@ -19,9 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
 import { setThing, ThingPersisted } from "../..";
-import type { WithAccessibleAcr } from "../acp";
-import { cloneResource } from "./cloneResource";
+import { internal_cloneResource as cloneResource } from "../../resource/resource.internal";
 
 /** @hidden */
 export function setAccessControlResourceThing<T extends WithAccessibleAcr>(

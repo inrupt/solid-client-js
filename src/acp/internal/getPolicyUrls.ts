@@ -19,7 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { WithAccessibleAcr } from "../acp";
+import type { UrlString } from "../../interfaces";
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
 import { ACP } from "../constants";
 import { getIriAll } from "../../thing/get";
 import { getThing } from "../../thing/thing";
@@ -36,20 +37,22 @@ export function getPolicyUrls(
 ): string[] {
   const acr = getAccessControlResource(resource);
 
-  return [
-    ...new Set(
+  return Array.from(
+    new Set(
       accessControlUrls
         .map((accessControlUrl) => {
           const accessControlThing = getThing(acr, accessControlUrl);
+          // istanbul ignore next
           if (accessControlThing !== null) {
             return getIriAll(accessControlThing, type);
           }
+          // istanbul ignore next
           return [];
         })
         .reduce(
           (previousValue, currentValue) => previousValue.concat(currentValue),
           []
         )
-    ),
-  ];
+    )
+  );
 }

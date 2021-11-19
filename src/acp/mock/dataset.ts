@@ -37,6 +37,7 @@ export function addSubject(
   subject: SubjectPredicateObjectTuple
 ): SolidDataset {
   let thing = getThing(dataset, subject[0]);
+  // istanbul ignore next
   if (thing === null || typeof thing === "undefined") {
     thing = createThing({ url: subject[0] });
   }
@@ -55,7 +56,7 @@ export function addSubjects(
   dataset: SolidDataset,
   subjects: SubjectPredicateObjectTuple[]
 ): SolidDataset {
- return subjects.reduce(addSubject, dataset)
+  return subjects.reduce(addSubject, dataset);
 }
 
 /** @hidden */
