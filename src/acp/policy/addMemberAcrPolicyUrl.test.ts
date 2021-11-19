@@ -20,6 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { ACP } from "../constants";
 import { TEST_URL } from "../mock/constants";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { addMemberAcrPolicyUrl } from "./addMemberAcrPolicyUrl";
@@ -36,18 +37,18 @@ describe("addMemberAcrPolicyUrl()", () => {
       ).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [TEST_URL.defaultMemberAcrAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultMemberAcrAccessControl": {
+        [TEST_URL.defaultMemberAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.defaultMemberAcrAccessControlPolicy1],
             },
           },
@@ -76,18 +77,18 @@ describe("addMemberAcrPolicyUrl()", () => {
       ).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [TEST_URL.defaultMemberAcrAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultMemberAcrAccessControl": {
+        [TEST_URL.defaultMemberAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [
                 TEST_URL.defaultMemberAcrAccessControlPolicy1,
                 TEST_URL.defaultMemberAcrAccessControlPolicy2,

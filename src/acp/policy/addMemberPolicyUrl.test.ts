@@ -20,6 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { ACP } from "../constants";
 import { TEST_URL } from "../mock/constants";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { addMemberPolicyUrl } from "./addMemberPolicyUrl";
@@ -34,18 +35,18 @@ describe("addMemberPolicyUrl()", () => {
         .internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [TEST_URL.defaultMemberAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultMemberAccessControl": {
+        [TEST_URL.defaultMemberAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [TEST_URL.defaultMemberAccessControlPolicy1],
             },
           },
@@ -73,18 +74,18 @@ describe("addMemberPolicyUrl()", () => {
       ).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [TEST_URL.defaultMemberAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultMemberAccessControl": {
+        [TEST_URL.defaultMemberAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [
                 TEST_URL.defaultMemberAccessControlPolicy1,
                 TEST_URL.defaultMemberAccessControlPolicy2,

@@ -46,18 +46,18 @@ describe("removePolicyUrl()", () => {
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [TEST_URL.defaultAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAccessControl": {
+        [TEST_URL.defaultAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [TEST_URL.defaultAccessControlPolicy1],
             },
           },
@@ -72,18 +72,18 @@ describe("removePolicyUrl()", () => {
         .internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [TEST_URL.defaultAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAccessControl": {
+        [TEST_URL.defaultAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [],
             },
           },
@@ -128,15 +128,15 @@ describe("removePolicyUrl()", () => {
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [
                 TEST_URL.defaultAccessControl,
                 TEST_URL.defaultAcrAccessControl,
               ],
             },
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [
                 TEST_URL.defaultMemberAccessControl,
                 TEST_URL.defaultMemberAcrAccessControl,
@@ -146,36 +146,36 @@ describe("removePolicyUrl()", () => {
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAccessControl": {
+        [TEST_URL.defaultAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultAccessControl,
         },
-        "https://example.org/acr#defaultAcrAccessControl": {
+        [TEST_URL.defaultAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultAcrAccessControl,
         },
-        "https://example.org/acr#defaultMemberAccessControl": {
+        [TEST_URL.defaultMemberAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultMemberAccessControl,
         },
-        "https://example.org/acr#defaultMemberAcrAccessControl": {
+        [TEST_URL.defaultMemberAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
@@ -189,15 +189,15 @@ describe("removePolicyUrl()", () => {
       removePolicyUrl(resource, TEST_URL.policy1).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [
                 TEST_URL.defaultAccessControl,
                 TEST_URL.defaultAcrAccessControl,
               ],
             },
-            "http://www.w3.org/ns/solid/acp#memberAccessControl": {
+            [ACP.memberAccessControl]: {
               namedNodes: [
                 TEST_URL.defaultMemberAccessControl,
                 TEST_URL.defaultMemberAcrAccessControl,
@@ -207,36 +207,36 @@ describe("removePolicyUrl()", () => {
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAccessControl": {
+        [TEST_URL.defaultAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultAccessControl,
         },
-        "https://example.org/acr#defaultAcrAccessControl": {
+        [TEST_URL.defaultAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultAcrAccessControl,
         },
-        "https://example.org/acr#defaultMemberAccessControl": {
+        [TEST_URL.defaultMemberAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#apply": {
+            [ACP.apply]: {
               namedNodes: [TEST_URL.policy1],
             },
           },
           type: "Subject",
           url: TEST_URL.defaultMemberAccessControl,
         },
-        "https://example.org/acr#defaultMemberAcrAccessControl": {
+        [TEST_URL.defaultMemberAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.policy1],
             },
           },

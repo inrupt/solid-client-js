@@ -20,6 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { ACP } from "../constants";
 import { TEST_URL } from "../mock/constants";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { addAcrPolicyUrl } from "./addAcrPolicyUrl";
@@ -34,18 +35,18 @@ describe("addAcrPolicyUrl()", () => {
         .internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [TEST_URL.defaultAcrAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAcrAccessControl": {
+        [TEST_URL.defaultAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [TEST_URL.defaultAcrAccessControlPolicy1],
             },
           },
@@ -73,18 +74,18 @@ describe("addAcrPolicyUrl()", () => {
       ).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
-        "https://example.org/acr": {
+        [TEST_URL.accessControlResource]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#accessControl": {
+            [ACP.accessControl]: {
               namedNodes: [TEST_URL.defaultAcrAccessControl],
             },
           },
           type: "Subject",
           url: TEST_URL.accessControlResource,
         },
-        "https://example.org/acr#defaultAcrAccessControl": {
+        [TEST_URL.defaultAcrAccessControl]: {
           predicates: {
-            "http://www.w3.org/ns/solid/acp#access": {
+            [ACP.access]: {
               namedNodes: [
                 TEST_URL.defaultAcrAccessControlPolicy1,
                 TEST_URL.defaultAcrAccessControlPolicy2,
