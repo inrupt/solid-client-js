@@ -30,13 +30,13 @@ import { createDatasetFromSubjects } from "../mock/dataset";
 import { getMemberPolicyUrlAll } from "./getMemberPolicyUrlAll";
 
 describe("getMemberPolicyUrlAll()", () => {
-  it("Returns empty array for empty Access Control Resource", async () => {
+  it("returns an empty array for empty ACR", async () => {
     const resource = mockAccessControlledResource();
 
     expect(getMemberPolicyUrlAll(resource)).toStrictEqual([]);
   });
 
-  it("Returns a member policy URL when present", async () => {
+  it("returns a member policy URL when present", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -55,7 +55,7 @@ describe("getMemberPolicyUrlAll()", () => {
     ]);
   });
 
-  it("Returns all member policy URLs when present", async () => {
+  it("returns all member policy URLs when present", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -93,7 +93,7 @@ describe("getMemberPolicyUrlAll()", () => {
     ]);
   });
 
-  it("Doesn't pick up non member policy URLs", async () => {
+  it("doesn't pick up non member policy URLs", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [

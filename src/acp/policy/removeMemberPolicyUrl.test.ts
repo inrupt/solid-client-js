@@ -30,7 +30,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { removeMemberPolicyUrl } from "./removeMemberPolicyUrl";
 
 describe("removeMemberPolicyUrl()", () => {
-  it("Returns a Resource whose ACR does not contain the removed policy", async () => {
+  it("returns a Resource whose ACR does not contain the removed member policy", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -96,7 +96,7 @@ describe("removeMemberPolicyUrl()", () => {
     });
   });
 
-  it("Does not remove other policies", async () => {
+  it("does not remove non member policies", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [

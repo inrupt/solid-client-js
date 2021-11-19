@@ -25,7 +25,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { addMemberPolicyUrl } from "./addMemberPolicyUrl";
 
 describe("addMemberPolicyUrl()", () => {
-  it("Returns a Reource whose ACR contains the added member policy", async () => {
+  it("returns a resource whose ACR contains the added member policy", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
@@ -56,7 +56,7 @@ describe("addMemberPolicyUrl()", () => {
     });
   });
 
-  it("Adds to the existing default access control", async () => {
+  it("adds to the pre-existing default member access control", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });

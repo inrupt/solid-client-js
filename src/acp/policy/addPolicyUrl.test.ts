@@ -25,7 +25,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { addPolicyUrl } from "./addPolicyUrl";
 
 describe("addPolicyUrl()", () => {
-  it("Returns a Reource whose ACR contains the added policy", async () => {
+  it("returns a resource whose ACR contains the added policy", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
@@ -50,13 +50,13 @@ describe("addPolicyUrl()", () => {
             },
           },
           type: "Subject",
-          url: "https://example.org/acr#defaultAccessControl",
+          url: TEST_URL.defaultAccessControl,
         },
       },
     });
   });
 
-  it("Adds to the existing default access control", async () => {
+  it("adds to the pre-existing default resource access control", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
@@ -92,7 +92,7 @@ describe("addPolicyUrl()", () => {
             },
           },
           type: "Subject",
-          url: "https://example.org/acr#defaultAccessControl",
+          url: TEST_URL.defaultAccessControl,
         },
       },
     });

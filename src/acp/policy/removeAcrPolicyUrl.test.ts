@@ -30,7 +30,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { removeAcrPolicyUrl } from "./removeAcrPolicyUrl";
 
 describe("removeAcrPolicyUrl()", () => {
-  it("Returns a Resource whose ACR does not contain the removed policy", async () => {
+  it("returns a resource whose ACR does not contain the removed ACR policy", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -62,7 +62,7 @@ describe("removeAcrPolicyUrl()", () => {
             },
           },
           type: "Subject",
-          url: "https://example.org/acr#defaultAcrAccessControl",
+          url: TEST_URL.defaultAcrAccessControl,
         },
       },
     });
@@ -88,13 +88,13 @@ describe("removeAcrPolicyUrl()", () => {
             },
           },
           type: "Subject",
-          url: "https://example.org/acr#defaultAcrAccessControl",
+          url: TEST_URL.defaultAcrAccessControl,
         },
       },
     });
   });
 
-  it("Does not remove other policies", async () => {
+  it("does not remove non ACR policy URLs", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
