@@ -38,7 +38,7 @@ import { getPolicyUrls } from "../internal/getPolicyUrls";
  * @param resourceWithAcr The resource for which to retrieve URLs policies
  * applying to its children.
  * @returns Policy URL array.
- * @since 1.16.0
+ * @since unreleased
  */
 export function getMemberPolicyUrlAll(
   resourceWithAcr: WithAccessibleAcr

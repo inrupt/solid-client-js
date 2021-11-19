@@ -42,7 +42,7 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  * applying to its children.
  * @param policyUrl A Policy URL.
  * @returns The resource with its ammended access control resource.
- * @since 1.16.0
+ * @since unreleased
  */
 export function addMemberPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,

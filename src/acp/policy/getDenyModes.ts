@@ -36,7 +36,7 @@ import { getModes } from "../internal/getModes";
  *
  * @param policy The Policy Thing which denies retrieved access modes.
  * @returns Policy URL array.
- * @since 1.16.0
+ * @since unreleased
  */
 export function getDenyModes<T extends ThingPersisted>(policy: T): AccessModes {
   return getModes(policy, ACP.deny);
