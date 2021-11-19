@@ -32,10 +32,10 @@ import { getAccessControlResourceThing } from "../internal/getAccessControlResou
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Member Access Controls mandate access over children of container resources.
+ * Get the URL of all member access controls linked to the given resource's ACR.
  *
- * @param resourceWithAcr The resource for which to retrieve children inherited
- * access control URLs.
+ * @param resourceWithAcr The resource for which to retrieve URLs of access
+ * controls inherited by its children.
  * @returns Access Control URL array
  * @since 1.6.0
  */

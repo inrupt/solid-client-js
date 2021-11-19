@@ -32,9 +32,10 @@ import { getAccessControlResourceThing } from "../internal/getAccessControlResou
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Access Controls mandate access over resources.
+ * Get the URL of all access controls linked to the given resource's ACR.
  *
- * @param resourceWithAcr The resource for which to retrieve access control URLs.
+ * @param resourceWithAcr The resource for which to retrieve URLs of access
+ * controls applying to it.
  * @returns Access Control URL array
  * @since 1.6.0
  */

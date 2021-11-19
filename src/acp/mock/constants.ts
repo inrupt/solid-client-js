@@ -26,12 +26,16 @@ import {
   DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
 } from "../internal/getDefaultAccessControlUrl";
 
+/** @hidden */
 export const DEFAULT_DOMAIN = "https://example.org/";
 
+/** @hidden */
 export const DEFAULT_RESOURCE_URL = DEFAULT_DOMAIN.concat("r");
 
+/** @hidden */
 export const DEFAULT_ACCESS_CONTROL_RESOURCE_URL = DEFAULT_DOMAIN.concat("acr");
 
+/** @hidden */
 export const TEST_URL = {
   accessControlResource: DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   accessControl1: DEFAULT_DOMAIN.concat("ac1"),

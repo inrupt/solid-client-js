@@ -32,8 +32,7 @@ import { getPolicyUrls } from "../internal/getPolicyUrls";
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Policies allow or deny access modes over resources and their associated
- * access control resource.
+ * Get the URLs of policies applying to the ACR of the given resource.
  *
  * @param resourceWithAcr The resource for which to retrieve URLs of policies
  * applying to its access control resource.

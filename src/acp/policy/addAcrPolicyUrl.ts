@@ -35,8 +35,7 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  * See also: https://solid.github.io/authorization-panel/acp-specification/
  * ```
  *
- * Policies allow or deny access modes over resources and their associated
- * access control resource.
+ * Add a policy applying to the ACR of the given resource.
  *
  * @param resourceWithAcr The resource for which to add the URL of a policy
  * applying to its access control resource.
