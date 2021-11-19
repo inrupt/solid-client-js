@@ -55,7 +55,7 @@ describe("getPolicyUrlAll()", () => {
     ]);
   });
 
-  it("Returns all member policy URLs when present", async () => {
+  it("Returns all policy URLs when present", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
