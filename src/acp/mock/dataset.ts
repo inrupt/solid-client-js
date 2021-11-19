@@ -55,10 +55,7 @@ export function addSubjects(
   dataset: SolidDataset,
   subjects: SubjectPredicateObjectTuple[]
 ): SolidDataset {
-  for (const subject of subjects) {
-    dataset = addSubject(dataset, subject);
-  }
-  return dataset;
+ return subjects.reduce(addSubject, dataset)
 }
 
 /** @hidden */
