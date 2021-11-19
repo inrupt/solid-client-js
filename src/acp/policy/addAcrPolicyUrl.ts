@@ -41,7 +41,7 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  * applying to its access control resource.
  * @param policyUrl A Policy URL.
  * @returns The resource with its ammended access control resource.
- * @since unreleased
+ * @since 1.16.1
  */
 export function addAcrPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,

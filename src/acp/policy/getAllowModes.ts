@@ -36,7 +36,7 @@ import { getModes } from "../internal/getModes";
  *
  * @param policy The Policy Thing which allows retrieved access modes.
  * @returns Policy URL array.
- * @since unreleased
+ * @since 1.16.1
  */
 export function getAllowModes<T extends ThingPersisted>(
   policy: T

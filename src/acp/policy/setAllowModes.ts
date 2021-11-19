@@ -36,7 +36,7 @@ import { setModes } from "../internal/setModes";
  *
  * @param policy The Policy on which to set the modes to allow.
  * @param modes Modes to allow for this Policy.
- * @since unreleased
+ * @since 1.16.1
  */
 export function setAllowModes<T extends ThingPersisted>(
   policy: T,
