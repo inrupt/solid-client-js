@@ -40,7 +40,7 @@ import { removeIri } from "../../thing/remove";
  * applying to its access control resource.
  * @param policyUrl A Policy URL.
  * @returns The resource with its ammended access control resource.
- * @since unreleased
+ * @since 1.16.1
  */
 export function removeAcrPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
