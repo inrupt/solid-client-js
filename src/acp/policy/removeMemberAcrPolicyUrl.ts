@@ -20,7 +20,7 @@
  */
 
 import type { Url, UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { ACP } from "../constants";
 import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
 import { DEFAULT_MEMBER_ACR_ACCESS_CONTROL } from "../internal/getDefaultAccessControlUrl";

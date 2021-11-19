@@ -19,10 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { buildThing, createThing, getIriAll, getSourceUrl } from "../..";
 import { ACP } from "../constants";
-import { getAccessControlResource } from "./getAccessControlResource";
+import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import { getAccessControlResourceThing } from "./getAccessControlResourceThing";
 import {
   DefaultAccessControlName,

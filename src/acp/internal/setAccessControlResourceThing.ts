@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { setThing, ThingPersisted } from "../..";
 import { internal_cloneResource as cloneResource } from "../../resource/resource.internal";
 

@@ -20,10 +20,10 @@
  */
 
 import type { ThingPersisted } from "../../interfaces";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { getSourceUrl } from "../../resource/resource";
 import { getThing } from "../../thing/thing";
-import { getAccessControlResource } from "./getAccessControlResource";
+import { internal_getAcr as getAccessControlResource } from "../control.internal";
 
 /** @hidden */
 export function getAccessControlResourceThing(

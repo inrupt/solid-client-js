@@ -19,9 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { getSourceUrl } from "../..";
-import { getAccessControlResource } from "./getAccessControlResource";
+import { internal_getAcr as getAccessControlResource } from "../control.internal";
 
 /** @hidden */
 export type DefaultAccessControlName =

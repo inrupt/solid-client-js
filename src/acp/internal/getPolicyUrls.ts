@@ -20,11 +20,11 @@
  */
 
 import type { UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { ACP } from "../constants";
 import { getIriAll } from "../../thing/get";
 import { getThing } from "../../thing/thing";
-import { getAccessControlResource } from "./getAccessControlResource";
+import { internal_getAcr as getAccessControlResource } from "../control.internal";
 
 /** @hidden */
 type PolicyType = typeof ACP.apply | typeof ACP.access;
