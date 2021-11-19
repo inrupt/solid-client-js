@@ -52,6 +52,8 @@ export const ldp = {
 /** @hidden */
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
+  primaryTopic: "http://xmlns.com/foaf/0.1/primaryTopic",
+  isPrimaryTopicOf: "http://xmlns.com/foaf/0.1/isPrimaryTopicOf",
 } as const;
 
 /** @hidden */

@@ -61,7 +61,13 @@ import {
   UrlString,
 } from "../interfaces";
 import { mockContainerFrom, mockSolidDatasetFrom } from "./mock";
-import { createThing, getThing, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { mockThingFrom } from "../thing/mock";
 import { addInteger, addStringNoLocale, addUrl } from "../thing/add";
 import { removeStringNoLocale } from "../thing/remove";
@@ -2014,6 +2020,66 @@ describe("createContainerAt", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+    });
+  });
+
+  describe("Creating non-empty container", () => {
+    it("returns an non-empty SolidDataset if one is provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(
+            mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
+          )
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      const returnedContainer = await createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+          initialContent: mockDataset,
+        }
+      );
+      // All the things in the initial content should be in the returned dataset.
+      expect(
+        getThingAll(mockDataset).every(
+          (thing) => getThing(returnedContainer, asIri(thing)) !== null
+        )
+      ).toBe(true);
+      // The initial content should be sent when creating the container
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
+        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+      );
+    });
+
+    it("reports HTTP error when an non-empty SolidDataset provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Mock an error response to the request.
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Forbidden", { status: 403 }))
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      await expect(
+        createContainerAt("https://arbitrary.pod/container/", {
+          fetch: mockFetch,
+          initialContent: mockDataset,
+        })
+      ).rejects.toThrow("Creating the non-empty Container");
     });
   });
 

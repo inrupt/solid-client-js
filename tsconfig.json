@@ -93,6 +93,7 @@
       "src/access/universal.ts",
       "src/rdfjs.ts",
       "src/profile/jwks.ts",
+      "src/profile/webid.ts",
       "src/formats/index.ts"
     ],
     "exclude": [

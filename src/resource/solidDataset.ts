@@ -489,7 +489,8 @@ export async function deleteSolidDataset(
 }
 
 /**
- * Create an empty Container at the given URL.
+ * Create a Container at the given URL. Some content may optionally be specified,
+ * e.g. to add metadata describing the container.
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to, or because the Container already exists.
@@ -500,12 +501,15 @@ export async function deleteSolidDataset(
  *
  * @param url URL of the empty Container that is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @param solidDataset Optional parameter - if provided we use this dataset as the body of the HTT request, meaning it's data is included in the Container resource.
  * @since 0.2.0
  */
 export async function createContainerAt(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      initialContent: SolidDataset;
+    }
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
@@ -517,6 +521,11 @@ export async function createContainerAt(
 
   const response = await config.fetch(url, {
     method: "PUT",
+    body: config.initialContent
+      ? await triplesToTurtle(
+          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes)
+        )
+      : undefined,
     headers: {
       Accept: "text/turtle",
       "Content-Type": "text/turtle",
@@ -537,8 +546,10 @@ export async function createContainerAt(
       return createContainerWithNssWorkaroundAt(url, options);
     }
 
+    const containerType =
+      config.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
-      `Creating the empty Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
+      `Creating the ${containerType} Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }
@@ -547,7 +558,7 @@ export async function createContainerAt(
   const containerDataset: SolidDataset &
     WithChangeLog &
     WithServerResourceInfo = freeze({
-    ...createSolidDataset(),
+    ...(options.initialContent ?? createSolidDataset()),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
