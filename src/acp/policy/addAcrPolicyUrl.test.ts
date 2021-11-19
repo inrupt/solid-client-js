@@ -25,7 +25,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { addAcrPolicyUrl } from "./addAcrPolicyUrl";
 
 describe("addAcrPolicyUrl()", () => {
-  it("Returns a Reource whose ACR contains the added ACR policy", async () => {
+  it("returns a Resource whose ACR contains the added policy", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
