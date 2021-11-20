@@ -19,26 +19,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { ACL, ACP } from "../constants";
-import { getIriAll } from "../../thing/get";
-
-/** @hidden */
-export type ModeType = typeof ACP.allow | typeof ACP.deny;
-
-/** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
-  const modes = getIriAll(policy, type);
-
-  return {
-    read: modes.includes(ACL.Read),
-    append: modes.includes(ACL.Append),
-    write: modes.includes(ACL.Write),
-    controlRead: false,
-    controlWrite: false,
-  };
+/**
+ * ```{note}
+ * The ACP specification is a draft. As such, this function is experimental and
+ * subject to change, even in a non-major release.
+ * See also: https://solid.github.io/authorization-panel/acp-specification/
+ * ```
+ */
+export interface DefaultOptions {
+  fetch?: typeof fetch;
 }

@@ -19,26 +19,28 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { ACL, ACP } from "../constants";
-import { getIriAll } from "../../thing/get";
+import type { WithServerResourceInfo } from "../../interfaces";
+import type { DefaultOptions } from "../type/DefaultOptions";
+import { getResourceInfo } from "../../resource/resource";
 
-/** @hidden */
-export type ModeType = typeof ACP.allow | typeof ACP.deny;
-
-/** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
-  const modes = getIriAll(policy, type);
-
-  return {
-    read: modes.includes(ACL.Read),
-    append: modes.includes(ACL.Append),
-    write: modes.includes(ACL.Write),
-    controlRead: false,
-    controlWrite: false,
-  };
+/**
+ * Retrieve the Server Resource Info of the ACL linked to a resource.
+ *
+ * @param {WithServerResourceInfo} resource The Resource for which ACL we want
+ * to retrieve the Server Resource Info.
+ * @param {DefaultOptions} options
+ * @returns The Server Resource Info if available, null otherwise.
+ * @since unreleased
+ */
+export async function getAclServerResourceInfo(
+  resource: WithServerResourceInfo,
+  options?: DefaultOptions
+): Promise<WithServerResourceInfo | null> {
+  if (typeof resource.internal_resourceInfo.aclUrl === "string") {
+    return await getResourceInfo(
+      resource.internal_resourceInfo.aclUrl,
+      options
+    );
+  }
+  return null;
 }

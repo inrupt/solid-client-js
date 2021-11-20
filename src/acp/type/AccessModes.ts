@@ -30,4 +30,6 @@ export interface AccessModes {
   read: boolean;
   append: boolean;
   write: boolean;
+  controlRead: boolean;
+  controlWrite: boolean;
 }

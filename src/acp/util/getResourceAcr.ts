@@ -19,26 +19,36 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { ACL, ACP } from "../constants";
-import { getIriAll } from "../../thing/get";
+import type { SolidDataset, WithServerResourceInfo } from "../../interfaces";
+import type { DefaultOptions } from "../type/DefaultOptions";
+import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import { getAcrUrl } from "./getAcrUrl";
+import { getSolidDataset } from "../../resource/solidDataset";
+import { getSourceUrl } from "../../resource/resource";
 
-/** @hidden */
-export type ModeType = typeof ACP.allow | typeof ACP.deny;
+export async function getResourceAcr<T extends WithServerResourceInfo>(
+  resource: T,
+  options?: DefaultOptions
+): Promise<(T & WithAccessibleAcr) | null> {
+  const acrUrl = await getAcrUrl(resource, options);
+  if (acrUrl === null) {
+    return null;
+  }
 
-/** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
-  const modes = getIriAll(policy, type);
+  let acr: SolidDataset & WithServerResourceInfo;
+  try {
+    acr = await getSolidDataset(acrUrl, options);
+  } catch (e: unknown) {
+    return null;
+  }
 
   return {
-    read: modes.includes(ACL.Read),
-    append: modes.includes(ACL.Append),
-    write: modes.includes(ACL.Write),
-    controlRead: false,
-    controlWrite: false,
+    ...resource,
+    internal_acp: {
+      acr: {
+        ...acr,
+        accessTo: getSourceUrl(resource),
+      },
+    },
   };
 }

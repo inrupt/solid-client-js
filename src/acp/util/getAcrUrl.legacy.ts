@@ -19,26 +19,28 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { ACL, ACP } from "../constants";
-import { getIriAll } from "../../thing/get";
+import type { UrlString, WithServerResourceInfo } from "../../interfaces";
+import { ACP } from "../constants";
 
-/** @hidden */
-export type ModeType = typeof ACP.allow | typeof ACP.deny;
+/**
+ * Retrieve the URL of an Access Control Resource as per pre-draft versions of
+ * the ACP specification.
+ *
+ * @param resource The Resource for which to retrieve the URL of the Access
+ * Control Resource if it is accessible.
+ * @returns The URL of the ACR or null.
+ * @deprecated
+ */
+export function getAcrUrl(resource: WithServerResourceInfo): UrlString | null {
+  const linkedAccessControlResource =
+    resource.internal_resourceInfo.linkedResources[ACP.accessControl];
 
-/** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
-  const modes = getIriAll(policy, type);
+  if (
+    Array.isArray(linkedAccessControlResource) &&
+    linkedAccessControlResource.length === 0
+  ) {
+    return linkedAccessControlResource[0];
+  }
 
-  return {
-    read: modes.includes(ACL.Read),
-    append: modes.includes(ACL.Append),
-    write: modes.includes(ACL.Write),
-    controlRead: false,
-    controlWrite: false,
-  };
+  return null;
 }
