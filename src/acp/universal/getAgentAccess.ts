@@ -25,6 +25,7 @@ import type { DefaultOptions } from "../type/DefaultOptions";
 import { getResourceInfo } from "../../resource/resource";
 import { getAgentAccess as getAgentAccessAcp } from "../util/getAgentAccess";
 import { getAgentAccess as getAgentAccessWac } from "../../access/wac";
+import { getResourceAcr } from "../util/getResourceAcr";
 
 /**
  * Get an overview of what access is defined for a given Agent.
@@ -55,13 +56,13 @@ export async function getAgentAccess(
   webId: WebId,
   options?: DefaultOptions
 ): Promise<AccessModes | null> {
-  // TODO: Change the standard getAgentAccess signature (WAC) to align with universal and take a UrlString
-  return (
-    (await getAgentAccessAcp(resourceUrl, webId, options)) ??
-    getAgentAccessWac(
-      await getResourceInfo(resourceUrl, options),
-      webId,
-      options
-    )
-  );
+  // TODO: Change the standard getAgentAccess signatures to all take a WithAcl
+  const resourceInfo = await getResourceInfo(resourceUrl, options);
+  const acr = await getResourceAcr(resourceInfo, options);
+
+  if (acr === null) {
+    return getAgentAccessWac(resourceInfo, webId, options);
+  }
+
+  return getAgentAccessAcp(acr, webId);
 }

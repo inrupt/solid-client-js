@@ -79,4 +79,5 @@ export const TEST_URL = {
   defaultMemberAcrAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacracp1"),
   defaultMemberAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacracp2"),
   policy1: DEFAULT_DOMAIN.concat("p1"),
+  defaultWebId: DEFAULT_DOMAIN.concat("wid1"),
 };
