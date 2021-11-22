@@ -20,7 +20,13 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { TEST_URL } from "../mock/constants";
+import { ACL, ACP } from "../constants";
+import {
+  DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+  DEFAULT_DOMAIN,
+  TEST_URL,
+} from "../mock/constants";
+import { createDatasetFromSubjects } from "../mock/dataset";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { getAgentAccess } from "./getAgentAccess";
 
@@ -38,5 +44,321 @@ describe("getAgentAccess()", () => {
         controlWrite: false,
       }
     );
+  });
+
+  it("returns the access modes for a simple ACR", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("returns the control access modes for a simple ACR", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.access, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: true,
+      controlWrite: false,
+    });
+  });
+
+  it("returns access modes without the ones denied", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [
+            [
+              ACP.apply,
+              [DEFAULT_DOMAIN.concat("p1"), DEFAULT_DOMAIN.concat("p2")],
+            ],
+            [
+              ACP.access,
+              [DEFAULT_DOMAIN.concat("p3"), DEFAULT_DOMAIN.concat("p4")],
+            ],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.allow, [ACL.Read, ACL.Append, ACL.Write]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p2"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.deny, [ACL.Write]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p3"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.allow, [ACL.Read, ACL.Write]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p4"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.deny, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: true,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: true,
+    });
+  });
+
+  it("returns access modes only if all of matchers match", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [
+            [
+              ACP.apply,
+              [DEFAULT_DOMAIN.concat("p1"), DEFAULT_DOMAIN.concat("p2")],
+            ],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [
+              ACP.allOf,
+              [DEFAULT_DOMAIN.concat("m1"), DEFAULT_DOMAIN.concat("m2")],
+            ],
+            [ACP.allow, [ACL.Read, ACL.Append, ACL.Write]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p2"),
+          [
+            [
+              ACP.allOf,
+              [DEFAULT_DOMAIN.concat("m1"), DEFAULT_DOMAIN.concat("m3")],
+            ],
+            [ACP.allow, [ACL.Write]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m2"),
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("alice"), DEFAULT_DOMAIN.concat("latifa")],
+            ],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m3"),
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("malik"), DEFAULT_DOMAIN.concat("bob")],
+            ],
+          ],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: false,
+      append: false,
+      write: true,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("returns access modes only if any of matchers match", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [
+              ACP.anyOf,
+              [DEFAULT_DOMAIN.concat("m1"), DEFAULT_DOMAIN.concat("m2")],
+            ],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("jorge")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m2"),
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("latifa"), DEFAULT_DOMAIN.concat("bob")],
+            ],
+          ],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("returns access modes only if none of matchers don't match", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m2")]],
+            [
+              ACP.noneOf,
+              [DEFAULT_DOMAIN.concat("m1"), DEFAULT_DOMAIN.concat("m3")],
+            ],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("jorge")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m2"),
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("latifa"), DEFAULT_DOMAIN.concat("bob")],
+            ],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m3"),
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("malik"), DEFAULT_DOMAIN.concat("bob")],
+            ],
+          ],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 });

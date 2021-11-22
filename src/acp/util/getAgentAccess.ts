@@ -49,7 +49,7 @@ function isAgentMatched(
     .filter((thing): thing is ThingPersisted => thing !== null);
 
   const allOfMatched = allOfMatchers.every((thing) => {
-    getUrlAll(thing, ACP.agent).includes(webId);
+    return getUrlAll(thing, ACP.agent).includes(webId);
   });
 
   const anyOfMatchers = getUrlAll(policy, ACP.anyOf)
@@ -57,7 +57,7 @@ function isAgentMatched(
     .filter((thing): thing is ThingPersisted => thing !== null);
 
   const anyOfMatched = anyOfMatchers.some((thing) => {
-    getUrlAll(thing, ACP.agent).includes(webId);
+    return getUrlAll(thing, ACP.agent).includes(webId);
   });
 
   const noneOfMatchers = getUrlAll(policy, ACP.noneOf)
@@ -65,7 +65,7 @@ function isAgentMatched(
     .filter((thing): thing is ThingPersisted => thing !== null);
 
   const noneOfMatched = noneOfMatchers.some((thing) => {
-    getUrlAll(thing, ACP.agent).includes(webId);
+    return getUrlAll(thing, ACP.agent).includes(webId);
   });
 
   return (
@@ -86,21 +86,19 @@ function reduceModes(
 
   if (type === "control") {
     return {
-      read: (modes.read || allowed.read) && !denied.read,
-      append: (modes.append || allowed.append) && !denied.append,
-      write: (modes.write || allowed.write) && !denied.write,
-      controlRead: modes.controlRead,
-      controlWrite: modes.controlWrite,
+      read: modes.read,
+      append: modes.append,
+      write: modes.write,
+      controlRead: (modes.controlRead || allowed.read) && !denied.read,
+      controlWrite: (modes.controlWrite || allowed.write) && !denied.write,
     };
   }
   return {
-    read: modes.read,
-    append: modes.append,
-    write: modes.write,
-    controlRead:
-      (modes.controlRead || allowed.controlRead) && !denied.controlRead,
-    controlWrite:
-      (modes.controlWrite || allowed.controlWrite) && !denied.controlWrite,
+    read: (modes.read || allowed.read) && !denied.read,
+    append: (modes.append || allowed.append) && !denied.append,
+    write: (modes.write || allowed.write) && !denied.write,
+    controlRead: modes.controlRead,
+    controlWrite: modes.controlWrite,
   };
 }
 
@@ -130,8 +128,9 @@ export async function getAgentAccess(
     .filter((policy): policy is ThingPersisted => policy !== null);
 
   policyAll.map((policy) => {
-    isAgentMatched(resourceWithAcr, policy, webId);
-    resourceAccess = reduceModes(policy, resourceAccess, "resource");
+    if (isAgentMatched(resourceWithAcr, policy, webId)) {
+      resourceAccess = reduceModes(policy, resourceAccess, "resource");
+    }
   });
 
   const acrPolicyAll = getAcrPolicyUrlAll(resourceWithAcr)
@@ -139,8 +138,9 @@ export async function getAgentAccess(
     .filter((policy): policy is ThingPersisted => policy !== null);
 
   acrPolicyAll.map((policy) => {
-    isAgentMatched(resourceWithAcr, policy, webId);
-    resourceAccess = reduceModes(policy, resourceAccess, "control");
+    if (isAgentMatched(resourceWithAcr, policy, webId)) {
+      resourceAccess = reduceModes(policy, resourceAccess, "control");
+    }
   });
 
   return resourceAccess;
