@@ -24,7 +24,10 @@ import type { DefaultOptions } from "../acp/type/DefaultOptions";
 import { getResourceInfo } from "../resource/resource";
 
 /**
- * Retrieve the Server Resource Info of the ACL linked to a resource.
+ * Retrieve the Server Resource Info of Resource expressing access control over
+ * another resource it is linked to. It applies in both ACP and WAC contexts:
+ * the Access Control Resource is discovered consistently using a Link header
+ * with `rel=acl`.
  *
  * @param {WithServerResourceInfo} resource The Resource for which ACL we want
  * to retrieve the Server Resource Info.
