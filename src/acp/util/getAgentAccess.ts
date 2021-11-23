@@ -69,6 +69,7 @@ function isAgentMatched(
   });
 
   return (
+    allOfMatchers.length + anyOfMatchers.length > 0 &&
     (allOfMatchers.length === 0 || allOfMatched) &&
     (anyOfMatchers.length === 0 || anyOfMatched) &&
     (noneOfMatchers.length === 0 || !noneOfMatched)
