@@ -19,13 +19,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString, WebId } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import type { DefaultOptions } from "../type/DefaultOptions";
-import { getResourceInfo } from "../../resource/resource";
-import { getAgentAccess as getAgentAccessAcp } from "../util/getAgentAccess";
-import { getAgentAccess as getAgentAccessWac } from "../../access/wac";
-import { getResourceAcr } from "../util/getResourceAcr";
+import type { UrlString, WebId } from "../interfaces";
+import type { AccessModes } from "../acp/type/AccessModes";
+import type { DefaultOptions } from "../acp/type/DefaultOptions";
+import { getResourceInfo } from "../resource/resource";
+import { setAgentAccess as setAgentAccessAcp } from "../acp/util/setAgentAccess";
+import {
+  setAgentResourceAccess as setAgentAccessWac,
+  getAgentAccess as getAgentAccessWac,
+  WacAccess,
+} from "../access/wac";
+import { getResourceAcr } from "../acp/util/getResourceAcr";
 
 /**
  * Get an overview of what access is defined for a given Agent.
@@ -51,18 +55,20 @@ import { getResourceAcr } from "../util/getResourceAcr";
  * @param webId WebID of the Agent you want to get the access for.
  * @since unreleased
  */
-export async function getAgentAccess(
+export async function setAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
+  access: Partial<AccessModes>,
   options?: DefaultOptions
 ): Promise<AccessModes | null> {
-  // TODO: Change the standard getAgentAccess signatures to all take a WithAcl
+  // TODO: Change the standard getAgentAccess signatures to all take a  T extends WithAcl
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);
 
   if (acr === null) {
+    await setAgentAccessWac(resourceInfo, webId, access as WacAccess, options);
     return getAgentAccessWac(resourceInfo, webId, options);
   }
 
-  return getAgentAccessAcp(acr, webId);
+  return setAgentAccessAcp(acr, webId, access);
 }

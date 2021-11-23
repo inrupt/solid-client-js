@@ -110,8 +110,8 @@ function reduceModes(
  * @param options Default Options such as a fetch function.
  * @since 1.16.0
  */
-export async function getAgentAccess(
-  resourceWithAcr: WithAccessibleAcr,
+export async function getAgentAccess<T extends WithAccessibleAcr>(
+  resourceWithAcr: T,
   webId: WebId
 ): Promise<AccessModes> {
   // TODO: add support for external resources

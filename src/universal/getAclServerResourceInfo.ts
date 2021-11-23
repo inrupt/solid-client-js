@@ -19,9 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { WithServerResourceInfo } from "../../interfaces";
-import type { DefaultOptions } from "../type/DefaultOptions";
-import { getResourceInfo } from "../../resource/resource";
+import type { WithServerResourceInfo } from "../interfaces";
+import type { DefaultOptions } from "../acp/type/DefaultOptions";
+import { getResourceInfo } from "../resource/resource";
 
 /**
  * Retrieve the Server Resource Info of the ACL linked to a resource.
