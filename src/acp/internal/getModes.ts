@@ -28,10 +28,7 @@ import { getIriAll } from "../../thing/get";
 export type ModeType = typeof ACP.allow | typeof ACP.deny;
 
 /** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
+export function getModes(policy: ThingPersisted, type: ModeType): AccessModes {
   const modes = getIriAll(policy, type);
 
   return {

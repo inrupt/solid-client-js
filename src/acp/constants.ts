@@ -24,25 +24,25 @@ export const ACP_NAMESPACE = "http://www.w3.org/ns/solid/acp#";
 
 /** @hidden */
 export const ACP = {
-  AccessControl: ACP_NAMESPACE.concat("AccessControl"),
-  AccessControlResource: ACP_NAMESPACE.concat("AccessControlResource"),
-  AuthenticatedAgent: ACP_NAMESPACE.concat("AuthenticatedAgent"),
-  CreatorAgent: ACP_NAMESPACE.concat("CreatorAgent"),
-  Matcher: ACP_NAMESPACE.concat("Matcher"),
-  Policy: ACP_NAMESPACE.concat("Policy"),
-  PublicAgent: ACP_NAMESPACE.concat("PublicAgent"),
-  access: ACP_NAMESPACE.concat("access"),
-  accessControl: ACP_NAMESPACE.concat("accessControl"),
-  agent: ACP_NAMESPACE.concat("agent"),
-  allOf: ACP_NAMESPACE.concat("allOf"),
-  allow: ACP_NAMESPACE.concat("allow"),
-  anyOf: ACP_NAMESPACE.concat("anyOf"),
-  apply: ACP_NAMESPACE.concat("apply"),
-  client: ACP_NAMESPACE.concat("client"),
-  deny: ACP_NAMESPACE.concat("deny"),
-  memberAccessControl: ACP_NAMESPACE.concat("memberAccessControl"),
-  noneOf: ACP_NAMESPACE.concat("noneOf"),
-};
+  AccessControl: "http://www.w3.org/ns/solid/acp#AccessControl",
+  AccessControlResource: "http://www.w3.org/ns/solid/acp#AccessControlResource",
+  AuthenticatedAgent: "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
+  CreatorAgent: "http://www.w3.org/ns/solid/acp#CreatorAgent",
+  Matcher: "http://www.w3.org/ns/solid/acp#Matcher",
+  Policy: "http://www.w3.org/ns/solid/acp#Policy",
+  PublicAgent: "http://www.w3.org/ns/solid/acp#PublicAgent",
+  access: "http://www.w3.org/ns/solid/acp#access",
+  accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
+  agent: "http://www.w3.org/ns/solid/acp#agent",
+  allOf: "http://www.w3.org/ns/solid/acp#allOf",
+  allow: "http://www.w3.org/ns/solid/acp#allow",
+  anyOf: "http://www.w3.org/ns/solid/acp#anyOf",
+  apply: "http://www.w3.org/ns/solid/acp#apply",
+  client: "http://www.w3.org/ns/solid/acp#client",
+  deny: "http://www.w3.org/ns/solid/acp#deny",
+  memberAccessControl: "http://www.w3.org/ns/solid/acp#memberAccessControl",
+  noneOf: "http://www.w3.org/ns/solid/acp#noneOf",
+} as const;
 
 /** @hidden */
 export const ACL_NAMESPACE = "http://www.w3.org/ns/auth/acl#";
