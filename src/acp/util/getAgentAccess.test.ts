@@ -361,4 +361,66 @@ describe("getAgentAccess()", () => {
       controlWrite: false,
     });
   });
+
+  it("doesn't match if there is only a noneOf matcher matching", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("p1"),
+          [
+            [ACP.noneOf, [DEFAULT_DOMAIN.concat("m1")]],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("m1"),
+          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
+        ],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("doesn't match if there is no matchers", async () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
+        ],
+        [
+          DEFAULT_DOMAIN.concat("ac1"),
+          [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
+        ],
+        [DEFAULT_DOMAIN.concat("p1"), [[ACP.allow, [ACL.Read]]]],
+      ])
+    );
+
+    expect(
+      await getAgentAccess(resource, DEFAULT_DOMAIN.concat("bob"))
+    ).toStrictEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
 });
