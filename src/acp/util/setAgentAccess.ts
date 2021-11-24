@@ -22,18 +22,71 @@
 import type { WebId } from "../../interfaces";
 import type { AccessModes } from "../type/AccessModes";
 import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
-import { getPolicyUrlAll } from "../policy/getPolicyUrlAll";
 import { getThing, ThingPersisted } from "../..";
-import { internal_getAcr } from "../control.internal";
-import { getAcrPolicyUrlAll } from "../policy/getAcrPolicyUrlAll";
+import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import { getAgentAccess } from "./getAgentAccess";
+import { setDefaultAgentMatcherPolicyMatcherThingIfNotExist } from "../internal/setDefaultAgentMatcherPolicyMatcherThingIfNotExist";
+import {
+  DefaultAccessControlName,
+  DEFAULT_ACCESS_CONTROL,
+  DEFAULT_ACR_ACCESS_CONTROL,
+} from "../internal/getDefaultAccessControlUrl";
+import { getDefaultAgentMatcherPolicyMatcherUrl } from "../internal/getDefaultAgentMatcherPolicyMatcherUrl";
+import { addAgent, removeAgent } from "../matcher";
+import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
 
 /** @hidden */
-function containsModes(
+function containsNewModes(
   access: Partial<AccessModes>,
+  existingAccess: AccessModes,
   type: "control" | "resource"
 ): boolean {
-  return true;
+  if (type === "resource") {
+    return (
+      (typeof access.read === "boolean" &&
+        existingAccess.read !== access.read) ||
+      (typeof access.append === "boolean" &&
+        existingAccess.append !== access.append) ||
+      (typeof access.write === "boolean" &&
+        existingAccess.write !== access.write)
+    );
+  }
+  return (
+    (typeof access.controlRead === "boolean" &&
+      existingAccess.controlRead !== access.controlRead) ||
+    (typeof access.controlWrite === "boolean" &&
+      existingAccess.controlWrite !== access.controlWrite)
+  );
+}
+
+function setAgentAccessMode<T extends WithAccessibleAcr>(
+  resourceWithAcr: T,
+  webId: WebId,
+  name: DefaultAccessControlName,
+  mode: keyof AccessModes,
+  operation: "add" | "remove"
+): T {
+  // Set default Matcher if not exists
+  const resourceWithDefaultAgentMatcher =
+    setDefaultAgentMatcherPolicyMatcherThingIfNotExist(
+      resourceWithAcr,
+      name,
+      mode
+    );
+  const defaultAgentMatcherThing = getThing(
+    getAccessControlResource(resourceWithDefaultAgentMatcher),
+    getDefaultAgentMatcherPolicyMatcherUrl(
+      resourceWithDefaultAgentMatcher,
+      name,
+      mode
+    )
+  ) as ThingPersisted;
+  return setAccessControlResourceThing<T>(
+    resourceWithDefaultAgentMatcher,
+    operation === "add"
+      ? addAgent(defaultAgentMatcherThing, webId)
+      : removeAgent(defaultAgentMatcherThing, webId)
+  );
 }
 
 /**
@@ -49,19 +102,70 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   webId: WebId,
   access: Partial<AccessModes>
-): Promise<AccessModes> {
-  if (containsModes(access, "resource")) {
-    // Get the access modes currently set
-    // Do the diff
-    // Set what is needed
-    const policyAll = getPolicyUrlAll(resourceWithAcr)
-      .map((url) => getThing(internal_getAcr(resourceWithAcr), url))
-      .filter((policy): policy is ThingPersisted => policy !== null);
+): Promise<T> {
+  const agentAccessModes = await getAgentAccess(resourceWithAcr, webId);
+
+  // Add Agent to Default Matcher if access mode is different from what exists
+  if (
+    typeof access.read === "boolean" &&
+    agentAccessModes.read !== access.read
+  ) {
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_ACCESS_CONTROL,
+      "read",
+      access.read ? "add" : "remove"
+    );
+  }
+  if (
+    typeof access.append === "boolean" &&
+    agentAccessModes.append !== access.append
+  ) {
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_ACCESS_CONTROL,
+      "append",
+      access.append ? "add" : "remove"
+    );
+  }
+  if (
+    typeof access.write === "boolean" &&
+    agentAccessModes.write !== access.write
+  ) {
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_ACCESS_CONTROL,
+      "write",
+      access.write ? "add" : "remove"
+    );
+  }
+  if (
+    typeof access.controlRead === "boolean" &&
+    agentAccessModes.controlRead !== access.controlRead
+  ) {
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_ACR_ACCESS_CONTROL,
+      "controlRead",
+      access.controlRead ? "add" : "remove"
+    );
+  }
+  if (
+    typeof access.controlWrite === "boolean" &&
+    agentAccessModes.controlWrite !== access.controlWrite
+  ) {
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_ACR_ACCESS_CONTROL,
+      "controlWrite",
+      access.controlWrite ? "add" : "remove"
+    );
   }
 
-  if (containsModes(access, "control")) {
-    const x = getAgentAccess(resourceWithAcr, webId);
-  }
-
-  return getAgentAccess(resourceWithAcr, webId);
+  return resourceWithAcr;
 }

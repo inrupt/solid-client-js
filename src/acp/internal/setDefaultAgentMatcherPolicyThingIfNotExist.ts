@@ -20,61 +20,62 @@
  */
 
 import type { WithAccessibleAcr } from "../acp";
-import { buildThing, createThing, getIriAll, getSourceUrl } from "../..";
+import type { AccessModes } from "../type/AccessModes";
+import { buildThing, getIriAll, getThing, ThingPersisted } from "../..";
 import { ACP } from "../constants";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
-import { getAccessControlResourceThing } from "./getAccessControlResourceThing";
 import {
   DefaultAccessControlName,
   getDefaultAccessControlUrl,
 } from "./getDefaultAccessControlUrl";
 import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
+import { setDefaultAccessControlThingIfNotExist } from "./setDefaultAccessControlThingIfNotExist";
+import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
 
-function getAccessControlTypeFromDefaultAccessControlName(
+function getPolicyTypeFromDefaultAccessControlName(
   name: DefaultAccessControlName
 ): string {
-  if (name.includes("Member")) {
-    return ACP.memberAccessControl;
+  if (name.includes("Acr")) {
+    return ACP.access;
   }
-  return ACP.accessControl;
+  return ACP.apply;
 }
 
 /** @hidden */
-export function setDefaultAccessControlThingIfNotExist<
+export function setDefaultAgentMatcherPolicyThingIfNotExist<
   T extends WithAccessibleAcr
->(resource: T, name: DefaultAccessControlName): T {
-  const defaultAccessControlThingUrl = getDefaultAccessControlUrl(
+>(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
+  const resourceWithDefaultAccessControlThing =
+    setDefaultAccessControlThingIfNotExist(resource, name);
+  let defaultAccessControlThing = getThing(
+    getAccessControlResource(resourceWithDefaultAccessControlThing),
+    getDefaultAccessControlUrl(resourceWithDefaultAccessControlThing, name)
+  ) as ThingPersisted;
+
+  // Get the Default Access Control Agent Matcher Policy Thing or create it and return
+  const defaultAgentMatcherPolicyUrl = getDefaultAgentMatcherPolicyUrl(
     resource,
-    name
+    name,
+    mode
   );
-  const acr = getAccessControlResource(resource);
-
-  // Get the Access Control Resource Thing or create it
-  let accessControlResourceThing = getAccessControlResourceThing(resource);
-  if (
-    accessControlResourceThing === null ||
-    typeof accessControlResourceThing === "undefined"
-  ) {
-    accessControlResourceThing = createThing({ url: getSourceUrl(acr) });
-  }
-
-  // Get the Default Access Control Thing or create it and return
-  const accessControlUrlAll = getIriAll(
-    accessControlResourceThing,
-    getAccessControlTypeFromDefaultAccessControlName(name)
+  const agentMatcherPolicyUrlAll = getIriAll(
+    defaultAccessControlThing,
+    getPolicyTypeFromDefaultAccessControlName(name)
   );
 
-  if (!accessControlUrlAll.includes(defaultAccessControlThingUrl)) {
-    accessControlResourceThing = buildThing(accessControlResourceThing)
+  if (!agentMatcherPolicyUrlAll.includes(defaultAgentMatcherPolicyUrl)) {
+    defaultAccessControlThing = buildThing(defaultAccessControlThing)
       .addUrl(
-        getAccessControlTypeFromDefaultAccessControlName(name),
-        defaultAccessControlThingUrl
+        getPolicyTypeFromDefaultAccessControlName(name),
+        defaultAgentMatcherPolicyUrl
       )
       .build();
 
-    return setAccessControlResourceThing(resource, accessControlResourceThing);
+    return setAccessControlResourceThing(
+      resourceWithDefaultAccessControlThing,
+      defaultAccessControlThing
+    );
   }
 
-  // Return the original resource if the ACR and Default AC exist
-  return resource;
+  return resourceWithDefaultAccessControlThing;
 }
