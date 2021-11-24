@@ -35,7 +35,7 @@ import {
 } from "./rdf.internal";
 import { ToRdfJsOptions } from "./rdfjs";
 import { IriString } from "./interfaces";
-import { xmlSchemaTypes } from "./datatypes";
+import { xmlSchemaTypes } from "./xmlSchemaTypes";
 
 export const DataFactory = RdfJsDataFactory;
 

@@ -24,8 +24,6 @@ import { Url, UrlString, Thing, ThingPersisted } from "../interfaces";
 import {
   isNamedNode,
   normalizeLocale,
-  XmlSchemaTypeIri,
-  xmlSchemaTypes,
   deserializeBoolean,
   deserializeDatetime,
   deserializeDecimal,
@@ -35,6 +33,7 @@ import {
   deserializeTime,
   Time,
 } from "../datatypes";
+import { XmlSchemaTypeIri, xmlSchemaTypes } from "../xmlSchemaTypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import {
   isThing,

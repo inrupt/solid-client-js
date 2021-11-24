@@ -28,11 +28,10 @@ import {
   deserializeTime,
   deserializeDecimal,
   deserializeInteger,
-  xmlSchemaTypes,
-  XmlSchemaTypeIri,
   internal_isValidUrl,
   Time,
 } from "../datatypes";
+import { XmlSchemaTypeIri, xmlSchemaTypes } from "../xmlSchemaTypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { ValidPropertyUrlExpectedError } from "./thing";
 import { internal_toIriString } from "../interfaces.internal";
