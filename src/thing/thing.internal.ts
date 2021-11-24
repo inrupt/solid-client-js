@@ -23,12 +23,12 @@ import { Quad, Quad_Object } from "@rdfjs/types";
 import {
   isNamedNode,
   isLiteral,
-  xmlSchemaTypes,
   deserializeBoolean,
   deserializeDatetime,
   deserializeDecimal,
   deserializeInteger,
 } from "../datatypes";
+import { xmlSchemaTypes } from "../xmlSchemaTypes";
 import {
   Thing,
   SolidDataset,

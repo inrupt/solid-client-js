@@ -29,8 +29,8 @@ import {
   serializeDatetime,
   serializeDecimal,
   serializeInteger,
-  xmlSchemaTypes,
 } from "./datatypes";
+import { xmlSchemaTypes } from "./xmlSchemaTypes";
 import { ImmutableDataset } from "./rdf.internal";
 import { addRdfJsQuadToDataset } from "./rdfjs.internal";
 import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";

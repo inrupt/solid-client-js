@@ -26,23 +26,6 @@ import { internal_toIriString } from "./interfaces.internal";
 import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 
 /**
- * IRIs of the XML Schema data types we support
- */
-export const xmlSchemaTypes = {
-  boolean: "http://www.w3.org/2001/XMLSchema#boolean",
-  dateTime: "http://www.w3.org/2001/XMLSchema#dateTime",
-  date: "http://www.w3.org/2001/XMLSchema#date",
-  time: "http://www.w3.org/2001/XMLSchema#time",
-  decimal: "http://www.w3.org/2001/XMLSchema#decimal",
-  integer: "http://www.w3.org/2001/XMLSchema#integer",
-  string: "http://www.w3.org/2001/XMLSchema#string",
-  langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
-} as const;
-
-export type XmlSchemaTypeIri =
-  typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
-
-/**
  * @internal
  * @param value Value to serialise.
  * @returns String representation of `value`.

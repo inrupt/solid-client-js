@@ -29,13 +29,12 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
-  XmlSchemaTypeIri,
-  xmlSchemaTypes,
   internal_isValidUrl,
   isNamedNode,
   serializeTime,
   Time,
 } from "../datatypes";
+import { XmlSchemaTypeIri, xmlSchemaTypes } from "../xmlSchemaTypes";
 import {
   asIri,
   isThing,

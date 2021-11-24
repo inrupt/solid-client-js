@@ -55,7 +55,7 @@ import {
   getIriAll,
   getPropertyAll,
 } from "./get";
-import { xmlSchemaTypes } from "../datatypes";
+import { xmlSchemaTypes } from "../xmlSchemaTypes";
 import { createThing, ValidPropertyUrlExpectedError } from "./thing";
 import { mockThingFrom } from "./mock";
 import { localNodeSkolemPrefix } from "../rdf.internal";
