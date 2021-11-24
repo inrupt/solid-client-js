@@ -23,7 +23,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { ACL, ACP } from "../constants";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-  DEFAULT_DOMAIN,
   TEST_URL,
 } from "../mock/constants";
 import { createDatasetFromSubjects } from "../mock/dataset";
@@ -35,93 +34,35 @@ describe("setAgentAccess()", () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
+
     expect(
       (await setAgentAccess(resource, TEST_URL.defaultWebId, { read: true }))
         .internal_acp.acr.graphs.default
-    ).toStrictEqual({
-      [DEFAULT_ACCESS_CONTROL_RESOURCE_URL]: {
-        predicates: {
-          [ACP.accessControl]: {
-            namedNodes: [TEST_URL.defaultAccessControl],
-          },
-          [ACP.memberAccessControl]: {
-            namedNodes: [TEST_URL.defaultMemberAccessControl],
-          },
-        },
-        type: "Subject",
-        url: DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-      },
-      [TEST_URL.defaultAccessControl]: {
-        predicates: {
-          [ACP.apply]: {
-            namedNodes: [
-              "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicy",
+    ).toStrictEqual(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[ACP.accessControl, [TEST_URL.defaultAccessControl]]],
+        ],
+        [
+          TEST_URL.defaultAccessControl,
+          [[ACP.apply, [TEST_URL.defaultAccessControlAgentMatcherReadPolicy]]],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+          [
+            [
+              ACP.anyOf,
+              [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher],
             ],
-          },
-        },
-        type: "Subject",
-        url: TEST_URL.defaultAccessControl,
-      },
-      "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicy": {
-        predicates: {
-          [ACP.anyOf]: {
-            namedNodes: [
-              "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicyMatcher",
-            ],
-          },
-          [ACP.allow]: {
-            namedNodes: [ACL.Read],
-          },
-        },
-        type: "Subject",
-        url: "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicy",
-      },
-      "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicyMatcher":
-        {
-          predicates: {
-            [ACP.agent]: {
-              namedNodes: [TEST_URL.defaultWebId],
-            },
-          },
-          type: "Subject",
-          url: "https://example.org/acr#defaultAccessControlAgentMatcherReadPolicyMatcher",
-        },
-      [TEST_URL.defaultMemberAccessControl]: {
-        predicates: {
-          [ACP.apply]: {
-            namedNodes: [
-              "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicy",
-            ],
-          },
-        },
-        type: "Subject",
-        url: TEST_URL.defaultMemberAccessControl,
-      },
-      "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicy":
-        {
-          predicates: {
-            [ACP.anyOf]: {
-              namedNodes: [
-                "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicyMatcher",
-              ],
-            },
-            [ACP.allow]: {
-              namedNodes: [ACL.Read],
-            },
-          },
-          type: "Subject",
-          url: "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicy",
-        },
-      "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicyMatcher":
-        {
-          predicates: {
-            [ACP.agent]: {
-              namedNodes: [TEST_URL.defaultWebId],
-            },
-          },
-          type: "Subject",
-          url: "https://example.org/acr#defaultMemberAccessControlAgentMatcherReadPolicyMatcher",
-        },
-    });
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+      ]).graphs.default
+    );
   });
 });

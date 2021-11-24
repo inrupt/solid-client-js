@@ -101,13 +101,6 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       "read",
       access.read ? "add" : "remove"
     );
-    resourceWithAcr = setAgentAccessMode(
-      resourceWithAcr,
-      webId,
-      DEFAULT_MEMBER_ACCESS_CONTROL,
-      "read",
-      access.read ? "add" : "remove"
-    );
   }
   if (
     typeof access.append === "boolean" &&
@@ -119,13 +112,6 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       DEFAULT_ACCESS_CONTROL,
       "append",
       access.append ? "add" : "remove"
-    );
-    resourceWithAcr = setAgentAccessMode(
-      resourceWithAcr,
-      webId,
-      DEFAULT_MEMBER_ACCESS_CONTROL,
-      "append",
-      access.read ? "add" : "remove"
     );
   }
   if (
@@ -139,13 +125,6 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       "write",
       access.write ? "add" : "remove"
     );
-    resourceWithAcr = setAgentAccessMode(
-      resourceWithAcr,
-      webId,
-      DEFAULT_MEMBER_ACCESS_CONTROL,
-      "write",
-      access.read ? "add" : "remove"
-    );
   }
   if (
     typeof access.controlRead === "boolean" &&
@@ -155,13 +134,6 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       resourceWithAcr,
       webId,
       DEFAULT_ACR_ACCESS_CONTROL,
-      "controlRead",
-      access.controlRead ? "add" : "remove"
-    );
-    resourceWithAcr = setAgentAccessMode(
-      resourceWithAcr,
-      webId,
-      DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
       "controlRead",
       access.controlRead ? "add" : "remove"
     );
@@ -176,13 +148,6 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       DEFAULT_ACR_ACCESS_CONTROL,
       "controlWrite",
       access.controlWrite ? "add" : "remove"
-    );
-    resourceWithAcr = setAgentAccessMode(
-      resourceWithAcr,
-      webId,
-      DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
-      "controlWrite",
-      access.controlRead ? "add" : "remove"
     );
   }
 

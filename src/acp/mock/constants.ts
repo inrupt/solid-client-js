@@ -80,4 +80,20 @@ export const TEST_URL = {
   defaultMemberAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacracp2"),
   policy1: DEFAULT_DOMAIN.concat("p1"),
   defaultWebId: DEFAULT_DOMAIN.concat("wid1"),
+  defaultAccessControlAgentMatcherReadPolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherReadPolicy"
+    ),
+  defaultAccessControlAgentMatcherReadPolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherReadPolicyMatcher"
+    ),
+  defaultMemberAccessControlAgentMatcherReadPolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultMemberAccessControlAgentMatcherReadPolicy"
+    ),
+  defaultMemberAccessControlAgentMatcherReadPolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultMemberAccessControlAgentMatcherReadPolicyMatcher"
+    ),
 };
