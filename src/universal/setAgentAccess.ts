@@ -30,6 +30,8 @@ import {
   WacAccess,
 } from "../access/wac";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
+import { saveAcrFor } from "../acp/acp";
+import { getAgentAccess } from "./getAgentAccess";
 
 /**
  * Get an overview of what access is defined for a given Agent.
@@ -70,5 +72,11 @@ export async function setAgentAccess(
     return getAgentAccessWac(resourceInfo, webId, options);
   }
 
-  return setAgentAccessAcp(acr, webId, access);
+  // TODO: Make sure both setAgentAccessWac and setAgentAccessAcp don't save within the function, expose one standard saveAclFor function that is universal.
+  try {
+    await saveAcrFor(await setAgentAccessAcp(acr, webId, access), options);
+    return await getAgentAccess(resourceUrl, webId, options);
+  } catch (e) {
+    return null;
+  }
 }
