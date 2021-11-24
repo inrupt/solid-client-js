@@ -21,7 +21,13 @@
 
 import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../type/AccessModes";
-import { buildThing, getIriAll, getThing, ThingPersisted } from "../..";
+import {
+  buildThing,
+  createThing,
+  getIriAll,
+  getThing,
+  ThingPersisted,
+} from "../..";
 import { ACP } from "../constants";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
@@ -29,6 +35,7 @@ import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
 import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
 import { setDefaultAgentMatcherPolicyThingIfNotExist } from "./setDefaultAgentMatcherPolicyThingIfNotExist";
 import { getDefaultAgentMatcherPolicyMatcherUrl } from "./getDefaultAgentMatcherPolicyMatcherUrl";
+import { setModes } from "./setModes";
 
 /** @hidden */
 export const DEFAULT_POLICY_MATCHER_PREDICATE = ACP.anyOf;
@@ -37,40 +44,46 @@ export const DEFAULT_POLICY_MATCHER_PREDICATE = ACP.anyOf;
 export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
   T extends WithAccessibleAcr
 >(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
-  const resourceWithDefaultAccessControlAgentMatcherPolicyThing =
+  const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
+  const matcherUrl = getDefaultAgentMatcherPolicyMatcherUrl(
+    resource,
+    name,
+    mode
+  );
+
+  const resourceWithDefaultAgentMatcherPolicy =
     setDefaultAgentMatcherPolicyThingIfNotExist(resource, name, mode);
+
   let defaultAgentMatcherPolicyThing = getThing(
-    getAccessControlResource(
-      resourceWithDefaultAccessControlAgentMatcherPolicyThing
-    ),
-    getDefaultAgentMatcherPolicyUrl(
-      resourceWithDefaultAccessControlAgentMatcherPolicyThing,
-      name,
-      mode
-    )
-  ) as ThingPersisted;
+    getAccessControlResource(resourceWithDefaultAgentMatcherPolicy),
+    policyUrl
+  );
+
+  if (!defaultAgentMatcherPolicyThing) {
+    defaultAgentMatcherPolicyThing = createThing({ url: policyUrl });
+    defaultAgentMatcherPolicyThing = setModes(
+      defaultAgentMatcherPolicyThing,
+      { [mode]: true } as any as AccessModes,
+      ACP.allow
+    );
+  }
 
   // Get the Default Access Control Agent Matcher Policy Matcher Thing or create it and return
-  const defaultAgentMatcherPolicyMatcherUrl =
-    getDefaultAgentMatcherPolicyMatcherUrl(resource, name, mode);
   const agentMatcherPolicyUrlAll = getIriAll(
     defaultAgentMatcherPolicyThing,
     DEFAULT_POLICY_MATCHER_PREDICATE
   );
 
-  if (!agentMatcherPolicyUrlAll.includes(defaultAgentMatcherPolicyMatcherUrl)) {
+  if (!agentMatcherPolicyUrlAll.includes(matcherUrl)) {
     defaultAgentMatcherPolicyThing = buildThing(defaultAgentMatcherPolicyThing)
-      .addUrl(
-        DEFAULT_POLICY_MATCHER_PREDICATE,
-        defaultAgentMatcherPolicyMatcherUrl
-      )
+      .addUrl(DEFAULT_POLICY_MATCHER_PREDICATE, matcherUrl)
       .build();
 
     return setAccessControlResourceThing(
-      resourceWithDefaultAccessControlAgentMatcherPolicyThing,
+      resourceWithDefaultAgentMatcherPolicy,
       defaultAgentMatcherPolicyThing
     );
   }
 
-  return resourceWithDefaultAccessControlAgentMatcherPolicyThing;
+  return resourceWithDefaultAgentMatcherPolicy;
 }

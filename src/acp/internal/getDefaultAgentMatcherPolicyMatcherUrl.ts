@@ -25,15 +25,12 @@ import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
 
 /** @hidden */
-export const MATCHER_SUFFIX = "AgentMatcherPolicy";
-
-/** @hidden */
 export function getDefaultAgentMatcherPolicyMatcherUrl(
   resource: WithAccessibleAcr,
   name: DefaultAccessControlName,
   mode: keyof AccessModes
 ): string {
   return getDefaultAgentMatcherPolicyUrl(resource, name, mode).concat(
-    MATCHER_SUFFIX
+    "Matcher"
   );
 }

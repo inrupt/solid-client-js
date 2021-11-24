@@ -27,9 +27,6 @@ import {
 } from "./getDefaultAccessControlUrl";
 
 /** @hidden */
-export const AGENT_MATCHER_SUFFIX = "AgentMatcherPolicy";
-
-/** @hidden */
 export function getDefaultAgentMatcherPolicyUrl(
   resource: WithAccessibleAcr,
   name: DefaultAccessControlName,

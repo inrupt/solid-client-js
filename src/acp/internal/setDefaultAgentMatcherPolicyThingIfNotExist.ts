@@ -21,61 +21,30 @@
 
 import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../type/AccessModes";
-import { buildThing, getIriAll, getThing, ThingPersisted } from "../..";
-import { ACP } from "../constants";
-import { internal_getAcr as getAccessControlResource } from "../control.internal";
-import {
-  DefaultAccessControlName,
-  getDefaultAccessControlUrl,
-} from "./getDefaultAccessControlUrl";
-import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
-import { setDefaultAccessControlThingIfNotExist } from "./setDefaultAccessControlThingIfNotExist";
+import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
-
-function getPolicyTypeFromDefaultAccessControlName(
-  name: DefaultAccessControlName
-): string {
-  if (name.includes("Acr")) {
-    return ACP.access;
-  }
-  return ACP.apply;
-}
+import { addMemberAcrPolicyUrl } from "../policy/addMemberAcrPolicyUrl";
+import { addMemberPolicyUrl } from "../policy/addMemberPolicyUrl";
+import { addAcrPolicyUrl } from "../policy/addAcrPolicyUrl";
+import { addPolicyUrl } from "../policy/addPolicyUrl";
 
 /** @hidden */
 export function setDefaultAgentMatcherPolicyThingIfNotExist<
   T extends WithAccessibleAcr
 >(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
-  const resourceWithDefaultAccessControlThing =
-    setDefaultAccessControlThingIfNotExist(resource, name);
-  let defaultAccessControlThing = getThing(
-    getAccessControlResource(resourceWithDefaultAccessControlThing),
-    getDefaultAccessControlUrl(resourceWithDefaultAccessControlThing, name)
-  ) as ThingPersisted;
+  const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
 
-  // Get the Default Access Control Agent Matcher Policy Thing or create it and return
-  const defaultAgentMatcherPolicyUrl = getDefaultAgentMatcherPolicyUrl(
-    resource,
-    name,
-    mode
-  );
-  const agentMatcherPolicyUrlAll = getIriAll(
-    defaultAccessControlThing,
-    getPolicyTypeFromDefaultAccessControlName(name)
-  );
-
-  if (!agentMatcherPolicyUrlAll.includes(defaultAgentMatcherPolicyUrl)) {
-    defaultAccessControlThing = buildThing(defaultAccessControlThing)
-      .addUrl(
-        getPolicyTypeFromDefaultAccessControlName(name),
-        defaultAgentMatcherPolicyUrl
-      )
-      .build();
-
-    return setAccessControlResourceThing(
-      resourceWithDefaultAccessControlThing,
-      defaultAccessControlThing
-    );
+  if (policyUrl.includes("Member") && policyUrl.includes("Acr")) {
+    return addMemberAcrPolicyUrl(resource, policyUrl);
   }
 
-  return resourceWithDefaultAccessControlThing;
+  if (policyUrl.includes("Member")) {
+    return addMemberPolicyUrl(resource, policyUrl);
+  }
+
+  if (policyUrl.includes("Acr")) {
+    return addAcrPolicyUrl(resource, policyUrl);
+  }
+
+  return addPolicyUrl(resource, policyUrl);
 }

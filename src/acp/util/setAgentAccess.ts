@@ -22,7 +22,7 @@
 import type { WebId } from "../../interfaces";
 import type { AccessModes } from "../type/AccessModes";
 import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
-import { getThing, ThingPersisted } from "../..";
+import { createThing, getThing, ThingPersisted } from "../..";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import { getAgentAccess } from "./getAgentAccess";
 import { setDefaultAgentMatcherPolicyMatcherThingIfNotExist } from "../internal/setDefaultAgentMatcherPolicyMatcherThingIfNotExist";
@@ -30,35 +30,14 @@ import {
   DefaultAccessControlName,
   DEFAULT_ACCESS_CONTROL,
   DEFAULT_ACR_ACCESS_CONTROL,
+  DEFAULT_MEMBER_ACCESS_CONTROL,
+  DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
 } from "../internal/getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyMatcherUrl } from "../internal/getDefaultAgentMatcherPolicyMatcherUrl";
 import { addAgent, removeAgent } from "../matcher";
 import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
 
 /** @hidden */
-function containsNewModes(
-  access: Partial<AccessModes>,
-  existingAccess: AccessModes,
-  type: "control" | "resource"
-): boolean {
-  if (type === "resource") {
-    return (
-      (typeof access.read === "boolean" &&
-        existingAccess.read !== access.read) ||
-      (typeof access.append === "boolean" &&
-        existingAccess.append !== access.append) ||
-      (typeof access.write === "boolean" &&
-        existingAccess.write !== access.write)
-    );
-  }
-  return (
-    (typeof access.controlRead === "boolean" &&
-      existingAccess.controlRead !== access.controlRead) ||
-    (typeof access.controlWrite === "boolean" &&
-      existingAccess.controlWrite !== access.controlWrite)
-  );
-}
-
 function setAgentAccessMode<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   webId: WebId,
@@ -66,6 +45,12 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
   mode: keyof AccessModes,
   operation: "add" | "remove"
 ): T {
+  const matcherUrl = getDefaultAgentMatcherPolicyMatcherUrl(
+    resourceWithAcr,
+    name,
+    mode
+  );
+
   // Set default Matcher if not exists
   const resourceWithDefaultAgentMatcher =
     setDefaultAgentMatcherPolicyMatcherThingIfNotExist(
@@ -73,14 +58,13 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
       name,
       mode
     );
-  const defaultAgentMatcherThing = getThing(
-    getAccessControlResource(resourceWithDefaultAgentMatcher),
-    getDefaultAgentMatcherPolicyMatcherUrl(
-      resourceWithDefaultAgentMatcher,
-      name,
-      mode
-    )
-  ) as ThingPersisted;
+
+  const defaultAgentMatcherThing =
+    getThing(
+      getAccessControlResource(resourceWithDefaultAgentMatcher),
+      matcherUrl
+    ) ?? createThing({ url: matcherUrl });
+
   return setAccessControlResourceThing<T>(
     resourceWithDefaultAgentMatcher,
     operation === "add"
@@ -105,7 +89,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
 ): Promise<T> {
   const agentAccessModes = await getAgentAccess(resourceWithAcr, webId);
 
-  // Add Agent to Default Matcher if access mode is different from what exists
+  // Add Agent to Default Matchers (including member) if access mode is different from what exists
   if (
     typeof access.read === "boolean" &&
     agentAccessModes.read !== access.read
@@ -114,6 +98,13 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       resourceWithAcr,
       webId,
       DEFAULT_ACCESS_CONTROL,
+      "read",
+      access.read ? "add" : "remove"
+    );
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_MEMBER_ACCESS_CONTROL,
       "read",
       access.read ? "add" : "remove"
     );
@@ -129,6 +120,13 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       "append",
       access.append ? "add" : "remove"
     );
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_MEMBER_ACCESS_CONTROL,
+      "append",
+      access.read ? "add" : "remove"
+    );
   }
   if (
     typeof access.write === "boolean" &&
@@ -141,6 +139,13 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       "write",
       access.write ? "add" : "remove"
     );
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_MEMBER_ACCESS_CONTROL,
+      "write",
+      access.read ? "add" : "remove"
+    );
   }
   if (
     typeof access.controlRead === "boolean" &&
@@ -150,6 +155,13 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       resourceWithAcr,
       webId,
       DEFAULT_ACR_ACCESS_CONTROL,
+      "controlRead",
+      access.controlRead ? "add" : "remove"
+    );
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
       "controlRead",
       access.controlRead ? "add" : "remove"
     );
@@ -164,6 +176,13 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       DEFAULT_ACR_ACCESS_CONTROL,
       "controlWrite",
       access.controlWrite ? "add" : "remove"
+    );
+    resourceWithAcr = setAgentAccessMode(
+      resourceWithAcr,
+      webId,
+      DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
+      "controlWrite",
+      access.controlRead ? "add" : "remove"
     );
   }
 
