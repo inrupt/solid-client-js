@@ -33,7 +33,7 @@ import {
 } from "../datatypes";
 import { XmlSchemaTypeIri, xmlSchemaTypes } from "../xmlSchemaTypes";
 import { internal_throwIfNotThing } from "./thing.internal";
-import { ValidPropertyUrlExpectedError } from "./thing";
+import { ValidPropertyUrlExpectedError } from "./errors";
 import { internal_toIriString } from "../interfaces.internal";
 import {
   getBlankNodeValue,

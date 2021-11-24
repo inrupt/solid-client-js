@@ -34,9 +34,26 @@ import {
   SolidDataset,
   hasChangelog,
   WithChangeLog,
+  ThingPersisted,
+  ThingLocal,
 } from "../interfaces";
-import { ThingExpectedError, isThing } from "./thing";
-import { freeze } from "../rdf.internal";
+import { ThingExpectedError } from "./errors";
+import { freeze, isLocalNodeIri } from "../rdf.internal";
+
+export function internal_isThing<X>(input: X | Thing): input is Thing {
+  return (
+    typeof input === "object" &&
+    input !== null &&
+    typeof (input as Thing).type === "string" &&
+    (input as Thing).type === "Subject"
+  );
+}
+
+export function internal_isThingLocal(
+  thing: ThingPersisted | ThingLocal
+): thing is ThingLocal {
+  return isLocalNodeIri(thing.url);
+}
 
 /** @hidden For internal use only. */
 export function internal_getReadableValue(value: Quad_Object): string {
@@ -99,7 +116,7 @@ export function internal_getReadableValue(value: Quad_Object): string {
  * @hidden
  */
 export function internal_throwIfNotThing(thing: Thing): void {
-  if (!isThing(thing)) {
+  if (!internal_isThing(thing)) {
     throw new ThingExpectedError(thing);
   }
 }

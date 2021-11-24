@@ -34,13 +34,12 @@ import {
   Time,
 } from "../datatypes";
 import { XmlSchemaTypeIri, xmlSchemaTypes } from "../xmlSchemaTypes";
-import { internal_throwIfNotThing } from "./thing.internal";
+import { internal_isThing, internal_throwIfNotThing } from "./thing.internal";
+import { asIri } from "./asIri";
 import {
-  isThing,
   ValidPropertyUrlExpectedError,
   ValidValueUrlExpectedError,
-  asIri,
-} from "./thing";
+} from "./errors";
 import { internal_toIriString } from "../interfaces.internal";
 import { freeze } from "../rdf.internal";
 
@@ -94,7 +93,7 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   }
   const predicateIri = internal_toIriString(property);
 
-  if (!isThing(value) && !internal_isValidUrl(value)) {
+  if (!internal_isThing(value) && !internal_isValidUrl(value)) {
     throw new ValidValueUrlExpectedError(value);
   }
   const iriToRemove = isNamedNode(value)

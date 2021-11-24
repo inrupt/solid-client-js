@@ -27,7 +27,6 @@ import {
 import {
   UrlString,
   Url,
-  SolidClientError,
   Thing,
   ThingLocal,
   ThingPersisted,
@@ -42,7 +41,15 @@ import {
   internal_addAdditionsToChangeLog,
   internal_addDeletionsToChangeLog,
   internal_getReadableValue,
+  internal_isThing,
+  internal_isThingLocal,
 } from "./thing.internal";
+import {
+  ThingExpectedError,
+  ValidThingUrlExpectedError,
+  ValidValueUrlExpectedError,
+  ValidPropertyUrlExpectedError,
+} from "./errors";
 import {
   freeze,
   getLocalNodeIri,
@@ -53,6 +60,16 @@ import {
 } from "../rdf.internal";
 import { internal_toIriString } from "../interfaces.internal";
 import { getTermAll } from "./get";
+import { asIri, asUrl } from "./asIri";
+
+export {
+  ThingExpectedError,
+  ValidThingUrlExpectedError,
+  ValidValueUrlExpectedError,
+  ValidPropertyUrlExpectedError,
+};
+
+export { asIri, asUrl };
 
 /**
  * @hidden Scopes are not yet consistently used in Solid and hence not properly implemented in this library yet (the add*() and set*() functions do not respect it yet), so we're not exposing these to developers at this point in time.
@@ -310,47 +327,6 @@ export function createThing(options: CreateThingOptions = {}): Thing {
 }
 
 /**
- * @param input An value that might be a [[Thing]].
- * @returns Whether `input` is a Thing.
- * @since 0.2.0
- */
-export function isThing<X>(input: X | Thing): input is Thing {
-  return (
-    typeof input === "object" &&
-    input !== null &&
-    typeof (input as Thing).type === "string" &&
-    (input as Thing).type === "Subject"
-  );
-}
-
-type IsNotThingLocal<T extends Thing> = T extends ThingLocal ? never : T;
-/**
- * Get the URL to a given [[Thing]].
- *
- * @param thing The [[Thing]] you want to obtain the URL from.
- * @param baseUrl If `thing` is not persisted yet, the base URL that should be used to construct this [[Thing]]'s URL.
- */
-export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
-export function asUrl<T extends ThingPersisted>(
-  thing: T & IsNotThingLocal<T>
-): UrlString;
-export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
-export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
-  if (isThingLocal(thing)) {
-    if (typeof baseUrl === "undefined") {
-      throw new Error(
-        "The URL of a Thing that has not been persisted cannot be determined without a base URL."
-      );
-    }
-    return resolveLocalIri(getLocalNodeName(thing.url), baseUrl);
-  }
-
-  return thing.url;
-}
-/** @hidden Alias of [[asUrl]] for those who prefer IRI terminology. */
-export const asIri = asUrl;
-
-/**
  * Gets a human-readable representation of the given Thing to aid debugging.
  *
  * Note that changes to the exact format of the return value are not considered a breaking change;
@@ -387,77 +363,18 @@ export function thingAsMarkdown(thing: Thing): string {
 }
 
 /**
+ * @param input An value that might be a [[Thing]].
+ * @returns Whether `input` is a Thing.
+ * @since 0.2.0
+ */
+export const isThing = internal_isThing;
+
+/**
  * @param thing The [[Thing]] of which a URL might or might not be known.
  * @return `true` if `thing` has no known URL yet.
  * @since 1.7.0
  */
-export function isThingLocal(
-  thing: ThingPersisted | ThingLocal
-): thing is ThingLocal {
-  return isLocalNodeIri(thing.url);
-}
-
-/**
- * This error is thrown when a function expected to receive a [[Thing]] but received something else.
- * @since 1.2.0
- */
-export class ThingExpectedError extends SolidClientError {
-  public readonly receivedValue: unknown;
-
-  constructor(receivedValue: unknown) {
-    const message = `Expected a Thing, but received: [${receivedValue}].`;
-    super(message);
-    this.receivedValue = receivedValue;
-  }
-}
-
-/**
- * This error is thrown when a function expected to receive a valid URL to identify a property but received something else.
- */
-export class ValidPropertyUrlExpectedError extends SolidClientError {
-  public readonly receivedProperty: unknown;
-
-  constructor(receivedValue: unknown) {
-    const value = isNamedNode(receivedValue)
-      ? receivedValue.value
-      : receivedValue;
-    const message = `Expected a valid URL to identify a property, but received: [${value}].`;
-    super(message);
-    this.receivedProperty = value;
-  }
-}
-
-/**
- * This error is thrown when a function expected to receive a valid URL value but received something else.
- */
-export class ValidValueUrlExpectedError extends SolidClientError {
-  public readonly receivedValue: unknown;
-
-  constructor(receivedValue: unknown) {
-    const value = isNamedNode(receivedValue)
-      ? receivedValue.value
-      : receivedValue;
-    const message = `Expected a valid URL value, but received: [${value}].`;
-    super(message);
-    this.receivedValue = value;
-  }
-}
-
-/**
- * This error is thrown when a function expected to receive a valid URL to identify a [[Thing]] but received something else.
- */
-export class ValidThingUrlExpectedError extends SolidClientError {
-  public readonly receivedValue: unknown;
-
-  constructor(receivedValue: unknown) {
-    const value = isNamedNode(receivedValue)
-      ? receivedValue.value
-      : receivedValue;
-    const message = `Expected a valid URL to identify a Thing, but received: [${value}].`;
-    super(message);
-    this.receivedValue = value;
-  }
-}
+export const isThingLocal = internal_isThingLocal;
 
 /**
  * Generate a string that can be used as the unique identifier for a Thing
