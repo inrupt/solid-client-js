@@ -48,12 +48,11 @@ import {
   Access,
   AclDataset,
   AclRule,
-  hasAccessibleAcl,
   WithAccessibleAcl,
   WithAcl,
   WithFallbackAcl,
   WithResourceAcl,
-} from "./acl";
+} from "./acl.types";
 import { removeAll, removeIri } from "../thing/remove";
 import { freeze } from "../rdf.internal";
 import { internal_cloneResource } from "../resource/resource.internal";
@@ -73,7 +72,7 @@ export async function internal_fetchAcl(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<WithAcl["internal_acl"]> {
-  if (!hasAccessibleAcl(resourceInfo)) {
+  if (!internal_hasAccessibleAcl(resourceInfo)) {
     return {
       resourceAcl: null,
       fallbackAcl: null,
@@ -111,7 +110,7 @@ export async function internal_fetchResourceAcl(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<AclDataset | null> {
-  if (!hasAccessibleAcl(dataset)) {
+  if (!internal_hasAccessibleAcl(dataset)) {
     return null;
   }
 
@@ -160,7 +159,7 @@ export async function internal_fetchFallbackAcl(
   const containerIri = new URL(containerPath, resourceUrl.origin).href;
   const containerInfo = await getResourceInfo(containerIri, options);
 
-  if (!hasAccessibleAcl(containerInfo)) {
+  if (!internal_hasAccessibleAcl(containerInfo)) {
     // If the current user does not have access to this Container's ACL,
     // we cannot determine whether its ACL is the one that applies. Thus, return null:
     return null;
@@ -687,6 +686,24 @@ export function internal_getResourceAcl(
   resource: WithServerResourceInfo & WithResourceAcl
 ): AclDataset {
   return resource.internal_acl.resourceAcl;
+}
+
+/**
+ * Given a [[SolidDataset]], verify whether its Access Control List is accessible to the current user.
+ *
+ * This should generally only be true for SolidDatasets fetched by
+ * [[getSolidDatasetWithAcl]].
+ *
+ * Please note that the Web Access Control specification is not yet finalised, and hence, this
+ * function is still experimental and can change in a non-major release.
+ *
+ * @param dataset A [[SolidDataset]].
+ * @returns Whether the given `dataset` has a an ACL that is accessible to the current user.
+ */
+export function internal_hasAccessibleAcl<
+  ResourceExt extends WithServerResourceInfo
+>(dataset: ResourceExt): dataset is WithAccessibleAcl<ResourceExt> {
+  return typeof dataset.internal_resourceInfo.aclUrl === "string";
 }
 
 /**
