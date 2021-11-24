@@ -30,7 +30,7 @@ import { mockAccessControlledResource } from "../mock/mockAccessControlledResour
 import { setAgentAccess } from "./setAgentAccess";
 
 describe("setAgentAccess()", () => {
-  it("returns the default access modes for an empty ACR", async () => {
+  it("sets an access mode for an empty ACR", async () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
@@ -64,5 +64,49 @@ describe("setAgentAccess()", () => {
         ],
       ]).graphs.default
     );
+  });
+
+  it("removes an access mode for an existing default matcher", async () => {
+    const testDataset = createDatasetFromSubjects([
+      [
+        DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+        [[ACP.accessControl, [TEST_URL.defaultAccessControl]]],
+      ],
+      [
+        TEST_URL.defaultAccessControl,
+        [[ACP.apply, [TEST_URL.defaultAccessControlAgentMatcherReadPolicy]]],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Read]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId]]],
+      ],
+    ]);
+    const resource = mockAccessControlledResource(testDataset);
+
+    expect(
+      (await setAgentAccess(resource, TEST_URL.defaultWebId, { read: false }))
+        .internal_acp.acr.graphs.default
+    ).toStrictEqual({
+      ...testDataset.graphs.default,
+      [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher]: {
+        predicates: {
+          [ACP.agent]: {
+            namedNodes: [],
+          },
+        },
+        type: "Subject",
+        url: TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+      },
+    });
   });
 });
