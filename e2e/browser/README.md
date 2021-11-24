@@ -74,7 +74,7 @@ To run the tests, run:
 2. `npm install` in `.codesandbox/sandbox` to install the dependencies of the
    application under test.
 
-You can then run the tests using `npm run e2e-test-browser` at the root.
+You can then run the tests using `npm run test-e2e-browser` at the root.
 
 Note: if you want to run the end-to-end tests against your local code, then
 before running the above command, run:

@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "test": "eslint --config .eslintrc.js \"src/\" --ext .js,.jsx,.ts,.tsx && jest",
-    "e2e-test-node": "jest --config=jest.e2e.config.js",
-    "e2e-test-browser": "testcafe",
+    "test-e2e-node": "jest --config=jest.e2e.config.js",
+    "test-e2e-browser": "testcafe",
     "build": "rollup --config rollup.config.js",
     "prepublishOnly": "npm run build",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
