@@ -22,28 +22,40 @@
 import pkg from "./package.json";
 import typescript from "rollup-plugin-typescript2";
 
+const outputGlobals = {
+  "http-link-header": "LinkHeader",
+  "@rdfjs/data-model": "RdfJsDataFactory",
+  "@rdfjs/dataset": "rdfJsDatasetModule",
+  jsonld: "jsonld",
+  "cross-fetch": "crossFetch",
+};
+
 export default {
   input: "./src/index.ts",
   output: [
     {
       file: pkg.main,
       format: "cjs",
+      globals: outputGlobals,
     },
     {
       file: pkg.module,
       entryFileNames: "[name].es.js",
       format: "esm",
+      globals: outputGlobals,
     },
     {
       dir: "dist",
       entryFileNames: "[name].mjs",
       format: "esm",
       preserveModules: true,
+      globals: outputGlobals,
     },
     {
       dir: "umd",
       format: "umd",
       name: "SolidClient",
+      globals: outputGlobals,
     },
   ],
   plugins: [
@@ -61,6 +73,7 @@ export default {
     "cross-fetch",
     "http-link-header",
     "@rdfjs/dataset",
+    "@rdfjs/data-model",
     "n3",
     "jsonld",
   ],
