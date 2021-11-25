@@ -37,6 +37,7 @@ import {
   createSolidDataset,
   deleteSolidDataset,
   acp_v4 as acp,
+  getSolidDataset,
 } from "../index";
 import {
   getTestingEnvironment,
@@ -128,18 +129,26 @@ describe("An ACP Solid server", () => {
   });
 
   it("can get and set read access for the public", async () => {
-    const agentAccess = await setPublicAccess(
+    await expect(
+      getSolidDataset(sessionDataset, { fetch: session.fetch })
+    ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
+
+    await expect(getSolidDataset(sessionDataset)).rejects.toThrow();
+
+    const access = await setPublicAccess(
       sessionDataset,
       { read: true },
       { fetch: session.fetch }
     );
-    expect(agentAccess).toStrictEqual({
+
+    expect(access).toStrictEqual({
       read: true,
       append: false,
       write: false,
       controlRead: false,
       controlWrite: false,
     });
+
     expect(await getPublicAccess(sessionDataset, options)).toStrictEqual({
       read: true,
       append: false,
@@ -147,6 +156,11 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
+
+    // TODO: Find out why the unauthenticated fetch still fails after setting public access
+    await expect(getSolidDataset(sessionDataset)).resolves.toEqual(
+      expect.objectContaining({ graphs: { default: {} } })
+    );
   });
 
   it("can get and set full access for an agent", async () => {
