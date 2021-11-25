@@ -21,7 +21,7 @@
 
 import type { WebId } from "../../interfaces";
 import type { AccessModes } from "../type/AccessModes";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { getPolicyUrlAll } from "../policy/getPolicyUrlAll";
 import { getThing, getUrlAll, ThingPersisted } from "../..";
 import { internal_getAcr } from "../control.internal";

@@ -21,7 +21,7 @@
 
 import type { SolidDataset, WithServerResourceInfo } from "../../interfaces";
 import type { DefaultOptions } from "../type/DefaultOptions";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
+import type { WithAccessibleAcr } from "../acp";
 import { getAcrUrl } from "./getAcrUrl";
 import { getSolidDataset } from "../../resource/solidDataset";
 import { getSourceUrl } from "../../resource/resource";

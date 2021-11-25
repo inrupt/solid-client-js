@@ -21,8 +21,8 @@
 
 import type { WebId } from "../../interfaces";
 import type { AccessModes } from "../type/AccessModes";
-import type { WithAccessibleAcr } from "../type/WithAccessibleAcr";
-import { createThing, getThing, ThingPersisted } from "../..";
+import type { WithAccessibleAcr } from "../acp";
+import { createThing, getThing } from "../..";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import { getAgentAccess } from "./getAgentAccess";
 import { setDefaultAgentMatcherPolicyMatcherThingIfNotExist } from "../internal/setDefaultAgentMatcherPolicyMatcherThingIfNotExist";
