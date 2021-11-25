@@ -34,13 +34,14 @@ export function setDefaultAgentMatcherPolicyThingIfNotExist<
 >(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
   const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
 
-  if (policyUrl.includes("Member") && policyUrl.includes("Acr")) {
-    return addMemberAcrPolicyUrl(resource, policyUrl);
-  }
+  // TODO: Re-enable when we support setting agent access on member resources
+  // if (policyUrl.includes("Member") && policyUrl.includes("Acr")) {
+  //   return addMemberAcrPolicyUrl(resource, policyUrl);
+  // }
 
-  if (policyUrl.includes("Member")) {
-    return addMemberPolicyUrl(resource, policyUrl);
-  }
+  // if (policyUrl.includes("Member")) {
+  //   return addMemberPolicyUrl(resource, policyUrl);
+  // }
 
   if (policyUrl.includes("Acr")) {
     return addAcrPolicyUrl(resource, policyUrl);

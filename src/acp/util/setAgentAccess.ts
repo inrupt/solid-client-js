@@ -30,8 +30,6 @@ import {
   DefaultAccessControlName,
   DEFAULT_ACCESS_CONTROL,
   DEFAULT_ACR_ACCESS_CONTROL,
-  DEFAULT_MEMBER_ACCESS_CONTROL,
-  DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
 } from "../internal/getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyMatcherUrl } from "../internal/getDefaultAgentMatcherPolicyMatcherUrl";
 import { addAgent, removeAgent } from "../matcher";

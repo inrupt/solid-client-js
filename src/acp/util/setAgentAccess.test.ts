@@ -66,6 +66,17 @@ describe("setAgentAccess()", () => {
     );
   });
 
+  it("sets no access mode for an empty access modes set", async () => {
+    const resource = mockAccessControlledResource();
+
+    expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
+
+    expect(
+      (await setAgentAccess(resource, TEST_URL.defaultWebId, {})).internal_acp
+        .acr.graphs.default
+    ).toStrictEqual({});
+  });
+
   it("removes an access mode for an existing default matcher", async () => {
     const testDataset = createDatasetFromSubjects([
       [
@@ -111,8 +122,6 @@ describe("setAgentAccess()", () => {
   });
 
   it("adds full access for an agent", async () => {
-    const resource = mockAccessControlledResource();
-
     expect(
       (
         await setAgentAccess(
@@ -238,6 +247,247 @@ describe("setAgentAccess()", () => {
           [[ACP.agent, [TEST_URL.defaultWebId]]],
         ],
       ]).graphs.default,
+    });
+  });
+
+  it("removes all access modes for an agent", async () => {
+    const dataset = createDatasetFromSubjects([
+      [
+        DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+        [
+          [
+            ACP.accessControl,
+            [TEST_URL.defaultAccessControl, TEST_URL.defaultAcrAccessControl],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControl,
+        [
+          [
+            ACP.apply,
+            [
+              TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+              TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+              TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+            ],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControl,
+        [
+          [
+            ACP.access,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+            ],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Read]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Append]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Write]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+        [
+          [
+            ACP.anyOf,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+            ],
+          ],
+          [ACP.allow, [ACL.Read]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+        [
+          [
+            ACP.anyOf,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+            ],
+          ],
+          [ACP.allow, [ACL.Write]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId, TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId, TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId, TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId, TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+        [[ACP.agent, [TEST_URL.defaultWebId, TEST_URL.otherWebId]]],
+      ],
+    ]);
+    const datasetWithoutDefaultWebId = createDatasetFromSubjects([
+      [
+        DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+        [
+          [
+            ACP.accessControl,
+            [TEST_URL.defaultAccessControl, TEST_URL.defaultAcrAccessControl],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControl,
+        [
+          [
+            ACP.apply,
+            [
+              TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+              TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+              TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+            ],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControl,
+        [
+          [
+            ACP.access,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+            ],
+          ],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Read]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Append]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+        [
+          [
+            ACP.anyOf,
+            [TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher],
+          ],
+          [ACP.allow, [ACL.Write]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+        [
+          [
+            ACP.anyOf,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+            ],
+          ],
+          [ACP.allow, [ACL.Read]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+        [
+          [
+            ACP.anyOf,
+            [
+              TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+            ],
+          ],
+          [ACP.allow, [ACL.Write]],
+        ],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+        [[ACP.agent, [TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher,
+        [[ACP.agent, [TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher,
+        [[ACP.agent, [TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+        [[ACP.agent, [TEST_URL.otherWebId]]],
+      ],
+      [
+        TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+        [[ACP.agent, [TEST_URL.otherWebId]]],
+      ],
+    ]);
+
+    expect(
+      (
+        await setAgentAccess(
+          mockAccessControlledResource(dataset),
+          TEST_URL.defaultWebId,
+          {
+            read: false,
+            append: false,
+            write: false,
+            controlRead: false,
+            controlWrite: false,
+          }
+        )
+      ).internal_acp.acr.graphs.default
+    ).toStrictEqual({
+      ...datasetWithoutDefaultWebId.graphs.default,
     });
   });
 });
