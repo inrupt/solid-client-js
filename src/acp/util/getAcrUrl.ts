@@ -23,7 +23,7 @@ import type { UrlString, WithServerResourceInfo } from "../../interfaces";
 import type { DefaultOptions } from "../type/DefaultOptions";
 import { ACP } from "../constants";
 import { getLinkedResourceUrlAll, getSourceUrl } from "../../resource/resource";
-import { getAclServerResourceInfo } from "../universal/getAclServerResourceInfo";
+import { getAclServerResourceInfo } from "../../universal/getAclServerResourceInfo";
 import { getAcrUrl as getAcrUrlLegacy } from "./getAcrUrl.legacy";
 
 /**

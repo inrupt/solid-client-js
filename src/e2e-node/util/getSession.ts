@@ -19,32 +19,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { removeAll } from "../../thing/remove";
-import { addIri } from "../../thing/add";
-import { ACL } from "../constants";
-import { ModeType } from "./getModes";
+import { Session } from "@inrupt/solid-client-authn-node";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "./getTestingEnvironment";
 
-/** @hidden */
-export function setModes<T extends ThingPersisted>(
-  policy: T,
-  modes: AccessModes,
-  type: ModeType
-): T {
-  let newPolicy = removeAll(policy, type);
-
-  if (modes.read || modes.controlRead) {
-    newPolicy = addIri(newPolicy, type, ACL.Read);
-  }
-
-  if (modes.append) {
-    newPolicy = addIri(newPolicy, type, ACL.Append);
-  }
-
-  if (modes.write || modes.controlWrite) {
-    newPolicy = addIri(newPolicy, type, ACL.Write);
-  }
-
-  return newPolicy;
+export async function getSession(
+  params?: TestingEnvironment
+): Promise<Session> {
+  const authDetails = params ?? getTestingEnvironment();
+  const session = new Session();
+  await session.login({
+    oidcIssuer: authDetails.idp,
+    clientId: authDetails.clientId,
+    clientName: "Solid Client End-2-End Test Client App - Node.js",
+    clientSecret: authDetails.clientSecret,
+  });
+  return session;
 }

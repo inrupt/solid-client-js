@@ -109,4 +109,135 @@ describe("setAgentAccess()", () => {
       },
     });
   });
+
+  it("adds full access for an agent", async () => {
+    const resource = mockAccessControlledResource();
+
+    expect(
+      (
+        await setAgentAccess(
+          mockAccessControlledResource(),
+          TEST_URL.defaultWebId,
+          {
+            read: true,
+            append: true,
+            write: true,
+            controlRead: true,
+            controlWrite: true,
+          }
+        )
+      ).internal_acp.acr.graphs.default
+    ).toStrictEqual({
+      ...createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [
+              ACP.accessControl,
+              [TEST_URL.defaultAccessControl, TEST_URL.defaultAcrAccessControl],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControl,
+          [
+            [
+              ACP.apply,
+              [
+                TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+                TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+                TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+              ],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.defaultAcrAccessControl,
+          [
+            [
+              ACP.access,
+              [
+                TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+                TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+              ],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherReadPolicy,
+          [
+            [
+              ACP.anyOf,
+              [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher],
+            ],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherAppendPolicy,
+          [
+            [
+              ACP.anyOf,
+              [TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher],
+            ],
+            [ACP.allow, [ACL.Append]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherWritePolicy,
+          [
+            [
+              ACP.anyOf,
+              [TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher],
+            ],
+            [ACP.allow, [ACL.Write]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicy,
+          [
+            [
+              ACP.anyOf,
+              [
+                TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+              ],
+            ],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicy,
+          [
+            [
+              ACP.anyOf,
+              [
+                TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+              ],
+            ],
+            [ACP.allow, [ACL.Write]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherAppendPolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+        [
+          TEST_URL.defaultAccessControlAgentMatcherWritePolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+        [
+          TEST_URL.defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+        [
+          TEST_URL.defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher,
+          [[ACP.agent, [TEST_URL.defaultWebId]]],
+        ],
+      ]).graphs.default,
+    });
+  });
 });

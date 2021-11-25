@@ -19,32 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
-import { removeAll } from "../../thing/remove";
-import { addIri } from "../../thing/add";
-import { ACL } from "../constants";
-import { ModeType } from "./getModes";
+export interface TestingEnvironment {
+  clientId: string;
+  clientSecret: string;
+  idp: string;
+  pod: string;
+}
 
-/** @hidden */
-export function setModes<T extends ThingPersisted>(
-  policy: T,
-  modes: AccessModes,
-  type: ModeType
-): T {
-  let newPolicy = removeAll(policy, type);
-
-  if (modes.read || modes.controlRead) {
-    newPolicy = addIri(newPolicy, type, ACL.Read);
-  }
-
-  if (modes.append) {
-    newPolicy = addIri(newPolicy, type, ACL.Append);
-  }
-
-  if (modes.write || modes.controlWrite) {
-    newPolicy = addIri(newPolicy, type, ACL.Write);
-  }
-
-  return newPolicy;
+export function getTestingEnvironment(): TestingEnvironment {
+  return {
+    pod: process.env.E2E_TEST_POD!,
+    idp: process.env.E2E_TEST_IDP!,
+    clientId: process.env.E2E_TEST_CLIENT_ID!,
+    clientSecret: process.env.E2E_TEST_CLIENT_SECRET!,
+  };
 }

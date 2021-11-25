@@ -84,9 +84,41 @@ export const TEST_URL = {
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
       "#defaultAccessControlAgentMatcherReadPolicy"
     ),
+  defaultAccessControlAgentMatcherAppendPolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherAppendPolicy"
+    ),
+  defaultAccessControlAgentMatcherWritePolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherWritePolicy"
+    ),
+  defaultAcrAccessControlAgentMatcherControlReadPolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAcrAccessControlAgentMatcherControlReadPolicy"
+    ),
+  defaultAcrAccessControlAgentMatcherControlWritePolicy:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAcrAccessControlAgentMatcherControlWritePolicy"
+    ),
   defaultAccessControlAgentMatcherReadPolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
       "#defaultAccessControlAgentMatcherReadPolicyMatcher"
+    ),
+  defaultAccessControlAgentMatcherAppendPolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherAppendPolicyMatcher"
+    ),
+  defaultAccessControlAgentMatcherWritePolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAccessControlAgentMatcherWritePolicyMatcher"
+    ),
+  defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher"
+    ),
+  defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher:
+    DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+      "#defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher"
     ),
   defaultMemberAccessControlAgentMatcherReadPolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
