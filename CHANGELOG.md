@@ -8,6 +8,10 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+# [1.16.1] - 2021-11-20
+
+- The ACP low-level API is amended to align with the latest specification draft.
+
 ## [1.16.0] - 2021-11-16
 
 ### New features
