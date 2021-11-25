@@ -45,6 +45,9 @@ import {
 import { getAccessControlUrlAll } from "../acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../universal/getAgentAccess";
 import { setAgentAccess } from "../universal/setAgentAccess";
+import { getPublicAccess } from "../universal/getPublicAccess";
+import { setPublicAccess } from "../universal/setPublicAccess";
+import { ACP } from "../acp/constants";
 
 let env: TestingEnvironment;
 
@@ -117,6 +120,28 @@ describe("An ACP Solid server", () => {
       controlWrite: false,
     });
     expect(await getAgentAccess(sessionDataset, agent, options)).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("can get and set read access for the public", async () => {
+    const agentAccess = await setPublicAccess(
+      sessionDataset,
+      { read: true },
+      { fetch: session.fetch }
+    );
+    expect(agentAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+    expect(await getPublicAccess(sessionDataset, options)).toStrictEqual({
       read: true,
       append: false,
       write: false,
