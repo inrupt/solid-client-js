@@ -24,7 +24,6 @@ import { ACL, ACP } from "../constants";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   DEFAULT_DOMAIN,
-  TEST_URL,
 } from "../mock/constants";
 import { createDatasetFromSubjects } from "../mock/dataset";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
@@ -44,7 +43,7 @@ describe("getPublicAccess()", () => {
     });
   });
 
-  it("returns the access modes for a simple ACR", async () => {
+  it("returns public access modes for a simple ACR", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [

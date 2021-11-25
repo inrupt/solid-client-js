@@ -70,7 +70,6 @@ export async function setPublicAccess(
   access: Partial<AccessModes>,
   options?: DefaultOptions
 ): Promise<AccessModes | null> {
-  // TODO: Change the standard getAgentAccess signatures to all take a  T extends WithAcl
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);
 
@@ -79,7 +78,6 @@ export async function setPublicAccess(
     return getPublicAccessWac(resourceInfo, options);
   }
 
-  // TODO: Make sure both setAgentAccessWac and setAgentAccessAcp don't save within the function, expose one standard saveAclFor function that is universal.
   try {
     await saveAcrFor(await setPublicAccessAcp(acr, access), options);
     return await getPublicAccessAcp(resourceUrl, options);

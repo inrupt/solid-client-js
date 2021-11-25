@@ -47,7 +47,6 @@ import { getAgentAccess } from "../universal/getAgentAccess";
 import { setAgentAccess } from "../universal/setAgentAccess";
 import { getPublicAccess } from "../universal/getPublicAccess";
 import { setPublicAccess } from "../universal/setPublicAccess";
-import { ACP } from "../acp/constants";
 
 let env: TestingEnvironment;
 
