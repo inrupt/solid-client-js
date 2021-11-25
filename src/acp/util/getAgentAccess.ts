@@ -108,7 +108,6 @@ function reduceModes(
  *
  * @param resourceWithAcr URL of the Resource you want to read the access for.
  * @param webId WebID of the Agent you want to get the access for.
- * @param options Default Options such as a fetch function.
  * @since 1.16.0
  */
 export async function getAgentAccess<T extends WithAccessibleAcr>(

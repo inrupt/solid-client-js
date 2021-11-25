@@ -34,27 +34,36 @@ import { saveAcrFor } from "../acp/acp";
 import { getAgentAccess } from "./getAgentAccess";
 
 /**
- * Get an overview of what access is defined for a given Agent.
+ * Set access to a resource for a given Agent.
  *
  * This function works with Solid Pods that implement either the Web Access
  * Control spec or the Access Control Policies proposal, with some caveats:
  *
  * - If access to the given Resource has been set using anything other than the
  *   functions in this module, it is possible that it has been set in a way that
- *   prevents this function from reliably reading access, in which case it will
- *   resolve to `null`.
- * - It will only return access specified explicitly for the given Agent. If
- *   additional restrictions are set up to apply to the given Agent in a
- *   particular situation, those will not be reflected in the return value of
- *   this function.
- * - It will only return access specified explicitly for the given Resource.
- *   In other words, if the Resource is a Container, the returned Access may not
- *   apply to contained Resources.
- * - If the current user does not have permission to view access for the given
- *   Resource, this function will resolve to `null`.
+ *   prevents this function from reliably setting access.
+ * - It will only set access explicitly for the given Agent. In other words,
+ *   additional restrictions could be present that further restrict or loosen
+ *   what access the given Agent has in particular circumstances.
+ * - The provided access will only apply to the given Resource. In other words,
+ *   if the Resource is a Container, the configured Access will not apply to
+ *   contained Resources.
+ * - If the current user does not have permission to view or change access for
+ *   the given Resource, this function will resolve to `null`.
  *
- * @param resourceUrl URL of the Resource you want to read the access for.
- * @param webId WebID of the Agent you want to get the access for.
+ * Additionally, two caveats apply to users with a Pod server that uses WAC:
+ * - If the Resource did not have an ACL yet, a new one will be initialised.
+ *   This means that changes to the ACL of a parent Container can no longer
+ *   affect access people have to this Resource, although existing access will
+ *   be preserved.
+ * - Setting different values for `controlRead` and `controlWrite` is not
+ *   supported, and **will throw an error**. If you expect (some of) your users
+ *   to have Pods implementing WAC, be sure to pass the same value for both.
+ *
+ * @param resourceUrl URL of the Resource you want to set access for.
+ * @param webId WebID of the Agent you want to set access for.
+ * @param access The Access Modes to add (true) or remove (false).
+ * @param options Default Options such as a fetch function.
  * @since unreleased
  */
 export async function setAgentAccess(
