@@ -19,32 +19,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../acp";
-import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
+import { Session } from "@inrupt/solid-client-authn-node";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "./getTestingEnvironment";
 
-/**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
- *
- * Get the URLs of policies applying to the given resource's children.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs policies
- * applying to its children.
- * @returns Policy URL array.
- * @since 1.16.1
- */
-export function getMemberPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.apply
-  );
+export async function getSession(
+  params?: TestingEnvironment
+): Promise<Session> {
+  const authDetails = params ?? getTestingEnvironment();
+  const session = new Session();
+  await session.login({
+    oidcIssuer: authDetails.idp,
+    clientId: authDetails.clientId,
+    clientName: "Solid Client End-2-End Test Client App - Node.js",
+    clientSecret: authDetails.clientSecret,
+  });
+  return session;
 }

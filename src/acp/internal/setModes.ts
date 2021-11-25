@@ -34,7 +34,7 @@ export function setModes<T extends ThingPersisted>(
 ): T {
   let newPolicy = removeAll(policy, type);
 
-  if (modes.read) {
+  if (modes.read || modes.controlRead) {
     newPolicy = addIri(newPolicy, type, ACL.Read);
   }
 
@@ -42,7 +42,7 @@ export function setModes<T extends ThingPersisted>(
     newPolicy = addIri(newPolicy, type, ACL.Append);
   }
 
-  if (modes.write) {
+  if (modes.write || modes.controlWrite) {
     newPolicy = addIri(newPolicy, type, ACL.Write);
   }
 

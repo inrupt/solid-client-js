@@ -19,32 +19,31 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../acp";
-import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
+import type { WithServerResourceInfo } from "../interfaces";
+import type { DefaultOptions } from "../acp/type/DefaultOptions";
+import { getResourceInfo } from "../resource/resource";
 
 /**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
+ * Retrieve the Server Resource Info of Resource expressing access control over
+ * another resource it is linked to. It applies in both ACP and WAC contexts:
+ * the Access Control Resource is discovered consistently using a Link header
+ * with `rel=acl`.
  *
- * Get the URLs of policies applying to the given resource's children.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs policies
- * applying to its children.
- * @returns Policy URL array.
- * @since 1.16.1
+ * @param {WithServerResourceInfo} resource The Resource for which ACL we want
+ * to retrieve the Server Resource Info.
+ * @param {DefaultOptions} options
+ * @returns The Server Resource Info if available, null otherwise.
+ * @since unreleased
  */
-export function getMemberPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.apply
-  );
+export async function getAclServerResourceInfo(
+  resource: WithServerResourceInfo,
+  options?: DefaultOptions
+): Promise<WithServerResourceInfo | null> {
+  if (typeof resource.internal_resourceInfo.aclUrl === "string") {
+    return await getResourceInfo(
+      resource.internal_resourceInfo.aclUrl,
+      options
+    );
+  }
+  return null;
 }

@@ -19,32 +19,45 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
+import type { SolidDataset, WithServerResourceInfo } from "../../interfaces";
+import type { DefaultOptions } from "../type/DefaultOptions";
 import type { WithAccessibleAcr } from "../acp";
-import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
+import { getAcrUrl } from "./getAcrUrl";
+import { getSolidDataset } from "../../resource/solidDataset";
+import { getSourceUrl } from "../../resource/resource";
 
 /**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
+ * Retrieve the Access Control Resource of a Resource as per the ACP Draft
+ * specification.
  *
- * Get the URLs of policies applying to the given resource's children.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs policies
- * applying to its children.
- * @returns Policy URL array.
- * @since 1.16.1
+ * @param resource The Resource for which to retrieve the URL of the Access
+ * Control Resource if it is accessible.
+ * @param options Default Options such as a fetch function.
+ * @returns The URL of the ACR or null.
  */
-export function getMemberPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.apply
-  );
+export async function getResourceAcr<T extends WithServerResourceInfo>(
+  resource: T,
+  options?: DefaultOptions
+): Promise<(T & WithAccessibleAcr) | null> {
+  const acrUrl = await getAcrUrl(resource, options);
+  if (acrUrl === null) {
+    return null;
+  }
+
+  let acr: SolidDataset & WithServerResourceInfo;
+  try {
+    acr = await getSolidDataset(acrUrl, options);
+  } catch (e: unknown) {
+    return null;
+  }
+
+  return {
+    ...resource,
+    internal_acp: {
+      acr: {
+        ...acr,
+        accessTo: getSourceUrl(resource),
+      },
+    },
+  };
 }

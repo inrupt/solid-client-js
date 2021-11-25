@@ -19,26 +19,33 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { ThingPersisted } from "../../interfaces";
+import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../type/AccessModes";
-import { ACL, ACP } from "../constants";
-import { getIriAll } from "../../thing/get";
+import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
+import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
+import { addMemberAcrPolicyUrl } from "../policy/addMemberAcrPolicyUrl";
+import { addMemberPolicyUrl } from "../policy/addMemberPolicyUrl";
+import { addAcrPolicyUrl } from "../policy/addAcrPolicyUrl";
+import { addPolicyUrl } from "../policy/addPolicyUrl";
 
 /** @hidden */
-export type ModeType = typeof ACP.allow | typeof ACP.deny;
+export function setDefaultAgentMatcherPolicyThingIfNotExist<
+  T extends WithAccessibleAcr
+>(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
+  const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
 
-/** @hidden */
-export function getModes<T extends ThingPersisted>(
-  policy: T,
-  type: ModeType
-): AccessModes {
-  const modes = getIriAll(policy, type);
+  // TODO: Re-enable when we support setting agent access on member resources
+  // if (policyUrl.includes("Member") && policyUrl.includes("Acr")) {
+  //   return addMemberAcrPolicyUrl(resource, policyUrl);
+  // }
 
-  return {
-    read: modes.includes(ACL.Read),
-    append: modes.includes(ACL.Append),
-    write: modes.includes(ACL.Write),
-    controlRead: false,
-    controlWrite: false,
-  };
+  // if (policyUrl.includes("Member")) {
+  //   return addMemberPolicyUrl(resource, policyUrl);
+  // }
+
+  if (policyUrl.includes("Acr")) {
+    return addAcrPolicyUrl(resource, policyUrl);
+  }
+
+  return addPolicyUrl(resource, policyUrl);
 }

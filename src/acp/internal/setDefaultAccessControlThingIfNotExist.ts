@@ -30,7 +30,7 @@ import {
 } from "./getDefaultAccessControlUrl";
 import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
 
-function getTypeFromDefaultAccessControlName(
+function getAccessControlTypeFromDefaultAccessControlName(
   name: DefaultAccessControlName
 ): string {
   if (name.includes("Member")) {
@@ -61,13 +61,13 @@ export function setDefaultAccessControlThingIfNotExist<
   // Get the Default Access Control Thing or create it and return
   const accessControlUrlAll = getIriAll(
     accessControlResourceThing,
-    getTypeFromDefaultAccessControlName(name)
+    getAccessControlTypeFromDefaultAccessControlName(name)
   );
 
   if (!accessControlUrlAll.includes(defaultAccessControlThingUrl)) {
     accessControlResourceThing = buildThing(accessControlResourceThing)
       .addUrl(
-        getTypeFromDefaultAccessControlName(name),
+        getAccessControlTypeFromDefaultAccessControlName(name),
         defaultAccessControlThingUrl
       )
       .build();

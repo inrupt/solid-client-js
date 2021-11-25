@@ -19,32 +19,28 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
-import type { WithAccessibleAcr } from "../acp";
+import type { UrlString, WithServerResourceInfo } from "../../interfaces";
 import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
 
 /**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
+ * Retrieve the URL of an Access Control Resource as per pre-draft versions of
+ * the ACP specification.
  *
- * Get the URLs of policies applying to the given resource's children.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs policies
- * applying to its children.
- * @returns Policy URL array.
- * @since 1.16.1
+ * @param resource The Resource for which to retrieve the URL of the Access
+ * Control Resource if it is accessible.
+ * @returns The URL of the ACR or null.
+ * @deprecated
  */
-export function getMemberPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.apply
-  );
+export function getAcrUrl(resource: WithServerResourceInfo): UrlString | null {
+  const linkedAccessControlResource =
+    resource.internal_resourceInfo.linkedResources[ACP.accessControl];
+
+  if (
+    Array.isArray(linkedAccessControlResource) &&
+    linkedAccessControlResource.length === 0
+  ) {
+    return linkedAccessControlResource[0];
+  }
+
+  return null;
 }

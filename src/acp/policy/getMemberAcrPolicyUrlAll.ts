@@ -40,8 +40,8 @@ import { getPolicyUrls } from "../internal/getPolicyUrls";
  * @returns Policy URL array.
  * @since 1.16.1
  */
-export function getMemberAcrPolicyUrlAll(
-  resourceWithAcr: WithAccessibleAcr
+export function getMemberAcrPolicyUrlAll<T extends WithAccessibleAcr>(
+  resourceWithAcr: T
 ): UrlString[] {
   return getPolicyUrls(
     resourceWithAcr,

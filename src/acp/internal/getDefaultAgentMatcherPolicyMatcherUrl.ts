@@ -19,32 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString } from "../../interfaces";
 import type { WithAccessibleAcr } from "../acp";
-import { ACP } from "../constants";
-import { getMemberAccessControlUrlAll } from "../accessControl/getMemberAccessControlUrlAll";
-import { getPolicyUrls } from "../internal/getPolicyUrls";
+import { AccessModes } from "../type/AccessModes";
+import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
+import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
 
-/**
- * ```{note}
- * The ACP specification is a draft. As such, this function is experimental and
- * subject to change, even in a non-major release.
- * See also: https://solid.github.io/authorization-panel/acp-specification/
- * ```
- *
- * Get the URLs of policies applying to the given resource's children.
- *
- * @param resourceWithAcr The resource for which to retrieve URLs policies
- * applying to its children.
- * @returns Policy URL array.
- * @since 1.16.1
- */
-export function getMemberPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
-): UrlString[] {
-  return getPolicyUrls(
-    resourceWithAcr,
-    getMemberAccessControlUrlAll(resourceWithAcr),
-    ACP.apply
+/** @hidden */
+export function getDefaultAgentMatcherPolicyMatcherUrl(
+  resource: WithAccessibleAcr,
+  name: DefaultAccessControlName,
+  mode: keyof AccessModes
+): string {
+  return getDefaultAgentMatcherPolicyUrl(resource, name, mode).concat(
+    "Matcher"
   );
 }
