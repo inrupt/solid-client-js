@@ -37,6 +37,7 @@ import {
   createSolidDataset,
   deleteSolidDataset,
   acp_v4 as acp,
+  getSolidDataset,
 } from "../index";
 import {
   getTestingEnvironment,
@@ -45,6 +46,8 @@ import {
 import { getAccessControlUrlAll } from "../acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../universal/getAgentAccess";
 import { setAgentAccess } from "../universal/setAgentAccess";
+import { getPublicAccess } from "../universal/getPublicAccess";
+import { setPublicAccess } from "../universal/setPublicAccess";
 
 let env: TestingEnvironment;
 
@@ -123,6 +126,43 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
+  });
+
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("can get and set read access for the public", async () => {
+    await expect(
+      getSolidDataset(sessionDataset, { fetch: session.fetch })
+    ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
+
+    await expect(getSolidDataset(sessionDataset)).rejects.toThrow();
+
+    const access = await setPublicAccess(
+      sessionDataset,
+      { read: true },
+      { fetch: session.fetch }
+    );
+
+    expect(access).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+
+    expect(await getPublicAccess(sessionDataset, options)).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+
+    // TODO: Find out why the unauthenticated fetch still fails after setting public access
+    // Answer: Unauthenticated fetch is currently not supported in ESS 1.2
+    await expect(getSolidDataset(sessionDataset)).resolves.toEqual(
+      expect.objectContaining({ graphs: { default: {} } })
+    );
   });
 
   it("can get and set full access for an agent", async () => {
