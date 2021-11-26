@@ -42,6 +42,7 @@ export const ACP = {
   deny: ACP_NAMESPACE.concat("deny"),
   memberAccessControl: ACP_NAMESPACE.concat("memberAccessControl"),
   noneOf: ACP_NAMESPACE.concat("noneOf"),
+  vc: ACP_NAMESPACE.concat("vc"),
 };
 
 /** @hidden */
@@ -54,3 +55,6 @@ export const ACL = {
   Read: ACL_NAMESPACE.concat("Read"),
   Write: ACL_NAMESPACE.concat("Write"),
 };
+
+/** @hidden */
+export const VC_ACCESS_GRANT = "http://www.w3.org/ns/solid/vc#SolidAccessGrant";

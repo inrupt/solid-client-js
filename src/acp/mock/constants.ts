@@ -129,4 +129,10 @@ export const TEST_URL = {
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
       "#defaultMemberAccessControlAgentMatcherReadPolicyMatcher"
     ),
+  defaultAccessControlVcPolicy: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#defaultAccessControlVcPolicy"
+  ),
+  defaultAccessControlVcMatcher: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#defaultAccessControlVcMatcher"
+  ),
 };
