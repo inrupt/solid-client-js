@@ -19,9 +19,67 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Thing, UrlString } from "../..";
+import { getSourceIri } from "../../resource/resource";
+import { getIriAll } from "../../thing/get";
+import { asIri, getThing } from "../../thing/thing";
 import { WithAccessibleAcr } from "../acp";
+import { ACP } from "../constants";
+import { internal_getAcr } from "../control.internal";
+import { getAccessControlResourceThing } from "../internal/getAccessControlResourceThing";
+import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
+import { getModes } from "../internal/getModes";
 import { AccessModes } from "../type/AccessModes";
+import { DEFAULT_VC_MATCHER_NAME, DEFAULT_VC_POLICY_NAME } from "./setVcAccess";
+
+const DEFAULT_NO_ACCESS: AccessModes = {
+  read: false,
+  append: false,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+
+const linkExists = (
+  subject: Thing,
+  predicate: UrlString,
+  object: Thing
+): boolean => getIriAll(subject, predicate).includes(asIri(object));
+
+// TODO: It should be possible to write a `chainExists` function, taking in a chain
+// of Thing, predicate, Thing, predicate... and checks whether such chain exists
+// in a given dataset. It would make the following function much easier to read,
+// instead of checking at each link that it isn't null and it is connected to the
+// next link.
 
 export function getVcAccess(resourceWithAcr: WithAccessibleAcr): AccessModes {
-  throw new Error("unimplemented");
+  const acr = internal_getAcr(resourceWithAcr);
+
+  const accessControl = getDefaultAccessControlThing(
+    resourceWithAcr,
+    "defaultAccessControl"
+  );
+
+  const acrThing = getAccessControlResourceThing(resourceWithAcr);
+
+  if (
+    acrThing === null ||
+    !linkExists(acrThing, ACP.accessControl, accessControl)
+  ) {
+    return DEFAULT_NO_ACCESS;
+  }
+
+  const defaultVcPolicyIri = `${getSourceIri(acr)}#${DEFAULT_VC_POLICY_NAME}`;
+  const vcPolicy = getThing(acr, defaultVcPolicyIri);
+  if (vcPolicy === null || !linkExists(accessControl, ACP.apply, vcPolicy)) {
+    return DEFAULT_NO_ACCESS;
+  }
+
+  const defaultVcMatcherIri = `${getSourceIri(acr)}#${DEFAULT_VC_MATCHER_NAME}`;
+  const vcMatcher = getThing(acr, defaultVcMatcherIri);
+  if (vcMatcher === null || !linkExists(vcPolicy, ACP.anyOf, vcMatcher)) {
+    return DEFAULT_NO_ACCESS;
+  }
+
+  return getModes(vcPolicy, ACP.allow);
 }
