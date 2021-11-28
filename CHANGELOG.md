@@ -8,6 +8,12 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### New features
+
+- `getVcAccess`/`setVcAccess`: functions available in the `acp/acp` module to get and
+  set Access Modes for a resource applicable when an Access Grant for the given resource
+  is issued.
+
 # [1.16.1] - 2021-11-20
 
 - The ACP low-level API is amended to align with the latest specification draft.
