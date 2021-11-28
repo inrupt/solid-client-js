@@ -132,6 +132,9 @@ import {
 } from "./matcher";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 
+import { getVcAccess } from "./util/getVcAccess";
+import { setVcAccess } from "./util/setVcAccess";
+
 const v4AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
@@ -143,6 +146,8 @@ const v4AcpFunctions = {
   hasAccessibleAcr,
   saveAcrFor,
   isAcpControlled,
+  getVcAccess,
+  setVcAccess,
 };
 
 const v4ControlFunctions = {

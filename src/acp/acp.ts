@@ -458,3 +458,7 @@ export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
   });
   return acrLinks.find((x) => x !== undefined);
 }
+
+// This file currently acts as an index for the `acp` module.
+export { getVcAccess } from "./util/getVcAccess";
+export { setVcAccess } from "./util/setVcAccess";
