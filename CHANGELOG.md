@@ -8,6 +8,8 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+# [1.17.0] - 2021-11-29
+
 ### New features
 
 - `getVcAccess`/`setVcAccess`: functions available in the `acp/acp` module to get and
