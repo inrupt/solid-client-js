@@ -64,6 +64,7 @@ export const DEFAULT_VC_MATCHER_NAME = "defaultVcMatcher";
  * will disable it, and to `undefined` will leave it unchanged compared to what was previously
  * set.
  * @returns A copy of the resource and its attached ACR, updated to the new access modes.
+ * @since 1.17.0
  */
 export function setVcAccess(
   resourceWithAcr: WithAccessibleAcr,

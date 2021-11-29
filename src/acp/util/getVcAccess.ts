@@ -70,7 +70,7 @@ const linkExists = (
  *
  * @param resourceWithAcr The resource for which the VC access modes are looked up.
  * @returns The access modes available to a VC holder.
- * @since unreleased
+ * @since 1.17.0
  */
 export function getVcAccess(resourceWithAcr: WithAccessibleAcr): AccessModes {
   const acr = internal_getAcr(resourceWithAcr);
