@@ -25,6 +25,10 @@ import {
   DEFAULT_MEMBER_ACCESS_CONTROL,
   DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
 } from "../internal/getDefaultAccessControlUrl";
+import {
+  DEFAULT_VC_MATCHER_NAME,
+  DEFAULT_VC_POLICY_NAME,
+} from "../util/setVcAccess";
 
 /** @hidden */
 export const DEFAULT_DOMAIN = "https://example.org/";
@@ -129,4 +133,12 @@ export const TEST_URL = {
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
       "#defaultMemberAccessControlAgentMatcherReadPolicyMatcher"
     ),
+  defaultAccessControlVcPolicy: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#",
+    DEFAULT_VC_POLICY_NAME
+  ),
+  defaultAccessControlVcMatcher: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
+    "#",
+    DEFAULT_VC_MATCHER_NAME
+  ),
 };

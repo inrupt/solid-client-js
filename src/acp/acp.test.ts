@@ -47,6 +47,8 @@ import {
   getSolidDatasetWithAcr,
   isAcpControlled,
   saveAcrFor,
+  getVcAccess,
+  setVcAccess,
 } from "./acp";
 import { UrlString, WithServerResourceInfo, File } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
@@ -1179,4 +1181,9 @@ describe("getLinkedAcrUrl", () => {
       getLinkedAcrUrl(undefined as unknown as WithServerResourceInfo)
     ).toBeUndefined();
   });
+});
+
+it("re-exports util functions", () => {
+  expect(setVcAccess).not.toBeUndefined();
+  expect(getVcAccess).not.toBeUndefined();
 });
