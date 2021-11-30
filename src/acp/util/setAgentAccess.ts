@@ -79,12 +79,12 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
  * @param access Access Modes you want to set for the agent.
  * @since 1.16.0
  */
-export async function setAgentAccess<T extends WithAccessibleAcr>(
+export function setAgentAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   webId: WebId,
   access: Partial<AccessModes>
-): Promise<T> {
-  const agentAccessModes = await getAgentAccess(resourceWithAcr, webId);
+): T {
+  const agentAccessModes = getAgentAccess(resourceWithAcr, webId);
 
   // Add Agent to Default Matchers (including member) if access mode is different from what exists
   if (

@@ -36,7 +36,7 @@ describe("setAgentAccess()", () => {
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
 
     expect(
-      (await setAgentAccess(resource, TEST_URL.defaultWebId, { read: true }))
+      setAgentAccess(resource, TEST_URL.defaultWebId, { read: true })
         .internal_acp.acr.graphs.default
     ).toStrictEqual(
       createDatasetFromSubjects([
@@ -72,8 +72,8 @@ describe("setAgentAccess()", () => {
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
 
     expect(
-      (await setAgentAccess(resource, TEST_URL.defaultWebId, {})).internal_acp
-        .acr.graphs.default
+      setAgentAccess(resource, TEST_URL.defaultWebId, {}).internal_acp.acr
+        .graphs.default
     ).toStrictEqual({});
   });
 
