@@ -1,9 +1,9 @@
 name: Release
 
 on:
-    push:
-        tags:
-            - v[0-9]+.[0-9]+.[0-9]+
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
 
 env:
   CI: true
@@ -13,88 +13,88 @@ jobs:
     outputs:
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
     steps:
-    - name: Create GitHub Deployment
-      id: create-deployment
-      uses: octokit/request-action@v2.1.0
-      with:
-        route: POST /repos/:repository/deployments
-        repository: ${{ github.repository }}
-        ref: ${{ github.sha }}
-        environment: review
-        transient_environment: true
-        auto_merge: false
-        mediaType: '{"previews": ["flash", "ant-man"]}'
-        # The deployment runs in parallel with CI, so status checks will never have succeeded yet:
-        required_contexts: '[]'
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Create GitHub Deployment
+        id: create-deployment
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: POST /repos/:repository/deployments
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          environment: review
+          transient_environment: true
+          auto_merge: false
+          mediaType: '{"previews": ["flash", "ant-man"]}'
+          # The deployment runs in parallel with CI, so status checks will never have succeeded yet:
+          required_contexts: "[]"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   publish-npm:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - name: Mark GitHub Deployment as in progress
-      id: start-deployment
-      uses: octokit/request-action@v2.1.0
-      with:
-        route: POST /repos/:repository/deployments/:deployment/statuses
-        repository: ${{ github.repository }}
-        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
-        environment: review
-        description: "Publishing to npm tag [${GITHUB_REF#refs/tags/v}]…"
-        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        state: in_progress
-        mediaType: '{"previews": ["flash", "ant-man"]}'
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Prepare for publication to npm
-      uses: actions/setup-node@v2.5.0
-      with:
-        node-version: '12.x'
-        registry-url: 'https://registry.npmjs.org'
-    - run: npm ci
-    - name: Publish to npm
-      run: |
-        npm publish --access public
-        echo "Package published. To install, run:"
-        echo ""
-        echo "    npm install @inrupt/solid-client"
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    - name: Mark GitHub Deployment as successful
-      uses: octokit/request-action@v2.1.0
-      with:
-        route: POST /repos/:repository/deployments/:deployment/statuses
-        repository: ${{ github.repository }}
-        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
-        environment: review
-        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client/v/${GITHUB_REF#refs/tags/v}'
-        description: "Published to npm. To install, run: npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
-        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        mediaType: '{"previews": ["flash", "ant-man"]}'
-        state: success
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Mark GitHub Deployment as failed
-      uses: octokit/request-action@v2.1.0
-      if: failure()
-      with:
-        route: POST /repos/:repository/deployments/:deployment/statuses
-        repository: ${{ github.repository }}
-        deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
-        environment: review
-        description: "Publication to npm failed. Review the GitHub Actions log for more information."
-        log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        mediaType: '{"previews": ["flash", "ant-man"]}'
-        state: failure
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    - name: Waiting for npm CDNs to update...
-      run: |
-        echo "Giving npm some time to make the newly-published package available…"
-        sleep 5m
-        echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
+      - uses: actions/checkout@v2.4.0
+      - name: Mark GitHub Deployment as in progress
+        id: start-deployment
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+          environment: review
+          description: "Publishing to npm tag [${GITHUB_REF#refs/tags/v}]…"
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: in_progress
+          mediaType: '{"previews": ["flash", "ant-man"]}'
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Prepare for publication to npm
+        uses: actions/setup-node@v2.5.0
+        with:
+          node-version: "12.x"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - name: Publish to npm
+        run: |
+          npm publish --access public
+          echo "Package published. To install, run:"
+          echo ""
+          echo "    npm install @inrupt/solid-client"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Mark GitHub Deployment as successful
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+          environment: review
+          environment_url: "https://www.npmjs.com/package/@inrupt/solid-client/v/${GITHUB_REF#refs/tags/v}"
+          description: "Published to npm. To install, run: npm install @inrupt/solid-client@${GITHUB_REF#refs/tags/v}"
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          mediaType: '{"previews": ["flash", "ant-man"]}'
+          state: success
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Mark GitHub Deployment as failed
+        uses: octokit/request-action@v2.1.0
+        if: failure()
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
+          environment: review
+          description: "Publication to npm failed. Review the GitHub Actions log for more information."
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          mediaType: '{"previews": ["flash", "ant-man"]}'
+          state: failure
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Waiting for npm CDNs to update...
+        run: |
+          echo "Giving npm some time to make the newly-published package available…"
+          sleep 5m
+          echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
     runs-on: ubuntu-20.04
@@ -103,66 +103,66 @@ jobs:
         node-version: [16.x, 14.x, 12.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.0
-      with:
-        node-version: ${{ matrix.node-version }}
-        registry-url: 'https://registry.npmjs.org'
-    - name: Install the preview release of solid-client in the packaging test project
-      run: |
-        cd .github/workflows/cd-packaging-tests/node
-        npm install @inrupt/solid-client
-    - name: Verify that the package can be imported in Node from a CommonJS module
-      run: |
-        cd .github/workflows/cd-packaging-tests/node
-        node --unhandled-rejections=strict commonjs.cjs
-    - name: Verify that the package can be imported in Node from an ES module
-      run: |
-        cd .github/workflows/cd-packaging-tests/node
-        node --unhandled-rejections=strict esmodule.mjs
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-node@v2.5.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: "https://registry.npmjs.org"
+      - name: Install the preview release of solid-client in the packaging test project
+        run: |
+          cd .github/workflows/cd-packaging-tests/node
+          npm install @inrupt/solid-client
+      - name: Verify that the package can be imported in Node from a CommonJS module
+        run: |
+          cd .github/workflows/cd-packaging-tests/node
+          node --unhandled-rejections=strict commonjs.cjs
+      - name: Verify that the package can be imported in Node from an ES module
+        run: |
+          cd .github/workflows/cd-packaging-tests/node
+          node --unhandled-rejections=strict esmodule.mjs
 
   verify-imports-parcel:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.0
-      with:
-        node-version: '14.x'
-        registry-url: 'https://registry.npmjs.org'
-    - name: Verify that the package can be imported in a Parcel project
-      run: |
-        cd .github/workflows/cd-packaging-tests/bundler-parcel
-        npm install @inrupt/solid-client
-        # Parcel version currently pinned because of
-        # https://github.com/parcel-bundler/parcel/issues/5943
-        npx parcel@1.12.3 build index.ts
-    - name: Archive Parcel build artifacts
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        name: parcel-dist
-        path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-node@v2.5.0
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Verify that the package can be imported in a Parcel project
+        run: |
+          cd .github/workflows/cd-packaging-tests/bundler-parcel
+          npm install @inrupt/solid-client
+          # Parcel version currently pinned because of
+          # https://github.com/parcel-bundler/parcel/issues/5943
+          npx parcel@1.12.3 build index.ts
+      - name: Archive Parcel build artifacts
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: parcel-dist
+          path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
 
   verify-imports-webpack:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.0
-      with:
-        node-version: '14.x'
-        registry-url: 'https://registry.npmjs.org'
-    - name: Verify that the package can be imported in a Webpack project
-      run: |
-        cd .github/workflows/cd-packaging-tests/bundler-webpack
-        npm install @inrupt/solid-client
-        npm install webpack@5 webpack-cli buffer
-        npx webpack --devtool source-map
-    - name: Archive Webpack build artifacts
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        name: webpack-dist
-        path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-node@v2.5.0
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Verify that the package can be imported in a Webpack project
+        run: |
+          cd .github/workflows/cd-packaging-tests/bundler-webpack
+          npm install @inrupt/solid-client
+          npm install webpack@5 webpack-cli buffer
+          npx webpack --devtool source-map
+      - name: Archive Webpack build artifacts
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: webpack-dist
+          path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
 
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
@@ -173,31 +173,31 @@ jobs:
         node-version: [14.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.0
-      with:
-        node-version: ${{ matrix.node-version }}
-        registry-url: 'https://registry.npmjs.org'
-    - run: npm ci
-    - name: Install the preview release of solid-client
-      # The `--force` allows us to install it even though our own package has the same name.
-      # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
-      run: |
-        npm install --force @inrupt/solid-client
-    - name: Make sure that the end-to-end tests run against the just-published package
-      run: |
-        cd src/e2e-node
-        # For all files (`-type f`) in this directory,
-        # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client`:
-        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
-    - name: Run the Node-based end-to-end tests
-      run: npm run e2e-test-node
-      env:
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
-        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
-        E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
-        E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
-        E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
-        E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-node@v2.5.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - name: Install the preview release of solid-client
+        # The `--force` allows us to install it even though our own package has the same name.
+        # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
+        run: |
+          npm install --force @inrupt/solid-client
+      - name: Make sure that the end-to-end tests run against the just-published package
+        run: |
+          cd src/e2e-node
+          # For all files (`-type f`) in this directory,
+          # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client`:
+          find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
+      - name: Run the Node-based end-to-end tests
+        run: npm run e2e-test-node
+        env:
+          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+          E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+          E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+          E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+          E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+          E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
+          E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}

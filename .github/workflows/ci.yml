@@ -5,9 +5,9 @@ on:
   # Allow manual triggering, e.g. to run end-to-end tests against Dependabot PRs:
   workflow_dispatch:
   schedule:
-  # Run every fifth minute.
-  # This is to verify that ESS is running properly.
-  - cron: '*/5 * * * *'
+    # Run every fifth minute.
+    # This is to verify that ESS is running properly.
+    - cron: "*/5 * * * *"
 
 env:
   CI: true
@@ -23,212 +23,212 @@ jobs:
         # FIXME: find out why Node 16 crashes.
         node-version: [14.x, 12.x]
     steps:
-    - uses: actions/checkout@v2.4.0
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2.5.0
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache node modules
-      uses: actions/cache@v2.1.7
-      env:
-        cache-name: cache-node-modules
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node${{ runner.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-    # Unfortunately `npm ci` regularly fails for reasons outside our control (e.g. network errors),
-    # so retry it twice if it fails to avoid those:
-    # (No, GitHub Actions at this point in time does not have native retry functionality.)
-    - run: npm ci || npm ci || npm ci
-    - run: npm run build
-    - run: npm test
-      if: github.event_name != 'schedule'
-    - run: npm run e2e-test-node
-      # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
-      # and because behaviour on different OS's is already tested by unit tests,
-      # end-to-end tests only need to run on one OS.
-      # Additionally, Dependabot does not have access to our secrets,
-      # so end-to-end tests for Dependabot PRs can only be manually started.
-      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: runner.os == 'Linux' && matrix.node-version == env.DEFAULT_NODE_VERSION && github.actor != 'dependabot[bot]'
-      env:
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
-        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
-        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-        E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
-        E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
-        E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
-        E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
-        E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
-        E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
-    # Ideally, we'd autodetect installed browsers and run them headlessly.
-    # See https://github.com/DevExpress/testcafe/issues/5641
-    - name: Prepare browser-based end-to-end tests
-      run: |
-        cd .codesandbox/sandbox
-        npm install
-        # Run the end-to-end tests against the code in this branch specifically:
-        npm install ../../
-        cd ../..
-      if: matrix.node-version == env.DEFAULT_NODE_VERSION && github.actor != 'dependabot[bot]'
-    - name: Run browser-based end-to-end tests (Linux)
-      # TODO: These tests started consistently failing on 2021-08-04.
-      #       Possibly related to the new Release Candidate of Parcel 2, although
-      #       a downgrade did not fix it.
-      #       This CI run succeeded on 2021-08-03, but failed when retrying a
-      #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
-      #       This is the first CI run that started failing (not terminating):
-      #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
-      timeout-minutes: 5
-      continue-on-error: true
-      # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
-      # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
-      # That also requires adding `--hostname localhost` to run over HTTPS:
-      # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
-      # Setting a test-specific user agent is only possible for Chrome: https://stackoverflow.com/a/59358925
-      run: npm run e2e-test-browser -- "firefox:headless,chrome:headless:userAgent='Browser-based solid-client end-to-end tests running in CI. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $(chrome --version) Safari/537.36'" --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
-      # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one.
-      # Additionally, Dependabot does not have access to our secrets,
-      # so end-to-end tests for Dependabot PRs can only be manually started.
-      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
-      env:
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
-        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
-        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
-        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
-    - name: Run browser-based end-to-end tests (Windows)
-      # TODO: These tests started consistently failing on 2021-08-04.
-      #       Possibly related to the new Release Candidate of Parcel 2, although
-      #       a downgrade did not fix it.
-      #       This CI run succeeded on 2021-08-03, but failed when retrying a
-      #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
-      #       This is the first CI run that started failing (not terminating):
-      #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
-      #       Note that continue-on-error was still set to true for Windows
-      #       before that, because tests running there were pretty flaky in the
-      #       first place — they job had to be manually inspected when code with
-      #       a high risk of breaking in the browser was added.
-      timeout-minutes: 5
-      continue-on-error: true
-      # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
-      # That also requires adding `--hostname localhost` to run over HTTPS:
-      # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
-      run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
-      # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one.
-      # Additionally, Dependabot does not have access to our secrets,
-      # so end-to-end tests for Dependabot PRs can only be manually started.
-      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
-      env:
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
-        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
-        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
-        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
-    - name: Run browser-based end-to-end tests (MacOS)
-      # TODO: continue-on-error was set to true because browser-based end-to-end
-      #       tests on MacOS are pretty flaky, so this job had to be manually
-      #       inspected when code with a high risk of breaking in the browser
-      #       was added. However, with the tests on Linux currently consistently
-      #       failing, we're only relying on the MacOS tests again for now.
-      # continue-on-error: true
-      # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
-      # enabled, which results in TestCafe needing screen recording permission, which it cannot
-      # obtain programmatically. Thus, we have to run the browser as a remote as a workaround.
-      # Source: https://devexpress.github.io/testcafe/documentation/guides/continuous-integration/github-actions.html#step-2---create-a-job
-      # Additionally, the tests on MacOS fail particularly often due to network errors;
-      # hence, they are run in quarantine mode (--quarantine-mode) to make TestCafe automatically retry them,
-      # and with --retry-test-pages to retry failed network connections.
-      # That also requires adding `--hostname localhost` to run over HTTPS:
-      # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
-      run: |
-        export HOSTNAME=localhost
-        export PORT1=1337
-        export PORT2=1338
-        npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode --retry-test-pages --hostname localhost &
-        pid=$!
-        sleep 1s
-        open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
-        wait $pid
-      # Connecting to a remote appears to run into a race condition every now and then,
-      # where TestCafe waits for the browser endlessly. 20 minutes should be more than enough at the
-      # time of writing for the end-to-end tests to succeed, so cut them off after that:
-      timeout-minutes: 20
-      # The Node version does not influence how well our tests run in the browser,
-      # so we only need to test in one.
-      # Additionally, Dependabot does not have access to our secrets,
-      # so end-to-end tests for Dependabot PRs can only be manually started.
-      # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-      if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
-      env:
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
-        E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
-        E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-        E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
-        E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
-        GITHUB_OS: ${{ runner.os }}
-    - run: npx prettier --check "src/**"
-      if: github.event_name != 'schedule'
-    - run: npx package-check
-      if: github.event_name != 'schedule'
-    - run: npm run check-licenses
-      if: github.event_name != 'schedule'
-    # Some issues identified by npm audit cannot be fixed by us
-    # (i.e. they require an upstream dependency update),
-    # but using `npm-force-resolutions` we can at least override the upstream
-    # dependency when running an audit.
-    # If this task fails, first attempt to run `npm audit fix` or upgrade the
-    # relevant dependency; when that does not work, you can add the transitive
-    # dependency to the `resolutions` field in package.json according to the
-    # instructions in `npm-force-resolutions`'s README.
-    - run: npx npm-force-resolutions@0.0.10 && npm audit --audit-level=moderate
-      if: github.event_name != 'schedule'
-    - name: Archive browser-based end-to-end test failure screenshots, if any
-      uses: actions/upload-artifact@v2.2.4
-      continue-on-error: true
-      if: failure() && github.event_name != 'schedule'
-      with:
-        name: e2e-browser-failures
-        path: e2e-browser-failures
-    - name: Archive browser-based end-to-end test request logs
-      uses: actions/upload-artifact@v2.2.4
-      continue-on-error: true
-      if: (failure() || success()) && matrix.node-version == env.DEFAULT_NODE_VERSION && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
-      with:
-        name: testcafe-requests
-        path: src/e2e-browser/testcafe-requests
-    - name: Archive code coverage results
-      uses: actions/upload-artifact@v2.2.4
-      continue-on-error: true
-      if: github.event_name != 'schedule'
-      with:
-        name: code-coverage-report
-        path: coverage
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v2.2.4
-      continue-on-error: true
-      if: github.event_name != 'schedule'
-      with:
-        name: dist
-        path: dist
-    - name: Send a notification that the test has failed
-      run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
-      if: failure() && github.event_name == 'schedule'
-      env:
-        WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
-        RUN_ID: "${{ github.run_id }}"
+      - uses: actions/checkout@v2.4.0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2.5.0
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Cache node modules
+        uses: actions/cache@v2.1.7
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node${{ runner.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      # Unfortunately `npm ci` regularly fails for reasons outside our control (e.g. network errors),
+      # so retry it twice if it fails to avoid those:
+      # (No, GitHub Actions at this point in time does not have native retry functionality.)
+      - run: npm ci || npm ci || npm ci
+      - run: npm run build
+      - run: npm test
+        if: github.event_name != 'schedule'
+      - run: npm run e2e-test-node
+        # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
+        # and because behaviour on different OS's is already tested by unit tests,
+        # end-to-end tests only need to run on one OS.
+        # Additionally, Dependabot does not have access to our secrets,
+        # so end-to-end tests for Dependabot PRs can only be manually started.
+        # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+        if: runner.os == 'Linux' && matrix.node-version == env.DEFAULT_NODE_VERSION && github.actor != 'dependabot[bot]'
+        env:
+          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+          E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
+          E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
+          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+          E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
+          E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
+          E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+          E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+          E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
+          E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+      # Ideally, we'd autodetect installed browsers and run them headlessly.
+      # See https://github.com/DevExpress/testcafe/issues/5641
+      - name: Prepare browser-based end-to-end tests
+        run: |
+          cd .codesandbox/sandbox
+          npm install
+          # Run the end-to-end tests against the code in this branch specifically:
+          npm install ../../
+          cd ../..
+        if: matrix.node-version == env.DEFAULT_NODE_VERSION && github.actor != 'dependabot[bot]'
+      - name: Run browser-based end-to-end tests (Linux)
+        # TODO: These tests started consistently failing on 2021-08-04.
+        #       Possibly related to the new Release Candidate of Parcel 2, although
+        #       a downgrade did not fix it.
+        #       This CI run succeeded on 2021-08-03, but failed when retrying a
+        #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
+        #       This is the first CI run that started failing (not terminating):
+        #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
+        timeout-minutes: 5
+        continue-on-error: true
+        # TODO: Add Edge/merge with Windows setup once Edge is available on Linux:
+        # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
+        # That also requires adding `--hostname localhost` to run over HTTPS:
+        # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
+        # Setting a test-specific user agent is only possible for Chrome: https://stackoverflow.com/a/59358925
+        run: npm run e2e-test-browser -- "firefox:headless,chrome:headless:userAgent='Browser-based solid-client end-to-end tests running in CI. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $(chrome --version) Safari/537.36'" --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
+        # The Node version does not influence how well our tests run in the browser,
+        # so we only need to test in one.
+        # Additionally, Dependabot does not have access to our secrets,
+        # so end-to-end tests for Dependabot PRs can only be manually started.
+        # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        env:
+          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+          E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+          E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+          E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+          E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
+      - name: Run browser-based end-to-end tests (Windows)
+        # TODO: These tests started consistently failing on 2021-08-04.
+        #       Possibly related to the new Release Candidate of Parcel 2, although
+        #       a downgrade did not fix it.
+        #       This CI run succeeded on 2021-08-03, but failed when retrying a
+        #       day later: https://github.com/inrupt/solid-client-js/actions/runs/1094162699
+        #       This is the first CI run that started failing (not terminating):
+        #       https://github.com/inrupt/solid-client-js/runs/3238702146?check_suite_focus=true
+        #       Note that continue-on-error was still set to true for Windows
+        #       before that, because tests running there were pretty flaky in the
+        #       first place — they job had to be manually inspected when code with
+        #       a high risk of breaking in the browser was added.
+        timeout-minutes: 5
+        continue-on-error: true
+        # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
+        # That also requires adding `--hostname localhost` to run over HTTPS:
+        # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
+        run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
+        # The Node version does not influence how well our tests run in the browser,
+        # so we only need to test in one.
+        # Additionally, Dependabot does not have access to our secrets,
+        # so end-to-end tests for Dependabot PRs can only be manually started.
+        # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        env:
+          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+          E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+          E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+          E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+          E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
+      - name: Run browser-based end-to-end tests (MacOS)
+        # TODO: continue-on-error was set to true because browser-based end-to-end
+        #       tests on MacOS are pretty flaky, so this job had to be manually
+        #       inspected when code with a high risk of breaking in the browser
+        #       was added. However, with the tests on Linux currently consistently
+        #       failing, we're only relying on the MacOS tests again for now.
+        # continue-on-error: true
+        # MacOS needs a somewhat particular setup. It is running with "System Integrity Protection"
+        # enabled, which results in TestCafe needing screen recording permission, which it cannot
+        # obtain programmatically. Thus, we have to run the browser as a remote as a workaround.
+        # Source: https://devexpress.github.io/testcafe/documentation/guides/continuous-integration/github-actions.html#step-2---create-a-job
+        # Additionally, the tests on MacOS fail particularly often due to network errors;
+        # hence, they are run in quarantine mode (--quarantine-mode) to make TestCafe automatically retry them,
+        # and with --retry-test-pages to retry failed network connections.
+        # That also requires adding `--hostname localhost` to run over HTTPS:
+        # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
+        run: |
+          export HOSTNAME=localhost
+          export PORT1=1337
+          export PORT2=1338
+          npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode --retry-test-pages --hostname localhost &
+          pid=$!
+          sleep 1s
+          open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
+          wait $pid
+        # Connecting to a remote appears to run into a race condition every now and then,
+        # where TestCafe waits for the browser endlessly. 20 minutes should be more than enough at the
+        # time of writing for the end-to-end tests to succeed, so cut them off after that:
+        timeout-minutes: 20
+        # The Node version does not influence how well our tests run in the browser,
+        # so we only need to test in one.
+        # Additionally, Dependabot does not have access to our secrets,
+        # so end-to-end tests for Dependabot PRs can only be manually started.
+        # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        env:
+          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
+          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
+          E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
+          E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
+          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
+          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+          E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
+          E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
+          GITHUB_OS: ${{ runner.os }}
+      - run: npx prettier --check "src/**"
+        if: github.event_name != 'schedule'
+      - run: npx package-check
+        if: github.event_name != 'schedule'
+      - run: npm run check-licenses
+        if: github.event_name != 'schedule'
+      # Some issues identified by npm audit cannot be fixed by us
+      # (i.e. they require an upstream dependency update),
+      # but using `npm-force-resolutions` we can at least override the upstream
+      # dependency when running an audit.
+      # If this task fails, first attempt to run `npm audit fix` or upgrade the
+      # relevant dependency; when that does not work, you can add the transitive
+      # dependency to the `resolutions` field in package.json according to the
+      # instructions in `npm-force-resolutions`'s README.
+      - run: npx npm-force-resolutions@0.0.10 && npm audit --audit-level=moderate
+        if: github.event_name != 'schedule'
+      - name: Archive browser-based end-to-end test failure screenshots, if any
+        uses: actions/upload-artifact@v2.2.4
+        continue-on-error: true
+        if: failure() && github.event_name != 'schedule'
+        with:
+          name: e2e-browser-failures
+          path: e2e-browser-failures
+      - name: Archive browser-based end-to-end test request logs
+        uses: actions/upload-artifact@v2.2.4
+        continue-on-error: true
+        if: (failure() || success()) && matrix.node-version == env.DEFAULT_NODE_VERSION && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        with:
+          name: testcafe-requests
+          path: src/e2e-browser/testcafe-requests
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v2.2.4
+        continue-on-error: true
+        if: github.event_name != 'schedule'
+        with:
+          name: code-coverage-report
+          path: coverage
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2.2.4
+        continue-on-error: true
+        if: github.event_name != 'schedule'
+        with:
+          name: dist
+          path: dist
+      - name: Send a notification that the test has failed
+        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+        if: failure() && github.event_name == 'schedule'
+        env:
+          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
+          RUN_ID: "${{ github.run_id }}"
