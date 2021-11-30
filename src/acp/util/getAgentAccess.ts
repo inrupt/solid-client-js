@@ -110,10 +110,10 @@ function reduceModes(
  * @param webId WebID of the Agent you want to get the access for.
  * @since 1.16.0
  */
-export async function getAgentAccess<T extends WithAccessibleAcr>(
+export function getAgentAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   webId: WebId
-): Promise<AccessModes> {
+): AccessModes {
   // TODO: add support for external resources
   let resourceAccess = {
     read: false,
