@@ -95,11 +95,11 @@ const serversUnderTest: AuthDetails[] = [
 // eslint-disable-next-line jest/no-disabled-tests
 describe.each(serversUnderTest)(
   "ACP end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
-  (rootContainer, oidcIssuer, clientId, clientSecret) => {
+  (rootContainerDisplay, oidcIssuerDisplay, clientId, clientSecret) => {
     // Re-add `https://` at the start of these URLs, which we trimmed above
     // so that GitHub Actions doesn't replace them with *** in the logs.
-    rootContainer = "https://" + rootContainer;
-    oidcIssuer = "https://" + oidcIssuer;
+    const rootContainer = "https://" + rootContainerDisplay;
+    const oidcIssuer = "https://" + oidcIssuerDisplay;
 
     describe("An ACP Solid server", () => {
       let options: any;

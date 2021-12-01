@@ -365,11 +365,11 @@ const serversUnderTest: AuthDetails[] = [
 // eslint-disable-next-line jest/no-disabled-tests
 describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
-  (rootContainer, oidcIssuer, clientId, clientSecret) => {
+  (rootContainerDisplay, oidcIssuerDisplay, clientId, clientSecret) => {
     // Re-add `https://` at the start of these URLs, which we trimmed above
     // so that GitHub Actions doesn't replace them with *** in the logs.
-    rootContainer = "https://" + rootContainer;
-    oidcIssuer = "https://" + oidcIssuer;
+    const rootContainer = "https://" + rootContainerDisplay;
+    const oidcIssuer = "https://" + oidcIssuerDisplay;
     function supportsWac() {
       return (
         rootContainer.includes("inrupt.net") ||
@@ -890,7 +890,7 @@ describe.each(serversUnderTest)(
           // FIXME: This will no longer be a problem when ESS 1.2 is consistently deployed, and
           // we can use the latest universal API everywhere.
           console.error(
-            `Unauthenticated fetch is not supported, even for public resources, by ${rootContainer}`
+            `Unauthenticated fetch is not supported, even for public resources, by ${rootContainerDisplay}`
           );
 
           // FIXME: The following should work.
