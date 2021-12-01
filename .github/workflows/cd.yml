@@ -311,7 +311,3 @@ jobs:
         E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
         E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
         E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
-        E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
-        E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
-        E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
-        E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
