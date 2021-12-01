@@ -51,6 +51,8 @@ export default {
       // Use our own version of TypeScript, rather than the one bundled with the plugin:
       typescript: require("typescript"),
       tsconfigOverride: {
+        // Exclude tests:
+        exclude: ["**/*.test.ts"],
         compilerOptions: {
           module: "esnext",
         },
