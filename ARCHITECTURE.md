@@ -165,7 +165,7 @@ non-overlapping error conditions that may occur in both access control
 mechanisms (e.g. no fallback ACL available in WAC, no access to a Resource
 defining Policies in ACPs, etc.).
 
-## `src/e2e-browser` and `src/e2e-node`
+## `e2e/browser` and `e2e/node`
 
 solid-client can run in both Node and in the browser. To ensure that everything
 works as intended, we have a suite of tests that attempts to use its APIs to

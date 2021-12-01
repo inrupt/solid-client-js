@@ -10,7 +10,7 @@ To run the tests locally:
    add them to `.env.test.local`.
    For example, for pod.inrupt.com, you can obtain them via
    https://broker.pod.inrupt.com/catalog.html.
-4. You can now run `npm run e2e-test-node` from the root.
+4. You can now run `npm run test-e2e-node` from the root.
 
 ## Running these End-to-End-specific tests from an IDE
 

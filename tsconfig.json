@@ -11,7 +11,7 @@
     // "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // "sourceMap": true,                     /* Generates corresponding '.map' file. */
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
-    "outDir": ".",                           /* Redirect output structure to the directory. */
+    "outDir": "dist",                           /* Redirect output structure to the directory. */
     "rootDir": "src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     // "composite": true,                     /* Enable project compilation */
     // "removeComments": true,                /* Do not emit comments to output. */
@@ -103,7 +103,7 @@
       // Internal helpers:
       "**/*.internal.ts",
       // End-to-end tests:
-      "src/e2e-*/**",
+      "e2e/**",
       // Re-exported functions are already documented in their own modules:
       "src/index.ts",
       // Constants are only used internally:
@@ -129,6 +129,6 @@
     // as the root directory for compilation (instead of /src),
     // meaning that files that would otherwise be included in /dist directly
     // (e.g. dist/index.d.ts) will then be built to /dist/src.
-    "src/e2e-browser",
+    "e2e",
   ]
 }

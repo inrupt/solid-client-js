@@ -28,6 +28,11 @@ module.exports = {
   // Because we're making HTTP requests that can take a while, tests should be
   // given a little longer to complete:
   testTimeout: 30000,
-  testRegex: "e2e-node/.*.test.ts",
+  testRegex: "e2e/node/.*.test.ts",
   injectGlobals: false,
+  globals: {
+    "ts-jest": {
+      tsconfig: "tsconfig.test.json",
+    },
+  },
 };

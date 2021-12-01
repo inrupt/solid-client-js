@@ -38,20 +38,20 @@ import {
   deleteSolidDataset,
   acp_v4 as acp,
   getSolidDataset,
-} from "../index";
+} from "../../src/index";
 import {
   getTestingEnvironment,
   TestingEnvironment,
 } from "./util/getTestingEnvironment";
-import { getAccessControlUrlAll } from "../acp/accessControl/getAccessControlUrlAll";
-import { getAgentAccess } from "../universal/getAgentAccess";
-import { setAgentAccess } from "../universal/setAgentAccess";
-import { getPublicAccess as latest_getPublicAccess } from "../universal/getPublicAccess";
-import { setPublicAccess as latest_setPublicAccess } from "../universal/setPublicAccess";
+import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
+import { getAgentAccess } from "../../src/universal/getAgentAccess";
+import { setAgentAccess } from "../../src/universal/setAgentAccess";
+import { getPublicAccess as latest_getPublicAccess } from "../../src/universal/getPublicAccess";
+import { setPublicAccess as latest_setPublicAccess } from "../../src/universal/setPublicAccess";
 import {
   setPublicAccess as legacy_setPublicAccess,
   getPublicAccess as legacy_getPublicAccess,
-} from "../access/universal";
+} from "../../src/access/universal";
 
 let env: TestingEnvironment;
 
