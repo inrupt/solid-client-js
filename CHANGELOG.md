@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfixes
+
+- Some of the `acp/acp` functions, namely `getAgentAccess`, `setAgentAccess`,
+  `getPublicAccess` and `setPublicAccess` were marked async, but did not perform
+  asynchronous operations.
+
 The following sections document changes that have been released already:
 
 # [1.17.0] - 2021-11-29
