@@ -365,19 +365,28 @@ const serversUnderTest: AuthDetails[] = [
 // eslint-disable-next-line jest/no-disabled-tests
 describe.each(serversUnderTest)(
   "Authenticated end-to-end tests against Pod [%s] and OIDC Issuer [%s]:",
-  (rootContainer, oidcIssuer, clientId, clientSecret) => {
+  (rawRootContainer, rawOidcIssuer, clientId, clientSecret) => {
+    if (!rawRootContainer || !rawOidcIssuer) {
+      console.log("Skipping test due to missing env variables");
+      return;
+    }
+
     // Re-add `https://` at the start of these URLs, which we trimmed above
     // so that GitHub Actions doesn't replace them with *** in the logs.
-    rootContainer = "https://" + rootContainer;
-    oidcIssuer = "https://" + oidcIssuer;
+    const rootContainerUrl = new URL("https://" + rawRootContainer);
+    const oidcIssuerUrl = new URL("https://" + rawOidcIssuer);
+
+    const rootContainer = rootContainerUrl.toString();
+    const oidcIssuer = oidcIssuerUrl.toString();
+
     function supportsWac() {
       return (
-        rootContainer.includes("inrupt.net") ||
-        rootContainer.includes("solidcommunity.net")
+        rootContainerUrl.hostname.endsWith("inrupt.net") ||
+        rootContainerUrl.hostname.endsWith("solidcommunity.net")
       );
     }
     function supportsAcps() {
-      return rootContainer.includes("pod.inrupt.com");
+      return rootContainerUrl.hostname.endsWith("pod.inrupt.com");
     }
 
     let session: Session;
