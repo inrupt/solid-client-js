@@ -36,8 +36,7 @@ describe("setPublicAccess()", () => {
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
 
     expect(
-      (await setPublicAccess(resource, { read: true })).internal_acp.acr.graphs
-        .default
+      setPublicAccess(resource, { read: true }).internal_acp.acr.graphs.default
     ).toStrictEqual(
       createDatasetFromSubjects([
         [

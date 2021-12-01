@@ -31,9 +31,9 @@ import { setAgentAccess } from "./setAgentAccess";
  * @param access Access Modes you want to set for the agent.
  * @since 1.16.0
  */
-export async function setPublicAccess<T extends WithAccessibleAcr>(
+export function setPublicAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   access: Partial<AccessModes>
-): Promise<T> {
+): T {
   return setAgentAccess(resourceWithAcr, ACP.PublicAgent, access);
 }
