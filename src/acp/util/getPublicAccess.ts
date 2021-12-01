@@ -30,8 +30,8 @@ import { getAgentAccess } from "./getAgentAccess";
  * @param resourceWithAcr URL of the Resource you want to read the access for.
  * @since 1.16.0
  */
-export async function getPublicAccess<T extends WithAccessibleAcr>(
+export function getPublicAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T
-): Promise<AccessModes> {
+): AccessModes {
   return getAgentAccess(resourceWithAcr, ACP.PublicAgent);
 }

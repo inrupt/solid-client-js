@@ -34,7 +34,7 @@ describe("getPublicAccess()", () => {
     const resource = mockAccessControlledResource();
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
-    expect(await getPublicAccess(resource)).toStrictEqual({
+    expect(getPublicAccess(resource)).toStrictEqual({
       read: false,
       append: false,
       write: false,
@@ -65,7 +65,7 @@ describe("getPublicAccess()", () => {
       ])
     );
 
-    expect(await getPublicAccess(resource)).toStrictEqual({
+    expect(getPublicAccess(resource)).toStrictEqual({
       read: true,
       append: false,
       write: false,
