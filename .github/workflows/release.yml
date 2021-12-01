@@ -186,12 +186,12 @@ jobs:
           npm install --force @inrupt/solid-client
       - name: Make sure that the end-to-end tests run against the just-published package
         run: |
-          cd src/e2e-node
+          cd e2e/node
           # For all files (`-type f`) in this directory,
-          # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client`:
-          find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client/g' {} \;
+          # replace `../../src/index` (i.e. in the import statement) with `@inrupt/solid-client`:
+          find ./ -type f -exec sed --in-place --expression='s/\.\.\/\.\.\/src\/index/@inrupt\/solid-client/g' {} \;
       - name: Run the Node-based end-to-end tests
-        run: npm run e2e-test-node
+        run: npm run test-e2e-node
         env:
           E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}

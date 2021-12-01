@@ -14,16 +14,19 @@ jobs:
         node-version: [16.x]
         environment-name: ["Inrupt Production", "Inrupt Dev-Next"]
     steps:
-    - uses: actions/checkout@v2
-    - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci --ignore-scripts
-    - run: npm run test-e2e-acp
-      env:
-        E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
-        E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
-        E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
-        E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
-        E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
+      - uses: actions/checkout@v2
+      - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci --ignore-scripts
+      # FIXME: The limit of tests by path to acp.test.ts is because the current
+      # e2e tests do not work in an environment matrix and use different env
+      # variables
+      - run: npm run test-e2e-node -- --runTestsByPath e2e/node/acp.test.ts
+        env:
+          E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+          E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+          E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
+          E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+          E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}

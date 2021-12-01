@@ -42,7 +42,7 @@ jobs:
       - run: npm run build
       - run: npm test
         if: github.event_name != 'schedule'
-      - run: npm run e2e-test-node
+      - run: npm run test-e2e-node
         # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
         # and because behaviour on different OS's is already tested by unit tests,
         # end-to-end tests only need to run on one OS.
@@ -88,7 +88,7 @@ jobs:
         # That also requires adding `--hostname localhost` to run over HTTPS:
         # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
         # Setting a test-specific user agent is only possible for Chrome: https://stackoverflow.com/a/59358925
-        run: npm run e2e-test-browser -- "firefox:headless,chrome:headless:userAgent='Browser-based solid-client end-to-end tests running in CI. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $(chrome --version) Safari/537.36'" --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
+        run: npm run test-e2e-browser -- "firefox:headless,chrome:headless:userAgent='Browser-based solid-client end-to-end tests running in CI. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $(chrome --version) Safari/537.36'" --screenshots takeOnFails=true,path=./e2e-browser-failures --retry-test-pages --hostname localhost
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         # Additionally, Dependabot does not have access to our secrets,
@@ -121,7 +121,7 @@ jobs:
         # Connections are flakier in CI, so retry failed network requests with --retry-test-pages.
         # That also requires adding `--hostname localhost` to run over HTTPS:
         # https://testcafe.io/documentation/402638/reference/configuration-file#retrytestpages
-        run: npm run e2e-test-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
+        run: npm run test-e2e-browser -- edge:headless,firefox:headless,chrome:headless --retry-test-pages --hostname localhost
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         # Additionally, Dependabot does not have access to our secrets,
@@ -157,7 +157,7 @@ jobs:
           export HOSTNAME=localhost
           export PORT1=1337
           export PORT2=1338
-          npm run e2e-test-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode --retry-test-pages --hostname localhost &
+          npm run test-e2e-browser -- remote --hostname ${HOSTNAME} --ports ${PORT1},${PORT2} --quarantine-mode --retry-test-pages --hostname localhost &
           pid=$!
           sleep 1s
           open -a Safari http://${HOSTNAME}:${PORT1}/browser/connect
@@ -211,7 +211,7 @@ jobs:
         if: (failure() || success()) && matrix.node-version == env.DEFAULT_NODE_VERSION && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
         with:
           name: testcafe-requests
-          path: src/e2e-browser/testcafe-requests
+          path: e2e/browser/testcafe-requests
       - name: Archive code coverage results
         uses: actions/upload-artifact@v2.2.4
         continue-on-error: true

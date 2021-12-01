@@ -71,8 +71,7 @@ import {
   UrlString,
   acp_v3 as acp,
   FetchError,
-  getEffectiveAccess,
-} from "../index";
+} from "../../src/index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
 // and therefore aren't exported from the package root:
@@ -80,8 +79,8 @@ import {
   getAgentAccess as getAgentAccessUniversal,
   getPublicAccess as getPublicAccessUniversal,
   setPublicAccess as setPublicAccessUniversal,
-} from "../access/universal";
-import openidClient from "openid-client";
+} from "../../src/access/universal";
+
 import { blankNode } from "@rdfjs/dataset";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
@@ -731,6 +730,7 @@ describe.each(serversUnderTest)(
           getSolidDataset(policyResourceUrl, { fetch: session.fetch })
         ).rejects.toThrow(
           // Forbidden:
+          // @ts-ignore-next
           expect.objectContaining({ statusCode: 403 }) as FetchError
         );
 
@@ -750,6 +750,7 @@ describe.each(serversUnderTest)(
         // when not logged in (i.e. not passing the session's fetch):
         await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
           // Unauthorised:
+          // @ts-ignore-next
           expect.objectContaining({ statusCode: 401 }) as FetchError
         );
 
@@ -818,6 +819,7 @@ describe.each(serversUnderTest)(
         // when not logged in (i.e. not passing the session's fetch):
         await expect(getFile(resourceUrl)).rejects.toThrow(
           // Unauthorised:
+          // @ts-ignore-next
           expect.objectContaining({ statusCode: 401 }) as FetchError
         );
 
