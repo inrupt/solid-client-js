@@ -114,9 +114,7 @@
       "src/fetcher.ts",
       // Helper methods for working with raw Turtle internally:
       "src/formats/turtle.ts",
-      "src/formats/jsonLd.ts",
-      // Internal wrapper for RDF/JS implementations:
-      "src/rdfjs.ts",
+      "src/formats/jsonLd.ts"
     ],
     "theme": "markdown",
     "readme": "none",
