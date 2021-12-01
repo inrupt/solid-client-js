@@ -81,7 +81,6 @@ import {
   getPublicAccess as getPublicAccessUniversal,
   setPublicAccess as setPublicAccessUniversal,
 } from "../access/universal";
-import openidClient from "openid-client";
 import { blankNode } from "@rdfjs/dataset";
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
@@ -888,8 +887,10 @@ describe.each(serversUnderTest)(
           const publicDataset = await getSolidDataset(datasetUrl);
           expect(publicDataset).not.toBeNull();
         } catch (e) {
+          // FIXME: This will no longer be a problem when ESS 1.2 is consistently deployed, and
+          // we can use the latest universal API everywhere.
           console.error(
-            "Unauthenticated fetch is not supported even for public resources"
+            `Unauthenticated fetch is not supported, even for public resources, by ${rootContainer}`
           );
 
           // FIXME: The following should work.
