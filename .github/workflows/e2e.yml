@@ -1,0 +1,23 @@
+name: E2E tests
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    environment:
+      name: ${{ matrix.environment-name }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16.x]
+        environment-name: ["Inrupt Production", "Inrupt Dev-Next"]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci --ignore-scripts
+    - run: npm run test-e2e-acp
