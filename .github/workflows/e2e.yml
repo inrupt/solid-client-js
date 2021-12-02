@@ -21,3 +21,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm ci --ignore-scripts
     - run: npm run test-e2e-acp
+      env:
+        E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+        E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+        E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
+        E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
