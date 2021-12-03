@@ -26,3 +26,4 @@ jobs:
         E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
         E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
         E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+        E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}

@@ -46,8 +46,12 @@ import {
 import { getAccessControlUrlAll } from "../acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../universal/getAgentAccess";
 import { setAgentAccess } from "../universal/setAgentAccess";
-import { getPublicAccess } from "../universal/getPublicAccess";
-import { setPublicAccess } from "../universal/setPublicAccess";
+import { getPublicAccess as latest_getPublicAccess } from "../universal/getPublicAccess";
+import { setPublicAccess as latest_setPublicAccess } from "../universal/setPublicAccess";
+import {
+  setPublicAccess as legacy_setPublicAccess,
+  getPublicAccess as legacy_getPublicAccess,
+} from "../access/universal";
 
 let env: TestingEnvironment;
 
@@ -129,6 +133,14 @@ describe("An ACP Solid server", () => {
   });
 
   it("can get and set read access for the public", async () => {
+    const setPublicAccess =
+      env.environment === "Inrupt Dev-Next"
+        ? latest_setPublicAccess
+        : legacy_setPublicAccess;
+    const getPublicAccess =
+      env.environment === "Inrupt Dev-Next"
+        ? latest_getPublicAccess
+        : legacy_getPublicAccess;
     await expect(
       getSolidDataset(sessionDataset, { fetch: session.fetch })
     ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
