@@ -19,26 +19,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export interface TestingEnvironment {
-  clientId: string;
-  clientSecret: string;
-  idp: string;
-  pod: string;
-  environment: "Inrupt Dev-Next" | "Inrupt Production";
-}
+/* Config file to run just end-to-end tests */
 
-export function getTestingEnvironment(): TestingEnvironment {
-  if (
-    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
-    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production"
-  ) {
-    throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
-  }
-  return {
-    pod: process.env.E2E_TEST_POD!,
-    idp: process.env.E2E_TEST_IDP!,
-    clientId: process.env.E2E_TEST_CLIENT_ID!,
-    clientSecret: process.env.E2E_TEST_CLIENT_SECRET!,
-    environment: process.env.E2E_TEST_ENVIRONMENT,
-  };
-}
+module.exports = {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  clearMocks: true,
+  testRegex: "e2e-node/.*acp.test.ts",
+  injectGlobals: false,
+  // Because we're making HTTP requests that can take a while, tests should be
+  // given a little longer to complete:
+  testTimeout: 10000,
+};
