@@ -315,3 +315,6 @@ jobs:
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
           E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
           E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+          # FIXME: this is a temporary fix until actual environments are used across
+          # all our end-to-end tests.
+          E2E_TEST_ENVIRONMENT: "Inrupt Dev-Next"
