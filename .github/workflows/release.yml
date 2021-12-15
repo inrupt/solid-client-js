@@ -51,7 +51,7 @@ jobs:
       - name: Prepare for publication to npm
         uses: actions/setup-node@v2.5.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - name: Publish to npm
@@ -128,7 +128,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
       - uses: actions/setup-node@v2.5.0
         with:
-          node-version: "14.x"
+          node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Parcel project
         run: |
@@ -150,7 +150,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
       - uses: actions/setup-node@v2.5.0
         with:
-          node-version: "14.x"
+          node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Webpack project
         run: |
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v2.4.0
