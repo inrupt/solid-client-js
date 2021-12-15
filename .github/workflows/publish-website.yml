@@ -15,7 +15,7 @@ jobs:
       - name: Prepare for publication to GitHub Packages
         uses: actions/setup-node@v2.5.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - name: Build API docs
         run: |
