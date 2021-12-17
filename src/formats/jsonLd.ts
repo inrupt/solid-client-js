@@ -80,16 +80,16 @@ export const getJsonLdParser = (): Parser => {
 function fixQuads(plainQuads: any[]): Quad[] {
   const fixedQuads = plainQuads.map((plainQuad) =>
     DataFactory.quad(
-      term(plainQuad.subject) as Quad_Subject,
-      term(plainQuad.predicate) as Quad_Predicate,
-      term(plainQuad.object) as Quad_Object,
-      term(plainQuad.graph) as Quad_Graph
+      jsonLdTerm(plainQuad.subject) as Quad_Subject,
+      jsonLdTerm(plainQuad.predicate) as Quad_Predicate,
+      jsonLdTerm(plainQuad.object) as Quad_Object,
+      jsonLdTerm(plainQuad.graph) as Quad_Graph
     )
   );
   return fixedQuads;
 }
 
-function term(term: any) {
+function jsonLdTerm(term: any) {
   switch (term.termType) {
     case "NamedNode":
       return DataFactory.namedNode(term.value);
@@ -100,6 +100,6 @@ function term(term: any) {
     case "DefaultGraph":
       return DataFactory.defaultGraph();
     default:
-      throw Error("unknown termType: " + term.termType);
+      throw Error(`unknown termType: ${term.termType}`);
   }
 }

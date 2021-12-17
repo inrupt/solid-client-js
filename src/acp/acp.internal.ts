@@ -28,7 +28,7 @@ import { getLinkedResourceUrlAll } from "../resource/resource";
  * @returns Whether that Resource is an ACP ACR or not (in which case it's likely a WAC ACL).
  */
 export function isAcr(linkedAccessResource: WithServerResourceInfo): boolean {
-  const relTypeLinks = getLinkedResourceUrlAll(linkedAccessResource)["type"];
+  const relTypeLinks = getLinkedResourceUrlAll(linkedAccessResource).type;
   return (
     Array.isArray(relTypeLinks) &&
     relTypeLinks.includes(acp.AccessControlResource)

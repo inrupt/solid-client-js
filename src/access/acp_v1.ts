@@ -394,7 +394,7 @@ function internal_findActorAll(
               acp.CreatorAgent,
               acp.AuthenticatedAgent,
             ] as string[]
-          ).includes(iri) || actorRelation != acp.agent
+          ).includes(iri) || actorRelation !== acp.agent
       )
       .forEach((iri) => actors.add(iri));
   });
@@ -1027,7 +1027,7 @@ function copyRulesExcludingActor(
 ): Rule[] {
   return ruleIris
     .map((ruleIri) => {
-      const rule = acpData.rules.find((rule) => asIri(rule) === ruleIri);
+      const rule = acpData.rules.find((acpRule) => asIri(acpRule) === ruleIri);
       /* istanbul ignore if: getPoliciesAndRules should already have fetched all referenced Rules, so this should never be true: */
       if (typeof rule === "undefined") {
         return null;
@@ -1120,10 +1120,10 @@ export async function internal_getPoliciesAndRules(
   );
 
   return {
-    inaccessibleUrls: inaccessibleUrls,
-    acrPolicies: acrPolicies,
-    policies: policies,
-    rules: rules,
+    inaccessibleUrls,
+    acrPolicies,
+    policies,
+    rules,
   };
 }
 

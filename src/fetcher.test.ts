@@ -20,9 +20,10 @@
  */
 
 import { jest, it, expect } from "@jest/globals";
-jest.mock("cross-fetch");
 
 import { fetch } from "./fetcher";
+
+jest.mock("cross-fetch");
 
 it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
   const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<

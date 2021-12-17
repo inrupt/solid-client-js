@@ -191,7 +191,7 @@ const deprecatedFunctions = {
   getAllControl: internal_getControlAll,
   getControlAll: internal_getControlAll,
   setControl: internal_setControl,
-  removeControl: removeControl,
+  removeControl,
   addPolicyUrl: internal_addPolicyUrl,
   getPolicyUrlAll: internal_getPolicyUrlAll,
   removePolicyUrl: internal_removePolicyUrl,

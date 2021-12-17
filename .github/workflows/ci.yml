@@ -40,7 +40,7 @@ jobs:
       # (No, GitHub Actions at this point in time does not have native retry functionality.)
       - run: npm ci || npm ci || npm ci
       - run: npm run build
-      - run: npm test
+      - run: npm run ci
         if: github.event_name != 'schedule'
       - run: npm run test-e2e-node
         # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,

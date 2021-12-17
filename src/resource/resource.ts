@@ -43,7 +43,7 @@ import { acp } from "../constants";
 
 /** @ignore For internal use only. */
 export const internal_defaultFetchOptions = {
-  fetch: fetch,
+  fetch,
 };
 
 /**

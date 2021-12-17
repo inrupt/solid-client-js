@@ -577,22 +577,22 @@ export function acrAsMarkdown(
   }
   if (policyUrls.length > 0) {
     markdown += "\nThe following policies apply to this resource:\n- ";
-    markdown += policyUrls.join("\n- ") + "\n";
+    markdown += `${policyUrls.join("\n- ")}\n`;
   }
   if (acrPolicyUrls.length > 0) {
     markdown +=
       "\nThe following policies apply to the access control resource for this resource:\n- ";
-    markdown += acrPolicyUrls.join("\n- ") + "\n";
+    markdown += `${acrPolicyUrls.join("\n- ")}\n`;
   }
   if (memberPolicyUrls.length > 0) {
     markdown +=
       "\nThe following policies apply to the children of this resource:\n- ";
-    markdown += memberPolicyUrls.join("\n- ") + "\n";
+    markdown += `${memberPolicyUrls.join("\n- ")}\n`;
   }
   if (memberAcrPolicyUrls.length > 0) {
     markdown +=
       "\nThe following policies apply to the access control resources for children of this resource:\n- ";
-    markdown += memberAcrPolicyUrls.join("\n- ") + "\n";
+    markdown += `${memberAcrPolicyUrls.join("\n- ")}\n`;
   }
 
   return markdown;

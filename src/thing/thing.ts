@@ -19,6 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// FIXME: Move type declarations into a new file:
+/* eslint-disable max-classes-per-file */
+
 import {
   isNamedNode,
   resolveLocalIri,
@@ -63,7 +66,7 @@ export interface GetThingOptions {
    *
    * If not specified, the Thing will include Quads from all Named Graphs in the given
    * [[SolidDataset]].
-   **/
+   */
   scope?: Url | UrlString;
 }
 export function getThing(
@@ -288,14 +291,14 @@ export function createThing(options?: CreateThingLocalOptions): ThingLocal;
 export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
-    const url = (options as CreateThingPersistedOptions).url;
+    const { url } = options as CreateThingPersistedOptions;
     if (!internal_isValidUrl(url)) {
       throw new ValidThingUrlExpectedError(url);
     }
     const thing: ThingPersisted = freeze({
       type: "Subject",
       predicates: freeze({}),
-      url: url,
+      url,
     });
     return thing;
   }
@@ -360,30 +363,30 @@ export const asIri = asUrl;
  * @since 0.3.0
  */
 export function thingAsMarkdown(thing: Thing): string {
-  let thingAsMarkdown: string = "";
+  let markdown = "";
 
   if (isThingLocal(thing)) {
-    thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
+    markdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
       thing.url
     )}\`)\n`;
   } else {
-    thingAsMarkdown += `## Thing: ${thing.url}\n`;
+    markdown += `## Thing: ${thing.url}\n`;
   }
 
   const predicateIris = Object.keys(thing.predicates);
   if (predicateIris.length === 0) {
-    thingAsMarkdown += "\n<empty>\n";
+    markdown += "\n<empty>\n";
   } else {
     for (const predicate of predicateIris) {
-      thingAsMarkdown += `\nProperty: ${predicate}\n`;
+      markdown += `\nProperty: ${predicate}\n`;
       const values = getTermAll(thing, predicate);
-      values.forEach((value) => {
-        thingAsMarkdown += `- ${internal_getReadableValue(value)}\n`;
-      });
+      for (const value of values) {
+        markdown += `- ${internal_getReadableValue(value)}\n`;
+      }
     }
   }
 
-  return thingAsMarkdown;
+  return markdown;
 }
 
 /**

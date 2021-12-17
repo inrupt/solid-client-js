@@ -25,7 +25,7 @@
 export const fetch: typeof window.fetch = async (resource, init) => {
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof window === "object" && typeof require !== "function") {
-    return await window.fetch(resource, init);
+    return window.fetch(resource, init);
   }
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
@@ -51,9 +51,9 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // } catch (e) {
   // When enabling the above, make sure to add a similar try {...} catch block using `import`
   // statements in the elseif above.
-  // eslint-disable-next-line prefer-const
+  // eslint-disable-next-line prefer-const, global-require
   fetch = require("cross-fetch");
   // }
 
-  return await fetch(resource, init);
+  return fetch(resource, init);
 };

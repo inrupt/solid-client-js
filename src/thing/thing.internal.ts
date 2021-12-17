@@ -54,22 +54,22 @@ export function internal_getReadableValue(value: Quad_Object): string {
         val =
           deserializeBoolean(value.value)?.valueOf() ??
           `Invalid data: \`${value.value}\``;
-        return val + " (boolean)";
+        return `${val} (boolean)`;
       case xmlSchemaTypes.dateTime:
         val =
           deserializeDatetime(value.value)?.toUTCString() ??
           `Invalid data: \`${value.value}\``;
-        return val + " (datetime)";
+        return `${val} (datetime)`;
       case xmlSchemaTypes.decimal:
         val =
           deserializeDecimal(value.value)?.toString() ??
           `Invalid data: \`${value.value}\``;
-        return val + " (decimal)";
+        return `${val} (decimal)`;
       case xmlSchemaTypes.integer:
         val =
           deserializeInteger(value.value)?.toString() ??
           `Invalid data: \`${value.value}\``;
-        return val + " (integer)";
+        return `${val} (integer)`;
       case xmlSchemaTypes.langString:
         return `"${value.value}" (${value.language} string)`;
       case xmlSchemaTypes.string:

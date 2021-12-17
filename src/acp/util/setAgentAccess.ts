@@ -71,6 +71,8 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
   );
 }
 
+// FIXME: refactor this function to not do param reassignment:
+/* eslint-disable no-param-reassign */
 /**
  * Set access for a given Agent.
  *
@@ -150,3 +152,4 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
 
   return resourceWithAcr;
 }
+/* eslint-enable no-param-reassign */

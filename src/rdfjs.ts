@@ -46,7 +46,6 @@ import {
   getChainBlankNodes,
   toRdfJsQuads,
 } from "./rdfjs.internal";
-const rdfJsDataset = rdfjsDatasetModule.dataset;
 
 /**
  * Convert an RDF/JS Dataset into a [[SolidDataset]]
@@ -84,7 +83,7 @@ export function fromRdfJsDataset(
     (datasetAcc, quad) =>
       addRdfJsQuadToDataset(datasetAcc, quad, {
         otherQuads: quads,
-        chainBlankNodes: chainBlankNodes,
+        chainBlankNodes,
       }),
     dataset
   );
@@ -111,6 +110,7 @@ export function toRdfJsDataset(
   set: ImmutableDataset,
   options: ToRdfJsOptions = {}
 ): RdfJs.DatasetCore {
-  const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
+  const datasetFactory =
+    options.datasetFactory?.dataset ?? rdfjsDatasetModule.dataset;
   return datasetFactory(toRdfJsQuads(set, options));
 }

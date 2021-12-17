@@ -64,13 +64,14 @@ export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
     mode
   );
 
+  let updatedResource = resource;
   let defaultAgentMatcherPolicyThing = getThing(
     getAccessControlResource(resource),
     policyUrl
   );
 
   if (!defaultAgentMatcherPolicyThing) {
-    resource = setDefaultAgentMatcherPolicyThingIfNotExist(
+    updatedResource = setDefaultAgentMatcherPolicyThingIfNotExist(
       resource,
       name,
       mode
@@ -95,10 +96,10 @@ export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
       .build();
 
     return setAccessControlResourceThing(
-      resource,
+      updatedResource,
       defaultAgentMatcherPolicyThing
     );
   }
 
-  return resource;
+  return updatedResource;
 }

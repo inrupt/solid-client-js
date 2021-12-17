@@ -3221,7 +3221,7 @@ describe("getTerm", () => {
   it("returns a NamedNode for a Local Node", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      localNodeSkolemPrefix + "local-node-name"
+      `${localNodeSkolemPrefix}local-node-name`
     );
 
     const foundTerm = getTerm(
@@ -3384,7 +3384,7 @@ describe("getTermAll", () => {
   it("returns NamedNodes for Local Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      localNodeSkolemPrefix + "local-node-name"
+      `${localNodeSkolemPrefix}local-node-name`
     );
 
     const foundTerms = getTermAll(

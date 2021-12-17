@@ -30,8 +30,8 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getSession } from "./util/getSession";
 import { config } from "dotenv-flow";
+import { getSession } from "./util/getSession";
 import {
   saveSolidDatasetAt,
   createSolidDataset,

@@ -43,7 +43,6 @@ import {
   WithChangeLog,
   hasChangelog,
   LocalNode,
-  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
@@ -259,7 +258,7 @@ export async function responseToSolidDataset(
           (datasetAcc, quad) =>
             addRdfJsQuadToDataset(datasetAcc, quad, {
               otherQuads: allQuads,
-              chainBlankNodes: chainBlankNodes,
+              chainBlankNodes,
             }),
           solidDataset
         );
@@ -275,7 +274,7 @@ export async function responseToSolidDataset(
     }
   );
 
-  return await parsingPromise;
+  return parsingPromise;
 }
 
 /**
@@ -291,7 +290,7 @@ export async function getSolidDataset(
     typeof internal_defaultFetchOptions & ParseOptions
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
-  url = internal_toIriString(url);
+  const iri = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -302,14 +301,14 @@ export async function getSolidDataset(
     parserContentTypes.length > 0
       ? parserContentTypes.join(", ")
       : "text/turtle";
-  const response = await config.fetch(url, {
+  const response = await config.fetch(iri, {
     headers: {
       Accept: acceptedContentTypes,
     },
   });
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the Resource at [${url}] failed: [${response.status}] [${response.statusText}].`,
+      `Fetching the Resource at [${iri}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }
@@ -413,7 +412,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
-  url = internal_toIriString(url);
+  const iri = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -421,21 +420,22 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const datasetWithChangelog = internal_withChangeLog(solidDataset);
 
-  const requestInit = isUpdate(datasetWithChangelog, url)
+  const requestInit = isUpdate(datasetWithChangelog, iri)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
     : await prepareSolidDatasetCreation(datasetWithChangelog);
 
-  const response = await config.fetch(url, requestInit);
+  const response = await config.fetch(iri, requestInit);
 
   if (internal_isUnsuccessfulResponse(response)) {
-    const diagnostics = isUpdate(datasetWithChangelog, url)
-      ? "The changes that were sent to the Pod are listed below.\n\n" +
-        changeLogAsMarkdown(datasetWithChangelog)
-      : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(datasetWithChangelog);
+    const diagnostics = isUpdate(datasetWithChangelog, iri)
+      ? `The changes that were sent to the Pod are listed below.\n\n${changeLogAsMarkdown(
+          datasetWithChangelog
+        )}`
+      : `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
+          datasetWithChangelog
+        )}`;
     throw new FetchError(
-      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n` +
-        diagnostics,
+      `Storing the Resource at [${iri}] failed: [${response.status}] [${response.statusText}].\n\n${diagnostics}`,
       response
     );
   }
@@ -512,14 +512,15 @@ export async function createContainerAt(
     }
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
-  url = internal_toIriString(url);
-  url = url.endsWith("/") ? url : url + "/";
+  let iri = internal_toIriString(url);
+  iri = iri.endsWith("/") ? iri : `${iri}/`;
+
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
   };
 
-  const response = await config.fetch(url, {
+  const response = await config.fetch(iri, {
     method: "PUT",
     body: config.initialContent
       ? await triplesToTurtle(
@@ -543,13 +544,13 @@ export async function createContainerAt(
       (await response.text()).trim() ===
         internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465
     ) {
-      return createContainerWithNssWorkaroundAt(url, options);
+      return createContainerWithNssWorkaroundAt(iri, options);
     }
 
     const containerType =
       config.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
-      `Creating the ${containerType} Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
+      `Creating the ${containerType} Container at [${iri}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }
@@ -591,7 +592,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   url,
   options
 ) => {
-  url = internal_toIriString(url);
+  const iri = internal_toIriString(url);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -599,7 +600,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
 
   let existingContainer;
   try {
-    existingContainer = await getResourceInfo(url, options);
+    existingContainer = await getResourceInfo(iri, options);
   } catch (e) {
     // To create the Container, we'd want it to not exist yet. In other words, we'd expect to get
     // a 404 error here in the happy path - so do nothing if that's the case.
@@ -610,13 +611,13 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
   }
   if (typeof existingContainer !== "undefined") {
     throw new Error(
-      `The Container at [${url}] already exists, and therefore cannot be created again.`
+      `The Container at [${iri}] already exists, and therefore cannot be created again.`
     );
   }
 
-  const dummyUrl = url + ".dummy";
+  const dummyIri = `${iri}.dummy`;
 
-  const createResponse = await config.fetch(dummyUrl, {
+  const createResponse = await config.fetch(dummyIri, {
     method: "PUT",
     headers: {
       Accept: "text/turtle",
@@ -626,14 +627,14 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
 
   if (internal_isUnsuccessfulResponse(createResponse)) {
     throw new FetchError(
-      `Creating the empty Container at [${url}] failed: [${createResponse.status}] [${createResponse.statusText}].`,
+      `Creating the empty Container at [${iri}] failed: [${createResponse.status}] [${createResponse.statusText}].`,
       createResponse
     );
   }
 
-  await config.fetch(dummyUrl, { method: "DELETE" });
+  await config.fetch(dummyIri, { method: "DELETE" });
 
-  const containerInfoResponse = await config.fetch(url, { method: "HEAD" });
+  const containerInfoResponse = await config.fetch(iri, { method: "HEAD" });
 
   const resourceInfo = internal_parseResourceInfo(containerInfoResponse);
   const containerDataset: SolidDataset &
@@ -705,7 +706,7 @@ export async function saveSolidDatasetInContainer(
     ...internal_defaultFetchOptions,
     ...options,
   };
-  containerUrl = internal_toIriString(containerUrl);
+  const containerIri = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
     toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
@@ -717,17 +718,18 @@ export async function saveSolidDatasetInContainer(
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await config.fetch(containerUrl, {
+  const response = await config.fetch(containerIri, {
     method: "POST",
     body: rawTurtle,
-    headers: headers,
+    headers,
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Storing the Resource in the Container at [${containerUrl}] failed: [${response.status}] [${response.statusText}].\n\n` +
-        "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(solidDataset),
+      `${
+        `Storing the Resource in the Container at [${containerIri}] failed: [${response.status}] [${response.statusText}].\n\n` +
+        "The SolidDataset that was sent to the Pod is listed below.\n\n"
+      }${solidDatasetAsMarkdown(solidDataset)}`,
       response
     );
   }
@@ -786,7 +788,7 @@ export async function createContainerInContainer(
   containerUrl: UrlString | Url,
   options: SaveInContainerOptions = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithResourceInfo> {
-  containerUrl = internal_toIriString(containerUrl);
+  const containerIri = internal_toIriString(containerUrl);
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -799,14 +801,14 @@ export async function createContainerInContainer(
   if (options.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await config.fetch(containerUrl, {
+  const response = await config.fetch(containerIri, {
     method: "POST",
-    headers: headers,
+    headers,
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Creating an empty Container in the Container at [${containerUrl}] failed: [${response.status}] [${response.statusText}].`,
+      `Creating an empty Container in the Container at [${containerIri}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }
@@ -899,7 +901,7 @@ export function getContainedResourceUrlAll(
  * @since 0.3.0
  */
 export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
-  let readableSolidDataset: string = "";
+  let readableSolidDataset = "";
 
   if (hasResourceInfo(solidDataset)) {
     readableSolidDataset += `# SolidDataset: ${getSourceUrl(solidDataset)}\n`;
@@ -912,10 +914,12 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
     readableSolidDataset += "\n<empty>\n";
   } else {
     things.forEach((thing) => {
-      readableSolidDataset += "\n" + thingAsMarkdown(thing);
+      readableSolidDataset += `\n${thingAsMarkdown(thing)}`;
       if (hasChangelog(solidDataset)) {
-        readableSolidDataset +=
-          "\n" + getReadableChangeLogSummary(solidDataset, thing) + "\n";
+        readableSolidDataset += `\n${getReadableChangeLogSummary(
+          solidDataset,
+          thing
+        )}\n`;
       }
     });
   }
@@ -962,25 +966,21 @@ export function changeLogAsMarkdown(
     const changeLogByProperty = changeLogsByThingAndProperty[thingUrl];
     Object.keys(changeLogByProperty).forEach((propertyUrl) => {
       readableChangeLog += `\nProperty: ${propertyUrl}\n`;
-      const deleted = changeLogByProperty[propertyUrl].deleted;
-      const added = changeLogByProperty[propertyUrl].added;
+      const { deleted } = changeLogByProperty[propertyUrl];
+      const { added } = changeLogByProperty[propertyUrl];
       if (deleted.length > 0) {
         readableChangeLog += "- Removed:\n";
-        deleted.forEach(
-          (deletedValue) =>
-            (readableChangeLog += `  - ${internal_getReadableValue(
-              deletedValue
-            )}\n`)
-        );
+        deleted.forEach((deletedValue) => {
+          readableChangeLog += `  - ${internal_getReadableValue(
+            deletedValue
+          )}\n`;
+        });
       }
       if (added.length > 0) {
         readableChangeLog += "- Added:\n";
-        added.forEach(
-          (addedValue) =>
-            (readableChangeLog += `  - ${internal_getReadableValue(
-              addedValue
-            )}\n`)
-        );
+        added.forEach((addedValue) => {
+          readableChangeLog += `  - ${internal_getReadableValue(addedValue)}\n`;
+        });
       }
     });
   });
@@ -1053,9 +1053,9 @@ function getReadableChangeLogSummary(
   const additionString =
     nrOfAdditions === 1
       ? "1 new value added"
-      : nrOfAdditions + " new values added";
+      : `${nrOfAdditions} new values added`;
   const deletionString =
-    nrOfDeletions === 1 ? "1 value removed" : nrOfDeletions + " values removed";
+    nrOfDeletions === 1 ? "1 value removed" : `${nrOfDeletions} values removed`;
   return `(${additionString} / ${deletionString})`;
 }
 
@@ -1072,7 +1072,7 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
 
 function getNamedNodeFromLocalNode(node: LocalNode | NamedNode): NamedNode {
   if (isLocalNodeIri(node.value)) {
-    return DataFactory.namedNode("#" + getLocalNodeName(node.value));
+    return DataFactory.namedNode(`#${getLocalNodeName(node.value)}`);
   }
   return node;
 }
@@ -1180,7 +1180,7 @@ export async function getWellKnownSolid(
   if (rootResource !== null) {
     const wellKnownSolidUrl = new URL(
       ".well-known/solid",
-      rootResource.endsWith("/") ? rootResource : rootResource + "/"
+      rootResource.endsWith("/") ? rootResource : `${rootResource}/`
     ).href;
     try {
       return await getSolidDataset(wellKnownSolidUrl, {

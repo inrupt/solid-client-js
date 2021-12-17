@@ -72,7 +72,7 @@ export {
   isThingLocal,
   asUrl,
   asIri,
-  thingAsMarkdown as thingAsMarkdown,
+  thingAsMarkdown,
   ThingExpectedError,
 } from "./thing/thing";
 export {
@@ -227,7 +227,7 @@ export {
   SolidClientError,
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
-export { Time } from "./datatypes.js";
+export { Time } from "./datatypes";
 export {
   addJwkToJwks,
   addPublicKeyToProfileJwks,

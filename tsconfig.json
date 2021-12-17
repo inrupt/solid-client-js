@@ -1,18 +1,21 @@
 {
   "compilerOptions": {
     /* Basic Options */
-    "target": "es2017",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
-    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-    "lib": ["es2015", "dom"],                 /* Specify library files to be included in the compilation. */
+    "target": "es2017" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */,
+    "module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */,
+    "lib": [
+      "es2015",
+      "dom"
+    ] /* Specify library files to be included in the compilation. */,
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
     // "checkJs": true,                       /* Report errors in .js files. */
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
-    "declaration": true,                      /* Generates corresponding '.d.ts' file. */
+    "declaration": true /* Generates corresponding '.d.ts' file. */,
     // "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // "sourceMap": true,                     /* Generates corresponding '.map' file. */
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
-    "outDir": "dist",                           /* Redirect output structure to the directory. */
-    "rootDir": "src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
+    "outDir": "dist" /* Redirect output structure to the directory. */,
+    "rootDir": "src" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
     // "composite": true,                     /* Enable project compilation */
     // "removeComments": true,                /* Do not emit comments to output. */
     // "noEmit": true,                        /* Do not emit outputs. */
@@ -21,7 +24,7 @@
     // "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
 
     /* Strict Type-Checking Options */
-    "strict": true,                           /* Enable all strict type-checking options. */
+    "strict": true /* Enable all strict type-checking options. */,
     // "noImplicitAny": true,                 /* Raise error on expressions and declarations with an implied 'any' type. */
     // "strictNullChecks": true,              /* Enable strict null checks. */
     // "strictFunctionTypes": true,           /* Enable strict checking of function types. */
@@ -42,9 +45,11 @@
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
     // "typeRoots": [],                       /* List of folders to include type definitions from. */
     // https://github.com/microsoft/TypeScript/wiki/Performance#controlling-types-inclusion:
-    "types": ["jest"],                           /* Type declaration files to be included in compilation. */
+    "types": [
+      "jest"
+    ] /* Type declaration files to be included in compilation. */,
     // "allowSyntheticDefaultImports": true,  /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
-    "esModuleInterop": true,                   /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
+    "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
     // "preserveSymlinks": true,              /* Do not resolve the real path of symlinks. */
 
     /* Source Map Options */
@@ -57,7 +62,7 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Advanced Options */
-    "stripInternal": true,                 /* Do not emit declarations for code that has an @internal annotation in it’s JSDoc comment. */
+    "stripInternal": true /* Do not emit declarations for code that has an @internal annotation in it’s JSDoc comment. */
 
     /* Experimental Options */
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
@@ -118,17 +123,7 @@
     ],
     "theme": "markdown",
     "readme": "none",
-    "entryDocument": "index.md",
+    "entryDocument": "index.md"
   },
-  "include": ["src/**/*.ts", ".eslintrc.js"],
-  "exclude": [
-    "**/node_modules",
-    // These end-to-end tests reference code in `.codesandbox`,
-    // which is not part of this project and should not be compiled together with it.
-    // Not excluding this will lead to the root of the repository being used
-    // as the root directory for compilation (instead of /src),
-    // meaning that files that would otherwise be included in /dist directly
-    // (e.g. dist/index.d.ts) will then be built to /dist/src.
-    "e2e",
-  ]
+  "include": ["./src/index.ts"]
 }

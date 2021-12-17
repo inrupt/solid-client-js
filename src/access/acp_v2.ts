@@ -369,7 +369,7 @@ function internal_findActorAll(
               acp.CreatorAgent,
               acp.AuthenticatedAgent,
             ] as string[]
-          ).includes(iri) || actorRelation != acp.agent
+          ).includes(iri) || actorRelation !== acp.agent
       )
       .forEach((iri) => actors.add(iri));
   });
@@ -935,7 +935,7 @@ function copyMatchersExcludingActor(
   return matcherIris
     .map((matcherIri) => {
       const matcher = acpData.matchers.find(
-        (matcher) => asIri(matcher) === matcherIri
+        (acpMatcher) => asIri(acpMatcher) === matcherIri
       );
       /* istanbul ignore if: getPoliciesAndMatchers should already have fetched all referenced Matchers, so this should never be true: */
       if (typeof matcher === "undefined") {
@@ -1034,10 +1034,10 @@ export async function internal_getPoliciesAndMatchers(
   );
 
   return {
-    inaccessibleUrls: inaccessibleUrls,
-    acrPolicies: acrPolicies,
-    policies: policies,
-    matchers: matchers,
+    inaccessibleUrls,
+    acrPolicies,
+    policies,
+    matchers,
   };
 }
 

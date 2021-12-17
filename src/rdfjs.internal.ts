@@ -150,7 +150,7 @@ function addRdfJsQuadToObjects(
     ]);
     return freeze({
       ...objects,
-      namedNodes: namedNodes,
+      namedNodes,
     });
   }
 
@@ -167,7 +167,7 @@ function addRdfJsQuadToObjects(
       });
       return freeze({
         ...objects,
-        langStrings: langStrings,
+        langStrings,
       });
     }
 
@@ -182,7 +182,7 @@ function addRdfJsQuadToObjects(
     });
     return freeze({
       ...objects,
-      literals: literals,
+      literals,
     });
   }
 
@@ -197,7 +197,7 @@ function addRdfJsQuadToObjects(
     ]);
     return freeze({
       ...objects,
-      blankNodes: blankNodes,
+      blankNodes,
     });
   }
 
@@ -364,7 +364,7 @@ export function toRdfJsQuads(
         : dataFactory.namedNode(graphIri);
 
     Object.keys(graph).forEach((subjectIri) => {
-      const predicates = graph[subjectIri].predicates;
+      const { predicates } = graph[subjectIri];
       const subjectNode = isBlankNodeId(subjectIri)
         ? dataFactory.blankNode(getBlankNodeValue(subjectIri))
         : dataFactory.namedNode(subjectIri);

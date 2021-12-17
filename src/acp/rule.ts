@@ -468,6 +468,7 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   let ruleToRemove: UrlString;
   if (typeof rule === "string") {
     try {
+      // eslint-disable-next-line no-new
       new URL(rule);
       ruleToRemove = rule;
     } catch (e) {
@@ -1016,22 +1017,22 @@ export function ruleAsMarkdown(rule: Rule): string {
   const targetAgents = getAgentAll(rule);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
-    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+    targetEnumeration += `${targetAgents.join("\n  - ")}\n`;
   }
   const targetGroups = getGroupAll(rule);
   if (targetGroups.length > 0) {
     targetEnumeration += "- Members of the following groups:\n  - ";
-    targetEnumeration += targetGroups.join("\n  - ") + "\n";
+    targetEnumeration += `${targetGroups.join("\n  - ")}\n`;
   }
   const targetClients = getClientAll(rule);
   if (targetClients.length > 0) {
     targetEnumeration += "- Users of the following client applications:\n  - ";
-    targetEnumeration += targetClients.join("\n  - ") + "\n";
+    targetEnumeration += `${targetClients.join("\n  - ")}\n`;
   }
 
   markdown +=
     targetEnumeration.length > 0
-      ? "This rule applies to:\n" + targetEnumeration
+      ? `This rule applies to:\n${targetEnumeration}`
       : "<empty>\n";
 
   return markdown;

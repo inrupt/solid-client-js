@@ -127,7 +127,9 @@ export async function getAgentAccess<T extends WithAccessibleAcr>(
     .map((url) => getThing(internal_getAcr(resourceWithAcr), url))
     .filter((policy): policy is ThingPersisted => policy !== null);
 
-  policyAll.map((policy) => {
+  // FIXME: is this really a find() or reduce() instead? What happens if there
+  // are multiple resourceAccess values?
+  policyAll.forEach((policy) => {
     if (isAgentMatched(resourceWithAcr, policy, webId)) {
       resourceAccess = reduceModes(policy, resourceAccess, "resource");
     }
@@ -137,7 +139,9 @@ export async function getAgentAccess<T extends WithAccessibleAcr>(
     .map((url) => getThing(internal_getAcr(resourceWithAcr), url))
     .filter((policy): policy is ThingPersisted => policy !== null);
 
-  acrPolicyAll.map((policy) => {
+  // FIXME: is this really a find() or reduce() instead? What happens if there
+  // are multiple resourceAccess values?
+  acrPolicyAll.forEach((policy) => {
     if (isAgentMatched(resourceWithAcr, policy, webId)) {
       resourceAccess = reduceModes(policy, resourceAccess, "control");
     }

@@ -24,7 +24,9 @@ import { screen } from "@testing-library/testcafe";
 
 export class CognitoPage {
   usernameInput;
+
   passwordInput;
+
   submitButton;
 
   constructor() {

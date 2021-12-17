@@ -111,7 +111,7 @@ serversUnderTest.forEach((server) => {
     const createContainer = ClientFunction(() => E2eHelpers.createContainer());
     const deleteContainer = ClientFunction(() => E2eHelpers.deleteContainer());
 
-    await essUserLogin(t, "https://" + identityProvider, username, password);
+    await essUserLogin(t, `https://${identityProvider}`, username, password);
     // The Pod root is discovered from the WebID document, looking up the pim:storage predicate.
     const createdContainer = await createContainer();
     await t.expect(createdContainer).notTypeOf("null");

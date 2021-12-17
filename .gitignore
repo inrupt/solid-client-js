@@ -3,12 +3,11 @@ dist
 umd
 .DS_Store
 .eslintcache
-whitesource/
 LICENSE_DEPENDENCIES
 LICENSE_DEPENDENCIES_ALL
 docs/api/build/
 docs/api/source/api/
 docs/dist/
 .env*.local
-src/e2e-browser/testcafe-requests/
+e2e/browser/testcafe-requests/
 .codesandbox/sandbox/.parcel-cache/

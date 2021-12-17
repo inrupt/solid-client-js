@@ -24,6 +24,7 @@ import { screen } from "@testing-library/testcafe";
 
 export class IndexPage {
   idpInput;
+
   submitButton;
 
   constructor() {

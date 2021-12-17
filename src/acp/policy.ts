@@ -575,6 +575,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
     try {
+      // eslint-disable-next-line no-new
       new URL(policyToRemove);
     } catch (e) {
       // If the given Policy to remove is the name of the Policy,
@@ -630,6 +631,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
     try {
+      // eslint-disable-next-line no-new
       new URL(policyToRemove);
     } catch (e) {
       // If the given Policy to remove is the name of the Policy,
@@ -754,15 +756,15 @@ export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   }
   if (allOfRules.length > 0) {
     markdown += "\nAll of these rules should match:\n";
-    markdown += "- " + allOfRules.join("\n- ") + "\n";
+    markdown += `- ${allOfRules.join("\n- ")}\n`;
   }
   if (anyOfRules.length > 0) {
     markdown += "\nAt least one of these rules should match:\n";
-    markdown += "- " + anyOfRules.join("\n- ") + "\n";
+    markdown += `- ${anyOfRules.join("\n- ")}\n`;
   }
   if (noneOfRules.length > 0) {
     markdown += "\nNone of these rules should match:\n";
-    markdown += "- " + noneOfRules.join("\n- ") + "\n";
+    markdown += `- ${noneOfRules.join("\n- ")}\n`;
   }
 
   return markdown;

@@ -76,7 +76,7 @@ async function getParser(baseIri: IriString) {
 export async function triplesToTurtle(quads: Quad[]): Promise<string> {
   const n3 = await loadN3();
   const format = "text/turtle";
-  const writer = new n3.Writer({ format: format });
+  const writer = new n3.Writer({ format });
   // Remove any potentially lingering references to Named Graphs in Quads;
   // they'll be determined by the URL the Turtle will be sent to:
   const triples = quads.map((quad) =>
@@ -89,7 +89,8 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
       if (error) {
         return reject(error);
       }
-      resolve(result);
+
+      return resolve(result);
     });
   });
 

@@ -1,8 +1,6 @@
-# We want to ignore compiled Javascript in .gitignore, but not when publishing to npm. Hence this file.
-*.test.js
-*.test.ts
-coverage
-whitesource
+**/*.test.js
+**/*.test.ts
+# These are automatically generated HTML from the typescript definitions
 docs
 # Resources should contain files useful at build time only, and should not
 # be required as part of the package (like devDependencies)

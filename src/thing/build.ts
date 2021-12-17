@@ -39,7 +39,6 @@ import {
   addLiteral,
   addNamedNode,
   AddOfType,
-  addStringEnglish,
   addStringNoLocale,
   addStringWithLocale,
   addTerm,
@@ -58,7 +57,6 @@ import {
   removeNamedNode,
   RemoveOfType,
   removeStringNoLocale,
-  removeStringEnglish,
   removeStringWithLocale,
   removeUrl,
 } from "./remove";
@@ -73,7 +71,6 @@ import {
   setLiteral,
   setNamedNode,
   SetOfType,
-  setStringEnglish,
   setStringNoLocale,
   setStringWithLocale,
   setTerm,

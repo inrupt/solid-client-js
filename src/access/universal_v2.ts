@@ -99,7 +99,7 @@ export async function getAgentAccess(
     return getAgentAccessAcp(acpData, webId);
   }
   if (hasAccessibleAcl(resourceInfo)) {
-    return await getAgentAccessWac(resourceInfo, webId, options);
+    return getAgentAccessWac(resourceInfo, webId, options);
   }
   return null;
 }
@@ -167,16 +167,16 @@ export async function setAgentAccess(
     return null;
   }
   if (hasAccessibleAcl(resourceInfo)) {
-    if (access.controlRead != access.controlWrite) {
+    if (access.controlRead !== access.controlWrite) {
       throw new Error(
         `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${getSourceIri(
           resourceInfo
-        )}]), ` + "`controlRead` and `controlWrite` should have the same value."
+        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`
       );
     }
     const wacAccess = access as WacAccess;
     await setAgentAccessWac(resourceInfo, webId, wacAccess, options);
-    return await getAgentAccessWac(resourceInfo, webId, options);
+    return getAgentAccessWac(resourceInfo, webId, options);
   }
   return null;
 }
@@ -219,7 +219,7 @@ export async function getAgentAccessAll(
     return getAgentAccessAllAcp(acpData);
   }
   if (hasAccessibleAcl(resourceInfo)) {
-    return await getAgentAccessAllWac(resourceInfo, options);
+    return getAgentAccessAllWac(resourceInfo, options);
   }
   return null;
 }
@@ -260,7 +260,7 @@ export async function getPublicAccess(
     return getPublicAccessAcp(acpData);
   }
   if (hasAccessibleAcl(resourceInfo)) {
-    return await getPublicAccessWac(resourceInfo, options);
+    return getPublicAccessWac(resourceInfo, options);
   }
   return null;
 }
@@ -313,7 +313,7 @@ export async function setPublicAccess(
     if (updatedResource) {
       try {
         await saveAcrFor(updatedResource, options);
-        return getPublicAccess(resourceUrl, options);
+        return await getPublicAccess(resourceUrl, options);
       } catch (e) {
         return null;
       }
@@ -321,16 +321,16 @@ export async function setPublicAccess(
     return null;
   }
   if (hasAccessibleAcl(resourceInfo)) {
-    if (access.controlRead != access.controlWrite) {
+    if (access.controlRead !== access.controlWrite) {
       throw new Error(
         `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${getSourceIri(
           resourceInfo
-        )}]), ` + "`controlRead` and `controlWrite` should have the same value."
+        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`
       );
     }
     const wacAccess = access as WacAccess;
     await setPublicAccessWac(resourceInfo, wacAccess, options);
-    return await getPublicAccessWac(resourceInfo, options);
+    return getPublicAccessWac(resourceInfo, options);
   }
   return null;
 }

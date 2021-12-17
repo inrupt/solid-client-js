@@ -467,6 +467,7 @@ export function removeResourceMatcher<ResourceExt extends WithAccessibleAcr>(
   let matcherToRemove: UrlString;
   if (typeof matcher === "string") {
     try {
+      // eslint-disable-next-line no-new
       new URL(matcher);
       matcherToRemove = matcher;
     } catch (e) {
@@ -947,17 +948,17 @@ export function matcherAsMarkdown(matcher: Matcher): string {
   const targetAgents = getAgentAll(matcher);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
-    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+    targetEnumeration += `${targetAgents.join("\n  - ")}\n`;
   }
   const targetClients = getClientAll(matcher);
   if (targetClients.length > 0) {
     targetEnumeration += "- Users of the following client applications:\n  - ";
-    targetEnumeration += targetClients.join("\n  - ") + "\n";
+    targetEnumeration += `${targetClients.join("\n  - ")}\n`;
   }
 
   markdown +=
     targetEnumeration.length > 0
-      ? "This Matcher matches:\n" + targetEnumeration
+      ? `This Matcher matches:\n${targetEnumeration}`
       : "<empty>\n";
 
   return markdown;

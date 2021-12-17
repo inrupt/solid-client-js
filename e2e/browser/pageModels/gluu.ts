@@ -24,7 +24,9 @@ import { screen } from "@testing-library/testcafe";
 
 export class GluuPage {
   usernameInput;
+
   passwordInput;
+
   submitButton;
 
   constructor() {

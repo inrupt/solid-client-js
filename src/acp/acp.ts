@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acp } from "../constants";
+import * as constants from "../constants";
 import {
   SolidDataset,
   File,
@@ -172,10 +172,9 @@ export async function getSolidDatasetWithAccessDatasets(
   if (hasAccessibleAcl(solidDataset)) {
     const acl = await internal_fetchAcl(solidDataset, config);
     return internal_setAcl(solidDataset, acl);
-  } else {
-    const acr = await fetchAcr(solidDataset, config);
-    return { ...solidDataset, ...acr };
   }
+  const acr = await fetchAcr(solidDataset, config);
+  return { ...solidDataset, ...acr };
 }
 
 /**
@@ -211,10 +210,9 @@ export async function getFileWithAccessDatasets(
   if (hasAccessibleAcl(file)) {
     const acl = await internal_fetchAcl(file, config);
     return internal_setAcl(file, acl);
-  } else {
-    const acr = await fetchAcr(file, config);
-    return Object.assign(file, acr);
   }
+  const acr = await fetchAcr(file, config);
+  return Object.assign(file, acr);
 }
 
 /**
@@ -250,10 +248,9 @@ export async function getResourceInfoWithAccessDatasets(
   if (hasAccessibleAcl(resourceInfo)) {
     const acl = await internal_fetchAcl(resourceInfo, config);
     return internal_setAcl(resourceInfo, acl);
-  } else {
-    const acr = await fetchAcr(resourceInfo, config);
-    return { ...resourceInfo, ...acr };
   }
+  const acr = await fetchAcr(resourceInfo, config);
+  return { ...resourceInfo, ...acr };
 }
 
 /**
@@ -323,13 +320,16 @@ async function fetchAcr(
   resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<WithAcp> {
-  let acrUrl: UrlString | undefined = undefined;
+  let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {
     // Whereas a Resource can generally have multiple linked Resources for the same relation,
     // it can only have one Access Control Resource for that ACR to be valid.
     // Hence the accessing of [0] directly:
+    // eslint-disable-next-line prefer-destructuring
     acrUrl =
-      resource.internal_resourceInfo.linkedResources[acp.accessControl][0];
+      resource.internal_resourceInfo.linkedResources[
+        constants.acp.accessControl
+      ][0];
   } else if (hasAccessibleAcl(resource)) {
     // The ACP proposal will be updated to expose the Access Control Resource
     // via a Link header with rel="acl", just like WAC. That means that if
@@ -447,15 +447,19 @@ export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
   if (!hasServerResourceInfo(resource)) {
     return undefined;
   }
+
   // Two rels types are acceptable to indicate a link to an ACR.
-  const acrLinks = [acp.accessControl, "acl"].map((rel) => {
+  const acrLinks = [constants.acp.accessControl, "acl"].map((rel) => {
     if (
       Array.isArray(resource.internal_resourceInfo.linkedResources[rel]) &&
       resource.internal_resourceInfo.linkedResources[rel].length === 1
     ) {
       return resource.internal_resourceInfo.linkedResources[rel][0];
     }
+
+    return undefined;
   });
+
   return acrLinks.find((x) => x !== undefined);
 }
 

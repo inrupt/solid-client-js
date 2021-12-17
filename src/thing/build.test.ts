@@ -194,7 +194,7 @@ describe("Thing Builder API", () => {
     // Since we're passing the `url` option, `buildThing` should return a ThingPersisted,
     // which should cause an error when assigning to a ThingLocal variable:
     // @ts-expect-error
-    const _thingPersistedDirect: ThingLocal = buildThing({
+    const thingPersistedDirect: ThingLocal = buildThing({
       url: "https://some.pod/resource#thing",
     }).build();
 
@@ -202,18 +202,18 @@ describe("Thing Builder API", () => {
     // `buildThing` should also return a ThingPersisted,
     // which should cause an error when assigning to a ThingLocal variable:
     // @ts-expect-error
-    const _thingPersisted: ThingLocal = buildThing(
+    const thingPersisted: ThingLocal = buildThing(
       createThing({ url: "https://some.pod/resource#thing" })
     ).build();
 
     // Since we're passing the `name` option, `buildThing` should return a ThingLocal,
     // which should not cause an error when assigning to a ThingLocal variable:
-    const _thingLocalDirect: ThingLocal = buildThing({ name: "thing" }).build();
+    const thingLocalDirect: ThingLocal = buildThing({ name: "thing" }).build();
 
     // Since we're passing a ThingLocal as the starting Thing,
     // `buildThing` should also return a ThingLocal,
     // which should not cause an error when assigning to a ThingLocal variable:
-    const _thingLocal: ThingLocal = buildThing(
+    const thingLocal: ThingLocal = buildThing(
       createThing({ name: "thing" })
     ).build();
   });
@@ -227,7 +227,10 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     adderNames.forEach((adderName) => {
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect((builder as Record<string, Function>)[adderName]).toBeDefined();
+
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect(typeof (builder as Record<string, Function>)[adderName]).toBe(
         "function"
       );
@@ -243,7 +246,10 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     setterNames.forEach((setterName) => {
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect((builder as Record<string, Function>)[setterName]).toBeDefined();
+
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect(typeof (builder as Record<string, Function>)[setterName]).toBe(
         "function"
       );
@@ -259,7 +265,10 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     removerNames.forEach((removerName) => {
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect((builder as Record<string, Function>)[removerName]).toBeDefined();
+
+      // eslint-ignore-next-line @typescript-eslint/ban-types
       expect(typeof (builder as Record<string, Function>)[removerName]).toBe(
         "function"
       );

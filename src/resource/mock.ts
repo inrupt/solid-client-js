@@ -20,11 +20,12 @@
  */
 
 import * as crossFetch from "cross-fetch";
-const { Response } = crossFetch;
 import {
   Url,
   UrlString,
   SolidDataset,
+  // FIXME: should we rename File to something that doesn't conflict with a built-in?
+  // eslint-ignore-next-line no-shadow
   File,
   WithServerResourceInfo,
 } from "../interfaces";
@@ -32,6 +33,9 @@ import { internal_toIriString } from "../interfaces.internal";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
 import { getFile } from "./file";
 import { FetchError } from "./resource";
+
+// eslint-ignore-next-line no-shadow
+const { Response } = crossFetch;
 
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;
 
@@ -143,7 +147,7 @@ export function mockFileFrom(
  */
 export function mockFetchError(
   fetchedUrl: UrlString,
-  statusCode: number = 404
+  statusCode = 404
 ): FetchError {
   const failedResponse = new Response(undefined, {
     status: statusCode,

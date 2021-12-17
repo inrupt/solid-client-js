@@ -94,8 +94,8 @@ export function addMockAclRuleQuads(
     );
   }
 
-  aclDataset = setThing(aclDataset, newControl);
-  return { ...aclDataset, internal_accessTo: resource };
+  const newAclDataset = setThing(aclDataset, newControl);
+  return { ...newAclDataset, internal_accessTo: resource };
 }
 
 export function setMockAclUrl<T extends WithServerResourceInfo>(
@@ -107,7 +107,7 @@ export function setMockAclUrl<T extends WithServerResourceInfo>(
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
-        aclUrl: aclUrl,
+        aclUrl,
       },
     }
   );

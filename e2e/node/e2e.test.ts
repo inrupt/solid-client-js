@@ -31,6 +31,7 @@ import {
 import { foaf, schema } from "rdf-namespaces";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
+import { blankNode } from "@rdfjs/dataset";
 import {
   getSolidDataset,
   setThing,
@@ -81,8 +82,6 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-import { blankNode } from "@rdfjs/dataset";
-
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the other `describe` block has credentials for an NSS server:
 describe.each([
@@ -97,7 +96,7 @@ describe.each([
   "End-to-end tests with pre-existing data against resources in [%s]:",
   (rootContainer) => {
     it("should be able to read and update data in a Pod", async () => {
-      const randomNick = "Random nick " + Math.random();
+      const randomNick = `Random nick ${Math.random()}`;
 
       const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
       const existingThing = getThing(
@@ -208,10 +207,7 @@ describe.each([
     });
 
     it("should be able to read and update ACLs", async () => {
-      const fakeWebId =
-        "https://example.com/fake-webid#" +
-        Date.now().toString() +
-        Math.random().toString();
+      const fakeWebId = `https://example.com/fake-webid#${Date.now().toString()}${Math.random().toString()}`;
 
       const datasetWithAcl = await getSolidDatasetWithAcl(
         `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
@@ -373,8 +369,8 @@ describe.each(serversUnderTest)(
 
     // Re-add `https://` at the start of these URLs, which we trimmed above
     // so that GitHub Actions doesn't replace them with *** in the logs.
-    const rootContainerUrl = new URL("https://" + rawRootContainer);
-    const oidcIssuerUrl = new URL("https://" + rawOidcIssuer);
+    const rootContainerUrl = new URL(`https://${rawRootContainer}`);
+    const oidcIssuerUrl = new URL(`https://${rawOidcIssuer}`);
 
     const rootContainer = rootContainerUrl.toString();
     const oidcIssuer = oidcIssuerUrl.toString();
@@ -423,7 +419,7 @@ describe.each(serversUnderTest)(
       });
       const firstSavedThing = getThing(
         firstSavedDataset,
-        datasetUrl + "#e2e-test-thing"
+        `${datasetUrl}#e2e-test-thing`
       )!;
       expect(firstSavedThing).not.toBeNull();
       expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
@@ -443,7 +439,7 @@ describe.each(serversUnderTest)(
       });
       const secondSavedThing = getThing(
         secondSavedDataset,
-        datasetUrl + "#e2e-test-thing"
+        `${datasetUrl}#e2e-test-thing`
       )!;
       expect(secondSavedThing).not.toBeNull();
       expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
@@ -504,8 +500,7 @@ describe.each(serversUnderTest)(
         // pod.inrupt.com does not support WAC, so skip this test there.
         return;
       }
-      const fakeWebId =
-        "https://example.com/fake-webid#" + session.info.sessionId;
+      const fakeWebId = `https://example.com/fake-webid#${session.info.sessionId}`;
       const datasetWithoutAclUrl = `${rootContainer}solid-client-tests/node/acl-test-${session.info.sessionId}.ttl`;
       await saveSolidDatasetAt(datasetWithoutAclUrl, createSolidDataset(), {
         fetch: session.fetch,
@@ -603,7 +598,7 @@ describe.each(serversUnderTest)(
         });
         const initialisedThing = getThing(
           initialisedDataset,
-          datasetUrl + "#e2e-test-thing-with-blank-node"
+          `${datasetUrl}#e2e-test-thing-with-blank-node`
         )!;
 
         const updatedThing = setBoolean(
@@ -639,11 +634,11 @@ describe.each(serversUnderTest)(
         policyResourceUrl: UrlString,
         session: Session
       ) {
-        let publicRule = acp.createRule(policyResourceUrl + "#rule-public");
+        let publicRule = acp.createRule(`${policyResourceUrl}#rule-public`);
         publicRule = acp.setPublic(publicRule);
 
         let publicReadPolicy = acp.createPolicy(
-          policyResourceUrl + "#policy-publicRead"
+          `${policyResourceUrl}#policy-publicRead`
         );
         // Note: we should think of a better name for "optional", as this isn't really optional.
         //       At least one "optional" rule should apply, and since this is the only rule for this
@@ -655,12 +650,12 @@ describe.each(serversUnderTest)(
           write: false,
         });
 
-        let selfRule = acp.createRule(policyResourceUrl + "#rule-self");
+        let selfRule = acp.createRule(`${policyResourceUrl}#rule-self`);
         selfRule = acp.addAgent(selfRule, session.info.webId!);
         // This policy denies write access to the current user,
         // but allows write access so the Resource can still be removed afterwards:
         let selfWriteNoReadPolicy = acp.createPolicy(
-          policyResourceUrl + "#policy-selfWriteNoRead"
+          `${policyResourceUrl}#policy-selfWriteNoRead`
         );
         selfWriteNoReadPolicy = acp.addAllOfRuleUrl(
           selfWriteNoReadPolicy,
@@ -713,9 +708,7 @@ describe.each(serversUnderTest)(
       }
 
       it("can deny Read access", async () => {
-        const policyResourceUrl =
-          rootContainer +
-          `solid-client-tests/node/acp/policy-deny-agent-read-${session.info.sessionId}.ttl`;
+        const policyResourceUrl = `${rootContainer}solid-client-tests/node/acp/policy-deny-agent-read-${session.info.sessionId}.ttl`;
 
         // Create a Resource containing Access Policies and Rules:
         await initialisePolicyResource(policyResourceUrl, session);
@@ -730,7 +723,7 @@ describe.each(serversUnderTest)(
         // and that denies Read access to the current user:
         await applyPolicyToPolicyResource(
           policyResourceUrl,
-          policyResourceUrl + "#policy-selfWriteNoRead",
+          `${policyResourceUrl}#policy-selfWriteNoRead`,
           session
         );
 
@@ -748,9 +741,7 @@ describe.each(serversUnderTest)(
       });
 
       it("can allow public Read access", async () => {
-        const policyResourceUrl =
-          rootContainer +
-          `solid-client-tests/node/acp/policy-allow-public-read-${session.info.sessionId}.ttl`;
+        const policyResourceUrl = `${rootContainer}solid-client-tests/node/acp/policy-allow-public-read-${session.info.sessionId}.ttl`;
 
         // Create a Resource containing Access Policies and Rules:
         await initialisePolicyResource(policyResourceUrl, session);
@@ -768,7 +759,7 @@ describe.each(serversUnderTest)(
         // and provides Read access to the public:
         await applyPolicyToPolicyResource(
           policyResourceUrl,
-          policyResourceUrl + "#policy-publicRead",
+          `${policyResourceUrl}#policy-publicRead`,
           session
         );
 
@@ -782,9 +773,7 @@ describe.each(serversUnderTest)(
       });
 
       it("can set Access from a Resource's ACR", async () => {
-        const resourceUrl =
-          rootContainer +
-          `solid-client-tests/node/acp/resource-policies-and-rules-${session.info.sessionId}.ttl`;
+        const resourceUrl = `${rootContainer}solid-client-tests/node/acp/resource-policies-and-rules-${session.info.sessionId}.ttl`;
 
         await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), {
           fetch: session.fetch,

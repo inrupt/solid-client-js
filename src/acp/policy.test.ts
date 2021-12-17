@@ -20,15 +20,6 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
@@ -83,6 +74,16 @@ import {
   setResourcePolicy,
 } from "./policy";
 import { addNoneOfRuleUrl, addAnyOfRuleUrl, addAllOfRuleUrl } from "./rule";
+
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
 
 describe("createPolicy", () => {
   it("creates a Thing of type acp:AccessPolicy", () => {

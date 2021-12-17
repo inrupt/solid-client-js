@@ -131,7 +131,7 @@ function mockAcr(
 
   let acr: AccessControlResource & WithServerResourceInfo = {
     ...mockSolidDatasetFrom(mockAcrUrl),
-    accessTo: accessTo,
+    accessTo,
   };
 
   const mockedMatchers: Record<UrlString, Matcher> = {};
@@ -346,8 +346,8 @@ function mockAcpData(
   );
 
   return {
-    acrPolicies: acrPolicies,
-    policies: policies,
+    acrPolicies,
+    policies,
     matchers: Object.values(matchersByUrl),
     inaccessibleUrls: [],
   };

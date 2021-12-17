@@ -60,11 +60,11 @@ export function serializeBoolean(value: boolean): string {
 export function deserializeBoolean(value: string): boolean | null {
   if (value === "true" || value === "1") {
     return true;
-  } else if (value === "false" || value === "0") {
-    return false;
-  } else {
-    return null;
   }
+  if (value === "false" || value === "0") {
+    return false;
+  }
+  return null;
 }
 
 /**
@@ -93,9 +93,9 @@ export function serializeTime(value: Time): string {
 
   if (value.millisecond) {
     if (value.millisecond < 10) {
-      millisecondString = "00" + value.millisecond;
+      millisecondString = `00${value.millisecond}`;
     } else if (value.millisecond < 100) {
-      millisecondString = "0" + value.millisecond;
+      millisecondString = `0${value.millisecond}`;
     } else {
       millisecondString = value.millisecond;
     }
@@ -104,35 +104,30 @@ export function serializeTime(value: Time): string {
   if (typeof value.timezoneHourOffset === "number") {
     const timezoneFormatted =
       Math.abs(value.timezoneHourOffset) < 10
-        ? "0" + Math.abs(value.timezoneHourOffset)
+        ? `0${Math.abs(value.timezoneHourOffset)}`
         : Math.abs(value.timezoneHourOffset);
 
     timezoneString =
       value.timezoneHourOffset >= 0
-        ? "+" + timezoneFormatted
-        : "-" + timezoneFormatted;
+        ? `+${timezoneFormatted}`
+        : `-${timezoneFormatted}`;
 
     if (value.timezoneMinuteOffset) {
-      timezoneString =
-        timezoneString +
-        ":" +
-        (value.timezoneMinuteOffset < 10
-          ? "0" + value.timezoneMinuteOffset
-          : value.timezoneMinuteOffset);
+      timezoneString = `${timezoneString}:${
+        value.timezoneMinuteOffset < 10
+          ? `0${value.timezoneMinuteOffset}`
+          : value.timezoneMinuteOffset
+      }`;
     } else {
-      timezoneString = timezoneString + ":00";
+      timezoneString += ":00";
     }
   }
 
-  return (
-    (value.hour < 10 ? "0" + value.hour : value.hour) +
-    ":" +
-    (value.minute < 10 ? "0" + value.minute : value.minute) +
-    ":" +
-    (value.second < 10 ? "0" + value.second : value.second) +
-    (value.millisecond ? "." + millisecondString : "") +
-    (timezoneString ? timezoneString : "")
-  );
+  return `${value.hour < 10 ? `0${value.hour}` : value.hour}:${
+    value.minute < 10 ? `0${value.minute}` : value.minute
+  }:${value.second < 10 ? `0${value.second}` : value.second}${
+    value.millisecond ? `.${millisecondString}` : ""
+  }${timezoneString || ""}`;
 }
 
 /**
@@ -166,8 +161,8 @@ export function deserializeTime(literalString: string): Time | null {
     : undefined;
 
   if (utcMinutes >= 60) {
-    utcHours = utcHours + 1;
-    utcMinutes = utcMinutes - 60;
+    utcHours += 1;
+    utcMinutes -= 60;
   }
 
   const deserializedTime: Time = {
@@ -375,8 +370,8 @@ function splitTimeFromTimezone(timeString: string): [string, string?] {
   }
 
   return splitOnPlus.length > splitOnMinus.length
-    ? [splitOnPlus[0], "+" + splitOnPlus[1]]
-    : [splitOnMinus[0], "-" + splitOnMinus[1]];
+    ? [splitOnPlus[0], `+${splitOnPlus[1]}`]
+    : [splitOnMinus[0], `-${splitOnMinus[1]}`];
 }
 
 /**
@@ -508,6 +503,7 @@ export function internal_isValidUrl(iri: Iri | IriString): boolean {
     return true;
   }
   try {
+    // eslint-disable-next-line no-new
     new URL(iriString);
   } catch {
     return false;

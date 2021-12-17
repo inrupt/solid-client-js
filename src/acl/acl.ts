@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { acl } from "../constants";
+import * as constants from "../constants";
 import {
   createSolidDataset,
   getSolidDataset,
@@ -323,11 +323,11 @@ export function createAclFromFallbackAcl(
     resource.internal_acl.fallbackAcl.internal_accessTo
   );
   const newAclRules = defaultAclRules.map((rule) => {
-    rule = removeAll(rule, acl.default);
-    rule = removeAll(rule, acl.defaultForNew);
-    rule = setIri(rule, acl.accessTo, getSourceUrl(resource));
-    rule = setIri(rule, acl.default, getSourceUrl(resource));
-    return rule;
+    let newRule = removeAll(rule, constants.acl.default);
+    newRule = removeAll(newRule, constants.acl.defaultForNew);
+    newRule = setIri(newRule, constants.acl.accessTo, getSourceUrl(resource));
+    newRule = setIri(newRule, constants.acl.default, getSourceUrl(resource));
+    return newRule;
   });
 
   // Iterate over every ACL Rule we want to import, inserting them into `emptyResourceAcl` one by one:

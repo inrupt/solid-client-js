@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Quad } from "@rdfjs/types";
 import { getSolidDataset } from "../resource/solidDataset";
 import {
   IriString,
@@ -32,8 +33,7 @@ import {
   getResourceInfo,
   getSourceIri,
 } from "../resource/resource";
-import { acl, rdf } from "../constants";
-import { Quad } from "@rdfjs/types";
+import * as constants from "../constants";
 import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import {
   createThing,
@@ -82,15 +82,15 @@ export async function internal_fetchAcl(
   try {
     const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
 
-    const acl =
-      resourceAcl === null
-        ? {
-            resourceAcl: null,
-            fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
-          }
-        : { resourceAcl: resourceAcl, fallbackAcl: null };
-
-    return acl;
+    return resourceAcl === null
+      ? {
+          resourceAcl: null,
+          fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
+        }
+      : {
+          resourceAcl,
+          fallbackAcl: null,
+        };
   } catch (e: unknown) {
     /* istanbul ignore else: fetchResourceAcl swallows all non-AclIsAcrErrors */
     if (e instanceof AclIsAcrError) {
@@ -185,11 +185,10 @@ export function internal_getContainerPath(resourcePath: string): string {
       ? resourcePath.substring(0, resourcePath.length - 1)
       : resourcePath;
 
-  const containerPath =
-    resourcePath.substring(
-      0,
-      resourcePathWithoutTrailingSlash.lastIndexOf("/")
-    ) + "/";
+  const containerPath = `${resourcePath.substring(
+    0,
+    resourcePathWithoutTrailingSlash.lastIndexOf("/")
+  )}/`;
 
   return containerPath;
 }
@@ -201,7 +200,9 @@ export function internal_getAclRules(aclDataset: AclDataset): AclRule[] {
 }
 
 function isAclRule(thing: Thing): thing is AclRule {
-  return getIriAll(thing, rdf.type).includes(acl.Authorization);
+  return getIriAll(thing, constants.rdf.type).includes(
+    constants.acl.Authorization
+  );
 }
 
 /** @internal */
@@ -210,7 +211,7 @@ export function internal_getResourceAclRules(aclRules: AclRule[]): AclRule[] {
 }
 
 function isResourceAclRule(aclRule: AclRule): boolean {
-  return getIri(aclRule, acl.accessTo) !== null;
+  return getIri(aclRule, constants.acl.accessTo) !== null;
 }
 
 /** @internal */
@@ -222,7 +223,7 @@ export function internal_getResourceAclRulesForResource(
 }
 
 function appliesToResource(aclRule: AclRule, resource: IriString): boolean {
-  return getIriAll(aclRule, acl.accessTo).includes(resource);
+  return getIriAll(aclRule, constants.acl.accessTo).includes(resource);
 }
 
 /** @internal */
@@ -232,8 +233,8 @@ export function internal_getDefaultAclRules(aclRules: AclRule[]): AclRule[] {
 
 function isDefaultAclRule(aclRule: AclRule): boolean {
   return (
-    getIri(aclRule, acl.default) !== null ||
-    getIri(aclRule, acl.defaultForNew) !== null
+    getIri(aclRule, constants.acl.default) !== null ||
+    getIri(aclRule, constants.acl.defaultForNew) !== null
   );
 }
 
@@ -247,14 +248,14 @@ export function internal_getDefaultAclRulesForResource(
 
 function isDefaultForResource(aclRule: AclRule, resource: IriString): boolean {
   return (
-    getIriAll(aclRule, acl.default).includes(resource) ||
-    getIriAll(aclRule, acl.defaultForNew).includes(resource)
+    getIriAll(aclRule, constants.acl.default).includes(resource) ||
+    getIriAll(aclRule, constants.acl.defaultForNew).includes(resource)
   );
 }
 
 /** @internal */
 export function internal_getAccess(rule: AclRule): Access {
-  const ruleAccessModes = getIriAll(rule, acl.mode);
+  const ruleAccessModes = getIriAll(rule, constants.acl.mode);
   const writeAccess = ruleAccessModes.includes(
     internal_accessModeIriStrings.write
   );
@@ -328,23 +329,23 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
 
   // If the rule does not apply to any Resource, it is no longer working:
   if (
-    getIri(aclRule, acl.accessTo) === null &&
-    getIri(aclRule, acl.default) === null &&
-    getIri(aclRule, acl.defaultForNew) === null
+    getIri(aclRule, constants.acl.accessTo) === null &&
+    getIri(aclRule, constants.acl.default) === null &&
+    getIri(aclRule, constants.acl.defaultForNew) === null
   ) {
     return true;
   }
 
   // If the rule does not specify Access Modes, it is no longer working:
-  if (getIri(aclRule, acl.mode) === null) {
+  if (getIri(aclRule, constants.acl.mode) === null) {
     return true;
   }
 
   // If the rule does not specify whom it applies to, it is no longer working:
   if (
-    getIri(aclRule, acl.agent) === null &&
-    getIri(aclRule, acl.agentGroup) === null &&
-    getIri(aclRule, acl.agentClass) === null
+    getIri(aclRule, constants.acl.agent) === null &&
+    getIri(aclRule, constants.acl.agentGroup) === null &&
+    getIri(aclRule, constants.acl.agentClass) === null
   ) {
     return true;
   }
@@ -353,23 +354,23 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
 }
 
 function isAclQuad(quad: Quad): boolean {
-  const predicate = quad.predicate;
-  const object = quad.object;
+  const { predicate } = quad;
+  const { object } = quad;
   if (
-    predicate.equals(DataFactory.namedNode(rdf.type)) &&
-    object.equals(DataFactory.namedNode(acl.Authorization))
+    predicate.equals(DataFactory.namedNode(constants.rdf.type)) &&
+    object.equals(DataFactory.namedNode(constants.acl.Authorization))
   ) {
     return true;
   }
   if (
-    predicate.equals(DataFactory.namedNode(acl.accessTo)) ||
-    predicate.equals(DataFactory.namedNode(acl.default)) ||
-    predicate.equals(DataFactory.namedNode(acl.defaultForNew))
+    predicate.equals(DataFactory.namedNode(constants.acl.accessTo)) ||
+    predicate.equals(DataFactory.namedNode(constants.acl.default)) ||
+    predicate.equals(DataFactory.namedNode(constants.acl.defaultForNew))
   ) {
     return true;
   }
   if (
-    predicate.equals(DataFactory.namedNode(acl.mode)) &&
+    predicate.equals(DataFactory.namedNode(constants.acl.mode)) &&
     Object.values(internal_accessModeIriStrings).some((mode) =>
       object.equals(DataFactory.namedNode(mode))
     )
@@ -377,13 +378,13 @@ function isAclQuad(quad: Quad): boolean {
     return true;
   }
   if (
-    predicate.equals(DataFactory.namedNode(acl.agent)) ||
-    predicate.equals(DataFactory.namedNode(acl.agentGroup)) ||
-    predicate.equals(DataFactory.namedNode(acl.agentClass))
+    predicate.equals(DataFactory.namedNode(constants.acl.agent)) ||
+    predicate.equals(DataFactory.namedNode(constants.acl.agentGroup)) ||
+    predicate.equals(DataFactory.namedNode(constants.acl.agentClass))
   ) {
     return true;
   }
-  if (predicate.equals(DataFactory.namedNode(acl.origin))) {
+  if (predicate.equals(DataFactory.namedNode(constants.acl.origin))) {
     return true;
   }
   return false;
@@ -413,7 +414,7 @@ type AccessModeIriString =
 export function internal_getAclRulesForIri(
   aclRules: AclRule[],
   targetIri: IriString,
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof constants.acl.agent | typeof constants.acl.agentGroup
 ): AclRule[] {
   return aclRules.filter((rule) =>
     getIriAll(rule, targetType).includes(targetIri)
@@ -428,7 +429,7 @@ export function internal_getAclRulesForIri(
  */
 export function internal_getAccessByIri(
   aclRules: AclRule[],
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof constants.acl.agent | typeof constants.acl.agentGroup
 ): Record<IriString, Access> {
   const targetIriAccess: Record<IriString, Access> = {};
 
@@ -456,18 +457,34 @@ export function internal_getAccessByIri(
  */
 export function internal_initialiseAclRule(access: Access): AclRule {
   let newRule = createThing();
-  newRule = setIri(newRule, rdf.type, acl.Authorization);
+  newRule = setIri(newRule, constants.rdf.type, constants.acl.Authorization);
   if (access.read) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.read);
+    newRule = addIri(
+      newRule,
+      constants.acl.mode,
+      internal_accessModeIriStrings.read
+    );
   }
   if (access.append && !access.write) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.append);
+    newRule = addIri(
+      newRule,
+      constants.acl.mode,
+      internal_accessModeIriStrings.append
+    );
   }
   if (access.write) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.write);
+    newRule = addIri(
+      newRule,
+      constants.acl.mode,
+      internal_accessModeIriStrings.write
+    );
   }
   if (access.control) {
-    newRule = addIri(newRule, acl.mode, internal_accessModeIriStrings.control);
+    newRule = addIri(
+      newRule,
+      constants.acl.mode,
+      internal_accessModeIriStrings.control
+    );
   }
   return newRule;
 }
@@ -482,7 +499,11 @@ export function internal_initialiseAclRule(access: Access): AclRule {
  */
 export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
   let targetRule = createThing();
-  targetRule = setIri(targetRule, rdf.type, acl.Authorization);
+  targetRule = setIri(
+    targetRule,
+    constants.rdf.type,
+    constants.acl.Authorization
+  );
 
   function copyIris(
     inputRule: typeof sourceRule,
@@ -490,19 +511,20 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
     predicate: IriString
   ) {
     return getIriAll(inputRule, predicate).reduce(
-      (outputRule, iriTarget) => addIri(outputRule, predicate, iriTarget),
+      (outputRuleIris, iriTarget) =>
+        addIri(outputRuleIris, predicate, iriTarget),
       outputRule
     );
   }
 
-  targetRule = copyIris(sourceRule, targetRule, acl.accessTo);
-  targetRule = copyIris(sourceRule, targetRule, acl.default);
-  targetRule = copyIris(sourceRule, targetRule, acl.defaultForNew);
-  targetRule = copyIris(sourceRule, targetRule, acl.agent);
-  targetRule = copyIris(sourceRule, targetRule, acl.agentGroup);
-  targetRule = copyIris(sourceRule, targetRule, acl.agentClass);
-  targetRule = copyIris(sourceRule, targetRule, acl.origin);
-  targetRule = copyIris(sourceRule, targetRule, acl.mode);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.accessTo);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.default);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.defaultForNew);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.agent);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.agentGroup);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.agentClass);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.origin);
+  targetRule = copyIris(sourceRule, targetRule, constants.acl.mode);
 
   return targetRule;
 }
@@ -534,10 +556,10 @@ export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
 }
 
 const supportedActorPredicates = [
-  acl.agent,
-  acl.agentClass,
-  acl.agentGroup,
-  acl.origin,
+  constants.acl.agent,
+  constants.acl.agentClass,
+  constants.acl.agentGroup,
+  constants.acl.origin,
 ];
 /**
  * Union type of all relations defined in `knownActorRelations`.
@@ -588,14 +610,14 @@ function internal_removeActorFromRule(
   // ...but remove access to the original Resource...
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
-    ruleType === "resource" ? acl.accessTo : acl.default,
+    ruleType === "resource" ? constants.acl.accessTo : constants.acl.default,
     resourceIri
   );
   // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
   if (ruleType === "default") {
     ruleForOtherTargets = removeIri(
       ruleForOtherTargets,
-      acl.defaultForNew,
+      constants.acl.defaultForNew,
       resourceIri
     );
   }
@@ -625,7 +647,7 @@ function internal_removeActorFromRule(
  *
  * - Access Modes granted indirectly to Actors through other ACL rules, e.g., public or group-specific permissions.
  * - Access Modes granted to Actors for the child Resources if the associated Resource is a Container.
- * - The original ACL.
+ * - The original constants.acl.
  *
  * @param aclDataset The SolidDataset that contains Access-Control List rules.
  * @param actor The Actor to grant specific Access Modes.
@@ -663,7 +685,7 @@ export function internal_setActorAccess(
   let newRule = internal_initialiseAclRule(access);
   newRule = setIri(
     newRule,
-    accessType === "resource" ? acl.accessTo : acl.default,
+    accessType === "resource" ? constants.acl.accessTo : constants.acl.default,
     aclDataset.internal_accessTo
   );
   newRule = setIri(newRule, actorPredicate, actor);

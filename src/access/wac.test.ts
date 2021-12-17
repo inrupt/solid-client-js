@@ -20,8 +20,9 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
-import { getAgentResourceAccess } from "../acl/agent";
+import { getAgentResourceAccess, AgentAccess } from "../acl/agent";
 import {
   getAgentAccess,
   getAgentAccessAll,
@@ -33,11 +34,16 @@ import {
   setPublicResourceAccess,
   WacAccess,
 } from "./wac";
-import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
-import { addMockAclRuleQuads } from "../acl/mock.internal";
+import { addMockAclRuleQuads, setMockAclUrl } from "../acl/mock.internal";
 import { acl, foaf } from "../constants";
-import { setMockAclUrl } from "../acl/mock.internal";
+
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { internal_getResourceAcl } from "../acl/acl.internal";
+import { AclDataset } from "../acl/acl";
+import { getGroupResourceAccess } from "../acl/group";
+import { getPublicResourceAccess } from "../acl/class";
+import { toRdfJsQuads } from "../rdfjs.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -48,14 +54,6 @@ jest.mock("../fetcher.ts", () => ({
     )
   ),
 }));
-
-import { mockSolidDatasetFrom } from "../resource/mock";
-import { AgentAccess } from "../acl/agent";
-import { internal_getResourceAcl } from "../acl/acl.internal";
-import { AclDataset } from "../acl/acl";
-import { getGroupResourceAccess } from "../acl/group";
-import { getPublicResourceAccess } from "../acl/class";
-import { toRdfJsQuads } from "../rdfjs.internal";
 
 function getMockDataset(
   sourceIri: IriString,

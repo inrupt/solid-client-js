@@ -20,6 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import {
   asIri,
   buildThing,
@@ -35,7 +36,6 @@ import { foaf } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import { getProfileAll } from "./webid";
-import { Response } from "cross-fetch";
 
 // jest.mock("../fetcher.ts");
 jest.mock("../fetcher.ts", () => ({
