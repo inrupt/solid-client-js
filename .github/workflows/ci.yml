@@ -40,7 +40,7 @@ jobs:
       - run: npm run build
       - run: npm test
         if: github.event_name != 'schedule'
-      - run: npm run test-e2e-node
+      - run: npm run test-e2e-node -- --runTestsByPath e2e/node/e2e.test.ts
         # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
         # and because behaviour on different OS's is already tested by unit tests,
         # end-to-end tests only need to run on one OS.
@@ -92,7 +92,7 @@ jobs:
         # Additionally, Dependabot does not have access to our secrets,
         # so end-to-end tests for Dependabot PRs can only be manually started.
         # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        if: false && matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Linux' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
         env:
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
           E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -125,7 +125,7 @@ jobs:
         # Additionally, Dependabot does not have access to our secrets,
         # so end-to-end tests for Dependabot PRs can only be manually started.
         # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        if: false && matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'Windows' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
         env:
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
           E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
@@ -169,7 +169,7 @@ jobs:
         # Additionally, Dependabot does not have access to our secrets,
         # so end-to-end tests for Dependabot PRs can only be manually started.
         # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
-        if: matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
+        if: false && matrix.node-version == env.DEFAULT_NODE_VERSION && runner.os == 'macOS' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
         env:
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
           E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
