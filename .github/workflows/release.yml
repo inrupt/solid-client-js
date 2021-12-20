@@ -191,7 +191,7 @@ jobs:
           # replace `../../src/index` (i.e. in the import statement) with `@inrupt/solid-client`:
           find ./ -type f -exec sed --in-place --expression='s/\.\.\/\.\.\/src\/index/@inrupt\/solid-client/g' {} \;
       - name: Run the Node-based end-to-end tests
-        run: npm run test-e2e-node
+        run: npm run test-e2e-node -- --runTestsByPath e2e/node/e2e.test.ts
         env:
           E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
