@@ -20,15 +20,8 @@
  */
 
 module.exports = {
-  extends: ["@inrupt/eslint-config-lib"],
-  overrides: [
-    {
-      files: ["**/*"],
-      parserOptions: {
-        project: "./tsconfig.eslint.json",
-      },
-    },
-  ],
+  extends: ["@inrupt/eslint-config-base"],
+  ignorePatterns: ["**/dist/**/*", "**/coverage/**/*"],
   env: {
     browser: true,
     es6: true,
@@ -38,35 +31,102 @@ module.exports = {
     Atomics: "readonly",
     SharedArrayBuffer: "readonly",
   },
+  settings: {
+    "import/resolver": {
+      node: {
+        extensions: [".js", ".ts"],
+        paths: ["node_modules/", "node_modules/@types"],
+      },
+    },
+  },
   plugins: ["jest", "license-header"],
   rules: {
-    // There's a TypeScript-specific version of this rule;
-    // we disable the generic one, because it thinks imported types are unused
-    // when they're not:
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-floating-promises": "error",
     "license-header/header": [
       process.env.CI ? "error" : "warn",
       "./resources/license-header.js",
     ],
-    camelcase: [
-      "error",
-      {
-        allow: [
-          "^internal_",
-          "^Quad_",
-          // ACP & Access use prefixes for versioning:
-          "^acp_",
-          "^access_",
-        ],
-      },
-    ],
-    // FIXME: these are deviations in this package to our general rules:
-    // This could improve code quality, but probably isn't really useful for now:
-    "import/prefer-default-export": "warn",
     // This package has its own File type, and fetch is supplied via context
     "no-shadow": ["error", { allow: ["fetch", "File"] }],
     // this can be resolved using: https://github.com/alexgorbatchev/eslint-import-resolver-typescript
     "import/no-unresolved": ["error", { ignore: ["@rdfjs/types"] }],
   },
+  overrides: [
+    {
+      files: ["*.ts", "*.tsx"],
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        project: "./tsconfig.eslint.json",
+      },
+      extends: [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+      ],
+      rules: {
+        camelcase: [
+          "error",
+          {
+            allow: [
+              "^internal_",
+              "^Quad_",
+              // ACP & Access use prefixes for versioning:
+              "^acp_",
+              "^access_",
+            ],
+          },
+        ],
+        // TODO: Re-enable progressively
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/ban-types": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/unbound-method": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/restrict-plus-operands": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "class-methods-use-this": "off",
+        "import/prefer-default-export": "off",
+        "no-use-before-define": "off",
+        "require-await": "off",
+      },
+    },
+    {
+      files: ["*.test.ts"],
+      rules: {
+        // TODO: Re-enable progressively (and remove override)
+        "@typescript-eslint/await-thenable": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        camelcase: "off",
+        "consistent-return": "off",
+        "no-console": "off",
+        "no-nested-ternary": "off",
+        "no-param-reassign": "off",
+        "no-shadow": "off",
+        "no-useless-concat": "off",
+      },
+    },
+    {
+      files: ["*.testcafe.ts"],
+      rules: {
+        // TODO: Re-enable progressively (and remove override)
+        camelcase: "off",
+        "jest/no-test-callback": "off",
+      },
+    },
+    {
+      files: ["*.config.js"],
+      rules: {
+        // TODO: Re-enable progressively (and remove override)
+        "global-require": "off",
+        "import/extensions": "off",
+      },
+    },
+  ],
 };

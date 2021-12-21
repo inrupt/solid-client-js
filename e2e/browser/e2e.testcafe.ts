@@ -106,7 +106,7 @@ const serversUnderTest: {
 
 serversUnderTest.forEach((server) => {
   const { identityProvider, username, password } = server;
-  // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
+  // eslint-disable-next-line jest/expect-expect
   test(`Creating and removing empty Containers authenticated to ${identityProvider}`, async (t: TestController) => {
     const createContainer = ClientFunction(() => E2eHelpers.createContainer());
     const deleteContainer = ClientFunction(() => E2eHelpers.deleteContainer());
