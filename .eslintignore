@@ -1,4 +1,5 @@
-**/*.snap
-resources/*
-umd
-dist
+/**/*.snap
+/resources/*
+/umd/*
+/dist/*
+/docs/*

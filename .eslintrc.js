@@ -23,9 +23,9 @@ module.exports = {
   extends: ["@inrupt/eslint-config-lib"],
   overrides: [
     {
-      files: ["**/*.ts", "**/*.tsx", "**/*.js"],
+      files: ["**/*"],
       parserOptions: {
-        project: "./**/tsconfig*.json",
+        project: "./tsconfig.eslint.json",
       },
     },
   ],
