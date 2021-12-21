@@ -14,8 +14,7 @@
     "check-prettier": "npx prettier --check \"{src,e2e}/*.{ts,tsx,js,jsx,css}\" \"*.{md,mdx,yml}\"",
     "lint": "eslint --config .eslintrc.js --fix \"src/\" \"e2e/\"",
     "build-api-docs": "typedoc",
-    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;",
-    "prepare": "husky install"
+    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;"
   },
   "keywords": [
     "rdf",
@@ -86,10 +85,8 @@
     "eslint-plugin-jest": "^24.0.0",
     "eslint-plugin-license-header": "^0.3.0",
     "fast-check": "^2.2.0",
-    "husky": "^7.0.0",
     "jest": "^27.0.4",
     "license-checker": "^25.0.1",
-    "lint-staged": "^12.0.2",
     "prettier": "2.5.1",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.15.0",
@@ -109,11 +106,6 @@
     "http-link-header": "^1.0.2",
     "jsonld": "^5.2.0",
     "n3": "^1.10.0"
-  },
-  "# lint-staged": "Please make sure to keep rules matching with `npm run check-prettier`.",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
-    "*.{ts,tsx,js,jsx,css,md,mdx,yml}": "prettier --write"
   },
   "resolutions": {
     "glob-parent": "^5.1.2"
