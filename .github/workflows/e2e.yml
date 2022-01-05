@@ -5,6 +5,8 @@ on:
 
 jobs:
   test:
+    # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
+    if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
