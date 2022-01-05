@@ -99,9 +99,11 @@ export async function getProfileAll<
 export async function getPodUrlAll<
   T extends SolidDataset & WithServerResourceInfo
 >(
-  webId: WebId | ProfileAll<T>,
+  webId: WebId,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: ProfileAll<T>;
+    }
   > = internal_defaultFetchOptions
 ): Promise<UrlString[]> {
   throw new Error("Unimplemented");

@@ -273,15 +273,13 @@ describe("getPodUrlAll", () => {
     const mockedFetch = jest.fn() as typeof fetch;
     const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
-      getPodUrlAll(
-        {
+      getPodUrlAll(MOCK_WEBID, {
+        fetch: mockedFetch,
+        webIdProfile: {
           webIdProfile,
           altProfileAll: [],
         },
-        {
-          fetch: mockedFetch,
-        }
-      )
+      })
     ).resolves.toStrictEqual([]);
     expect(mockedFetch).not.toHaveBeenCalled();
   });
