@@ -26,6 +26,7 @@ import {
   getThing,
   getThingAll,
   SolidDataset,
+  UrlString,
   WebId,
   WithServerResourceInfo,
 } from "..";
@@ -93,4 +94,15 @@ export async function getProfileAll<
     webIdProfile,
     altProfileAll,
   };
+}
+
+export async function getPodUrlAll<
+  T extends SolidDataset & WithServerResourceInfo
+>(
+  webId: WebId | ProfileAll<T>,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<UrlString[]> {
+  throw new Error("Unimplemented");
 }

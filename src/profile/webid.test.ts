@@ -31,10 +31,10 @@ import {
   setStringNoLocale,
   setThing,
 } from "..";
-import { foaf } from "../constants";
+import { foaf, pim } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
-import { getProfileAll } from "./webid";
+import { getPodUrlAll, getProfileAll } from "./webid";
 import { Response } from "cross-fetch";
 
 // jest.mock("../fetcher.ts");
@@ -226,5 +226,152 @@ describe("getProfileAll", () => {
     // 'profile' should appear only once in the result set.
     expect(result.altProfileAll).toHaveLength(1);
     expect(mockedFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+it("does not fetch the WebID profile document if provided", async () => {
+  const mockedFetch = jest.fn() as typeof fetch;
+  const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
+  await expect(
+    getProfileAll(MOCK_WEBID, { fetch: mockedFetch, webIdProfile })
+  ).resolves.toStrictEqual({
+    webIdProfile,
+    altProfileAll: [],
+  });
+  expect(mockedFetch).not.toHaveBeenCalled();
+});
+
+describe("getPodUrlAll", () => {
+  it("uses the provided fetch if any", async () => {
+    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      })
+    );
+    await getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch });
+    expect(mockedFetch).toHaveBeenCalled();
+  });
+
+  it("uses the embedded fetch if solid-client-authn-browser is in the dependencies", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    mockedFetcher.fetch.mockResolvedValueOnce(
+      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+    );
+    await getPodUrlAll(MOCK_WEBID);
+    expect(mockedFetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("does not fetch if a WebID profile is provided", async () => {
+    const mockedFetch = jest.fn() as typeof fetch;
+    const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
+    await expect(
+      getPodUrlAll(
+        {
+          webIdProfile,
+          altProfileAll: [],
+        },
+        {
+          fetch: mockedFetch,
+        }
+      )
+    ).resolves.toStrictEqual([]);
+    expect(mockedFetch).not.toHaveBeenCalled();
+  });
+
+  it("returns Pod URLs found in the WebId profile", async () => {
+    const MOCK_STORAGE = "https://some.storage";
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(pim.storage, MOCK_STORAGE)
+      .build();
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    // Note that in this test, the fetch is mocked and not overridden by passing
+    // a profile.
+    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: MOCK_WEBID,
+      } as ResponseInit)
+    );
+    await expect(
+      getPodUrlAll(MOCK_WEBID, {
+        fetch: mockedFetch,
+      })
+    ).resolves.toStrictEqual([MOCK_STORAGE]);
+  });
+
+  it("returns all Pod URLs found in alternative profiles", async () => {
+    const ALT_MOCK_STORAGE_1 = "https://some.storage";
+    const ALT_MOCK_STORAGE_2 = "https://some-other.storage";
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.primaryTopic, "https://some.profile")
+      .addIri(foaf.primaryTopic, "https://some-other.profile")
+      .build();
+    const alternativeProfile1Content = buildThing({
+      url: "https://some.profile",
+    })
+      .addIri(pim.storage, ALT_MOCK_STORAGE_1)
+      .build();
+    const alternativeProfile2Content = buildThing({
+      url: "https://some-other.profile",
+    })
+      .addIri(pim.storage, ALT_MOCK_STORAGE_2)
+      .build();
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const altProfileAll = [
+      setThing(
+        mockSolidDatasetFrom("https://some.profile"),
+        alternativeProfile1Content
+      ),
+      setThing(
+        mockSolidDatasetFrom("https://some-other.profile"),
+        alternativeProfile2Content
+      ),
+    ];
+    await expect(
+      getPodUrlAll({ webIdProfile, altProfileAll })
+    ).resolves.toStrictEqual([ALT_MOCK_STORAGE_1, ALT_MOCK_STORAGE_2]);
+  });
+
+  it("returns Pod URLs from both the WebID profile and alternative profiles when applicable", async () => {
+    const MOCK_STORAGE = "https://some.storage";
+    const ALT_MOCK_STORAGE = "https://some-other.storage";
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.primaryTopic, "https://some.profile")
+      .addIri(pim.storage, MOCK_STORAGE)
+      .build();
+    const alternativeProfile1Content = buildThing({
+      url: "https://some.profile",
+    })
+      .addIri(pim.storage, MOCK_STORAGE)
+      .build();
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const altProfileAll = [
+      setThing(
+        mockSolidDatasetFrom("https://some.profile"),
+        alternativeProfile1Content
+      ),
+    ];
+    await expect(
+      getPodUrlAll({ webIdProfile, altProfileAll })
+    ).resolves.toStrictEqual([MOCK_STORAGE, ALT_MOCK_STORAGE]);
   });
 });
