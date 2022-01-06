@@ -96,15 +96,17 @@ export async function getProfileAll<
   };
 }
 
-export async function getPodUrlAll<
-  T extends SolidDataset & WithServerResourceInfo
->(
+export async function getPodUrlAll(
   webId: WebId,
   options: Partial<
-    typeof internal_defaultFetchOptions & {
-      webIdProfile: ProfileAll<T>;
-    }
+    typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<UrlString[]> {
-  throw new Error("Unimplemented");
+  throw new Error("unimplemented");
+}
+
+export function getPodUrlAllFrom<
+  T extends SolidDataset & WithServerResourceInfo
+>(profiles: ProfileAll<T>, webId: WebId): UrlString[] {
+  throw new Error("unimplemented");
 }
