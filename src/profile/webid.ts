@@ -96,6 +96,20 @@ export async function getProfileAll<
   };
 }
 
+/**
+ * Discover the Pods an agent advertises for in their profile resources. Both the
+ * agent's WebID and alternative profiles are fetched. Note that this function will
+ * only return URLs of Pods linked to using the `pim:storage`, i.e. a triple
+ * looking like <myWebid, pim:storage, myPodUrl> should appear in the profile
+ * resources.
+ *
+ * @param webId The WebID of the agent whose Pods should be discovered
+ * @param options Optional parameter
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request,
+ *    compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns a Promise resolving to an array containing the URLs of all the Pods
+ * linked from the agent's profile resource using the `pim:storage` predicate.
+ */
 export async function getPodUrlAll(
   webId: WebId,
   options: Partial<
@@ -106,6 +120,17 @@ export async function getPodUrlAll(
   return getPodUrlAllFrom(profiles, webId);
 }
 
+/**
+ * Discover the Pods advertised for in the provided profile resources. Note that
+ * this function will only return URLs of Pods linked to using the `pim:storage`
+ * predicate, i.e. a triple looking like <myWebid, pim:storage, myPodUrl>
+ * should appear in the profile resources.
+ *
+ * @param profiles The profile resources in which the Pods should be discovered
+ * @param webId The WebID of the agent whose Pods should be discovered
+ * @returns An array containing the URLs of all the Pods linked from the agent's
+ * profile resource using the `pim:storage` predicate.
+ */
 export function getPodUrlAllFrom<
   T extends SolidDataset & WithServerResourceInfo
 >(profiles: ProfileAll<T>, webId: WebId): UrlString[] {
