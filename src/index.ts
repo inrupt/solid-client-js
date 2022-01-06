@@ -234,7 +234,12 @@ export {
   getProfileJwksIri,
   setProfileJwks,
 } from "./profile/jwks";
-export { getProfileAll, ProfileAll } from "./profile/webid";
+export {
+  getProfileAll,
+  ProfileAll,
+  getPodUrlAll,
+  getPodUrlAllFrom,
+} from "./profile/webid";
 export { getJsonLdParser, getTurtleParser } from "./formats/index";
 
 /**

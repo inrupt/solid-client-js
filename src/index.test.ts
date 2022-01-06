@@ -177,6 +177,8 @@ import {
   getProfileJwksIri,
   setProfileJwks,
   getProfileAll,
+  getPodUrlAll,
+  getPodUrlAllFrom,
   getWellKnownSolid,
   getJsonLdParser,
   getTurtleParser,
@@ -359,6 +361,8 @@ it("exports the public API from the entry file", () => {
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
   expect(getProfileAll).toBeDefined();
+  expect(getPodUrlAll).toBeDefined();
+  expect(getPodUrlAllFrom).toBeDefined();
   expect(getWellKnownSolid).toBeDefined();
   expect(getJsonLdParser).toBeDefined();
   expect(getTurtleParser).toBeDefined();

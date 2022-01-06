@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- `getPodUrlAll`/`getPodUrlAllFrom`: functions available in the `profile/webid`
+  module to discover an agent's Pods based on their profiles.
+
 The following sections document changes that have been released already:
 
 # [1.17.0] - 2021-11-29

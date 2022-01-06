@@ -26,10 +26,11 @@ import {
   getThing,
   getThingAll,
   SolidDataset,
+  UrlString,
   WebId,
   WithServerResourceInfo,
 } from "..";
-import { foaf } from "../constants";
+import { foaf, pim } from "../constants";
 import {
   getSourceIri,
   internal_defaultFetchOptions,
@@ -93,4 +94,62 @@ export async function getProfileAll<
     webIdProfile,
     altProfileAll,
   };
+}
+
+/**
+ * Discover the Pods an agent advertises for in their profile resources. Both the
+ * agent's WebID and alternative profiles are fetched. Note that this function will
+ * only return URLs of Pods linked to using the `pim:storage`, i.e. a triple
+ * looking like <myWebid, pim:storage, myPodUrl> should appear in the profile
+ * resources.
+ *
+ * @param webId The WebID of the agent whose Pods should be discovered
+ * @param options Optional parameter
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request,
+ *    compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns a Promise resolving to an array containing the URLs of all the Pods
+ * linked from the agent's profile resource using the `pim:storage` predicate.
+ */
+export async function getPodUrlAll(
+  webId: WebId,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<UrlString[]> {
+  const profiles = await getProfileAll(webId, options);
+  return getPodUrlAllFrom(profiles, webId);
+}
+
+/**
+ * Discover the Pods advertised for in the provided profile resources. Note that
+ * this function will only return URLs of Pods linked to using the `pim:storage`
+ * predicate, i.e. a triple looking like <myWebid, pim:storage, myPodUrl>
+ * should appear in the profile resources.
+ *
+ * @param profiles The profile resources in which the Pods should be discovered
+ * @param webId The WebID of the agent whose Pods should be discovered
+ * @returns An array containing the URLs of all the Pods linked from the agent's
+ * profile resource using the `pim:storage` predicate.
+ */
+export function getPodUrlAllFrom(
+  profiles: ProfileAll<SolidDataset & WithServerResourceInfo>,
+  webId: WebId
+): UrlString[] {
+  const result: Set<string> = new Set();
+  [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
+    (profileResource) => {
+      const webIdThing = getThing(profileResource, webId);
+      if (webIdThing === null) {
+        throw new Error(
+          `The WebId [${webId}] does not appear in the resource fetched at [${getSourceIri(
+            profileResource
+          )}]`
+        );
+      }
+      getIriAll(webIdThing, pim.storage).forEach((podIri) =>
+        result.add(podIri)
+      );
+    }
+  );
+  return Array.from(result);
 }
