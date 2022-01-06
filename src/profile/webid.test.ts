@@ -231,18 +231,6 @@ describe("getProfileAll", () => {
   });
 });
 
-it("does not fetch the WebID profile document if provided", async () => {
-  const mockedFetch = jest.fn() as typeof fetch;
-  const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
-  await expect(
-    getProfileAll(MOCK_WEBID, { fetch: mockedFetch, webIdProfile })
-  ).resolves.toStrictEqual({
-    webIdProfile,
-    altProfileAll: [],
-  });
-  expect(mockedFetch).not.toHaveBeenCalled();
-});
-
 const mockProfileDoc = (
   iri: string,
   webId: string,
@@ -398,6 +386,22 @@ describe("getPodUrlAll", () => {
 });
 
 describe("getPodUrlAllFrom", () => {
+  it("throws if the WebId is not a subject of a provided profile resource", () => {
+    const MOCK_STORAGE = "https://some.storage";
+    const webIdProfile = mockProfileDoc(
+      "https://some.profile",
+      "https://some.different.webid",
+      {
+        pods: [MOCK_STORAGE],
+      }
+    );
+    expect(() =>
+      getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID)
+    ).toThrow(
+      /.*https:\/\/some.webid.*does not appear.*https:\/\/some.profile/
+    );
+  });
+
   it("returns Pod URLs found in the WebId profile", () => {
     const MOCK_STORAGE = "https://some.storage";
     const webIdProfile = mockProfileDoc("https://some.profile", MOCK_WEBID, {
