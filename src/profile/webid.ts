@@ -131,9 +131,10 @@ export async function getPodUrlAll(
  * @returns An array containing the URLs of all the Pods linked from the agent's
  * profile resource using the `pim:storage` predicate.
  */
-export function getPodUrlAllFrom<
-  T extends SolidDataset & WithServerResourceInfo
->(profiles: ProfileAll<T>, webId: WebId): UrlString[] {
+export function getPodUrlAllFrom(
+  profiles: ProfileAll<SolidDataset & WithServerResourceInfo>,
+  webId: WebId
+): UrlString[] {
   const result: Set<string> = new Set();
   [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
     (profileResource) => {
