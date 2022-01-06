@@ -250,7 +250,7 @@ const mockProfileDoc = (
 ): SolidDataset & WithServerResourceInfo => {
   const profileContent = buildThing({ url: webId });
   content.altProfiles?.forEach((altProfileIri) => {
-    profileContent.addIri(foaf.primaryTopic, altProfileIri);
+    profileContent.addIri(foaf.isPrimaryTopicOf, altProfileIri);
   });
   content.pods?.forEach((podIri) => {
     profileContent.addIri(pim.storage, podIri);
@@ -280,7 +280,11 @@ describe("getPodUrlAll", () => {
     };
 
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      })
     );
     await getPodUrlAll(MOCK_WEBID);
     expect(mockedFetcher.fetch).toHaveBeenCalled();

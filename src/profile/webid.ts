@@ -30,7 +30,7 @@ import {
   WebId,
   WithServerResourceInfo,
 } from "..";
-import { foaf } from "../constants";
+import { foaf, pim } from "../constants";
 import {
   getSourceIri,
   internal_defaultFetchOptions,
@@ -102,11 +102,28 @@ export async function getPodUrlAll(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<UrlString[]> {
-  throw new Error("unimplemented");
+  const profiles = await getProfileAll(webId, options);
+  return getPodUrlAllFrom(profiles, webId);
 }
 
 export function getPodUrlAllFrom<
   T extends SolidDataset & WithServerResourceInfo
 >(profiles: ProfileAll<T>, webId: WebId): UrlString[] {
-  throw new Error("unimplemented");
+  const result: Set<string> = new Set();
+  [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
+    (profileResource) => {
+      const webIdThing = getThing(profileResource, webId);
+      if (webIdThing === null) {
+        throw new Error(
+          `The WebId [${webId}] does not appear in the resource fetched at [${getSourceIri(
+            profileResource
+          )}]`
+        );
+      }
+      getIriAll(webIdThing, pim.storage).forEach((podIri) =>
+        result.add(podIri)
+      );
+    }
+  );
+  return Array.from(result);
 }
