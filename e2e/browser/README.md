@@ -90,6 +90,6 @@ without a UI component.
 
 To only run tests in a specific browser, run one of:
 
-    npm run e2e-test-browser -- --project=firefox
-    npm run e2e-test-browser -- --project=chromium
-    npm run e2e-test-browser -- --project=webkit
+    npm run test:e2e:browser -- --project=firefox
+    npm run test:e2e:browser -- --project=chromium
+    npm run test:e2e:browser -- --project=webkit
