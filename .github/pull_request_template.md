@@ -26,7 +26,7 @@ This PR bumps the version to <version number>.
 
 # Checklist
 
-- [ ] I used `npm version <major|minor|patch>` to update `package.json`, inspecting the changelog to determine if the release was major, minor or patch.
+- [ ] I inspected the changelog to determine if the release was major, minor or patch. I then used the command `npm version <major|minor|patch>` to update the `package.json` and `package-lock.json` (and locally create a tag).
 - [ ] The CHANGELOG has been updated to show version and release date - https://keepachangelog.com/en/1.0.0/.
 - [ ] `@since X.Y.Z` annotations have been added to new APIs.
 - [ ] The **only** commits in this PR are:
