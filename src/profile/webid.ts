@@ -109,6 +109,7 @@ export async function getProfileAll<
  *    compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns a Promise resolving to an array containing the URLs of all the Pods
  * linked from the agent's profile resource using the `pim:storage` predicate.
+ * @since 1.18.0
  */
 export async function getPodUrlAll(
   webId: WebId,
@@ -130,6 +131,7 @@ export async function getPodUrlAll(
  * @param webId The WebID of the agent whose Pods should be discovered
  * @returns An array containing the URLs of all the Pods linked from the agent's
  * profile resource using the `pim:storage` predicate.
+ * @since 1.18.0
  */
 export function getPodUrlAllFrom(
   profiles: ProfileAll<SolidDataset & WithServerResourceInfo>,
