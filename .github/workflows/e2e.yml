@@ -25,7 +25,7 @@ jobs:
       # FIXME: The limit of tests by path to acp.test.ts is because the current
       # e2e tests do not work in an environment matrix and use different env
       # variables
-      - run: npm run test-e2e-node -- --runTestsByPath e2e/node/acp.test.ts
+      - run: npm run test:e2e:node -- --runTestsByPath e2e/node/acp.test.ts
         env:
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
