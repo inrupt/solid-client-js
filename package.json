@@ -4,17 +4,19 @@
   "version": "1.18.0",
   "license": "MIT",
   "scripts": {
-    "test": "eslint --config .eslintrc.js \"src/\" --ext .js,.jsx,.ts,.tsx && jest",
-    "test-e2e-node": "jest --config=jest.e2e.config.js",
-    "test-e2e-browser": "testcafe",
     "build": "rollup --config rollup.config.js",
-    "prepublishOnly": "npm run build",
-    "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
+    "build-api-docs": "typedoc",
+    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;",
     "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
     "check-prettier": "npx prettier --check \"{src,e2e}/*.{ts,tsx,js,jsx,css}\" \"*.{md,mdx,yml}\"",
     "lint": "eslint --config .eslintrc.js --fix \"src/\" \"e2e/\"",
-    "build-api-docs": "typedoc",
-    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;"
+    "lint:ci": "eslint --config .eslintrc.js \"src/\" \"e2e/\"",
+    "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
+    "test:e2e:browser": "testcafe",
+    "test:e2e:node": "jest --config=jest.e2e.config.js"
   },
   "keywords": [
     "rdf",
