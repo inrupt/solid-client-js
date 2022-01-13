@@ -63,6 +63,7 @@ import { removeAcrPolicyUrl } from "./policy/removeAcrPolicyUrl";
 import { removeMemberAcrPolicyUrl } from "./policy/removeMemberAcrPolicyUrl";
 import { removeMemberPolicyUrl } from "./policy/removeMemberPolicyUrl";
 import { removePolicyUrl } from "./policy/removePolicyUrl";
+import { setResourcePolicy } from "./policy/setResourcePolicy";
 
 import {
   createPolicy,
@@ -78,8 +79,6 @@ import {
   getResourcePolicyAll,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setResourceAcrPolicy,
-  setResourcePolicy,
   getAllowModesV2,
   getDenyModesV2,
   setAllowModesV2,
@@ -189,7 +188,6 @@ const v4PolicyFunctions = {
   getResourcePolicyAll,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setResourceAcrPolicy,
   setResourcePolicy,
 };
 
