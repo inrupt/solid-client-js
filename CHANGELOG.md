@@ -8,10 +8,19 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
+The following sections document changes that have been released already:
+
+# [1.18.0] - 2022-01-13
+
+### New features
+
 - `getPodUrlAll`/`getPodUrlAllFrom`: functions available in the `profile/webid`
   module to discover an agent's Pods based on their profiles.
 
-The following sections document changes that have been released already:
+### Bugfixes
+
+- The ACP v4 low-level API is amended so that new policies use the default access controls.
+  Implemented `setResourcePolicy` and removed obsolete `setResourceAcrPolicy`.
 
 # [1.17.0] - 2021-11-29
 
@@ -33,7 +42,7 @@ The following sections document changes that have been released already:
   FOAF Profile Document resources from the WebID URI. Note that Profile documents
   may or not be Solid Resources
 
-- Allow 'createContainerAt()' to take an optional SolidDataset parameter to
+- Allow `createContainerAt` to take an optional SolidDataset parameter to
   use as the body of the HTTP request to the server. This is really useful
   when we wish to include meta-data for a new container, things like a textual
   label or comment.
