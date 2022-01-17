@@ -109,6 +109,7 @@
     "n3": "^1.10.0"
   },
   "resolutions": {
-    "glob-parent": "^5.1.2"
+    "glob-parent": "^5.1.2",
+    "marked": "^4.0.10"
   }
 }
