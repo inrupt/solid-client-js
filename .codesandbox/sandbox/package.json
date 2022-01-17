@@ -9,7 +9,7 @@
   "dependencies": {
     "@inrupt/solid-client": "*",
     "@inrupt/solid-client-authn-browser": "0.2.2 - 1.x",
-    "rdf-namespaces": "1.8.0"
+    "rdf-namespaces": "1.9.2"
   },
   "devDependencies": {
     "parcel": "^2.0.0-beta.2"
