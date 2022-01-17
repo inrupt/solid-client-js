@@ -47,8 +47,6 @@ jobs:
           npm install ../../
           cd ../..
       - name: Run browser-based end-to-end tests
-        timeout-minutes: 5
-        continue-on-error: true
         run: npm run test:e2e:browser
         env:
           E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
