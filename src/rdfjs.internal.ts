@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import RdfJsDataFactory from "@rdfjs/data-model";
+import RdfJsDataFactory from "@rdfjs/dataset";
 import * as RdfJs from "@rdfjs/types";
 import {
   BlankNodeId,
