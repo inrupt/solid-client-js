@@ -173,11 +173,7 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
     // Verify that indeed, the current user can no longer read it:
     await expect(
       getSolidDataset(sessionResource, options)
-    ).rejects.toThrow(
-      // Forbidden:
-      // @ts-ignore-next
-      expect.objectContaining({ statusCode: 403 }) as FetchError
-    );
+    ).rejects.toThrow(expect.objectContaining({ statusCode: 403 }));
 
     // Clean up:
     await deleteSolidDataset(sessionResource, options);
@@ -189,11 +185,9 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
 
     // Verify that we cannot fetch the Resource before adding public Read access
     // when not logged in (i.e. not passing the session's fetch):
-    await expect(getSolidDataset(sessionResource)).rejects.toThrow(
-      // Unauthorised:
-      // @ts-ignore-next
-      expect.objectContaining({ statusCode: 401 }) as FetchError
-    );
+    await expect(
+      getSolidDataset(sessionResource)
+    ).rejects.toThrow(expect.objectContaining({ statusCode: 401 }));
 
     // In the Resource's Access Control Resource, apply the Policy
     // that just so happens to be defined in the Resource itself,

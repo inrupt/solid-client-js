@@ -145,6 +145,7 @@ describe("An ACP Solid server", () => {
       env.environment === "Inrupt Dev-Next"
         ? latest_getPublicAccess
         : legacy_getPublicAccess;
+
     await expect(
       getSolidDataset(sessionDataset, options)
     ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
