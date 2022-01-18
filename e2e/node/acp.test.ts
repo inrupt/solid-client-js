@@ -142,7 +142,7 @@ describe("An ACP Solid server", () => {
         ? latest_getPublicAccess
         : legacy_getPublicAccess;
     await expect(
-      getSolidDataset(sessionDataset, { fetch: session.fetch })
+      getSolidDataset(sessionDataset, )
     ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
 
     await expect(getSolidDataset(sessionDataset)).rejects.toThrow();
