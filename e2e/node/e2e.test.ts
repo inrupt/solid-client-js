@@ -62,7 +62,6 @@ import {
 
 import { blankNode } from "@rdfjs/dataset";
 import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
-import { supportsAcp } from "./util/supportsAcp";
 import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
@@ -77,7 +76,7 @@ beforeAll(() => {
 });
 
 describe(`Authenticated end-to-end tests against environment ${env.environment}`, () => {
-  let options: any;
+  let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
 

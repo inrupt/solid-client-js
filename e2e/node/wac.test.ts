@@ -72,7 +72,7 @@ describe(`Authenticated end-to-end WAC tests against environment ${env.environme
     return;
   }
 
-  let options: any;
+  let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
 

@@ -63,7 +63,7 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
     return;
   }
 
-  let options: any;
+  let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
 

@@ -69,7 +69,7 @@ describe("An ACP Solid server", () => {
     return;
   }
 
-  let options: any;
+  let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionDataset: string;
 
