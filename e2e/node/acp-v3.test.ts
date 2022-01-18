@@ -58,7 +58,7 @@ beforeAll(() => {
   env = getTestingEnvironment();
 });
 
-describe(`Authenticated end-to-end ACP V3 tests against environment ${env.environment}`, () => {
+describe(`Authenticated end-to-end ACP V3`, () => {
   if (!env.feature.acp) {
     return;
   }

@@ -66,7 +66,7 @@ beforeAll(() => {
   env = getTestingEnvironment();
 });
 
-describe(`Authenticated end-to-end WAC tests against environment ${env.environment}`, () => {
+describe(`Authenticated end-to-end WAC`, () => {
   // Skip test for servers that don't support WAC
   if (!env.feature.wac) {
     return;

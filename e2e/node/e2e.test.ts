@@ -38,7 +38,6 @@ import {
   saveSolidDatasetAt,
   overwriteFile,
   isRawData,
-  getFile,
   getSourceUrl,
   deleteFile,
   createContainerAt,
@@ -48,9 +47,6 @@ import {
   createThing,
   createSolidDataset,
   deleteSolidDataset,
-  UrlString,
-  acp_v3 as acp,
-  FetchError,
 } from "../../src/index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
@@ -75,7 +71,7 @@ beforeAll(() => {
   env = getTestingEnvironment();
 });
 
-describe(`Authenticated end-to-end tests against environment ${env.environment}`, () => {
+describe(`Authenticated end-to-end`, () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
