@@ -22,9 +22,13 @@
 export interface TestingEnvironment {
   clientId: string;
   clientSecret: string;
+  environment: "Inrupt Dev-Next" | "Inrupt Production";
+  feature: {
+    acp: boolean;
+    wac: boolean;
+  };
   idp: string;
   pod: string;
-  environment: "Inrupt Dev-Next" | "Inrupt Production";
 }
 
 export function getTestingEnvironment(): TestingEnvironment {
@@ -57,5 +61,9 @@ export function getTestingEnvironment(): TestingEnvironment {
     clientId: process.env.E2E_TEST_CLIENT_ID,
     clientSecret: process.env.E2E_TEST_CLIENT_SECRET,
     environment: process.env.E2E_TEST_ENVIRONMENT,
+    feature: {
+      acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
+      wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false
+    }
   };
 }

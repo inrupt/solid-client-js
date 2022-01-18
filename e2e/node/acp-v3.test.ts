@@ -45,7 +45,6 @@ import {
   FetchError,
 } from "../../src/index";
 import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
-import { supportsAcp } from "./util/supportsAcp";
 import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
@@ -60,7 +59,7 @@ beforeAll(() => {
 });
 
 describe(`Authenticated end-to-end ACP V3 tests against environment ${env.environment}`, () => {
-  if (!supportsAcp(env.pod)) {
+  if (!env.feature.acp) {
     return;
   }
 

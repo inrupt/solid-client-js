@@ -65,6 +65,10 @@ beforeAll(() => {
 });
 
 describe("An ACP Solid server", () => {
+  if (!env.feature.acp) {
+    return;
+  }
+
   let options: any;
   let session: Session;
   let sessionDataset: string;

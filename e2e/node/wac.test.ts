@@ -53,8 +53,7 @@ import {
 } from "../../src/access/universal";
 
 import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
-import { supportsWac } from "./util/supportsWac";
-import { getSession } from "./util/getSession";
+import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
 
@@ -69,7 +68,7 @@ beforeAll(() => {
 
 describe(`Authenticated end-to-end WAC tests against environment ${env.environment}`, () => {
   // Skip test for servers that don't support WAC
-  if (!supportsWac(env.pod)) {
+  if (!env.feature.wac) {
     return;
   }
 
@@ -78,7 +77,7 @@ describe(`Authenticated end-to-end WAC tests against environment ${env.environme
   let sessionResource: string;
 
   beforeEach(async () => {
-    session = await getSession(env);
+    session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}solid-client-tests/node/acl-test-${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
