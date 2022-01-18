@@ -30,7 +30,7 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getSession } from "./util/getSession";
+import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 import { config } from "dotenv-flow";
 import {
   saveSolidDatasetAt,
@@ -70,7 +70,7 @@ describe("An ACP Solid server", () => {
   let sessionDataset: string;
 
   beforeEach(async () => {
-    session = await getSession(env);
+    session = await getAuthenticatedSession(env);
     sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionDataset, createSolidDataset(), options);

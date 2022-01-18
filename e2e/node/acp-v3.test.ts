@@ -46,7 +46,7 @@ import {
 } from "../../src/index";
 import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
 import { supportsAcp } from "./util/supportsAcp";
-import { getSession } from "./util/getSession";
+import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
 
@@ -69,7 +69,7 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
   let sessionResource: string;
 
   beforeEach(async () => {
-    session = await getSession(env);
+    session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}solid-client-tests/node/acp-v3-test-dataset-${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);

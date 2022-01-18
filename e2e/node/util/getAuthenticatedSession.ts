@@ -25,7 +25,7 @@ import {
   TestingEnvironment,
 } from "./getTestingEnvironment";
 
-export async function getSession(
+export async function getAuthenticatedSession(
   params?: TestingEnvironment
 ): Promise<Session> {
   const authDetails = params ?? getTestingEnvironment();

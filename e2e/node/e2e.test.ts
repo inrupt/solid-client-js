@@ -63,7 +63,7 @@ import {
 import { blankNode } from "@rdfjs/dataset";
 import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
 import { supportsAcp } from "./util/supportsAcp";
-import { getSession } from "./util/getSession";
+import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
 
@@ -82,7 +82,7 @@ describe(`Authenticated end-to-end tests against environment ${env.environment}`
   let sessionResource: string;
 
   beforeEach(async () => {
-    session = await getSession(env);
+    session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}solid-client-tests/node/test-dataset-${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);

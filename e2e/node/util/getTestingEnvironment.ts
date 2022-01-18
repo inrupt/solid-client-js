@@ -34,11 +34,28 @@ export function getTestingEnvironment(): TestingEnvironment {
   ) {
     throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
   }
+  if (
+    !process.env.E2E_TEST_POD ||
+    !process.env.E2E_TEST_IDP ||
+    !process.env.E2E_TEST_CLIENT_ID ||
+    !process.env.E2E_TEST_CLIENT_SECRET
+  ) {
+    const missing = (
+      !process.env.E2E_TEST_POD ? "E2E_TEST_POD " : ""
+    ).concat(
+      !process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : ""
+    ).concat(
+      !process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : ""
+    ).concat(
+      !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
+    );
+    throw new Error(`Environment variable missing: ${missing}`);
+  }
   return {
-    pod: process.env.E2E_TEST_POD!,
-    idp: process.env.E2E_TEST_IDP!,
-    clientId: process.env.E2E_TEST_CLIENT_ID!,
-    clientSecret: process.env.E2E_TEST_CLIENT_SECRET!,
+    pod: process.env.E2E_TEST_POD,
+    idp: process.env.E2E_TEST_IDP,
+    clientId: process.env.E2E_TEST_CLIENT_ID,
+    clientSecret: process.env.E2E_TEST_CLIENT_SECRET,
     environment: process.env.E2E_TEST_ENVIRONMENT,
   };
 }
