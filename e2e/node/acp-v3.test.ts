@@ -132,12 +132,9 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
 
   async function applyPolicyToPolicyResource(
     resourceUrl: UrlString,
-    policyUrl: UrlString,
-    session: Session
+    policyUrl: UrlString
   ) {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(resourceUrl, {
-      fetch: session.fetch,
-    });
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(resourceUrl, options);
     if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
         `The test Resource at [${getSourceUrl(
@@ -166,17 +163,13 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
     // and that denies Read access to the current user:
     await applyPolicyToPolicyResource(
       sessionResource,
-      sessionResource + "#policy-selfWriteNoRead",
-      session
+      sessionResource + "#policy-selfWriteNoRead"
     );
 
     // Verify that indeed, the current user can no longer read it:
     await expect(
       getSolidDataset(sessionResource, options)
     ).rejects.toThrow(expect.objectContaining({ statusCode: 403 }));
-
-    // Clean up:
-    await deleteSolidDataset(sessionResource, options);
   });
 
   it("can allow public Read access", async () => {
@@ -194,23 +187,17 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
     // and provides Read access to the public:
     await applyPolicyToPolicyResource(
       sessionResource,
-      sessionResource + "#policy-publicRead",
-      session
+      sessionResource + "#policy-publicRead"
     );
 
     // Verify that indeed, an unauthenticated user can now read it:
     await expect(
       getSolidDataset(sessionResource)
     ).resolves.not.toBeNull();
-
-    // Clean up:
-    await deleteSolidDataset(sessionResource, options);
   });
 
-  it("can set Access from a Resource's ACR", async () => {
-    await overwriteFile(sessionResource, Buffer.from("To-be-public Resource"), {
-      fetch: session.fetch,
-    });
+  it("can set public Access", async () => {
+    await overwriteFile(sessionResource, Buffer.from("To-be-public Resource"), options);
 
     const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(sessionResource, options);
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
@@ -251,14 +238,9 @@ describe(`Authenticated end-to-end ACP V3 tests against environment ${env.enviro
       expect.objectContaining({ statusCode: 401 }) as FetchError
     );
 
-    await acp.saveAcrFor(updatedResourceInfoWithAcr, {
-      fetch: session.fetch,
-    });
+    await acp.saveAcrFor(updatedResourceInfoWithAcr, options);
 
     // Verify that indeed, an unauthenticated user can now read it:
     await expect(getFile(sessionResource)).resolves.not.toBeNull();
-
-    // Clean up:
-    await deleteFile(sessionResource, { fetch: session.fetch });
   });
 });
