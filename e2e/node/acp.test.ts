@@ -65,19 +65,14 @@ beforeAll(() => {
 });
 
 describe("An ACP Solid server", () => {
-  it("Has setup the environment", async () => {
-    expect(env.feature).toBeDefined();
-  });
-
-  if (!env.feature.acp) {
-    return;
-  }
-
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionDataset: string;
 
   beforeEach(async () => {
+    if (!env.feature.acp) {
+      return;
+    }
     session = await getAuthenticatedSession(env);
     sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
     options = { fetch: session.fetch };
