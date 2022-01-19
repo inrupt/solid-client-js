@@ -38,7 +38,6 @@ jobs:
       # (No, GitHub Actions at this point in time does not have native retry functionality.)
       - run: npm ci || npm ci || npm ci
       - run: npm run build
-      - run: npm run lint:ci
       - run: npm test
         if: github.event_name != 'schedule'
       - run: npm run test:e2e:node -- --runTestsByPath e2e/node/e2e.test.ts
@@ -62,11 +61,7 @@ jobs:
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
           E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
           E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
-      - run: npm run check-prettier
-        if: github.event_name != 'schedule'
       - run: npx package-check
-        if: github.event_name != 'schedule'
-      - run: npm run check-licenses
         if: github.event_name != 'schedule'
       - name: Archive code coverage results
         uses: actions/upload-artifact@v2.3.1
