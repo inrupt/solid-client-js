@@ -70,7 +70,7 @@ beforeAll(() => {
   });
   env = getTestingEnvironment();
   // Skip test for servers that don't support WAC
-  if (!env.feature.wac) {
+  if (env.feature.wac !== true) {
     return;
   }
 });
