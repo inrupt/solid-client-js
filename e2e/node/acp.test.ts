@@ -53,26 +53,25 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 
-let env: TestingEnvironment;
-
-beforeAll(() => {
-  config({
-    path: __dirname,
-    // Disable warning messages in CI
-    silent: process.env.CI === "true",
-  });
-  env = getTestingEnvironment();
-});
-
 describe("An ACP Solid server", () => {
+  let env: TestingEnvironment;
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionDataset: string;
 
-  beforeEach(async () => {
+  beforeAll(() => {
+    config({
+      path: __dirname,
+      // Disable warning messages in CI
+      silent: process.env.CI === "true",
+    });
+    env = getTestingEnvironment();
     if (!env.feature.acp) {
       return;
     }
+  });
+
+  beforeEach(async () => {
     session = await getAuthenticatedSession(env);
     sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
     options = { fetch: session.fetch };
