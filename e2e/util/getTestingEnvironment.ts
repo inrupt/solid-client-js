@@ -33,51 +33,39 @@ export interface TestingEnvironment {
 }
 
 export function getTestingEnvironment(): TestingEnvironment {
+  if (
+    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
+    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production"
+  ) {
+    throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
+  }
+  if (
+    !process.env.E2E_TEST_POD ||
+    !process.env.E2E_TEST_IDP ||
+    !process.env.E2E_TEST_CLIENT_ID ||
+    !process.env.E2E_TEST_CLIENT_SECRET
+  ) {
+    const missing = (
+      !process.env.E2E_TEST_POD ? "E2E_TEST_POD " : ""
+    ).concat(
+      !process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : ""
+    ).concat(
+      !process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : ""
+    ).concat(
+      !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
+    );
+    throw new Error(`Environment variable missing: ${missing}`);
+  }
   return {
-    pod: "bla",
-    idp: "process.env.E2E_TEST_IDP",
-    clientId: "process.env.E2E_TEST_CLIENT_ID",
-    clientSecret: "process.env.E2E_TEST_CLIENT_SECRET",
-    environment: "Inrupt Dev-Next",
+    pod: process.env.E2E_TEST_POD,
+    idp: process.env.E2E_TEST_IDP,
+    clientId: process.env.E2E_TEST_CLIENT_ID,
+    clientSecret: process.env.E2E_TEST_CLIENT_SECRET,
+    environment: process.env.E2E_TEST_ENVIRONMENT,
     feature: {
-      acp: true,
-      acp_v3: false,
-      wac: true
+      acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
+      acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,
+      wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false
     }
   };
-  // if (
-  //   process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
-  //   process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production"
-  // ) {
-  //   throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
-  // }
-  // if (
-  //   !process.env.E2E_TEST_POD ||
-  //   !process.env.E2E_TEST_IDP ||
-  //   !process.env.E2E_TEST_CLIENT_ID ||
-  //   !process.env.E2E_TEST_CLIENT_SECRET
-  // ) {
-  //   const missing = (
-  //     !process.env.E2E_TEST_POD ? "E2E_TEST_POD " : ""
-  //   ).concat(
-  //     !process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : ""
-  //   ).concat(
-  //     !process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : ""
-  //   ).concat(
-  //     !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
-  //   );
-  //   throw new Error(`Environment variable missing: ${missing}`);
-  // }
-  // return {
-  //   pod: process.env.E2E_TEST_POD,
-  //   idp: process.env.E2E_TEST_IDP,
-  //   clientId: process.env.E2E_TEST_CLIENT_ID,
-  //   clientSecret: process.env.E2E_TEST_CLIENT_SECRET,
-  //   environment: process.env.E2E_TEST_ENVIRONMENT,
-  //   feature: {
-  //     acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
-  //     acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,
-  //     wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false
-  //   }
-  // };
 }
