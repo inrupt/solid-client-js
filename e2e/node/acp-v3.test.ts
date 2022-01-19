@@ -21,11 +21,12 @@
 
 import {
   jest,
+  beforeAll,
+  beforeEach,
+  afterEach,
   describe,
   it,
   expect,
-  beforeEach,
-  afterEach,
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
