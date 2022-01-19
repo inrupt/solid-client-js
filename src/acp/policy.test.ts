@@ -1478,4 +1478,28 @@ describe("policyAsMarkdown", () => {
         "- https://some.pod/policyResource#noneOfRule\n"
     );
   });
+
+  it("works as expected for v2+ policies", () => {
+    let policy = createPolicy("https://some.pod/policyResource#policy");
+    policy = setAllowModesV2(policy, {
+      read: true,
+      append: false,
+      write: false,
+    });
+    policy = setDenyModesV2(policy, {
+      read: false,
+      append: false,
+      write: true,
+    });
+
+    expect(policyAsMarkdown(policy)).toBe(
+      "## Policy: https://some.pod/policyResource#policy\n" +
+        "\n" +
+        "- Read: allowed\n" +
+        "- Append: unspecified\n" +
+        "- Write: denied\n" +
+        "\n" +
+        "<no rules specified yet>\n"
+    );
+  });
 });
