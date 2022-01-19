@@ -65,6 +65,10 @@ beforeAll(() => {
 });
 
 describe("An ACP Solid server", () => {
+  it("Has setup the environment", async () => {
+    expect(env.feature).toBeDefined();
+  });
+
   if (!env.feature.acp) {
     return;
   }
