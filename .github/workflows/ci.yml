@@ -68,16 +68,6 @@ jobs:
         if: github.event_name != 'schedule'
       - run: npm run check-licenses
         if: github.event_name != 'schedule'
-      # Some issues identified by npm audit cannot be fixed by us
-      # (i.e. they require an upstream dependency update),
-      # but using `npm-force-resolutions` we can at least override the upstream
-      # dependency when running an audit.
-      # If this task fails, first attempt to run `npm audit fix` or upgrade the
-      # relevant dependency; when that does not work, you can add the transitive
-      # dependency to the `resolutions` field in package.json according to the
-      # instructions in `npm-force-resolutions`'s README.
-      - run: npx npm-force-resolutions@0.0.10 && npm audit --audit-level=moderate
-        if: github.event_name != 'schedule'
       - name: Archive code coverage results
         uses: actions/upload-artifact@v2.3.1
         continue-on-error: true
