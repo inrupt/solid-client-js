@@ -281,6 +281,10 @@ export async function responseToSolidDataset(
 /**
  * Fetch a SolidDataset from the given URL. Currently requires the SolidDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
  *
+ * Note that the URL of a container ends with a [trailing slash "/"](https://solidproject.org/TR/protocol#uri).
+ * If it is missing, some libraries will add it automatically, which may result in additional round-trips, possibly including
+ * authentication errors ([more information](https://github.com/inrupt/solid-client-js/issues/1216#issuecomment-904703695)). 
+ *
  * @param url URL to fetch a [[SolidDataset]] from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a [[SolidDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
