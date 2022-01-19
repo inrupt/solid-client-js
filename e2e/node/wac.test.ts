@@ -57,6 +57,7 @@ import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
 if (env.feature.acp !== true) {
+  // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
 }
 

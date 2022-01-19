@@ -48,6 +48,7 @@ import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
 if (env.feature.acp_v3 !== true) {
+  // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
 }
 
