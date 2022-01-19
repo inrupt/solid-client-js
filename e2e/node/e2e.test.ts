@@ -20,17 +20,13 @@
  */
 
 import {
-  jest,
-  beforeAll,
-  beforeEach,
   afterEach,
+  beforeEach,
   describe,
-  it,
   expect,
+  it,
+  test,
 } from "@jest/globals";
-
-import { Session } from "@inrupt/solid-client-authn-node";
-import { config } from "dotenv-flow";
 import {
   getSolidDataset,
   setThing,
@@ -58,37 +54,30 @@ import {
 } from "../../src/access/universal";
 
 import { blankNode } from "@rdfjs/dataset";
-import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
-import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
+import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
+import type { Session } from "@inrupt/solid-client-authn-node";
 
-let env: TestingEnvironment;
-let options: { fetch: typeof global.fetch };
-let session: Session;
-let sessionResource: string;
+const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
 
-beforeAll(() => {
-  config({
-    path: __dirname,
-    // Disable warning messages in CI
-    silent: process.env.CI === "true",
-  });
-  env = getTestingEnvironment();
-});
-
-beforeEach(async () => {
-  session = await getAuthenticatedSession(env);
-  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-  options = { fetch: session.fetch };
-  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-});
-
-afterEach(async () => {
-  await deleteSolidDataset(sessionResource, options);
-  await session.logout();
-});
-
 describe(`Authenticated end-to-end`, () => {
+  let options: { fetch: typeof global.fetch };
+  let session: Session;
+  let sessionResource: string;
+  
+  beforeEach(async () => {
+    session = await getAuthenticatedSession(env);
+    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+    options = { fetch: session.fetch };
+    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+  });
+  
+  afterEach(async () => {
+    await deleteSolidDataset(sessionResource, options);
+    await session.logout();
+  });
+
   it("can create, read, update, delete and re-create a resource", async () => {
     const arbitraryPredicate = "https://arbitrary.vocab/predicate";
 

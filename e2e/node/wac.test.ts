@@ -20,19 +20,16 @@
  */
 
 import {
-  jest,
-  beforeAll,
-  beforeEach,
   afterEach,
+  beforeEach,
   describe,
-  it,
   expect,
+  it,
+  test,
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { config } from "dotenv-flow";
 import {
-  saveSolidDatasetAt,
   getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
@@ -42,8 +39,9 @@ import {
   getAgentResourceAccess,
   setAgentResourceAccess,
   saveAclFor,
-  createSolidDataset,
   deleteSolidDataset,
+  saveSolidDatasetAt,
+  createSolidDataset,
 } from "../../src/index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
@@ -53,41 +51,32 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvironment";
-import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
+import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
-let env: TestingEnvironment;
-let options: { fetch: typeof global.fetch };
-let session: Session;
-let sessionResource: string;
+const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
-
-beforeAll(() => {
-  config({
-    path: __dirname,
-    // Disable warning messages in CI
-    silent: process.env.CI === "true",
-  });
-  env = getTestingEnvironment();
-  // Skip test for servers that don't support WAC
-  if (env.feature.wac !== true) {
-    return;
-  }
-});
-
-beforeEach(async () => {
-  session = await getAuthenticatedSession(env);
-  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-  options = { fetch: session.fetch };
-  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-});
-
-afterEach(async () => {
-  await deleteSolidDataset(sessionResource, options);
-  await session.logout();
-});
+if (env.feature.acp !== true) {
+  test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
+}
 
 describe(`Authenticated end-to-end WAC`, () => {
+  let options: { fetch: typeof global.fetch };
+  let session: Session;
+  let sessionResource: string;
+  
+  beforeEach(async () => {
+    session = await getAuthenticatedSession(env);
+    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+    options = { fetch: session.fetch };
+    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+  });
+  
+  afterEach(async () => {
+    await deleteSolidDataset(sessionResource, options);
+    await session.logout();
+  });
+
   it("can read the user's access to their profile with WAC", async () => {
     const webId = session.info.webId!;
     const agentAccess = await getAgentAccessUniversal(webId, webId, options);

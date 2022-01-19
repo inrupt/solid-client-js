@@ -20,18 +20,16 @@
  */
 
 import {
-  jest,
-  beforeAll,
-  beforeEach,
   afterEach,
+  beforeEach,
   describe,
-  it,
   expect,
+  it,
+  test,
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
-import { config } from "dotenv-flow";
+import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import {
   saveSolidDatasetAt,
   createSolidDataset,
@@ -42,7 +40,7 @@ import {
 import {
   getTestingEnvironment,
   TestingEnvironment,
-} from "./util/getTestingEnvironment";
+} from "../util/getTestingEnvironment";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
@@ -53,37 +51,29 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 
-let env: TestingEnvironment;
-let options: { fetch: typeof global.fetch };
-let session: Session;
-let sessionResource: string;
+const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
-
-beforeAll(() => {
-  config({
-    path: __dirname,
-    // Disable warning messages in CI
-    silent: process.env.CI === "true",
-  });
-  env = getTestingEnvironment();
-  if (env.feature.acp !== true) {
-    return;
-  }
-});
-
-beforeEach(async () => {
-  session = await getAuthenticatedSession(env);
-  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-  options = { fetch: session.fetch };
-  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-});
-
-afterEach(async () => {
-  await deleteSolidDataset(sessionResource, options);
-  await session.logout();
-});
+if (env.feature.acp !== true) {
+  test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
+}
 
 describe("An ACP Solid server", () => {
+  let options: { fetch: typeof global.fetch };
+  let session: Session;
+  let sessionResource: string;
+  
+  beforeEach(async () => {
+    session = await getAuthenticatedSession(env);
+    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+    options = { fetch: session.fetch };
+    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+  });
+  
+  afterEach(async () => {
+    await deleteSolidDataset(sessionResource, options);
+    await session.logout();
+  });
+
   it("advertises its ACLs as ACP AccessControlResources", async () => {
     expect(await acp.isAcpControlled(sessionResource, options)).toBe(true);
   });

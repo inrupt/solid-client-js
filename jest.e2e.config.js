@@ -35,4 +35,5 @@ module.exports = {
       tsconfig: "tsconfig.test.json",
     },
   },
+  setupFiles: ["<rootDir>/e2e/util/setupEnv.ts"]
 };
