@@ -394,7 +394,8 @@ async function prepareSolidDatasetCreation(
  * the changelog tracks both the old value and new values of the property being modified. This
  * function applies the changes to the current SolidDataset. If the old value specified in the
  * changelog does not correspond to the value currently in the Pod, this function will throw an
- * error.
+ * error (common issues are listed in [the documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/error-codes/)).
+ * 
  * The SolidDataset returned by this function will contain the data sent to the Pod, and a ChangeLog
  * up-to-date with the saved data. Note that if the data on the server was modified in between the
  * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.
