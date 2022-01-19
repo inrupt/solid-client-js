@@ -53,36 +53,36 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 
+let env: TestingEnvironment;
+let options: { fetch: typeof global.fetch };
+let session: Session;
+let sessionDataset: string;
+
+beforeAll(() => {
+  config({
+    path: __dirname,
+    // Disable warning messages in CI
+    silent: process.env.CI === "true",
+  });
+  env = getTestingEnvironment();
+  if (!env.feature.acp) {
+    return;
+  }
+});
+
+beforeEach(async () => {
+  session = await getAuthenticatedSession(env);
+  sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
+  options = { fetch: session.fetch };
+  await saveSolidDatasetAt(sessionDataset, createSolidDataset(), options);
+});
+
+afterEach(async () => {
+  await deleteSolidDataset(sessionDataset, options);
+  await session.logout();
+});
+
 describe("An ACP Solid server", () => {
-  let env: TestingEnvironment;
-  let options: { fetch: typeof global.fetch };
-  let session: Session;
-  let sessionDataset: string;
-
-  beforeAll(() => {
-    config({
-      path: __dirname,
-      // Disable warning messages in CI
-      silent: process.env.CI === "true",
-    });
-    env = getTestingEnvironment();
-    if (!env.feature.acp) {
-      return;
-    }
-  });
-
-  beforeEach(async () => {
-    session = await getAuthenticatedSession(env);
-    sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
-    options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionDataset, createSolidDataset(), options);
-  });
-
-  afterEach(async () => {
-    await deleteSolidDataset(sessionDataset, options);
-    await session.logout();
-  });
-
   it("advertises its ACLs as ACP AccessControlResources", async () => {
     expect(await acp.isAcpControlled(sessionDataset, options)).toBe(true);
   });
