@@ -22,7 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node-version: [16.x]
-        environment-name: ["Inrupt Production", "Inrupt Dev-Next"]
+        environment-name: ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1"]
     steps:
       - uses: actions/checkout@v2
       - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
