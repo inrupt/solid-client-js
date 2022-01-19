@@ -25,6 +25,7 @@ export interface TestingEnvironment {
   environment: "Inrupt Dev-Next" | "Inrupt Production";
   feature: {
     acp: boolean;
+    acp_v3: boolean;
     wac: boolean;
   };
   idp: string;
@@ -63,6 +64,7 @@ export function getTestingEnvironment(): TestingEnvironment {
     environment: process.env.E2E_TEST_ENVIRONMENT,
     feature: {
       acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
+      acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,
       wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false
     }
   };

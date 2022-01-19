@@ -60,7 +60,7 @@ beforeAll(() => {
     silent: process.env.CI === "true",
   });
   env = getTestingEnvironment();
-  if (!env.feature.acp) {
+  if (!env.feature.acp_v3) {
     return;
   }
 });
