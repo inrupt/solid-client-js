@@ -384,19 +384,14 @@ async function prepareSolidDatasetCreation(
 }
 
 /**
- * Given a SolidDataset, store it in a Solid Pod.
- * 
- * If the resource already exists, some implementations will overwrite the existing
- * data at the given URL.  Other implementations will raise a 412 error, see 
- * [Common error codes and causes](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/error-codes/?highlight=modified#term-412-Precondition-Failed)
- * for a full explanation; you can avoid this error by first fetching the resource or by
- * reusing the original dataset object which was used to initially create it.
+ * Given a SolidDataset, store it in a Solid Pod (overwriting the existing data at the given URL).
  *
  * A SolidDataset keeps track of the data changes compared to the data in the Pod; i.e.,
  * the changelog tracks both the old value and new values of the property being modified. This
  * function applies the changes to the current SolidDataset. If the old value specified in the
  * changelog does not correspond to the value currently in the Pod, this function will throw an
- * error.
+ * error (common issues are listed in [the documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/error-codes/)).
+ * 
  * The SolidDataset returned by this function will contain the data sent to the Pod, and a ChangeLog
  * up-to-date with the saved data. Note that if the data on the server was modified in between the
  * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.
