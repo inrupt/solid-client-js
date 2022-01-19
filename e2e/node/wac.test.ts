@@ -56,6 +56,10 @@ import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvi
 import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
+let options: { fetch: typeof global.fetch };
+let session: Session;
+let sessionResource: string;
+const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
 
 beforeAll(() => {
   config({
@@ -64,30 +68,25 @@ beforeAll(() => {
     silent: process.env.CI === "true",
   });
   env = getTestingEnvironment();
-});
-
-describe(`Authenticated end-to-end WAC`, () => {
   // Skip test for servers that don't support WAC
   if (!env.feature.wac) {
     return;
   }
+});
 
-  let options: { fetch: typeof global.fetch };
-  let session: Session;
-  let sessionResource: string;
+beforeEach(async () => {
+  session = await getAuthenticatedSession(env);
+  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+  options = { fetch: session.fetch };
+  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+});
 
-  beforeEach(async () => {
-    session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}solid-client-tests/node/acl-test-${session.info.sessionId}`;
-    options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-  });
+afterEach(async () => {
+  await deleteSolidDataset(sessionResource, options);
+  await session.logout();
+});
 
-  afterEach(async () => {
-    await deleteSolidDataset(sessionResource, options);
-    await session.logout();
-  });
-
+describe(`Authenticated end-to-end WAC`, () => {
   it("can read the user's access to their profile with WAC", async () => {
     const webId = session.info.webId!;
     const agentAccess = await getAgentAccessUniversal(webId, webId, options);

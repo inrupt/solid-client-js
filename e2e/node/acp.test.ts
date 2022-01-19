@@ -56,7 +56,8 @@ import {
 let env: TestingEnvironment;
 let options: { fetch: typeof global.fetch };
 let session: Session;
-let sessionDataset: string;
+let sessionResource: string;
+const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
 
 beforeAll(() => {
   config({
@@ -72,23 +73,23 @@ beforeAll(() => {
 
 beforeEach(async () => {
   session = await getAuthenticatedSession(env);
-  sessionDataset = `${env.pod}acp-test-${session.info.sessionId}`;
+  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
   options = { fetch: session.fetch };
-  await saveSolidDatasetAt(sessionDataset, createSolidDataset(), options);
+  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
 });
 
 afterEach(async () => {
-  await deleteSolidDataset(sessionDataset, options);
+  await deleteSolidDataset(sessionResource, options);
   await session.logout();
 });
 
 describe("An ACP Solid server", () => {
   it("advertises its ACLs as ACP AccessControlResources", async () => {
-    expect(await acp.isAcpControlled(sessionDataset, options)).toBe(true);
+    expect(await acp.isAcpControlled(sessionResource, options)).toBe(true);
   });
 
   it("can read ACP access controls", async () => {
-    const resourceWithAcr = (await acp.getSolidDatasetWithAcr(sessionDataset, {
+    const resourceWithAcr = (await acp.getSolidDatasetWithAcr(sessionResource, {
       fetch: session.fetch,
     })) as any;
     expect(resourceWithAcr).toBeDefined();
@@ -100,7 +101,7 @@ describe("An ACP Solid server", () => {
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip("understands an Access Control Resource's default agent access", async () => {
     expect(
-      await getAgentAccess(sessionDataset, session.info.webId!, options)
+      await getAgentAccess(sessionResource, session.info.webId!, options)
     ).toEqual({
       read: true,
       append: false,
@@ -113,7 +114,7 @@ describe("An ACP Solid server", () => {
   it("can get and set read access for an agent", async () => {
     const agent = "https://example.org/bob";
     const agentAccess = await setAgentAccess(
-      sessionDataset,
+      sessionResource,
       agent,
       { read: true },
       { fetch: session.fetch }
@@ -125,7 +126,7 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
-    expect(await getAgentAccess(sessionDataset, agent, options)).toStrictEqual({
+    expect(await getAgentAccess(sessionResource, agent, options)).toStrictEqual({
       read: true,
       append: false,
       write: false,
@@ -145,13 +146,13 @@ describe("An ACP Solid server", () => {
         : legacy_getPublicAccess;
 
     await expect(
-      getSolidDataset(sessionDataset, options)
+      getSolidDataset(sessionResource, options)
     ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
 
-    await expect(getSolidDataset(sessionDataset)).rejects.toThrow();
+    await expect(getSolidDataset(sessionResource)).rejects.toThrow();
 
     const access = await setPublicAccess(
-      sessionDataset,
+      sessionResource,
       { read: true },
       { fetch: session.fetch }
     );
@@ -164,7 +165,7 @@ describe("An ACP Solid server", () => {
       controlWrite: false,
     });
 
-    expect(await getPublicAccess(sessionDataset, options)).toStrictEqual({
+    expect(await getPublicAccess(sessionResource, options)).toStrictEqual({
       read: true,
       append: false,
       write: false,
@@ -173,7 +174,7 @@ describe("An ACP Solid server", () => {
     });
 
     try {
-      await expect(getSolidDataset(sessionDataset)).resolves.toEqual(
+      await expect(getSolidDataset(sessionResource)).resolves.toEqual(
         expect.objectContaining({ graphs: { default: {} } })
       );
     } catch (e) {
@@ -186,7 +187,7 @@ describe("An ACP Solid server", () => {
   it("can get and set full access for an agent", async () => {
     const agent = "https://example.org/alice";
     const agentAccess = await setAgentAccess(
-      sessionDataset,
+      sessionResource,
       agent,
       {
         read: true,
@@ -204,7 +205,7 @@ describe("An ACP Solid server", () => {
       controlRead: true,
       controlWrite: true,
     });
-    expect(await getAgentAccess(sessionDataset, agent, options)).toStrictEqual({
+    expect(await getAgentAccess(sessionResource, agent, options)).toStrictEqual({
       read: true,
       append: true,
       write: true,
@@ -216,7 +217,7 @@ describe("An ACP Solid server", () => {
   it("can remove access for an agent", async () => {
     const agent = "https://example.org/malika";
     const agentAccess = await setAgentAccess(
-      sessionDataset,
+      sessionResource,
       agent,
       {
         read: true,
@@ -228,7 +229,7 @@ describe("An ACP Solid server", () => {
       { fetch: session.fetch }
     );
     const removedAgentAccess = await setAgentAccess(
-      sessionDataset,
+      sessionResource,
       agent,
       {
         read: true,
@@ -246,7 +247,7 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
-    expect(await getAgentAccess(sessionDataset, agent, options)).toStrictEqual({
+    expect(await getAgentAccess(sessionResource, agent, options)).toStrictEqual({
       read: true,
       append: true,
       write: false,

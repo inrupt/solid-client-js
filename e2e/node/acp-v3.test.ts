@@ -48,6 +48,10 @@ import { getTestingEnvironment, TestingEnvironment } from "./util/getTestingEnvi
 import { getAuthenticatedSession } from "./util/getAuthenticatedSession";
 
 let env: TestingEnvironment;
+let options: { fetch: typeof global.fetch };
+let session: Session;
+let sessionResource: string;
+const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
 
 beforeAll(() => {
   config({
@@ -56,29 +60,24 @@ beforeAll(() => {
     silent: process.env.CI === "true",
   });
   env = getTestingEnvironment();
-});
-
-describe(`Authenticated end-to-end ACP V3`, () => {
   if (!env.feature.acp) {
     return;
   }
+});
 
-  let options: { fetch: typeof global.fetch };
-  let session: Session;
-  let sessionResource: string;
+beforeEach(async () => {
+  session = await getAuthenticatedSession(env);
+  sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+  options = { fetch: session.fetch };
+  await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+});
 
-  beforeEach(async () => {
-    session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}solid-client-tests/node/acp-v3-test-dataset-${session.info.sessionId}`;
-    options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-  });
+afterEach(async () => {
+  await deleteSolidDataset(sessionResource, options);
+  await session.logout();
+});
 
-  afterEach(async () => {
-    await deleteSolidDataset(sessionResource, options);
-    await session.logout();
-  });
-
+describe(`Authenticated end-to-end ACP V3`, () => {
   async function initialisePolicyResource(
     policyResourceUrl: UrlString,
     session: Session
