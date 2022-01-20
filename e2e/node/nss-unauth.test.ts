@@ -20,10 +20,10 @@
  */
 
 import {
-  jest,
   describe,
-  it,
   expect,
+  it,
+  test,
 } from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
