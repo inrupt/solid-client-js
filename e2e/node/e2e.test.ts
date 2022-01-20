@@ -90,7 +90,7 @@ describe(`Authenticated end-to-end`, () => {
     let newDataset = createSolidDataset();
     newDataset = setThing(newDataset, newThing);
 
-    const datasetUrl = sessionResource.concat("-X");
+    const datasetUrl = sessionResource.concat("-crud");
     await saveSolidDatasetAt(datasetUrl, newDataset, {
       fetch: session.fetch,
     });
@@ -175,36 +175,49 @@ describe(`Authenticated end-to-end`, () => {
     const regularPredicate = "https://arbitrary.vocab/regular-predicate";
     const blankNodePredicate = "https://arbitrary.vocab/blank-node-predicate";
 
+    // Prepare the Resource on the Pod
     let newThing = createThing({ name: "e2e-test-thing-with-blank-node" });
     newThing = setBoolean(newThing, regularPredicate, true);
     newThing = setTerm(newThing, blankNodePredicate, blankNode());
     let newDataset = createSolidDataset();
     newDataset = setThing(newDataset, newThing);
 
-    await saveSolidDatasetAt(sessionResource, newDataset, options);
-
-    // Fetch the initialised SolidDataset for the first time,
-    // and change the non-blank node value:
-    const initialisedDataset = await getSolidDataset(sessionResource, options);
-    const initialisedThing = getThing(
-      initialisedDataset,
-      sessionResource + "#e2e-test-thing-with-blank-node"
-    )!;
-
-    const updatedThing = setBoolean(
-      initialisedThing,
-      regularPredicate,
-      false
-    );
-
-    // Now fetch the Resource again, and try to insert the updated Thing into it:
-    const refetchedDataset = await getSolidDataset(sessionResource, options);
-    const updatedDataset = setThing(refetchedDataset, updatedThing);
-    await expect(
-      saveSolidDatasetAt(sessionResource, updatedDataset, {
+    const datasetUrl = sessionResource.concat("-blank");
+    try {
+      await saveSolidDatasetAt(datasetUrl, newDataset, {
         fetch: session.fetch,
-      })
-    ).resolves.not.toThrow();
+      });
+
+      // Fetch the initialised SolidDataset for the first time,
+      // and change the non-blank node value:
+      const initialisedDataset = await getSolidDataset(datasetUrl, {
+        fetch: session.fetch,
+      });
+      const initialisedThing = getThing(
+        initialisedDataset,
+        datasetUrl + "#e2e-test-thing-with-blank-node"
+      )!;
+
+      const updatedThing = setBoolean(
+        initialisedThing,
+        regularPredicate,
+        false
+      );
+
+      // Now fetch the Resource again, and try to insert the updated Thing into it:
+      const refetchedDataset = await getSolidDataset(datasetUrl, {
+        fetch: session.fetch,
+      });
+      const updatedDataset = setThing(refetchedDataset, updatedThing);
+      await expect(
+        saveSolidDatasetAt(datasetUrl, updatedDataset, {
+          fetch: session.fetch,
+        })
+      ).resolves.not.toThrow();
+    } finally {
+      // Clean up after ourselves
+      await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+    }
   });
 
   it("cannot fetch non public resources unauthenticated", async () => {
