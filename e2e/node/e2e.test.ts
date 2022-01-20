@@ -72,7 +72,7 @@ describe(`Authenticated end-to-end`, () => {
   
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}.ttl`;
+    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
@@ -82,7 +82,7 @@ describe(`Authenticated end-to-end`, () => {
     await session.logout();
   });
 
-  it("can create, read, update, delete and re-create a resource", async () => {
+  it("can create, read, update and delete data", async () => {
     const arbitraryPredicate = "https://arbitrary.vocab/predicate";
 
     let newThing = createThing({ name: "e2e-test-thing" });
@@ -90,12 +90,17 @@ describe(`Authenticated end-to-end`, () => {
     let newDataset = createSolidDataset();
     newDataset = setThing(newDataset, newThing);
 
-    await saveSolidDatasetAt(sessionResource, newDataset, options);
+    const datasetUrl = sessionResource.concat("-X");
+    await saveSolidDatasetAt(datasetUrl, newDataset, {
+      fetch: session.fetch,
+    });
 
-    const firstSavedDataset = await getSolidDataset(sessionResource, options);
+    const firstSavedDataset = await getSolidDataset(datasetUrl, {
+      fetch: session.fetch,
+    });
     const firstSavedThing = getThing(
       firstSavedDataset,
-      sessionResource + "#e2e-test-thing"
+      datasetUrl + "#e2e-test-thing"
     )!;
     expect(firstSavedThing).not.toBeNull();
     expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
@@ -106,29 +111,30 @@ describe(`Authenticated end-to-end`, () => {
       false
     );
     const updatedDataset = setThing(firstSavedDataset, updatedThing);
-    await saveSolidDatasetAt(sessionResource, updatedDataset, options);
+    await saveSolidDatasetAt(datasetUrl, updatedDataset, {
+      fetch: session.fetch,
+    });
 
-    const secondSavedDataset = await getSolidDataset(sessionResource, {
+    const secondSavedDataset = await getSolidDataset(datasetUrl, {
       fetch: session.fetch,
     });
     const secondSavedThing = getThing(
       secondSavedDataset,
-      sessionResource + "#e2e-test-thing"
+      datasetUrl + "#e2e-test-thing"
     )!;
     expect(secondSavedThing).not.toBeNull();
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
-    await deleteSolidDataset(sessionResource, options);
+    await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
     await expect(() =>
-      getSolidDataset(sessionResource, options)
+      getSolidDataset(datasetUrl, { fetch: session.fetch })
     ).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
       })
     );
-
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
+
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
     const fileUrl = `${sessionResource}.txt`;
