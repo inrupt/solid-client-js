@@ -63,7 +63,7 @@ import {
 import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
 
 const env: TestingEnvironment = getTestingEnvironment();
-const skip = (env.environment === "NSS");
+const skip = (env.environment !== "NSS");
 if (skip) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
