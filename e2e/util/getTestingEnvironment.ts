@@ -22,7 +22,7 @@
 export interface TestingEnvironment {
   clientId: string;
   clientSecret: string;
-  environment: "Inrupt Dev-Next" | "Inrupt Production" | "Inrupt 1.1";
+  environment: "Inrupt Dev-Next" | "Inrupt Production" | "Inrupt 1.1" | "NSS";
   feature: {
     acp: boolean;
     acp_v3: boolean;
@@ -37,7 +37,8 @@ export function getTestingEnvironment(): TestingEnvironment {
   if (
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production" &&
-    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt 1.1"
+    process.env.E2E_TEST_ENVIRONMENT !== "Inrupt 1.1" &&
+    process.env.E2E_TEST_ENVIRONMENT !== "NSS"
   ) {
     throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
   }
