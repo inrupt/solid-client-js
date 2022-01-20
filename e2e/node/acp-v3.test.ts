@@ -41,6 +41,7 @@ import {
   UrlString,
   acp_v3 as acp,
   FetchError,
+  deleteFile,
 } from "../../src/index";
 import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
@@ -61,11 +62,9 @@ describe("Authenticated end-to-end ACP V3", () => {
     session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
   
   afterEach(async () => {
-    await deleteSolidDataset(sessionResource, options);
     await session.logout();
   });
 
@@ -140,59 +139,82 @@ describe("Authenticated end-to-end ACP V3", () => {
   }
 
   it("can deny Read access", async () => {
+    const policyResourceUrl = sessionResource.concat('-policy-deny');
+
     // Create a Resource containing Access Policies and Rules:
-    await initialisePolicyResource(sessionResource, session);
+    await initialisePolicyResource(policyResourceUrl, session);
 
     // Verify that we can fetch the Resource before Denying Read access:
     await expect(
-      getSolidDataset(sessionResource, options)
+      getSolidDataset(policyResourceUrl, options)
     ).resolves.not.toBeNull();
 
     // In the Resource's Access Control Resource, apply the Policy
     // that just so happens to be defined in the Resource itself,
     // and that denies Read access to the current user:
     await applyPolicyToPolicyResource(
-      sessionResource,
-      sessionResource + "#policy-selfWriteNoRead"
+      policyResourceUrl,
+      policyResourceUrl + "#policy-selfWriteNoRead"
     );
 
     // Verify that indeed, the current user can no longer read it:
     await expect(
-      getSolidDataset(sessionResource, options)
-    ).rejects.toThrow(expect.objectContaining({ statusCode: 403 }));
+      getSolidDataset(policyResourceUrl, options)
+    ).rejects.toThrow(
+      // Forbidden:
+      // @ts-ignore-next
+      expect.objectContaining({ statusCode: 403 }) as FetchError
+    );
+
+    // Clean up:
+    await deleteSolidDataset(policyResourceUrl, options);
   });
 
   it("can allow public Read access", async () => {
+    const policyResourceUrl = sessionResource.concat('-policy-allow');
+
     // Create a Resource containing Access Policies and Rules:
-    await initialisePolicyResource(sessionResource, session);
+    await initialisePolicyResource(policyResourceUrl, session);
 
     // Verify that we cannot fetch the Resource before adding public Read access
     // when not logged in (i.e. not passing the session's fetch):
-    await expect(
-      getSolidDataset(sessionResource)
-    ).rejects.toThrow(expect.objectContaining({ statusCode: 401 }));
+    await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
+      // Unauthorised:
+      // @ts-ignore-next
+      expect.objectContaining({ statusCode: 401 }) as FetchError
+    );
 
     // In the Resource's Access Control Resource, apply the Policy
     // that just so happens to be defined in the Resource itself,
     // and provides Read access to the public:
     await applyPolicyToPolicyResource(
-      sessionResource,
-      sessionResource + "#policy-publicRead"
+      policyResourceUrl,
+      policyResourceUrl + "#policy-publicRead"
     );
 
     // Verify that indeed, an unauthenticated user can now read it:
     await expect(
-      getSolidDataset(sessionResource)
+      getSolidDataset(policyResourceUrl)
     ).resolves.not.toBeNull();
+
+    // Clean up:
+    await deleteSolidDataset(policyResourceUrl, options);
   });
 
-  it("can set public Access", async () => {
-    await overwriteFile(sessionResource, Buffer.from("To-be-public Resource"), options);
+  it("can set Access from a Resource's ACR", async () => {
+    const resourceUrl = sessionResource.concat('-resource');
 
-    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(sessionResource, options);
+    await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), {
+      fetch: session.fetch,
+    });
+
+    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
+      resourceUrl,
+      { fetch: session.fetch }
+    );
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
-        `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${sessionResource}] was not accessible.`
+        `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`
       );
     }
     let publicRule = acp.createResourceRuleFor(
@@ -222,7 +244,7 @@ describe("Authenticated end-to-end ACP V3", () => {
 
     // Verify that we cannot fetch the Resource before adding public Read access
     // when not logged in (i.e. not passing the session's fetch):
-    await expect(getFile(sessionResource)).rejects.toThrow(
+    await expect(getFile(resourceUrl)).rejects.toThrow(
       // Unauthorised:
       // @ts-ignore-next
       expect.objectContaining({ statusCode: 401 }) as FetchError
@@ -231,6 +253,9 @@ describe("Authenticated end-to-end ACP V3", () => {
     await acp.saveAcrFor(updatedResourceInfoWithAcr, options);
 
     // Verify that indeed, an unauthenticated user can now read it:
-    await expect(getFile(sessionResource)).resolves.not.toBeNull();
+    await expect(getFile(resourceUrl)).resolves.not.toBeNull();
+
+    // Clean up:
+    await deleteFile(resourceUrl, options);
   });
 });
