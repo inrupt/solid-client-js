@@ -56,13 +56,12 @@ import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
-const skip = (env.feature.wac !== true);
-if (skip) {
+if (env.feature.wac !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
 }
 
-describe(`${skip ? "Skipped " : ""}Authenticated end-to-end WAC`, () => {
+describe("Authenticated end-to-end WAC", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;

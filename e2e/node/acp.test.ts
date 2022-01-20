@@ -53,13 +53,12 @@ import {
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
-const skip = (env.feature.acp !== true);
-if (skip) {
+if (env.feature.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
 
-describe(`${skip ? "Skipped " : ""}An ACP Solid server`, () => {
+describe("An ACP Solid server", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;

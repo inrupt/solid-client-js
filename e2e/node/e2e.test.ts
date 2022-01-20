@@ -60,14 +60,13 @@ import type { Session } from "@inrupt/solid-client-authn-node";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
-const skip = (env.environment === "NSS");
-if (skip) {
+if (env.environment === "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
 
-describe(`${skip ? "Skipped " : ""}Authenticated end-to-end`, () => {
+describe("Authenticated end-to-end", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
