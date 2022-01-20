@@ -60,6 +60,14 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
+import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+
+const env: TestingEnvironment = getTestingEnvironment();
+const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
+if (env.feature.nss !== true) {
+  // eslint-disable-next-line jest/no-focused-tests
+  test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
+}
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the e2e tests have an NSS environment setup.
