@@ -18,3 +18,9 @@ jobs:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - run: npm audit --audit-level=moderate
+      - name: Send a notification that the audit has failed
+        if: failure() && github.event_name == 'schedule'
+        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated npm audit --audit-level=moderate failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+        env:
+          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
+          RUN_ID: "${{ github.run_id }}"
