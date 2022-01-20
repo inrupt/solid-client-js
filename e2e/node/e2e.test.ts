@@ -60,9 +60,9 @@ import type { Session } from "@inrupt/solid-client-authn-node";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
-if (env.feature.acp_v3 !== true) {
+if (env.feature.nss === true) {
   // eslint-disable-next-line jest/no-focused-tests
-  test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
+  test.only(`Skipping unsupported Authenticated tests in ${env.environment}`, () => {});
 }
 
 describe(`Authenticated end-to-end`, () => {
