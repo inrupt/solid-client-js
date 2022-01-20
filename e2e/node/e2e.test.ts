@@ -72,7 +72,7 @@ describe(`Authenticated end-to-end`, () => {
   
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}.ttl`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
