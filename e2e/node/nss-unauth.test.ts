@@ -64,14 +64,15 @@ import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnv
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
-if (env.feature.nss !== true) {
+const skip = env.feature.nss !== true;
+if (skip) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the e2e tests have an NSS environment setup.
-describe("End-to-end tests with pre-existing data against resources in an NSS server", () => {
+describe(`${skip ? "Skipped " : ""}End-to-end tests with pre-existing data against resources in an NSS server`, () => {
   const rootContainer = "https://lit-e2e-test.inrupt.net/public/";
 
   it("should be able to read and update data in a Pod", async () => {

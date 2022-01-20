@@ -48,12 +48,13 @@ import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
-if (env.feature.acp_v3 !== true) {
+const skip = env.feature.acp_v3 !== true;
+if (skip) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
 }
 
-describe("Authenticated end-to-end ACP V3", () => {
+describe(`${skip ? "Skipped " : ""}Authenticated end-to-end ACP V3`, () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
