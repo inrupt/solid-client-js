@@ -63,8 +63,7 @@ import {
 import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
 
 const env: TestingEnvironment = getTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
-const skip = env.feature.nss !== true;
+const skip = env.environment !== "NSS";
 if (skip) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
