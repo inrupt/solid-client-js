@@ -260,6 +260,8 @@ jobs:
   # to detect issues introduced by the build process:
   cd-end-to-end-tests:
     runs-on: ubuntu-20.04
+    environment:
+      name: "Inrupt Production"
     strategy:
       matrix:
         node-version: [16.x]
@@ -303,18 +305,11 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         run: npm run test:e2e:node
         env:
-          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-          E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
-          E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
-          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-          E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
-          E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
           E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
           E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
-          # FIXME: this is a temporary fix until actual environments are used across
-          # all our end-to-end tests.
-          E2E_TEST_ENVIRONMENT: "Inrupt Dev-Next"
+          E2E_TEST_ENVIRONMENT: "Inrupt Production"
+          E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
+          E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
+          E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
