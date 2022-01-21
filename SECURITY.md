@@ -10,6 +10,7 @@ function compatible with the browser-native [fetch API](https://developer.mozill
 dealing with authentication. This may be done using Inrupt's authentication libraries
 [for Node](https://www.npmjs.com/package/@inrupt/solid-client-authn-node) or [for
 the browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser).
+The security policy for these libraries is available in the associated [GitHub repository](https://github.com/inrupt/solid-client-authn-js/blob/main/SECURITY.md).
 
 This library also exposes functions to modify data access permissions. We
 strive to make the API and documentation as clear and intuitive as possible, because
