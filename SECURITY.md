@@ -15,9 +15,9 @@ The security policy for these libraries is available in the associated [GitHub r
 This library also exposes functions to modify data access permissions. We
 strive to make the API and [documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
 as clear and intuitive as possible, because misuse of these functions may result
-in exposing data beyond what is intended. Please do open an 
+in exposing data beyond what is intended. Please do open an
 [issue](https://github.com/inrupt/solid-client-js/issues) if you face difficulties
-in that area. 
+in that area.
 
 # Reporting a vulnerability
 
