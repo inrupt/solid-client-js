@@ -68,16 +68,16 @@ the server understands ("SolidDatasets"), and those that do not ("Files").
 The main difference between the two is that, by virtue of the server
 understanding the structure of the former, we can do partial updates (i.e.
 PATCH requests) and retrieve the data in different formats (currently, the
-spec mandates that servers can receive/return such data as at least Turtle and JSON-LD).
+spec mandates that servers can receive/return such RDF data as at least Turtle and JSON-LD).
 
-Thus, data requested as Turtle or JSON-LD can be fetched as a SolidDataset; the
+Thus, RDF data can be fetched as a SolidDataset; the
 rest are just treated as regular Files: while it might be possible to parse and
 manipulate them using other libraries, solid-client just allows downloads and
 uploads, and not more specific operations like reading values for a given
 property. This applies to binary file types like JPEG, WebM and `.txt`.
-When it comes to files containing structured data in a non-RDF format (e.g.: JSON, 
+When it comes to files containing structured data in a non-RDF format (e.g., JSON, 
 XML or OpenDocument) or files containing structured data in an RDF format not
-understood by the server (e.g.: RDFa or RDF-XML) is up to the server to accept 
+understood by the server (e.g., RDFa or RDF-XML) it is up to the server to accept 
 that payload of RDF/XML and treat it as a binary resource, 
 or it could choose to reject it completely with an error saying something like
 "Unsupported RDF serialization".
