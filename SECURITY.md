@@ -17,7 +17,7 @@ strive to make the API and [documentation](https://docs.inrupt.com/developer-too
 as clear and intuitive as possible, because misuse of these functions may result
 in exposing data beyond what is intended. Please do open an
 [issue](https://github.com/inrupt/solid-client-js/issues) if you face difficulties
-in that area.
+with our access control APIs.
 
 # Reporting a vulnerability
 
