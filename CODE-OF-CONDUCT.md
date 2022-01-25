@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We as members, contributors, and leaders pledge to make participation in our project and community 
+We as members, contributors, and leaders pledge to make participation in our project and community
 a harassment-free experience for everyone, regardless of age, body
 size, visible or invisible disability, ethnicity, sex characteristics, gender
 identity and expression, level of experience, education, socio-economic status,
@@ -109,7 +109,7 @@ Violating these terms may lead to a permanent ban.
 standards, including but not limited to sustained inappropriate behavior, harassment of an
 individual, or aggression toward or disparagement of classes of individuals.
 
-**Consequence**: A permanent ban from any sort of public interaction within the project and the 
+**Consequence**: A permanent ban from any sort of public interaction within the project and the
 community.
 
 ## Attribution
