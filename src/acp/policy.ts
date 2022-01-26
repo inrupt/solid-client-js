@@ -723,6 +723,7 @@ export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
  *
  * @param policy The Policy to get a human-readable representation of.
  * @since 1.6.0
+ * @deprecated
  */
 export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   function getStatus(allow: boolean, deny: boolean): string {

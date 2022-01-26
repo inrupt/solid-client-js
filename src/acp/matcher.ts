@@ -927,6 +927,7 @@ export function removeAnyClient(matcher: Matcher): Matcher {
  *
  * @param matcher The Matcher to get a human-readable representation of.
  * @since Not released yet.
+ * @deprecated
  */
 export function matcherAsMarkdown(matcher: Matcher): string {
   let markdown = `## Matcher: ${asUrl(matcher)}\n\n`;

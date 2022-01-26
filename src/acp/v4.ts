@@ -32,7 +32,7 @@ import {
   isAcpControlled,
 } from "./acp";
 import {
-  acrAsMarkdown,
+  //acrAsMarkdown,
   //addAcrPolicyUrl,
   //addMemberAcrPolicyUrl,
   //addMemberPolicyUrl,
@@ -69,7 +69,7 @@ import {
   createPolicy,
   getPolicy,
   getPolicyAll,
-  policyAsMarkdown,
+  //policyAsMarkdown,
   removePolicy,
   setPolicy,
   createResourcePolicyFor,
@@ -104,7 +104,7 @@ import {
   removeAnyOfMatcherUrl,
   removeAllOfMatcherUrl,
   removeMatcher,
-  matcherAsMarkdown,
+  //matcherAsMarkdown,
   setAgent,
   setAuthenticated,
   setCreator,
@@ -150,7 +150,6 @@ const v4AcpFunctions = {
 };
 
 const v4ControlFunctions = {
-  acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
   addMemberPolicyUrl,
@@ -176,7 +175,6 @@ const v4PolicyFunctions = {
   getDenyModes: getDenyModesV2,
   getPolicy,
   getPolicyAll,
-  policyAsMarkdown,
   removePolicy,
   setAllowModes: setAllowModesV2,
   setDenyModes: setDenyModesV2,
@@ -199,7 +197,6 @@ const v4MatcherFunctions = {
   getMatcherAll,
   removeAgent,
   removeMatcher,
-  matcherAsMarkdown,
   setAgent,
   setMatcher,
   addClient,

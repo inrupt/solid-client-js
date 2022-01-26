@@ -556,6 +556,7 @@ export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource with an attached Access Control Resource of which you want to get a human-readable representation.
  * @since 1.6.0
+ * @deprecated
  */
 export function acrAsMarkdown(
   resourceWithAcr: WithResourceInfo & WithAccessibleAcr
