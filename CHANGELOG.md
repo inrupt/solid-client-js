@@ -10,6 +10,15 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### Deprecations
+
+- The low-level ACP API (V4) will no longer support custom Markdown serialization.
+  That is, the `acrAsMarkdown`, `matcherAsMarkdown`, `policyAsMarkdown` functions.
+  The API is still experimental and settling it takes priority. Helping users in
+  understanding the structure of any RDF might be improved through better turtle
+  serialisation for example and if we come to natural language, the feature might
+  be given more attention as a generic markdown serialisation framework.
+
 # [1.18.0] - 2022-01-13
 
 ### New features
