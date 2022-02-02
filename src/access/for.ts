@@ -64,6 +64,7 @@ export type Actor = "agent" | "group" | "public";
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access the given Agent or Group has.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -96,6 +97,7 @@ export async function getAccessFor(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access have been granted to the general public.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -169,6 +171,7 @@ export async function getAccessFor(
  * @param actorType type of actor whose access is being read.
  * @returns What access is set for the given resource, grouped by resp. Agent or Group.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function getAccessForAll(
   resourceUrl: UrlString,
@@ -220,6 +223,7 @@ export async function getAccessForAll(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access has been set for the given Agent explicitly.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function setAccessFor(
   resourceUrl: UrlString,
@@ -263,6 +267,7 @@ export async function setAccessFor(
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns What access has been set for the given Agent explicitly.
  * @since 1.5.0
+ * @deprecated Access Control Policies will no longer support vcard:Group. Use the mechanism-specific access API's if you want to define access for groups of people.
  */
 export async function setAccessFor(
   resourceUrl: UrlString,
