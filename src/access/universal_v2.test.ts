@@ -28,9 +28,6 @@ import {
   getPublicAccess,
   setAgentAccess,
   setPublicAccess,
-  getAccessFor as reexport_getAccessFor,
-  getAccessForAll as reexport_getAccessForAll,
-  setAccessFor as reexport_setAccessFor,
 } from "./universal_v2";
 import * as acpLowLevel from "../acp/acp";
 import * as acpModule from "./acp_v2";
@@ -837,19 +834,5 @@ describe("getAgentAccessAll", () => {
     const access = await getAgentAccessAll("https://arbitrary.pod/resource");
 
     expect(access).toBeNull();
-  });
-});
-
-describe("access/for reexports", () => {
-  it("re-exports getAccessFor", () => {
-    expect(reexport_getAccessFor).toBeDefined();
-  });
-
-  it("re-exports getAccessForAll", () => {
-    expect(reexport_getAccessForAll).toBeDefined();
-  });
-
-  it("re-exports setAccessFor", () => {
-    expect(reexport_setAccessFor).toBeDefined();
   });
 });
