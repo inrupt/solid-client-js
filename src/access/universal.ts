@@ -22,4 +22,9 @@
 // This file exists to maintain backwards compatibility with the old API as long
 // as possible. Once pod.inrupt.com implements the breaking changes to Access
 // Control Policies, this will be updated to point to _v2.
+
+/**
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
+ */
 export * from "./universal_v1";

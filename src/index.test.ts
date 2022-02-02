@@ -194,6 +194,7 @@ import {
   access,
   access_v1,
   access_v2,
+  universalAccess,
   responseToSolidDataset,
   responseToResourceInfo,
   addStringEnglish,
@@ -382,6 +383,7 @@ it("exports preview API's for early adopters", () => {
   expect(access).toBeDefined();
   expect(access_v1).toBeDefined();
   expect(access_v2).toBeDefined();
+  expect(universalAccess).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();
 });
