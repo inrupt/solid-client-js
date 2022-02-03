@@ -31,6 +31,6 @@ describe("getAcrUrl.legacy", () => {
 
   it("returns null if there is no ACR URL", async () => {
     const x = getAcrUrl({ internal_resourceInfo: { linkedResources: {} } } as any);
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 });

@@ -100,6 +100,6 @@ describe("setAgentAccess", () => {
   it("returns null if the ACR can't be saved", async () => {
     (saveAcrFor as jest.Mock).mockRejectedValueOnce("reject");
     const x = await setAgentAccess("x", "y", {});
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 });

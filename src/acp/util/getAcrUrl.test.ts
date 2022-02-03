@@ -48,7 +48,7 @@ describe("getAcrUrl", () => {
   it("returns null if the ACL resource info can't be fetched", async () => {
     (getAclServerResourceInfo as jest.Mock).mockResolvedValueOnce(null);
     const x = await getAcrUrl({} as any);
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 
   it("returns the ACR URL if info is fetched and the correct link type is present", async () => {
@@ -59,6 +59,6 @@ describe("getAcrUrl", () => {
   it("returns null if the correct link type is not present", async () => {
     (getLinkedResourceUrlAll as jest.Mock).mockReturnValueOnce({ type: ["y"] });
     const x = await getAcrUrl({} as any);
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 });

@@ -42,7 +42,7 @@ describe("getResourceAcr", () => {
     const x = await getResourceAcr({} as any);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
     expect(getAcrUrl).toHaveBeenCalledWith({}, undefined);
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 
   it("returns null if the ACR can't be retrieved", async () => {
@@ -52,7 +52,7 @@ describe("getResourceAcr", () => {
     expect(getAcrUrl).toHaveBeenCalledWith({}, undefined);
     expect(getSolidDataset).toHaveBeenCalledTimes(1);
     expect(getSolidDataset).toHaveBeenCalledWith("x", undefined);
-    expect(x).toBe(null);
+    expect(x).toBeNull();
   });
 
   it("returns the resource with ACR", async () => {
