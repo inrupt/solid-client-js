@@ -23,7 +23,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { getResourceAcr } from "./getResourceAcr";
 import { getAcrUrl } from "./getAcrUrl";
 import { getSolidDataset } from "../../resource/solidDataset";
-import { getSourceUrl } from "../../resource/resource";
 
 jest.mock("./getAcrUrl", () => ({
   getAcrUrl: jest.fn().mockImplementation(() => ("x"))

@@ -19,28 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { UrlString, WithServerResourceInfo } from "../../interfaces";
-import { ACP } from "../constants";
+import { describe, it, expect } from "@jest/globals";
+import { getAcrUrl } from "./getAcrUrl.legacy";
 
-/**
- * Retrieve the URL of an Access Control Resource as per pre-draft versions of
- * the ACP specification.
- *
- * @param resource The Resource for which to retrieve the URL of the Access
- * Control Resource if it is accessible.
- * @returns The URL of the ACR or null.
- * @deprecated
- */
-export function getAcrUrl(resource: WithServerResourceInfo): UrlString | null {
-  const linkedAccessControlResource =
-    resource.internal_resourceInfo.linkedResources[ACP.accessControl];
 
-  if (
-    Array.isArray(linkedAccessControlResource) &&
-    linkedAccessControlResource.length === 1
-  ) {
-    return linkedAccessControlResource[0];
-  }
+describe("getAcrUrl", () => {
+  it("returns the ACR URL", () => {
+    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: { "http://www.w3.org/ns/solid/acp#accessControl": [ "x" ] } } } as any);
+    expect(x).toBe("x");
+  });
 
-  return null;
-}
+  it("returns null if there is no ACR URL", async () => {
+    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: {} } } as any);
+    expect(x).toBe(null);
+  });
+});
