@@ -25,6 +25,7 @@ import { getResourceInfo } from "../resource/resource";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 import { setPublicAccess as setPublicAccessAcp } from "../acp/util/setPublicAccess";
 import { setPublicResourceAccess as setPublicAccessWac } from "../access/wac";
+import { saveAcrFor } from "../acp/acp";
 
 jest.mock("../resource/resource", () => ({
   getResourceInfo: jest.fn().mockImplementation(() => ({}))
@@ -36,6 +37,10 @@ jest.mock("../acp/util/getResourceAcr", () => ({
 
 jest.mock("./getPublicAccess", () => ({
   getPublicAccess: jest.fn().mockImplementation(() => ({}))
+}));
+
+jest.mock("../acp/acp", () => ({
+  saveAcrFor: jest.fn().mockImplementation(() => ({}))
 }));
 
 jest.mock("../acp/util/setPublicAccess", () => ({
@@ -90,5 +95,11 @@ describe("setPublicAccess", () => {
     expect(setPublicAccessWac).toHaveBeenCalledTimes(1);
     expect(setPublicAccessWac).toHaveBeenCalledWith({}, {}, { fetch: "z" });
     expect(setPublicAccessAcp).toHaveBeenCalledTimes(0);
+  });
+
+  it("returns null if the ACR can't be saved", async () => {
+    (saveAcrFor as jest.Mock).mockRejectedValueOnce("reject");
+    const x = await setPublicAccess("x", {});
+    expect(x).toBe(null);
   });
 });

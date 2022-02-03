@@ -25,6 +25,7 @@ import { getResourceInfo } from "../resource/resource";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 import { setAgentAccess as setAgentAccessAcp } from "../acp/util/setAgentAccess";
 import { setAgentResourceAccess as setAgentAccessWac } from "../access/wac";
+import { saveAcrFor } from "../acp/acp";
 
 jest.mock("../resource/resource", () => ({
   getResourceInfo: jest.fn().mockImplementation(() => ({}))
@@ -36,6 +37,10 @@ jest.mock("../acp/util/getResourceAcr", () => ({
 
 jest.mock("./getAgentAccess", () => ({
   getAgentAccess: jest.fn().mockImplementation(() => ({}))
+}));
+
+jest.mock("../acp/acp", () => ({
+  saveAcrFor: jest.fn().mockImplementation(() => ({}))
 }));
 
 jest.mock("../acp/util/setAgentAccess", () => ({
@@ -90,5 +95,11 @@ describe("setAgentAccess", () => {
     expect(setAgentAccessWac).toHaveBeenCalledTimes(1);
     expect(setAgentAccessWac).toHaveBeenCalledWith({}, "y", {}, { fetch: "z" });
     expect(setAgentAccessAcp).toHaveBeenCalledTimes(0);
+  });
+
+  it("returns null if the ACR can't be saved", async () => {
+    (saveAcrFor as jest.Mock).mockRejectedValueOnce("reject");
+    const x = await setAgentAccess("x", "y", {});
+    expect(x).toBe(null);
   });
 });
