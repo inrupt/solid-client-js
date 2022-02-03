@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { getAcrUrl } from "./getAcrUrl.legacy";
 
 
-describe("getAcrUrl", () => {
+describe("getAcrUrl.legacy", () => {
   it("returns the ACR URL", () => {
     const x = getAcrUrl({ internal_resourceInfo: { linkedResources: { "http://www.w3.org/ns/solid/acp#accessControl": [ "x" ] } } } as any);
     expect(x).toBe("x");
