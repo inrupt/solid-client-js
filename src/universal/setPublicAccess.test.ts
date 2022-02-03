@@ -20,11 +20,11 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { setAgentAccess } from "./setAgentAccess";
+import { setPublicAccess } from "./setPublicAccess";
 import { getResourceInfo } from "../resource/resource";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
-import { setAgentAccess as setAgentAccessAcp } from "../acp/util/setAgentAccess";
-import { setAgentResourceAccess as setAgentAccessWac } from "../access/wac";
+import { setPublicAccess as setPublicAccessAcp } from "../acp/util/setPublicAccess";
+import { setPublicResourceAccess as setPublicAccessWac } from "../access/wac";
 
 jest.mock("../resource/resource", () => ({
   getResourceInfo: jest.fn().mockImplementation(() => ({}))
@@ -34,61 +34,61 @@ jest.mock("../acp/util/getResourceAcr", () => ({
   getResourceAcr: jest.fn().mockImplementation(() => ({}))
 }));
 
-jest.mock("./getAgentAccess", () => ({
-  getAgentAccess: jest.fn().mockImplementation(() => ({}))
+jest.mock("./getPublicAccess", () => ({
+  getPublicAccess: jest.fn().mockImplementation(() => ({}))
 }));
 
-jest.mock("../acp/util/setAgentAccess", () => ({
-  setAgentAccess: jest.fn().mockImplementation(() => ({}))
+jest.mock("../acp/util/setPublicAccess", () => ({
+  setPublicAccess: jest.fn().mockImplementation(() => ({}))
 }));
 
 jest.mock("../access/wac", () => ({
-  getAgentAccess: jest.fn().mockImplementation(() => ({})),
-  setAgentResourceAccess: jest.fn().mockImplementation(() => ({}))
+  getPublicAccess: jest.fn().mockImplementation(() => ({})),
+  setPublicResourceAccess: jest.fn().mockImplementation(() => ({}))
 }));
 
-describe("setAgentAccess", () => {
+describe("setPublicAccess", () => {
   it("calls the ACP module when resource has an ACR", async () => {
-    await setAgentAccess("x", "y", {});
+    await setPublicAccess("x", {});
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessAcp).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessAcp).toHaveBeenCalledWith({}, "y", {});
-    expect(setAgentAccessWac).toHaveBeenCalledTimes(0);
+    expect(setPublicAccessAcp).toHaveBeenCalledTimes(1);
+    expect(setPublicAccessAcp).toHaveBeenCalledWith({}, {});
+    expect(setPublicAccessWac).toHaveBeenCalledTimes(0);
   });
   
   it("calls the WAC module when resource does not have an ACR", async () => {
     (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
-    await setAgentAccess("x", "y", {});
+    await setPublicAccess("x", {});
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessWac).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessWac).toHaveBeenCalledWith({}, "y", {}, undefined);
-    expect(setAgentAccessAcp).toHaveBeenCalledTimes(0);
+    expect(setPublicAccessWac).toHaveBeenCalledTimes(1);
+    expect(setPublicAccessWac).toHaveBeenCalledWith({}, {}, undefined);
+    expect(setPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 
   it("calls the ACR fetcher passing the fetch option", async () => {
-    await setAgentAccess("x", "y", {}, { fetch: "z" as any });
+    await setPublicAccess("x", {}, { fetch: "z" as any });
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
-    expect(setAgentAccessAcp).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessAcp).toHaveBeenCalledWith({}, "y", {});
-    expect(setAgentAccessWac).toHaveBeenCalledTimes(0);
+    expect(setPublicAccessAcp).toHaveBeenCalledTimes(1);
+    expect(setPublicAccessAcp).toHaveBeenCalledWith({}, {});
+    expect(setPublicAccessWac).toHaveBeenCalledTimes(0);
   });
 
   it("calls the WAC module passing the fetch option", async () => {
     (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
-    await setAgentAccess("x", "y", {}, { fetch: "z" as any });
+    await setPublicAccess("x", {}, { fetch: "z" as any });
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
-    expect(setAgentAccessWac).toHaveBeenCalledTimes(1);
-    expect(setAgentAccessWac).toHaveBeenCalledWith({}, "y", {}, { fetch: "z" });
-    expect(setAgentAccessAcp).toHaveBeenCalledTimes(0);
+    expect(setPublicAccessWac).toHaveBeenCalledTimes(1);
+    expect(setPublicAccessWac).toHaveBeenCalledWith({}, {}, { fetch: "z" });
+    expect(setPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 });
