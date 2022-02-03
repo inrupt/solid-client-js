@@ -26,11 +26,6 @@ import { getResourceAcr } from "../acp/util/getResourceAcr";
 import { getAgentAccess as getAgentAccessAcp } from "../acp/util/getAgentAccess";
 import { getAgentAccess as getAgentAccessWac } from "../access/wac";
 
-// const getResourceInfo = jest.spyOn(getResourceInfoModule, "getResourceInfo");
-// const getResourceAcr = jest.spyOn(getResourceAcrModule, "getResourceAcr");
-// const getAgentAccessAcp = jest.spyOn(getAgentAccessAcpModule, "getAgentAccess");
-// const getAgentAccessWac = jest.spyOn(getAgentAccessWacModule, "getAgentAccess");
-
 jest.mock("../resource/resource", () => ({
   getResourceInfo: jest.fn().mockImplementation(() => ({}))
 }));
