@@ -19,12 +19,28 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// This file exists to maintain backwards compatibility with the old API as long
-// as possible. Once pod.inrupt.com implements the breaking changes to Access
-// Control Policies, this will be updated to point to _v2.
+import { describe, it, expect } from "@jest/globals";
+import * as universal from "./index";
 
-/**
- * @hidden
- * @deprecated Please import from the "universal" modules.
- */
-export * from "./universal_v1";
+describe("universal", () => {
+  it("exports getAclServerResourceInfo", () => {
+    expect(universal.getAclServerResourceInfo).toBeDefined();
+  });
+
+  it("exports getAgentAccess", () => {
+    expect(universal.getAgentAccess).toBeDefined();
+  });
+
+  it("exports getPublicAccess", () => {
+    expect(universal.getPublicAccess).toBeDefined();
+  });
+
+  it("exports setAgentAccess", () => {
+    expect(universal.setAgentAccess).toBeDefined();
+  });
+
+  it("exports setPublicAccess", () => {
+    expect(universal.setPublicAccess).toBeDefined();
+  });
+});
+  

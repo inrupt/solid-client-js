@@ -19,12 +19,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// This file exists to maintain backwards compatibility with the old API as long
-// as possible. Once pod.inrupt.com implements the breaking changes to Access
-// Control Policies, this will be updated to point to _v2.
+import { describe, it, expect } from "@jest/globals";
+import { getAcrUrl } from "./getAcrUrl.legacy";
 
-/**
- * @hidden
- * @deprecated Please import from the "universal" modules.
- */
-export * from "./universal_v1";
+
+describe("getAcrUrl.legacy", () => {
+  it("returns the ACR URL", () => {
+    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: { "http://www.w3.org/ns/solid/acp#accessControl": [ "x" ] } } } as any);
+    expect(x).toBe("x");
+  });
+
+  it("returns null if there is no ACR URL", async () => {
+    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: {} } } as any);
+    expect(x).toBeNull();
+  });
+});

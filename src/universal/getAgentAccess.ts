@@ -56,7 +56,6 @@ export async function getAgentAccess(
   webId: WebId,
   options?: DefaultOptions
 ): Promise<AccessModes | null> {
-  // TODO: Change the standard getAgentAccess signatures to all take a  T extends WithAcl
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);
 

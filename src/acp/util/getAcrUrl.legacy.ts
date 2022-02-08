@@ -37,7 +37,7 @@ export function getAcrUrl(resource: WithServerResourceInfo): UrlString | null {
 
   if (
     Array.isArray(linkedAccessControlResource) &&
-    linkedAccessControlResource.length === 0
+    linkedAccessControlResource.length === 1
   ) {
     return linkedAccessControlResource[0];
   }

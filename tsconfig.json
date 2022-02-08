@@ -90,7 +90,7 @@
       "src/acp/policy.ts",
       "src/acp/rule.ts",
       "src/acp/mock.ts",
-      "src/access/universal.ts",
+      "src/universal/index.ts",
       "src/rdfjs.ts",
       "src/profile/jwks.ts",
       "src/profile/webid.ts",

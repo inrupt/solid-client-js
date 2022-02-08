@@ -143,6 +143,10 @@
     "./formats": {
       "import": "./dist/formats/index.mjs",
       "types": "./dist/formats/index.d.ts"
+    },
+    "./universal": {
+      "import": "./dist/universal/index.mjs",
+      "types": "./dist/universal/index.d.ts"
     }
   },
   "files": [
