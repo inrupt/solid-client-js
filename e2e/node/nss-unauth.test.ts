@@ -286,7 +286,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
   it("can fetch a non-RDF file and its metadata", async () => {
     const jsonFile = await getFile(`${rootContainer}arbitrary.json`);
 
-    expect(getContentType(jsonFile)).toEqual("application/json");
+    expect(getContentType(jsonFile)).toBe("application/json");
 
     const data = JSON.parse(await jsonFile.text());
     expect(data).toEqual({ arbitrary: "json data" });

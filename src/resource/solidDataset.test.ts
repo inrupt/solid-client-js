@@ -478,7 +478,7 @@ describe("getSolidDataset", () => {
 
     await getSolidDataset("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -494,7 +494,7 @@ describe("getSolidDataset", () => {
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("adds an Accept header accepting turtle by default", async () => {
@@ -563,7 +563,7 @@ describe("getSolidDataset", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("keeps track of where the SolidDataset was fetched from", async () => {
@@ -854,7 +854,7 @@ describe("saveSolidDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
@@ -1186,7 +1186,7 @@ describe("saveSolidDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
@@ -1339,7 +1339,7 @@ describe("saveSolidDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual(
+      expect(mockFetch.mock.calls[0][0]).toBe(
         "https://some-other.pod/resource"
       );
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
@@ -1390,7 +1390,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][0]).toEqual(
+      expect(mockFetch.mock.calls[0][0]).toBe(
         // Note that the hash fragment is still present in the target URL
         "https://some.pod/resource#something"
       );
@@ -1510,7 +1510,7 @@ describe("saveSolidDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][1]?.method as string).toStrictEqual(
+      expect(mockFetch.mock.calls[0][1]?.method as string).toBe(
         "PATCH"
       );
     });
@@ -1753,7 +1753,7 @@ describe("createContainerAt", () => {
 
     await createContainerAt("https://some.pod/container/");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/container/"
     );
   });
@@ -1767,7 +1767,7 @@ describe("createContainerAt", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
   });
 
   it("can be called with NamedNodes", async () => {
@@ -1782,7 +1782,7 @@ describe("createContainerAt", () => {
       }
     );
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
   });
 
   it("appends a trailing slash if not provided", async () => {
@@ -1794,7 +1794,7 @@ describe("createContainerAt", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
   });
 
   it("sets the right headers to create a Container", async () => {
@@ -1806,7 +1806,7 @@ describe("createContainerAt", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
     expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "Link",
@@ -2506,7 +2506,7 @@ describe("saveSolidDatasetInContainer", () => {
       }
     );
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/container/");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
@@ -2799,7 +2799,7 @@ describe("createContainerInContainer", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual(
+    expect(mockFetch.mock.calls[0][0]).toBe(
       "https://some.pod/parent-container/"
     );
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
@@ -3545,7 +3545,7 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -3557,7 +3557,7 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("assumes the discovery resource is at the server's origin if no root resource is linked", async () => {
@@ -3574,10 +3574,10 @@ describe("getWellKnownSolid", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual(
+    expect(mockFetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource/x/y/z"
     );
-    expect(mockFetch.mock.calls[1][0]).toEqual(
+    expect(mockFetch.mock.calls[1][0]).toBe(
       "https://some.pod/.well-known/solid"
     );
   });
@@ -3596,10 +3596,10 @@ describe("getWellKnownSolid", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual(
+    expect(mockFetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource/x/y/z"
     );
-    expect(mockFetch.mock.calls[2][0]).toEqual(
+    expect(mockFetch.mock.calls[2][0]).toBe(
       "https://some.pod/.well-known/solid"
     );
   });
@@ -3611,8 +3611,8 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toEqual(
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe(
       "https://some.pod/username/.well-known/solid"
     );
   });
@@ -3634,8 +3634,8 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toEqual(
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe(
       "https://some.pod/username/.well-known/solid"
     );
   });

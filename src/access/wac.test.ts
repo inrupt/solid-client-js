@@ -90,7 +90,7 @@ describe("getAgentAccess", () => {
     );
     await getAgentAccess(resource, "https://some.pod/profile#agent");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -559,7 +559,7 @@ describe("getGroupAccess", () => {
     );
     await getGroupAccess(resource, "https://some.pod/groups#group");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -936,7 +936,7 @@ describe("getPublicAccess", () => {
     );
     await getPublicAccess(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -1313,7 +1313,7 @@ describe("getAgentAccessAll", () => {
     );
     await getAgentAccessAll(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -1518,7 +1518,7 @@ describe("getGroupAccessAll", () => {
     );
     await getGroupAccessAll(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -1735,7 +1735,7 @@ describe("setAgentAccess", () => {
       controlWrite: undefined,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -2444,7 +2444,7 @@ describe("setGroupResourceAccess", () => {
       read: true,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -3168,7 +3168,7 @@ describe("setPublicResourceAccess", () => {
       read: true,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
