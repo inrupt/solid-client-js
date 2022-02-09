@@ -6,11 +6,19 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+# [1.19.0] - 2022-02-09
+
 ### New features
 
-The following sections document changes that have been released already:
+- `universalAccess`/`universal`: functions available in the `universal` module or
+  in the library via importing `universalAccess` work with the latest version of
+  the ACP specification and supersede the `access/universal` module.
 
 ### Deprecations
+
+- The universal access API group functions `getAccessFor`, `getAccessForAll` and
+  `setAccessFor` have been deprecated. In order for it to be a non-breaking change,
+  the universal API is now exposed through the `universal` module.
 
 - The low-level ACP API (V4) will no longer support custom Markdown serialization.
   That is, the `acrAsMarkdown`, `matcherAsMarkdown`, `policyAsMarkdown` functions.
