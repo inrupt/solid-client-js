@@ -33,7 +33,7 @@ import { getResourceInfo } from "../resource/resource";
  * to retrieve the Server Resource Info.
  * @param {DefaultOptions} options
  * @returns The Server Resource Info if available, null otherwise.
- * @since unreleased
+ * @since 1.19.0
  */
 export async function getAclServerResourceInfo(
   resource: WithServerResourceInfo,

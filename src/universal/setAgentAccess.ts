@@ -64,7 +64,7 @@ import { getAgentAccess } from "./getAgentAccess";
  * @param webId WebID of the Agent you want to set access for.
  * @param access The Access Modes to add (true) or remove (false).
  * @param options Default Options such as a fetch function.
- * @since unreleased
+ * @since 1.19.0
  */
 export async function setAgentAccess(
   resourceUrl: UrlString,
