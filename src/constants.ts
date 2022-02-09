@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -52,6 +52,8 @@ export const ldp = {
 /** @hidden */
 export const foaf = {
   Agent: "http://xmlns.com/foaf/0.1/Agent",
+  primaryTopic: "http://xmlns.com/foaf/0.1/primaryTopic",
+  isPrimaryTopicOf: "http://xmlns.com/foaf/0.1/isPrimaryTopicOf",
 } as const;
 
 /** @hidden */
@@ -66,7 +68,9 @@ export const acp = {
   Rule: "http://www.w3.org/ns/solid/acp#Rule",
   Matcher: "http://www.w3.org/ns/solid/acp#Matcher",
   accessControl: "http://www.w3.org/ns/solid/acp#accessControl",
+  memberAccessControl: "http://www.w3.org/ns/solid/acp#memberAccessControl",
   apply: "http://www.w3.org/ns/solid/acp#apply",
+  /** @deprecated Removed from the ACP proposal, to be replaced by memberAccessControls. */
   applyMembers: "http://www.w3.org/ns/solid/acp#applyMembers",
   allow: "http://www.w3.org/ns/solid/acp#allow",
   deny: "http://www.w3.org/ns/solid/acp#deny",
@@ -74,6 +78,7 @@ export const acp = {
   anyOf: "http://www.w3.org/ns/solid/acp#anyOf",
   noneOf: "http://www.w3.org/ns/solid/acp#noneOf",
   access: "http://www.w3.org/ns/solid/acp#access",
+  /** @deprecated Removed from the ACP proposal, to be replaced by memberAccessControls. */
   accessMembers: "http://www.w3.org/ns/solid/acp#accessMembers",
   agent: "http://www.w3.org/ns/solid/acp#agent",
   group: "http://www.w3.org/ns/solid/acp#group",
@@ -86,4 +91,14 @@ export const acp = {
 /** @hidden */
 export const solid = {
   PublicOidcClient: "http://www.w3.org/ns/solid/terms#PublicOidcClient",
+} as const;
+
+/** @hidden */
+export const security = {
+  publicKey: "https://w3id.org/security#publicKey",
+} as const;
+
+/** @hidden */
+export const pim = {
+  storage: "http://www.w3.org/ns/pim/space#storage",
 } as const;

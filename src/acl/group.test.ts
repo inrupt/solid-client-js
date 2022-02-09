@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -102,9 +102,10 @@ function addAclDatasetToSolidDataset(
   type: "resource" | "fallback"
 ): SolidDataset & WithServerResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
-    fallbackAcl: null,
-    resourceAcl: null,
-    ...((solidDataset as any as WithAcl).internal_acl ?? {}),
+    ...((solidDataset as any as WithAcl).internal_acl ?? {
+      fallbackAcl: null,
+      resourceAcl: null,
+    }),
   };
   if (type === "resource") {
     solidDataset.internal_resourceInfo.aclUrl =

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -927,6 +927,7 @@ export function removeAnyClient(matcher: Matcher): Matcher {
  *
  * @param matcher The Matcher to get a human-readable representation of.
  * @since Not released yet.
+ * @deprecated
  */
 export function matcherAsMarkdown(matcher: Matcher): string {
   let markdown = `## Matcher: ${asUrl(matcher)}\n\n`;

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -177,6 +177,28 @@ export const setInteger: SetOfType<number> = (thing, property, value) => {
   internal_throwIfNotThing(thing);
   return addInteger(removeAll(thing, property), property, value);
 };
+
+/**
+ * Create a new Thing with existing values replaced by the given English string for the given
+ * Property.
+ *
+ * To preserve existing values, see [[addStringEnglish]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to set a localised string value on.
+ * @param property Property for which to set the given localised string value.
+ * @param value Localised string to set on `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with existing values replaced by the given value for the given Property.
+ * @since 1.13.0
+ */
+export function setStringEnglish<T extends Thing>(
+  thing: T,
+  property: Url | UrlString,
+  value: string
+): T {
+  return setStringWithLocale(thing, property, value, "en");
+}
 
 /**
  * Create a new Thing with existing values replaced by the given localised string for the given Property.

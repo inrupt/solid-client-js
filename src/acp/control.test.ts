@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -61,7 +61,13 @@ import {
 import { acp, rdf } from "../constants";
 import { WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll, getUrl, getUrlAll } from "../thing/get";
-import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { addIri, addUrl } from "../thing/add";
@@ -209,6 +215,63 @@ describe("getControlAll", () => {
     const foundControls = internal_getControlAll(resourceWithAcr);
 
     expect(foundControls).toHaveLength(1);
+  });
+
+  it("returns an Access Control if linked to with the acp:accessControl predicate even if not explicitly typed", () => {
+    const controlUrl =
+      "https://some.pod/access-control-resource.ttl#access-control";
+    const acr = mockAcrFor("https://some.pod/resource");
+    const acrThing = setIri(
+      createThing({ url: getSourceUrl(acr) }),
+      acp.accessControl,
+      controlUrl
+    );
+
+    const accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      acrThing
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
+
+    const foundControl = internal_getControlAll(resourceWithAcr);
+    expect(foundControl).toHaveLength(1);
+    expect(foundControl.map(asIri)).toContain(controlUrl);
+  });
+
+  it("returns both explicitly and implicitly typed Access Control", () => {
+    const implicitControlIri =
+      "https://some.pod/access-control-resource.ttl#implicit-access-control";
+    const acr = mockAcrFor("https://some.pod/resource");
+    const acrThing = setIri(
+      createThing({ url: getSourceUrl(acr) }),
+      acp.accessControl,
+      implicitControlIri
+    );
+
+    let accessControlResource = setThing(
+      mockAcrFor("https://some.pod/resource"),
+      acrThing
+    );
+    const explicitControlIri =
+      "https://some.pod/access-control-resource.ttl#explicit-access-control";
+    const explicitControl = setUrl(
+      createThing({ url: explicitControlIri }),
+      rdf.type,
+      acp.AccessControl
+    );
+    accessControlResource = setThing(accessControlResource, explicitControl);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
+      accessControlResource
+    );
+
+    const foundControl = internal_getControlAll(resourceWithAcr);
+    expect(foundControl).toHaveLength(2);
+    expect(foundControl.map(asIri)).toContain(implicitControlIri);
+    expect(foundControl.map(asIri)).toContain(explicitControlIri);
   });
 
   it("ignores Things that are not Access Controls", () => {

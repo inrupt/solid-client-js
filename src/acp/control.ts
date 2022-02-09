@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -556,6 +556,7 @@ export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  *
  * @param resourceWithAcr The Resource with an attached Access Control Resource of which you want to get a human-readable representation.
  * @since 1.6.0
+ * @deprecated
  */
 export function acrAsMarkdown(
   resourceWithAcr: WithResourceInfo & WithAccessibleAcr

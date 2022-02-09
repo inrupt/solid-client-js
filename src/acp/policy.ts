@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -723,6 +723,7 @@ export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
  *
  * @param policy The Policy to get a human-readable representation of.
  * @since 1.6.0
+ * @deprecated
  */
 export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   function getStatus(allow: boolean, deny: boolean): string {

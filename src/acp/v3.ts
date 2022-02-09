@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -22,6 +22,7 @@
 import {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
@@ -29,6 +30,7 @@ import {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
 } from "./acp";
 import {
   acrAsMarkdown,
@@ -125,6 +127,7 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 const v3AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
@@ -132,6 +135,7 @@ const v3AcpFunctions = {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
 };
 
 const v3ControlFunctions = {

@@ -6,7 +6,139 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
 The following sections document changes that have been released already:
+
+### Deprecations
+
+- The low-level ACP API (V4) will no longer support custom Markdown serialization.
+  That is, the `acrAsMarkdown`, `matcherAsMarkdown`, `policyAsMarkdown` functions.
+  The API is still experimental and settling it takes priority. Helping users in
+  understanding the structure of any RDF might be improved through better turtle
+  serialisation for example and if we come to natural language, the feature might
+  be given more attention as a generic markdown serialisation framework.
+
+# [1.18.0] - 2022-01-13
+
+### New features
+
+- `getPodUrlAll`/`getPodUrlAllFrom`: functions available in the `profile/webid`
+  module to discover an agent's Pods based on their profiles.
+
+### Bugfixes
+
+- The ACP v4 low-level API is amended so that new policies use the default access controls.
+  Implemented `setResourcePolicy` and removed obsolete `setResourceAcrPolicy`.
+
+# [1.17.0] - 2021-11-29
+
+### New features
+
+- `getVcAccess`/`setVcAccess`: functions available in the `acp/acp` module to get and
+  set Access Modes for a resource applicable when an Access Grant for the given resource
+  is issued.
+
+# [1.16.1] - 2021-11-20
+
+- The ACP low-level API is amended to align with the latest specification draft.
+
+## [1.16.0] - 2021-11-16
+
+### New features
+
+- `getProfileAll`: function to discover the WebID Profile Document and its associated
+  FOAF Profile Document resources from the WebID URI. Note that Profile documents
+  may or not be Solid Resources
+
+- Allow `createContainerAt` to take an optional SolidDataset parameter to
+  use as the body of the HTTP request to the server. This is really useful
+  when we wish to include meta-data for a new container, things like a textual
+  label or comment.
+
+## [1.15.0] - 2021-11-02
+
+### New features
+
+- `getLinkedAcrUrl` returns the URL of an Access Control Resource from the
+  server-managed metadata associated to a given resource.
+- `getJsonLdParser` and `getTurtleParser` are experimental functions to explicitly
+  control the RDF serialization of the target of `getSolidDataset`.
+
+### Bugfixes
+
+- In some cases, the ACP functions failed to find the Access Control node within
+  an Access Control Resource, leading to policies being unapplied.
+
+## [1.14.0] - 2021-10-15
+
+### Bugfixes
+
+- The discovery of the `.well-known/solid` document now supports Pod servers where
+  it is directly available at the domain root, rather than being specific to individual
+  Pod roots.
+
+### New feature
+
+- `isAcpControlled` is a function verifying whether a given resource is controlled
+  using ACP. This is useful for apps not yet migrated to the universal API.
+
+## [1.13.3] - 2021-10-11
+
+### Bugfixes
+
+- The discovery of the `.well-known/solid` document failed if the Pod server
+  returned a Link to the Pod root missing the trailing slash.
+
+## [1.13.2] - 2021-10-07
+
+### Bugfixes
+
+- Getting an authentication failure when looking up metadata necessarily threw an
+  error, which prevented some legitimate use cases, e.g. the Pod root discovery from
+  a given resource.
+
+## [1.13.1] - 2021-10-04
+
+### Bugfix
+
+- The change on `getThingAll` introduced in 1.13.0 was actually breaking for some
+  users, so this makes it opt-in rather than default.
+
+## [1.13.0] - 2021-09-30
+
+### New features
+
+- Added convenience functions 'add/get/set/removeStringEnglish()' and
+  'add/get/set/removeStringEnglishAll()'.
+  We're still gently expressing the impossible-to-ignore relevance of locales in the underlying RDF
+  (and 'cos trying to 'hide' that critical RDF-ness (e.g., via an implicitly-acting function like
+  addString()) would lead to all sorts of confusion later (i.e., would it add an English language
+  tag, or a NoLocale string literal?)).
+
+### Bugfixes
+
+- `getThingAll` used to only return Things that had an IRI, and to ignore Things
+  with a blank node as a subject. This prevents some legitimate use cases, such as
+  parsing the `.well-known/solid` document (which only contains one blank node).
+
+## [1.12.0] - 2021-09-08
+
+### New features
+
+- Manage public keys attached to your profile with the functions `addJwkToJwks`,
+  `addPublicKeyToProfileJwks`, `getProfileJwksIri` and `setProfileJwks`, from the
+  `@inrupt/solid-client/profile/jwks` module.
+- Add `getWellKnownSolid`, to return the contents of the `.well-known/solid`
+  endpoint for a given resource url.
+
+## [1.11.1] - 2021-09-02
+
+### Bugs fixed
+
+- In some cases, Thing.getDate() would return null while Thing.setDate() had been
+  called prior. Thanks to a contribution from @AJamesPhillips, this is now fixed.
+- The submodule export for `./access/universal` was broken.
 
 ## [1.11.0] - 2021-08-12
 

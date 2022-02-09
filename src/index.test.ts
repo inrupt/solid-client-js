@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -67,6 +67,7 @@ import {
   getTime,
   getDecimal,
   getInteger,
+  getStringEnglish,
   getStringWithLocale,
   getStringNoLocale,
   getUrlAll,
@@ -77,6 +78,7 @@ import {
   getTimeAll,
   getDecimalAll,
   getIntegerAll,
+  getStringEnglishAll,
   getStringWithLocaleAll,
   getStringByLocaleAll,
   getStringNoLocaleAll,
@@ -121,6 +123,7 @@ import {
   removeTime,
   removeDecimal,
   removeInteger,
+  removeStringEnglish,
   removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
@@ -169,6 +172,16 @@ import {
   addMockFallbackAclTo,
   fromRdfJsDataset,
   toRdfJsDataset,
+  addJwkToJwks,
+  addPublicKeyToProfileJwks,
+  getProfileJwksIri,
+  setProfileJwks,
+  getProfileAll,
+  getPodUrlAll,
+  getPodUrlAllFrom,
+  getWellKnownSolid,
+  getJsonLdParser,
+  getTurtleParser,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -181,8 +194,10 @@ import {
   access,
   access_v1,
   access_v2,
+  universalAccess,
   responseToSolidDataset,
   responseToResourceInfo,
+  addStringEnglish,
   // Deprecated functions still exported for backwards compatibility:
 } from "./index";
 
@@ -235,8 +250,10 @@ it("exports the public API from the entry file", () => {
   expect(getTime).toBeDefined();
   expect(getDecimal).toBeDefined();
   expect(getInteger).toBeDefined();
+  expect(getStringEnglish).toBeDefined();
   expect(getStringWithLocale).toBeDefined();
   expect(getStringNoLocale).toBeDefined();
+  expect(getStringEnglishAll).toBeDefined();
   expect(getStringByLocaleAll).toBeDefined();
   expect(getUrlAll).toBeDefined();
   expect(getIriAll).toBeDefined();
@@ -262,6 +279,7 @@ it("exports the public API from the entry file", () => {
   expect(addTime).toBeDefined();
   expect(addDecimal).toBeDefined();
   expect(addInteger).toBeDefined();
+  expect(addStringEnglish).toBeDefined();
   expect(addStringWithLocale).toBeDefined();
   expect(addStringNoLocale).toBeDefined();
   expect(addLiteral).toBeDefined();
@@ -289,6 +307,7 @@ it("exports the public API from the entry file", () => {
   expect(removeTime).toBeDefined();
   expect(removeDecimal).toBeDefined();
   expect(removeInteger).toBeDefined();
+  expect(removeStringEnglish).toBeDefined();
   expect(removeStringWithLocale).toBeDefined();
   expect(removeStringNoLocale).toBeDefined();
   expect(removeLiteral).toBeDefined();
@@ -338,6 +357,16 @@ it("exports the public API from the entry file", () => {
   expect(addMockFallbackAclTo).toBeDefined();
   expect(fromRdfJsDataset).toBeDefined();
   expect(toRdfJsDataset).toBeDefined();
+  expect(addJwkToJwks).toBeDefined();
+  expect(addPublicKeyToProfileJwks).toBeDefined();
+  expect(getProfileJwksIri).toBeDefined();
+  expect(setProfileJwks).toBeDefined();
+  expect(getProfileAll).toBeDefined();
+  expect(getPodUrlAll).toBeDefined();
+  expect(getPodUrlAllFrom).toBeDefined();
+  expect(getWellKnownSolid).toBeDefined();
+  expect(getJsonLdParser).toBeDefined();
+  expect(getTurtleParser).toBeDefined();
 });
 
 it("exports error classes", () => {
@@ -354,6 +383,7 @@ it("exports preview API's for early adopters", () => {
   expect(access).toBeDefined();
   expect(access_v1).toBeDefined();
   expect(access_v2).toBeDefined();
+  expect(universalAccess).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();
 });

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -20,9 +20,6 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-
-import { Quad } from "@rdfjs/types";
-import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import { IriString, Thing } from "../interfaces";
 import {
@@ -33,6 +30,7 @@ import {
   setTime,
   setDecimal,
   setInteger,
+  setStringEnglish,
   setStringWithLocale,
   setStringNoLocale,
   setNamedNode,
@@ -1186,6 +1184,31 @@ describe("setInteger", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("setStringEnglish", () => {
+  it("replaces existing values with the given English string for the given Predicate", () => {
+    const thing = getMockThingWithLiteralFor(
+      "https://some.vocab/predicate",
+      "Arbitrary string",
+      "string"
+    );
+
+    const updatedThing = setStringEnglish(
+      thing,
+      "https://some.vocab/predicate",
+      "Some string value"
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].literals
+    ).toBeUndefined();
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      en: ["Some string value"],
+    });
   });
 });
 

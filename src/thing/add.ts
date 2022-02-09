@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -241,6 +241,27 @@ export const addInteger: AddOfType<number> = (thing, property, value) => {
     xmlSchemaTypes.integer
   );
 };
+
+/**
+ * Create a new Thing with an English string added for a Property.
+ *
+ * This preserves existing values for the given Property. To replace them, see [[setStringEnglish]].
+ *
+ * The original `thing` is not modified; this function returns a cloned Thing with updated values.
+ *
+ * @param thing Thing to add a localised string value to.
+ * @param property Property for which to add the given string value.
+ * @param value String to add to `thing` for the given `property`.
+ * @returns A new Thing equal to the input Thing with the given value added for the given Property.
+ * @since 1.13.0
+ */
+export function addStringEnglish<T extends Thing>(
+  thing: T,
+  property: Url | UrlString,
+  value: string
+): T {
+  return addStringWithLocale(thing, property, value, "en");
+}
 
 /**
  * Create a new Thing with a localised string added for a Property.

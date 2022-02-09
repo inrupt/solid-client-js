@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -122,7 +122,12 @@ export function getThing(
  */
 export function getThingAll(
   solidDataset: SolidDataset,
-  options: GetThingOptions = {}
+  options: GetThingOptions & {
+    /**
+     * Can Things local to the current dataset, and having no IRI, be returned ?
+     */
+    acceptBlankNodes?: boolean;
+  } = { acceptBlankNodes: false }
 ): Thing[] {
   const graph =
     typeof options.scope !== "undefined"
@@ -130,7 +135,7 @@ export function getThingAll(
       : "default";
   const thingsByIri = solidDataset.graphs[graph] ?? {};
   return Object.values(thingsByIri).filter(
-    (thing) => !isBlankNodeId(thing.url)
+    (thing) => !isBlankNodeId(thing.url) || options.acceptBlankNodes
   );
 }
 

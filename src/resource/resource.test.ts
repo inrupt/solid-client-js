@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -410,6 +410,25 @@ describe("getResourceInfo", () => {
     );
   });
 
+  it("overrides a 403 error if provided the appropriate option", async () => {
+    const mockFetch = jest
+      .fn(window.fetch)
+      .mockReturnValue(
+        Promise.resolve(
+          mockResponse("Forbidden", { status: 403, url: "https://some.url" })
+        )
+      );
+
+    const resourceInfo = await getResourceInfo("https://some.pod/resource", {
+      fetch: mockFetch,
+      ignoreAuthenticationErrors: true,
+    });
+
+    expect(resourceInfo.internal_resourceInfo.sourceIri).toBe(
+      "https://some.url"
+    );
+  });
+
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockResponse = new Response("Not found", { status: 404 });
     jest
@@ -442,6 +461,27 @@ describe("getResourceInfo", () => {
 
     const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
       fetch: mockFetch,
+    });
+
+    await expect(fetchPromise).rejects.toMatchObject({
+      statusCode: 418,
+      statusText: "I'm a teapot!",
+    });
+  });
+
+  it("does not ignore non-auth errors", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
+
+    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+      ignoreAuthenticationErrors: true,
     });
 
     await expect(fetchPromise).rejects.toMatchObject({

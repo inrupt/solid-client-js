@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -49,6 +49,19 @@ export type SolidDataset = ImmutableDataset;
  * A File is anything stored on a Pod in a format that solid-client does not have special affordances for, e.g. an image, or a plain JSON file.
  */
 export type File = Blob;
+
+/**
+ * A JSON data structure that represents a set of public keys as a JSON object.
+ * See https://datatracker.ietf.org/doc/html/rfc7517 for details.
+ */
+export type Jwk = Record<string, string>;
+
+/**
+ * A JSON data structure holding a list of JWK.
+ */
+export type Jwks = {
+  keys: Jwk[];
+};
 
 /**
  * A Resource is something that can be fetched from a Pod - either structured data in a [[SolidDataset]], or any other [[File]].

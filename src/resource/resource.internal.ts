@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -149,4 +149,10 @@ export function internal_isUnsuccessfulResponse(
   response: Response
 ): response is Response & { ok: false } {
   return !response.ok;
+}
+
+export function internal_isAuthenticationFailureResponse(
+  response: Response
+): response is Response & { status: 401 | 403 } {
+  return response.status === 401 || response.status === 403;
 }

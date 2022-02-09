@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -27,7 +27,6 @@ import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 
 /**
  * IRIs of the XML Schema data types we support
- * @internal
  */
 export const xmlSchemaTypes = {
   boolean: "http://www.w3.org/2001/XMLSchema#boolean",
@@ -39,7 +38,7 @@ export const xmlSchemaTypes = {
   string: "http://www.w3.org/2001/XMLSchema#string",
   langString: "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
 } as const;
-/** @internal */
+
 export type XmlSchemaTypeIri =
   typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
 
@@ -294,11 +293,14 @@ export function deserializeDatetime(literalString: string): Date | null {
  */
 export function serializeDate(value: Date): string {
   const year = value.getFullYear();
-  const month = value.getMonth();
+  const month = value.getMonth() + 1;
   const day = value.getDate();
   const [_, timezone] = splitTimeFromTimezone(value.toISOString());
 
-  return year + "-" + (month + 1) + "-" + day + timezone;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+    2,
+    "0"
+  )}${timezone}`;
 }
 
 /**

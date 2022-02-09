@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -117,9 +117,24 @@ export function internal_getControlAll(
   const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
-  return foundThings.filter((foundThing) =>
+  const explicitAccessControl = foundThings.filter((foundThing) =>
     getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
   );
+
+  const implicitAccessControl = foundThings
+    .filter((foundThing) => getIriAll(foundThing, acp.accessControl).length > 0)
+    .map((thingWithAccessControl) => {
+      // The initial filter ensures that at least one AccessControl will be found.
+      const controlIri = getIriAll(
+        thingWithAccessControl,
+        acp.accessControl
+      )[0];
+      // The found control is only an object in the current dataset, so we create the
+      // associated thing in order to possibly make it a subject.
+      return createThing({ url: controlIri });
+    });
+
+  return explicitAccessControl.concat(implicitAccessControl);
 }
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this

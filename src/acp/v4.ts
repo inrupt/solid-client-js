@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -29,32 +29,47 @@ import {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
 } from "./acp";
 import {
-  acrAsMarkdown,
-  addAcrPolicyUrl,
-  addMemberAcrPolicyUrl,
-  addMemberPolicyUrl,
-  addPolicyUrl,
-  getAcrPolicyUrlAll,
-  getMemberAcrPolicyUrlAll,
-  getMemberPolicyUrlAll,
-  getPolicyUrlAll,
+  //acrAsMarkdown,
+  //addAcrPolicyUrl,
+  //addMemberAcrPolicyUrl,
+  //addMemberPolicyUrl,
+  //addPolicyUrl,
+  //getAcrPolicyUrlAll,
+  //getMemberAcrPolicyUrlAll,
+  //getMemberPolicyUrlAll,
+  //getPolicyUrlAll,
   hasLinkedAcr,
-  removeAcrPolicyUrl,
+  //removeAcrPolicyUrl,
   removeAcrPolicyUrlAll,
-  removeMemberAcrPolicyUrl,
+  //removeMemberAcrPolicyUrl,
   removeMemberAcrPolicyUrlAll,
-  removeMemberPolicyUrl,
+  //removeMemberPolicyUrl,
   removeMemberPolicyUrlAll,
-  removePolicyUrl,
+  //removePolicyUrl,
   removePolicyUrlAll,
 } from "./control";
+import { addAcrPolicyUrl } from "./policy/addAcrPolicyUrl";
+import { addMemberAcrPolicyUrl } from "./policy/addMemberAcrPolicyUrl";
+import { addMemberPolicyUrl } from "./policy/addMemberPolicyUrl";
+import { addPolicyUrl } from "./policy/addPolicyUrl";
+import { getAcrPolicyUrlAll } from "./policy/getAcrPolicyUrlAll";
+import { getMemberAcrPolicyUrlAll } from "./policy/getMemberAcrPolicyUrlAll";
+import { getMemberPolicyUrlAll } from "./policy/getMemberPolicyUrlAll";
+import { getPolicyUrlAll } from "./policy/getPolicyUrlAll";
+import { removeAcrPolicyUrl } from "./policy/removeAcrPolicyUrl";
+import { removeMemberAcrPolicyUrl } from "./policy/removeMemberAcrPolicyUrl";
+import { removeMemberPolicyUrl } from "./policy/removeMemberPolicyUrl";
+import { removePolicyUrl } from "./policy/removePolicyUrl";
+import { setResourcePolicy } from "./policy/setResourcePolicy";
+
 import {
   createPolicy,
   getPolicy,
   getPolicyAll,
-  policyAsMarkdown,
+  //policyAsMarkdown,
   removePolicy,
   setPolicy,
   createResourcePolicyFor,
@@ -64,8 +79,6 @@ import {
   getResourcePolicyAll,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setResourceAcrPolicy,
-  setResourcePolicy,
   getAllowModesV2,
   getDenyModesV2,
   setAllowModesV2,
@@ -91,7 +104,7 @@ import {
   removeAnyOfMatcherUrl,
   removeAllOfMatcherUrl,
   removeMatcher,
-  matcherAsMarkdown,
+  //matcherAsMarkdown,
   setAgent,
   setAuthenticated,
   setCreator,
@@ -118,6 +131,9 @@ import {
 } from "./matcher";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 
+import { getVcAccess } from "./util/getVcAccess";
+import { setVcAccess } from "./util/setVcAccess";
+
 const v4AcpFunctions = {
   getFileWithAccessDatasets,
   getFileWithAcr,
@@ -128,10 +144,12 @@ const v4AcpFunctions = {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
+  isAcpControlled,
+  getVcAccess,
+  setVcAccess,
 };
 
 const v4ControlFunctions = {
-  acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
   addMemberPolicyUrl,
@@ -157,7 +175,6 @@ const v4PolicyFunctions = {
   getDenyModes: getDenyModesV2,
   getPolicy,
   getPolicyAll,
-  policyAsMarkdown,
   removePolicy,
   setAllowModes: setAllowModesV2,
   setDenyModes: setDenyModesV2,
@@ -169,7 +186,6 @@ const v4PolicyFunctions = {
   getResourcePolicyAll,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setResourceAcrPolicy,
   setResourcePolicy,
 };
 
@@ -181,7 +197,6 @@ const v4MatcherFunctions = {
   getMatcherAll,
   removeAgent,
   removeMatcher,
-  matcherAsMarkdown,
   setAgent,
   setMatcher,
   addClient,

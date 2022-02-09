@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -34,6 +34,7 @@ describe("Thing Builder API", () => {
 
     const builtThing = buildThing(startingThing)
       .addInteger("https://some.vocab/predicate", 42)
+      .addStringEnglish("https://some.vocab/predicate", "Some English string")
       .addStringWithLocale(
         "https://some.vocab/predicate",
         "Some string",
@@ -45,6 +46,11 @@ describe("Thing Builder API", () => {
       startingThing,
       "https://some.vocab/predicate",
       42
+    );
+    nonBuilderThing = adders.addStringEnglish(
+      nonBuilderThing,
+      "https://some.vocab/predicate",
+      "Some English string"
     );
     nonBuilderThing = adders.addStringWithLocale(
       nonBuilderThing,
@@ -71,6 +77,10 @@ describe("Thing Builder API", () => {
 
     const builtThing = buildThing(startingThing)
       .setDecimal("https://some.vocab/predicate", 13.37)
+      .setStringEnglish(
+        "https://some-other.vocab/predicate",
+        "Some English string"
+      )
       .setStringWithLocale(
         "https://some-other.vocab/predicate",
         "Some other string",
@@ -82,6 +92,11 @@ describe("Thing Builder API", () => {
       startingThing,
       "https://some.vocab/predicate",
       13.37
+    );
+    nonBuilderThing = setters.setStringEnglish(
+      nonBuilderThing,
+      "https://some-other.vocab/predicate",
+      "Some English string"
     );
     nonBuilderThing = setters.setStringWithLocale(
       nonBuilderThing,
@@ -98,6 +113,11 @@ describe("Thing Builder API", () => {
       createThing(),
       "https://some.vocab/predicate",
       4.2
+    );
+    startingThing = adders.addStringEnglish(
+      startingThing,
+      "https://some.vocab/predicate-english",
+      "Some English string"
     );
     startingThing = adders.addStringWithLocale(
       startingThing,
@@ -117,6 +137,10 @@ describe("Thing Builder API", () => {
     );
 
     const builtThing = buildThing(startingThing)
+      .removeStringEnglish(
+        "https://some.vocab/predicate-english",
+        "Some English string"
+      )
       .removeStringWithLocale(
         "https://some.vocab/predicate",
         "Some string",
@@ -126,8 +150,13 @@ describe("Thing Builder API", () => {
       .removeAll("https://yet-another.vocab/predicate")
       .build();
 
-    let nonBuilderThing = removers.removeStringWithLocale(
+    let nonBuilderThing = removers.removeStringEnglish(
       startingThing,
+      "https://some.vocab/predicate-english",
+      "Some English string"
+    );
+    nonBuilderThing = removers.removeStringWithLocale(
+      nonBuilderThing,
       "https://some.vocab/predicate",
       "Some string",
       "en-gb"

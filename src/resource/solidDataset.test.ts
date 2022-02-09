@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -33,6 +33,7 @@ jest.mock("../fetcher.ts", () => ({
 }));
 
 import { Response } from "cross-fetch";
+import * as jsonld from "jsonld";
 import { DataFactory } from "n3";
 import {
   getSolidDataset,
@@ -49,6 +50,7 @@ import {
   internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465,
   responseToSolidDataset,
   Parser,
+  getWellKnownSolid,
 } from "./solidDataset";
 import {
   WithChangeLog,
@@ -59,13 +61,74 @@ import {
   UrlString,
 } from "../interfaces";
 import { mockContainerFrom, mockSolidDatasetFrom } from "./mock";
-import { createThing, getThing, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import { mockThingFrom } from "../thing/mock";
 import { addInteger, addStringNoLocale, addUrl } from "../thing/add";
 import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+
+jest.mock("jsonld", () => ({
+  toRDF: jest.fn().mockImplementation(() =>
+    Promise.resolve([
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#consentIssuer",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://consent.pod.inrupt.com",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#notificationGatewayEndpoint",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://notification.pod.inrupt.com",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://inrupt.com/ns/ess#powerSwitchEndpoint",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://pod.inrupt.com/powerswitch/username",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+      {
+        subject: { termType: "BlankNode", value: "_:b0" },
+        predicate: {
+          termType: "NamedNode",
+          value: "http://www.w3.org/ns/pim/space#storage",
+        },
+        object: {
+          termType: "NamedNode",
+          value: "https://pod.inrupt.com/username/",
+        },
+        graph: { termType: "DefaultGraph", value: "" },
+      },
+    ])
+  ),
+}));
 
 function mockResponse(
   body?: BodyInit | null,
@@ -306,9 +369,9 @@ describe("responseToSolidDataset", () => {
     const t1 = performance.now();
 
     // Parsing a document with over 1000 statements will always be somewhat slow
-    // (hence allowing it to take a second), but if it attempts to detect
+    // (hence allowing it to take 1.5 seconds), but if it attempts to detect
     // chains, it will take on the order of >20 seconds.
-    expect(t1 - t0).toBeLessThan(1000);
+    expect(t1 - t0).toBeLessThan(1500);
     // Blank Nodes should be listed explicitly, rather than as properties on
     // https://some.pod/resource#me:
     expect(Object.keys(solidDataset.graphs.default)).not.toStrictEqual([
@@ -1960,6 +2023,66 @@ describe("createContainerAt", () => {
     });
   });
 
+  describe("Creating non-empty container", () => {
+    it("returns an non-empty SolidDataset if one is provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(
+          Promise.resolve(
+            mockResponse(undefined, { url: "https://arbitrary.pod/container/" })
+          )
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      const returnedContainer = await createContainerAt(
+        "https://arbitrary.pod/container/",
+        {
+          fetch: mockFetch,
+          initialContent: mockDataset,
+        }
+      );
+      // All the things in the initial content should be in the returned dataset.
+      expect(
+        getThingAll(mockDataset).every(
+          (thing) => getThing(returnedContainer, asIri(thing)) !== null
+        )
+      ).toBe(true);
+      // The initial content should be sent when creating the container
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
+        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+      );
+    });
+
+    it("reports HTTP error when an non-empty SolidDataset provided", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        // Mock an error response to the request.
+        .mockReturnValueOnce(
+          Promise.resolve(new Response("Forbidden", { status: 403 }))
+        );
+
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      await expect(
+        createContainerAt("https://arbitrary.pod/container/", {
+          fetch: mockFetch,
+          initialContent: mockDataset,
+        })
+      ).rejects.toThrow("Creating the non-empty Container");
+    });
+  });
+
   describe("using the workaround for Node Solid Server", () => {
     it("creates and deletes a dummy file inside the Container when encountering NSS's exact error message", async () => {
       const mockFetch = jest
@@ -3371,5 +3494,176 @@ describe("changeLogAsMarkdown", () => {
         "- Added:\n" +
         '  - "Some string" (string)\n'
     );
+  });
+});
+
+describe("getWellKnownSolid", () => {
+  type MockFetch = Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit?]
+  >;
+  function setMockResourceResponseOnFetch(
+    fetch: MockFetch,
+    response = mockResponse(undefined, {
+      url: "https://some.pod/resource",
+      headers: {
+        "Content-Type": "text/turtle",
+        link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
+      },
+    })
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(response);
+    return fetch;
+  }
+  function setMockWellKnownSolidResponseOnFetch(
+    fetch: MockFetch,
+    response = mockResponse(
+      `
+    {
+      "@context":"https://pod.inrupt.com/solid/v1",
+      "consent":"https://consent.pod.inrupt.com",
+      "notificationGateway":"https://notification.pod.inrupt.com",
+      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+      "storage":"https://pod.inrupt.com/username/"
+    }`,
+      {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "application/ld+json" },
+      }
+    )
+  ): MockFetch {
+    fetch.mockResolvedValueOnce(response);
+    return fetch;
+  }
+
+  it("calls the included fetcher by default", async () => {
+    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+      fetch: MockFetch;
+    };
+    setMockResourceResponseOnFetch(mockedFetcher.fetch);
+    setMockWellKnownSolidResponseOnFetch(mockedFetcher.fetch);
+
+    await getWellKnownSolid("https://some.pod/resource");
+
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource"
+    );
+  });
+
+  it("uses the given fetcher if provided", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+  });
+
+  it("assumes the discovery resource is at the server's origin if no root resource is linked", async () => {
+    const mockFetch = setMockResourceResponseOnFetch(
+      jest.fn(window.fetch),
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "text/turtle" },
+      })
+    );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource/x/y/z"
+    );
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/.well-known/solid"
+    );
+  });
+
+  it("assumes the discovery resource is at the server's origin if the resource is not found", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch).mockResolvedValueOnce(
+      new Response("", {
+        status: 404,
+        statusText: "Not found",
+      })
+    );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource/x/y/z", {
+      fetch: mockFetch,
+    });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual(
+      "https://some.pod/resource/x/y/z"
+    );
+    expect(mockFetch.mock.calls[2][0]).toEqual(
+      "https://some.pod/.well-known/solid"
+    );
+  });
+
+  it("forms the .well-known/solid endpoint from the root resource", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/username/.well-known/solid"
+    );
+  });
+
+  it("appends a / to the Pod root if missing before appending .well-known/solid", async () => {
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(
+      mockFetch,
+      mockResponse(undefined, {
+        url: "https://some.pod/resource",
+        headers: {
+          "Content-Type": "text/turtle",
+          // Note that the link to the Pod root has no trailing slash
+          link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
+    );
+    setMockWellKnownSolidResponseOnFetch(mockFetch);
+
+    await getWellKnownSolid("https://some.pod/resource", { fetch: mockFetch });
+
+    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toEqual(
+      "https://some.pod/username/.well-known/solid"
+    );
+  });
+
+  it("returns the contents of .well-known/solid for the given resource", async () => {
+    const wellKnownSolidResponseBody = `
+    {
+      "@context":"https://pod.inrupt.com/solid/v1",
+      "consent":"https://consent.pod.inrupt.com",
+      "notificationGateway":"https://notification.pod.inrupt.com",
+      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+      "storage":"https://pod.inrupt.com/username/"
+    }`;
+    const mockFetch = jest.fn(window.fetch);
+    setMockResourceResponseOnFetch(mockFetch);
+    setMockWellKnownSolidResponseOnFetch(
+      mockFetch,
+      mockResponse(wellKnownSolidResponseBody, {
+        url: "https://some.pod/resource",
+        headers: { "Content-Type": "application/ld+json" },
+      })
+    );
+
+    const wellKnownSolidResponse = await getWellKnownSolid(
+      "https://some.pod/resource",
+      { fetch: mockFetch }
+    );
+
+    expect(wellKnownSolidResponse).toMatchSnapshot();
   });
 });

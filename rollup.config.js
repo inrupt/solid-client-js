@@ -51,11 +51,19 @@ export default {
       // Use our own version of TypeScript, rather than the one bundled with the plugin:
       typescript: require("typescript"),
       tsconfigOverride: {
+        // Exclude tests:
+        exclude: ["**/*.test.ts"],
         compilerOptions: {
           module: "esnext",
         },
       },
     }),
   ],
-  external: ["cross-fetch", "http-link-header", "@rdfjs/dataset", "n3"],
+  external: [
+    "cross-fetch",
+    "http-link-header",
+    "@rdfjs/dataset",
+    "n3",
+    "jsonld",
+  ],
 };

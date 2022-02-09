@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -26,7 +26,8 @@ import {
   getChainBlankNodes,
   toRdfJsQuads,
 } from "../rdfjs.internal";
-import { ldp } from "../constants";
+import { ldp, pim } from "../constants";
+import { getJsonLdParser } from "../formats/jsonLd";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
 import {
@@ -42,6 +43,7 @@ import {
   WithChangeLog,
   hasChangelog,
   LocalNode,
+  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
@@ -52,6 +54,7 @@ import {
   FetchError,
   responseToResourceInfo,
   getContentType,
+  getLinkedResourceUrlAll,
 } from "./resource";
 import {
   internal_isUnsuccessfulResponse,
@@ -278,6 +281,10 @@ export async function responseToSolidDataset(
 /**
  * Fetch a SolidDataset from the given URL. Currently requires the SolidDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
  *
+ * Note that the URL of a container ends with a [trailing slash "/"](https://solidproject.org/TR/protocol#uri).
+ * If it is missing, some libraries will add it automatically, which may result in additional round-trips, possibly including
+ * authentication errors ([more information](https://github.com/inrupt/solid-client-js/issues/1216#issuecomment-904703695)). 
+ *
  * @param url URL to fetch a [[SolidDataset]] from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a [[SolidDataset]] containing the data at the given Resource, or rejecting if fetching it failed.
@@ -387,7 +394,8 @@ async function prepareSolidDatasetCreation(
  * the changelog tracks both the old value and new values of the property being modified. This
  * function applies the changes to the current SolidDataset. If the old value specified in the
  * changelog does not correspond to the value currently in the Pod, this function will throw an
- * error.
+ * error (common issues are listed in [the documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/error-codes/)).
+ * 
  * The SolidDataset returned by this function will contain the data sent to the Pod, and a ChangeLog
  * up-to-date with the saved data. Note that if the data on the server was modified in between the
  * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.
@@ -457,6 +465,8 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 /**
  * Deletes the SolidDataset at a given URL.
  *
+ * If operating on a container, the container must be empty otherwise a 409 CONFLICT will be raised.
+ *
  * @param file The (URL of the) SolidDataset to delete
  * @since 0.6.0
  */
@@ -484,7 +494,8 @@ export async function deleteSolidDataset(
 }
 
 /**
- * Create an empty Container at the given URL.
+ * Create a Container at the given URL. Some content may optionally be specified,
+ * e.g. to add metadata describing the container.
  *
  * Throws an error if creating the Container failed, e.g. because the current user does not have
  * permissions to, or because the Container already exists.
@@ -495,12 +506,15 @@ export async function deleteSolidDataset(
  *
  * @param url URL of the empty Container that is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @param solidDataset Optional parameter - if provided we use this dataset as the body of the HTT request, meaning it's data is included in the Container resource.
  * @since 0.2.0
  */
 export async function createContainerAt(
   url: UrlString | Url,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & {
+      initialContent: SolidDataset;
+    }
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
@@ -512,6 +526,11 @@ export async function createContainerAt(
 
   const response = await config.fetch(url, {
     method: "PUT",
+    body: config.initialContent
+      ? await triplesToTurtle(
+          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes)
+        )
+      : undefined,
     headers: {
       Accept: "text/turtle",
       "Content-Type": "text/turtle",
@@ -532,8 +551,10 @@ export async function createContainerAt(
       return createContainerWithNssWorkaroundAt(url, options);
     }
 
+    const containerType =
+      config.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
-      `Creating the empty Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
+      `Creating the ${containerType} Container at [${url}] failed: [${response.status}] [${response.statusText}].`,
       response
     );
   }
@@ -542,7 +563,7 @@ export async function createContainerAt(
   const containerDataset: SolidDataset &
     WithChangeLog &
     WithServerResourceInfo = freeze({
-    ...createSolidDataset(),
+    ...(options.initialContent ?? createSolidDataset()),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -1131,5 +1152,61 @@ function resolveLocalIrisInThing(
     url: isLocalNodeIri(thing.url)
       ? `${baseIri}#${getLocalNodeName(thing.url)}`
       : thing.url,
+  });
+}
+
+/**
+ * Fetch the contents of '.well-known/solid' for a given resource URL.
+ *
+ * The contents of the '.well-known/solid' endpoint define the capabilities of the server, and provide their associated endpoints/locations.
+ * This behaves similarly to the use of '.well-known' endpoints in e.g. (OIDC servers)[https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig]
+ *
+ * @param url URL of a Resource.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Promise resolving to a [[SolidDataset]] containing the data at '.well-known/solid' for the given Resource, or rejecting if fetching it failed.
+ * @since 1.12.0
+ */
+export async function getWellKnownSolid(
+  url: UrlString | Url,
+  options: Partial<
+    typeof internal_defaultFetchOptions & ParseOptions
+  > = internal_defaultFetchOptions
+): Promise<SolidDataset & WithServerResourceInfo> {
+  const urlString = internal_toIriString(url);
+  const resourceMetadata = await getResourceInfo(urlString, {
+    fetch: options.fetch,
+    // Discovering the .well-known/solid document is useful even for resources
+    // we don't have access to.
+    ignoreAuthenticationErrors: true,
+  });
+  const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
+  const rootResources = linkedResources[pim.storage];
+  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
+  if (rootResource !== null) {
+    const wellKnownSolidUrl = new URL(
+      ".well-known/solid",
+      rootResource.endsWith("/") ? rootResource : rootResource + "/"
+    ).href;
+    try {
+      return await getSolidDataset(wellKnownSolidUrl, {
+        ...options,
+        parsers: {
+          "application/ld+json": getJsonLdParser(),
+        },
+      });
+    } catch (e) {
+      // In case of error, do nothing and try to discover the .well-known
+      // at the root of the domain.
+    }
+  }
+  const wellKnownSolidUrl = new URL(
+    "/.well-known/solid",
+    new URL(urlString).origin
+  ).href;
+  return getSolidDataset(wellKnownSolidUrl, {
+    ...options,
+    parsers: {
+      "application/ld+json": getJsonLdParser(),
+    },
   });
 }

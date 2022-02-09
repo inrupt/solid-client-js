@@ -30,6 +30,13 @@ module.exports = {
     // when they're not:
     "no-unused-vars": "off",
     "@typescript-eslint/no-floating-promises": "error",
-    "license-header/header": [process.env.CI ? "error" : "warn", "./resources/license-header.js"],
+    "license-header/header": [
+      process.env.CI ? "error" : "warn",
+      "./resources/license-header.js",
+    ],
   },
+  // ESLint will try to parse these files using TypeScript,
+  // but since they're not part of the project, it will complain
+  // about them not being listed in tsconfig.json:
+  ignorePatterns: [".eslintrc.js", "playwright.config.ts"],
 };

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -39,12 +39,16 @@ import * as ResourceModule from "../resource/resource";
 import {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
   getSolidDatasetWithAccessDatasets,
   getSolidDatasetWithAcr,
+  isAcpControlled,
   saveAcrFor,
+  getVcAccess,
+  setVcAccess,
 } from "./acp";
 import { UrlString, WithServerResourceInfo, File } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
@@ -52,6 +56,7 @@ import { addIri } from "../thing/add";
 import { AccessControlResource } from "./control";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
+import { createSolidDataset } from "../resource/solidDataset";
 
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
@@ -1048,4 +1053,137 @@ describe("saveAcrFor", () => {
 
     expect(savedResource.internal_acp.acr).toEqual(fakeReturnedAcr);
   });
+});
+
+describe("isAcpControlled", () => {
+  it("returns true if a resource advertizes its linked ACP using an acp:accessControl Link header", async () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
+    };
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
+    });
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetResourceInfo.mockResolvedValueOnce(mockedSolidDataset);
+    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
+
+    await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
+      true
+    );
+  });
+
+  it("returns true if a resource advertizes its linked ACP using an 'acl' Link header", async () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acr";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [acrUrl],
+    };
+    mockedSolidDataset.internal_resourceInfo.aclUrl = acrUrl;
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
+    });
+    mockedAcr.internal_resourceInfo.linkedResources = {
+      type: ["http://www.w3.org/ns/solid/acp#AccessControlResource"],
+    };
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo
+      .mockResolvedValueOnce(mockedSolidDataset)
+      .mockResolvedValueOnce(mockedAcr);
+
+    await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
+      true
+    );
+  });
+
+  it("returns false if a resource advertizes a linked ACL using an 'acl' Link header", async () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const aclUrl = "https://arbitrary.pod/resource?ext=acl";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [aclUrl],
+    };
+    mockedSolidDataset.internal_resourceInfo.aclUrl = aclUrl;
+    const mockedAcr = mockAcr("https://arbitrary.pod/resource", {
+      policies: [],
+      memberPolicies: [],
+      acrPolicies: [],
+      memberAcrPolicies: [],
+    });
+    const mockedGetSolidDataset = jest.spyOn(
+      SolidDatasetModule,
+      "getSolidDataset"
+    );
+    mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
+    const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
+    mockedGetResourceInfo
+      .mockResolvedValueOnce(mockedSolidDataset)
+      .mockResolvedValueOnce(mockedAcr);
+
+    await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
+      false
+    );
+  });
+});
+
+describe("getLinkedAcrUrl", () => {
+  it("returns the IRI of an ACR linked with the ACP vocab predicate", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acl";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      [acp.accessControl]: [acrUrl],
+    };
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBe(acrUrl);
+  });
+
+  it("returns the IRI of an ACR linked with the 'acl' link rel", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    const acrUrl = "https://arbitrary.pod/resource?ext=acl";
+    mockedSolidDataset.internal_resourceInfo.linkedResources = {
+      acl: [acrUrl],
+    };
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBe(acrUrl);
+  });
+
+  it("returns undefined if no ACR is linked", () => {
+    const mockedSolidDataset = mockSolidDatasetFrom(
+      "https://arbitrary.pod/resource"
+    );
+    expect(getLinkedAcrUrl(mockedSolidDataset)).toBeUndefined();
+  });
+
+  it("returns undefined if the given resource has no server information", () => {
+    expect(
+      getLinkedAcrUrl(undefined as unknown as WithServerResourceInfo)
+    ).toBeUndefined();
+  });
+});
+
+it("re-exports util functions", () => {
+  expect(setVcAccess).not.toBeUndefined();
+  expect(getVcAccess).not.toBeUndefined();
 });

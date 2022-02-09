@@ -54,3 +54,45 @@ Object {
   "type": "Dataset",
 }
 `;
+
+exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource 1`] = `
+Object {
+  "graphs": Object {
+    "default": Object {
+      "_:b0": Object {
+        "predicates": Object {
+          "http://inrupt.com/ns/ess#consentIssuer": Object {
+            "namedNodes": Array [
+              "https://consent.pod.inrupt.com",
+            ],
+          },
+          "http://inrupt.com/ns/ess#notificationGatewayEndpoint": Object {
+            "namedNodes": Array [
+              "https://notification.pod.inrupt.com",
+            ],
+          },
+          "http://inrupt.com/ns/ess#powerSwitchEndpoint": Object {
+            "namedNodes": Array [
+              "https://pod.inrupt.com/powerswitch/username",
+            ],
+          },
+          "http://www.w3.org/ns/pim/space#storage": Object {
+            "namedNodes": Array [
+              "https://pod.inrupt.com/username/",
+            ],
+          },
+        },
+        "type": "Subject",
+        "url": "_:b0",
+      },
+    },
+  },
+  "internal_resourceInfo": Object {
+    "contentType": "application/ld+json",
+    "isRawData": false,
+    "linkedResources": Object {},
+    "sourceIri": "https://some.pod/resource",
+  },
+  "type": "Dataset",
+}
+`;

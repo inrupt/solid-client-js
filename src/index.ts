@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -54,6 +54,7 @@ export {
   Parser,
   ParseOptions,
   responseToSolidDataset,
+  getWellKnownSolid,
 } from "./resource/solidDataset";
 export {
   mockSolidDatasetFrom,
@@ -84,6 +85,7 @@ export {
   getTime,
   getDecimal,
   getInteger,
+  getStringEnglish,
   getStringWithLocale,
   getStringNoLocale,
   getUrlAll,
@@ -94,6 +96,7 @@ export {
   getTimeAll,
   getDecimalAll,
   getIntegerAll,
+  getStringEnglishAll,
   getStringWithLocaleAll,
   getStringByLocaleAll,
   getStringNoLocaleAll,
@@ -113,6 +116,7 @@ export {
   addTime,
   addDecimal,
   addInteger,
+  addStringEnglish,
   addStringWithLocale,
   addStringNoLocale,
   addLiteral,
@@ -144,6 +148,7 @@ export {
   removeTime,
   removeDecimal,
   removeInteger,
+  removeStringEnglish,
   removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
@@ -223,6 +228,19 @@ export {
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 export { Time } from "./datatypes.js";
+export {
+  addJwkToJwks,
+  addPublicKeyToProfileJwks,
+  getProfileJwksIri,
+  setProfileJwks,
+} from "./profile/jwks";
+export {
+  getProfileAll,
+  ProfileAll,
+  getPodUrlAll,
+  getPodUrlAllFrom,
+} from "./profile/webid";
+export { getJsonLdParser, getTurtleParser } from "./formats/index";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
@@ -281,7 +299,7 @@ export { acp_v4 } from "./acp/v4";
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
@@ -298,14 +316,15 @@ export { acp_v4 } from "./acp/v4";
  * Additionally, note that this version implements changes that have not been
  * implemented in servers yet. Until they have, please use access_v1.
  *
- * @deprecated Please import directly from the "access/universal" module.
+ * @deprecated Please import from the "universal" module.
  */
 export * as access_v2 from "./access/universal_v2";
+
 /**
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
@@ -318,14 +337,15 @@ export * as access_v2 from "./access/universal_v2";
  * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
  * or environment with support for export maps, we recommend you import these
  * functions directly from @inrupt/solid-client/access/universal.
- * @deprecated Please import directly from the "access/universal" module.
+ *
+ * @deprecated Please import from the "universal" module.
  */
 export * as access_v1 from "./access/universal_v1";
 /**
  * This API is still experimental, and subject to change. It builds on top of both
  * ACP and ACL, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated to the Resource itself, and calls the appropriate
+ * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
  *
  * As it is still under development, the following export is *only* intended for experimentation
@@ -338,6 +358,27 @@ export * as access_v1 from "./access/universal_v1";
  * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
  * or environment with support for export maps, we recommend you import these
  * functions directly from @inrupt/solid-client/access/universal.
- * @deprecated Please import directly from the "access/universal" module.
+ *
+ * @deprecated Please import from the "universal" module.
  */
-export * as access from "./access/universal_v1";
+export * as access from "./access/universal";
+
+/**
+ * This API is still experimental, and subject to change. It builds on top of both
+ * ACP and ACL, aiming at being adaptable to any Access Control system that may be
+ * implemented in Solid. That is why it is purely Resource-centric: the library
+ * discovers metadata associated with the Resource itself, and calls the appropriate
+ * underlying API to deal with the Access Control in place for the target Resource.
+ *
+ * As it is still under development, the following export is *only* intended for experimentation
+ * by early adopters, and is not recommended yet for production applications. Because
+ * of this, all of the Access-related API's are exported on a single object, which does
+ * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
+ * included in your bundle.
+ *
+ * Note that the following object is exposed to be available for environments not
+ * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
+ * or environment with support for export maps, we recommend you import these
+ * functions directly from @inrupt/solid-client/universal.
+ */
+export * as universalAccess from "./universal";

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -32,6 +32,7 @@ import {
   getTime,
   getDecimal,
   getInteger,
+  getStringEnglish,
   getStringWithLocale,
   getStringNoLocale,
   getLiteral,
@@ -43,6 +44,7 @@ import {
   getTimeAll,
   getDecimalAll,
   getIntegerAll,
+  getStringEnglishAll,
   getStringWithLocaleAll,
   getStringByLocaleAll,
   getStringNoLocaleAll,
@@ -1823,6 +1825,53 @@ describe("getIntegerAll", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("getStringEnglish", () => {
+  it("returns the English string value for the given Predicate", () => {
+    const thingWithLocaleString: Thing = {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        "https://some.vocab/predicate": {
+          langStrings: {
+            en: ["Some value"],
+          },
+        },
+      },
+    };
+
+    expect(
+      getStringEnglish(thingWithLocaleString, "https://some.vocab/predicate")
+    ).toBe("Some value");
+  });
+});
+
+describe("getStringEnglishAll", () => {
+  it("treats empty-string locale literally - i.e. only returns values added with an empty language tag", () => {
+    const thingWithLocaleStrings: Thing = {
+      type: "Subject",
+      url: SUBJECT,
+      predicates: {
+        [PREDICATE]: {
+          langStrings: {
+            en: ["value x", "value y"],
+            fr: ["value 1"],
+            "": ["value 2"],
+            es: ["value 3"],
+          },
+          literals: {
+            [xmlSchemaTypes.string]: ["value 1"],
+          },
+        },
+      },
+    };
+
+    expect(getStringEnglishAll(thingWithLocaleStrings, PREDICATE)).toEqual([
+      "value x",
+      "value y",
+    ]);
   });
 });
 

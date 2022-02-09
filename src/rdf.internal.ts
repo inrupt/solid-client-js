@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -25,7 +25,7 @@ import rdfJsDatasetModule from "@rdfjs/dataset";
 export const rdfJsDataset = rdfJsDatasetModule.dataset;
 import * as RdfJs from "@rdfjs/types";
 import { IriString } from "./interfaces";
-import { XmlSchemaTypeIri } from "./datatypes";
+import type { XmlSchemaTypeIri } from "./datatypes";
 
 export const localNodeSkolemPrefix =
   "https://inrupt.com/.well-known/sdk-local-node/" as const;

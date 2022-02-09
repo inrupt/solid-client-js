@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -33,6 +33,7 @@ import {
   removeTime,
   removeDecimal,
   removeInteger,
+  removeStringEnglish,
   removeStringWithLocale,
   removeStringNoLocale,
   removeLiteral,
@@ -2186,6 +2187,44 @@ describe("removeInteger", () => {
       thrownError = e;
     }
     expect(thrownError).toBeInstanceOf(ValidPropertyUrlExpectedError);
+  });
+});
+
+describe("removeStringEnglish", () => {
+  function getMockThingWithEnglishString(
+    predicate: IriString,
+    literalValue: string
+  ): Thing {
+    return {
+      type: "Subject",
+      url: "https://arbitrary.vocab/subject",
+      predicates: {
+        [predicate]: {
+          langStrings: {
+            en: [literalValue],
+          },
+        },
+      },
+    };
+  }
+
+  it("removes the given English string for the given Predicate", () => {
+    const thingWithStringWithLocale = getMockThingWithEnglishString(
+      "https://some.vocab/predicate",
+      "Some value in English..."
+    );
+
+    const updatedThing = removeStringEnglish(
+      thingWithStringWithLocale,
+      "https://some.vocab/predicate",
+      "Some value in English..."
+    );
+
+    expect(
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+    ).toStrictEqual({
+      en: [],
+    });
   });
 });
 

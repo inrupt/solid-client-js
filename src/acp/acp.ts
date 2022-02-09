@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -27,6 +27,7 @@ import {
   UrlString,
   WithServerResourceInfo,
   WithResourceInfo,
+  hasServerResourceInfo,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getFile } from "../resource/file";
@@ -404,3 +405,60 @@ export function getReferencedPolicyUrlAll(
   const uniqueUrls = Array.from(new Set(policyUrls));
   return uniqueUrls;
 }
+
+/**
+ * Verify whether the access to the given resource is controlled using the ACP
+ * system.
+ * @param resource The target resource
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns True if the access to the resource is controlled using ACP, false otherwise.
+ * @since 1.14.0.
+ */
+export async function isAcpControlled(
+  resource: Url | UrlString,
+  options: Partial<
+    typeof internal_defaultFetchOptions
+  > = internal_defaultFetchOptions
+): Promise<boolean> {
+  const urlString = internal_toIriString(resource);
+  const config = {
+    ...internal_defaultFetchOptions,
+    ...options,
+  };
+
+  const resourceInfo = await getResourceInfo(urlString, config);
+  return hasAccessibleAcr(await fetchAcr(resourceInfo, config));
+}
+
+/**
+ * ```{note} The Web Access Control specification is not yet finalised. As such, this
+ * function is still experimental and subject to change, even in a non-major release.
+ * ```
+ *
+ * Given a Resource, find out the URL of its governing Access Control Resource.
+ *
+ * @param resource Resource which should be governed by Access Policies.
+ * @returns The URL of the Access Control Resource, or undefined if not ACR is found.
+ * @since 1.15.0
+ */
+export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
+  resource: Resource
+): UrlString | undefined {
+  if (!hasServerResourceInfo(resource)) {
+    return undefined;
+  }
+  // Two rels types are acceptable to indicate a link to an ACR.
+  const acrLinks = [acp.accessControl, "acl"].map((rel) => {
+    if (
+      Array.isArray(resource.internal_resourceInfo.linkedResources[rel]) &&
+      resource.internal_resourceInfo.linkedResources[rel].length === 1
+    ) {
+      return resource.internal_resourceInfo.linkedResources[rel][0];
+    }
+  });
+  return acrLinks.find((x) => x !== undefined);
+}
+
+// This file currently acts as an index for the `acp` module.
+export { getVcAccess } from "./util/getVcAccess";
+export { setVcAccess } from "./util/setVcAccess";

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -337,9 +337,9 @@ describe("getThingAll", () => {
     expect(things).toStrictEqual([mockThing1, mockThing2]);
   });
 
-  it("does not return Things with a Blank Node as the Subject", () => {
+  it("does not return Things with a Blank Node as the Subject by default", () => {
     const mockDataset = getMockDataset([mockThing1]);
-    (mockDataset.graphs.default["_:blankNodeId"] as any) = {
+    const blankNode = {
       predicates: {
         ["https://arbitrary.predicate"]: {
           namedNodes: ["https://arbitrary.value"],
@@ -348,10 +348,29 @@ describe("getThingAll", () => {
       type: "Subject",
       url: "_:blankNodeId",
     };
+    (mockDataset.graphs.default["_:blankNodeId"] as any) = blankNode;
     const things = getThingAll(mockDataset);
 
     expect(things).toHaveLength(1);
     expect(things).toStrictEqual([mockThing1]);
+  });
+
+  it("returns Things with a Blank Node as the Subject if specified", () => {
+    const mockDataset = getMockDataset([mockThing1]);
+    const blankNode = {
+      predicates: {
+        ["https://arbitrary.predicate"]: {
+          namedNodes: ["https://arbitrary.value"],
+        },
+      },
+      type: "Subject",
+      url: "_:blankNodeId",
+    };
+    (mockDataset.graphs.default["_:blankNodeId"] as any) = blankNode;
+    const things = getThingAll(mockDataset, { acceptBlankNodes: true });
+
+    expect(things).toHaveLength(2);
+    expect(things).toStrictEqual([mockThing1, blankNode]);
   });
 
   it("returns Quads from the default Graphs if no scope was specified", () => {
