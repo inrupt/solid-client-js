@@ -14,15 +14,6 @@ Modules
 
    /modules/**
 
-Interfaces
-==========
-
-.. toctree::
-   :glob:
-   :titlesonly:
-
-   /interfaces/**
-
 Classes
 =======
 
