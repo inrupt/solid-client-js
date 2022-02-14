@@ -100,7 +100,7 @@ describe("fetchAcl", () => {
 
     await internal_fetchAcl(mockResourceInfo);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -307,7 +307,7 @@ describe("fetchResourceAcl", () => {
 
     await internal_fetchResourceAcl(sourceDataset);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource.acl"
     );
   });
@@ -769,7 +769,7 @@ describe("getSolidDatasetWithAcl", () => {
       // the mock Response.
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -909,12 +909,12 @@ describe("getFileWithAcl", () => {
       fetch: mockFetch,
     });
 
-    expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.sourceIri).toBe("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isRawData).toBe(true);
 
     const fileData = await file.text();
-    expect(fileData).toEqual("Some data");
+    expect(fileData).toBe("Some data");
   });
 
   it("returns the Resource's own ACL and not its Container's if available", async () => {

@@ -108,7 +108,7 @@ describe("getSolidDatasetWithAcr", () => {
       // the mock Response.
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -124,7 +124,7 @@ describe("getSolidDatasetWithAcr", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
@@ -146,8 +146,8 @@ describe("getSolidDatasetWithAcr", () => {
       { fetch: mockFetch }
     );
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toEqual("https://some.pod/acr.ttl");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/acr.ttl");
     expect(fetchedDataset.internal_acp.acr).toBeNull();
   });
 
@@ -254,7 +254,7 @@ describe("getFileWithAcr", () => {
 
     await getFileWithAcr("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -266,7 +266,7 @@ describe("getFileWithAcr", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
@@ -286,8 +286,8 @@ describe("getFileWithAcr", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toEqual("https://some.pod/acr.ttl");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/acr.ttl");
     expect(fetchedFile.internal_acp.acr).toBeNull();
   });
 
@@ -335,7 +335,7 @@ describe("getResourceInfoWithAcr", () => {
 
     await getResourceInfoWithAcr("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toEqual(
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       "https://some.pod/resource"
     );
   });
@@ -347,7 +347,7 @@ describe("getResourceInfoWithAcr", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
   it("attaches the fetched ACR to the returned ResourceInfo", async () => {
@@ -399,8 +399,8 @@ describe("getResourceInfoWithAcr", () => {
       { fetch: mockFetch }
     );
 
-    expect(mockFetch.mock.calls[0][0]).toEqual("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toEqual("https://some.pod/acr.ttl");
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/acr.ttl");
     expect(fetchedResourceInfo.internal_acp.acr).toBeNull();
   });
 });
@@ -1184,6 +1184,6 @@ describe("getLinkedAcrUrl", () => {
 });
 
 it("re-exports util functions", () => {
-  expect(setVcAccess).not.toBeUndefined();
-  expect(getVcAccess).not.toBeUndefined();
+  expect(setVcAccess).toBeDefined();
+  expect(getVcAccess).toBeDefined();
 });
