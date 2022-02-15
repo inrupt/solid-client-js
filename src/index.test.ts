@@ -177,6 +177,7 @@ import {
   getProfileJwksIri,
   setProfileJwks,
   getProfileAll,
+  getAltProfileUrlAllFrom,
   getPodUrlAll,
   getPodUrlAllFrom,
   getWellKnownSolid,
@@ -362,6 +363,7 @@ it("exports the public API from the entry file", () => {
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
   expect(getProfileAll).toBeDefined();
+  expect(getAltProfileUrlAllFrom).toBeDefined();
   expect(getPodUrlAll).toBeDefined();
   expect(getPodUrlAllFrom).toBeDefined();
   expect(getWellKnownSolid).toBeDefined();
