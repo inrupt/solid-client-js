@@ -19,18 +19,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
- * Import this module for the universal access API functions:
- * - `getAclServerResourceInfo`: Retrieve the server resource info for the ACL
- *    of a resource.
- * - `getAgentAccess`: Retrieve Access Modes granted to a specific agent over a
- *    resource.
- * - `getPublicAccess`: Retrieve Access Modes granted to the Public over a
- *    resource.
- * - `setAgentAccess`: Set Access Modes granted to a specific agent over a
- *    resource.
- * - `setPublicAccess`: Set Access Modes granted to the Public over a resource.
- */
 export { getAclServerResourceInfo } from "./getAclServerResourceInfo";
 export { getAgentAccess } from "./getAgentAccess";
 export { getPublicAccess } from "./getPublicAccess";
