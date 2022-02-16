@@ -300,6 +300,42 @@ describe("getProfileAll", () => {
     expect(result.altProfileAll).toHaveLength(1);
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
+
+  it("handles gracefully fetch errors on alternative profiles", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+          headers: {
+            "Content-Type": "text/turtle",
+          },
+          url: "https://some.profile",
+        } as ResponseInit)
+      )
+      // Fetching one of the alt profiles fails.
+      .mockResolvedValueOnce(
+        new Response(undefined, {
+          status: 401,
+        })
+      );
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const result = await getProfileAll(MOCK_WEBID, {
+      fetch: mockedFetch,
+      webIdProfile,
+    });
+    expect(result.altProfileAll).toHaveLength(1);
+    expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
+      getThingAll(MOCK_PROFILE)
+    );
+  });
 });
 
 const mockProfileDoc = (

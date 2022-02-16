@@ -101,14 +101,14 @@ export async function getProfileAll<
     webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
   } = options;
 
-  const altProfilesIri = getAltProfileUrlAllFrom(webId, webIdProfile);
-
-  // Ensure that each given profile only appears once.
-  const altProfileAll = await Promise.all(
-    Array.from(new Set(altProfilesIri)).map((uniqueProfileIri) =>
+  const altProfileAll = (await Promise.allSettled(
+    getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
       getSolidDataset(uniqueProfileIri, { fetch })
     )
-  );
+  ))
+  // Ignore the alternative profiles lookup which failed.
+  .filter((result): result is PromiseFulfilledResult<T> => result.status === "fulfilled")
+  .map((successfulResult) => successfulResult.value);
 
   return {
     webIdProfile,
