@@ -239,7 +239,7 @@ export {
   ProfileAll,
   getPodUrlAll,
   getPodUrlAllFrom,
-  getAltProfileUrlAllFrom
+  getAltProfileUrlAllFrom,
 } from "./profile/webid";
 export { getJsonLdParser, getTurtleParser } from "./formats/index";
 
