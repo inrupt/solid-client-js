@@ -194,9 +194,5 @@
     "http-link-header": "^1.0.2",
     "jsonld": "^5.2.0",
     "n3": "^1.10.0"
-  },
-  "resolutions": {
-    "glob-parent": "^5.1.2",
-    "marked": "^4.0.10"
   }
 }
