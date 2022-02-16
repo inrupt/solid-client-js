@@ -6,7 +6,21 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-# [1.19.0] - 2022-02-09
+### New features
+
+- `getAltProfileUrlAllFrom`: A function available in the `profile/webid` module
+which returns the alternative profiles URLs (if any) from a given WebID profile
+resource.
+
+### Bugfixes
+
+- `getProfileAll` no longer throws if fetching one of the alternative profiles fails.
+Instead, the successfully fetched alternative profiles are returned, and the thrown
+errors are catched. To use in conjunction with `getAltProfileUrlAllFrom` to figure
+out if fetching one or more alternative profiles failed. Note that this also resolves
+this bug in other functions based on this one, such as `getPodUrlAll`.
+
+## [1.19.0] - 2022-02-09
 
 ### New features
 
