@@ -304,8 +304,12 @@ export type WithAccessibleAcr = WithAcp & {
 };
 
 /**
- * @param resource Resource of which to check whether it has an Access Control Resource attached.
- * @returns Boolean representing whether the given Resource has an Access Control Resource attached for use in e.g. [[getPolicyUrlAll]].
+ * Checks whether a previously fetched Resource has an ACP or ACR set, if you
+ * haven't fetched a Resource yet, you may wish to use [[isAcpControlled]].
+ * @param resource Resource of which to check whether it has an Access Control
+ * Resource attached.
+ * @returns Boolean representing whether the given Resource has an Access
+ * Control Resource attached for use in e.g. [[getPolicyUrlAll]].
  * @since 1.6.0
  */
 export function hasAccessibleAcr(
@@ -408,10 +412,15 @@ export function getReferencedPolicyUrlAll(
 
 /**
  * Verify whether the access to the given resource is controlled using the ACP
- * system.
+ * system. If you have already fetched the resource with it's ACR, then you can
+ * use [[hasAccessibleAcr]] to get the same result as this method, but without
+ * re-requesting the resource.
  * @param resource The target resource
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns True if the access to the resource is controlled using ACP, false otherwise.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch`
+ * function to make the HTTP request, compatible with the browser-native [fetch
+ * API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns True if the access to the resource is controlled using ACP, false
+ * otherwise.
  * @since 1.14.0.
  */
 export async function isAcpControlled(
