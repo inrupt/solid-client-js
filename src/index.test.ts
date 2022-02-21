@@ -183,6 +183,7 @@ import {
   getWellKnownSolid,
   getJsonLdParser,
   getTurtleParser,
+  solidDatasetAsTurtle,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -369,6 +370,7 @@ it("exports the public API from the entry file", () => {
   expect(getWellKnownSolid).toBeDefined();
   expect(getJsonLdParser).toBeDefined();
   expect(getTurtleParser).toBeDefined();
+  expect(solidDatasetAsTurtle).toBeDefined();
 });
 
 it("exports error classes", () => {

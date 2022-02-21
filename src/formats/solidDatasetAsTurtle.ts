@@ -50,6 +50,7 @@ export async function solidDatasetAsTurtle(
 
   return new Promise<string>((resolve, reject) => {
     writer.end((error, result) => {
+      /* istanbul ignore next */ 
       if (error) {
         return reject(error);
       }

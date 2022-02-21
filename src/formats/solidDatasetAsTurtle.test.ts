@@ -64,4 +64,25 @@ describe("solidDatasetAsTurtle", () => {
     await expect(datasetAsTurtle).resolves.toContain(" Joe\"@en");
     await expect(datasetAsTurtle).resolves.not.toContain(":predicate <https://example.org/blank_node_object>");
   });
+
+  // N3 is very permissive, so skip this
+  it.skip("should throw", async () => {
+    const x: SolidDataset = {
+      type: "Dataset",
+      graphs: {
+        default: {
+          "https://example.org/a": {
+            type: "Subject",
+            url: "https://example.org/a",
+            predicates: {
+              "!!!!bla": {
+                namedNodes: [ "very wrong" ]
+              }
+            }
+          }
+        }
+      }
+    };
+    await expect(solidDatasetAsTurtle(x)).rejects.toThrow();
+  });
 });
