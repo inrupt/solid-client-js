@@ -72,7 +72,7 @@ export {
   isThingLocal,
   asUrl,
   asIri,
-  thingAsMarkdown as thingAsMarkdown,
+  thingAsMarkdown,
   ThingExpectedError,
 } from "./thing/thing";
 export {
@@ -241,7 +241,11 @@ export {
   getPodUrlAllFrom,
   getAltProfileUrlAllFrom,
 } from "./profile/webid";
-export { getJsonLdParser, getTurtleParser } from "./formats/index";
+export {
+  getJsonLdParser,
+  getTurtleParser,
+  solidDatasetAsTurtle,
+} from "./formats/index";
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.

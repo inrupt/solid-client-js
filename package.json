@@ -187,7 +187,7 @@
   },
   "dependencies": {
     "@rdfjs/dataset": "^1.1.0",
-    "@rdfjs/types": "^1.0.1",
+    "@rdfjs/types": "^1.1.0",
     "@types/n3": "^1.10.0",
     "@types/rdfjs__dataset": "^1.0.4",
     "cross-fetch": "^3.0.4",

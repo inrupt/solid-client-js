@@ -12,6 +12,9 @@ The following changes have been implemented but not released yet:
   which returns the alternative profiles URLs (if any) from a given WebID profile
   resource.
 
+- `solidDatasetAsTurtle`: A function available in the `formats` module which
+  provides turtle serialisation of a solid dataset or part of it.
+
 ### Bugfixes
 
 - `getProfileAll` no longer throws if fetching one of the alternative profiles fails.
