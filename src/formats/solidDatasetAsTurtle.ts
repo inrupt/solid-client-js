@@ -44,6 +44,7 @@ export async function solidDatasetAsTurtle(
   const writer = new Writer({ format: "application/turtle", prefixes });
   const subject = thing ? new NamedNode(thing) : undefined;
 
+  // If the subject is undefined, all the triples match.
   for (const quad of toRdfJsDataset(dataset).match(subject)) {
     writer.addQuad(quad);
   }
