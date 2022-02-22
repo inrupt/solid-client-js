@@ -41,7 +41,7 @@ export async function solidDatasetAsTurtle(
   }
 ): Promise<string> {
   const { prefixes = defaultPrefixes, thing } = { ...options };
-  const writer = new Writer({ format: "application/Turtle", prefixes });
+  const writer = new Writer({ format: "application/turtle", prefixes });
   const subject = thing ? new NamedNode(thing) : undefined;
 
   for (const quad of toRdfJsDataset(dataset).match(subject)) {
