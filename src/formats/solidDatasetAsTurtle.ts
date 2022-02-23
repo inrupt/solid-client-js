@@ -31,7 +31,7 @@ import { toRdfJsDataset } from "../rdfjs";
  * @param options.prefixes The Prefixes to use for Turtle serialisation (defaulting to a set of well known prefixes)
  * @param options.thing Restricts serialisation to the part of a dataset related to the thing
  * @returns RDF serialised as Turtle
- * @since
+ * @since 1.20.0
  */
 export async function solidDatasetAsTurtle(
   dataset: SolidDataset,
