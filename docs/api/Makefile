@@ -17,53 +17,45 @@ ifeq ($(MY_OS),Darwin)
 	IS_MAC="DEFINED"
 endif
 
+.PHONY: Makefile help check clean clean-all prepare html dist
+
+check:
+  $(if $(shell command -v $(SPHINXBUILD) 2> /dev/null),$(info Found `$(SPHINXBUILD)`),$(error sphinx-build is not available, please follow the instructions in ./docs/api/README.md))
+
 # Put it first so that "make" without argument is like "make help".
-help:
+help: check
 	@$(SPHINXBUILD) -M help "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-
-.PHONY: help clean Makefile migrate html
 
 clean:
 	if [ -d $(BUILDDIR) ]; then rm -rf $(BUILDDIR) ; fi;
-	if [ -d build/docs-assets ]; then rm -rf build/docs-assets ; fi;
+	if [ -d ../dist ]; then rm -rf ../dist ; fi;
 
-migrate: clean
+# clean-all has to be separate from clean as prepare depends on clean,
+# but prepare also expects the typedoc build output to exist in source/api
+clean-all: clean	
+	if [ -d docs-assets ]; then rm -rf docs-assets ; fi;
+	if [ -d source/api ]; then rm -rf source/api ; fi;
+
+prepare: clean
+	if [ ! -d docs-assets ]; then git clone https://github.com/inrupt/docs-assets.git docs-assets; fi;
+# Copying to SOURCECOPYDIR instead of copying source dir to BUILDDIR
+# in case someone forgets to backslash after build/
+# Copying source/api/* to BUILDDIR.
 	mkdir -p $(SOURCECOPYDIR)
-
-   # Using https (not ssh) to clone
-	git clone https://github.com/inrupt/docs-assets.git build/docs-assets
-
-   # Copying to SOURCECOPYDIR instead of copying source dir to BUILDDIR
-   # in case someone forgets to backslash after build/
-   # Copying source/api/* to BUILDDIR. (But will remove index.md since using bespoke index.rst instead)
-
-
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/api/* $(SOURCECOPYDIR)
+# Note: remove the typedoc generated `index.md` since we use a custom index.rst instead
+	rm $(SOURCECOPYDIR)/index.md
 
-  # Remove the typedoc generated index.md so that we can use our custom index.rst
-	rm $(SOURCECOPYDIR)index.md
-
-html: Makefile migrate
-
-# To clean up cross-reference links in markdown (foo.md#somesection) 
-# If making html (e.g. foo.html), use sed to change .md# to .html#
-# Also, on macOS, need -i '' but not for Linux
-
-ifdef IS_MAC
-	find . $(SOURCECOPYDIR) -type f -name "*.md" -exec sed -i '' -e 's?\.md#?\.html#?g' {} \;
-else
-	find . $(SOURCECOPYDIR) -type f -name "*.md" -exec sed -i  -e 's?\.md#?\.html#?g' {} \;
-endif
+html: Makefile check prepare
 	@$(SPHINXBUILD) -M $@ "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -c .
+
+dist: html
+	if [ -d ../dist ]; then rm -r ../dist; fi;
+	mkdir -p ../dist
+	cp -R $(BUILDDIR)/html/. ../dist/
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile migrate
+%: Makefile check prepare
 	@$(SPHINXBUILD) -M $@ "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -c .
-
-
-
-	
-
