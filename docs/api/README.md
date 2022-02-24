@@ -15,27 +15,30 @@ To build:
    source <path to the new virtual environment>/bin/activate
    ```
 
-1. Generate the API .md files:
-
-   npm ci; npm run build-api-docs
-
-1. Go to the directory for API docs:
-
-   cd docs/api
-
-1. Install the docs requirements (different from library docs requirements):
+2. Install the dependencies:
 
    ```sh
-   pip install -r requirements.txt
+   npm ci
+   npm run docs:install
    ```
 
-1. Make the API docs:
+3. Generate the docs source files and build the site:
 
    ```sh
-   make html
+   npm run docs:build
    ```
 
-   There should be a `build/html` directory with the html artifacts.
+4. If you want to preview the docs site, you can use:
+
+   ```sh
+   npm run docs:preview
+   ```
+
+5. If you'd like to clean the generated docs and start fresh, you can use:
+
+   ```sh
+   npm run docs:clean
+   ```
 
 When finished, can deactivate your virtual env.
 
