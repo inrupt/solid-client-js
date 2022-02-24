@@ -19,31 +19,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { spawn } from "child_process";
-import { resolve } from "path";
+import { FullConfig } from "@playwright/test";
+import * as dotenv from "dotenv-flow";
 
-async function globalSetup() {
-  const childProcess = spawn(
-    "npx",
-    ["parcel", "--port", "1234", "end-to-end-test.html"],
-    { cwd: resolve(__dirname, "../../.codesandbox/sandbox"), shell: true }
-  );
-  const parcelOutput = childProcess.stdout;
+async function globalSetup(_config: FullConfig) {
+  // If we're in CI, the environment is already configured.
+  if (process.env.CI === "test") {
+    return;
+  }
 
-  await new Promise((resolve) => {
-    const chunks = [];
-    parcelOutput.on("data", (data) => {
-      chunks.push(data);
-      const dataSoFar = Buffer.concat(chunks).toString("utf8");
-      if (dataSoFar.indexOf("Built in") !== -1) {
-        resolve(undefined);
-      }
-    });
+  // Ptherwise load dotenv configuration, this has to happen in globalSetup
+  // rather than in the *.playwright.ts files, as otherwise the config is loaded
+  // multiple times and dotenv-flow complains.
+  dotenv.config({
+    path: __dirname,
+    silent: false,
   });
-
-  // Return the teardown function.
-  return () => {
-    childProcess.kill();
-  };
 }
+
 export default globalSetup;

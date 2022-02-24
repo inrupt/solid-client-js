@@ -22,7 +22,6 @@
 /* eslint-disable jest/no-done-callback */
 
 import { test, expect } from "@playwright/test";
-import { config } from "dotenv-flow";
 
 // We re-use the test helpers from elsewhere, but we need to ignore the
 // TypeScript error (TS6059) that complains about not all files being under the
@@ -38,23 +37,16 @@ import { essUserLogin } from "./roles";
 // Hence, we just declare this variable to be of the same type here.
 const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
-// Load environment variables from .env.test.local if available:
-config({
-  default_node_env: "test",
-  path: __dirname,
-  // In CI, actual environment variables will overwrite values from .env files.
-  // We don't need warning messages in the logs for that:
-  silent: process.env.CI === "true",
-});
-
-test("creating and removing empty Containers", async ({ page }) => {
+test("creating and removing empty Containers", async ({ page, baseURL }) => {
   const createContainer = () =>
     page.evaluate(() => E2eHelpers.createContainer());
   const deleteContainer = () =>
     page.evaluate(() => E2eHelpers.deleteContainer());
 
-  await page.goto("/end-to-end-test.html");
+  await page.goto(baseURL);
+
   await essUserLogin(page);
+
   const createdContainer = await createContainer();
   expect(createdContainer).not.toBeNull();
   expect(createdContainer).toEqual(expect.objectContaining({}));

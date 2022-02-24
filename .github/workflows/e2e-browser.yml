@@ -11,6 +11,7 @@ jobs:
     # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
     if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -20,28 +21,21 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node${{ runner.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-      # Unfortunately `npm ci` regularly fails for reasons outside our control (e.g. network errors),
-      # so retry it twice if it fails to avoid those:
-      # (No, GitHub Actions at this point in time does not have native retry functionality.)
-      - run: npm ci || npm ci || npm ci
-      - run: npm run build
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: Setup Playwright
+        run: npx playwright install --with-deps
+      - run: npm ci
+      - name: Build and link package
+        run: |
+          npm run build
+          npm link
       - name: Prepare browser-based end-to-end tests
         run: |
           cd .codesandbox/sandbox
           npm install
-          # Install browsers
-          npx playwright install
-          npx playwright install-deps
           # Run the end-to-end tests against the code in this branch specifically:
-          npm install ../../
-          cd ../..
+          npm link @inrupt/solid-client
       - name: Run browser-based end-to-end tests
         run: npm run test:e2e:browser
         env:
@@ -53,26 +47,12 @@ jobs:
           E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
           E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
           E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
-      - name: Archive browser-based end-to-end test failure screenshots, if any
-        uses: actions/upload-artifact@v3
-        continue-on-error: true
-        if: failure()
-        with:
-          name: e2e-browser-failures
-          path: e2e-browser-failures
       - name: Archive browser-based end-to-end test request logs
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
           name: playwright-output
           path: test-results/
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
-        continue-on-error: true
-        if: github.event_name != 'schedule'
-        with:
-          name: code-coverage-report
-          path: coverage
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         continue-on-error: true

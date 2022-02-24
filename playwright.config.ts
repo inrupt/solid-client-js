@@ -23,14 +23,22 @@ import { PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   testMatch: "*.playwright.ts",
+  // Configure dotenv in local:
+  globalSetup: "./e2e/browser/globalSetup.ts",
   retries: 1,
-  globalSetup: require.resolve("./e2e/browser/globalSetup.ts"),
   use: {
-    baseURL: "http://localhost:1234",
+    baseURL: "http://localhost:1234/end-to-end-test.html",
     headless: true,
     screenshot: "only-on-failure",
     trace: "on",
     video: "on-first-retry",
+  },
+  webServer: {
+    cwd: "./.codesandbox/sandbox/",
+    command: "npm run start:e2e",
+    port: 1234,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
   },
   projects: [
     {
