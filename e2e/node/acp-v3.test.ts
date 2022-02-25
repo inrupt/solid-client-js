@@ -136,7 +136,11 @@ describe("Authenticated end-to-end ACP V3", () => {
   ) {
     const resourceWithAcr = await acp.getSolidDatasetWithAcr(
       resourceUrl,
+<<<<<<< HEAD
       fetchOptions
+=======
+      options
+>>>>>>> c5f66764 (chore: fix linting issues in e2e node tests)
     );
     if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
@@ -146,7 +150,11 @@ describe("Authenticated end-to-end ACP V3", () => {
       );
     }
     const changedResourceWithAcr = acp.addPolicyUrl(resourceWithAcr, policyUrl);
+<<<<<<< HEAD
     return acp.saveAcrFor(changedResourceWithAcr, fetchOptions);
+=======
+    return acp.saveAcrFor(changedResourceWithAcr, options);
+>>>>>>> c5f66764 (chore: fix linting issues in e2e node tests)
   }
 
   it("can deny Read access", async () => {
@@ -169,9 +177,13 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Verify that indeed, the current user can no longer read it:
+<<<<<<< HEAD
     await expect(
       getSolidDataset(policyResourceUrl, fetchOptions)
     ).rejects.toThrow(
+=======
+    await expect(getSolidDataset(policyResourceUrl, options)).rejects.toThrow(
+>>>>>>> c5f66764 (chore: fix linting issues in e2e node tests)
       // Forbidden:
       // @ts-ignore-next
       expect.objectContaining({ statusCode: 403 }) as FetchError
@@ -219,10 +231,16 @@ describe("Authenticated end-to-end ACP V3", () => {
       fetchOptions
     );
 
+<<<<<<< HEAD
     const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
       resourceUrl,
       fetchOptions
     );
+=======
+    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(resourceUrl, {
+      fetch: session.fetch,
+    });
+>>>>>>> c5f66764 (chore: fix linting issues in e2e node tests)
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
         `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`
