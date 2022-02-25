@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
-        if: steps.setup-node.outputs.cache-hit != 'true'
+        # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
       - name: Build package
@@ -34,6 +34,8 @@ jobs:
           path: dist
 
   test-e2e-browser:
+    needs: build
+
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
     if: github.actor != 'dependabot[bot]'
