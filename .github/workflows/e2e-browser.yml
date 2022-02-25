@@ -21,6 +21,7 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
+        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
         # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
@@ -74,7 +75,8 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
-        if: steps.setup-node.outputs.cache-hit != 'true'
+        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
+        # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
       - name: Link built package
