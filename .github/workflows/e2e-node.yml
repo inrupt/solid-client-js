@@ -20,7 +20,8 @@ jobs:
           ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
       - run: npm ci --ignore-scripts
