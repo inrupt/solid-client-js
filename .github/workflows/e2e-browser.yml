@@ -90,6 +90,7 @@ jobs:
           npm install --ignore-scripts
           # Run the end-to-end tests against the code in this branch specifically:
           npm link @inrupt/solid-client
+          npm run build:e2e
 
       - name: Setup Playwright
         run: npx playwright install --with-deps

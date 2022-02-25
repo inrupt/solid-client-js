@@ -34,8 +34,8 @@ const config: PlaywrightTestConfig = {
     video: "on-first-retry",
   },
   webServer: {
-    cwd: "./.codesandbox/sandbox/",
-    command: "npm run start:e2e",
+    cwd: "./.codesandbox/sandbox/dist/",
+    command: "python3 -m http.server",
     port: 1234,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

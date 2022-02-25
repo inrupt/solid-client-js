@@ -4,18 +4,18 @@
   "description": "Example project calling out to solid-client",
   "scripts": {
     "start": "parcel index.html --open",
-    "start:e2e": "parcel end-to-end-test.html --no-autoinstall",
+    "build:e2e": "parcel build end-to-end-test.html",
     "build": "parcel build index.html"
   },
   "dependencies": {
     "@inrupt/solid-client": "*",
     "@inrupt/solid-client-authn-browser": "0.2.2 - 1.x",
-    "rdf-namespaces": "1.9.2"
+    "rdf-namespaces": "1.9.2",
+    "buffer": "^6.0.3",
+    "process": "^0.11.10"
   },
   "devDependencies": {
-    "buffer": "^6.0.3",
-    "parcel": "^2.3.2",
-    "process": "^0.11.10"
+    "parcel": "^2.3.2"
   },
   "keywords": [
     "typescript",
