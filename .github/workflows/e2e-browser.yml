@@ -81,12 +81,10 @@ jobs:
         # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - name: Link built package
-        run: npm link
-
       - name: Prepare browser-based end-to-end tests
-        working-directory: .codesandbox/sandbox
         run: |
+          run: npm link
+          cd .codesandbox/sandbox
           npm install --ignore-scripts
           # Run the end-to-end tests against the code in this branch specifically:
           npm link @inrupt/solid-client
