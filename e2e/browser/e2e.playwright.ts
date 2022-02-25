@@ -45,6 +45,11 @@ test("creating and removing empty Containers", async ({ page, baseURL }) => {
 
   await page.goto(baseURL);
 
+  // Lazy check for the env being setup properly:
+  expect(process.env.E2E_TEST_ESS_IDP_URL).toBeDefined();
+  expect(process.env.E2E_TEST_ESS_COGNITO_USER).toBeDefined();
+  expect(process.env.E2E_TEST_ESS_COGNITO_PASSWORD).toBeDefined();
+
   await essUserLogin(page);
 
   const createdContainer = await createContainer();
