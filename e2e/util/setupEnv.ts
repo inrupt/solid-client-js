@@ -23,7 +23,7 @@ import { config } from "dotenv-flow";
 
 export function setupEnv() {
   // If we're in CI, the environment is already configured.
-  if (process.env.CI === "test") {
+  if (process.env.CI) {
     return;
   }
 
