@@ -20,19 +20,39 @@
  */
 
 export interface TestingEnvironment {
+  environment: "Inrupt Dev-Next" | "Inrupt Production" | "Inrupt 1.1" | "NSS";
+  idp: string;
+  pod: string;
+}
+
+export interface NodeTestingEnvironment extends TestingEnvironment {
   clientId: string;
   clientSecret: string;
-  environment: "Inrupt Dev-Next" | "Inrupt Production" | "Inrupt 1.1" | "NSS";
   feature: {
     acp: boolean;
     acp_v3: boolean;
     wac: boolean;
   };
-  idp: string;
-  pod: string;
 }
 
-export function getTestingEnvironment(): TestingEnvironment {
+export interface BrowserTestingEnvironment extends TestingEnvironment {
+  username: string;
+  password: string;
+}
+
+function checkEnvVars(...keys: string[]) {
+  const missing = keys.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Environment variable${
+        missing.length > 1 ? "s" : ""
+      } missing: ${missing.join(" ")}`
+    );
+  }
+}
+
+function getTestingEnvironment(): TestingEnvironment {
   if (
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production" &&
@@ -41,26 +61,37 @@ export function getTestingEnvironment(): TestingEnvironment {
   ) {
     throw new Error(`Unknown environment: ${process.env.E2E_TEST_ENVIRONMENT}`);
   }
-  if (
-    !process.env.E2E_TEST_POD ||
-    !process.env.E2E_TEST_IDP ||
-    !process.env.E2E_TEST_CLIENT_ID ||
-    !process.env.E2E_TEST_CLIENT_SECRET
-  ) {
-    const missing = (!process.env.E2E_TEST_POD ? "E2E_TEST_POD " : "")
-      .concat(!process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : "")
-      .concat(!process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : "")
-      .concat(
-        !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
-      );
-    throw new Error(`Environment variable missing: ${missing}`);
-  }
+
+  checkEnvVars("E2E_TEST_POD", "E2E_TEST_IDP");
+
   return {
-    pod: process.env.E2E_TEST_POD,
-    idp: process.env.E2E_TEST_IDP,
-    clientId: process.env.E2E_TEST_CLIENT_ID,
-    clientSecret: process.env.E2E_TEST_CLIENT_SECRET,
-    environment: process.env.E2E_TEST_ENVIRONMENT,
+    environment: process.env.E2E_TEST_ENVIRONMENT!,
+    idp: process.env.E2E_TEST_IDP!,
+    pod: process.env.E2E_TEST_POD!,
+  };
+}
+
+export function getBrowserTestingEnvironment(): BrowserTestingEnvironment {
+  const baseEnv = getTestingEnvironment();
+
+  checkEnvVars("E2E_TEST_USER", "E2E_TEST_PASSWORD");
+
+  return {
+    ...baseEnv,
+    username: process.env.E2E_TEST_USER!,
+    password: process.env.E2E_TEST_PASSWORD!,
+  };
+}
+
+export function getNodeTestingEnvironment(): NodeTestingEnvironment {
+  const baseEnv = getTestingEnvironment();
+
+  checkEnvVars("E2E_TEST_CLIENT_ID", "E2E_TEST_CLIENT_SECRET");
+
+  return {
+    ...baseEnv,
+    clientId: process.env.E2E_TEST_CLIENT_ID!,
+    clientSecret: process.env.E2E_TEST_CLIENT_SECRET!,
     feature: {
       acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
       acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,

@@ -19,24 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Page } from "@playwright/test";
-import { BrowserTestingEnvironment } from "../util/getTestingEnvironment";
-import { IndexPage } from "./pageModels";
-import { BrokerPage } from "./pageModels/broker";
-import { CognitoPage } from "./pageModels/cognito";
+import { setupEnv } from "../util/setupEnv";
 
-export const essUserLogin = async (
-  page: Page,
-  env: BrowserTestingEnvironment
-) => {
-  const indexPage = new IndexPage(page);
-  await indexPage.startLogin(env.idp);
-
-  const cognitoPage = new CognitoPage(page);
-  await cognitoPage.login(env.username, env.password);
-
-  const authorisePage = new BrokerPage(page);
-  await authorisePage.authoriseOnce();
-
-  await indexPage.handleRedirect();
-};
+// In jest, we immediately invoke this:
+setupEnv();

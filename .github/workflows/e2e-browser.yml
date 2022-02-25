@@ -37,12 +37,24 @@ jobs:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
     if: github.actor != 'dependabot[bot]'
+    # Ensure we timeout reasonably quickly:
+    timeout-minutes: 30
+
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    environment:
+      name: ${{ matrix.environment-name }}
+
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ["16"]
+        # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        # The Node version does not influence how well our tests run in the browser,
+        # so we only need to test in one.
+        node-version: [16.x]
+        environment-name:
+          - "Inrupt Production"
+          - "Inrupt Dev-Next"
+
     steps:
       - uses: actions/checkout@v3
 
@@ -59,9 +71,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
-      - name: Setup Playwright
-        run: npx playwright install --with-deps
-
       - name: Install dependencies
         if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
@@ -76,17 +85,17 @@ jobs:
           # Run the end-to-end tests against the code in this branch specifically:
           npm link @inrupt/solid-client
 
+      - name: Setup Playwright
+        run: npx playwright install --with-deps
+
       - name: Run browser-based end-to-end tests
         run: npm run test:e2e:browser
         env:
-          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-          E2E_TEST_ESS_COGNITO_USER: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_USER }}
-          E2E_TEST_ESS_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_ESS_PROD_COGNITO_PASSWORD }}
-          E2E_TEST_DEV_NEXT_POD: ${{ secrets.E2E_TEST_DEV_NEXT_POD }}
-          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-          E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
-          E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
+          E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
+          E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+          E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+          E2E_TEST_USER: ${{ secrets.E2E_TEST_USER }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
 
       - name: Archive browser-based end-to-end test request logs
         uses: actions/upload-artifact@v3

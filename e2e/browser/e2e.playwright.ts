@@ -28,6 +28,7 @@ import { test, expect } from "@playwright/test";
 // one 'rootDir'.
 // @ts-ignore
 import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
+import { getBrowserTestingEnvironment } from "../util/getTestingEnvironment";
 import { essUserLogin } from "./roles";
 
 // E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
@@ -38,19 +39,15 @@ import { essUserLogin } from "./roles";
 const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
 
 test("creating and removing empty Containers", async ({ page, baseURL }) => {
+  const env = getBrowserTestingEnvironment();
+
+  await page.goto(baseURL);
+  await essUserLogin(page, env);
+
   const createContainer = () =>
     page.evaluate(() => E2eHelpers.createContainer());
   const deleteContainer = () =>
     page.evaluate(() => E2eHelpers.deleteContainer());
-
-  await page.goto(baseURL);
-
-  // Lazy check for the env being setup properly:
-  expect(process.env.E2E_TEST_ESS_IDP_URL).toBeDefined();
-  expect(process.env.E2E_TEST_ESS_COGNITO_USER).toBeDefined();
-  expect(process.env.E2E_TEST_ESS_COGNITO_PASSWORD).toBeDefined();
-
-  await essUserLogin(page);
 
   const createdContainer = await createContainer();
   expect(createdContainer).not.toBeNull();

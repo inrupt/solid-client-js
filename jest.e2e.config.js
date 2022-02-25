@@ -29,5 +29,5 @@ module.exports = {
   // Increase timeout to accomodate variable network latency
   testTimeout: 30000,
   injectGlobals: false,
-  setupFiles: ["<rootDir>/e2e/util/setupEnv.ts"]
+  setupFiles: ["<rootDir>/e2e/node/setup.ts"],
 };

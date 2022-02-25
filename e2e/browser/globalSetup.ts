@@ -20,21 +20,10 @@
  */
 
 import { FullConfig } from "@playwright/test";
-import * as dotenv from "dotenv-flow";
+import { setupEnv } from "../util/setupEnv";
 
 async function globalSetup(_config: FullConfig) {
-  // If we're in CI, the environment is already configured.
-  if (process.env.CI === "test") {
-    return;
-  }
-
-  // Ptherwise load dotenv configuration, this has to happen in globalSetup
-  // rather than in the *.playwright.ts files, as otherwise the config is loaded
-  // multiple times and dotenv-flow complains.
-  dotenv.config({
-    path: __dirname,
-    silent: false,
-  });
+  setupEnv();
 }
 
 export default globalSetup;

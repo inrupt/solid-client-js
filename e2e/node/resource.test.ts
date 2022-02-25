@@ -48,16 +48,13 @@ import {
   saveSolidDatasetInContainer,
 } from "../../src/index";
 import { blankNode } from "@rdfjs/dataset";
-import {
-  getTestingEnvironment,
-  TestingEnvironment,
-} from "../util/getTestingEnvironment";
+import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import type { Session } from "@inrupt/solid-client-authn-node";
 import { setupTestResources, teardownTestResources } from "./test-helpers";
 
-const env: TestingEnvironment = getTestingEnvironment();
-
+const env = getNodeTestingEnvironment();
+const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
 if (env.environment === "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
