@@ -27,14 +27,14 @@ const config: PlaywrightTestConfig = {
   globalSetup: "./e2e/browser/globalSetup.ts",
   retries: 1,
   use: {
-    baseURL: "http://localhost:1234/end-to-end-test.html",
+    baseURL: "http://localhost:1234/",
     headless: true,
     screenshot: "only-on-failure",
     trace: "on",
     video: "on-first-retry",
   },
   webServer: {
-    cwd: "./.codesandbox/sandbox/dist/",
+    cwd: "./e2e/browser/webapp",
     command: "python3 -m http.server",
     port: 1234,
     timeout: 120 * 1000,

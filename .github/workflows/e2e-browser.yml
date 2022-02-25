@@ -84,11 +84,11 @@ jobs:
       - name: Prepare browser-based end-to-end tests
         run: |
           npm link
-          cd .codesandbox/sandbox
-          npm install --ignore-scripts
+          cd e2e/browser/webapp
+          npm ci
           # Run the end-to-end tests against the code in this branch specifically:
           npm link @inrupt/solid-client
-          npm run build:e2e
+          npm run build
 
       - name: Setup Playwright
         run: npx playwright install --with-deps

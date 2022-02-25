@@ -1,10 +1,11 @@
 {
-  "name": "solid-client-sandbox",
+  "name": "solid-client-e2e-webapp",
   "version": "1.0.0",
-  "description": "Example project calling out to solid-client",
+  "description": "e2e webapp for solid-client",
+  "source": "src/index.html",
   "scripts": {
-    "start": "parcel index.html --open",
-    "build": "parcel build index.html"
+    "start": "parcel",
+    "build": "parcel build"
   },
   "dependencies": {
     "@inrupt/solid-client": "*",

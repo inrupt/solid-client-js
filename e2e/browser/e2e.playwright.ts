@@ -27,11 +27,11 @@ import { test, expect } from "@playwright/test";
 // TypeScript error (TS6059) that complains about not all files being under the
 // one 'rootDir'.
 // @ts-ignore
-import type { getHelpers } from "../../.codesandbox/sandbox/src/end-to-end-test-helpers";
+import type { getHelpers } from "./webapp/src/helpers";
 import { getBrowserTestingEnvironment } from "../util/getTestingEnvironment";
 import { essUserLogin } from "./roles";
 
-// E2eHelpers is a global defined in .codesandbox/sandbox/src/end-to-end-helper.
+// E2eHelpers is a global defined in ./webapp/src/helpers.ts
 // Since code inside of page.evaluate is executed in that context in the browser,
 // that variable is available to it - but as far as TypeScript is concerned,
 // it is executed in the context of this test file.
