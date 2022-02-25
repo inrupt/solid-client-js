@@ -6,7 +6,34 @@ on:
 env:
   CI: true
 jobs:
-  test:
+  build:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        id: setup-node
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        if: steps.setup-node.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Build package
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist
+
+  test-e2e-browser:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
     if: github.actor != 'dependabot[bot]'
@@ -18,25 +45,37 @@ jobs:
         node-version: ["16"]
     steps:
       - uses: actions/checkout@v3
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
+        id: setup-node
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
+
       - name: Setup Playwright
         run: npx playwright install --with-deps
-      - run: npm ci
-      - name: Build and link package
-        run: |
-          npm run build
-          npm link
+
+      - name: Install dependencies
+        if: steps.setup-node.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Link built package
+        run: npm link
+
       - name: Prepare browser-based end-to-end tests
+        working-directory: .codesandbox/sandbox
         run: |
-          cd .codesandbox/sandbox
-          npm install
+          npm install --ignore-scripts
           # Run the end-to-end tests against the code in this branch specifically:
           npm link @inrupt/solid-client
+
       - name: Run browser-based end-to-end tests
         run: npm run test:e2e:browser
         env:
@@ -48,19 +87,16 @@ jobs:
           E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
           E2E_TEST_DEV_NEXT_COGNITO_USER: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_USER }}
           E2E_TEST_DEV_NEXT_COGNITO_PASSWORD: ${{ secrets.E2E_TEST_DEV_NEXT_COGNITO_PASSWORD }}
+
       - name: Archive browser-based end-to-end test request logs
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
           name: playwright-output
           path: test-results/
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
-        continue-on-error: true
-        if: github.event_name != 'schedule'
-        with:
-          name: dist
-          path: dist
+        # Ensure test recordings are always uploaded if the exist:
+        if: ${{ always() }}
+
       - name: Send a notification that the test has failed
         run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
         if: failure() && github.event_name == 'schedule'
