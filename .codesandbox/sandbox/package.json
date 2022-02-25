@@ -4,7 +4,7 @@
   "description": "Example project calling out to solid-client",
   "scripts": {
     "start": "parcel index.html --open",
-    "start:e2e": "parcel end-to-end-test.html",
+    "start:e2e": "parcel end-to-end-test.html --no-autoinstall",
     "build": "parcel build index.html"
   },
   "dependencies": {

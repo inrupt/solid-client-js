@@ -6,6 +6,7 @@ on:
 env:
   CI: true
   DEBUG: "pw:webserver"
+  ACTIONS_STEP_DEBUG: true
 jobs:
   build:
     if: github.actor != 'dependabot[bot]'
