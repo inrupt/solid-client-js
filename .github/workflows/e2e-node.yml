@@ -16,15 +16,28 @@ jobs:
       name: ${{ matrix.environment-name }}
     strategy:
       matrix:
+        os: [ubuntu-latest]
+        node-version: [16.x]
         environment-name:
-          ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
+          - "Inrupt Production"
+          - "Inrupt Dev-Next"
+          - "Inrupt 1.1"
+          - "NSS"
     steps:
       - uses: actions/checkout@v3
+
       - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
         uses: actions/setup-node@v3
+        id: setup-node
         with:
-          node-version: "16"
-      - run: npm ci --ignore-scripts
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        if: steps.setup-node.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
       - run: npm run test:e2e:node
         env:
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
@@ -35,3 +48,10 @@ jobs:
           E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
           E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
           E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
+
+      - name: Send a notification that the test has failed
+        if: failure() && github.event_name == 'schedule'
+        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against ${{ matrix.environment-name }} failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+        env:
+          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
+          RUN_ID: "${{ github.run_id }}"
