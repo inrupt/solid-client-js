@@ -5,8 +5,10 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "build-api-docs": "typedoc",
-    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;",
+    "docs:clean": "cd docs/api; make clean-all",
+    "docs:install": "cd docs/api; pip install -r requirements.txt",
+    "docs:build": "typedoc && cd docs/api && make html dist",
+    "docs:preview": "python3 -m http.server --bind 127.0.0.1 --directory docs/dist",
     "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
     "lint": "npm run lint:eslint -- --fix && npm run lint:prettier -- --write",
     "lint:ci": "npm run lint:eslint && npm run lint:prettier -- --check",
@@ -181,8 +183,8 @@
     "rollup": "^2.15.0",
     "rollup-plugin-typescript2": "^0.31.0",
     "ts-jest": "^27.0.3",
-    "typedoc": "^0.22.10",
-    "typedoc-plugin-markdown": "^3.3.0",
+    "typedoc": "^0.22.12",
+    "typedoc-plugin-markdown": "^3.11.14",
     "typescript": "^4.5.5"
   },
   "dependencies": {

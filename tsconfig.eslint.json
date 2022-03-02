@@ -1,12 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": [
-    "src/**/*.ts",
-    "e2e/**/*.ts",
-    "./*.js",
-    "website/**/*.js",
-    "website/**/*.jsx"
-  ],
+  "include": ["src/**/*.ts", "e2e/**/*.ts", "./*.js"],
   // Although we do not want our browser-based end-to-end tests from /e2e/browser
   // to be compiled as part of solid-client, we do want to run ESLint over them.
   // Thus, we override the `exclude` property of the tsconfig.json that we extend.

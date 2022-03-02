@@ -52,7 +52,7 @@ extensions = [
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['./build/docs-assets/_templates']
+templates_path = ['./docs-assets/_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -67,7 +67,7 @@ exclude_patterns = [ ]
 #html_theme = 'alabaster'
 
 html_theme = 'inrupt'
-html_theme_path = ['./build/docs-assets/themes']
+html_theme_path = ['./docs-assets/themes']
 
 html_copy_source = False
 
@@ -120,7 +120,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['./build/docs-assets/_static']
+html_static_path = ['./docs-assets/_static']
 
 html_sidebars = {
     '**': [ 'search-field.html',  'docs-sidebar.html'],
@@ -128,3 +128,6 @@ html_sidebars = {
 
 locale_dirs = ['locale/']   # path is example but recommended.
 gettext_compact = False     # optional.
+
+myst_heading_anchors = 6
+myst_url_schemes = [ 'https' ]
