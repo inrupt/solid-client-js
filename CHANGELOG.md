@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.20.0] - 2022-02-23
+
 ### New features
 
 - `getAltProfileUrlAllFrom`: A function available in the `profile/webid` module

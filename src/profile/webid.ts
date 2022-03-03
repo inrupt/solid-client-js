@@ -50,6 +50,7 @@ export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
  * @param webId The WebID of the user's whose alternative profiles you are discovering.
  * @param webIdProfile The WebID profile obtained dereferencing the provided WebID.
  * @returns A list of URLs of the user's alternative profiles.
+ * @since 1.20.0
  */
 export function getAltProfileUrlAllFrom(
   webId: WebId,
