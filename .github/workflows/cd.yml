@@ -51,7 +51,7 @@ jobs:
     outputs:
       version-nr: ${{ steps.determine-npm-version.outputs.version-nr }}
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
       - name: Mark GitHub Deployment as in progress
         id: start-deployment
         uses: octokit/request-action@v2.1.4
@@ -70,7 +70,7 @@ jobs:
           mediaType: '{"previews": ["flash", "ant-man"]}'
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
@@ -159,8 +159,8 @@ jobs:
         node-version: [16.x, 14.x, 12.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
@@ -195,8 +195,8 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: "14.x"
           registry-url: "https://registry.npmjs.org"
@@ -228,8 +228,8 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: "14.x"
           registry-url: "https://registry.npmjs.org"
@@ -267,8 +267,8 @@ jobs:
         node-version: [16.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
