@@ -25,6 +25,9 @@ The following changes have been implemented but not released yet:
   out if fetching one or more alternative profiles failed. Note that this also resolves
   this bug in other functions based on this one, such as `getPodUrlAll`.
 
+- `getPodUrlAll` no longer throws if the WebID only appears as the object in an
+alternative profile (and not as a subject), which is a valid case.
+
 ## [1.19.0] - 2022-02-09
 
 ### New features

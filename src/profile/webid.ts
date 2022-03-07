@@ -162,16 +162,11 @@ export function getPodUrlAllFrom(
   [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
     (profileResource) => {
       const webIdThing = getThing(profileResource, webId);
-      if (webIdThing === null) {
-        throw new Error(
-          `The WebId [${webId}] does not appear in the resource fetched at [${getSourceIri(
-            profileResource
-          )}]`
-        );
-      }
-      getIriAll(webIdThing, pim.storage).forEach((podIri) =>
+      if (webIdThing !== null) {
+        getIriAll(webIdThing, pim.storage).forEach((podIri) =>
         result.add(podIri)
       );
+      }
     }
   );
   return Array.from(result);

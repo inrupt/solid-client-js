@@ -493,7 +493,7 @@ describe("getPodUrlAll", () => {
 });
 
 describe("getPodUrlAllFrom", () => {
-  it("throws if the WebId is not a subject of a provided profile resource", () => {
+  it("returns an empty result if the given resources doesn't have the WebID as a subject", () => {
     const MOCK_STORAGE = "https://some.storage";
     const webIdProfile = mockProfileDoc(
       "https://some.profile",
@@ -502,11 +502,9 @@ describe("getPodUrlAllFrom", () => {
         pods: [MOCK_STORAGE],
       }
     );
-    expect(() =>
+    expect(
       getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID)
-    ).toThrow(
-      /.*https:\/\/some.webid.*does not appear.*https:\/\/some.profile/
-    );
+    ).toStrictEqual([]);
   });
 
   it("returns Pod URLs found in the WebId profile", () => {
