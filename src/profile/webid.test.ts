@@ -36,7 +36,12 @@ import {
 import { foaf, pim } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
-import { getAltProfileUrlAllFrom, getPodUrlAll, getPodUrlAllFrom, getProfileAll } from "./webid";
+import {
+  getAltProfileUrlAllFrom,
+  getPodUrlAll,
+  getPodUrlAllFrom,
+  getProfileAll,
+} from "./webid";
 import { Response } from "cross-fetch";
 
 // jest.mock("../fetcher.ts");
@@ -90,16 +95,11 @@ describe("getAltProfileUrlAllFrom", () => {
     webIdProfile = setThing(webIdProfile, otherProfileContent);
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
-    expect(result).toContain(
-      "https://some.profile"
-    );
-    expect(result).toContain(
-      "https://some.other.profile"
-    );
+    expect(result).toContain("https://some.profile");
+    expect(result).toContain("https://some.other.profile");
   });
 
   it("returns an array of the IRI of objects of triples of the WebID doc such as <webid, foaf:isPrimaryTopicOf, ?object>", () => {
-    
     const profileContent = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
       .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
@@ -109,16 +109,10 @@ describe("getAltProfileUrlAllFrom", () => {
       mockSolidDatasetFrom(MOCK_WEBID),
       profileContent
     );
-    const result = getAltProfileUrlAllFrom(MOCK_WEBID, 
-      webIdProfile,
-    );
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
-    expect(result).toContain(
-      "https://some.profile"
-    );
-    expect(result).toContain(
-      "https://some.other.profile"
-    );
+    expect(result).toContain("https://some.profile");
+    expect(result).toContain("https://some.other.profile");
   });
 
   it("deduplicates profile values", () => {
@@ -138,9 +132,7 @@ describe("getAltProfileUrlAllFrom", () => {
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     // 'profile' should appear only once in the result set.
     expect(result).toHaveLength(1);
-    expect(result).toContain(
-      "https://some.profile"
-    );
+    expect(result).toContain("https://some.profile");
   });
 });
 

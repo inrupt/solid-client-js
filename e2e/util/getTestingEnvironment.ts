@@ -47,15 +47,12 @@ export function getTestingEnvironment(): TestingEnvironment {
     !process.env.E2E_TEST_CLIENT_ID ||
     !process.env.E2E_TEST_CLIENT_SECRET
   ) {
-    const missing = (
-      !process.env.E2E_TEST_POD ? "E2E_TEST_POD " : ""
-    ).concat(
-      !process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : ""
-    ).concat(
-      !process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : ""
-    ).concat(
-      !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
-    );
+    const missing = (!process.env.E2E_TEST_POD ? "E2E_TEST_POD " : "")
+      .concat(!process.env.E2E_TEST_IDP ? "E2E_TEST_IDP " : "")
+      .concat(!process.env.E2E_TEST_CLIENT_ID ? "E2E_TEST_CLIENT_ID " : "")
+      .concat(
+        !process.env.E2E_TEST_CLIENT_SECRET ? "E2E_TEST_CLIENT_SECRET " : ""
+      );
     throw new Error(`Environment variable missing: ${missing}`);
   }
   return {
@@ -67,7 +64,7 @@ export function getTestingEnvironment(): TestingEnvironment {
     feature: {
       acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
       acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,
-      wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false
-    }
+      wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false,
+    },
   };
 }

@@ -42,7 +42,7 @@ export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
 };
 
 /**
- * List all the alternative profiles IRI found in a given WebID profile. 
+ * List all the alternative profiles IRI found in a given WebID profile.
  *
  * Note that some of these profiles may be private, and you may not have access to
  * the resulting resource.
@@ -102,14 +102,19 @@ export async function getProfileAll<
     webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
   } = options;
 
-  const altProfileAll = (await Promise.allSettled(
-    getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
-      getSolidDataset(uniqueProfileIri, { fetch })
+  const altProfileAll = (
+    await Promise.allSettled(
+      getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
+        getSolidDataset(uniqueProfileIri, { fetch })
+      )
     )
-  ))
-  // Ignore the alternative profiles lookup which failed.
-  .filter((result): result is PromiseFulfilledResult<T> => result.status === "fulfilled")
-  .map((successfulResult) => successfulResult.value);
+  )
+    // Ignore the alternative profiles lookup which failed.
+    .filter(
+      (result): result is PromiseFulfilledResult<T> =>
+        result.status === "fulfilled"
+    )
+    .map((successfulResult) => successfulResult.value);
 
   return {
     webIdProfile,
@@ -164,8 +169,8 @@ export function getPodUrlAllFrom(
       const webIdThing = getThing(profileResource, webId);
       if (webIdThing !== null) {
         getIriAll(webIdThing, pim.storage).forEach((podIri) =>
-        result.add(podIri)
-      );
+          result.add(podIri)
+        );
       }
     }
   );

@@ -1510,9 +1510,7 @@ describe("saveSolidDatasetAt", () => {
       });
 
       expect(mockFetch.mock.calls).toHaveLength(1);
-      expect(mockFetch.mock.calls[0][1]?.method as string).toBe(
-        "PATCH"
-      );
+      expect(mockFetch.mock.calls[0][1]?.method as string).toBe("PATCH");
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
@@ -3574,9 +3572,7 @@ describe("getWellKnownSolid", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource/x/y/z"
-    );
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/x/y/z");
     expect(mockFetch.mock.calls[1][0]).toBe(
       "https://some.pod/.well-known/solid"
     );
@@ -3596,9 +3592,7 @@ describe("getWellKnownSolid", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource/x/y/z"
-    );
+    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/x/y/z");
     expect(mockFetch.mock.calls[2][0]).toBe(
       "https://some.pod/.well-known/solid"
     );

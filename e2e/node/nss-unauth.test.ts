@@ -19,12 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  describe,
-  expect,
-  it,
-  test,
-} from "@jest/globals";
+import { describe, expect, it, test } from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
 import {
@@ -60,7 +55,10 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
-import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "../util/getTestingEnvironment";
 
 const env: TestingEnvironment = getTestingEnvironment();
 if (env.environment !== "NSS") {

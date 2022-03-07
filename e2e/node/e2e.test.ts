@@ -54,7 +54,10 @@ import {
 } from "../../src/access/universal";
 
 import { blankNode } from "@rdfjs/dataset";
-import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import type { Session } from "@inrupt/solid-client-authn-node";
 
@@ -65,19 +68,18 @@ if (env.environment === "NSS") {
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
-
 describe("Authenticated end-to-end", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
-  
+
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
-  
+
   afterEach(async () => {
     await deleteSolidDataset(sessionResource, options);
     await session.logout();
@@ -106,11 +108,7 @@ describe("Authenticated end-to-end", () => {
     expect(firstSavedThing).not.toBeNull();
     expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
 
-    const updatedThing = setBoolean(
-      firstSavedThing,
-      arbitraryPredicate,
-      false
-    );
+    const updatedThing = setBoolean(firstSavedThing, arbitraryPredicate, false);
     const updatedDataset = setThing(firstSavedDataset, updatedThing);
     await saveSolidDatasetAt(datasetUrl, updatedDataset, {
       fetch: session.fetch,
@@ -135,7 +133,6 @@ describe("Authenticated end-to-end", () => {
       })
     );
   });
-
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
     const fileUrl = `${sessionResource}.txt`;

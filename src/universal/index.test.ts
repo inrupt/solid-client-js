@@ -43,4 +43,3 @@ describe("universal", () => {
     expect(universal.setPublicAccess).toBeDefined();
   });
 });
-  

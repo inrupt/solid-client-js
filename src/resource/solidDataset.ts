@@ -283,7 +283,7 @@ export async function responseToSolidDataset(
  *
  * Note that the URL of a container ends with a [trailing slash "/"](https://solidproject.org/TR/protocol#uri).
  * If it is missing, some libraries will add it automatically, which may result in additional round-trips, possibly including
- * authentication errors ([more information](https://github.com/inrupt/solid-client-js/issues/1216#issuecomment-904703695)). 
+ * authentication errors ([more information](https://github.com/inrupt/solid-client-js/issues/1216#issuecomment-904703695)).
  *
  * @param url URL to fetch a [[SolidDataset]] from.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
@@ -395,7 +395,7 @@ async function prepareSolidDatasetCreation(
  * function applies the changes to the current SolidDataset. If the old value specified in the
  * changelog does not correspond to the value currently in the Pod, this function will throw an
  * error (common issues are listed in [the documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/error-codes/)).
- * 
+ *
  * The SolidDataset returned by this function will contain the data sent to the Pod, and a ChangeLog
  * up-to-date with the saved data. Note that if the data on the server was modified in between the
  * first fetch and saving it, the updated data will not be reflected in the returned SolidDataset.

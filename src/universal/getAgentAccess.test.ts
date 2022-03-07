@@ -27,21 +27,20 @@ import { getAgentAccess as getAgentAccessAcp } from "../acp/util/getAgentAccess"
 import { getAgentAccess as getAgentAccessWac } from "../access/wac";
 
 jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({}))
+  getResourceInfo: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/getResourceAcr", () => ({
-  getResourceAcr: jest.fn().mockImplementation(() => ({}))
+  getResourceAcr: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/getAgentAccess", () => ({
-  getAgentAccess: jest.fn().mockImplementation(() => ({}))
+  getAgentAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../access/wac", () => ({
-  getAgentAccess: jest.fn().mockImplementation(() => ({}))
+  getAgentAccess: jest.fn().mockImplementation(() => ({})),
 }));
-
 
 describe("getAgentAccess", () => {
   it("calls the ACP module when resource has an ACR", async () => {
@@ -53,7 +52,7 @@ describe("getAgentAccess", () => {
     expect(getAgentAccessAcp).toHaveBeenCalledWith({}, "y");
     expect(getAgentAccessWac).toHaveBeenCalledTimes(0);
   });
-  
+
   it("calls the WAC module when resource does not have an ACR", async () => {
     (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
     await getAgentAccess("x", "y");
