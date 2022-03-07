@@ -138,7 +138,7 @@ jobs:
           # https://github.com/parcel-bundler/parcel/issues/5943
           npx parcel@1.12.3 build index.ts
       - name: Archive Parcel build artifacts
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         with:
           name: parcel-dist
           path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
@@ -159,7 +159,7 @@ jobs:
           npm install webpack@5 webpack-cli buffer
           npx webpack --devtool source-map
       - name: Archive Webpack build artifacts
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         with:
           name: webpack-dist
           path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
