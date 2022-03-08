@@ -26,7 +26,7 @@ import { toRdfJsDataset } from "../rdfjs";
 
 /**
  * A function to serialise a Solid Dataset as Turtle
- * 
+ *
  * @param dataset The Dataset to serialize as Turtle
  * @param options.prefixes The Prefixes to use for Turtle serialisation (defaulting to a set of well known prefixes)
  * @param options.thing Restricts serialisation to the part of a dataset related to the thing
@@ -36,8 +36,8 @@ import { toRdfJsDataset } from "../rdfjs";
 export async function solidDatasetAsTurtle(
   dataset: SolidDataset,
   options?: {
-    prefixes?: Record<string, string>,
-    thing?: string,
+    prefixes?: Record<string, string>;
+    thing?: string;
   }
 ): Promise<string> {
   const { prefixes = defaultPrefixes, thing } = { ...options };
@@ -51,7 +51,7 @@ export async function solidDatasetAsTurtle(
 
   return new Promise<string>((resolve, reject) => {
     writer.end((error, result) => {
-      /* istanbul ignore next */ 
+      /* istanbul ignore next */
       if (error) {
         return reject(error);
       }

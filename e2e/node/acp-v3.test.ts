@@ -43,7 +43,10 @@ import {
   FetchError,
   deleteFile,
 } from "../../src/index";
-import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
 const env: TestingEnvironment = getTestingEnvironment();
@@ -57,13 +60,13 @@ describe("Authenticated end-to-end ACP V3", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
-  
+
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
     sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
   });
-  
+
   afterEach(async () => {
     await session.logout();
   });
@@ -123,7 +126,10 @@ describe("Authenticated end-to-end ACP V3", () => {
     resourceUrl: UrlString,
     policyUrl: UrlString
   ) {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(resourceUrl, options);
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+      resourceUrl,
+      options
+    );
     if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
         `The test Resource at [${getSourceUrl(
@@ -131,15 +137,12 @@ describe("Authenticated end-to-end ACP V3", () => {
         )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
       );
     }
-    const changedResourceWithAcr = acp.addPolicyUrl(
-      resourceWithAcr,
-      policyUrl
-    );
+    const changedResourceWithAcr = acp.addPolicyUrl(resourceWithAcr, policyUrl);
     return acp.saveAcrFor(changedResourceWithAcr, options);
   }
 
   it("can deny Read access", async () => {
-    const policyResourceUrl = sessionResource.concat('-policy-deny');
+    const policyResourceUrl = sessionResource.concat("-policy-deny");
 
     // Create a Resource containing Access Policies and Rules:
     await initialisePolicyResource(policyResourceUrl, session);
@@ -158,9 +161,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Verify that indeed, the current user can no longer read it:
-    await expect(
-      getSolidDataset(policyResourceUrl, options)
-    ).rejects.toThrow(
+    await expect(getSolidDataset(policyResourceUrl, options)).rejects.toThrow(
       // Forbidden:
       // @ts-ignore-next
       expect.objectContaining({ statusCode: 403 }) as FetchError
@@ -171,7 +172,7 @@ describe("Authenticated end-to-end ACP V3", () => {
   });
 
   it("can allow public Read access", async () => {
-    const policyResourceUrl = sessionResource.concat('-policy-allow');
+    const policyResourceUrl = sessionResource.concat("-policy-allow");
 
     // Create a Resource containing Access Policies and Rules:
     await initialisePolicyResource(policyResourceUrl, session);
@@ -193,25 +194,22 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Verify that indeed, an unauthenticated user can now read it:
-    await expect(
-      getSolidDataset(policyResourceUrl)
-    ).resolves.not.toBeNull();
+    await expect(getSolidDataset(policyResourceUrl)).resolves.not.toBeNull();
 
     // Clean up:
     await deleteSolidDataset(policyResourceUrl, options);
   });
 
   it("can set Access from a Resource's ACR", async () => {
-    const resourceUrl = sessionResource.concat('-resource');
+    const resourceUrl = sessionResource.concat("-resource");
 
     await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), {
       fetch: session.fetch,
     });
 
-    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
-      resourceUrl,
-      { fetch: session.fetch }
-    );
+    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(resourceUrl, {
+      fetch: session.fetch,
+    });
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
         `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`

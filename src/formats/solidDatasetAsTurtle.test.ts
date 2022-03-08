@@ -25,9 +25,11 @@ import { responseToSolidDataset } from "../resource/solidDataset";
 import type { SolidDataset } from "../interfaces";
 
 async function getDataset(ttl: string): Promise<SolidDataset> {
-  return responseToSolidDataset(new Response(ttl, {
-    headers: { "Content-Type": "text/turtle" },
-  }));
+  return responseToSolidDataset(
+    new Response(ttl, {
+      headers: { "Content-Type": "text/turtle" },
+    })
+  );
 }
 
 const ttl = `
@@ -54,15 +56,21 @@ describe("solidDatasetAsTurtle", () => {
   it("should correctly serialize all triples in a Dataset", async () => {
     const datasetAsTurtle = solidDatasetAsTurtle(await getDataset(ttl));
     await expect(datasetAsTurtle).resolves.toContain("a foaf:Person");
-    await expect(datasetAsTurtle).resolves.toContain(" Joe\"@en");
-    await expect(datasetAsTurtle).resolves.toContain(":predicate <https://example.org/blank_node_object>");
+    await expect(datasetAsTurtle).resolves.toContain(' Joe"@en');
+    await expect(datasetAsTurtle).resolves.toContain(
+      ":predicate <https://example.org/blank_node_object>"
+    );
   });
 
   it("should correctly serialize only triples related to a thing in a Dataset", async () => {
-    const datasetAsTurtle = solidDatasetAsTurtle(await getDataset(ttl), { thing: "https://example.org/joe" });
+    const datasetAsTurtle = solidDatasetAsTurtle(await getDataset(ttl), {
+      thing: "https://example.org/joe",
+    });
     await expect(datasetAsTurtle).resolves.toContain("a foaf:Person");
-    await expect(datasetAsTurtle).resolves.toContain(" Joe\"@en");
-    await expect(datasetAsTurtle).resolves.not.toContain(":predicate <https://example.org/blank_node_object>");
+    await expect(datasetAsTurtle).resolves.toContain(' Joe"@en');
+    await expect(datasetAsTurtle).resolves.not.toContain(
+      ":predicate <https://example.org/blank_node_object>"
+    );
   });
 
   // N3 is very permissive, so skip this
@@ -76,12 +84,12 @@ describe("solidDatasetAsTurtle", () => {
             url: "https://example.org/a",
             predicates: {
               "!!!!bla": {
-                namedNodes: [ "very wrong" ]
-              }
-            }
-          }
-        }
-      }
+                namedNodes: ["very wrong"],
+              },
+            },
+          },
+        },
+      },
     };
     await expect(solidDatasetAsTurtle(x)).rejects.toThrow();
   });
