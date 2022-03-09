@@ -27,19 +27,19 @@ import { getPublicAccess as getPublicAccessWac } from "../access/wac";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 
 jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({}))
+  getResourceInfo: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/getResourceAcr", () => ({
-  getResourceAcr: jest.fn().mockImplementation(() => ({}))
+  getResourceAcr: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/getPublicAccess", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({}))
+  getPublicAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../access/wac", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({}))
+  getPublicAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 describe("getAgentAccess", () => {
@@ -52,7 +52,7 @@ describe("getAgentAccess", () => {
     expect(getPublicAccessAcp).toHaveBeenCalledWith({});
     expect(getPublicAccessWac).toHaveBeenCalledTimes(0);
   });
-  
+
   it("calls the WAC module when resource does not have an ACR", async () => {
     (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
     await getPublicAccess("x");

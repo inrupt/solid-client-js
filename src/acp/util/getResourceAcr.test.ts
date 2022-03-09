@@ -25,15 +25,15 @@ import { getAcrUrl } from "./getAcrUrl";
 import { getSolidDataset } from "../../resource/solidDataset";
 
 jest.mock("./getAcrUrl", () => ({
-  getAcrUrl: jest.fn().mockImplementation(() => ("x"))
+  getAcrUrl: jest.fn().mockImplementation(() => "x"),
 }));
 
 jest.mock("../../resource/solidDataset", () => ({
-  getSolidDataset: jest.fn().mockImplementation(() => ({ acr: "acr" }))
+  getSolidDataset: jest.fn().mockImplementation(() => ({ acr: "acr" })),
 }));
 
 jest.mock("../../resource/resource", () => ({
-  getSourceUrl: jest.fn().mockImplementation(() => ("y"))
+  getSourceUrl: jest.fn().mockImplementation(() => "y"),
 }));
 
 describe("getResourceAcr", () => {

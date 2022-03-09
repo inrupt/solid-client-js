@@ -1,7 +1,7 @@
 {
   "name": "@inrupt/solid-client",
   "description": "Make your web apps work with Solid Pods.",
-  "version": "1.20.0",
+  "version": "1.20.1",
   "license": "MIT",
   "scripts": {
     "build": "rollup --config rollup.config.js",
@@ -13,7 +13,7 @@
     "lint": "npm run lint:eslint -- --fix && npm run lint:prettier -- --write",
     "lint:ci": "npm run lint:eslint && npm run lint:prettier -- --check",
     "lint:eslint": "eslint --config .eslintrc.js \"src/\" \"e2e/\"",
-    "lint:prettier": "prettier \"{src,e2e}/*.{ts,tsx,js,jsx,css}\" \"*.{md,mdx,yml}\"",
+    "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"*.{md,mdx,yml}\"",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
     "test": "jest",

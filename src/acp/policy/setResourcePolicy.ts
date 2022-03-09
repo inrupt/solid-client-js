@@ -19,11 +19,11 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
- import type { ThingPersisted } from "../../interfaces";
- import type { WithAccessibleAcr } from "../acp";
- import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
- 
- /**
+import type { ThingPersisted } from "../../interfaces";
+import type { WithAccessibleAcr } from "../acp";
+import { setAccessControlResourceThing } from "../internal/setAccessControlResourceThing";
+
+/**
  * ```{note}
  * The ACP specification is a draft. As such, this function is experimental and
  * subject to change, even in a non-major release.
@@ -39,11 +39,8 @@
  * @since 1.18.0
  */
 export function setResourcePolicy<T extends WithAccessibleAcr>(
-resourceWithAcr: T,
-policy: ThingPersisted
+  resourceWithAcr: T,
+  policy: ThingPersisted
 ): T {
-    return setAccessControlResourceThing(
-        resourceWithAcr,
-        policy
-    );
+  return setAccessControlResourceThing(resourceWithAcr, policy);
 }
