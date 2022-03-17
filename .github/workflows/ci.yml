@@ -6,22 +6,9 @@ env:
   CI: true
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-      - run: npm ci --ignore-scripts
-      - run: npm run build
-  test:
-    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: ["16", "14", "12"]
     steps:
@@ -30,6 +17,5 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
       - run: npm ci --ignore-scripts
       - run: npm test
