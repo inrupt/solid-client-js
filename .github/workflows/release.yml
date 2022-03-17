@@ -9,7 +9,7 @@ env:
   CI: true
 jobs:
   prepare-deployment:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
     steps:
@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   publish-npm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment]
     steps:
       - uses: actions/checkout@v3
@@ -51,7 +51,7 @@ jobs:
       - name: Prepare for publication to npm
         uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - name: Publish to npm
@@ -97,10 +97,10 @@ jobs:
           echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 14.x, 12.x]
+        node-version: ["16", "14", "12"]
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
@@ -122,13 +122,13 @@ jobs:
           node --unhandled-rejections=strict esmodule.mjs
 
   verify-imports-parcel:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Parcel project
         run: |
@@ -144,13 +144,13 @@ jobs:
           path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
 
   verify-imports-webpack:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Webpack project
         run: |
@@ -167,16 +167,13 @@ jobs:
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
   cd-end-to-end-tests:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        node-version: [16.x]
+    runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - name: Install the preview release of solid-client

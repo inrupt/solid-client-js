@@ -11,21 +11,18 @@ jobs:
   e2e-node:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     if: github.actor != 'dependabot[bot]'
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.environment-name }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        node-version: [16.x]
         environment-name:
           ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
     steps:
       - uses: actions/checkout@v3
-      - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "16"
       - run: npm ci --ignore-scripts
       - run: npm run test:e2e:node
         env:
