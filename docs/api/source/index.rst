@@ -1,8 +1,7 @@
 :orphan:
 
-================
-solid-client API
-================
+@inrupt/solid-client API Documentation
+======================================
 
 
 Modules
