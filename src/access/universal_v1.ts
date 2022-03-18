@@ -483,4 +483,4 @@ export async function setPublicAccess(
   return null;
 }
 
-export { getAccessFor, getAccessForAll, setAccessFor } from "./for";
+export { getAccessFor, getAccessForAll, setAccessFor, Actor } from "./for";
