@@ -10,6 +10,12 @@ The following changes have been implemented but not released yet:
 
 -
 
+## [1.20.2] - 2022-03-18
+
+### Bugfixes
+
+- Export the `Actor` type in the `universal_v1` module.
+
 ## [1.20.1] - 2022-03-08
 
 ### Bugfixes
