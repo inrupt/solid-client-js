@@ -192,19 +192,24 @@ describe("getProfileAll", () => {
     await getProfileAll(MOCK_WEBID);
     // The embedded fetch should have been used to fetch the alt profile.
     expect(mockedAuthFetcher.fetch).toHaveBeenCalledTimes(1);
-    expect(mockedAuthFetcher.fetch).toHaveBeenCalledWith("https://some.profile", expect.anything());
+    expect(mockedAuthFetcher.fetch).toHaveBeenCalledWith(
+      "https://some.profile",
+      expect.anything()
+    );
     // The unauthenticated fetch should have been used to fetch the WebID.
     expect(mockedUnauthFetch.fetch).toHaveBeenCalledTimes(1);
-    expect(mockedUnauthFetch.fetch).toHaveBeenCalledWith(MOCK_WEBID, expect.anything());
+    expect(mockedUnauthFetch.fetch).toHaveBeenCalledWith(
+      MOCK_WEBID,
+      expect.anything()
+    );
   });
 
   it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
-    
     // Mock the alt profile authenticated fetch
     const mockedAuthFetcher = jest.fn(fetch) as jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      ReturnType<typeof window.fetch>,
+      [RequestInfo, RequestInit?]
+    >;
     mockedAuthFetcher.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
         headers: {
@@ -498,9 +503,9 @@ describe("getPodUrlAll", () => {
 
   it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
     const mockedAuthFetch = jest.fn(fetch) as jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
-      >;
+      ReturnType<typeof window.fetch>,
+      [RequestInfo, RequestInit?]
+    >;
 
     mockedAuthFetch.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
@@ -539,10 +544,16 @@ describe("getPodUrlAll", () => {
     await getPodUrlAll(MOCK_WEBID, { fetch: mockedAuthFetch });
     // The provided authenticated fetch should have been used to fetch the alt profile.
     expect(mockedAuthFetch).toHaveBeenCalledTimes(1);
-    expect(mockedAuthFetch).toHaveBeenCalledWith("https://some.profile", expect.anything());
+    expect(mockedAuthFetch).toHaveBeenCalledWith(
+      "https://some.profile",
+      expect.anything()
+    );
     // The unauthenticated fetch should have been used to fetch the webid profile.
     expect(mockedUnauthFetcher.fetch).toHaveBeenCalledTimes(1);
-    expect(mockedUnauthFetcher.fetch).toHaveBeenCalledWith(MOCK_WEBID, expect.anything());
+    expect(mockedUnauthFetcher.fetch).toHaveBeenCalledWith(
+      MOCK_WEBID,
+      expect.anything()
+    );
   });
 
   it("returns Pod URLs found in the fetched WebId profile", async () => {
