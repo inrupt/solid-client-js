@@ -63,16 +63,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: true,
         append: false,
         write: false,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -111,16 +109,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: true,
         append: true,
         write: true,
         controlRead: true,
         controlWrite: true,
-      }
+      },
     });
   });
 
@@ -152,16 +148,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: true,
         append: true,
         write: true,
         controlRead: true,
         controlWrite: true,
-      }
+      },
     });
   });
 
@@ -195,7 +189,12 @@ describe("getAgentAccessAll", () => {
         ],
         [
           DEFAULT_DOMAIN.concat("m1"),
-          [[ACP.agent, [DEFAULT_DOMAIN.concat("alice"), DEFAULT_DOMAIN.concat("bob")]]],
+          [
+            [
+              ACP.agent,
+              [DEFAULT_DOMAIN.concat("alice"), DEFAULT_DOMAIN.concat("bob")],
+            ],
+          ],
         ],
         [
           DEFAULT_DOMAIN.concat("m2"),
@@ -204,9 +203,7 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("alice")]: {
         read: true,
         append: true,
@@ -220,7 +217,7 @@ describe("getAgentAccessAll", () => {
         write: true,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -249,16 +246,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: false,
         append: false,
         write: false,
         controlRead: true,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -317,16 +312,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: true,
         append: true,
         write: false,
         controlRead: false,
         controlWrite: true,
-      }
+      },
     });
   });
 
@@ -391,9 +384,7 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: false,
         append: false,
@@ -421,7 +412,7 @@ describe("getAgentAccessAll", () => {
         write: false,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -462,9 +453,7 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: true,
         append: false,
@@ -485,7 +474,7 @@ describe("getAgentAccessAll", () => {
         write: false,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -536,9 +525,7 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("jorge")]: {
         read: false,
         append: false,
@@ -566,7 +553,7 @@ describe("getAgentAccessAll", () => {
         write: false,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 
@@ -595,16 +582,14 @@ describe("getAgentAccessAll", () => {
       ])
     );
 
-    expect(
-      await getAgentAccessAll(resource)
-    ).toStrictEqual({
+    expect(await getAgentAccessAll(resource)).toStrictEqual({
       [DEFAULT_DOMAIN.concat("bob")]: {
         read: false,
         append: false,
         write: false,
         controlRead: false,
         controlWrite: false,
-      }
+      },
     });
   });
 

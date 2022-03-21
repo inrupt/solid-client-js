@@ -42,12 +42,25 @@ describe("getAgentUrlAll", () => {
           createDatasetFromSubjects([
             [
               "https://example.org/subject_resource",
-              [[ACP.agent, ["https://example.org/x", "https://example.org/y", "https://example.org/z"]]],
-            ]
+              [
+                [
+                  ACP.agent,
+                  [
+                    "https://example.org/x",
+                    "https://example.org/y",
+                    "https://example.org/z",
+                  ],
+                ],
+              ],
+            ],
           ])
         )
       )
-    ).toStrictEqual(["https://example.org/x", "https://example.org/y", "https://example.org/z"]);
+    ).toStrictEqual([
+      "https://example.org/x",
+      "https://example.org/y",
+      "https://example.org/z",
+    ]);
   });
 
   it("returns agents defined in a matcher only once", () => {
@@ -57,15 +70,28 @@ describe("getAgentUrlAll", () => {
           createDatasetFromSubjects([
             [
               "https://example.org/subject_resource_1",
-              [[ACP.agent, ["https://example.org/x", "https://example.org/y", "https://example.org/z"]]],
+              [
+                [
+                  ACP.agent,
+                  [
+                    "https://example.org/x",
+                    "https://example.org/y",
+                    "https://example.org/z",
+                  ],
+                ],
+              ],
             ],
             [
               "https://example.org/subject_resource_2",
               [[ACP.agent, ["https://example.org/x"]]],
-            ]
+            ],
           ])
         )
       )
-    ).toStrictEqual(["https://example.org/x", "https://example.org/y", "https://example.org/z"]);
+    ).toStrictEqual([
+      "https://example.org/x",
+      "https://example.org/y",
+      "https://example.org/z",
+    ]);
   });
 });

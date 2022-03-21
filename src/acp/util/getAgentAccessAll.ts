@@ -47,7 +47,7 @@ import type { WithAccessibleAcr } from "../acp";
  * @param options Default Options such as a fetch function.
  * @since unreleased
  */
- export async function getAgentAccessAll<T extends WithAccessibleAcr>(
+export async function getAgentAccessAll<T extends WithAccessibleAcr>(
   resourceWithAcr: T
 ): Promise<Record<string, AccessModes> | null> {
   let agentAccess = {};
@@ -55,8 +55,8 @@ import type { WithAccessibleAcr } from "../acp";
   await getAgentUrlAll(resourceWithAcr).forEach(async (agent) => {
     agentAccess = {
       [agent]: await getAgentAccess(resourceWithAcr, agent),
-      ...agentAccess
-    }
+      ...agentAccess,
+    };
   });
 
   return agentAccess;

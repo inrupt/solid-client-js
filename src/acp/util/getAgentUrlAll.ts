@@ -25,15 +25,16 @@ import { ACP } from "../constants";
 import { getThingAll, getUrlAll } from "../..";
 
 /** @hidden */
-export function getAgentUrlAll(
-  acr: WithAccessibleAcr
-): string[] {
-  return Array.from(new Set(getThingAll(internal_getAcr(acr))
-    .map((thing) => {
-      return getUrlAll(thing, ACP.agent);
-    })
-    .reduce((flatArray, agentArray) => {
-      return flatArray.concat(agentArray);
-    }, []))
+export function getAgentUrlAll(acr: WithAccessibleAcr): string[] {
+  return Array.from(
+    new Set(
+      getThingAll(internal_getAcr(acr))
+        .map((thing) => {
+          return getUrlAll(thing, ACP.agent);
+        })
+        .reduce((flatArray, agentArray) => {
+          return flatArray.concat(agentArray);
+        }, [])
+    )
   );
 }
