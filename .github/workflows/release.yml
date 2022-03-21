@@ -169,6 +169,8 @@ jobs:
   cd-end-to-end-tests:
     runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
+    environment:
+      name: "Inrupt Production"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -190,11 +192,11 @@ jobs:
       - name: Run the Node-based end-to-end tests
         run: npm run test:e2e:node -- --runTestsByPath e2e/node/e2e.test.ts
         env:
-          E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-          E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-          E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
-          E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
           E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
           E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+          E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
+          E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
+          E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
+          E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
