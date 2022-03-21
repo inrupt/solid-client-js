@@ -6,9 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-### New features
+### Bugfixes
 
--
+- `getProfileAll` and `getPodUrlAll` no longer make an authenticated request to the
+WebID profile, which should be a public resource in the first place.
 
 ## [1.20.2] - 2022-03-18
 
