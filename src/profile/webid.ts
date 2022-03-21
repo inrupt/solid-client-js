@@ -35,6 +35,8 @@ import {
   getSourceIri,
   internal_defaultFetchOptions,
 } from "../resource/resource";
+import { fetch as unauthenticatedFetch } from "cross-fetch";
+import { fetch as defaultFetch } from "../fetcher";
 
 export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
   webIdProfile: T;
@@ -91,21 +93,20 @@ export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo
 >(
   webId: WebId,
-  options: Partial<
+  options?: Partial<
     typeof internal_defaultFetchOptions & {
       webIdProfile: T;
     }
-  > = internal_defaultFetchOptions
+  >
 ): Promise<ProfileAll<T>> {
-  const {
-    fetch,
-    webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
-  } = options;
-
+  const authFetch = options?.fetch ?? defaultFetch;
+  const webIdProfile =
+    options?.webIdProfile ??
+    ((await getSolidDataset(webId, { fetch: unauthenticatedFetch })) as T);
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
-        getSolidDataset(uniqueProfileIri, { fetch })
+        getSolidDataset(uniqueProfileIri, { fetch: authFetch })
       )
     )
   )
