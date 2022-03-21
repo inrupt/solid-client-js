@@ -8,7 +8,8 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
--
+- `getAgentAccessAll` has been added to the new `universal` access module. This
+  function provides an overview of access modes granted to all agents.
 
 ## [1.20.2] - 2022-03-18
 
