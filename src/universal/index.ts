@@ -21,6 +21,7 @@
 
 export { getAclServerResourceInfo } from "./getAclServerResourceInfo";
 export { getAgentAccess } from "./getAgentAccess";
+export { getAgentAccessAll } from "./getAgentAccessAll";
 export { getPublicAccess } from "./getPublicAccess";
 export { setAgentAccess } from "./setAgentAccess";
 export { setPublicAccess } from "./setPublicAccess";
