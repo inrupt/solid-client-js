@@ -131,3 +131,4 @@ gettext_compact = False     # optional.
 
 myst_heading_anchors = 6
 myst_url_schemes = [ 'https' ]
+myst_enable_extensions = ['colon_fence']
