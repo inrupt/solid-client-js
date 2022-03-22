@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- `getAgentAccessAll` has been added to the new `universal` access module. This
+  function provides an overview of access modes granted to all agents.
+
 ### Bugfixes
 
 - `getProfileAll` and `getPodUrlAll` no longer make an authenticated request to the

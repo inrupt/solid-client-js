@@ -19,9 +19,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export { getAclServerResourceInfo } from "./getAclServerResourceInfo";
-export { getAgentAccess } from "./getAgentAccess";
-export { getAgentAccessAll } from "./getAgentAccessAll";
-export { getPublicAccess } from "./getPublicAccess";
-export { setAgentAccess } from "./setAgentAccess";
-export { setPublicAccess } from "./setPublicAccess";
+import type { WithAccessibleAcr } from "../acp";
+import { internal_getAcr } from "../control.internal";
+import { ACP } from "../constants";
+import { getThingAll, getUrlAll } from "../..";
+
+/** @hidden */
+export function getAgentUrlAll(acr: WithAccessibleAcr): string[] {
+  return Array.from(
+    new Set(
+      getThingAll(internal_getAcr(acr))
+        .map((thing) => {
+          return getUrlAll(thing, ACP.agent);
+        })
+        .reduce((flatArray, agentArray) => {
+          return flatArray.concat(agentArray);
+        }, [])
+    )
+  );
+}
