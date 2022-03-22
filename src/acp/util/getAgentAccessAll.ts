@@ -50,14 +50,17 @@ import type { WithAccessibleAcr } from "../acp";
 export async function getAgentAccessAll<T extends WithAccessibleAcr>(
   resourceWithAcr: T
 ): Promise<Record<string, AccessModes> | null> {
-  let agentAccess = {};
-
-  await getAgentUrlAll(resourceWithAcr).forEach(async (agent) => {
-    agentAccess = {
-      [agent]: await getAgentAccess(resourceWithAcr, agent),
-      ...agentAccess,
-    };
-  });
-
-  return agentAccess;
+return (
+    await Promise.all(
+      getAgentUrlAll(resourceWithAcr).map(async (agent) => ({
+        [agent]: await getAgentAccess(resourceWithAcr, agent),
+      }))
+    )
+  ).reduce(
+    (agentAccessAll, currentAgentAccess) => ({
+      ...agentAccessAll,
+      ...currentAgentAccess,
+    }),
+    {}
+  );
 }
