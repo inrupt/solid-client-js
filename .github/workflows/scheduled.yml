@@ -9,7 +9,7 @@ on:
 env:
   CI: true
 jobs:
-  e2e-node:
+  scheduled-e2e-node:
     name: "Scheduled E2E Integration tests"
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     runs-on: ubuntu-latest
