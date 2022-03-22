@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.21.0] - 2022-03-22
+
 ### New features
 
 - `getAgentAccessAll` has been added to the new `universal` access module. This

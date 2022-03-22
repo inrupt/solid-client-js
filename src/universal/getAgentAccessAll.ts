@@ -48,7 +48,7 @@ import { getResourceAcr } from "../acp/util/getResourceAcr";
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param options Default Options such as a fetch function.
- * @since unreleased
+ * @since 1.21.0
  */
 export async function getAgentAccessAll(
   resourceUrl: UrlString,
