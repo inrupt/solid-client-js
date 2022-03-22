@@ -38,7 +38,7 @@ describe("getAgentAccessAll", () => {
     expect(await getAgentAccessAll(resource)).toStrictEqual({});
   });
 
-  it("returns the access modes for a simple ACR", async () => {
+  it("returns one allowed access modes an ACR with 1 policy", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -74,7 +74,7 @@ describe("getAgentAccessAll", () => {
     });
   });
 
-  it("returns all access modes for a simple ACR", async () => {
+  it("returns all access modes defined in multiple policies", async () => {
     const resource = mockAccessControlledResource(
       createDatasetFromSubjects([
         [
@@ -216,42 +216,6 @@ describe("getAgentAccessAll", () => {
         append: true,
         write: true,
         controlRead: false,
-        controlWrite: false,
-      },
-    });
-  });
-
-  it("returns the control access modes for a simple ACR", async () => {
-    const resource = mockAccessControlledResource(
-      createDatasetFromSubjects([
-        [
-          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-          [[ACP.accessControl, [DEFAULT_DOMAIN.concat("ac1")]]],
-        ],
-        [
-          DEFAULT_DOMAIN.concat("ac1"),
-          [[ACP.access, [DEFAULT_DOMAIN.concat("p1")]]],
-        ],
-        [
-          DEFAULT_DOMAIN.concat("p1"),
-          [
-            [ACP.anyOf, [DEFAULT_DOMAIN.concat("m1")]],
-            [ACP.allow, [ACL.Read]],
-          ],
-        ],
-        [
-          DEFAULT_DOMAIN.concat("m1"),
-          [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
-        ],
-      ])
-    );
-
-    expect(await getAgentAccessAll(resource)).toStrictEqual({
-      [DEFAULT_DOMAIN.concat("bob")]: {
-        read: false,
-        append: false,
-        write: false,
-        controlRead: true,
         controlWrite: false,
       },
     });
