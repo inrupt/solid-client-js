@@ -89,21 +89,23 @@ export function getAltProfileUrlAllFrom(
  *  If none are found, the WebID profile document itself is returned.
  * @since 1.16.0
  */
- export async function getProfileAll<
- T extends SolidDataset & WithServerResourceInfo
+export async function getProfileAll<
+  T extends SolidDataset & WithServerResourceInfo
 >(
- webId: WebId,
- options?: Partial<
-   typeof internal_defaultFetchOptions & {
-     webIdProfile: T;
-   }>
+  webId: WebId,
+  options?: Partial<
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: T;
+    }
+  >
 ): Promise<ProfileAll<T>>;
 export async function getProfileAll(
   webId: WebId,
   options?: Partial<
     typeof internal_defaultFetchOptions & {
       webIdProfile: undefined;
-    }>
+    }
+  >
 ): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
 export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo
@@ -113,12 +115,12 @@ export async function getProfileAll<
     typeof internal_defaultFetchOptions & {
       webIdProfile: T;
     }
-> = internal_defaultFetchOptions
-): Promise<ProfileAll<T | SolidDataset & WithServerResourceInfo>> {
+  > = internal_defaultFetchOptions
+): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
   const authFetch = options.fetch ?? defaultFetch;
   const webIdProfile =
     options.webIdProfile ??
-    ((await getSolidDataset(webId, { fetch: unauthenticatedFetch })));
+    (await getSolidDataset(webId, { fetch: unauthenticatedFetch }));
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
