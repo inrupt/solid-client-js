@@ -56,6 +56,9 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 import { hasAccessibleAcr } from "../../src/acp/acp";
+import { setupTestResources, teardownTestResources } from "./test-setup";
+
+const TEST_SLUG = "solid-client-test-e2e-acp"
 
 const env: TestingEnvironment = getTestingEnvironment();
 if (env.feature.acp !== true) {
@@ -71,38 +74,14 @@ describe("An ACP Solid server", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    // Set the user agent to something distinctive to make debug easier
-    const fetchWithAgent = (url: RequestInfo, options?: RequestInit) => {
-      return session.fetch(url, {
-        ...options,
-        headers: {
-          ...options?.headers,
-          "User-Agent": "solid-client ACP e2e tests"
-        }
-      })
-    }
+    const { containerUrl, resourceUrl, fetchWithAgent } = await setupTestResources(session, TEST_SLUG, env.pod);
+    sessionResource = resourceUrl;
+    sessionContainer = containerUrl;
     options = { fetch: fetchWithAgent };
-    sessionContainer = getSourceIri(
-      await createContainerInContainer(
-        env.pod, {
-          ...options,
-          slugSuggestion: "solid-client-tests-node-acp",
-        }
-      )
-    );
-    sessionResource = getSourceIri(
-      await saveSolidDatasetInContainer(
-        sessionContainer,
-        createSolidDataset(),
-        options
-      )
-    );
   });
 
   afterEach(async () => {
-    await deleteSolidDataset(sessionResource, options);
-    await deleteSolidDataset(sessionContainer, options);
-    await session.logout();
+    await teardownTestResources(session, sessionContainer, sessionResource, options.fetch);
   });
 
   it("advertises its ACLs as ACP AccessControlResources", async () => {
