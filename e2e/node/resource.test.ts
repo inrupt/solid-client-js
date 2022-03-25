@@ -120,7 +120,9 @@ describe("Authenticated end-to-end", () => {
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
     await deleteSolidDataset(datasetUrl, fetchOptions);
-    await expect(() => getSolidDataset(datasetUrl, fetchOptions)).rejects.toEqual(
+    await expect(() =>
+      getSolidDataset(datasetUrl, fetchOptions)
+    ).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
       })
@@ -179,7 +181,10 @@ describe("Authenticated end-to-end", () => {
 
       // Fetch the initialised SolidDataset for the first time,
       // and change the non-blank node value:
-      const initialisedDataset = await getSolidDataset(datasetUrl, fetchOptions);
+      const initialisedDataset = await getSolidDataset(
+        datasetUrl,
+        fetchOptions
+      );
       const initialisedThing = getThing(
         initialisedDataset,
         datasetUrl + "#e2e-test-thing-with-blank-node"

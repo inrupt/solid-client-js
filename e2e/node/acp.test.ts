@@ -137,15 +137,15 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
-    expect(await getAgentAccess(sessionResource, agent, fetchOptions)).toStrictEqual(
-      {
-        read: true,
-        append: false,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      }
-    );
+    expect(
+      await getAgentAccess(sessionResource, agent, fetchOptions)
+    ).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 
   it("can get and set read access for the public", async () => {
@@ -156,9 +156,9 @@ describe("An ACP Solid server", () => {
       ? latest_getPublicAccess
       : legacy_getPublicAccess;
 
-    await expect(getSolidDataset(sessionResource, fetchOptions)).resolves.toEqual(
-      expect.objectContaining({ graphs: { default: {} } })
-    );
+    await expect(
+      getSolidDataset(sessionResource, fetchOptions)
+    ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
 
     await expect(getSolidDataset(sessionResource)).rejects.toThrow();
 
@@ -216,15 +216,15 @@ describe("An ACP Solid server", () => {
       controlRead: true,
       controlWrite: true,
     });
-    expect(await getAgentAccess(sessionResource, agent, fetchOptions)).toStrictEqual(
-      {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      }
-    );
+    expect(
+      await getAgentAccess(sessionResource, agent, fetchOptions)
+    ).toStrictEqual({
+      read: true,
+      append: true,
+      write: true,
+      controlRead: true,
+      controlWrite: true,
+    });
   });
 
   it("can remove access for an agent", async () => {
@@ -260,14 +260,14 @@ describe("An ACP Solid server", () => {
       controlRead: false,
       controlWrite: false,
     });
-    expect(await getAgentAccess(sessionResource, agent, fetchOptions)).toStrictEqual(
-      {
-        read: true,
-        append: true,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      }
-    );
+    expect(
+      await getAgentAccess(sessionResource, agent, fetchOptions)
+    ).toStrictEqual({
+      read: true,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 });

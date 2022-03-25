@@ -172,7 +172,9 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Verify that indeed, the current user can no longer read it:
-    await expect(getSolidDataset(policyResourceUrl, fetchOptions)).rejects.toThrow(
+    await expect(
+      getSolidDataset(policyResourceUrl, fetchOptions)
+    ).rejects.toThrow(
       // Forbidden:
       // @ts-ignore-next
       expect.objectContaining({ statusCode: 403 }) as FetchError
