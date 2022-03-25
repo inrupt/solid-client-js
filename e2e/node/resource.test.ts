@@ -54,7 +54,7 @@ import {
 } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import type { Session } from "@inrupt/solid-client-authn-node";
-import { setupTestResources, teardownTestResources } from "./test-setup";
+import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const env: TestingEnvironment = getTestingEnvironment();
 

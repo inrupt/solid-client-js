@@ -48,7 +48,7 @@ import {
   TestingEnvironment,
 } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-import { setupTestResources, teardownTestResources } from "./test-setup";
+import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 

@@ -56,7 +56,7 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 import { hasAccessibleAcr } from "../../src/acp/acp";
-import { setupTestResources, teardownTestResources } from "./test-setup";
+import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp";
 
