@@ -110,10 +110,11 @@ describe("An ACP Solid server", () => {
   });
 
   it("can read ACP access controls", async () => {
-    const resourceWithAcr = (await acp.getSolidDatasetWithAcr(sessionResource, {
-      fetch: session.fetch,
-    })) as any;
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(sessionResource, options);
     expect(resourceWithAcr).toBeDefined();
+    if (!hasAccessibleAcr(resourceWithAcr)) {
+      throw new Error(`${getSourceUrl(resourceWithAcr)} has no accessible ACR.`);
+    }
     const accessControlUrlArray = getAccessControlUrlAll(resourceWithAcr);
     expect(accessControlUrlArray).toHaveLength(1);
   });
