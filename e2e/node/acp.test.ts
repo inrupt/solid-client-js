@@ -36,6 +36,11 @@ import {
   deleteSolidDataset,
   acp_v4 as acp,
   getSolidDataset,
+  createContainerInContainer,
+  asUrl,
+  getSourceIri,
+  saveSolidDatasetInContainer,
+  getSourceUrl,
 } from "../../src/index";
 import {
   getTestingEnvironment,
@@ -50,9 +55,9 @@ import {
   setPublicAccess as legacy_setPublicAccess,
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
+import { hasAccessibleAcr } from "../../src/acp/acp";
 
 const env: TestingEnvironment = getTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/acp-";
 if (env.feature.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
@@ -62,16 +67,41 @@ describe("An ACP Solid server", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
+  let sessionContainer: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-    options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+    // Set the user agent to something distinctive to make debug easier
+    const fetchWithAgent = (url: RequestInfo, options?: RequestInit) => {
+      return session.fetch(url, {
+        ...options,
+        headers: {
+          ...options?.headers,
+          "User-Agent": "solid-client ACP e2e tests"
+        }
+      })
+    }
+    options = { fetch: fetchWithAgent };
+    sessionContainer = getSourceIri(
+      await createContainerInContainer(
+        env.pod, {
+          slugSuggestion: "solid-client-tests-node-acp",
+          fetch: fetchWithAgent
+        }
+      )
+    );
+    sessionResource = getSourceIri(
+      await saveSolidDatasetInContainer(
+        sessionContainer,
+        createSolidDataset(),
+        options
+      )
+    );
   });
 
   afterEach(async () => {
     await deleteSolidDataset(sessionResource, options);
+    await deleteSolidDataset(sessionContainer, options);
     await session.logout();
   });
 
@@ -108,7 +138,7 @@ describe("An ACP Solid server", () => {
       sessionResource,
       agent,
       { read: true },
-      { fetch: session.fetch }
+      options
     );
     expect(agentAccess).toStrictEqual({
       read: true,
@@ -147,7 +177,7 @@ describe("An ACP Solid server", () => {
     const access = await setPublicAccess(
       sessionResource,
       { read: true },
-      { fetch: session.fetch }
+      options
     );
 
     expect(access).toStrictEqual({
@@ -189,7 +219,7 @@ describe("An ACP Solid server", () => {
         controlRead: true,
         controlWrite: true,
       },
-      { fetch: session.fetch }
+      options
     );
     expect(agentAccess).toStrictEqual({
       read: true,
@@ -221,7 +251,7 @@ describe("An ACP Solid server", () => {
         controlRead: true,
         controlWrite: true,
       },
-      { fetch: session.fetch }
+      options
     );
     const removedAgentAccess = await setAgentAccess(
       sessionResource,
@@ -233,7 +263,7 @@ describe("An ACP Solid server", () => {
         controlRead: false,
         controlWrite: false,
       },
-      { fetch: session.fetch }
+      options
     );
     expect(removedAgentAccess).toStrictEqual({
       read: true,
