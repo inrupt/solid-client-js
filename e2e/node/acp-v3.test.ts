@@ -67,11 +67,10 @@ describe("Authenticated end-to-end ACP V3", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const { containerUrl, resourceUrl, fetchWithAgent } =
-      await setupTestResources(session, TEST_SLUG, env.pod);
-    sessionResource = resourceUrl;
-    sessionContainer = containerUrl;
-    options = { fetch: fetchWithAgent };
+    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    sessionResource = testsetup.resourceUrl;
+    sessionContainer = testsetup.containerUrl;
+    options = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
