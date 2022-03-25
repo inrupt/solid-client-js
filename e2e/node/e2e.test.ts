@@ -78,7 +78,17 @@ describe("Authenticated end-to-end", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    options = { fetch: session.fetch };
+    // Set the user agent to something distinctive to make debug easier
+    const fetchWithAgent = (url: RequestInfo, options?: RequestInit) => {
+      return session.fetch(url, {
+        ...options,
+        headers: {
+          ...options?.headers,
+          "User-Agent": "solid-client node e2e tests"
+        }
+      })
+    }
+    options = { fetch: fetchWithAgent };
     sessionContainer = getSourceIri(
       await createContainerInContainer(
         env.pod, {
@@ -111,13 +121,9 @@ describe("Authenticated end-to-end", () => {
     newDataset = setThing(newDataset, newThing);
 
     const datasetUrl = sessionResource.concat("-crud");
-    await saveSolidDatasetAt(datasetUrl, newDataset, {
-      fetch: session.fetch,
-    });
+    await saveSolidDatasetAt(datasetUrl, newDataset, options);
 
-    const firstSavedDataset = await getSolidDataset(datasetUrl, {
-      fetch: session.fetch,
-    });
+    const firstSavedDataset = await getSolidDataset(datasetUrl, options);
     const firstSavedThing = getThing(
       firstSavedDataset,
       datasetUrl + "#e2e-test-thing"
@@ -127,13 +133,9 @@ describe("Authenticated end-to-end", () => {
 
     const updatedThing = setBoolean(firstSavedThing, arbitraryPredicate, false);
     const updatedDataset = setThing(firstSavedDataset, updatedThing);
-    await saveSolidDatasetAt(datasetUrl, updatedDataset, {
-      fetch: session.fetch,
-    });
+    await saveSolidDatasetAt(datasetUrl, updatedDataset, options);
 
-    const secondSavedDataset = await getSolidDataset(datasetUrl, {
-      fetch: session.fetch,
-    });
+    const secondSavedDataset = await getSolidDataset(datasetUrl, options);
     const secondSavedThing = getThing(
       secondSavedDataset,
       datasetUrl + "#e2e-test-thing"
@@ -141,9 +143,9 @@ describe("Authenticated end-to-end", () => {
     expect(secondSavedThing).not.toBeNull();
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
-    await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+    await deleteSolidDataset(datasetUrl, options);
     await expect(() =>
-      getSolidDataset(datasetUrl, { fetch: session.fetch })
+      getSolidDataset(datasetUrl, options)
     ).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
@@ -154,12 +156,8 @@ describe("Authenticated end-to-end", () => {
   it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
-    const sessionFile = await overwriteFile(fileUrl, Buffer.from("test"), {
-      fetch: session.fetch,
-    });
-    const sessionDataset = await getSolidDataset(sessionResource, {
-      fetch: session.fetch,
-    });
+    const sessionFile = await overwriteFile(fileUrl, Buffer.from("test"), options);
+    const sessionDataset = await getSolidDataset(sessionResource, options);
 
     expect(isRawData(sessionDataset)).toBe(false);
     expect(isRawData(sessionFile)).toBe(true);
@@ -174,7 +172,7 @@ describe("Authenticated end-to-end", () => {
     const newContainer1 = await createContainerAt(containerUrl, options);
     const newContainer2 = await createContainerInContainer(
       containerContainerUrl,
-      { slugSuggestion: containerName, fetch: session.fetch }
+      { ...options, slugSuggestion: containerName }
     );
 
     expect(getSourceUrl(newContainer1)).toBe(containerUrl);
@@ -182,8 +180,8 @@ describe("Authenticated end-to-end", () => {
       `${containerContainerUrl}${containerName}/`
     );
 
-    await deleteFile(containerUrl, { fetch: session.fetch });
-    await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
+    await deleteFile(containerUrl, options);
+    await deleteFile(getSourceUrl(newContainer2), options);
   });
 
   it("can update Things containing Blank Nodes in different instances of the same SolidDataset", async () => {
@@ -199,15 +197,11 @@ describe("Authenticated end-to-end", () => {
 
     const datasetUrl = sessionResource.concat("-blank");
     try {
-      await saveSolidDatasetAt(datasetUrl, newDataset, {
-        fetch: session.fetch,
-      });
+      await saveSolidDatasetAt(datasetUrl, newDataset, options);
 
       // Fetch the initialised SolidDataset for the first time,
       // and change the non-blank node value:
-      const initialisedDataset = await getSolidDataset(datasetUrl, {
-        fetch: session.fetch,
-      });
+      const initialisedDataset = await getSolidDataset(datasetUrl, options);
       const initialisedThing = getThing(
         initialisedDataset,
         datasetUrl + "#e2e-test-thing-with-blank-node"
@@ -220,18 +214,14 @@ describe("Authenticated end-to-end", () => {
       );
 
       // Now fetch the Resource again, and try to insert the updated Thing into it:
-      const refetchedDataset = await getSolidDataset(datasetUrl, {
-        fetch: session.fetch,
-      });
+      const refetchedDataset = await getSolidDataset(datasetUrl, options);
       const updatedDataset = setThing(refetchedDataset, updatedThing);
       await expect(
-        saveSolidDatasetAt(datasetUrl, updatedDataset, {
-          fetch: session.fetch,
-        })
+        saveSolidDatasetAt(datasetUrl, updatedDataset, options)
       ).resolves.not.toThrow();
     } finally {
       // Clean up after ourselves
-      await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+      await deleteSolidDataset(datasetUrl, options);
     }
   });
 
