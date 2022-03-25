@@ -47,15 +47,6 @@ import {
   getSourceIri,
   saveSolidDatasetInContainer,
 } from "../../src/index";
-// Functions from this module have to be imported from the module directly,
-// because their names overlap with access system-specific versions,
-// and therefore aren't exported from the package root:
-import { getPublicAccess as latest_getPublicAccess } from "../../src/universal/getPublicAccess";
-import { setPublicAccess as latest_setPublicAccess } from "../../src/universal/setPublicAccess";
-import {
-  setPublicAccess as legacy_setPublicAccess,
-  getPublicAccess as legacy_getPublicAccess,
-} from "../../src/access/universal";
 import { blankNode } from "@rdfjs/dataset";
 import {
   getTestingEnvironment,
@@ -65,7 +56,7 @@ import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 const env: TestingEnvironment = getTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
+
 if (env.environment === "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
@@ -228,69 +219,5 @@ describe("Authenticated end-to-end", () => {
 
   it("cannot fetch non public resources unauthenticated", async () => {
     await expect(getSolidDataset(sessionResource)).rejects.toThrow();
-  });
-
-  it("can read and change access to a resource", async () => {
-    const setPublicAccess = env.feature.acp
-      ? latest_setPublicAccess
-      : legacy_setPublicAccess;
-  const getPublicAccess = env.feature.acp
-      ? latest_getPublicAccess
-      : legacy_getPublicAccess;
-
-    await expect(
-      getPublicAccess(sessionResource, options)
-    ).resolves.toStrictEqual({
-      read: false,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    const publicAccess = await setPublicAccess(
-      sessionResource,
-      { read: true },
-      options
-    );
-    expect(publicAccess).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    // Fetching the public resource unauthenticated:
-    try {
-      const publicDataset = await getSolidDataset(sessionResource);
-      expect(publicDataset).not.toBeNull();
-    } catch (e) {
-      console.error(
-        "Unauthenticated fetch is not supported even for public resources"
-      );
-
-      // FIXME: The following should work.
-      // const publicDataset = await getSolidDataset(datasetUrl, {
-      //   fetch: session.fetch
-      // });
-
-      // // eslint-disable-next-line jest/no-conditional-expect, jest/no-try-expect
-      // expect(getEffectiveAccess(publicDataset).public).toStrictEqual({
-      //   read: true,
-      //   append: false,
-      //   write: false
-      // });
-    }
-
-    await expect(
-      getPublicAccess(sessionResource, options)
-    ).resolves.toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
   });
 });
