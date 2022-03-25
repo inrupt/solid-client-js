@@ -50,7 +50,7 @@ import {
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import { setupTestResources, teardownTestResources } from "./test-setup";
 
-const TEST_SLUG = "solid-client-test-e2e-acp_v3"
+const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
@@ -67,14 +67,20 @@ describe("Authenticated end-to-end ACP V3", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const { containerUrl, resourceUrl, fetchWithAgent } = await setupTestResources(session, TEST_SLUG, env.pod);
+    const { containerUrl, resourceUrl, fetchWithAgent } =
+      await setupTestResources(session, TEST_SLUG, env.pod);
     sessionResource = resourceUrl;
     sessionContainer = containerUrl;
     options = { fetch: fetchWithAgent };
   });
 
   afterEach(async () => {
-    await teardownTestResources(session, sessionContainer, sessionResource, options.fetch);
+    await teardownTestResources(
+      session,
+      sessionContainer,
+      sessionResource,
+      options.fetch
+    );
   });
 
   async function initialisePolicyResource(
@@ -209,9 +215,16 @@ describe("Authenticated end-to-end ACP V3", () => {
   it("can set Access from a Resource's ACR", async () => {
     const resourceUrl = sessionResource.concat("-resource");
 
-    await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), options);
+    await overwriteFile(
+      resourceUrl,
+      Buffer.from("To-be-public Resource"),
+      options
+    );
 
-    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(resourceUrl, options);
+    const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
+      resourceUrl,
+      options
+    );
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
         `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`

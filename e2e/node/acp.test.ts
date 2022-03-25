@@ -58,7 +58,7 @@ import {
 import { hasAccessibleAcr } from "../../src/acp/acp";
 import { setupTestResources, teardownTestResources } from "./test-setup";
 
-const TEST_SLUG = "solid-client-test-e2e-acp"
+const TEST_SLUG = "solid-client-test-e2e-acp";
 
 const env: TestingEnvironment = getTestingEnvironment();
 if (env.feature.acp !== true) {
@@ -74,14 +74,20 @@ describe("An ACP Solid server", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const { containerUrl, resourceUrl, fetchWithAgent } = await setupTestResources(session, TEST_SLUG, env.pod);
+    const { containerUrl, resourceUrl, fetchWithAgent } =
+      await setupTestResources(session, TEST_SLUG, env.pod);
     sessionResource = resourceUrl;
     sessionContainer = containerUrl;
     options = { fetch: fetchWithAgent };
   });
 
   afterEach(async () => {
-    await teardownTestResources(session, sessionContainer, sessionResource, options.fetch);
+    await teardownTestResources(
+      session,
+      sessionContainer,
+      sessionResource,
+      options.fetch
+    );
   });
 
   it("advertises its ACLs as ACP AccessControlResources", async () => {
@@ -89,10 +95,15 @@ describe("An ACP Solid server", () => {
   });
 
   it("can read ACP access controls", async () => {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(sessionResource, options);
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+      sessionResource,
+      options
+    );
     expect(resourceWithAcr).toBeDefined();
     if (!hasAccessibleAcr(resourceWithAcr)) {
-      throw new Error(`${getSourceUrl(resourceWithAcr)} has no accessible ACR.`);
+      throw new Error(
+        `${getSourceUrl(resourceWithAcr)} has no accessible ACR.`
+      );
     }
     const accessControlUrlArray = getAccessControlUrlAll(resourceWithAcr);
     expect(accessControlUrlArray).toHaveLength(1);
@@ -140,11 +151,11 @@ describe("An ACP Solid server", () => {
 
   it("can get and set read access for the public", async () => {
     const setPublicAccess = env.feature.acp
-        ? latest_setPublicAccess
-        : legacy_setPublicAccess;
+      ? latest_setPublicAccess
+      : legacy_setPublicAccess;
     const getPublicAccess = env.feature.acp
-        ? latest_getPublicAccess
-        : legacy_getPublicAccess;
+      ? latest_getPublicAccess
+      : legacy_getPublicAccess;
 
     await expect(getSolidDataset(sessionResource, options)).resolves.toEqual(
       expect.objectContaining({ graphs: { default: {} } })

@@ -20,38 +20,49 @@
  */
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { createContainerInContainer, createSolidDataset, deleteSolidDataset, getSourceIri, saveSolidDatasetInContainer } from "../../src";
+import {
+  createContainerInContainer,
+  createSolidDataset,
+  deleteSolidDataset,
+  getSourceIri,
+  saveSolidDatasetInContainer,
+} from "../../src";
 
-export async function setupTestResources(session: Session, slug: string, podRoot: string) {
+export async function setupTestResources(
+  session: Session,
+  slug: string,
+  podRoot: string
+) {
   // Set the user agent to something distinctive to make debug easier
   const fetchWithAgent = (url: RequestInfo, options?: RequestInit) => {
     return session.fetch(url, {
       ...options,
       headers: {
         ...options?.headers,
-        "User-Agent": slug
-      }
-    })
-  }
+        "User-Agent": slug,
+      },
+    });
+  };
   const containerUrl = getSourceIri(
-    await createContainerInContainer(
-      podRoot, {
-        fetch: fetchWithAgent,
-        slugSuggestion: slug,
-      }
-    )
+    await createContainerInContainer(podRoot, {
+      fetch: fetchWithAgent,
+      slugSuggestion: slug,
+    })
   );
   const resourceUrl = getSourceIri(
-    await saveSolidDatasetInContainer(
-      containerUrl,
-      createSolidDataset(),
-      { fetch: fetchWithAgent }
-    )
+    await saveSolidDatasetInContainer(containerUrl, createSolidDataset(), {
+      fetch: fetchWithAgent,
+    })
   );
   return { containerUrl, resourceUrl, fetchWithAgent };
 }
 
-export async function teardownTestResources(session: Session, containerUrl: string, resourceUrl: string, userAgentFetch: typeof fetch) {
+export async function teardownTestResources(
+  session: Session,
+  containerUrl: string,
+  resourceUrl: string,
+  userAgentFetch: typeof fetch
+) {
   await deleteSolidDataset(resourceUrl, { fetch: userAgentFetch });
   await deleteSolidDataset(containerUrl, { fetch: userAgentFetch });
   await session.logout();

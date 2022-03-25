@@ -63,7 +63,7 @@ if (env.environment === "NSS") {
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
-const TEST_SLUG = "solid-client-test-e2e-resource"
+const TEST_SLUG = "solid-client-test-e2e-resource";
 
 describe("Authenticated end-to-end", () => {
   let options: { fetch: typeof global.fetch };
@@ -73,14 +73,20 @@ describe("Authenticated end-to-end", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const { containerUrl, resourceUrl, fetchWithAgent } = await setupTestResources(session, TEST_SLUG, env.pod);
+    const { containerUrl, resourceUrl, fetchWithAgent } =
+      await setupTestResources(session, TEST_SLUG, env.pod);
     sessionResource = resourceUrl;
     sessionContainer = containerUrl;
     options = { fetch: fetchWithAgent };
   });
 
   afterEach(async () => {
-    await teardownTestResources(session, sessionContainer, sessionResource, options.fetch);
+    await teardownTestResources(
+      session,
+      sessionContainer,
+      sessionResource,
+      options.fetch
+    );
   });
 
   it("can create, read, update and delete data", async () => {
@@ -115,9 +121,7 @@ describe("Authenticated end-to-end", () => {
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
     await deleteSolidDataset(datasetUrl, options);
-    await expect(() =>
-      getSolidDataset(datasetUrl, options)
-    ).rejects.toEqual(
+    await expect(() => getSolidDataset(datasetUrl, options)).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
       })
@@ -127,7 +131,11 @@ describe("Authenticated end-to-end", () => {
   it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
-    const sessionFile = await overwriteFile(fileUrl, Buffer.from("test"), options);
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      Buffer.from("test"),
+      options
+    );
     const sessionDataset = await getSolidDataset(sessionResource, options);
 
     expect(isRawData(sessionDataset)).toBe(false);
