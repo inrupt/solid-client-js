@@ -160,12 +160,10 @@ describe("An ACP Solid server", () => {
   });
 
   it("can get and set read access for the public", async () => {
-    const setPublicAccess =
-      env.environment === "Inrupt Dev-Next"
+    const setPublicAccess = env.feature.acp
         ? latest_setPublicAccess
         : legacy_setPublicAccess;
-    const getPublicAccess =
-      env.environment === "Inrupt Dev-Next"
+    const getPublicAccess = env.feature.acp
         ? latest_getPublicAccess
         : legacy_getPublicAccess;
 

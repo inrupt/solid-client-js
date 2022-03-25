@@ -50,11 +50,12 @@ import {
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
 // and therefore aren't exported from the package root:
+import { getPublicAccess as latest_getPublicAccess } from "../../src/universal/getPublicAccess";
+import { setPublicAccess as latest_setPublicAccess } from "../../src/universal/setPublicAccess";
 import {
-  getPublicAccess as getPublicAccessUniversal,
-  setPublicAccess as setPublicAccessUniversal,
+  setPublicAccess as legacy_setPublicAccess,
+  getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
-
 import { blankNode } from "@rdfjs/dataset";
 import {
   getTestingEnvironment,
@@ -230,8 +231,15 @@ describe("Authenticated end-to-end", () => {
   });
 
   it("can read and change access to a resource", async () => {
+    const setPublicAccess = env.feature.acp
+      ? latest_setPublicAccess
+      : legacy_setPublicAccess;
+  const getPublicAccess = env.feature.acp
+      ? latest_getPublicAccess
+      : legacy_getPublicAccess;
+
     await expect(
-      getPublicAccessUniversal(sessionResource, options)
+      getPublicAccess(sessionResource, options)
     ).resolves.toStrictEqual({
       read: false,
       append: false,
@@ -240,7 +248,7 @@ describe("Authenticated end-to-end", () => {
       controlWrite: false,
     });
 
-    const publicAccess = await setPublicAccessUniversal(
+    const publicAccess = await setPublicAccess(
       sessionResource,
       { read: true },
       options
@@ -276,7 +284,7 @@ describe("Authenticated end-to-end", () => {
     }
 
     await expect(
-      getPublicAccessUniversal(sessionResource, options)
+      getPublicAccess(sessionResource, options)
     ).resolves.toStrictEqual({
       read: true,
       append: false,
