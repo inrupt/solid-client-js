@@ -44,6 +44,8 @@ import {
   createThing,
   createSolidDataset,
   deleteSolidDataset,
+  getSourceIri,
+  saveSolidDatasetInContainer,
 } from "../../src/index";
 // Functions from this module have to be imported from the module directly,
 // because their names overlap with access system-specific versions,
@@ -71,17 +73,32 @@ if (env.environment === "NSS") {
 describe("Authenticated end-to-end", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
+  let sessionContainer: string;
   let sessionResource: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+    sessionContainer = getSourceIri(
+      await createContainerInContainer(
+        env.pod, {
+          ...options,
+          slugSuggestion: "solid-client-tests-node-e2e",
+        }
+      )
+    );
+    sessionResource = getSourceIri(
+      await saveSolidDatasetInContainer(
+        sessionContainer,
+        createSolidDataset(),
+        options
+      )
+    );
   });
 
   afterEach(async () => {
     await deleteSolidDataset(sessionResource, options);
+    await deleteSolidDataset(sessionContainer, options);
     await session.logout();
   });
 

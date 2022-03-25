@@ -85,8 +85,8 @@ describe("An ACP Solid server", () => {
     sessionContainer = getSourceIri(
       await createContainerInContainer(
         env.pod, {
+          ...options,
           slugSuggestion: "solid-client-tests-node-acp",
-          fetch: fetchWithAgent
         }
       )
     );
