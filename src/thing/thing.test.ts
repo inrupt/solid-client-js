@@ -407,6 +407,7 @@ describe("getThingAll", () => {
 describe("setThing", () => {
   const mockThing1Iri = "https://some.vocab/subject1";
   const mockThing2Iri = "https://some.vocab/subject2";
+  const mockThing3Iri = "https://some.vocab/subject3";
   const mockThing1: ThingPersisted = {
     type: "Subject",
     url: mockThing1Iri,
@@ -422,6 +423,22 @@ describe("setThing", () => {
     predicates: {
       ["https://arbitrary.vocab/predicate"]: {
         namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockThing3: ThingPersisted = {
+    type: "Subject",
+    url: mockThing3Iri,
+    predicates: {
+      ["https://arbitrary.vocab/predicate"]: {
+        namedNodes: ["https://arbitrary.vocab/object"],
+        blankNodes: [
+          {
+            ["https://arbitrary.vocab/blanknode/predicate"]: {
+              namedNodes: ["https://arbitrary.vocab/blanknode/object"],
+            },
+          },
+        ],
       },
     },
   };
@@ -575,6 +592,12 @@ describe("setThing", () => {
     expect(
       getThing(updatedDataset, "https://some.pod/resource#subjectName")
     ).toStrictEqual(originalThing);
+  });
+
+  it("will create blank nodes including in a Thing", () => {
+    const dataset = getMockDataset([]);
+    const updatedDataset = setThing(dataset, mockThing3);
+    expect(updatedDataset.internal_changeLog.additions).not.toHaveLength(1);
   });
 });
 
