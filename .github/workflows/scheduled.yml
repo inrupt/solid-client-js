@@ -2,6 +2,8 @@ name: End-to-end node tests
 
 on:
   schedule:
+    branches:
+      - main
     # Run every fifth minute.
     # This is to verify that ESS is running properly.
     - cron: "*/5 * * * *"
