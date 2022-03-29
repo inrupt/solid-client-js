@@ -370,7 +370,7 @@ export * as access from "./access/universal";
 
 /**
  * This API is still experimental, and subject to change. It builds on top of both
- * ACP and ACL, aiming at being adaptable to any Access Control system that may be
+ * ACP and WAC, aiming at being adaptable to any Access Control system that may be
  * implemented in Solid. That is why it is purely Resource-centric: the library
  * discovers metadata associated with the Resource itself, and calls the appropriate
  * underlying API to deal with the Access Control in place for the target Resource.
