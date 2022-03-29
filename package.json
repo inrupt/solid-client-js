@@ -178,7 +178,7 @@
     "fast-check": "^2.2.0",
     "jest": "^27.0.4",
     "license-checker": "^25.0.1",
-    "prettier": "2.6.0",
+    "prettier": "2.6.1",
     "rdf-namespaces": "^1.8.0",
     "rollup": "^2.15.0",
     "rollup-plugin-typescript2": "^0.31.0",
