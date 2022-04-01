@@ -8,7 +8,7 @@ SOURCEDIR     = source
 GIT_BRANCH    :=$(shell git rev-parse --abbrev-ref HEAD)
 BUILDDIR      = build
 SPHINXOPTS    = -d $(BUILDDIR)/doctrees -W 
-SOURCECOPYDIR = $(BUILDDIR)/source/
+SOURCECOPYDIR = $(BUILDDIR)/source
 
 # Will need later for scrubbing generated .md files
 MY_OS         :=$(shell uname)

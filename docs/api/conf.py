@@ -26,7 +26,7 @@ copyright = u'{0} Inrupt Inc.'.format(datetime.date.today().year)
 # -- product name -----
 # -- Separately update code samples and toc links and docs-navbar since not using substitutions--
 
-name = 'solid-client API'
+name = 'solid-client'
 repo_name = '{0}-js'.format(name)
 
 pygments_style = 'sphinx'
@@ -77,7 +77,7 @@ html_title = 'Inrupt {0} Documentation'.format(name)
 # as well as some for pydata_sphinx_theme
 
 html_theme_options = {
-    'project_title': 'Inrupt {0}'.format(name),
+    'project_title': '@inrupt/{0} API'.format(name),
     'banner': False,
     'banner_msg': '',
     'robots_index': True,
@@ -85,7 +85,7 @@ html_theme_options = {
     'github_org': 'inrupt',
     'github_repo': repo_name,
     'github_branch': 'main',
-    'docs_project': 'developer-tools/api/javascript/solid-client',
+    'docs_project': 'developer-tools/api/javascript/{0}'.format(name),
     'show_api_menu': True,
     
     # below are pydata_sphinx_theme
@@ -131,3 +131,4 @@ gettext_compact = False     # optional.
 
 myst_heading_anchors = 6
 myst_url_schemes = [ 'https' ]
+myst_enable_extensions = ['colon_fence']
