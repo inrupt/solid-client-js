@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         environment-name:
-          ["Inrupt Production", "Inrupt 1.1", "NSS"]
+          ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
