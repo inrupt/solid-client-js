@@ -256,7 +256,7 @@ export {
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- * 
+ *
  * @hidden
  * @deprecated Replaced by [[acp_v2]].
  */
@@ -271,7 +271,7 @@ export { acp_v1 } from "./acp/v1";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- * 
+ *
  * @hidden
  * @deprecated Replaced by [[acp_v3]].
  */

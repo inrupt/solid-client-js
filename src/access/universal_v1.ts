@@ -411,7 +411,7 @@ export async function setGroupAccess(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @since 1.5.0
- * 
+ *
  * @hidden
  * @deprecated Please import from the "universal" modules.
  */
