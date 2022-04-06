@@ -44,15 +44,9 @@ import {
   createThing,
   createSolidDataset,
   deleteSolidDataset,
+  getSourceIri,
+  saveSolidDatasetInContainer,
 } from "../../src/index";
-// Functions from this module have to be imported from the module directly,
-// because their names overlap with access system-specific versions,
-// and therefore aren't exported from the package root:
-import {
-  getPublicAccess as getPublicAccessUniversal,
-  setPublicAccess as setPublicAccessUniversal,
-} from "../../src/access/universal";
-
 import { blankNode } from "@rdfjs/dataset";
 import {
   getTestingEnvironment,
@@ -60,29 +54,38 @@ import {
 } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import type { Session } from "@inrupt/solid-client-authn-node";
+import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const env: TestingEnvironment = getTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
+
 if (env.environment === "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
+const TEST_SLUG = "solid-client-test-e2e-resource";
+
 describe("Authenticated end-to-end", () => {
-  let options: { fetch: typeof global.fetch };
+  let fetchOptions: { fetch: typeof global.fetch };
   let session: Session;
+  let sessionContainer: string;
   let sessionResource: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-    options = { fetch: session.fetch };
-    await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
+    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    sessionResource = testsetup.resourceUrl;
+    sessionContainer = testsetup.containerUrl;
+    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
-    await deleteSolidDataset(sessionResource, options);
-    await session.logout();
+    await teardownTestResources(
+      session,
+      sessionContainer,
+      sessionResource,
+      fetchOptions.fetch
+    );
   });
 
   it("can create, read, update and delete data", async () => {
@@ -94,13 +97,9 @@ describe("Authenticated end-to-end", () => {
     newDataset = setThing(newDataset, newThing);
 
     const datasetUrl = sessionResource.concat("-crud");
-    await saveSolidDatasetAt(datasetUrl, newDataset, {
-      fetch: session.fetch,
-    });
+    await saveSolidDatasetAt(datasetUrl, newDataset, fetchOptions);
 
-    const firstSavedDataset = await getSolidDataset(datasetUrl, {
-      fetch: session.fetch,
-    });
+    const firstSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const firstSavedThing = getThing(
       firstSavedDataset,
       datasetUrl + "#e2e-test-thing"
@@ -110,13 +109,9 @@ describe("Authenticated end-to-end", () => {
 
     const updatedThing = setBoolean(firstSavedThing, arbitraryPredicate, false);
     const updatedDataset = setThing(firstSavedDataset, updatedThing);
-    await saveSolidDatasetAt(datasetUrl, updatedDataset, {
-      fetch: session.fetch,
-    });
+    await saveSolidDatasetAt(datasetUrl, updatedDataset, fetchOptions);
 
-    const secondSavedDataset = await getSolidDataset(datasetUrl, {
-      fetch: session.fetch,
-    });
+    const secondSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const secondSavedThing = getThing(
       secondSavedDataset,
       datasetUrl + "#e2e-test-thing"
@@ -124,9 +119,9 @@ describe("Authenticated end-to-end", () => {
     expect(secondSavedThing).not.toBeNull();
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
-    await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+    await deleteSolidDataset(datasetUrl, fetchOptions);
     await expect(() =>
-      getSolidDataset(datasetUrl, { fetch: session.fetch })
+      getSolidDataset(datasetUrl, fetchOptions)
     ).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
@@ -137,27 +132,27 @@ describe("Authenticated end-to-end", () => {
   it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
-    const sessionFile = await overwriteFile(fileUrl, Buffer.from("test"), {
-      fetch: session.fetch,
-    });
-    const sessionDataset = await getSolidDataset(sessionResource, {
-      fetch: session.fetch,
-    });
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      Buffer.from("test"),
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
     expect(isRawData(sessionDataset)).toBe(false);
     expect(isRawData(sessionFile)).toBe(true);
 
-    await deleteFile(fileUrl, options);
+    await deleteFile(fileUrl, fetchOptions);
   });
 
   it("can create and remove Containers", async () => {
     const containerUrl = `${env.pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
     const containerContainerUrl = `${env.pod}solid-client-tests/node/container-test/`;
     const containerName = `container2-${session.info.sessionId}`;
-    const newContainer1 = await createContainerAt(containerUrl, options);
+    const newContainer1 = await createContainerAt(containerUrl, fetchOptions);
     const newContainer2 = await createContainerInContainer(
       containerContainerUrl,
-      { slugSuggestion: containerName, fetch: session.fetch }
+      { ...fetchOptions, slugSuggestion: containerName }
     );
 
     expect(getSourceUrl(newContainer1)).toBe(containerUrl);
@@ -165,8 +160,8 @@ describe("Authenticated end-to-end", () => {
       `${containerContainerUrl}${containerName}/`
     );
 
-    await deleteFile(containerUrl, { fetch: session.fetch });
-    await deleteFile(getSourceUrl(newContainer2), { fetch: session.fetch });
+    await deleteFile(containerUrl, fetchOptions);
+    await deleteFile(getSourceUrl(newContainer2), fetchOptions);
   });
 
   it("can update Things containing Blank Nodes in different instances of the same SolidDataset", async () => {
@@ -182,15 +177,14 @@ describe("Authenticated end-to-end", () => {
 
     const datasetUrl = sessionResource.concat("-blank");
     try {
-      await saveSolidDatasetAt(datasetUrl, newDataset, {
-        fetch: session.fetch,
-      });
+      await saveSolidDatasetAt(datasetUrl, newDataset, fetchOptions);
 
       // Fetch the initialised SolidDataset for the first time,
       // and change the non-blank node value:
-      const initialisedDataset = await getSolidDataset(datasetUrl, {
-        fetch: session.fetch,
-      });
+      const initialisedDataset = await getSolidDataset(
+        datasetUrl,
+        fetchOptions
+      );
       const initialisedThing = getThing(
         initialisedDataset,
         datasetUrl + "#e2e-test-thing-with-blank-node"
@@ -203,79 +197,18 @@ describe("Authenticated end-to-end", () => {
       );
 
       // Now fetch the Resource again, and try to insert the updated Thing into it:
-      const refetchedDataset = await getSolidDataset(datasetUrl, {
-        fetch: session.fetch,
-      });
+      const refetchedDataset = await getSolidDataset(datasetUrl, fetchOptions);
       const updatedDataset = setThing(refetchedDataset, updatedThing);
       await expect(
-        saveSolidDatasetAt(datasetUrl, updatedDataset, {
-          fetch: session.fetch,
-        })
+        saveSolidDatasetAt(datasetUrl, updatedDataset, fetchOptions)
       ).resolves.not.toThrow();
     } finally {
       // Clean up after ourselves
-      await deleteSolidDataset(datasetUrl, { fetch: session.fetch });
+      await deleteSolidDataset(datasetUrl, fetchOptions);
     }
   });
 
   it("cannot fetch non public resources unauthenticated", async () => {
     await expect(getSolidDataset(sessionResource)).rejects.toThrow();
-  });
-
-  it("can read and change access to a resource", async () => {
-    await expect(
-      getPublicAccessUniversal(sessionResource, options)
-    ).resolves.toStrictEqual({
-      read: false,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    const publicAccess = await setPublicAccessUniversal(
-      sessionResource,
-      { read: true },
-      options
-    );
-    expect(publicAccess).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    // Fetching the public resource unauthenticated:
-    try {
-      const publicDataset = await getSolidDataset(sessionResource);
-      expect(publicDataset).not.toBeNull();
-    } catch (e) {
-      console.error(
-        "Unauthenticated fetch is not supported even for public resources"
-      );
-
-      // FIXME: The following should work.
-      // const publicDataset = await getSolidDataset(datasetUrl, {
-      //   fetch: session.fetch
-      // });
-
-      // // eslint-disable-next-line jest/no-conditional-expect, jest/no-try-expect
-      // expect(getEffectiveAccess(publicDataset).public).toStrictEqual({
-      //   read: true,
-      //   append: false,
-      //   write: false
-      // });
-    }
-
-    await expect(
-      getPublicAccessUniversal(sessionResource, options)
-    ).resolves.toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
   });
 });
