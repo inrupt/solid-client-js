@@ -49,6 +49,7 @@
  * @packageDocumentation
  * @module acp_ess_2
  */
+
 export {
   getFileWithAccessDatasets,
   getFileWithAcr,
@@ -61,7 +62,6 @@ export {
   saveAcrFor,
   isAcpControlled,
 } from "./acp";
-
 export {
   hasLinkedAcr,
   removeAcrPolicyUrlAll,
@@ -69,33 +69,19 @@ export {
   removeMemberPolicyUrlAll,
   removePolicyUrlAll,
 } from "./control";
-
 export { addAcrPolicyUrl } from "./policy/addAcrPolicyUrl";
-
 export { addMemberAcrPolicyUrl } from "./policy/addMemberAcrPolicyUrl";
-
 export { addMemberPolicyUrl } from "./policy/addMemberPolicyUrl";
-
 export { addPolicyUrl } from "./policy/addPolicyUrl";
-
 export { getAcrPolicyUrlAll } from "./policy/getAcrPolicyUrlAll";
-
 export { getMemberAcrPolicyUrlAll } from "./policy/getMemberAcrPolicyUrlAll";
-
 export { getMemberPolicyUrlAll } from "./policy/getMemberPolicyUrlAll";
-
 export { getPolicyUrlAll } from "./policy/getPolicyUrlAll";
-
 export { removeAcrPolicyUrl } from "./policy/removeAcrPolicyUrl";
-
 export { removeMemberAcrPolicyUrl } from "./policy/removeMemberAcrPolicyUrl";
-
 export { removeMemberPolicyUrl } from "./policy/removeMemberPolicyUrl";
-
 export { removePolicyUrl } from "./policy/removePolicyUrl";
-
 export { setResourcePolicy } from "./policy/setResourcePolicy";
-
 export {
   createPolicy,
   getPolicy,
@@ -114,7 +100,6 @@ export {
   setAllowModesV2 as setAllowModes,
   setDenyModesV2 as setDenyModes,
 } from "./policy";
-
 export {
   addAgent,
   addNoneOfMatcherUrl,
@@ -156,9 +141,6 @@ export {
   removeResourceMatcher,
   setResourceMatcher,
 } from "./matcher";
-
 export { addMockAcrTo, mockAcrFor } from "./mock";
-
 export { getVcAccess } from "./util/getVcAccess";
-
 export { setVcAccess } from "./util/setVcAccess";
