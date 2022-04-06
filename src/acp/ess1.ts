@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
+export {
   getFileWithAccessDatasets,
   getFileWithAcr,
   getLinkedAcrUrl,
@@ -32,7 +32,8 @@ import {
   saveAcrFor,
   isAcpControlled,
 } from "./acp";
-import {
+
+export {
   acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
@@ -52,16 +53,17 @@ import {
   removePolicyUrl,
   removePolicyUrlAll,
 } from "./control";
-import {
+
+export {
   createPolicy,
-  getAllowModesV1,
-  getDenyModesV1,
+  getAllowModesV1 as getAllowModes,
+  getDenyModesV1 as getDenyModes,
   getPolicy,
   getPolicyAll,
   policyAsMarkdown,
   removePolicy,
-  setAllowModesV1,
-  setDenyModesV1,
+  setAllowModesV1 as setAllowModes,
+  setDenyModesV1 as setDenyModes,
   setPolicy,
   createResourcePolicyFor,
   getResourceAcrPolicy,
@@ -73,7 +75,8 @@ import {
   setResourceAcrPolicy,
   setResourcePolicy,
 } from "./policy";
-import {
+
+export {
   addAgent,
   addNoneOfRuleUrl,
   addGroup,
@@ -122,128 +125,5 @@ import {
   removeResourceRule,
   setResourceRule,
 } from "./rule";
-import { addMockAcrTo, mockAcrFor } from "./mock";
 
-const v3AcpFunctions = {
-  getFileWithAccessDatasets,
-  getFileWithAcr,
-  getLinkedAcrUrl,
-  getReferencedPolicyUrlAll,
-  getResourceInfoWithAccessDatasets,
-  getResourceInfoWithAcr,
-  getSolidDatasetWithAccessDatasets,
-  getSolidDatasetWithAcr,
-  hasAccessibleAcr,
-  saveAcrFor,
-  isAcpControlled,
-};
-
-const v3ControlFunctions = {
-  acrAsMarkdown,
-  addAcrPolicyUrl,
-  addMemberAcrPolicyUrl,
-  addMemberPolicyUrl,
-  addPolicyUrl,
-  getAcrPolicyUrlAll,
-  getMemberAcrPolicyUrlAll,
-  getMemberPolicyUrlAll,
-  getPolicyUrlAll,
-  hasLinkedAcr,
-  removeAcrPolicyUrl,
-  removeAcrPolicyUrlAll,
-  removeMemberAcrPolicyUrl,
-  removeMemberAcrPolicyUrlAll,
-  removeMemberPolicyUrl,
-  removeMemberPolicyUrlAll,
-  removePolicyUrl,
-  removePolicyUrlAll,
-};
-
-const v3PolicyFunctions = {
-  createPolicy,
-  getAllowModes: getAllowModesV1,
-  getDenyModes: getDenyModesV1,
-  getPolicy,
-  getPolicyAll,
-  policyAsMarkdown,
-  removePolicy,
-  setAllowModes: setAllowModesV1,
-  setDenyModes: setDenyModesV1,
-  setPolicy,
-  createResourcePolicyFor,
-  getResourceAcrPolicy,
-  getResourceAcrPolicyAll,
-  getResourcePolicy,
-  getResourcePolicyAll,
-  removeResourceAcrPolicy,
-  removeResourcePolicy,
-  setResourceAcrPolicy,
-  setResourcePolicy,
-};
-
-const v3RuleFunctions = {
-  addAgent,
-  addGroup,
-  createRule,
-  getAgentAll,
-  getGroupAll,
-  getRule,
-  getRuleAll,
-  removeAgent,
-  removeGroup,
-  removeRule,
-  ruleAsMarkdown,
-  setAgent,
-  setGroup,
-  setRule,
-  addClient,
-  getClientAll,
-  hasAnyClient,
-  removeClient,
-  setAnyClient,
-  setClient,
-  removeAnyClient,
-  hasAuthenticated,
-  hasCreator,
-  hasPublic,
-  setAuthenticated,
-  setCreator,
-  setPublic,
-  removeAuthenticated,
-  removeCreator,
-  removePublic,
-  getAnyOfRuleUrlAll,
-  addAnyOfRuleUrl,
-  removeAnyOfRuleUrl,
-  setAnyOfRuleUrl,
-  getAllOfRuleUrlAll,
-  addAllOfRuleUrl,
-  removeAllOfRuleUrl,
-  setAllOfRuleUrl,
-  getNoneOfRuleUrlAll,
-  addNoneOfRuleUrl,
-  removeNoneOfRuleUrl,
-  setNoneOfRuleUrl,
-  createResourceRuleFor,
-  getResourceRule,
-  getResourceRuleAll,
-  removeResourceRule,
-  setResourceRule,
-};
-
-const v3MockFunctions = {
-  addMockAcrTo,
-  mockAcrFor,
-};
-
-/**
- * @hidden
- * @deprecated Please import "acp_ess_1" directly.
- */
-export const acp_v3 = {
-  ...v3AcpFunctions,
-  ...v3ControlFunctions,
-  ...v3PolicyFunctions,
-  ...v3RuleFunctions,
-  ...v3MockFunctions,
-};
+export { addMockAcrTo, mockAcrFor } from "./mock";

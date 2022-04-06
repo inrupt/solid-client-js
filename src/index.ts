@@ -256,6 +256,8 @@ export {
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
+ * 
+ * @hidden
  * @deprecated Replaced by [[acp_v2]].
  */
 export { acp_v1 } from "./acp/v1";
@@ -269,6 +271,8 @@ export { acp_v1 } from "./acp/v1";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
+ * 
+ * @hidden
  * @deprecated Replaced by [[acp_v3]].
  */
 export { acp_v2 } from "./acp/v2";
@@ -282,6 +286,9 @@ export { acp_v2 } from "./acp/v2";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
+ *
+ * @hidden
+ * @deprecated Replaced by [[acp_ess_1]].
  */
 export { acp_v3 } from "./acp/v3";
 
@@ -297,8 +304,34 @@ export { acp_v3 } from "./acp/v3";
  *
  * This version of the APIs contains changes that have not been implemented by a server yet. Only
  * switch to it when servers are updated.
+ *
+ * @hidden
+ * @deprecated Replaced by [[acp_ess_2]].
  */
 export { acp_v4 } from "./acp/v4";
+
+/**
+ * This API is still experimental, and subject to change. It builds on top of both
+ * ACP and ACL, aiming at being adaptable to any Access Control system that may be
+ * implemented in Solid. That is why it is purely Resource-centric: the library
+ * discovers metadata associated with the Resource itself, and calls the appropriate
+ * underlying API to deal with the Access Control in place for the target Resource.
+ *
+ * As it is still under development, the following export is *only* intended for experimentation
+ * by early adopters, and is not recommended yet for production applications. Because
+ * of this, all of the Access-related API's are exported on a single object, which does
+ * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
+ * included in your bundle.
+ *
+ * Note that the following object is exposed to be available for environments not
+ * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
+ * or environment with support for export maps, we recommend you import these
+ * functions directly from @inrupt/solid-client/access/universal.
+ *
+ * @hidden
+ * @deprecated Please import from the "universal" module.
+ */
+export * as access_v1 from "./access/universal_v1";
 
 /**
  * This API is still experimental, and subject to change. It builds on top of both
@@ -321,6 +354,7 @@ export { acp_v4 } from "./acp/v4";
  * Additionally, note that this version implements changes that have not been
  * implemented in servers yet. Until they have, please use access_v1.
  *
+ * @hidden
  * @deprecated Please import from the "universal" module.
  */
 export * as access_v2 from "./access/universal_v2";
@@ -343,27 +377,7 @@ export * as access_v2 from "./access/universal_v2";
  * or environment with support for export maps, we recommend you import these
  * functions directly from @inrupt/solid-client/access/universal.
  *
- * @deprecated Please import from the "universal" module.
- */
-export * as access_v1 from "./access/universal_v1";
-/**
- * This API is still experimental, and subject to change. It builds on top of both
- * ACP and ACL, aiming at being adaptable to any Access Control system that may be
- * implemented in Solid. That is why it is purely Resource-centric: the library
- * discovers metadata associated with the Resource itself, and calls the appropriate
- * underlying API to deal with the Access Control in place for the target Resource.
- *
- * As it is still under development, the following export is *only* intended for experimentation
- * by early adopters, and is not recommended yet for production applications. Because
- * of this, all of the Access-related API's are exported on a single object, which does
- * not facilitate tree-shaking: if you use one ACP-related API, all of them will be
- * included in your bundle.
- *
- * Note that the following object is exposed to be available for environments not
- * supporting export maps. For developers using Node 12+, Webpack 5+, or any tool
- * or environment with support for export maps, we recommend you import these
- * functions directly from @inrupt/solid-client/access/universal.
- *
+ * @hidden
  * @deprecated Please import from the "universal" module.
  */
 export * as access from "./access/universal";
@@ -387,3 +401,30 @@ export * as access from "./access/universal";
  * functions directly from @inrupt/solid-client/universal.
  */
 export * as universalAccess from "./universal";
+
+/**
+ * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
+ * To enable early experimentation, solid-client exposes a low-level API. However, this API can and
+ * will include breaking changes in non-major releases. Additionally, for most applications, a
+ * higher-level API that is planned will be more applicable.
+ * Thus, the following export is *only* intended for experimentation by early adopters, and is not
+ * recommended for production applications. Because of this, all ACP-related API's are exported on a
+ * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
+ * them will be included in your bundle.
+ */
+export * as acp_ess_1 from "./acp/ess1";
+
+/**
+ * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
+ * To enable early experimentation, solid-client exposes a low-level API. However, this API can and
+ * will include breaking changes in non-major releases. Additionally, for most applications, a
+ * higher-level API that is planned will be more applicable.
+ * Thus, the following export is *only* intended for experimentation by early adopters, and is not
+ * recommended for production applications. Because of this, all ACP-related API's are exported on a
+ * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
+ * them will be included in your bundle.
+ *
+ * This version of the APIs contains changes that have not been implemented by a server yet. Only
+ * switch to it when servers are updated.
+ */
+export * as acp_ess_2 from "./acp/ess2";
