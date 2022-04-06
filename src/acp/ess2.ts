@@ -19,6 +19,36 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * :::{admonition} Experimental API
+ * :class: important
+ *
+ * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
+ * To enable early experimentation, solid-client exposes a low-level API. However, this API can and
+ * will include breaking changes in non-major releases. Additionally, for most applications, a
+ * higher-level API that is planned will be more applicable.
+ *
+ * Thus, the following export is *only* intended for experimentation by early adopters, and is not
+ * recommended for production applications. Because of this, all ACP-related API's are exported on a
+ * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
+ * them will be included in your bundle.
+ *
+ * For more information see: [Tutorial: Managing
+ * Access](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
+ * :::
+ *
+ * This module can be imported as an object from the main package, which results
+ * in tree-shaking not being supported (so all the exported APIs will likely end
+ * up in your bundle). This import style is used for environments such as nextjs
+ * or create-react-app.
+ *
+ * ```typescript
+ * import { acp_ess_2 } from "@inrupt/solid-client";
+ * ```
+ *
+ * @packageDocumentation
+ * @module acp_ess_2
+ */
 export {
   getFileWithAccessDatasets,
   getFileWithAcr,
