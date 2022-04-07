@@ -60,11 +60,8 @@ if (env.environment === "NSS") {
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
-<<<<<<< HEAD:e2e/node/resource.test.ts
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
-=======
->>>>>>> c5f66764 (chore: fix linting issues in e2e node tests):e2e/node/e2e.test.ts
 describe("Authenticated end-to-end", () => {
   let fetchOptions: { fetch: typeof global.fetch };
   let session: Session;
