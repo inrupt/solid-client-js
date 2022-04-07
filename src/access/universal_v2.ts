@@ -52,6 +52,8 @@ import {
  * - true: this access mode is granted, or
  * - false: this access mode is not granted.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export interface Access {
   read: boolean;
@@ -84,6 +86,8 @@ export interface Access {
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @param webId WebID of the Agent you want to get the access for.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export async function getAgentAccess(
   resourceUrl: UrlString,
@@ -137,6 +141,8 @@ export async function getAgentAccess(
  * @param access What access permissions you want to set for the given Agent to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for the given Agent explicitly.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export async function setAgentAccess(
   resourceUrl: UrlString,
@@ -205,6 +211,8 @@ export async function setAgentAccess(
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @returns The access information to the Resource, grouped by Agent.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export async function getAgentAccessAll(
   resourceUrl: UrlString,
@@ -246,6 +254,8 @@ export async function getAgentAccessAll(
  *
  * @param resourceUrl URL of the Resource you want to read the access for.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export async function getPublicAccess(
   resourceUrl: UrlString,
@@ -297,6 +307,8 @@ export async function getPublicAccess(
  * @param access What access permissions you want to set for everybody to the given Resource. Possible properties are `read`, `append`, `write`, `controlRead` and `controlWrite`: set to `true` to allow, to `false` to stop allowing, or `undefined` to leave unchanged. Take note that `controlRead` and `controlWrite` can not have distinct values for a Pod server implementing Web Access Control; trying this will throw an error.
  * @returns What access has been set for everybody explicitly.
  * @since 1.5.0
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
  */
 export async function setPublicAccess(
   resourceUrl: UrlString,
@@ -335,4 +347,8 @@ export async function setPublicAccess(
   return null;
 }
 
+/**
+ * @hidden
+ * @deprecated Please import from the "universal" modules.
+ */
 export { getAccessFor, getAccessForAll, setAccessFor } from "./for";
