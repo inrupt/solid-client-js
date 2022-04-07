@@ -36,6 +36,8 @@
  * For more information see: [Tutorial: Managing
  * Access](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
  * :::
+ * 
+ * This module supports Inrupt's ESS 1.1 ACP implementation.
  *
  * This module can be imported as an object from the main package, which results
  * in tree-shaking not being supported (so all the exported APIs will likely end
