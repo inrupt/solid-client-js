@@ -1,3 +1,24 @@
+/**
+ * Copyright 2022 Inrupt Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   login,
@@ -7,7 +28,7 @@ import {
   Session,
   ISessionInfo,
 } from "@inrupt/solid-client-authn-browser";
-import SolidClient from "../solidClient"
+import SolidClient from "../solidClient";
 
 const REDIRECT_URL = window.location.href;
 const APP_NAME = "Solid client browser-based tests app";
@@ -18,7 +39,7 @@ export default function AppContainer() {
   const [issuer, setIssuer] = useState<string>(DEFAULT_ISSUER);
 
   useEffect(() => {
-    handleIncomingRedirect().then(setSessionInfo);
+    handleIncomingRedirect().then(setSessionInfo).catch(console.error);
   }, []);
 
   const handleLogin = async () => {
@@ -76,10 +97,11 @@ export default function AppContainer() {
           Log Out
         </button>
       </form>
-      {sessionInfo?.isLoggedIn
-          ? <SolidClient session={getDefaultSession()}/>
-          : <></>}
-      
+      {sessionInfo?.isLoggedIn ? (
+        <SolidClient session={getDefaultSession()} />
+      ) : (
+        <></>
+      )}
     </>
   );
 }

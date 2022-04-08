@@ -35,32 +35,40 @@ test("creating and removing empty Containers", async ({ page }) => {
   await page.waitForSelector("button[data-testid=createContainer]");
 
   // A root container should have been found.
-  await expect(page.locator("span[data-testid=parentContainerUrl]")).toContainText(/https:\/\//)
+  await expect(
+    page.locator("span[data-testid=parentContainerUrl]")
+  ).toContainText(/https:\/\//);
   // No child container should be available yet.
-  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText("None");
+  await expect(
+    page.locator("span[data-testid=childContainerUrl]")
+  ).toContainText("None");
 
   await Promise.all([
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 201),
-    page.click("button[data-testid=createContainer]")
+    page.click("button[data-testid=createContainer]"),
   ]);
 
   // The delete button is only shown once the state has been updated after creation.
   await page.waitForSelector("button[data-testid=deleteContainer]");
-  
+
   // The child container should have been created under the parent
-  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText(
+  await expect(
+    page.locator("span[data-testid=childContainerUrl]")
+  ).toContainText(
     await page.locator("span[data-testid=childContainerUrl]").allInnerTexts()
   );
-  
+
   await Promise.all([
     page.waitForRequest((request) => request.method() === "DELETE"),
     page.waitForResponse((response) => response.status() === 204),
-    page.click("button[data-testid=deleteContainer]")
+    page.click("button[data-testid=deleteContainer]"),
   ]);
 
   await page.waitForSelector("button[data-testid=createContainer]");
 
   // The child container should have been deleted.
-  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText("None");
+  await expect(
+    page.locator("span[data-testid=childContainerUrl]")
+  ).toContainText("None");
 });
