@@ -20,7 +20,7 @@
  */
 
 import { acp, rdf, solid } from "../constants";
-import { isNamedNode } from "../datatypes";
+import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import {
   SolidDataset,
   Thing,
@@ -30,10 +30,11 @@ import {
   WebId,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
+import { getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
 import { getSourceUrl } from "../resource/resource";
-import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
-import { removeIri } from "../thing/remove";
+import { addIri, addStringNoLocale } from "../thing/add";
+import { getIriAll, getStringNoLocaleAll } from "../thing/get";
+import { removeIri, removeStringNoLocale } from "../thing/remove";
 import { setIri, setUrl } from "../thing/set";
 import {
   asUrl,
@@ -808,9 +809,9 @@ export function removeCreator(matcher: Matcher): Matcher {
  * @since Not released yet.
  */
 export function getClientAll(matcher: Matcher): WebId[] {
-  return getIriAll(matcher, acp.client).filter(
-    (client: WebId) => client !== solid.PublicOidcClient
-  );
+  return getIriAll(matcher, acp.client)
+    .concat(getStringNoLocaleAll(matcher, acp.client))
+    .filter((client: WebId) => client !== solid.PublicOidcClient);
 }
 
 /**
@@ -823,8 +824,9 @@ export function getClientAll(matcher: Matcher): WebId[] {
  * @param matcher The Matcher for which clients are set.
  * @param client The Client the Matcher should apply to.
  * @returns A copy of the input Matcher, applying to a different set of Clients.
- * @since Not released yet.
+ * @deprecated.
  */
+/* istanbul ignore next */
 export function setClient(matcher: Matcher, client: WebId): Matcher {
   // Preserve the special "any client" class, which we
   // don't want to overwrite with this function.
@@ -850,6 +852,9 @@ export function setClient(matcher: Matcher, client: WebId): Matcher {
  * @since Not released yet.
  */
 export function addClient(matcher: Matcher, client: WebId): Matcher {
+  if (!internal_isValidUrl(client)) {
+    return addStringNoLocale(matcher, acp.client, client);
+  }
   return addIri(matcher, acp.client, client);
 }
 
@@ -866,6 +871,9 @@ export function addClient(matcher: Matcher, client: WebId): Matcher {
  * @since Not released yet.
  */
 export function removeClient(matcher: Matcher, client: WebId): Matcher {
+  if (!internal_isValidUrl(client)) {
+    return removeStringNoLocale(matcher, acp.client, client);
+  }
   return removeIri(matcher, acp.client, client);
 }
 

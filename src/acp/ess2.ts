@@ -133,7 +133,6 @@ export {
   addClient,
   getClientAll,
   removeClient,
-  setClient,
   removeAuthenticated,
   removeCreator,
   removePublic,

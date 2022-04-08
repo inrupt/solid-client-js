@@ -100,7 +100,6 @@ it("exports Inrupt ESS 1.1 ACP functions", () => {
   expect(acp_ess_2.setAllowModes).toBeDefined();
   expect(acp_ess_2.setAnyOfMatcherUrl).toBeDefined();
   expect(acp_ess_2.setAuthenticated).toBeDefined();
-  expect(acp_ess_2.setClient).toBeDefined();
   expect(acp_ess_2.setCreator).toBeDefined();
   expect(acp_ess_2.setDenyModes).toBeDefined();
   expect(acp_ess_2.setMatcher).toBeDefined();
