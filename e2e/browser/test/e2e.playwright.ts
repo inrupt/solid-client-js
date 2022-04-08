@@ -22,35 +22,45 @@
 /* eslint-disable jest/no-done-callback */
 
 import { test, expect } from "@playwright/test";
-
-// We re-use the test helpers from elsewhere, but we need to ignore the
-// TypeScript error (TS6059) that complains about not all files being under the
-// one 'rootDir'.
-// @ts-ignore
-import type { getHelpers } from "./webapp/src/helpers";
-import { getBrowserTestingEnvironment } from "../util/getTestingEnvironment";
+import { getBrowserTestingEnvironment } from "../../util/getTestingEnvironment";
 import { essUserLogin } from "./roles";
 
-// E2eHelpers is a global defined in ./webapp/src/helpers.ts
-// Since code inside of page.evaluate is executed in that context in the browser,
-// that variable is available to it - but as far as TypeScript is concerned,
-// it is executed in the context of this test file.
-// Hence, we just declare this variable to be of the same type here.
-const E2eHelpers: ReturnType<typeof getHelpers> = {} as any;
+const { username, password } = getBrowserTestingEnvironment();
 
-test("creating and removing empty Containers", async ({ page, baseURL }) => {
-  const env = getBrowserTestingEnvironment();
+test("creating and removing empty Containers", async ({ page }) => {
+  await page.goto("/");
+  await essUserLogin(page, username, password);
 
-  await page.goto(baseURL);
-  await essUserLogin(page, env);
+  // The button is only shown once the app is ready.
+  await page.waitForSelector("button[data-testid=createContainer]");
 
-  const createContainer = () =>
-    page.evaluate(() => E2eHelpers.createContainer());
-  const deleteContainer = () =>
-    page.evaluate(() => E2eHelpers.deleteContainer());
+  // A root container should have been found.
+  await expect(page.locator("span[data-testid=parentContainerUrl]")).toContainText(/https:\/\//)
+  // No child container should be available yet.
+  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText("None");
 
-  const createdContainer = await createContainer();
-  expect(createdContainer).not.toBeNull();
-  expect(createdContainer).toEqual(expect.objectContaining({}));
-  await deleteContainer();
+  await Promise.all([
+    page.waitForRequest((request) => request.method() === "POST"),
+    page.waitForResponse((response) => response.status() === 201),
+    page.click("button[data-testid=createContainer]")
+  ]);
+
+  // The delete button is only shown once the state has been updated after creation.
+  await page.waitForSelector("button[data-testid=deleteContainer]");
+  
+  // The child container should have been created under the parent
+  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText(
+    await page.locator("span[data-testid=childContainerUrl]").allInnerTexts()
+  );
+  
+  await Promise.all([
+    page.waitForRequest((request) => request.method() === "DELETE"),
+    page.waitForResponse((response) => response.status() === 204),
+    page.click("button[data-testid=deleteContainer]")
+  ]);
+
+  await page.waitForSelector("button[data-testid=createContainer]");
+
+  // The child container should have been deleted.
+  await expect(page.locator("span[data-testid=childContainerUrl]")).toContainText("None");
 });
