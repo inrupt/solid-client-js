@@ -19,6 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { setupEnv } from "./setupEnv";
+
 export interface TestingEnvironment {
   environment: "Inrupt Dev-Next" | "Inrupt Production" | "Inrupt 1.1" | "NSS";
   idp: string;
@@ -53,6 +55,7 @@ function checkEnvVars(...keys: string[]) {
 }
 
 function getTestingEnvironment(): TestingEnvironment {
+  setupEnv();
   if (
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production" &&

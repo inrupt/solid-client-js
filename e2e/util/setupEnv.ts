@@ -20,6 +20,7 @@
  */
 
 import { config } from "dotenv-flow";
+import { join } from "path";
 
 export function setupEnv() {
   // If we're in CI, the environment is already configured.
@@ -29,7 +30,6 @@ export function setupEnv() {
 
   // Otherwise load dotenv configuration
   config({
-    path: __dirname.concat("/../env/"),
-    silent: false,
+    path: join(__dirname, "..", "env"),
   });
 }

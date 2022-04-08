@@ -20,23 +20,23 @@
  */
 
 import { Page } from "@playwright/test";
-import { BrowserTestingEnvironment } from "../util/getTestingEnvironment";
 import { IndexPage } from "./pageModels";
 import { BrokerPage } from "./pageModels/broker";
 import { CognitoPage } from "./pageModels/cognito";
 
 export const essUserLogin = async (
   page: Page,
-  env: BrowserTestingEnvironment
-) => {
+  login: string,
+  password: string
+): Promise<void> => {
   const indexPage = new IndexPage(page);
-  await indexPage.startLogin(env.idp);
-
   const cognitoPage = new CognitoPage(page);
-  await cognitoPage.login(env.username, env.password);
-
   const authorisePage = new BrokerPage(page);
-  await authorisePage.authoriseOnce();
 
-  await indexPage.handleRedirect();
+  await Promise.all([
+    indexPage.startLogin(),
+    cognitoPage.login(login, password),
+    authorisePage.authoriseOnce(),
+    indexPage.handleRedirect(),
+  ]);
 };
