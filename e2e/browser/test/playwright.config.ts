@@ -24,7 +24,7 @@ import { PlaywrightTestConfig } from "@playwright/test";
 const config: PlaywrightTestConfig = {
   testMatch: "*.playwright.ts",
   // Configure dotenv in local:
-  globalSetup: "./e2e/browser/globalSetup.ts",
+  globalSetup: "./globalSetup.ts",
   retries: 1,
   use: {
     baseURL: "http://localhost:1234/",
@@ -34,7 +34,7 @@ const config: PlaywrightTestConfig = {
     video: "on-first-retry",
   },
   webServer: {
-    cwd: "./e2e/browser/webapp",
+    cwd: "../testApp",
     command: "python3 -m http.server",
     port: 1234,
     timeout: 120 * 1000,
