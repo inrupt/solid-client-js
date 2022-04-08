@@ -26,15 +26,17 @@ import { getAclServerResourceInfo } from "../../universal/getAclServerResourceIn
 import { getAcrUrl as getAcrUrlLegacy } from "./getAcrUrl.legacy";
 
 jest.mock("./getAcrUrl.legacy", () => ({
-  getAcrUrl: jest.fn().mockImplementation(() => null)
+  getAcrUrl: jest.fn().mockImplementation(() => null),
 }));
 
 jest.mock("../../universal/getAclServerResourceInfo", () => ({
-  getAclServerResourceInfo: jest.fn().mockImplementation(() => ({}))
+  getAclServerResourceInfo: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../../resource/resource", () => ({
-  getLinkedResourceUrlAll: jest.fn().mockImplementation(() => ({ type: ["http://www.w3.org/ns/solid/acp#AccessControlResource"] })),
+  getLinkedResourceUrlAll: jest.fn().mockImplementation(() => ({
+    type: ["http://www.w3.org/ns/solid/acp#AccessControlResource"],
+  })),
   getSourceUrl: jest.fn().mockImplementation(() => "x"),
 }));
 

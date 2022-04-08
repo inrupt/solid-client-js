@@ -28,28 +28,28 @@ import { setAgentResourceAccess as setAgentAccessWac } from "../access/wac";
 import { saveAcrFor } from "../acp/acp";
 
 jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({}))
+  getResourceInfo: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/getResourceAcr", () => ({
-  getResourceAcr: jest.fn().mockImplementation(() => ({}))
+  getResourceAcr: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("./getAgentAccess", () => ({
-  getAgentAccess: jest.fn().mockImplementation(() => ({}))
+  getAgentAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/acp", () => ({
-  saveAcrFor: jest.fn().mockImplementation(() => ({}))
+  saveAcrFor: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../acp/util/setAgentAccess", () => ({
-  setAgentAccess: jest.fn().mockImplementation(() => ({}))
+  setAgentAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("../access/wac", () => ({
   getAgentAccess: jest.fn().mockImplementation(() => ({})),
-  setAgentResourceAccess: jest.fn().mockImplementation(() => ({}))
+  setAgentResourceAccess: jest.fn().mockImplementation(() => ({})),
 }));
 
 describe("setAgentAccess", () => {
@@ -62,7 +62,7 @@ describe("setAgentAccess", () => {
     expect(setAgentAccessAcp).toHaveBeenCalledWith({}, "y", {});
     expect(setAgentAccessWac).toHaveBeenCalledTimes(0);
   });
-  
+
   it("calls the WAC module when resource does not have an ACR", async () => {
     (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
     await setAgentAccess("x", "y", {});

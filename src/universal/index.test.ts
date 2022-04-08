@@ -31,6 +31,10 @@ describe("universal", () => {
     expect(universal.getAgentAccess).toBeDefined();
   });
 
+  it("exports getAgentAccessAll", () => {
+    expect(universal.getAgentAccessAll).toBeDefined();
+  });
+
   it("exports getPublicAccess", () => {
     expect(universal.getPublicAccess).toBeDefined();
   });
@@ -43,4 +47,3 @@ describe("universal", () => {
     expect(universal.setPublicAccess).toBeDefined();
   });
 });
-  

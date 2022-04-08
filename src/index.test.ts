@@ -177,11 +177,13 @@ import {
   getProfileJwksIri,
   setProfileJwks,
   getProfileAll,
+  getAltProfileUrlAllFrom,
   getPodUrlAll,
   getPodUrlAllFrom,
   getWellKnownSolid,
   getJsonLdParser,
   getTurtleParser,
+  solidDatasetAsTurtle,
   // Error classes:
   SolidClientError,
   FetchError,
@@ -195,6 +197,8 @@ import {
   access_v1,
   access_v2,
   universalAccess,
+  acp_ess_1,
+  acp_ess_2,
   responseToSolidDataset,
   responseToResourceInfo,
   addStringEnglish,
@@ -362,11 +366,13 @@ it("exports the public API from the entry file", () => {
   expect(getProfileJwksIri).toBeDefined();
   expect(setProfileJwks).toBeDefined();
   expect(getProfileAll).toBeDefined();
+  expect(getAltProfileUrlAllFrom).toBeDefined();
   expect(getPodUrlAll).toBeDefined();
   expect(getPodUrlAllFrom).toBeDefined();
   expect(getWellKnownSolid).toBeDefined();
   expect(getJsonLdParser).toBeDefined();
   expect(getTurtleParser).toBeDefined();
+  expect(solidDatasetAsTurtle).toBeDefined();
 });
 
 it("exports error classes", () => {
@@ -384,6 +390,8 @@ it("exports preview API's for early adopters", () => {
   expect(access_v1).toBeDefined();
   expect(access_v2).toBeDefined();
   expect(universalAccess).toBeDefined();
+  expect(acp_ess_1).toBeDefined();
+  expect(acp_ess_2).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();
 });

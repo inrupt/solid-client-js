@@ -6,13 +6,13 @@ env:
   CI: true
 jobs:
   unpublish-npm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     if: github.event.ref_type == 'branch'
     steps:
       - name: Prepare for unpublication from npm
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - name: Determine npm tag
         # Remove non-alphanumeric characters

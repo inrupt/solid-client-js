@@ -241,7 +241,7 @@ const v4MockFunctions = {
 
 /**
  * @hidden
- * @deprecated Please import directly from the "acp/*" modules.
+ * @deprecated Please import "acp_ess_2" directly.
  */
 export const acp_v4 = {
   ...v4AcpFunctions,

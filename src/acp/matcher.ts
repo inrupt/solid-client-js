@@ -880,6 +880,7 @@ export function removeClient(matcher: Matcher, client: WebId): Matcher {
  * @param matcher The Matcher checked for authenticated access.
  * @returns Whether the Matcher applies to public clients.
  * @since Not released yet.
+ * @deprecated
  */
 export function hasAnyClient(matcher: Matcher): boolean {
   return (
@@ -899,6 +900,7 @@ export function hasAnyClient(matcher: Matcher): boolean {
  * @param matcher The Matcher for which clients are set.
  * @returns A copy of the Matcher, updated to apply to any client
  * @since Not released yet.
+ * @deprecated
  */
 export function setAnyClient(matcher: Matcher): Matcher {
   return addIri(matcher, acp.client, solid.PublicOidcClient);
@@ -914,6 +916,7 @@ export function setAnyClient(matcher: Matcher): Matcher {
  * @param matcher The Matcher for which clients are set.
  * @returns A copy of the Matcher, updated to no longer apply to any client
  * @since Not released yet.
+ * @deprecated
  */
 export function removeAnyClient(matcher: Matcher): Matcher {
   return removeIri(matcher, acp.client, solid.PublicOidcClient);

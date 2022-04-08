@@ -238,7 +238,7 @@ const v3MockFunctions = {
 
 /**
  * @hidden
- * @deprecated Please import directly from the "acp/*" modules.
+ * @deprecated Please import "acp_ess_1" directly.
  */
 export const acp_v3 = {
   ...v3AcpFunctions,

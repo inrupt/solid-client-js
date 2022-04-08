@@ -35,11 +35,40 @@ import {
   getSourceIri,
   internal_defaultFetchOptions,
 } from "../resource/resource";
+import { fetch as unauthenticatedFetch } from "cross-fetch";
+import { fetch as defaultFetch } from "../fetcher";
 
 export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
   webIdProfile: T;
   altProfileAll: Array<SolidDataset & WithServerResourceInfo>;
 };
+
+/**
+ * List all the alternative profiles IRI found in a given WebID profile.
+ *
+ * Note that some of these profiles may be private, and you may not have access to
+ * the resulting resource.
+ *
+ * @param webId The WebID of the user's whose alternative profiles you are discovering.
+ * @param webIdProfile The WebID profile obtained dereferencing the provided WebID.
+ * @returns A list of URLs of the user's alternative profiles.
+ * @since 1.20.0
+ */
+export function getAltProfileUrlAllFrom(
+  webId: WebId,
+  webIdProfile: SolidDataset
+): UrlString[] {
+  const webIdThing = getThing(webIdProfile, webId);
+
+  const altProfileUrlAll = getThingAll(webIdProfile)
+    .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
+    .map(asIri)
+    .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
+    .filter((profileIri) => profileIri !== getSourceIri(webIdProfile));
+
+  // Deduplicate the results.
+  return Array.from(new Set(altProfileUrlAll));
+}
 
 /**
  * Get all the Profile Resources discoverable from a WebID Profile.
@@ -64,31 +93,47 @@ export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo
 >(
   webId: WebId,
+  options?: Partial<
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: T;
+    }
+  >
+): Promise<ProfileAll<T>>;
+export async function getProfileAll(
+  webId: WebId,
+  options?: Partial<
+    typeof internal_defaultFetchOptions & {
+      webIdProfile: undefined;
+    }
+  >
+): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
+export async function getProfileAll<
+  T extends SolidDataset & WithServerResourceInfo
+>(
+  webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
       webIdProfile: T;
     }
   > = internal_defaultFetchOptions
-): Promise<ProfileAll<T>> {
-  const {
-    fetch,
-    webIdProfile = (await getSolidDataset(webId, { fetch })) as T,
-  } = options;
-
-  const webIdThing = getThing(webIdProfile, webId);
-
-  const altProfilesIri = getThingAll(webIdProfile)
-    .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
-    .map(asIri)
-    .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
-    .filter((profileIri) => profileIri !== getSourceIri(webIdProfile));
-
-  // Ensure that each given profile only appears once.
-  const altProfileAll = await Promise.all(
-    Array.from(new Set(altProfilesIri)).map((uniqueProfileIri) =>
-      getSolidDataset(uniqueProfileIri, { fetch })
+): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
+  const authFetch = options.fetch ?? defaultFetch;
+  const webIdProfile =
+    options.webIdProfile ??
+    (await getSolidDataset(webId, { fetch: unauthenticatedFetch }));
+  const altProfileAll = (
+    await Promise.allSettled(
+      getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
+        getSolidDataset(uniqueProfileIri, { fetch: authFetch })
+      )
     )
-  );
+  )
+    // Ignore the alternative profiles lookup which failed.
+    .filter(
+      (result): result is PromiseFulfilledResult<T> =>
+        result.status === "fulfilled"
+    )
+    .map((successfulResult) => successfulResult.value);
 
   return {
     webIdProfile,
@@ -141,16 +186,11 @@ export function getPodUrlAllFrom(
   [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
     (profileResource) => {
       const webIdThing = getThing(profileResource, webId);
-      if (webIdThing === null) {
-        throw new Error(
-          `The WebId [${webId}] does not appear in the resource fetched at [${getSourceIri(
-            profileResource
-          )}]`
+      if (webIdThing !== null) {
+        getIriAll(webIdThing, pim.storage).forEach((podIri) =>
+          result.add(podIri)
         );
       }
-      getIriAll(webIdThing, pim.storage).forEach((podIri) =>
-        result.add(podIri)
-      );
     }
   );
   return Array.from(result);

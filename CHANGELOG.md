@@ -8,9 +8,66 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
-The following sections document changes that have been released already:
+- `acp_ess_1` & `acp_ess_2` export all low level ACP functions available for
+  interacting with Inrupt's ESS ACP implementations.
+
+## [1.21.0] - 2022-03-22
+
+### New features
+
+- `getAgentAccessAll` has been added to the new `universal` access module. This
+  function provides an overview of access modes granted to all agents.
+
+### Bugfixes
+
+- `getProfileAll` and `getPodUrlAll` no longer make an authenticated request to the
+  WebID profile, which should be a public resource in the first place.
+
+## [1.20.2] - 2022-03-18
+
+### Bugfixes
+
+- Export the `Actor` type in the `universal_v1` module.
+
+## [1.20.1] - 2022-03-08
+
+### Bugfixes
+
+- `getPodUrlAll` no longer throws if the WebID only appears as the object in an
+  alternative profile (and not as a subject), which is a valid case.
+
+## [1.20.0] - 2022-02-23
+
+### New features
+
+- `getAltProfileUrlAllFrom`: A function available in the `profile/webid` module
+  which returns the alternative profiles URLs (if any) from a given WebID profile
+  resource.
+
+- `solidDatasetAsTurtle`: A function available in the `formats` module which
+  provides turtle serialisation of a solid dataset or part of it.
+
+### Bugfixes
+
+- `getProfileAll` no longer throws if fetching one of the alternative profiles fails.
+  Instead, the successfully fetched alternative profiles are returned, and the thrown
+  errors are catched. To use in conjunction with `getAltProfileUrlAllFrom` to figure
+  out if fetching one or more alternative profiles failed. Note that this also resolves
+  this bug in other functions based on this one, such as `getPodUrlAll`.
+
+## [1.19.0] - 2022-02-09
+
+### New features
+
+- `universalAccess`/`universal`: functions available in the `universal` module or
+  in the library via importing `universalAccess` work with the latest version of
+  the ACP specification and supersede the `access/universal` module.
 
 ### Deprecations
+
+- The universal access API group functions `getAccessFor`, `getAccessForAll` and
+  `setAccessFor` have been deprecated. In order for it to be a non-breaking change,
+  the universal API is now exposed through the `universal` module.
 
 - The low-level ACP API (V4) will no longer support custom Markdown serialization.
   That is, the `acrAsMarkdown`, `matcherAsMarkdown`, `policyAsMarkdown` functions.

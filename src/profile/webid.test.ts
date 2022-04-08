@@ -36,10 +36,25 @@ import {
 import { foaf, pim } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
-import { getPodUrlAll, getPodUrlAllFrom, getProfileAll } from "./webid";
+import {
+  getAltProfileUrlAllFrom,
+  getPodUrlAll,
+  getPodUrlAllFrom,
+  getProfileAll,
+} from "./webid";
 import { Response } from "cross-fetch";
+import type * as CrossFetch from "cross-fetch";
 
-// jest.mock("../fetcher.ts");
+jest.mock("cross-fetch", () => {
+  const crossFetchModule = jest.requireActual(
+    "cross-fetch"
+  ) as typeof CrossFetch;
+  return {
+    ...crossFetchModule,
+    fetch: jest.fn(fetch),
+  };
+});
+
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
     Promise.resolve(
@@ -63,32 +78,175 @@ const MOCK_PROFILE = setThing(
   )
 );
 
+describe("getAltProfileUrlAllFrom", () => {
+  it("returns no alt profiles if the WebID profile contains no triples with the foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
+    const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
+    await expect(
+      getProfileAll(MOCK_WEBID, { webIdProfile })
+    ).resolves.toStrictEqual({
+      webIdProfile,
+      altProfileAll: [],
+    });
+  });
+
+  it("returns an array of the IRI of subject of triples of the WebID doc with the foaf:primaryTopic predicate not matching the WebID", () => {
+    const profileContent = buildThing({ url: "https://some.profile" })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+    const otherProfileContent = buildThing({
+      url: "https://some.other.profile",
+    })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    webIdProfile = setThing(webIdProfile, otherProfileContent);
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
+    expect(result).toHaveLength(2);
+    expect(result).toContain("https://some.profile");
+    expect(result).toContain("https://some.other.profile");
+  });
+
+  it("returns an array of the IRI of objects of triples of the WebID doc such as <webid, foaf:isPrimaryTopicOf, ?object>", () => {
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
+    expect(result).toHaveLength(2);
+    expect(result).toContain("https://some.profile");
+    expect(result).toContain("https://some.other.profile");
+  });
+
+  it("deduplicates profile values", () => {
+    // The profile document will have two triples <profile, foaf:primaryTopic, webid>...
+    const profileContent = buildThing({ url: "https://some.profile" })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+    // and <webid, foaf:isPrimaryTopicOf, profile>.
+    const webidData = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .build();
+    let webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    webIdProfile = setThing(webIdProfile, webidData);
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
+    // 'profile' should appear only once in the result set.
+    expect(result).toHaveLength(1);
+    expect(result).toContain("https://some.profile");
+  });
+});
+
 describe("getProfileAll", () => {
-  it("defaults to the embeded fetch if available", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+  it("defaults to the embeded fetch if available to fetch alt profiles", async () => {
+    // Mock the alt profile authenticated fetch
+    const mockedAuthFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
         [RequestInfo, RequestInit?]
       >;
     };
 
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
-    );
-    await getProfileAll(MOCK_WEBID);
-    expect(mockedFetcher.fetch).toHaveBeenCalled();
-  });
-
-  it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+    mockedAuthFetcher.fetch.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+        url: "https://some.profile",
+      } as ResponseInit)
     );
-    await getProfileAll(MOCK_WEBID, { fetch: mockedFetch });
-    expect(mockedFetch).toHaveBeenCalled();
+
+    const profileContent = buildThing({ url: "https://some.profile" })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    // Mock the webid unauthenticated fetch
+    const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedUnauthFetch.fetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: MOCK_WEBID,
+      } as ResponseInit)
+    );
+
+    await getProfileAll(MOCK_WEBID);
+    // The embedded fetch should have been used to fetch the alt profile.
+    expect(mockedAuthFetcher.fetch).toHaveBeenCalledTimes(1);
+    expect(mockedAuthFetcher.fetch).toHaveBeenCalledWith(
+      "https://some.profile",
+      expect.anything()
+    );
+    // The unauthenticated fetch should have been used to fetch the WebID.
+    expect(mockedUnauthFetch.fetch).toHaveBeenCalledTimes(1);
+    expect(mockedUnauthFetch.fetch).toHaveBeenCalledWith(
+      MOCK_WEBID,
+      expect.anything()
+    );
+  });
+
+  it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
+    // Mock the alt profile authenticated fetch
+    const mockedAuthFetcher = jest.fn(fetch) as jest.Mock<
+      ReturnType<typeof window.fetch>,
+      [RequestInfo, RequestInit?]
+    >;
+    mockedAuthFetcher.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: "https://some.profile",
+      } as ResponseInit)
+    );
+
+    const profileContent = buildThing({ url: "https://some.profile" })
+      .addIri(foaf.primaryTopic, MOCK_WEBID)
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    // Mock the webid unauthenticated fetch
+    const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedUnauthFetch.fetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: MOCK_WEBID,
+      } as ResponseInit)
+    );
+
+    await getProfileAll(MOCK_WEBID, { fetch: mockedAuthFetcher });
+    // The embedded fetch should have been used.
+    expect(mockedAuthFetcher).toHaveBeenCalledTimes(1);
+    expect(mockedUnauthFetch.fetch).toHaveBeenCalledTimes(1);
   });
 
   it("does not fetch the WebID profile document if provided", async () => {
@@ -101,16 +259,6 @@ describe("getProfileAll", () => {
       altProfileAll: [],
     });
     expect(mockedFetch).not.toHaveBeenCalled();
-  });
-
-  it("returns no alt profiles if the WebID profile contains no triples with the foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
-    const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
-    await expect(
-      getProfileAll(MOCK_WEBID, { webIdProfile })
-    ).resolves.toStrictEqual({
-      webIdProfile,
-      altProfileAll: [],
-    });
   });
 
   it("returns an array of the subject of triples of the WebID doc with the foaf:primaryTopic predicate not matching the WebID", async () => {
@@ -149,6 +297,8 @@ describe("getProfileAll", () => {
       fetch: mockedFetch,
       webIdProfile,
     });
+    // The provided fetch should have been used.
+    expect(mockedFetch).toHaveBeenCalled();
     expect(result.altProfileAll).toHaveLength(2);
     expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
       getThingAll(MOCK_PROFILE)
@@ -229,6 +379,42 @@ describe("getProfileAll", () => {
     expect(result.altProfileAll).toHaveLength(1);
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
+
+  it("handles gracefully fetch errors on alternative profiles", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+          headers: {
+            "Content-Type": "text/turtle",
+          },
+          url: "https://some.profile",
+        } as ResponseInit)
+      )
+      // Fetching one of the alt profiles fails.
+      .mockResolvedValueOnce(
+        new Response(undefined, {
+          status: 401,
+        })
+      );
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const result = await getProfileAll(MOCK_WEBID, {
+      fetch: mockedFetch,
+      webIdProfile,
+    });
+    expect(result.altProfileAll).toHaveLength(1);
+    expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
+      getThingAll(MOCK_PROFILE)
+    );
+  });
 });
 
 const mockProfileDoc = (
@@ -247,16 +433,25 @@ const mockProfileDoc = (
 };
 
 describe("getPodUrlAll", () => {
-  it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+  it("does not use the provided fetch to dereference the WebID", async () => {
+    const mockedFetcher = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedFetcher.fetch.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+        url: "https://some.profile",
+      } as ResponseInit)
     );
+    const mockedFetch = jest.fn(fetch);
     await getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch });
-    expect(mockedFetch).toHaveBeenCalled();
+    expect(mockedFetch).not.toHaveBeenCalled();
+    expect(mockedFetcher.fetch).toHaveBeenCalled();
   });
 
   it("uses the embedded fetch if solid-client-authn-browser is in the dependencies", async () => {
@@ -272,10 +467,93 @@ describe("getPodUrlAll", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+        url: "https://some.profile",
+      } as ResponseInit)
+    );
+
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      // This will point to an alt profile, prompting the authenticated fetch.
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+
+    // The WebID is explicitly fetched using the unauthenticated fetch.
+    const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedUnauthFetcher.fetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: MOCK_WEBID,
+      } as ResponseInit)
     );
     await getPodUrlAll(MOCK_WEBID);
+    // The embedded fetch should have been used.
     expect(mockedFetcher.fetch).toHaveBeenCalled();
+  });
+
+  it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
+    const mockedAuthFetch = jest.fn(fetch) as jest.Mock<
+      ReturnType<typeof window.fetch>,
+      [RequestInfo, RequestInit?]
+    >;
+
+    mockedAuthFetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: "https://some.profile",
+      } as ResponseInit)
+    );
+
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      // This will point to an alt profile, prompting the authenticated fetch.
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+
+    // The WebID is explicitly fetched using the unauthenticated fetch.
+    const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+    mockedUnauthFetcher.fetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: MOCK_WEBID,
+      } as ResponseInit)
+    );
+    await getPodUrlAll(MOCK_WEBID, { fetch: mockedAuthFetch });
+    // The provided authenticated fetch should have been used to fetch the alt profile.
+    expect(mockedAuthFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAuthFetch).toHaveBeenCalledWith(
+      "https://some.profile",
+      expect.anything()
+    );
+    // The unauthenticated fetch should have been used to fetch the webid profile.
+    expect(mockedUnauthFetcher.fetch).toHaveBeenCalledTimes(1);
+    expect(mockedUnauthFetcher.fetch).toHaveBeenCalledWith(
+      MOCK_WEBID,
+      expect.anything()
+    );
   });
 
   it("returns Pod URLs found in the fetched WebId profile", async () => {
@@ -283,17 +561,24 @@ describe("getPodUrlAll", () => {
     const webIdProfile = mockProfileDoc("https://some.profile", MOCK_WEBID, {
       pods: [MOCK_STORAGE],
     });
-    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+
+    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    mockedUnauthFetch.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
         headers: {
           "Content-Type": "text/turtle",
         },
-        url: "https://some.profile",
-      } as ResponseInit)
+      })
     );
-    await expect(
-      getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch })
-    ).resolves.toStrictEqual([MOCK_STORAGE]);
+    await expect(getPodUrlAll(MOCK_WEBID)).resolves.toStrictEqual([
+      MOCK_STORAGE,
+    ]);
   });
 
   it("returns all Pod URLs found in fetched alternative profiles", async () => {
@@ -313,16 +598,25 @@ describe("getPodUrlAll", () => {
 
     // Mock the three consecutive fetches to the WebID document and the two
     // profile resources linked from it.
+    // The WebID is fetched using the default fetch
+    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    mockedUnauthFetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      })
+    );
+
+    // The alternative profiles are Solid resources, and require authentication.
     const mockedFetch = jest
       .fn(fetch)
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-          url: "https://some.profile",
-        } as ResponseInit)
-      )
       .mockResolvedValueOnce(
         new Response(await triplesToTurtle(toRdfJsQuads(altProfileAll[0])), {
           headers: {
@@ -360,24 +654,30 @@ describe("getPodUrlAll", () => {
 
     // Mock the two consecutive fetches to the WebID document and the profile
     //resource linked from it.
-    const mockedFetch = jest
-      .fn(fetch)
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-          url: "https://some.profile",
-        } as ResponseInit)
-      )
-      .mockResolvedValueOnce(
-        new Response(await triplesToTurtle(toRdfJsQuads(altProfileAll[0])), {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-          url: "https://some.alt-profile",
-        } as ResponseInit)
-      );
+    // The WebID is fetched using the default fetch
+    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo, RequestInit?]
+      >;
+    };
+
+    mockedUnauthFetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      })
+    );
+
+    const mockedFetch = jest.fn(fetch).mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(altProfileAll[0])), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+        url: "https://some.alt-profile",
+      } as ResponseInit)
+    );
 
     await expect(
       getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch })
@@ -386,7 +686,7 @@ describe("getPodUrlAll", () => {
 });
 
 describe("getPodUrlAllFrom", () => {
-  it("throws if the WebId is not a subject of a provided profile resource", () => {
+  it("returns an empty result if the given resources doesn't have the WebID as a subject", () => {
     const MOCK_STORAGE = "https://some.storage";
     const webIdProfile = mockProfileDoc(
       "https://some.profile",
@@ -395,11 +695,9 @@ describe("getPodUrlAllFrom", () => {
         pods: [MOCK_STORAGE],
       }
     );
-    expect(() =>
+    expect(
       getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID)
-    ).toThrow(
-      /.*https:\/\/some.webid.*does not appear.*https:\/\/some.profile/
-    );
+    ).toStrictEqual([]);
   });
 
   it("returns Pod URLs found in the WebId profile", () => {

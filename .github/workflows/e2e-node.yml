@@ -4,10 +4,6 @@ on:
   push:
   # Allow manual triggering, e.g. to run end-to-end tests against Dependabot PRs:
   workflow_dispatch:
-  schedule:
-    # Run every fifth minute.
-    # This is to verify that ESS is running properly.
-    - cron: "*/5 * * * *"
 
 env:
   CI: true
@@ -15,20 +11,18 @@ jobs:
   e2e-node:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     if: github.actor != 'dependabot[bot]'
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.environment-name }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        node-version: [16.x]
-        environment-name: ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
+        environment-name:
+          ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
     steps:
-      - uses: actions/checkout@v2
-      - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
-        uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "16"
       - run: npm ci --ignore-scripts
       - run: npm run test:e2e:node
         env:
@@ -40,9 +34,3 @@ jobs:
           E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
           E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
           E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
-      - name: Send a notification that the test has failed
-        if: failure() && github.event_name == 'schedule'
-        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against ${{ matrix.environment-name }} failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
-        env:
-          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
-          RUN_ID: "${{ github.run_id }}"

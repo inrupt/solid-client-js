@@ -24,23 +24,30 @@ import { getResourceInfo } from "../resource/resource";
 import { getAclServerResourceInfo } from "./getAclServerResourceInfo";
 
 jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({}))
+  getResourceInfo: jest.fn().mockImplementation(() => ({})),
 }));
 
 describe("getAclServerResourceInfo", () => {
   it("fetches the ACL resource info if the resource has an ACL", async () => {
-    await getAclServerResourceInfo({ internal_resourceInfo: { aclUrl: "x" } } as any);
+    await getAclServerResourceInfo({
+      internal_resourceInfo: { aclUrl: "x" },
+    } as any);
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
   });
 
   it("returns null if the resource has no ACL", async () => {
-    await getAclServerResourceInfo({ internal_resourceInfo: { aclUrl: undefined } } as any);
+    await getAclServerResourceInfo({
+      internal_resourceInfo: { aclUrl: undefined },
+    } as any);
     expect(getResourceInfo).toHaveBeenCalledTimes(0);
   });
 
   it("passes the fetch option to fetch the ACL resource info", async () => {
-    await getAclServerResourceInfo({ internal_resourceInfo: { aclUrl: "x" } } as any, { fetch: "x" } as any);
+    await getAclServerResourceInfo(
+      { internal_resourceInfo: { aclUrl: "x" } } as any,
+      { fetch: "x" } as any
+    );
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "x" });
   });

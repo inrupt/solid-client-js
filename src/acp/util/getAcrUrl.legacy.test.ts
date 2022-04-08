@@ -22,15 +22,22 @@
 import { describe, it, expect } from "@jest/globals";
 import { getAcrUrl } from "./getAcrUrl.legacy";
 
-
 describe("getAcrUrl.legacy", () => {
   it("returns the ACR URL", () => {
-    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: { "http://www.w3.org/ns/solid/acp#accessControl": [ "x" ] } } } as any);
+    const x = getAcrUrl({
+      internal_resourceInfo: {
+        linkedResources: {
+          "http://www.w3.org/ns/solid/acp#accessControl": ["x"],
+        },
+      },
+    } as any);
     expect(x).toBe("x");
   });
 
   it("returns null if there is no ACR URL", async () => {
-    const x = getAcrUrl({ internal_resourceInfo: { linkedResources: {} } } as any);
+    const x = getAcrUrl({
+      internal_resourceInfo: { linkedResources: {} },
+    } as any);
     expect(x).toBeNull();
   });
 });

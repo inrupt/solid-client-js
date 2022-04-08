@@ -14,7 +14,7 @@ env:
   CI: true
 jobs:
   prepare-deployment:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data || '{}').id || 'Skipped for Dependabot' }}
@@ -46,12 +46,12 @@ jobs:
           echo "::set-output name=tag-slug::$(echo ${GITHUB_REF#refs/heads/} | tr -cd '[:alnum:]-')"
 
   publish-npm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment]
     outputs:
       version-nr: ${{ steps.determine-npm-version.outputs.version-nr }}
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
       - name: Mark GitHub Deployment as in progress
         id: start-deployment
         uses: octokit/request-action@v2.1.4
@@ -70,7 +70,7 @@ jobs:
           mediaType: '{"previews": ["flash", "ant-man"]}'
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
@@ -153,14 +153,14 @@ jobs:
           echo "Done waiting — hopefully that was enough time for the follow-up jobs to install the just-published package, to verify that everything looks OK."
 
   verify-imports-node:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 14.x, 12.x]
+        node-version: ["16", "14", "12"]
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
@@ -192,13 +192,13 @@ jobs:
           node --unhandled-rejections=strict esmodule.mjs
 
   verify-imports-parcel:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Parcel project
         # Dependabot does not have access to our secrets,
@@ -214,7 +214,7 @@ jobs:
         env:
           VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
       - name: Archive Parcel build artifacts
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         continue-on-error: true
         # Dependabot does not have access to our secrets,
         # so publishing packages for Dependabot PRs can only be manually started.
@@ -225,13 +225,13 @@ jobs:
           path: .github/workflows/cd-packaging-tests/bundler-parcel/dist
 
   verify-imports-webpack:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14.x"
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - name: Verify that the package can be imported in a Webpack project
         # Dependabot does not have access to our secrets,
@@ -246,7 +246,7 @@ jobs:
         env:
           VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
       - name: Archive Webpack build artifacts
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         continue-on-error: true
         # Dependabot does not have access to our secrets,
         # so publishing packages for Dependabot PRs can only be manually started.
@@ -259,16 +259,16 @@ jobs:
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
   cd-end-to-end-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     environment:
       name: "Inrupt Production"
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: ["16"]
     needs: [prepare-deployment, publish-npm]
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"

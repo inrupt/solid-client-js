@@ -43,8 +43,14 @@ import {
   FetchError,
   deleteFile,
 } from "../../src/index";
-import { getTestingEnvironment, TestingEnvironment } from "../util/getTestingEnvironment";
+import {
+  getTestingEnvironment,
+  TestingEnvironment,
+} from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
+import { setupTestResources, teardownTestResources } from "./test-helpers";
+
+const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
 const env: TestingEnvironment = getTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
@@ -54,18 +60,26 @@ if (env.feature.acp_v3 !== true) {
 }
 
 describe("Authenticated end-to-end ACP V3", () => {
-  let options: { fetch: typeof global.fetch };
+  let fetchOptions: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
-  
+  let sessionContainer: string;
+
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
-    options = { fetch: session.fetch };
+    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    sessionResource = testsetup.resourceUrl;
+    sessionContainer = testsetup.containerUrl;
+    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
-  
+
   afterEach(async () => {
-    await session.logout();
+    await teardownTestResources(
+      session,
+      sessionContainer,
+      sessionResource,
+      fetchOptions.fetch
+    );
   });
 
   async function initialisePolicyResource(
@@ -116,14 +130,17 @@ describe("Authenticated end-to-end ACP V3", () => {
     policyResource = setThing(policyResource, selfRule);
     policyResource = setThing(policyResource, selfWriteNoReadPolicy);
 
-    return saveSolidDatasetAt(policyResourceUrl, policyResource, options);
+    return saveSolidDatasetAt(policyResourceUrl, policyResource, fetchOptions);
   }
 
   async function applyPolicyToPolicyResource(
     resourceUrl: UrlString,
     policyUrl: UrlString
   ) {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(resourceUrl, options);
+    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+      resourceUrl,
+      fetchOptions
+    );
     if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
         `The test Resource at [${getSourceUrl(
@@ -131,22 +148,19 @@ describe("Authenticated end-to-end ACP V3", () => {
         )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
       );
     }
-    const changedResourceWithAcr = acp.addPolicyUrl(
-      resourceWithAcr,
-      policyUrl
-    );
-    return acp.saveAcrFor(changedResourceWithAcr, options);
+    const changedResourceWithAcr = acp.addPolicyUrl(resourceWithAcr, policyUrl);
+    return acp.saveAcrFor(changedResourceWithAcr, fetchOptions);
   }
 
   it("can deny Read access", async () => {
-    const policyResourceUrl = sessionResource.concat('-policy-deny');
+    const policyResourceUrl = sessionResource.concat("-policy-deny");
 
     // Create a Resource containing Access Policies and Rules:
     await initialisePolicyResource(policyResourceUrl, session);
 
     // Verify that we can fetch the Resource before Denying Read access:
     await expect(
-      getSolidDataset(policyResourceUrl, options)
+      getSolidDataset(policyResourceUrl, fetchOptions)
     ).resolves.not.toBeNull();
 
     // In the Resource's Access Control Resource, apply the Policy
@@ -159,7 +173,7 @@ describe("Authenticated end-to-end ACP V3", () => {
 
     // Verify that indeed, the current user can no longer read it:
     await expect(
-      getSolidDataset(policyResourceUrl, options)
+      getSolidDataset(policyResourceUrl, fetchOptions)
     ).rejects.toThrow(
       // Forbidden:
       // @ts-ignore-next
@@ -167,11 +181,11 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Clean up:
-    await deleteSolidDataset(policyResourceUrl, options);
+    await deleteSolidDataset(policyResourceUrl, fetchOptions);
   });
 
   it("can allow public Read access", async () => {
-    const policyResourceUrl = sessionResource.concat('-policy-allow');
+    const policyResourceUrl = sessionResource.concat("-policy-allow");
 
     // Create a Resource containing Access Policies and Rules:
     await initialisePolicyResource(policyResourceUrl, session);
@@ -193,24 +207,24 @@ describe("Authenticated end-to-end ACP V3", () => {
     );
 
     // Verify that indeed, an unauthenticated user can now read it:
-    await expect(
-      getSolidDataset(policyResourceUrl)
-    ).resolves.not.toBeNull();
+    await expect(getSolidDataset(policyResourceUrl)).resolves.not.toBeNull();
 
     // Clean up:
-    await deleteSolidDataset(policyResourceUrl, options);
+    await deleteSolidDataset(policyResourceUrl, fetchOptions);
   });
 
   it("can set Access from a Resource's ACR", async () => {
-    const resourceUrl = sessionResource.concat('-resource');
+    const resourceUrl = sessionResource.concat("-resource");
 
-    await overwriteFile(resourceUrl, Buffer.from("To-be-public Resource"), {
-      fetch: session.fetch,
-    });
+    await overwriteFile(
+      resourceUrl,
+      Buffer.from("To-be-public Resource", "utf8"),
+      fetchOptions
+    );
 
     const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
       resourceUrl,
-      { fetch: session.fetch }
+      fetchOptions
     );
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
@@ -250,12 +264,12 @@ describe("Authenticated end-to-end ACP V3", () => {
       expect.objectContaining({ statusCode: 401 }) as FetchError
     );
 
-    await acp.saveAcrFor(updatedResourceInfoWithAcr, options);
+    await acp.saveAcrFor(updatedResourceInfoWithAcr, fetchOptions);
 
     // Verify that indeed, an unauthenticated user can now read it:
     await expect(getFile(resourceUrl)).resolves.not.toBeNull();
 
     // Clean up:
-    await deleteFile(resourceUrl, options);
+    await deleteFile(resourceUrl, fetchOptions);
   });
 });

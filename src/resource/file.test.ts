@@ -144,12 +144,12 @@ describe("getFile", () => {
       fetch: mockFetch,
     });
 
-    expect(file.internal_resourceInfo.sourceIri).toEqual("https://some.url");
+    expect(file.internal_resourceInfo.sourceIri).toBe("https://some.url");
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isRawData).toBe(true);
 
     const fileData = await file.text();
-    expect(fileData).toEqual("Some data");
+    expect(fileData).toBe("Some data");
   });
 
   it("should pass the request headers through", async () => {
@@ -403,11 +403,11 @@ describe("Write non-RDF data into a folder", () => {
     const savedFile = await saveFileInContainer("https://some.url", mockBlob);
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toBe("https://some.url");
     expect(mockCall[1]?.headers).toEqual({
       "Content-Type": "binary",
     });
-    expect(mockCall[1]?.method).toEqual("POST");
+    expect(mockCall[1]?.method).toBe("POST");
     expect(mockCall[1]?.body).toEqual(mockBlob);
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile!.internal_resourceInfo).toEqual({
@@ -435,7 +435,7 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toBe("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
     expect(mockCall[1]?.body).toEqual(mockBlob);
   });
@@ -449,7 +449,7 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toBe("https://some.url");
     expect(mockCall[1]?.headers).toEqual({
       "Content-Type": "binary",
       Slug: "someFileName",
@@ -618,11 +618,11 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     const savedFile = await overwriteFile("https://some.url", mockBlob);
 
     const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toBe("https://some.url");
     expect(mockCall[1]?.headers).toEqual({
       "Content-Type": "binary",
     });
-    expect(mockCall[1]?.method).toEqual("PUT");
+    expect(mockCall[1]?.method).toBe("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(savedFile).toBeInstanceOf(Blob);
@@ -666,9 +666,9 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     });
 
     const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toEqual("https://some.url");
+    expect(mockCall[0]).toBe("https://some.url");
     expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
-    expect(mockCall[1]?.method).toEqual("PUT");
+    expect(mockCall[1]?.method).toBe("PUT");
     expect(mockCall[1]?.body).toEqual(mockBlob);
 
     expect(savedFile).toBeInstanceOf(Blob);

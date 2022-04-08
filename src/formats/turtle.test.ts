@@ -35,10 +35,10 @@ describe("The Parser", () => {
     parser.onQuad(onQuadCallback);
     parser.onComplete(onCompleteCallback);
     const turtle = `
-    @prefix : <#>.
-    @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-    :someSubject a foaf:Person; foaf:name "Some name".
-  `;
+      @prefix : <#>.
+      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+      :someSubject a foaf:Person; foaf:name "Some name".
+    `;
     await parser.parse(turtle, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",

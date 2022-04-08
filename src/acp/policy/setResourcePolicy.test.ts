@@ -42,10 +42,7 @@ describe("setResourcePolicy()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [[ACP.accessControl, [TEST_URL.defaultAccessControl]]],
         ],
-        [
-          TEST_URL.defaultAccessControl,
-          [[ACP.apply, [policyUrl]]],
-        ],
+        [TEST_URL.defaultAccessControl, [[ACP.apply, [policyUrl]]]],
       ])
     );
 
@@ -76,8 +73,7 @@ describe("setResourcePolicy()", () => {
     policy = acp_v4.addAllOfMatcherUrl(policy, matcherUrl);
 
     expect(
-      setResourcePolicy(resource, policy)
-        .internal_acp.acr.graphs
+      setResourcePolicy(resource, policy).internal_acp.acr.graphs
     ).toStrictEqual({
       default: {
         [TEST_URL.accessControlResource]: {
