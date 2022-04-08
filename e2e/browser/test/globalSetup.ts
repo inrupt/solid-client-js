@@ -20,7 +20,7 @@
  */
 
 import { FullConfig } from "@playwright/test";
-import { setupEnv } from "../util/setupEnv";
+import { setupEnv } from "../../util/setupEnv";
 
 async function globalSetup(_config: FullConfig) {
   setupEnv();
