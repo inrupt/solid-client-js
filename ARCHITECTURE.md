@@ -77,7 +77,7 @@ parse and manipulate them using other libraries, `solid-client` just allows down
 and uploads, and not more specific operations like reading values for a given property.
 This applies to binary file types like JPEG, WebM and `.txt`.
 
-When it comes to files containing structured data in a non-RDF format (such as JSON, 
+When it comes to files containing structured data in a non-RDF format (such as JSON,
 XML or OpenDocument) or files containing structured data in an RDF format not required
 by the Solid Protocol (for example RDF/XML) it is up to the server to accept that
 payload and treat it as a binary resource, interpret it as RDF, or reject it.
@@ -136,13 +136,12 @@ serialisations for PATCH requests.
 
 ## `universalAccess`, `src/acl/*` and `acp_ess_`
 
-At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization): 
+At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization):
 Web Access Control ([WAC](https://solidproject.org/TR/wac)). WAC uses the Access
 Control List (ACL) model to set authorization.
 
 A second model for expressing permission now exists: Access Control Policies
-([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
-
+([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)).
 
 `solid-client` includes code to achieve some simple, yet common, use cases
 for setting permissions without having to understand the differences between or
@@ -323,7 +322,7 @@ without breaking anything.
 
 It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
 functions, rather than just `*String` functions with an optional `locale`
-parameter. This was a lengthy internal discussion where the decision was to nudge 
+parameter. This was a lengthy internal discussion where the decision was to nudge
 developers to make a conscious choice whether or not to set a locale.
 
 Note that the two are not interchangeable: RDF has different types for strings
