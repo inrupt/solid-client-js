@@ -68,19 +68,18 @@ the server understands ("SolidDatasets"), and those that do not ("Files").
 The main difference between the two is that, by virtue of the server
 understanding the structure of the former, we can do partial updates (i.e.
 PATCH requests) and retrieve the data in different formats (currently, the
-spec mandates that servers can receive/return such RDF data as at least Turtle and JSON-LD).
+Solid Protocol specification mandates that [RDF data must be content negotiable as Turtle and JSON-LD](https://solidproject.org/TR/protocol#resource-representations)).
 
-Thus, RDF data can be fetched as a SolidDataset; the
-rest are just treated as regular Files: while it might be possible to parse and
+A SolidDataset is solid-client's abstraction/data structure for RDF resources; other types of
+resources are just treated as regular Files: while it might be possible to parse and
 manipulate them using other libraries, solid-client just allows downloads and
 uploads, and not more specific operations like reading values for a given
 property. This applies to binary file types like JPEG, WebM and `.txt`.
-When it comes to files containing structured data in a non-RDF format (e.g., JSON, 
-XML or OpenDocument) or files containing structured data in an RDF format not
-understood by the server (e.g., RDFa or RDF-XML) it is up to the server to accept 
-that payload of RDF/XML and treat it as a binary resource, 
-or it could choose to reject it completely with an error saying something like
-"Unsupported RDF serialization".
+
+When it comes to files containing structured data in a non-RDF format (such as JSON, 
+XML or OpenDocument) or files containing structured data in an RDF format not required
+by the Solid Protocol (for example RDF/XML) it is up to the server to accept that
+payload and treat it as a binary resource, interpret it as RDF, or reject it.
 
 ## `With*` types
 
@@ -136,38 +135,22 @@ serialisations for PATCH requests.
 
 ## `src/access/*`, `src/acl/*` and `src/acp/*`
 
-At first, there was one [Solid authorization mechanism](https://solidproject.org/TR/protocol#authorization), 
-Web Access Control ([WAC](https://solidproject.org/TR/wac)), and people often 
-referred to it as Access Control Lists, or ACLs.
+At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization): 
+Web Access Control ([WAC](https://solidproject.org/TR/wac)).
 
-WAC is an access control system to set authorization conditions on HTTP resources 
-using the Access Control List (ACL) model. It allows for quite a few different use 
-cases, although simple use cases like "allow this person to view this 
-Resource" were relatively cumbersome to define given the reliance on inheritance
-to effective establish the access control for a given agent: you'd have to take into 
-account all kinds of access that could be defined earlier. But that's OK: `src/acl/*` 
-contains code that takes care of all that nasty stuff.
+WAC uses the Access Control List (ACL) model to set authorization.
 
-In order to solve these (and other) intrinsic limitations of WAC, Inrupt proposed 
-a new mechanism: Access Control Policies ([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
-ACP is more flexible and stores authorization information across a particular set 
-of Resources. `src/acp/*` contains APIs that are essentially wrappers around our 
-existing APIs for reading and writing data, but using ACP terminology.
+A second model for expressing permission now exists: Access Control Policies ([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
 
-However, the ACP proposal has to co-exist with WAC for the time being, which does
-not make developer's life any easier. Since developers don't control the access control
-model that will be used by their users, they need to support both.
 
-But not to worry. Like for WAC, solid-client includes code to achieve some
-simple, yet common, use cases in `src/access/acp.ts`, taking care of all the
-hairy details of dealing with the vast range of potential existing access
-configurations. Additionally, it includes the "Universal Access API" in
-`src/access/universal.ts`. This supports the common, simple use cases that are
-supported in both WAC and ACP, and automatically adjusts to the access mechanism
-in use by the user's Pod, at the cost of being less flexible, and relying
-on developers to recover from the different and non-overlapping error conditions 
-that may occur in both access control mechanisms (e.g., no fallback ACL available 
-in WAC, no access to a Resource defining Policies in ACPs, etc.).
+`solid-client` includes code to achieve some simple, yet common, use cases
+for setting permissions without having to understand the differences between or
+details of the ACL and ACP domain models by providing a high level access control
+module also called the "Universal Access API".
+
+`solid-client` also includes lower level functions to interact directly with either
+authorization systems (ACL/ACP). Those lower level functions are for the time being
+still experimental and we don't advise using them in production code.
 
 ## `e2e/browser` and `e2e/node`
 
@@ -213,9 +196,9 @@ this, be sure to test it well.
 
 ## The entire low-level Access Control Policies API
 
-(i.e. `/src/acp/*`)
+(i.e. `acp_ess_1` and `acp_ess_2`)
 
-This API was put together in a relatively short timeframe so there are bound to be
+The low level ACP API was put together in a short timeframe and there are bound to be
 idiosyncracies there. _Especially_ given that the ACP model is still a proposal.
 
 One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
