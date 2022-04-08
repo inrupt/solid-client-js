@@ -174,6 +174,7 @@
     "@typescript-eslint/parser": "^5.11.0",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.8.0",
+    "eslint-config-next": "^12.1.4",
     "eslint-plugin-jest": "^26.1.0",
     "eslint-plugin-license-header": "^0.4.0",
     "fast-check": "^2.2.0",
