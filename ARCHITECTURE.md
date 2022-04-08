@@ -61,23 +61,26 @@ this can be directed to him.
 
 ## Resources, Files and SolidDatasets
 
-solid-client refers to everything that can be fetched from a URL as a Resource.
+`solid-client` refers to everything that can be fetched from a URL as a Resource.
 There are two types of Resources: those containing RDF in a serialisation that
 the server understands ("SolidDatasets"), and those that do not ("Files").
 
-The main difference between the two is that, by virtue of the server
-understanding the structure of the former, we can do partial updates (i.e.
+The main difference between RDF and non-RDF resources is that, by virtue of the
+server understanding the structure of the former, we can do partial updates (i.e.
 PATCH requests) and retrieve the data in different formats (currently, the
-spec mandates that servers can serve such data as at least Turtle and JSON-LD).
+Solid Protocol specification mandates that RDF data must be content negotiable
+[as Turtle and JSON-LD](https://solidproject.org/TR/protocol#resource-representations)).
 
-Thus, data stored as Turtle or JSON-LD can be fetched as a SolidDataset; the
-rest are just treated as regular Files: while it might be possible to parse and
-manipulate them using other libraries, solid-client just allows downloads and
-uploads, and not more specific operations like reading values for a given
-property. This applies to binary file types like JPEG, WebM and `.txt`, but also
-to files containing structured data in a non-RDF format, like JSON, XML or
-OpenDocument, or even to files containing structured data in an RDF format not
-understood by the server, such as RDFa or RDF-XML.
+A SolidDataset is `solid-client`'s abstraction/data structure for RDF resources; other
+types of resources are just treated as regular Files: while it might be possible to
+parse and manipulate them using other libraries, `solid-client` just allows downloads
+and uploads, and not more specific operations like reading values for a given property.
+This applies to binary file types like JPEG, WebM and `.txt`.
+
+When it comes to files containing structured data in a non-RDF format (such as JSON,
+XML or OpenDocument) or files containing structured data in an RDF format not required
+by the Solid Protocol (for example RDF/XML) it is up to the server to accept that
+payload and treat it as a binary resource, interpret it as RDF, or reject it.
 
 ## `With*` types
 
@@ -131,43 +134,28 @@ their own parsers), since the spec mandates that all servers should be able to
 serialise RDF to that, and since we already have a Turtle library to produce
 serialisations for PATCH requests.
 
-## `src/access/*`, `src/acl/*` and `src/acp/*`
+## `universalAccess`, `src/acl/*` and `acp_ess_`
 
-At first, there was Web Access Control. And although people often referred to it
-as Access Control Lists, He saw it was Good.
+At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization):
+Web Access Control ([WAC](https://solidproject.org/TR/wac)). WAC uses the Access
+Control List (ACL) model to set authorization.
 
-Or at least, it was OK. It was a pretty flexible system that allows for quite a
-few different access use cases, although that meant simple use cases like "allow
-this person to view this Resource" were relatively cumbersome to define: after
-all, you'd have to take into account all kinds of access that could be defined
-earlier. But that's OK: `src/acl/*` contains code that does all that nasty
-stuff.
+A second model for expressing permission now exists: Access Control Policies
+([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)).
 
-But then Inrupt ate from the tree of knowledge, and proposed a new mechanism:
-Access Control Policies. Which, in the end, is also just a bunch of data written
-to a particular bunch of Resources. `src/acp/*` contains APIs that are
-essentially wrappers around our existing APIs for reading and writing data, but
-using ACP terminology.
+`solid-client` includes code to achieve some simple, yet common, use cases
+for setting permissions without having to understand the differences between or
+details of the ACL and ACP domain models by providing a high level access control
+module also called the "Universal Access API": `universalAccess`.
 
-However, the ACP proposal is even more flexible then WAC, making simple use
-cases even more cumbersome to define. And to make matters worse, it had to
-co-exist next to WAC, which doesn't seem to be going anywhere anytime soon.
-
-But not to worry. Like for WAC, solid-client includes code to achieve some
-simple, yet common, use cases in `src/access/acp.ts`, taking care of all the
-hairy details of dealing with the vast range of potential existing access
-configurations. Additionally, it includes the "Universal Access API" in
-`src/access/universal.ts`. This supports the common, simple use cases that are
-supported in both WAC and ACP, and automatically adjusts to the access mechanism
-in use by the user's Pod, at the cost of being less flexible, and not
-providing a way for developers to recover from the myriad of different and
-non-overlapping error conditions that may occur in both access control
-mechanisms (e.g. no fallback ACL available in WAC, no access to a Resource
-defining Policies in ACPs, etc.).
+`solid-client` also includes lower level functions to interact directly with either
+authorization systems (ACL: `src/acl/*` and ACP: `acp_ess_`). Those lower level
+functions are for the time being still experimental and we don't advise using
+them in production code.
 
 ## `e2e/browser` and `e2e/node`
 
-solid-client can run in both Node and in the browser. To ensure that everything
+`solid-client` can run in both Node and in the browser. To ensure that everything
 works as intended, we have a suite of tests that attempts to use its APIs to
 manipulate data on a real server.
 
@@ -209,23 +197,21 @@ this, be sure to test it well.
 
 ## The entire low-level Access Control Policies API
 
-(i.e. `/src/acp/*`)
+(i.e. `acp_ess_1` and `acp_ess_2`)
 
-This API was very hastily put together ("it's just a one-on-one mapping of the
-ACP spec to JavaScript, we need it now, and how hard could it be?") without
-actually trying to use it in a real app, so there are bound to be lots of
-idiosyncracies there. _Especially_ given that the ACP proposal still is in heavy
-flux.
+The low level ACP API was put together in a short timeframe and there are bound to be
+idiosyncracies there. _Especially_ given that the ACP model is still a proposal.
 
-One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
+One thing that might jump out to you in particular is the various module exports
+(`v1.ts`, `v2.ts`, `v3.ts`, `v4.ts`, `acp_v1`, `acp_ess_1`, `acp_ess_2` etc...).
 Back when there was no talk of there being alternative access mechanisms other
-than Web Access Control (also known as "Access Control Lists"), and JavaScript
-did not have a way to expose submodules to consumers, the WAC APIs were exported
-from the top level directly. However, some of the ACP APIs have the same names
-as WAC APIs. For that reason, and to avoid having to introduce breaking changes
-while iterating on the ACP APIs, we chose to add all those APIs as properties on
-an `acp_v1` object and export _that_, forgoing tree-shaking. That way, we could
-keep old versions available (but deprecated) while iterating on the new ones.
+than Web Access Control and JavaScript did not have a way to expose submodules
+to consumers, the WAC APIs were exported from the top level directly. However,
+some of the ACP APIs have the same names as WAC APIs. For that reason, and to
+avoid having to introduce breaking changes while iterating on the ACP APIs, we
+chose to add all those APIs as properties on a top level export (forgoing tree-shaking).
+That way, we could keep old versions available (but deprecated) while iterating
+on the new ones.
 
 Likewise, we initially thought there would be more Access Control
 Policies-related data we would store for a given Resource, hence the
@@ -336,9 +322,8 @@ without breaking anything.
 
 It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
 functions, rather than just `*String` functions with an optional `locale`
-parameter. This was a lengthy discussion where nobody left happy, but the
-reasons had to do with forcing people to make a conscious choice not to set a
-locale.
+parameter. This was a lengthy internal discussion where the decision was to nudge
+developers to make a conscious choice whether or not to set a locale.
 
 Note that the two are not interchangeable: RDF has different types for strings
 with and without locales, and strings in different locales or without locales
