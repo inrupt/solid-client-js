@@ -61,20 +61,21 @@ this can be directed to him.
 
 ## Resources, Files and SolidDatasets
 
-solid-client refers to everything that can be fetched from a URL as a Resource.
+`solid-client` refers to everything that can be fetched from a URL as a Resource.
 There are two types of Resources: those containing RDF in a serialisation that
 the server understands ("SolidDatasets"), and those that do not ("Files").
 
-The main difference between the two is that, by virtue of the server
-understanding the structure of the former, we can do partial updates (i.e.
+The main difference between RDF and non-RDF resources is that, by virtue of the
+server understanding the structure of the former, we can do partial updates (i.e.
 PATCH requests) and retrieve the data in different formats (currently, the
-Solid Protocol specification mandates that [RDF data must be content negotiable as Turtle and JSON-LD](https://solidproject.org/TR/protocol#resource-representations)).
+Solid Protocol specification mandates that RDF data must be content negotiable
+[as Turtle and JSON-LD](https://solidproject.org/TR/protocol#resource-representations)).
 
-A SolidDataset is solid-client's abstraction/data structure for RDF resources; other types of
-resources are just treated as regular Files: while it might be possible to parse and
-manipulate them using other libraries, solid-client just allows downloads and
-uploads, and not more specific operations like reading values for a given
-property. This applies to binary file types like JPEG, WebM and `.txt`.
+A SolidDataset is `solid-client`'s abstraction/data structure for RDF resources; other
+types of resources are just treated as regular Files: while it might be possible to
+parse and manipulate them using other libraries, `solid-client` just allows downloads
+and uploads, and not more specific operations like reading values for a given property.
+This applies to binary file types like JPEG, WebM and `.txt`.
 
 When it comes to files containing structured data in a non-RDF format (such as JSON, 
 XML or OpenDocument) or files containing structured data in an RDF format not required
@@ -133,28 +134,29 @@ their own parsers), since the spec mandates that all servers should be able to
 serialise RDF to that, and since we already have a Turtle library to produce
 serialisations for PATCH requests.
 
-## `src/access/*`, `src/acl/*` and `src/acp/*`
+## `universalAccess`, `src/acl/*` and `acp_ess_`
 
 At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization): 
-Web Access Control ([WAC](https://solidproject.org/TR/wac)).
+Web Access Control ([WAC](https://solidproject.org/TR/wac)). WAC uses the Access
+Control List (ACL) model to set authorization.
 
-WAC uses the Access Control List (ACL) model to set authorization.
-
-A second model for expressing permission now exists: Access Control Policies ([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
+A second model for expressing permission now exists: Access Control Policies
+([ACP](https://github.com/solid/authorization-panel/blob/main/proposals/acp/index.md)). 
 
 
 `solid-client` includes code to achieve some simple, yet common, use cases
 for setting permissions without having to understand the differences between or
 details of the ACL and ACP domain models by providing a high level access control
-module also called the "Universal Access API".
+module also called the "Universal Access API": `universalAccess`.
 
 `solid-client` also includes lower level functions to interact directly with either
-authorization systems (ACL/ACP). Those lower level functions are for the time being
-still experimental and we don't advise using them in production code.
+authorization systems (ACL: `src/acl/*` and ACP: `acp_ess_`). Those lower level
+functions are for the time being still experimental and we don't advise using
+them in production code.
 
 ## `e2e/browser` and `e2e/node`
 
-solid-client can run in both Node and in the browser. To ensure that everything
+`solid-client` can run in both Node and in the browser. To ensure that everything
 works as intended, we have a suite of tests that attempts to use its APIs to
 manipulate data on a real server.
 
@@ -201,15 +203,16 @@ this, be sure to test it well.
 The low level ACP API was put together in a short timeframe and there are bound to be
 idiosyncracies there. _Especially_ given that the ACP model is still a proposal.
 
-One thing that might jump out to you in particular is `v1.ts`, `v2.ts`, etc.
+One thing that might jump out to you in particular is the various module exports
+(`v1.ts`, `v2.ts`, `v3.ts`, `v4.ts`, `acp_v1`, `acp_ess_1`, `acp_ess_2` etc...).
 Back when there was no talk of there being alternative access mechanisms other
-than Web Access Control (also known as "Access Control Lists"), and JavaScript
-did not have a way to expose submodules to consumers, the WAC APIs were exported
-from the top level directly. However, some of the ACP APIs have the same names
-as WAC APIs. For that reason, and to avoid having to introduce breaking changes
-while iterating on the ACP APIs, we chose to add all those APIs as properties on
-an `acp_v1` object and export _that_, forgoing tree-shaking. That way, we could
-keep old versions available (but deprecated) while iterating on the new ones.
+than Web Access Control and JavaScript did not have a way to expose submodules
+to consumers, the WAC APIs were exported from the top level directly. However,
+some of the ACP APIs have the same names as WAC APIs. For that reason, and to
+avoid having to introduce breaking changes while iterating on the ACP APIs, we
+chose to add all those APIs as properties on a top level export (forgoing tree-shaking).
+That way, we could keep old versions available (but deprecated) while iterating
+on the new ones.
 
 Likewise, we initially thought there would be more Access Control
 Policies-related data we would store for a given Resource, hence the
