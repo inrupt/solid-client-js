@@ -26,6 +26,8 @@ const config: PlaywrightTestConfig = {
   // Configure dotenv in local:
   globalSetup: "./globalSetup.ts",
   retries: 1,
+  // Extends from the default 30s
+  timeout: 60000,
   use: {
     baseURL: "http://localhost:3000/",
     headless: true,
@@ -50,24 +52,24 @@ const config: PlaywrightTestConfig = {
         }. Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0`,
       },
     },
-    // {
-    //   name: "Chromium",
-    //   use: {
-    //     browserName: "chromium",
-    //     userAgent: `Browser-based solid-client end-to-end tests running ${
-    //       process.env.CI === "true" ? "in CI" : "locally"
-    //     }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
-    //   },
-    // },
-    // {
-    //   name: "WebKit",
-    //   use: {
-    //     browserName: "webkit",
-    //     userAgent: `Browser-based solid-client end-to-end tests running ${
-    //       process.env.CI === "true" ? "in CI" : "locally"
-    //     }. Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1`,
-    //   },
-    // },
+    {
+      name: "Chromium",
+      use: {
+        browserName: "chromium",
+        userAgent: `Browser-based solid-client end-to-end tests running ${
+          process.env.CI === "true" ? "in CI" : "locally"
+        }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
+      },
+    },
+    {
+      name: "WebKit",
+      use: {
+        browserName: "webkit",
+        userAgent: `Browser-based solid-client end-to-end tests running ${
+          process.env.CI === "true" ? "in CI" : "locally"
+        }. Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1`,
+      },
+    },
   ],
 };
 
