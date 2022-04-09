@@ -810,8 +810,8 @@ export function removeCreator(matcher: Matcher): Matcher {
  */
 export function getClientAll(matcher: Matcher): WebId[] {
   return getIriAll(matcher, acp.client)
-    .concat(getStringNoLocaleAll(matcher, acp.client))
-    .filter((client: WebId) => client !== solid.PublicOidcClient);
+    .filter((client: WebId) => client !== solid.PublicOidcClient)
+    .concat(getStringNoLocaleAll(matcher, acp.client));
 }
 
 /**
