@@ -849,7 +849,7 @@ export function setClient(matcher: Matcher, client: Url | string): Matcher {
  * @returns A copy of the [[Matcher]], applying to an additional Client.
  * @since Not released yet.
  */
-export function addClient(matcher: Matcher, client: WebId): Matcher {
+export function addClient(matcher: Matcher, client: Url | string): Matcher {
   if (!internal_isValidUrl(client)) {
     return addStringNoLocale(matcher, acp.client, client);
   }
@@ -868,7 +868,7 @@ export function addClient(matcher: Matcher, client: WebId): Matcher {
  * @returns A copy of the Matcher, not applying to the given Client.
  * @since Not released yet.
  */
-export function removeClient(matcher: Matcher, client: WebId): Matcher {
+export function removeClient(matcher: Matcher, client: Url | string): Matcher {
   if (!internal_isValidUrl(client)) {
     return removeStringNoLocale(matcher, acp.client, client);
   }
