@@ -23,14 +23,24 @@ import { PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   testMatch: "*.playwright.ts",
+  // Configure dotenv in local:
+  globalSetup: "./globalSetup.ts",
   retries: 1,
-  globalSetup: require.resolve("./e2e/browser/globalSetup.ts"),
+  // Extends from the default 30s
+  timeout: 60000,
   use: {
-    baseURL: "http://localhost:1234",
+    baseURL: "http://localhost:3000/",
     headless: true,
     screenshot: "only-on-failure",
     trace: "on",
     video: "on-first-retry",
+  },
+  webServer: {
+    cwd: "../testApp",
+    command: "npm run dev",
+    port: 3000,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
   },
   projects: [
     {

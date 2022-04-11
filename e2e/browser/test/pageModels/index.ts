@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -19,15 +19,30 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* Config file to run just end-to-end tests */
+import { Page } from "@playwright/test";
+import { getBrowserTestingEnvironment } from "../../../util/getTestingEnvironment";
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  testRegex: "e2e/node/.*.test.ts",
-  clearMocks: true,
-  // Increase timeout to accomodate variable network latency
-  testTimeout: 30000,
-  injectGlobals: false,
-  setupFiles: ["<rootDir>/e2e/node/setup.ts"],
-};
+export class IndexPage {
+  page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async startLogin() {
+    const { idp } = getBrowserTestingEnvironment();
+    await this.page.fill("[data-testid=identityProviderInput]", idp);
+    await this.page.click("[data-testid=loginButton]");
+  }
+
+  async handleRedirect() {
+    // Wait for the backchannel exchange
+    await this.page.waitForRequest(
+      (request) =>
+        request.method() === "POST" && request.url().includes("/token")
+    );
+    await Promise.all([
+      this.page.waitForResponse((response) => response.status() === 200),
+    ]);
+  }
+}

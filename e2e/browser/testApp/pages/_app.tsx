@@ -19,25 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Page } from "@playwright/test";
+import type { AppProps } from "next/app";
 
-export class IndexPage {
-  page;
-
-  constructor(page: Page) {
-    this.page = page;
-  }
-
-  async startLogin(idp = "https://broker.pod.inrupt.com") {
-    await this.page.fill("input[type=url]", idp);
-    await this.page.click("button");
-    // The page appears stable while
-    // solid-client-authn-browser initiates the login process,
-    // so we have to explicitly wait for the redirect to the Identity Provider:
-    await this.page.waitForNavigation();
-  }
-
-  async handleRedirect() {
-    await this.page.waitForSelector("[role=alert]");
-  }
+function MyApp({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />;
 }
+
+export default MyApp;

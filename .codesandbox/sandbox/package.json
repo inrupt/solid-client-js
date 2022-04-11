@@ -12,7 +12,9 @@
     "rdf-namespaces": "1.9.2"
   },
   "devDependencies": {
-    "parcel": "^2.0.0-beta.2"
+    "buffer": "^6.0.3",
+    "process": "^0.11.10",
+    "parcel": "^2.3.2"
   },
   "keywords": [
     "typescript",

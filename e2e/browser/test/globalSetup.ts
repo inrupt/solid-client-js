@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -19,15 +19,11 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* Config file to run just end-to-end tests */
+import { FullConfig } from "@playwright/test";
+import { setupEnv } from "../../util/setupEnv";
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  testRegex: "e2e/node/.*.test.ts",
-  clearMocks: true,
-  // Increase timeout to accomodate variable network latency
-  testTimeout: 30000,
-  injectGlobals: false,
-  setupFiles: ["<rootDir>/e2e/node/setup.ts"],
-};
+async function globalSetup(_config: FullConfig) {
+  setupEnv();
+}
+
+export default globalSetup;
