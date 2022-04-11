@@ -825,7 +825,7 @@ export function getClientAll(matcher: Matcher): WebId[] {
  * @param client The Client the Matcher should apply to.
  * @returns A copy of the input Matcher, applying to a different set of Clients.
  */
-export function setClient(matcher: Matcher, client: WebId): Matcher {
+export function setClient(matcher: Matcher, client: Url | string): Matcher {
   // Preserve the special "any client" class, which we
   // don't want to overwrite with this function.
   const anyClientEnabled = hasAnyClient(matcher);
