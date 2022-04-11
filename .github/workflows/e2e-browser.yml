@@ -106,10 +106,3 @@ jobs:
           path: e2e/browser/test/test-results/
         # Ensure test recordings are always uploaded if the exist:
         if: ${{ always() }}
-
-      - name: Send a notification that the test has failed
-        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated tests against pod.inrupt.com and inrupt.net failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
-        if: failure() && github.event_name == 'schedule'
-        env:
-          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
-          RUN_ID: "${{ github.run_id }}"
