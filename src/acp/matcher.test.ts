@@ -85,6 +85,7 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 import { internal_getAcr } from "./control.internal";
 import { addStringNoLocale, addUrl } from "../thing/add";
 import { getStringNoLocaleAll, getUrl, getUrlAll } from "../thing/get";
+import { internal_isValidUrl } from "../datatypes";
 
 // Vocabulary terms
 const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
@@ -149,11 +150,9 @@ const addAllObjects = (
   objects: (Url|string)[]
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
-    try {
-      return addUrl(thingAcc, predicate, object);
-    } catch (e) {
-      return addStringNoLocale(thingAcc, predicate, object.toString());
-    }
+    return internal_isValidUrl(object) 
+      ? addUrl(thingAcc, predicate, object)
+      : addStringNoLocale(thingAcc, predicate, object.toString())
   }, thing);
 };
 
