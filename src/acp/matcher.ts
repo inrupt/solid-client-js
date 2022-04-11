@@ -824,9 +824,7 @@ export function getClientAll(matcher: Matcher): WebId[] {
  * @param matcher The Matcher for which clients are set.
  * @param client The Client the Matcher should apply to.
  * @returns A copy of the input Matcher, applying to a different set of Clients.
- * @deprecated.
  */
-/* istanbul ignore next */
 export function setClient(matcher: Matcher, client: WebId): Matcher {
   // Preserve the special "any client" class, which we
   // don't want to overwrite with this function.
