@@ -146,13 +146,13 @@ const MOCK_CLIENT_ID_4 = "other_string_client_id";
 const addAllObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: Url[]
+  objects: (Url|string)[]
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
     try {
       return addUrl(thingAcc, predicate, object);
     } catch (e) {
-      return addStringNoLocale(thingAcc, predicate, object.value);
+      return addStringNoLocale(thingAcc, predicate, object.toString());
     }
   }, thing);
 };
@@ -174,7 +174,7 @@ const mockMatcher = (
     public?: boolean;
     authenticated?: boolean;
     creator?: boolean;
-    clients?: Url[];
+    clients?: (Url|string)[];
     publicClient?: boolean;
   }
 ): Matcher => {
