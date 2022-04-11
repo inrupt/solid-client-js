@@ -68,6 +68,7 @@ import {
   removeResourceMatcher,
   setResourceMatcher,
   createResourceMatcherFor,
+  setClient,
 } from "./matcher";
 
 import { Policy } from "./policy";
@@ -1322,6 +1323,44 @@ describe("getClientAll", () => {
     expect(clients).not.toContain(ACP_AUTHENTICATED.value);
     expect(clients).not.toContain(ACP_PUBLIC.value);
     expect(clients).toHaveLength(0);
+  });
+});
+
+describe("setClient", () => {
+  it("sets the given clients for the matcher", () => {
+    const matcher = mockMatcher(MOCKED_MATCHER_IRI);
+    const result = setClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
+  });
+
+  it("deletes any clients previously set for the matcher", () => {
+    const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
+    });
+    const result = setClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_IDENTIFIER_1.value
+    );
+  });
+
+  it("does not change the input matcher", () => {
+    const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
+    });
+    setClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
+    expect(getUrlAll(matcher, ACP_CLIENT)).not.toContain(
+      MOCK_CLIENT_IDENTIFIER_2.value
+    );
+    expect(getUrlAll(matcher, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
+  });
+
+  it("does not overwrite the public client class", () => {
+    const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
+      publicClient: true,
+    });
+    const result = setClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 });
 
