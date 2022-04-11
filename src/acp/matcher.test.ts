@@ -134,14 +134,14 @@ const NONEOF_MATCHER_IRI = DataFactory.namedNode(
 );
 const MOCK_WEBID_ME = DataFactory.namedNode("https://my.pod/profile#me");
 const MOCK_WEBID_YOU = DataFactory.namedNode("https://your.pod/profile#you");
-const MOCK_CLIENT_WEBID_1 = DataFactory.namedNode(
+const MOCK_CLIENT_IDENTIFIER_1 = DataFactory.namedNode(
   "https://my.app/registration#it"
 );
-const MOCK_CLIENT_WEBID_2 = DataFactory.namedNode(
+const MOCK_CLIENT_IDENTIFIER_2 = DataFactory.namedNode(
   "https://your.app/registration#it"
 );
-const MOCK_CLIENT_WEBID_3 = DataFactory.namedNode("test_string_client_id");
-const MOCK_CLIENT_WEBID_4 = DataFactory.namedNode("other_string_client_id");
+const MOCK_CLIENT_ID_3 = "test_string_client_id";
+const MOCK_CLIENT_ID_4 = "other_string_client_id";
 
 const addAllObjects = (
   thing: ThingPersisted,
@@ -970,7 +970,7 @@ describe("getAgentAll", () => {
       public: true,
       authenticated: true,
       creator: true,
-      clients: [MOCK_CLIENT_WEBID_1],
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
     });
     const agents = getAgentAll(matcher);
     expect(agents).not.toContain(ACP_CREATOR.value);
@@ -1301,12 +1301,12 @@ describe("removeCreator", () => {
 describe("getClientAll", () => {
   it("returns all the clients a matcher applies to by WebID", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2, MOCK_CLIENT_WEBID_3],
+      clients: [MOCK_CLIENT_IDENTIFIER_1, MOCK_CLIENT_IDENTIFIER_2, MOCK_CLIENT_ID_3],
     });
     const clients = getClientAll(matcher);
-    expect(clients).toContain(MOCK_CLIENT_WEBID_1.value);
-    expect(clients).toContain(MOCK_CLIENT_WEBID_2.value);
-    expect(clients).toContain(MOCK_CLIENT_WEBID_3.value);
+    expect(clients).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
+    expect(clients).toContain(MOCK_CLIENT_IDENTIFIER_2.value);
+    expect(clients).toContain(MOCK_CLIENT_ID_3);
     expect(clients).toHaveLength(3);
   });
 
@@ -1329,26 +1329,26 @@ describe("getClientAll", () => {
 describe("addClient", () => {
   it("adds the given client to the matcher", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
-    const result = addClient(matcher, MOCK_CLIENT_WEBID_1.value);
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    const result = addClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
   });
 
   it("adds the given string client ID to the matcher", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
-    const result = addClient(matcher, MOCK_CLIENT_WEBID_3.value);
+    const result = addClient(matcher, MOCK_CLIENT_ID_3);
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_WEBID_3.value
+      MOCK_CLIENT_ID_3
     );
   });
 
   it("does not override existing clients/the public client class", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1],
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
       publicClient: true,
     });
-    const result = addClient(matcher, MOCK_CLIENT_WEBID_2.value);
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_2.value);
+    const result = addClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 });
@@ -1356,38 +1356,38 @@ describe("addClient", () => {
 describe("removeClient", () => {
   it("removes the given client from the matcher", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
+      clients: [MOCK_CLIENT_IDENTIFIER_1, MOCK_CLIENT_IDENTIFIER_2],
     });
-    const result = removeClient(matcher, MOCK_CLIENT_WEBID_1.value);
+    const result = removeClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value
     );
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_2.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_2.value);
   });
 
   it("removes the given string client ID from the matcher", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_3, MOCK_CLIENT_WEBID_4],
+      clients: [MOCK_CLIENT_ID_3, MOCK_CLIENT_ID_4],
     });
-    const result = removeClient(matcher, MOCK_CLIENT_WEBID_3.value);
+    const result = removeClient(matcher, MOCK_CLIENT_ID_3);
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_3.value
+      MOCK_CLIENT_ID_3
     );
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_WEBID_4.value
+      MOCK_CLIENT_ID_4
     );
   });
 
   it("does not delete unrelated clients", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1, MOCK_CLIENT_WEBID_2],
+      clients: [MOCK_CLIENT_IDENTIFIER_1, MOCK_CLIENT_IDENTIFIER_2],
       publicClient: true,
     });
-    const result = removeClient(matcher, MOCK_CLIENT_WEBID_2.value);
+    const result = removeClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value
     );
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
 
@@ -1409,7 +1409,7 @@ describe("hasAnyClient", () => {
   });
   it("returns false if the matcher only applies to individual clients", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1],
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
     });
     expect(hasAnyClient(matcher)).toBe(false);
   });
@@ -1432,10 +1432,10 @@ describe("setAnyClient", () => {
 
   it("does not change the other clients", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
-      clients: [MOCK_CLIENT_WEBID_1],
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
     });
     const result = setAnyClient(matcher);
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
   });
 });
 
@@ -1459,10 +1459,10 @@ describe("removeAnyClient", () => {
   it("does not change the other clients", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI, {
       publicClient: true,
-      clients: [MOCK_CLIENT_WEBID_1],
+      clients: [MOCK_CLIENT_IDENTIFIER_1],
     });
     const result = removeAnyClient(matcher);
-    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
+    expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_IDENTIFIER_1.value);
   });
 });
 
