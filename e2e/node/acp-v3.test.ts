@@ -43,16 +43,13 @@ import {
   FetchError,
   deleteFile,
 } from "../../src/index";
-import {
-  getTestingEnvironment,
-  TestingEnvironment,
-} from "../util/getTestingEnvironment";
+import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
-const env: TestingEnvironment = getTestingEnvironment();
+const env = getNodeTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
 if (env.feature.acp_v3 !== true) {
   // eslint-disable-next-line jest/no-focused-tests

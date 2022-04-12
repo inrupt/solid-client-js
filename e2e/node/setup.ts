@@ -19,31 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { spawn } from "child_process";
-import { resolve } from "path";
+import { setupEnv } from "../util/setupEnv";
 
-async function globalSetup() {
-  const childProcess = spawn(
-    "npx",
-    ["parcel", "--port", "1234", "end-to-end-test.html"],
-    { cwd: resolve(__dirname, "../../.codesandbox/sandbox"), shell: true }
-  );
-  const parcelOutput = childProcess.stdout;
-
-  await new Promise((resolve) => {
-    const chunks = [];
-    parcelOutput.on("data", (data) => {
-      chunks.push(data);
-      const dataSoFar = Buffer.concat(chunks).toString("utf8");
-      if (dataSoFar.indexOf("Built in") !== -1) {
-        resolve(undefined);
-      }
-    });
-  });
-
-  // Return the teardown function.
-  return () => {
-    childProcess.kill();
-  };
-}
-export default globalSetup;
+// In jest, we immediately invoke this:
+setupEnv();

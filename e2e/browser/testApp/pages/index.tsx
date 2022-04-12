@@ -19,23 +19,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Page } from "@playwright/test";
-import { IndexPage } from "./pageModels";
-import { BrokerPage } from "./pageModels/broker";
-import { CognitoPage } from "./pageModels/cognito";
+import type { NextPage } from "next";
+import dynamic from "next/dynamic";
 
-export const essUserLogin = async (page: Page) => {
-  const indexPage = new IndexPage(page);
-  await indexPage.startLogin(process.env.E2E_TEST_ESS_IDP_URL);
+const App = dynamic(() => import("../components/appContainer"), {
+  ssr: false,
+});
 
-  const cognitoPage = new CognitoPage(page);
-  await cognitoPage.login(
-    process.env.E2E_TEST_ESS_COGNITO_USER!,
-    process.env.E2E_TEST_ESS_COGNITO_PASSWORD!
-  );
-
-  const authorisePage = new BrokerPage(page);
-  await authorisePage.authoriseOnce();
-
-  await indexPage.handleRedirect();
+const Home: NextPage = () => {
+  return <App />;
 };
+
+export default Home;

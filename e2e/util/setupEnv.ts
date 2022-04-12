@@ -20,9 +20,16 @@
  */
 
 import { config } from "dotenv-flow";
+import { join } from "path";
 
-config({
-  path: __dirname.concat("/../env/"),
-  // Disable warning messages in CI
-  silent: process.env.CI === "true",
-});
+export function setupEnv() {
+  // If we're in CI, the environment is already configured.
+  if (process.env.CI) {
+    return;
+  }
+
+  // Otherwise load dotenv configuration
+  config({
+    path: join(__dirname, "..", "env"),
+  });
+}

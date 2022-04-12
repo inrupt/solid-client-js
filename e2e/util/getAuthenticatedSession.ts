@@ -21,14 +21,14 @@
 
 import { Session } from "@inrupt/solid-client-authn-node";
 import {
-  getTestingEnvironment,
-  TestingEnvironment,
+  getNodeTestingEnvironment,
+  NodeTestingEnvironment,
 } from "./getTestingEnvironment";
 
 export async function getAuthenticatedSession(
-  params?: TestingEnvironment
+  params?: NodeTestingEnvironment
 ): Promise<Session> {
-  const authDetails = params ?? getTestingEnvironment();
+  const authDetails = params ?? getNodeTestingEnvironment();
   const session = new Session();
   await session.login({
     oidcIssuer: authDetails.idp,

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Inrupt Inc.
+ * Copyright 2022 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -19,15 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* Config file to run just end-to-end tests */
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  testRegex: "e2e/node/.*.test.ts",
-  clearMocks: true,
-  // Increase timeout to accomodate variable network latency
-  testTimeout: 30000,
-  injectGlobals: false,
-  setupFiles: ["<rootDir>/e2e/node/setup.ts"],
-};
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/basic-features/typescript for more information.

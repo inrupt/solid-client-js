@@ -51,13 +51,10 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-import {
-  getTestingEnvironment,
-  TestingEnvironment,
-} from "../util/getTestingEnvironment";
+import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
-const env: TestingEnvironment = getTestingEnvironment();
+const env = getNodeTestingEnvironment();
 const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
 if (env.feature.wac !== true) {
   // eslint-disable-next-line jest/no-focused-tests
