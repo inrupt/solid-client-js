@@ -497,7 +497,7 @@ export function isLocalNode<T>(
  * @internal Library users shouldn't need to be exposed to raw URLs.
  * @param iri The value of which to verify that it is a valid URL.
  */
-export function internal_isValidUrl(iri: Iri | IriString): boolean {
+export function internal_isValidUrl(iri: Iri | IriString): iri is Iri {
   const iriString = internal_toIriString(iri);
   // If the runtime environment supports URL, instantiate one.
   // If the given IRI is not a valid URL, it will throw an error.
