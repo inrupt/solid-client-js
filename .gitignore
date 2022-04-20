@@ -16,3 +16,4 @@ test-results/
 .vercel
 .virtualenv
 .parcel-cache/
+.vscode/settings.json
