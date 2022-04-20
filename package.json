@@ -193,7 +193,7 @@
     "@rdfjs/dataset": "^1.1.0",
     "@rdfjs/types": "^1.1.0",
     "@types/n3": "^1.10.0",
-    "@types/rdfjs__dataset": "^1.0.4",
+    "@types/rdfjs__dataset": "^2.0.0",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
     "jsonld": "^5.2.0",
