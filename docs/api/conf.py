@@ -16,6 +16,7 @@
 
 # -- Project information -----------------------------------------------------
 
+from sphinx.highlighting import lexers
 import datetime
 
 copyright = u'{0} Inrupt Inc.'.format(datetime.date.today().year)
@@ -38,7 +39,6 @@ source_suffix = {
 }
 
 # -- Add lexers
-from sphinx.highlighting import lexers
 
 highlight_language = 'javascript'
 
@@ -57,7 +57,7 @@ templates_path = ['./docs-assets/_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [ ]
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -87,9 +87,9 @@ html_theme_options = {
     'github_branch': 'main',
     'docs_project': 'developer-tools/api/javascript/{0}'.format(name),
     'show_api_menu': True,
-    
+
     # below are pydata_sphinx_theme
-    "footer_items": [ "copyright.html"],
+    "footer_items": ["copyright.html"],
     "navbar_align": "left",
     "icon_links": [
         {
@@ -110,9 +110,9 @@ html_theme_options = {
     ],
     "favicons": [
         {
-         "rel": "icon",
-         "sizes": "16x16",
-         "href": "https://docs.inrupt.com/inrupt_stickers_v2-03.png",
+            "rel": "icon",
+            "sizes": "16x16",
+            "href": "https://docs.inrupt.com/inrupt_stickers_v2-03.png",
         },
     ],
 }
@@ -123,12 +123,12 @@ html_theme_options = {
 html_static_path = ['./docs-assets/_static']
 
 html_sidebars = {
-    '**': [ 'search-field.html',  'docs-sidebar.html'],
+    '**': ['search-field.html',  'docs-sidebar.html'],
 }
 
 locale_dirs = ['locale/']   # path is example but recommended.
 gettext_compact = False     # optional.
 
 myst_heading_anchors = 6
-myst_url_schemes = [ 'https' ]
+myst_url_schemes = ('https', 'http')
 myst_enable_extensions = ['colon_fence']
