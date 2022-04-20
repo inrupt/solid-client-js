@@ -11,6 +11,11 @@ The following changes have been implemented but not released yet:
 - `acp_ess_1` & `acp_ess_2` export all low level ACP functions available for
   interacting with Inrupt's ESS ACP implementations.
 
+### Documentation
+
+- Removed `getWellKnownSolid` from public documentation, as this method is too
+  unstable for end-users of the SDK to be using right now.
+
 ## [1.21.0] - 2022-03-22
 
 ### New features

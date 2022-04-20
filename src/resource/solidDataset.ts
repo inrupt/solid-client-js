@@ -1156,6 +1156,8 @@ function resolveLocalIrisInThing(
 }
 
 /**
+ * @hidden
+ *
  * Fetch a SolidDataset containing information about the capabilities of the
  * storage server that hosts the given resource URL. For more information,
  * please see the [ESS
