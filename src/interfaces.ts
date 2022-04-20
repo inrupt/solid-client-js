@@ -20,8 +20,8 @@
  */
 
 import { Quad, NamedNode } from "@rdfjs/types";
-import { Access } from "./acl/acl";
 import { ImmutableDataset, LocalNodeIri, Subject } from "./rdf.internal";
+import { internal_AccessPermissions } from "./resource/wacAllow.internal";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.
@@ -108,11 +108,6 @@ export type WithResourceInfo = {
   };
 };
 
-type internal_WacAllow = {
-  user: Access;
-  public: Access;
-};
-
 /**
  * What access the current user has to a particular Resource, and what access everybody has.
  *
@@ -175,7 +170,7 @@ export type WithServerResourceInfo = WithResourceInfo & {
      * @see https://github.com/solid/solid-spec/blob/cb1373a369398d561b909009bd0e5a8c3fec953b/api-rest.md#wac-allow-headers
      * @see https://github.com/solid/specification/issues/171
      */
-    permissions?: internal_WacAllow;
+    permissions?: internal_AccessPermissions;
   };
 };
 
