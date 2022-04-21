@@ -1156,14 +1156,43 @@ function resolveLocalIrisInThing(
 }
 
 /**
- * Fetch the contents of '.well-known/solid' for a given resource URL.
+ * @hidden
  *
- * The contents of the '.well-known/solid' endpoint define the capabilities of the server, and provide their associated endpoints/locations.
- * This behaves similarly to the use of '.well-known' endpoints in e.g. (OIDC servers)[https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig]
+ * Fetch a SolidDataset containing information about the capabilities of the
+ * storage server that hosts the given resource URL. For more information,
+ * please see the [ESS
+ * Documentation](https://docs.inrupt.com/ess/latest/services/discovery-endpoint/#well-known-solid).
+ *
+ * **Note:** The data contained in this dataset has changed between ESS 1.1 and
+ * ESS 2.0, as such you will need to check for multiple predicates to support
+ * both versions.
+ *
+ * ```typescript
+ * const wellKnown = await getWellKnownSolid(resource);
+ *
+ * // The wellKnown dataset uses a blank node for the subject all of it’s predicates,
+ * // such that we need to call getThingAll with acceptBlankNodes set to true to
+ * // retrieve back predicates contained within the dataset
+ * const wellKnownSubjects = getThingAll(wellKnown, {
+ *   acceptBlankNodes: true,
+ * });
+ * const wellKnownSubject = wellKnownSubjects[0];
+ *
+ * // Retrieve a value from the wellKnown dataset:
+ * let notificationGateway = getIri(
+ *   wellKnownSubject,
+ *   "http://www.w3.org/ns/solid/terms#notificationGateway"
+ * );
+ * ```
+ *
  *
  * @param url URL of a Resource.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
- * @returns Promise resolving to a [[SolidDataset]] containing the data at '.well-known/solid' for the given Resource, or rejecting if fetching it failed.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch`
+ * function to make the HTTP request, compatible with the browser-native [fetch
+ * API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @returns Promise resolving to a [[SolidDataset]] containing the data at
+ * '.well-known/solid' for the given Resource, or rejecting if fetching it
+ * failed.
  * @since 1.12.0
  */
 export async function getWellKnownSolid(
