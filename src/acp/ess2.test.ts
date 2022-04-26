@@ -46,6 +46,7 @@ it("exports Inrupt ESS 1.1 ACP functions", () => {
   expect(acp_ess_2.getDenyModes).toBeDefined();
   expect(acp_ess_2.getFileWithAccessDatasets).toBeDefined();
   expect(acp_ess_2.getFileWithAcr).toBeDefined();
+  expect(acp_ess_2.getLinkedAcrUrl).toBeDefined();
   expect(acp_ess_2.getMatcher).toBeDefined();
   expect(acp_ess_2.getMatcherAll).toBeDefined();
   expect(acp_ess_2.getMemberAcrPolicyUrlAll).toBeDefined();

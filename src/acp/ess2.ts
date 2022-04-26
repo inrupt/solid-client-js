@@ -55,6 +55,7 @@
 export {
   getFileWithAccessDatasets,
   getFileWithAcr,
+  getLinkedAcrUrl,
   getReferencedPolicyUrlAll,
   getResourceInfoWithAccessDatasets,
   getResourceInfoWithAcr,
