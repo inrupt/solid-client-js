@@ -6,7 +6,6 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-
 ## [1.22.0] - 2022-04-26
 
 ### New features
