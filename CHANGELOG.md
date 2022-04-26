@@ -6,6 +6,9 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+
+## [1.22.0] - 2022-04-26
+
 ### New features
 
 - `acp_ess_1` & `acp_ess_2` export all low level ACP functions available for
