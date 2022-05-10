@@ -3539,13 +3539,12 @@ describe("getWellKnownSolid", () => {
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
   let mockedFetcher: { fetch: MockFetch };
-  
+
   beforeAll(() => {
     mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: MockFetch;
     };
-  })
-
+  });
 
   it("fetches root well known solid by default", async () => {
     // Fetches root well known
@@ -3564,17 +3563,18 @@ describe("getWellKnownSolid", () => {
         ] .`,
         {
           headers: {
-            "Content-Type": "text/turtle"
-          }
+            "Content-Type": "text/turtle",
+          },
         }
       )
     );
 
     await getWellKnownSolid(resourceUrl);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(serverUrl.concat(wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+      serverUrl.concat(wellKnownSolid)
+    );
   });
-
 
   it("fetches pod root well known solid otherwise", async () => {
     // Root cannot be fetched
@@ -3583,16 +3583,13 @@ describe("getWellKnownSolid", () => {
     );
     // Resource advertises Pod root
     mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(
-        undefined,
-        {
-          url: resourceUrl,
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`
-          }
-        }
-      )
+      mockResponse(undefined, {
+        url: resourceUrl,
+        headers: {
+          "Content-Type": "text/turtle",
+          link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
     );
     // Fetches Pod root well known
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3606,8 +3603,8 @@ describe("getWellKnownSolid", () => {
         }`,
         {
           headers: {
-            "Content-Type": "application/ld+json"
-          }
+            "Content-Type": "application/ld+json",
+          },
         }
       )
     );
@@ -3615,13 +3612,16 @@ describe("getWellKnownSolid", () => {
     await getWellKnownSolid(resourceUrl);
 
     // Tries the root well known solid first is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(serverUrl.concat(wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+      serverUrl.concat(wellKnownSolid)
+    );
     // Checks the resource's location header otherwise
     expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // The advertised podIdentifier (as storage) is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(podUrl.concat(wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
+      podUrl.concat(wellKnownSolid)
+    );
   });
-
 
   it("uses the given fetcher for pod root well known solid if provided", async () => {
     // Root cannot be fetched
@@ -3631,29 +3631,27 @@ describe("getWellKnownSolid", () => {
     const mockFetch = jest.fn(window.fetch);
     // Resource advertises Pod root
     mockFetch.mockResolvedValueOnce(
-      mockResponse(
-        undefined,
-        {
-          url: resourceUrl,
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`
-          }
-        }
-      )
+      mockResponse(undefined, {
+        url: resourceUrl,
+        headers: {
+          "Content-Type": "text/turtle",
+          link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
     );
     setMockWellKnownSolidResponseOnFetch(mockFetch);
 
     await getWellKnownSolid(resourceUrl, { fetch: mockFetch });
 
     // Fails at pod root (unauthenticated)
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(serverUrl.concat(wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+      serverUrl.concat(wellKnownSolid)
+    );
     // Checks the pod root (authenticated/with the provided fetcher)
     expect(mockFetch.mock.calls[0][0]).toBe(resourceUrl);
     // Retrieve pod root well known solid
     expect(mockFetch.mock.calls[1][0]).toBe(podUrl.concat(".well-known/solid"));
   });
-
 
   it("appends a / to the Pod root if missing before appending .well-known/solid", async () => {
     // Root cannot be fetched
@@ -3662,16 +3660,13 @@ describe("getWellKnownSolid", () => {
     );
     // Resource advertises Pod root
     mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(
-        undefined,
-        {
-          url: resourceUrl,
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`
-          }
-        }
-      )
+      mockResponse(undefined, {
+        url: resourceUrl,
+        headers: {
+          "Content-Type": "text/turtle",
+          link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
     );
     // Fetches Pod root well known
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3685,8 +3680,8 @@ describe("getWellKnownSolid", () => {
         }`,
         {
           headers: {
-            "Content-Type": "application/ld+json"
-          }
+            "Content-Type": "application/ld+json",
+          },
         }
       )
     );
@@ -3694,11 +3689,15 @@ describe("getWellKnownSolid", () => {
     await getWellKnownSolid(resourceUrl);
 
     // Tries the root well known solid first is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(serverUrl.concat(wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+      serverUrl.concat(wellKnownSolid)
+    );
     // Checks the resource's location header otherwise
     expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // The advertised podIdentifier (as storage) is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(serverUrl.concat("username/", wellKnownSolid));
+    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
+      serverUrl.concat("username/", wellKnownSolid)
+    );
   });
 
   it("Throws an error if the resource metadata can't be fetched", async () => {
@@ -3708,16 +3707,13 @@ describe("getWellKnownSolid", () => {
     );
     // Resource advertises Pod root
     mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(
-        undefined,
-        {
-          url: resourceUrl,
-          headers: {
-            "Content-Type": "text/turtle",
-            link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`
-          }
-        }
-      )
+      mockResponse(undefined, {
+        url: resourceUrl,
+        headers: {
+          "Content-Type": "text/turtle",
+          link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
+        },
+      })
     );
     // Can't fetch pod root well known solid
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3735,7 +3731,9 @@ describe("getWellKnownSolid", () => {
     // Resource does not advertise pod root
     mockedFetcher.fetch.mockResolvedValueOnce(new Response(undefined));
 
-    await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow("Could not determine storage root or well-known solid resource.");
+    await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow(
+      "Could not determine storage root or well-known solid resource."
+    );
   });
 
   it("returns the contents of .well-known/solid for the given resource", async () => {

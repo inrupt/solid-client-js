@@ -1236,5 +1236,7 @@ export async function getWellKnownSolid(
       },
     });
   }
-  throw new Error("Could not determine storage root or well-known solid resource.");
+  throw new Error(
+    "Could not determine storage root or well-known solid resource."
+  );
 }
