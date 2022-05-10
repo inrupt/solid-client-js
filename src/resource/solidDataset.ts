@@ -1202,6 +1202,19 @@ export async function getWellKnownSolid(
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
+
+  // Try to fetch the well-known solid dataset from the pod's root
+  try {
+    const wellKnownSolidUrl = new URL(
+      "/.well-known/solid",
+      new URL(urlString).origin
+    ).href;
+    return await getSolidDataset(wellKnownSolidUrl);
+  } catch (e) {
+    // In case of error, do nothing and try to discover the .well-known
+    // at the pod's root.
+  }
+
   const resourceMetadata = await getResourceInfo(urlString, {
     fetch: options.fetch,
     // Discovering the .well-known/solid document is useful even for resources
@@ -1216,26 +1229,12 @@ export async function getWellKnownSolid(
       ".well-known/solid",
       rootResource.endsWith("/") ? rootResource : rootResource + "/"
     ).href;
-    try {
-      return await getSolidDataset(wellKnownSolidUrl, {
-        ...options,
-        parsers: {
-          "application/ld+json": getJsonLdParser(),
-        },
-      });
-    } catch (e) {
-      // In case of error, do nothing and try to discover the .well-known
-      // at the root of the domain.
-    }
+    return await getSolidDataset(wellKnownSolidUrl, {
+      ...options,
+      parsers: {
+        "application/ld+json": getJsonLdParser(),
+      },
+    });
   }
-  const wellKnownSolidUrl = new URL(
-    "/.well-known/solid",
-    new URL(urlString).origin
-  ).href;
-  return getSolidDataset(wellKnownSolidUrl, {
-    ...options,
-    parsers: {
-      "application/ld+json": getJsonLdParser(),
-    },
-  });
+  throw new Error("Could not determine storage root or well-known solid resource.");
 }
