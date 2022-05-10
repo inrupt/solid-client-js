@@ -1203,7 +1203,7 @@ export async function getWellKnownSolid(
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
-  // Try to fetch the well-known solid dataset from the pod's root
+  // Try to fetch the well-known solid dataset from the server's root (ESS 2.0 behaviour)
   try {
     const wellKnownSolidUrl = new URL(
       "/.well-known/solid",
@@ -1224,6 +1224,7 @@ export async function getWellKnownSolid(
   const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
   const rootResources = linkedResources[pim.storage];
   const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
+  // If pod root (storage) was advertised, retrieve well known solid from pod's root
   if (rootResource !== null) {
     const wellKnownSolidUrl = new URL(
       ".well-known/solid",
