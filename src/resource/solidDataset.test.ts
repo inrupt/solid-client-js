@@ -74,7 +74,6 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
-import { JsonObject } from "fast-check/lib/types/arbitrary/_internals/helpers/JsonConstraintsBuilder";
 
 jest.mock("jsonld", () => ({
   toRDF: jest.fn().mockImplementation(() =>
