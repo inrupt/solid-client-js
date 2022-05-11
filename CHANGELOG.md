@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfixes
+
+- `getWellKnownSolid` fetches well known solid from the server's root by default.
+
 ## [1.22.0] - 2022-04-26
 
 ### New features
