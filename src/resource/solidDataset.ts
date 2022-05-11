@@ -1203,7 +1203,7 @@ export async function getWellKnownSolid(
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
-  // Try to fetch the well-known solid dataset from the server's root (ESS 2.0 behaviour)
+  // Try to fetch the well-known solid dataset from the server's root
   try {
     const wellKnownSolidUrl = new URL(
       "/.well-known/solid",
