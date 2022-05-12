@@ -832,10 +832,9 @@ export async function createContainerInContainer(
       internal_resourceInfo: {
         ...internalResourceInfo,
         sourceIri,
-      }
+      },
     });
-  }
-  catch(e) {
+  } catch (e) {
     // If it's a relative URL then, rely on the response.url to construct the sourceIri
   }
 
@@ -844,7 +843,7 @@ export async function createContainerInContainer(
     internal_resourceInfo: {
       ...internalResourceInfo,
       sourceIri: new URL(internalResourceInfo.location, response.url).href,
-    }
+    },
   });
 }
 
