@@ -177,7 +177,7 @@ describe("responseToSolidDataset", () => {
       .mockReturnValue("https://some.pod/resource");
     const solidDataset = await responseToSolidDataset(response);
 
-    expect(solidDataset).toStrictEqual({
+    expect(solidDataset).toEqual(expect.objectContaining({
       graphs: {
         default: {
           "https://some.pod/resource": {
@@ -227,7 +227,7 @@ describe("responseToSolidDataset", () => {
         sourceIri: "https://some.pod/resource",
       },
       type: "Dataset",
-    });
+    }));
   });
 
   it("does not include non-deterministic identifiers when it detects non-cyclic chains of Blank Nodes", async () => {
@@ -263,7 +263,7 @@ describe("responseToSolidDataset", () => {
       .mockReturnValue("https://some.pod/resource");
     const solidDataset = await responseToSolidDataset(response);
 
-    expect(solidDataset).toStrictEqual({
+    expect(solidDataset).toEqual(expect.objectContaining({
       graphs: {
         default: {
           "https://some.pod/resource": {
@@ -336,7 +336,7 @@ describe("responseToSolidDataset", () => {
         sourceIri: "https://some.pod/resource",
       },
       type: "Dataset",
-    });
+    }));
   });
 
   it("does not attempt to detect chains when there are many Blank Nodes, to avoid performance bottlenecks", async () => {
@@ -2859,6 +2859,52 @@ describe("createContainerInContainer", () => {
     );
   });
 
+  it("uses the full location URL if absolute thereby applying server-side normalisation", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      mockResponse("Arbitrary response", {
+        headers: {
+          Location: "https://some.pod/parent-container/child-container/",
+        },
+        url: "https://some.pod/parent-container//",
+      })
+    );
+
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/parent-container/child-container/"
+    );
+  });
+
+  it("uses the relative location URL to indicate source IRI", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      mockResponse("Arbitrary response", {
+        headers: {
+          Location: "./x/y/",
+        },
+        url: "https://some.pod/parent-container//a/b",
+      })
+    );
+
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//a/b",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/parent-container//a/x/y/"
+    );
+  });
+
   it("includes the final slug with the return value, normalised to the target Container's origin", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
@@ -2888,6 +2934,7 @@ describe("createContainerInContainer", () => {
       mockResponse("Arbitrary response", {
         headers: {
           Location: "child-container/",
+          "Content-Location": "https://some.pod/parent-container/child-container/",
         },
         url: "https://some.pod/parent-container/",
       })

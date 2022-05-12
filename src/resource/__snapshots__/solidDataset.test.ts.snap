@@ -46,9 +46,11 @@ Object {
     },
   },
   "internal_resourceInfo": Object {
+    "contentLocation": undefined,
     "contentType": "text/turtle",
     "isRawData": false,
     "linkedResources": Object {},
+    "location": undefined,
     "sourceIri": "https://arbitrary.pod/resource",
   },
   "type": "Dataset",
@@ -88,9 +90,11 @@ Object {
     },
   },
   "internal_resourceInfo": Object {
+    "contentLocation": undefined,
     "contentType": "application/ld+json",
     "isRawData": false,
     "linkedResources": Object {},
+    "location": undefined,
     "sourceIri": "https://some.pod/resource",
   },
   "type": "Dataset",

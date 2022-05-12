@@ -43,8 +43,10 @@ export function internal_parseResourceInfo(
   const resourceInfo: WithServerResourceInfo["internal_resourceInfo"] = {
     sourceIri: response.url,
     isRawData: !isSolidDataset,
+    contentLocation: response.headers.get("Content-Location") ?? undefined,
     contentType: response.headers.get("Content-Type") ?? undefined,
     linkedResources: {},
+    location: response.headers.get("Location") ?? undefined,
   };
 
   const linkHeader = response.headers.get("Link");
