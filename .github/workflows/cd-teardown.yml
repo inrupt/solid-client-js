@@ -22,11 +22,11 @@ jobs:
         run: |
           export EXISTING_TAGS=$(npm dist-tag ls @inrupt/solid-client | grep --count $TAG_SLUG)
           # Unfortunately GitHub Actions does not currently let us do something like
-          #     if: secrets.NPM_TOKEN != ''
+          #     if: secrets.INRUPT_NPM_TOKEN != ''
           # so simply skip the command if the env var is not set
           # or if the package was not published under this tag
           # (e.g. for Dependabot Pull Requests):
           if [ -n $NODE_AUTH_TOKEN ] && [ $EXISTING_TAGS -eq 1 ]; then npm dist-tag rm @inrupt/solid-client $TAG_SLUG; fi
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.INRUPT_NPM_TOKEN }}
       - run: echo "Package tag [$TAG_SLUG] unpublished."
