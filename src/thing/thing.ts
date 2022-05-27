@@ -115,7 +115,7 @@ export function getThing(
 }
 
 /**
- * Get all [[Thing]]s about which a [[SolidDataset]] contains Quads.
+ * Get all [[Thing]]s in a [[SolidDataset]].
  *
  * @param solidDataset The [[SolidDataset]] to extract the [[Thing]]s from.
  * @param options Not yet implemented.
