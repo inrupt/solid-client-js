@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["16", "14", "12"]
+        node-version: ["16", "14"]
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
