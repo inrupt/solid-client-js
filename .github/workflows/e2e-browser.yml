@@ -103,6 +103,6 @@ jobs:
         continue-on-error: true
         with:
           name: playwright-output
-          path: e2e/browser/test/test-results/
+          path: test-results/
         # Ensure test recordings are always uploaded if the exist:
         if: ${{ always() }}
