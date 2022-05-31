@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Support for Node.js v12.x has been dropped as that version has reached end-of-life.
+
 ## [1.23.0] - 2022-05-18
 
 ### Bugfixes
