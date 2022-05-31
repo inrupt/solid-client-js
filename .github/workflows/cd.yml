@@ -100,7 +100,7 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         run: |
           # Unfortunately GitHub Actions does not currently let us do something like
-          #     if: secrets.NPM_TOKEN != ''
+          #     if: secrets.INRUPT_NPM_TOKEN != ''
           # so simply skip the command if the env var is not set:
           if [ -z $NODE_AUTH_TOKEN ]; then echo "No npm token defined; package not published."; fi
           if [ -n $NODE_AUTH_TOKEN ]; then npm publish --access public --tag "$TAG_SLUG"; fi
@@ -108,7 +108,7 @@ jobs:
           if [ -n $NODE_AUTH_TOKEN ]; then echo ""; fi
           if [ -n $NODE_AUTH_TOKEN ]; then echo "    npm install @inrupt/solid-client@$TAG_SLUG"; fi
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.INRUPT_NPM_TOKEN }}
           TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
       - name: Mark GitHub Deployment as successful
         uses: octokit/request-action@v2.1.4
