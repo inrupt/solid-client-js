@@ -737,14 +737,24 @@ export async function saveSolidDatasetInContainer(
     );
   }
 
-  const locationHeader = response.headers.get("Location");
-  if (locationHeader === null) {
+  const internalResourceInfo = internal_parseResourceInfo(response);
+
+  if (!internalResourceInfo.location) {
     throw new Error(
       "Could not determine the location of the newly saved SolidDataset."
     );
   }
 
-  const resourceIri = new URL(locationHeader, response.url).href;
+  let resourceIri;
+
+  try {
+    // Try to parse the location header as a URL (safe if it's an absolute URL)``
+    // This should help determine the container URL if normalisation happened on the server side.
+    resourceIri = new URL(internalResourceInfo.location).href;
+  } catch (e) {
+    // If it's a relative URL then, rely on the response.url to construct the sourceIri
+    resourceIri = new URL(internalResourceInfo.location, response.url).href;
+  }
 
   const resourceInfo: WithResourceInfo = {
     internal_resourceInfo: {
