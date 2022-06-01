@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfixes
+
+- `saveSolidDatasetInContainer` and `createContainerInContainer` adequately take
+  into account the Location header to determine the location of newly created
+  resources.
+
 ### Breaking Changes
 
 - Support for Node.js v12.x has been dropped as that version has reached end-of-life.

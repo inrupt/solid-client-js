@@ -163,10 +163,18 @@ export type WithServerResourceInfo = WithResourceInfo & {
      */
     aclUrl?: UrlString;
     /**
+     * Content-Location is the relative or absolute direct URL to use to access the resource when content negotiation happened.
+     */
+    contentLocation?: UrlString;
+    /**
      * An object of the links in the `Link` header, keyed by their `rel`.
      * @hidden
      */
     linkedResources: LinkedResourceUrlAll;
+    /**
+     * Location is the relative or absolute URL target of a redirection or the URL of a newly created resource.
+     */
+    location?: UrlString;
     /**
      * Access permissions for the current user and the general public for this resource.
      *

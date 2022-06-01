@@ -177,57 +177,59 @@ describe("responseToSolidDataset", () => {
       .mockReturnValue("https://some.pod/resource");
     const solidDataset = await responseToSolidDataset(response);
 
-    expect(solidDataset).toStrictEqual({
-      graphs: {
-        default: {
-          "https://some.pod/resource": {
-            predicates: {
-              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                namedNodes: [
-                  "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
-                ],
-              },
-              "http://xmlns.com/foaf/0.1/maker": {
-                namedNodes: ["https://some.pod/resource#me"],
-              },
-              "http://xmlns.com/foaf/0.1/primaryTopic": {
-                namedNodes: ["https://some.pod/resource#me"],
-              },
-            },
-            type: "Subject",
-            url: "https://some.pod/resource",
-          },
-          "https://some.pod/resource#me": {
-            predicates: {
-              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
-              },
-              "http://www.w3.org/2006/vcard/ns#fn": {
-                blankNodes: [
-                  {
-                    "https://some.pod/resource#predicate": {
-                      namedNodes: ["for://a.blank/node"],
-                    },
-                  },
-                ],
-                literals: {
-                  "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+    expect(solidDataset).toEqual(
+      expect.objectContaining({
+        graphs: {
+          default: {
+            "https://some.pod/resource": {
+              predicates: {
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                  namedNodes: [
+                    "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+                  ],
+                },
+                "http://xmlns.com/foaf/0.1/maker": {
+                  namedNodes: ["https://some.pod/resource#me"],
+                },
+                "http://xmlns.com/foaf/0.1/primaryTopic": {
+                  namedNodes: ["https://some.pod/resource#me"],
                 },
               },
+              type: "Subject",
+              url: "https://some.pod/resource",
             },
-            type: "Subject",
-            url: "https://some.pod/resource#me",
+            "https://some.pod/resource#me": {
+              predicates: {
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                  namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
+                },
+                "http://www.w3.org/2006/vcard/ns#fn": {
+                  blankNodes: [
+                    {
+                      "https://some.pod/resource#predicate": {
+                        namedNodes: ["for://a.blank/node"],
+                      },
+                    },
+                  ],
+                  literals: {
+                    "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+                  },
+                },
+              },
+              type: "Subject",
+              url: "https://some.pod/resource#me",
+            },
           },
         },
-      },
-      internal_resourceInfo: {
-        contentType: "text/turtle",
-        isRawData: false,
-        linkedResources: {},
-        sourceIri: "https://some.pod/resource",
-      },
-      type: "Dataset",
-    });
+        internal_resourceInfo: {
+          contentType: "text/turtle",
+          isRawData: false,
+          linkedResources: {},
+          sourceIri: "https://some.pod/resource",
+        },
+        type: "Dataset",
+      })
+    );
   });
 
   it("does not include non-deterministic identifiers when it detects non-cyclic chains of Blank Nodes", async () => {
@@ -263,80 +265,82 @@ describe("responseToSolidDataset", () => {
       .mockReturnValue("https://some.pod/resource");
     const solidDataset = await responseToSolidDataset(response);
 
-    expect(solidDataset).toStrictEqual({
-      graphs: {
-        default: {
-          "https://some.pod/resource": {
-            predicates: {
-              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                namedNodes: [
-                  "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
-                ],
-              },
-              "http://xmlns.com/foaf/0.1/maker": {
-                namedNodes: ["https://some.pod/resource#me"],
-              },
-              "http://xmlns.com/foaf/0.1/primaryTopic": {
-                namedNodes: ["https://some.pod/resource#me"],
-              },
-            },
-            type: "Subject",
-            url: "https://some.pod/resource",
-          },
-          "https://some.pod/resource#me": {
-            predicates: {
-              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
-              },
-              "http://www.w3.org/2006/vcard/ns#fn": {
-                literals: {
-                  "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+    expect(solidDataset).toEqual(
+      expect.objectContaining({
+        graphs: {
+          default: {
+            "https://some.pod/resource": {
+              predicates: {
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                  namedNodes: [
+                    "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
+                  ],
+                },
+                "http://xmlns.com/foaf/0.1/maker": {
+                  namedNodes: ["https://some.pod/resource#me"],
+                },
+                "http://xmlns.com/foaf/0.1/primaryTopic": {
+                  namedNodes: ["https://some.pod/resource#me"],
                 },
               },
-              "http://www.w3.org/ns/auth/acl#trustedApp": {
-                blankNodes: [
-                  {
-                    "http://www.w3.org/ns/auth/acl#mode": {
-                      namedNodes: [
-                        "http://www.w3.org/ns/auth/acl#Append",
-                        "http://www.w3.org/ns/auth/acl#Control",
-                        "http://www.w3.org/ns/auth/acl#Read",
-                        "http://www.w3.org/ns/auth/acl#Write",
-                      ],
-                    },
-                    "http://www.w3.org/ns/auth/acl#origin": {
-                      namedNodes: ["http://localhost:3000"],
-                    },
-                  },
-                  {
-                    "http://www.w3.org/ns/auth/acl#mode": {
-                      namedNodes: [
-                        "http://www.w3.org/ns/auth/acl#Append",
-                        "http://www.w3.org/ns/auth/acl#Control",
-                        "http://www.w3.org/ns/auth/acl#Read",
-                        "http://www.w3.org/ns/auth/acl#Write",
-                      ],
-                    },
-                    "http://www.w3.org/ns/auth/acl#origin": {
-                      namedNodes: ["https://penny.vincenttunru.com"],
-                    },
-                  },
-                ],
-              },
+              type: "Subject",
+              url: "https://some.pod/resource",
             },
-            type: "Subject",
-            url: "https://some.pod/resource#me",
+            "https://some.pod/resource#me": {
+              predicates: {
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+                  namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
+                },
+                "http://www.w3.org/2006/vcard/ns#fn": {
+                  literals: {
+                    "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
+                  },
+                },
+                "http://www.w3.org/ns/auth/acl#trustedApp": {
+                  blankNodes: [
+                    {
+                      "http://www.w3.org/ns/auth/acl#mode": {
+                        namedNodes: [
+                          "http://www.w3.org/ns/auth/acl#Append",
+                          "http://www.w3.org/ns/auth/acl#Control",
+                          "http://www.w3.org/ns/auth/acl#Read",
+                          "http://www.w3.org/ns/auth/acl#Write",
+                        ],
+                      },
+                      "http://www.w3.org/ns/auth/acl#origin": {
+                        namedNodes: ["http://localhost:3000"],
+                      },
+                    },
+                    {
+                      "http://www.w3.org/ns/auth/acl#mode": {
+                        namedNodes: [
+                          "http://www.w3.org/ns/auth/acl#Append",
+                          "http://www.w3.org/ns/auth/acl#Control",
+                          "http://www.w3.org/ns/auth/acl#Read",
+                          "http://www.w3.org/ns/auth/acl#Write",
+                        ],
+                      },
+                      "http://www.w3.org/ns/auth/acl#origin": {
+                        namedNodes: ["https://penny.vincenttunru.com"],
+                      },
+                    },
+                  ],
+                },
+              },
+              type: "Subject",
+              url: "https://some.pod/resource#me",
+            },
           },
         },
-      },
-      internal_resourceInfo: {
-        contentType: "text/turtle",
-        isRawData: false,
-        linkedResources: {},
-        sourceIri: "https://some.pod/resource",
-      },
-      type: "Dataset",
-    });
+        internal_resourceInfo: {
+          contentType: "text/turtle",
+          isRawData: false,
+          linkedResources: {},
+          sourceIri: "https://some.pod/resource",
+        },
+        type: "Dataset",
+      })
+    );
   });
 
   it("does not attempt to detect chains when there are many Blank Nodes, to avoid performance bottlenecks", async () => {
@@ -2859,6 +2863,52 @@ describe("createContainerInContainer", () => {
     );
   });
 
+  it("uses the full location URL if absolute thereby applying server-side normalisation", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      mockResponse("Arbitrary response", {
+        headers: {
+          Location: "https://some.pod/parent-container/child-container/",
+        },
+        url: "https://some.pod/parent-container//",
+      })
+    );
+
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/parent-container/child-container/"
+    );
+  });
+
+  it("uses the relative location URL to indicate source IRI", async () => {
+    const mockFetch = setMockOnFetch(
+      jest.fn(window.fetch),
+      mockResponse("Arbitrary response", {
+        headers: {
+          Location: "./x/y/",
+        },
+        url: "https://some.pod/parent-container//a/b",
+      })
+    );
+
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//a/b",
+      {
+        fetch: mockFetch,
+      }
+    );
+
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/parent-container//a/x/y/"
+    );
+  });
+
   it("includes the final slug with the return value, normalised to the target Container's origin", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
@@ -2888,6 +2938,8 @@ describe("createContainerInContainer", () => {
       mockResponse("Arbitrary response", {
         headers: {
           Location: "child-container/",
+          "Content-Location":
+            "https://some.pod/parent-container/child-container/",
         },
         url: "https://some.pod/parent-container/",
       })
