@@ -25,6 +25,12 @@ import { DataFactory } from "n3";
 import jsonld from "jsonld";
 import { getJsonLdParser } from "./jsonLd";
 
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest
+    .fn()
+    .mockImplementation(() => Promise.resolve(new Response(undefined, {}))),
+}));
+
 describe("The Parser", () => {
   it("should correctly find all triples in raw JSON-LD", async () => {
     const parser = getJsonLdParser();
@@ -143,5 +149,95 @@ describe("The Parser", () => {
 
     expect(onErrorCallback).toHaveBeenCalledTimes(1);
     expect(onErrorCallback.mock.calls[0][0]).toBeInstanceOf(Error);
+  });
+
+  describe("using custom fetcher for resolving contexts", () => {
+    it("should resolve successfully", async () => {
+      const parser = getJsonLdParser();
+      const onErrorCallback = jest.fn();
+      const onCompleteCallback = jest.fn();
+
+      parser.onError(onErrorCallback);
+      parser.onComplete(onCompleteCallback);
+
+      const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+        fetch: jest.Mock<
+          ReturnType<typeof window.fetch>,
+          [RequestInfo, RequestInit?]
+        >;
+      };
+      mockedFetcher.fetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            "@context": {
+              pim: "http://www.w3.org/ns/pim/space#",
+              "@version": 1.1,
+              "@protected": true,
+              id: "@id",
+              type: "@type",
+              storage: { "@id": "pim:storage", "@type": "@id" },
+            },
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      const jsonLd = `
+      {
+        "@context":"https://pod.inrupt.com/solid/v1",
+        "storage":"https://pod.inrupt.com/username/"
+      }
+    `;
+
+      await parser.parse(jsonLd, {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: false,
+          linkedResources: {},
+        },
+      });
+
+      expect(onErrorCallback).toHaveBeenCalledTimes(0);
+      expect(onCompleteCallback).toHaveBeenCalledTimes(1);
+      expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle errors gracefully", async () => {
+      const parser = getJsonLdParser();
+      const onErrorCallback = jest.fn();
+      const onCompleteCallback = jest.fn();
+
+      parser.onError(onErrorCallback);
+      parser.onComplete(onCompleteCallback);
+
+      const mockedFetcher = jest.requireMock("../fetcher.ts") as {
+        fetch: jest.Mock<
+          ReturnType<typeof window.fetch>,
+          [RequestInfo, RequestInit?]
+        >;
+      };
+      mockedFetcher.fetch.mockRejectedValue("Some error");
+
+      const jsonLd = `
+      {
+        "@context":"https://pod.inrupt.com/solid/v1",
+        "storage":"https://pod.inrupt.com/username/"
+      }
+    `;
+
+      await parser.parse(jsonLd, {
+        internal_resourceInfo: {
+          sourceIri: "https://some.pod/resource",
+          isRawData: false,
+          linkedResources: {},
+        },
+      });
+
+      console.log(onErrorCallback.mock.calls);
+
+      expect(onErrorCallback).toHaveBeenCalledTimes(1);
+      expect(onCompleteCallback).toHaveBeenCalledTimes(1);
+      expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+    });
   });
 });
