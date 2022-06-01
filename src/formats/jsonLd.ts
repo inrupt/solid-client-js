@@ -30,6 +30,21 @@ import {
 import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
+import { fetch } from "../fetcher";
+import { RemoteDocument } from "jsonld/jsonld-spec";
+
+const fetchDocumentLoader = async (
+  url: string,
+  options: any
+): Promise<RemoteDocument> => {
+  const res = await fetch(url);
+
+  return {
+    contextUrl: undefined,
+    documentUrl: url,
+    document: await res.json(),
+  };
+};
 
 /**
  * ```{note} This function is still experimental and subject to change, even
@@ -60,6 +75,7 @@ export const getJsonLdParser = (): Parser => {
       try {
         const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
           base: getSourceUrl(resourceInfo),
+          documentLoader: fetchDocumentLoader,
         })) as any[];
         quads = fixQuads(plainQuads);
       } catch (error) {

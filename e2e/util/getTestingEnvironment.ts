@@ -55,7 +55,10 @@ function checkEnvVars(...keys: string[]) {
 }
 
 function getTestingEnvironment(): TestingEnvironment {
-  setupEnv();
+  if (!process.env.E2E_TEST_ENVIRONMENT) {
+    setupEnv();
+  }
+
   if (
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Dev-Next" &&
     process.env.E2E_TEST_ENVIRONMENT !== "Inrupt Production" &&

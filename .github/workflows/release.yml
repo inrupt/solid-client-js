@@ -61,7 +61,7 @@ jobs:
           echo ""
           echo "    npm install @inrupt/solid-client"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.INRUPT_NPM_TOKEN }}
       - name: Mark GitHub Deployment as successful
         uses: octokit/request-action@v2.1.4
         with:
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["16", "14", "12"]
+        node-version: ["16", "14"]
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3

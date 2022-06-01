@@ -1,7 +1,7 @@
 {
   "name": "@inrupt/solid-client",
   "description": "Make your web apps work with Solid Pods.",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "license": "MIT",
   "scripts": {
     "build": "rollup --config rollup.config.js",
@@ -198,5 +198,8 @@
     "http-link-header": "^1.0.2",
     "jsonld": "^5.2.0",
     "n3": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=14.0"
   }
 }
