@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.23.1] - 2022-06-01
+
 ### Bugfixes
 
 - `saveSolidDatasetInContainer` and `createContainerInContainer` adequately take
