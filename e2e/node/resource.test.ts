@@ -44,8 +44,10 @@ import {
   createThing,
   createSolidDataset,
   deleteSolidDataset,
+  getWellKnownSolid,
   getSourceIri,
   saveSolidDatasetInContainer,
+  solidDatasetAsTurtle,
 } from "../../src/index";
 import { blankNode } from "@rdfjs/dataset";
 import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
@@ -207,5 +209,11 @@ describe("Authenticated end-to-end", () => {
 
   it("cannot fetch non public resources unauthenticated", async () => {
     await expect(getSolidDataset(sessionResource)).rejects.toThrow();
+  });
+
+  it("can fetch getWellKnownSolid", async () => {
+    // We don't really care for what the resulting dataset is, just that across
+    // environments it reliably succeeds:
+    await expect(getWellKnownSolid(sessionResource)).resolves.not.toThrow();
   });
 });
