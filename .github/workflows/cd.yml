@@ -262,15 +262,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: "Inrupt Production"
-    strategy:
-      matrix:
-        node-version: ["16"]
     needs: [prepare-deployment, publish-npm]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
         # Dependabot does not have access to our secrets,
