@@ -17,3 +17,4 @@ test-results/
 .virtualenv
 .parcel-cache/
 .vscode/settings.json
+coverage
