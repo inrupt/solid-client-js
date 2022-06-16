@@ -25,7 +25,7 @@ module.exports = {
   testRegex: "/src/.*\\.test\\.ts$",
   clearMocks: true,
   collectCoverage: true,
-  coverageReporters: ["text", "lcov"],
+  coverageReporters: process.env.CI ? ["text", "lcov"] : ["text"],
   coverageThreshold: {
     global: {
       branches: 100,
