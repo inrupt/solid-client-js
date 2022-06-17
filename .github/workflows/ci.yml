@@ -19,7 +19,8 @@ jobs:
           cache: "npm"
       - run: npm ci --ignore-scripts
       - run: npm test
-      - run: git fetch main
+      - run: git fetch --depth=0
+        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
       - uses: SonarSource/sonarcloud-github-action@v1.6
         if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
         env:
