@@ -547,12 +547,11 @@ export function getResourceAcrPolicyAll(
   resourceWithAcr: WithAccessibleAcr
 ): ResourcePolicy[] {
   const acr = internal_getAcr(resourceWithAcr);
-  const policyUrls = getAcrPolicyUrlAll(resourceWithAcr);
-  const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
-  const foundPolicies = foundThings.filter(
-    (thing) => thing !== null && isPolicy(thing)
-  ) as ResourcePolicy[];
-  return foundPolicies;
+    const foundThings = getThingAll(acr);
+    const foundPolicies = foundThings.filter(
+        (thing) => thing !== null && isPolicy(thing)
+    ) as ResourcePolicy[];
+    return foundPolicies;
 }
 
 /**
