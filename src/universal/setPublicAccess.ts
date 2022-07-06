@@ -31,7 +31,10 @@ import {
 } from "../access/wac";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 import { saveAcrFor } from "../acp/acp";
-import { getPublicAccess as getPublicAccessAcp } from "./getPublicAccess";
+import {
+  getPublicAccess,
+  getPublicAccess as getPublicAccessAcp,
+} from "./getPublicAccess";
 
 /**
  * Set access to a resource for the public.
@@ -73,14 +76,14 @@ export async function setPublicAccess(
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);
 
-  if (acr === null) {
-    await setPublicAccessWac(resourceInfo, access as WacAccess, options);
-    return getPublicAccessWac(resourceInfo, options);
-  }
-
   try {
-    await saveAcrFor(await setPublicAccessAcp(acr, access), options);
-    return await getPublicAccessAcp(resourceUrl, options);
+    if (acr === null) {
+      await setPublicAccessWac(resourceInfo, access as WacAccess, options);
+    } else {
+      await saveAcrFor(await setPublicAccessAcp(acr, access), options);
+    }
+
+    return await getPublicAccess(resourceUrl, options);
   } catch (e) {
     return null;
   }
