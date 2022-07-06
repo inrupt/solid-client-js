@@ -35,4 +35,5 @@ module.exports = {
     },
   },
   injectGlobals: false,
+  globalSetup: "./global-setup.js"
 };

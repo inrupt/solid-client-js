@@ -30,4 +30,5 @@ module.exports = {
   testTimeout: 30000,
   injectGlobals: false,
   setupFiles: ["<rootDir>/e2e/node/setup.ts"],
+  globalSetup: "./global-setup.js"
 };
