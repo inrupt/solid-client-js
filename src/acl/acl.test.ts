@@ -84,7 +84,7 @@ describe("fetchAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -302,7 +302,7 @@ describe("fetchResourceAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -478,7 +478,7 @@ describe("fetchFallbackAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -760,7 +760,7 @@ describe("getSolidDatasetWithAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -865,7 +865,7 @@ describe("getFileWithAcl", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1187,7 +1187,7 @@ describe("getResourceInfoWithAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2466,7 +2466,7 @@ describe("saveAclFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     const withResourceInfo = {
@@ -2686,7 +2686,7 @@ describe("deleteAclFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {

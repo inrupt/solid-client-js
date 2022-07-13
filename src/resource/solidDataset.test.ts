@@ -473,7 +473,7 @@ describe("getSolidDataset", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -809,7 +809,7 @@ describe("saveSolidDatasetAt", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1641,7 +1641,7 @@ describe("deleteSolidDataset", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1749,7 +1749,7 @@ describe("createContainerAt", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2665,7 +2665,7 @@ describe("saveSolidDatasetInContainer", () => {
 describe("createContainerInContainer", () => {
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockOnFetch(
     fetch: MockFetch,
@@ -2963,7 +2963,7 @@ describe("deleteContainer", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -3550,7 +3550,7 @@ describe("changeLogAsMarkdown", () => {
 describe("getWellKnownSolid", () => {
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockResourceResponseOnFetch(
     fetch: MockFetch,

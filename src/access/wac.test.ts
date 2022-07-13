@@ -78,7 +78,7 @@ describe("getAgentAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -547,7 +547,7 @@ describe("getGroupAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -924,7 +924,7 @@ describe("getPublicAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1301,7 +1301,7 @@ describe("getAgentAccessAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1506,7 +1506,7 @@ describe("getGroupAccessAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1717,7 +1717,7 @@ describe("setAgentAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2430,7 +2430,7 @@ describe("setGroupResourceAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -3154,7 +3154,7 @@ describe("setPublicResourceAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

@@ -151,7 +151,7 @@ describe("getProfileAll", () => {
     const mockedAuthFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -176,7 +176,7 @@ describe("getProfileAll", () => {
     const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -207,7 +207,7 @@ describe("getProfileAll", () => {
     // Mock the alt profile authenticated fetch
     const mockedAuthFetcher = jest.fn(fetch) as jest.Mock<
       ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit?]
+      [RequestInfo | URL, RequestInit?]
     >;
     mockedAuthFetcher.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
@@ -230,7 +230,7 @@ describe("getProfileAll", () => {
     const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -436,7 +436,7 @@ describe("getPodUrlAll", () => {
     const mockedFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -457,7 +457,7 @@ describe("getPodUrlAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -484,7 +484,7 @@ describe("getPodUrlAll", () => {
     const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -503,7 +503,7 @@ describe("getPodUrlAll", () => {
   it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
     const mockedAuthFetch = jest.fn(fetch) as jest.Mock<
       ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit?]
+      [RequestInfo | URL, RequestInit?]
     >;
 
     mockedAuthFetch.mockResolvedValueOnce(
@@ -529,7 +529,7 @@ describe("getPodUrlAll", () => {
     const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -564,7 +564,7 @@ describe("getPodUrlAll", () => {
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -601,7 +601,7 @@ describe("getPodUrlAll", () => {
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -657,7 +657,7 @@ describe("getPodUrlAll", () => {
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

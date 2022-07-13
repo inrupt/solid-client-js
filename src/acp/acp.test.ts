@@ -98,7 +98,7 @@ describe("getSolidDatasetWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -248,7 +248,7 @@ describe("getFileWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -329,7 +329,7 @@ describe("getResourceInfoWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -972,7 +972,7 @@ describe("saveAcrFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

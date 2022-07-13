@@ -163,7 +163,7 @@ describe("The Parser", () => {
       const mockedFetcher = jest.requireMock("../fetcher.ts") as {
         fetch: jest.Mock<
           ReturnType<typeof window.fetch>,
-          [RequestInfo, RequestInit?]
+          [RequestInfo | URL, RequestInit?]
         >;
       };
       mockedFetcher.fetch.mockResolvedValueOnce(
@@ -213,7 +213,7 @@ describe("The Parser", () => {
       const mockedFetcher = jest.requireMock("../fetcher.ts") as {
         fetch: jest.Mock<
           ReturnType<typeof window.fetch>,
-          [RequestInfo, RequestInit?]
+          [RequestInfo | URL, RequestInit?]
         >;
       };
       mockedFetcher.fetch.mockRejectedValue("Some error");

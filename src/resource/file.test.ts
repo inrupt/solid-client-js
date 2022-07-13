@@ -100,7 +100,7 @@ describe("getFile", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -220,7 +220,7 @@ describe("Non-RDF data deletion", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -368,7 +368,7 @@ describe("Write non-RDF data into a folder", () => {
 
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockOnFetch(
     fetch: MockFetch,
@@ -583,7 +583,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -602,7 +602,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
