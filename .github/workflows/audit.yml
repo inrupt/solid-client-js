@@ -10,17 +10,6 @@ on:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-          registry-url: "https://registry.npmjs.org"
-      - run: npm audit --audit-level=moderate
-      - name: Send a notification that the audit has failed
-        if: failure() && github.event_name == 'schedule'
-        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated npm audit --audit-level=moderate failed. View <https://github.com/inrupt/solid-client-js/actions/runs/$RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
-        env:
-          WEBHOOK_E2E_FAILURE: "${{ secrets.WEBHOOK_E2E_FAILURE }}"
-          RUN_ID: "${{ github.run_id }}"
+    uses: inrupt/javascript-style-configs/.github/workflows/reusable-audit.yml@main
+    secrets:
+      WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}
