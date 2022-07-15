@@ -23,7 +23,7 @@ jobs:
         if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16.x' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16' }}
         with:
           name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
           path: coverage/
@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v3
         with:
-          name: code-coverage-ubuntu-latest-16.x
+          name: code-coverage-ubuntu-latest-16
           path: coverage/
       - uses: SonarSource/sonarcloud-github-action@v1.6
         env:
