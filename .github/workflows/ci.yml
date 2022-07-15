@@ -21,10 +21,28 @@ jobs:
       - run: npm test
       - run: git fetch --unshallow
         if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
+      # Upload coverage for sonarcube (only matching OS and one node version required)
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16.x' }}
+        with:
+          name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
+          path: coverage/
+  
+  sonar-scan: 
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # Sonar analysis needs the full history for features like automatic assignment of bugs. If the following step
+          # is not included the project will show a warning about incomplete information.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: code-coverage-ubuntu-latest-16.x
+          path: coverage/
       - uses: SonarSource/sonarcloud-github-action@v1.6
-        if: ${{ matrix.node-version == '16' && matrix.os == 'ubuntu-latest' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-
