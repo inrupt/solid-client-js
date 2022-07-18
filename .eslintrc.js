@@ -44,9 +44,6 @@ module.exports = {
     "@typescript-eslint/ban-ts-comment": "error",
     "@typescript-eslint/no-use-before-define": "warn",
     "@typescript-eslint/no-explicit-any": "error",
-
-    // Temporary:
-    "header/header": "off",
   },
   overrides: [
     {
