@@ -53,7 +53,7 @@ export function internal_setAcr<ResourceExt extends WithAcp>(
   return Object.assign(internal_cloneResource(resource), {
     internal_acp: {
       ...resource.internal_acp,
-      acr: acr,
+      acr,
     },
   });
 }

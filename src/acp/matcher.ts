@@ -30,7 +30,6 @@ import {
   WebId,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
-import { getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
 import { getSourceUrl } from "../resource/resource";
 import { addIri, addStringNoLocale } from "../thing/add";
 import { getIriAll, getStringNoLocaleAll } from "../thing/get";
@@ -467,10 +466,9 @@ export function removeResourceMatcher<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let matcherToRemove: UrlString;
   if (typeof matcher === "string") {
-    try {
-      new URL(matcher);
+    if (internal_isValidUrl(matcher)) {
       matcherToRemove = matcher;
-    } catch (e) {
+    } else {
       // If the given Matcher to remove is the name of the Matcher,
       // resolve it to its full URL — developers usually refer to either the
       // Matcher itself, or by its name, as they do not have access to the ACR
@@ -957,17 +955,17 @@ export function matcherAsMarkdown(matcher: Matcher): string {
   const targetAgents = getAgentAll(matcher);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
-    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+    targetEnumeration += `${targetAgents.join("\n  - ")}\n`;
   }
   const targetClients = getClientAll(matcher);
   if (targetClients.length > 0) {
     targetEnumeration += "- Users of the following client applications:\n  - ";
-    targetEnumeration += targetClients.join("\n  - ") + "\n";
+    targetEnumeration += `${targetClients.join("\n  - ")}\n`;
   }
 
   markdown +=
     targetEnumeration.length > 0
-      ? "This Matcher matches:\n" + targetEnumeration
+      ? `This Matcher matches:\n${targetEnumeration}`
       : "<empty>\n";
 
   return markdown;

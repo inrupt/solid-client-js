@@ -21,7 +21,7 @@
 
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
-import { isNamedNode } from "../datatypes";
+import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
@@ -574,9 +574,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
-    try {
-      new URL(policyToRemove);
-    } catch (e) {
+    if (internal_isValidUrl(policyToRemove) === false) {
       // If the given Policy to remove is the name of the Policy,
       // resolve it to its full URL — developers usually refer to either the
       // Policy itself, or by its name, as they do not have access to the ACR
@@ -629,9 +627,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
-    try {
-      new URL(policyToRemove);
-    } catch (e) {
+    if (internal_isValidUrl(policyToRemove) === false) {
       // If the given Policy to remove is the name of the Policy,
       // resolve it to its full URL — developers usually refer to either the
       // Policy itself, or by its name, as they do not have access to the ACR
@@ -755,15 +751,15 @@ export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   }
   if (allOfRules.length > 0) {
     markdown += "\nAll of these rules should match:\n";
-    markdown += "- " + allOfRules.join("\n- ") + "\n";
+    markdown += `- ${allOfRules.join("\n- ")}\n`;
   }
   if (anyOfRules.length > 0) {
     markdown += "\nAt least one of these rules should match:\n";
-    markdown += "- " + anyOfRules.join("\n- ") + "\n";
+    markdown += `- ${anyOfRules.join("\n- ")}\n`;
   }
   if (noneOfRules.length > 0) {
     markdown += "\nNone of these rules should match:\n";
-    markdown += "- " + noneOfRules.join("\n- ") + "\n";
+    markdown += `- ${noneOfRules.join("\n- ")}\n`;
   }
 
   return markdown;

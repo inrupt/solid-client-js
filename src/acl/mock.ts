@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { WithServerResourceInfo, UrlString } from "../interfaces";
+import { WithServerResourceInfo } from "../interfaces";
 import { getSourceIri } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
 import {
@@ -55,7 +55,7 @@ export function addMockResourceAclTo<T extends WithServerResourceInfo>(
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
-        aclUrl: aclUrl,
+        aclUrl,
       },
     }
   );
@@ -87,7 +87,7 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
   resource: T
 ): T & WithFallbackAcl {
   const containerUrl = internal_getContainerPath(getSourceIri(resource));
-  const aclUrl = containerUrl + ".acl";
+  const aclUrl = `${containerUrl}.acl`;
   const mockContainer = setMockAclUrl(mockContainerFrom(containerUrl), aclUrl);
   const aclDataset = createAcl(mockContainer);
 

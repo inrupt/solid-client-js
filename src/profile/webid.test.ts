@@ -20,8 +20,9 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
+import type * as CrossFetch from "cross-fetch";
 import {
-  asIri,
   buildThing,
   createSolidDataset,
   createThing,
@@ -42,8 +43,6 @@ import {
   getPodUrlAllFrom,
   getProfileAll,
 } from "./webid";
-import { Response } from "cross-fetch";
-import type * as CrossFetch from "cross-fetch";
 
 jest.mock("cross-fetch", () => {
   const crossFetchModule = jest.requireActual(
@@ -51,7 +50,7 @@ jest.mock("cross-fetch", () => {
   ) as typeof CrossFetch;
   return {
     ...crossFetchModule,
-    fetch: jest.fn(fetch),
+    fetch: jest.fn(),
   };
 });
 
@@ -653,7 +652,7 @@ describe("getPodUrlAll", () => {
     });
 
     // Mock the two consecutive fetches to the WebID document and the profile
-    //resource linked from it.
+    // resource linked from it.
     // The WebID is fetched using the default fetch
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<

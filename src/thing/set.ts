@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
+import type { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
 import { Thing, Url, UrlString } from "../interfaces";
 import { internal_isValidUrl, Time } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";

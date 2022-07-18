@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { fetch as unauthenticatedFetch } from "cross-fetch";
 import {
   asIri,
   getIriAll,
@@ -35,7 +36,6 @@ import {
   getSourceIri,
   internal_defaultFetchOptions,
 } from "../resource/resource";
-import { fetch as unauthenticatedFetch } from "cross-fetch";
 import { fetch as defaultFetch } from "../fetcher";
 
 export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {

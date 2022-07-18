@@ -233,8 +233,6 @@ describe("The Parser", () => {
         },
       });
 
-      console.log(onErrorCallback.mock.calls);
-
       expect(onErrorCallback).toHaveBeenCalledTimes(1);
       expect(onCompleteCallback).toHaveBeenCalledTimes(1);
       expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);

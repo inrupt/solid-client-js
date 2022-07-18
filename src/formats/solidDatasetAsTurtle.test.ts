@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { jest, describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 import { solidDatasetAsTurtle } from "./solidDatasetAsTurtle";
 import { responseToSolidDataset } from "../resource/solidDataset";
 import type { SolidDataset } from "../interfaces";

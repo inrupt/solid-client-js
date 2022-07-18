@@ -20,6 +20,7 @@
  */
 
 import { describe, it, jest, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import { rdf, security } from "../constants";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { buildThing } from "../thing/build";
@@ -32,7 +33,6 @@ import {
   getProfileJwksIri,
   setProfileJwks,
 } from "./jwks";
-import { Response } from "cross-fetch";
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(

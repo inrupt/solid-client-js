@@ -38,7 +38,7 @@
 //      needs to be explicit, and to always call 'DataFactory.literal()' with
 //      NamedNode instances for the 2nd param when we know we want a Datatype.
 
-import * as RdfJs from "@rdfjs/types";
+import type * as RdfJs from "@rdfjs/types";
 import rdfjsDatasetModule from "@rdfjs/dataset";
 import { ImmutableDataset } from "./rdf.internal";
 import {
@@ -46,6 +46,7 @@ import {
   getChainBlankNodes,
   toRdfJsQuads,
 } from "./rdfjs.internal";
+
 const rdfJsDataset = rdfjsDatasetModule.dataset;
 
 /**
@@ -84,7 +85,7 @@ export function fromRdfJsDataset(
     (datasetAcc, quad) =>
       addRdfJsQuadToDataset(datasetAcc, quad, {
         otherQuads: quads,
-        chainBlankNodes: chainBlankNodes,
+        chainBlankNodes,
       }),
     dataset
   );

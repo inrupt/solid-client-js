@@ -50,7 +50,7 @@ import { setupTestResources, teardownTestResources } from "./test-helpers";
 const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
 const env = getNodeTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/acp-v3-";
+
 if (env.feature.acp_v3 !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
@@ -83,11 +83,11 @@ describe("Authenticated end-to-end ACP V3", () => {
     policyResourceUrl: UrlString,
     session: Session
   ) {
-    let publicRule = acp.createRule(policyResourceUrl + "#rule-public");
+    let publicRule = acp.createRule(`${policyResourceUrl}#rule-public`);
     publicRule = acp.setPublic(publicRule);
 
     let publicReadPolicy = acp.createPolicy(
-      policyResourceUrl + "#policy-publicRead"
+      `${policyResourceUrl}#policy-publicRead`
     );
     // Note: we should think of a better name for "optional", as this isn't really optional.
     //       At least one "optional" rule should apply, and since this is the only rule for this
@@ -99,12 +99,12 @@ describe("Authenticated end-to-end ACP V3", () => {
       write: false,
     });
 
-    let selfRule = acp.createRule(policyResourceUrl + "#rule-self");
+    let selfRule = acp.createRule(`${policyResourceUrl}#rule-self`);
     selfRule = acp.addAgent(selfRule, session.info.webId!);
     // This policy denies write access to the current user,
     // but allows write access so the Resource can still be removed afterwards:
     let selfWriteNoReadPolicy = acp.createPolicy(
-      policyResourceUrl + "#policy-selfWriteNoRead"
+      `${policyResourceUrl}#policy-selfWriteNoRead`
     );
     selfWriteNoReadPolicy = acp.addAllOfRuleUrl(
       selfWriteNoReadPolicy,
@@ -165,7 +165,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     // and that denies Read access to the current user:
     await applyPolicyToPolicyResource(
       policyResourceUrl,
-      policyResourceUrl + "#policy-selfWriteNoRead"
+      `${policyResourceUrl}#policy-selfWriteNoRead`
     );
 
     // Verify that indeed, the current user can no longer read it:
@@ -200,7 +200,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     // and provides Read access to the public:
     await applyPolicyToPolicyResource(
       policyResourceUrl,
-      policyResourceUrl + "#policy-publicRead"
+      `${policyResourceUrl}#policy-publicRead`
     );
 
     // Verify that indeed, an unauthenticated user can now read it:

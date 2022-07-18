@@ -227,7 +227,7 @@ export {
   SolidClientError,
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
-export { Time } from "./datatypes.js";
+export { Time } from "./datatypes";
 export {
   addJwkToJwks,
   addPublicKeyToProfileJwks,

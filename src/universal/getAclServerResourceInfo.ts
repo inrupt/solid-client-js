@@ -40,10 +40,7 @@ export async function getAclServerResourceInfo(
   options?: DefaultOptions
 ): Promise<WithServerResourceInfo | null> {
   if (typeof resource.internal_resourceInfo.aclUrl === "string") {
-    return await getResourceInfo(
-      resource.internal_resourceInfo.aclUrl,
-      options
-    );
+    return getResourceInfo(resource.internal_resourceInfo.aclUrl, options);
   }
   return null;
 }

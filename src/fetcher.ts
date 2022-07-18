@@ -19,13 +19,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
+
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */
 export const fetch: typeof window.fetch = async (resource, init) => {
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof window === "object" && typeof require !== "function") {
-    return await window.fetch(resource, init);
+    return window.fetch(resource, init);
   }
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
@@ -42,7 +44,6 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // warning. Since the use of package names instead of file names requires a bundles anyway, this
   // should not have any practical consequences. For more background, see:
   // https://github.com/webpack/webpack/issues/7713
-  let fetch;
 
   // Unfortunately solid-client-authn-browser does not support a default session yet.
   // Once it does, we can auto-detect if it is available and use it as follows:
@@ -51,9 +52,8 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // } catch (e) {
   // When enabling the above, make sure to add a similar try {...} catch block using `import`
   // statements in the elseif above.
-  // eslint-disable-next-line prefer-const
-  fetch = require("cross-fetch");
+  const fetch = require("cross-fetch");
   // }
 
-  return await fetch(resource, init);
+  return fetch(resource, init);
 };

@@ -19,8 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Quad } from "@rdfjs/types";
-import { Parser as n3Parser, Writer as n3Writer } from "n3";
+import type { Quad } from "@rdfjs/types";
+import { Parser as N3Parser, Writer as N3Writer } from "n3";
 import { IriString } from "../interfaces";
 import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
@@ -52,7 +52,7 @@ export const getTurtleParser = (): Parser => {
     },
     parse: async (source, resourceInfo) => {
       const parser = await getParser(getSourceUrl(resourceInfo));
-      parser.parse(source, (error, quad, _prefixes) => {
+      parser.parse(source, (error, quad) => {
         if (error) {
           onErrorCallbacks.forEach((callback) => callback(error));
         } else if (quad) {
@@ -66,7 +66,7 @@ export const getTurtleParser = (): Parser => {
 };
 
 async function getParser(baseIri: IriString) {
-  return new n3Parser({ format: "text/turtle", baseIRI: baseIri });
+  return new N3Parser({ format: "text/turtle", baseIRI: baseIri });
 }
 
 /**
@@ -75,7 +75,7 @@ async function getParser(baseIri: IriString) {
  */
 export async function triplesToTurtle(quads: Quad[]): Promise<string> {
   const format = "text/turtle";
-  const writer = new n3Writer({ format: format });
+  const writer = new N3Writer({ format });
   // Remove any potentially lingering references to Named Graphs in Quads;
   // they'll be determined by the URL the Turtle will be sent to:
   const triples = quads.map((quad) =>
@@ -86,9 +86,10 @@ export async function triplesToTurtle(quads: Quad[]): Promise<string> {
     writer.end((error, result) => {
       /* istanbul ignore if [n3.js doesn't actually pass an error nor a result, apparently: https://github.com/rdfjs/N3.js/blob/62682e48c02d8965b4d728cb5f2cbec6b5d1b1b8/src/N3Writer.js#L290] */
       if (error) {
-        return reject(error);
+        reject(error);
+      } else {
+        resolve(result);
       }
-      resolve(result);
     });
   });
 

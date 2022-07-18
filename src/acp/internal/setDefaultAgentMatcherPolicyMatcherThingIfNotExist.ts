@@ -78,7 +78,7 @@ export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
     defaultAgentMatcherPolicyThing = createThing({ url: policyUrl });
     defaultAgentMatcherPolicyThing = setModes(
       defaultAgentMatcherPolicyThing,
-      { [mode]: true } as any as AccessModes,
+      { [mode]: true } as unknown as AccessModes,
       ACP.allow
     );
   }

@@ -69,7 +69,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
   const rootContainer = "https://lit-e2e-test.inrupt.net/public/";
 
   it("should be able to read and update data in a Pod", async () => {
-    const randomNick = "Random nick " + Math.random();
+    const randomNick = `Random nick ${Math.random()}`;
 
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
@@ -180,10 +180,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
   });
 
   it("should be able to read and update ACLs", async () => {
-    const fakeWebId =
-      "https://example.com/fake-webid#" +
-      Date.now().toString() +
-      Math.random().toString();
+    const fakeWebId = `https://example.com/fake-webid#${Date.now().toString()}${Math.random().toString()}`;
 
     const datasetWithAcl = await getSolidDatasetWithAcl(
       `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`

@@ -20,15 +20,6 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 
@@ -70,6 +61,16 @@ import { createSolidDataset } from "../resource/solidDataset";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { addIri, addStringNoLocale } from "../thing/add";
 import { getIri } from "../thing/get";
+
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
 
 function mockResponse(
   body?: BodyInit | null,
@@ -135,7 +136,7 @@ describe("fetchAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -226,7 +227,7 @@ describe("fetchAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -691,7 +692,7 @@ describe("getSolidDatasetWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -729,7 +730,7 @@ describe("getSolidDatasetWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -926,7 +927,7 @@ describe("getFileWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
-        headers: headers,
+        headers,
         url: url as string,
       };
       return Promise.resolve(new Response(undefined, init));
@@ -963,7 +964,7 @@ describe("getFileWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
-        headers: headers,
+        headers,
         url: url as string,
       };
       return Promise.resolve(new Response(undefined, init));
@@ -1118,7 +1119,7 @@ describe("getResourceInfoWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -1156,7 +1157,7 @@ describe("getResourceInfoWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );

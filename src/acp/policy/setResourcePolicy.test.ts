@@ -19,9 +19,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { jest, describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 import { ACP } from "../constants";
-import { addAllOfMatcherUrl } from "../matcher";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
   TEST_URL,
@@ -96,7 +95,7 @@ describe("setResourcePolicy()", () => {
         },
         [policyUrl]: {
           predicates: {
-            ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]: {
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
               namedNodes: [ACP.Policy],
             },
             [ACP.allOf]: {

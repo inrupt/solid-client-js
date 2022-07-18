@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Literal, NamedNode } from "@rdfjs/types";
+import type { Literal, NamedNode } from "@rdfjs/types";
 import { Url, UrlString, Thing, ThingPersisted } from "../interfaces";
 import {
   isNamedNode,
@@ -98,11 +98,10 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   if (!isThing(value) && !internal_isValidUrl(value)) {
     throw new ValidValueUrlExpectedError(value);
   }
-  const iriToRemove = isNamedNode(value)
-    ? value.value
-    : typeof value === "string"
-    ? value
-    : asIri(value);
+
+  const iriToRemove = isThing(value)
+    ? asIri(value)
+    : internal_toIriString(value);
 
   const updatedNamedNodes = freeze(
     thing.predicates[predicateIri]?.namedNodes?.filter(
@@ -197,9 +196,8 @@ export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
           deserializedDate.getMonth() === value.getMonth() &&
           deserializedDate.getDate() === value.getDate()
         );
-      } else {
-        return false;
       }
+      return false;
     }
   );
 };
@@ -232,9 +230,8 @@ export const removeTime: RemoveOfType<Time> = (thing, property, value) => {
           deserializedTime.timezoneHourOffset === value.timezoneHourOffset &&
           deserializedTime.timezoneMinuteOffset === value.timezoneMinuteOffset
         );
-      } else {
-        return false;
       }
+      return false;
     }
   );
 };

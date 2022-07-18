@@ -369,7 +369,7 @@ function internal_findActorAll(
               acp.CreatorAgent,
               acp.AuthenticatedAgent,
             ] as string[]
-          ).includes(iri) || actorRelation != acp.agent
+          ).includes(iri) || actorRelation !== acp.agent
       )
       .forEach((iri) => actors.add(iri));
   });
@@ -1034,10 +1034,10 @@ export async function internal_getPoliciesAndMatchers(
   );
 
   return {
-    inaccessibleUrls: inaccessibleUrls,
-    acrPolicies: acrPolicies,
-    policies: policies,
-    matchers: matchers,
+    inaccessibleUrls,
+    acrPolicies,
+    policies,
+    matchers,
   };
 }
 

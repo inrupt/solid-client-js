@@ -20,15 +20,6 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 import {
@@ -51,6 +42,16 @@ import {
   SolidClientError,
 } from "../interfaces";
 import { createSolidDataset } from "./solidDataset";
+
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
 
 function mockResponse(
   body?: BodyInit | null,

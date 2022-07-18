@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { NamedNode } from "@rdfjs/types";
+import type { NamedNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
 
 import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
@@ -1533,7 +1533,7 @@ describe("ruleAsMarkdown", () => {
     const rule = createRule("https://some.pod/policyResource#rule");
 
     expect(ruleAsMarkdown(rule)).toBe(
-      "## Rule: https://some.pod/policyResource#rule\n" + "\n" + "<empty>\n"
+      `## Rule: https://some.pod/policyResource#rule\n\n<empty>\n`
     );
   });
 
@@ -1549,20 +1549,21 @@ describe("ruleAsMarkdown", () => {
     rule = addClient(rule, "https://some.app/registration#it");
 
     expect(ruleAsMarkdown(rule)).toBe(
-      "## Rule: https://some.pod/policyResource#rule\n" +
-        "\n" +
-        "This rule applies to:\n" +
-        "- Everyone\n" +
-        "- All authenticated agents\n" +
-        "- The creator of this resource\n" +
-        "- Users of any client application\n" +
-        "- The following agents:\n" +
-        "  - https://some.pod/profile#agent\n" +
-        "  - https://some-other.pod/profile#agent\n" +
-        "- Members of the following groups:\n" +
-        "  - https://some.pod/groups#family\n" +
-        "- Users of the following client applications:\n" +
-        "  - https://some.app/registration#it\n"
+      `## Rule: https://some.pod/policyResource#rule
+
+This rule applies to:
+- Everyone
+- All authenticated agents
+- The creator of this resource
+- Users of any client application
+- The following agents:
+  - https://some.pod/profile#agent
+  - https://some-other.pod/profile#agent
+- Members of the following groups:
+  - https://some.pod/groups#family
+- Users of the following client applications:
+  - https://some.app/registration#it
+`
     );
   });
 });

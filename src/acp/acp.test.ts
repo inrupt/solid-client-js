@@ -21,16 +21,6 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn(window.fetch).mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
-
 import { Response } from "cross-fetch";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
@@ -58,6 +48,16 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
 import { createSolidDataset } from "../resource/solidDataset";
 
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn(window.fetch).mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
+
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
   memberPolicies: ["https://some.pod/policies#memberPolicy"],
@@ -74,7 +74,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
     control = addIri(control, acp.applyMembers, policyUrl);
   });
 
-  const acrUrl = accessTo + "?ext=acr";
+  const acrUrl = `${accessTo}?ext=acr`;
   let acrThing = createThing({ url: acrUrl });
   policies.acrPolicies.forEach((policyUrl) => {
     acrThing = addIri(acrThing, acp.access, policyUrl);
@@ -85,7 +85,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
 
   let acr: AccessControlResource & WithServerResourceInfo = {
     ...mockSolidDatasetFrom(acrUrl),
-    accessTo: accessTo,
+    accessTo,
   };
   acr = setThing(acr, control);
   acr = setThing(acr, acrThing);

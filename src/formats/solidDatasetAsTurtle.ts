@@ -19,9 +19,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { NamedNode, Writer } from "n3";
 import type { SolidDataset } from "../interfaces";
 import { prefixes as defaultPrefixes } from "./prefixes";
-import { NamedNode, Writer } from "n3";
 import { toRdfJsDataset } from "../rdfjs";
 
 /**
@@ -53,9 +53,10 @@ export async function solidDatasetAsTurtle(
     writer.end((error, result) => {
       /* istanbul ignore next */
       if (error) {
-        return reject(error);
+        reject(error);
+      } else {
+        resolve(result);
       }
-      resolve(result);
     });
   });
 }

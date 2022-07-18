@@ -54,7 +54,7 @@ export async function getAcrUrl(
     return null;
   }
 
-  const relTypeLinks = getLinkedResourceUrlAll(aclServerResourceInfo)["type"];
+  const relTypeLinks = getLinkedResourceUrlAll(aclServerResourceInfo).type;
   if (
     Array.isArray(relTypeLinks) &&
     relTypeLinks.includes(ACP.AccessControlResource)

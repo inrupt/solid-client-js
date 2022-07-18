@@ -191,17 +191,16 @@ describe("Thing Builder API", () => {
     // We're only going to check for expected TypeScript errors:
     expect.assertions(0);
 
-    // Since we're passing the `url` option, `buildThing` should return a ThingPersisted,
-    // which should cause an error when assigning to a ThingLocal variable:
-    // @ts-expect-error
+    // @ts-expect-error Since we're passing the `url` option, `buildThing`
+    // should return a ThingPersisted, which should cause an error when
+    // assigning to a ThingLocal variable:
     const _thingPersistedDirect: ThingLocal = buildThing({
       url: "https://some.pod/resource#thing",
     }).build();
 
-    // Since we're passing a ThingPersisted as the starting Thing,
-    // `buildThing` should also return a ThingPersisted,
-    // which should cause an error when assigning to a ThingLocal variable:
-    // @ts-expect-error
+    // @ts-expect-error Since we're passing a ThingPersisted as the starting
+    // Thing, `buildThing` should also return a ThingPersisted, which should
+    // cause an error when assigning to a ThingLocal variable:
     const _thingPersisted: ThingLocal = buildThing(
       createThing({ url: "https://some.pod/resource#thing" })
     ).build();
@@ -227,8 +226,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     adderNames.forEach((adderName) => {
-      expect((builder as Record<string, Function>)[adderName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[adderName]).toBe(
+      expect((builder as Record<string, unknown>)[adderName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[adderName]).toBe(
         "function"
       );
     });
@@ -243,8 +242,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     setterNames.forEach((setterName) => {
-      expect((builder as Record<string, Function>)[setterName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[setterName]).toBe(
+      expect((builder as Record<string, unknown>)[setterName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[setterName]).toBe(
         "function"
       );
     });
@@ -259,8 +258,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     removerNames.forEach((removerName) => {
-      expect((builder as Record<string, Function>)[removerName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[removerName]).toBe(
+      expect((builder as Record<string, unknown>)[removerName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[removerName]).toBe(
         "function"
       );
     });

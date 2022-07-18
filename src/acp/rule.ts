@@ -20,7 +20,7 @@
  */
 
 import { acp, rdf, solid } from "../constants";
-import { isNamedNode } from "../datatypes";
+import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import {
   SolidDataset,
   Thing,
@@ -467,10 +467,9 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let ruleToRemove: UrlString;
   if (typeof rule === "string") {
-    try {
-      new URL(rule);
+    if (internal_isValidUrl(rule)) {
       ruleToRemove = rule;
-    } catch (e) {
+    } else {
       // If the given Rule to remove is the name of the Rule,
       // resolve it to its full URL — developers usually refer to either the
       // Rule itself, or by its name, as they do not have access to the ACR
@@ -1016,22 +1015,22 @@ export function ruleAsMarkdown(rule: Rule): string {
   const targetAgents = getAgentAll(rule);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
-    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+    targetEnumeration += `${targetAgents.join("\n  - ")}\n`;
   }
   const targetGroups = getGroupAll(rule);
   if (targetGroups.length > 0) {
     targetEnumeration += "- Members of the following groups:\n  - ";
-    targetEnumeration += targetGroups.join("\n  - ") + "\n";
+    targetEnumeration += `${targetGroups.join("\n  - ")}\n`;
   }
   const targetClients = getClientAll(rule);
   if (targetClients.length > 0) {
     targetEnumeration += "- Users of the following client applications:\n  - ";
-    targetEnumeration += targetClients.join("\n  - ") + "\n";
+    targetEnumeration += `${targetClients.join("\n  - ")}\n`;
   }
 
   markdown +=
     targetEnumeration.length > 0
-      ? "This rule applies to:\n" + targetEnumeration
+      ? `This rule applies to:\n${targetEnumeration}`
       : "<empty>\n";
 
   return markdown;

@@ -22,16 +22,6 @@
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 import type { Mock } from "jest-mock";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
-
 import { Response } from "cross-fetch";
 import * as jsonld from "jsonld";
 import { DataFactory } from "n3";
@@ -74,6 +64,16 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
 
 jest.mock("jsonld", () => ({
   toRDF: jest.fn().mockImplementation(() =>
@@ -866,7 +866,7 @@ describe("saveSolidDatasetAt", () => {
         ]
       ).toBe("text/turtle");
       expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
       ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
@@ -2516,7 +2516,7 @@ describe("saveSolidDatasetInContainer", () => {
       ]
     ).toBe("text/turtle");
     expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
     ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
@@ -3088,7 +3088,7 @@ describe("getContainedResourceUrlAll", () => {
 
     containedResourceNames.forEach((resourceName) => {
       let childListing = createThing({
-        url: containerUrl + resourceName + ".ttl",
+        url: `${containerUrl + resourceName}.ttl`,
       });
       childListing = addUrl(childListing, rdf.type, ldp.Resource);
 

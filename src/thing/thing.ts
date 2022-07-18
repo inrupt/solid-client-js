@@ -63,7 +63,7 @@ export interface GetThingOptions {
    *
    * If not specified, the Thing will include Quads from all Named Graphs in the given
    * [[SolidDataset]].
-   **/
+   * */
   scope?: Url | UrlString;
 }
 export function getThing(
@@ -288,14 +288,14 @@ export function createThing(options?: CreateThingLocalOptions): ThingLocal;
 export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
-    const url = (options as CreateThingPersistedOptions).url;
+    const { url } = options as CreateThingPersistedOptions;
     if (!internal_isValidUrl(url)) {
       throw new ValidThingUrlExpectedError(url);
     }
     const thing: ThingPersisted = freeze({
       type: "Subject",
       predicates: freeze({}),
-      url: url,
+      url,
     });
     return thing;
   }
@@ -360,7 +360,7 @@ export const asIri = asUrl;
  * @since 0.3.0
  */
 export function thingAsMarkdown(thing: Thing): string {
-  let thingAsMarkdown: string = "";
+  let thingAsMarkdown = "";
 
   if (isThingLocal(thing)) {
     thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
@@ -376,10 +376,11 @@ export function thingAsMarkdown(thing: Thing): string {
   } else {
     for (const predicate of predicateIris) {
       thingAsMarkdown += `\nProperty: ${predicate}\n`;
+
       const values = getTermAll(thing, predicate);
-      values.forEach((value) => {
-        thingAsMarkdown += `- ${internal_getReadableValue(value)}\n`;
-      });
+      thingAsMarkdown += values.reduce((acc, value) => {
+        return `${acc}- ${internal_getReadableValue(value)}\n`;
+      }, "");
     }
   }
 

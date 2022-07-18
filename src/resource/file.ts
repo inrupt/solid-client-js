@@ -53,7 +53,7 @@ export type GetFileOptions = {
 };
 
 const defaultGetFileOptions = {
-  fetch: fetch,
+  fetch,
 };
 
 const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
@@ -417,13 +417,13 @@ async function writeFile(
 
   // If a slug is in the parameters, set the request headers accordingly
   if (config.slug !== undefined) {
-    headers["Slug"] = config.slug;
+    headers.Slug = config.slug;
   }
   headers["Content-Type"] = getContentType(file, options.contentType);
 
   const targetUrlString = internal_toIriString(targetUrl);
 
-  return await config.fetch(targetUrlString, {
+  return config.fetch(targetUrlString, {
     ...config.init,
     headers,
     method,

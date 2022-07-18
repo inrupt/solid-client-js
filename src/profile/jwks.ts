@@ -27,7 +27,6 @@ import {
   Jwks,
   SolidDataset,
   ThingPersisted,
-  Url,
   UrlString,
   WebId,
   WithResourceInfo,

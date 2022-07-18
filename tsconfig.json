@@ -48,7 +48,6 @@
     ],
     "exclude": [
       "node_modules/**",
-      ".codesandbox/**",
       "**/*.test.ts",
       // Internal helpers:
       "**/*.internal.ts",

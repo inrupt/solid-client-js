@@ -127,7 +127,7 @@ export async function getAgentAccess<T extends WithAccessibleAcr>(
     .map((url) => getThing(internal_getAcr(resourceWithAcr), url))
     .filter((policy): policy is ThingPersisted => policy !== null);
 
-  policyAll.map((policy) => {
+  policyAll.forEach((policy) => {
     if (isAgentMatched(resourceWithAcr, policy, webId)) {
       resourceAccess = reduceModes(policy, resourceAccess, "resource");
     }
@@ -137,7 +137,7 @@ export async function getAgentAccess<T extends WithAccessibleAcr>(
     .map((url) => getThing(internal_getAcr(resourceWithAcr), url))
     .filter((policy): policy is ThingPersisted => policy !== null);
 
-  acrPolicyAll.map((policy) => {
+  acrPolicyAll.forEach((policy) => {
     if (isAgentMatched(resourceWithAcr, policy, webId)) {
       resourceAccess = reduceModes(policy, resourceAccess, "control");
     }

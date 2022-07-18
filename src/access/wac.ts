@@ -327,7 +327,7 @@ async function setActorClassAccess<T extends WithServerResourceInfo>(
   const wacAccess = universalAccessToAcl(access, currentAccess);
   const updatedResourceAcl = setAccess(resourceAcl, wacAccess);
 
-  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
+  return saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
 }
 
 async function setActorAccess<T extends WithServerResourceInfo>(
@@ -349,7 +349,7 @@ async function setActorAccess<T extends WithServerResourceInfo>(
   const wacAccess = universalAccessToAcl(access, currentAccess);
   const updatedResourceAcl = setAccess(resourceAcl, actor, wacAccess);
 
-  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
+  return saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
 }
 
 /**
@@ -379,7 +379,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorAccess(
+  return setActorAccess(
     resource,
     agent,
     access,
@@ -416,7 +416,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorAccess(
+  return setActorAccess(
     resource,
     group,
     access,
@@ -451,7 +451,7 @@ export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorClassAccess(
+  return setActorClassAccess(
     resource,
     access,
     getPublicAccessWac,

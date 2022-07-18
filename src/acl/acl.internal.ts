@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import type { Quad } from "@rdfjs/types";
 import { getSolidDataset } from "../resource/solidDataset";
 import {
   IriString,
@@ -33,7 +34,6 @@ import {
   getSourceIri,
 } from "../resource/resource";
 import { acl, rdf } from "../constants";
-import { Quad } from "@rdfjs/types";
 import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import {
   createThing,
@@ -88,7 +88,7 @@ export async function internal_fetchAcl(
             resourceAcl: null,
             fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
           }
-        : { resourceAcl: resourceAcl, fallbackAcl: null };
+        : { resourceAcl, fallbackAcl: null };
 
     return acl;
   } catch (e: unknown) {
@@ -185,11 +185,10 @@ export function internal_getContainerPath(resourcePath: string): string {
       ? resourcePath.substring(0, resourcePath.length - 1)
       : resourcePath;
 
-  const containerPath =
-    resourcePath.substring(
-      0,
-      resourcePathWithoutTrailingSlash.lastIndexOf("/")
-    ) + "/";
+  const containerPath = `${resourcePath.substring(
+    0,
+    resourcePathWithoutTrailingSlash.lastIndexOf("/")
+  )}/`;
 
   return containerPath;
 }
@@ -353,8 +352,8 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
 }
 
 function isAclQuad(quad: Quad): boolean {
-  const predicate = quad.predicate;
-  const object = quad.object;
+  const { predicate } = quad;
+  const { object } = quad;
   if (
     predicate.equals(DataFactory.namedNode(rdf.type)) &&
     object.equals(DataFactory.namedNode(acl.Authorization))

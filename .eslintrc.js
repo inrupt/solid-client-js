@@ -1,42 +1,63 @@
-/* eslint-disable license-header/header */
+require("@rushstack/eslint-patch/modern-module-resolution");
 
 module.exports = {
-  env: {
-    browser: true,
-    es6: true,
-    node: true,
-  },
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:jest/recommended",
-    "plugin:jest/style",
-  ],
-  globals: {
-    Atomics: "readonly",
-    SharedArrayBuffer: "readonly",
-  },
-  parser: "@typescript-eslint/parser",
+  extends: ["@inrupt/eslint-config-lib"],
   parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: "module",
-    tsconfigRootDir: __dirname,
-    project: ["./tsconfig.eslint.json"],
+    project: "./tsconfig.eslint.json",
   },
-  plugins: ["@typescript-eslint", "jest", "license-header"],
   rules: {
-    // There's a TypeScript-specific version of this rule;
-    // we disable the generic one, because it thinks imported types are unused
-    // when they're not:
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-floating-promises": "error",
-    "license-header/header": [
-      process.env.CI ? "error" : "warn",
-      "./resources/license-header.js",
+    camelcase: [
+      "error",
+      {
+        allow: [
+          "^internal_",
+          "^acp_ess_",
+          "^acp_v*",
+          "^access_v*",
+          "^Quad_*",
+          "^reexport_*",
+          "^latest_*",
+          "^legacy_*",
+        ],
+      },
     ],
+
+    // Temporarily fix the Jest shadowing warnings
+    "no-shadow": [
+      "warn",
+      {
+        allow: ["describe", "it", "jest", "expect"],
+      },
+    ],
+
+    // We use a lot of named exports:
+    "import/prefer-default-export": "off",
+    // Made warning due to src/thing/thing.ts
+    "max-classes-per-file": "warn",
+
+    "no-underscore-dangle": "warn",
+    "no-param-reassign": "warn",
+
+    // Currently the typings for the Object type in src/rdfjs.internal.js specs
+    // the property of it's object as partial, though it may not be:
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "error",
+    "@typescript-eslint/no-use-before-define": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
+
+    // Temporary:
+    "header/header": "off",
   },
-  // ESLint will try to parse these files using TypeScript,
-  // but since they're not part of the project, it will complain
-  // about them not being listed in tsconfig.json:
-  ignorePatterns: [".eslintrc.js", "playwright.config.ts"],
+  overrides: [
+    {
+      files: "*.test.ts",
+      rules: {
+        "no-nested-ternary": "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
+
+        // TODO: Refactor to https://github.com/SamVerschueren/tsd
+        "@typescript-eslint/ban-ts-comment": "off",
+      },
+    },
+  ],
 };

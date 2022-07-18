@@ -55,7 +55,7 @@ import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
 const env = getNodeTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/wac-";
+const sessionResourcePrefix = "solid-client-tests/node/wac-";
 if (env.feature.wac !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
@@ -91,8 +91,7 @@ describe("Authenticated end-to-end WAC", () => {
   });
 
   it("can read and update ACLs", async () => {
-    const fakeWebId =
-      "https://example.com/fake-webid#" + session.info.sessionId;
+    const fakeWebId = `https://example.com/fake-webid#${session.info.sessionId}`;
 
     const datasetWithAcl = await getSolidDatasetWithAcl(env.pod, options);
     const datasetWithoutAcl = await getSolidDatasetWithAcl(

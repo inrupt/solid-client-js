@@ -107,7 +107,7 @@ export function setMockAclUrl<T extends WithServerResourceInfo>(
     {
       internal_resourceInfo: {
         ...resource.internal_resourceInfo,
-        aclUrl: aclUrl,
+        aclUrl,
       },
     }
   );

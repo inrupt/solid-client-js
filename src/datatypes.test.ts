@@ -629,7 +629,7 @@ describe("isLiteral", () => {
 describe("isLocalNode", () => {
   it("recognises a LocalNode", () => {
     expect(
-      isLocalNode(DataFactory.namedNode(localNodeSkolemPrefix + "localNode"))
+      isLocalNode(DataFactory.namedNode(`${localNodeSkolemPrefix}localNode`))
     ).toBe(true);
   });
 
@@ -667,7 +667,7 @@ describe("asNamedNode", () => {
 describe("resolveIriForLocalNode", () => {
   it("properly resolves the IRI for a LocalNode", () => {
     const localNode = DataFactory.namedNode(
-      localNodeSkolemPrefix + "some-name"
+      `${localNodeSkolemPrefix}some-name`
     ) as LocalNode;
     expect(
       resolveIriForLocalNode(localNode, "https://some.pod/resource").value

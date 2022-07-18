@@ -23,7 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import * as fc from "fast-check";
 import { DataFactory } from "n3";
-import * as RdfJs from "@rdfjs/types";
+import type * as RdfJs from "@rdfjs/types";
 import {
   serializeBoolean,
   serializeDatetime,

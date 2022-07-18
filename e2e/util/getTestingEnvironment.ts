@@ -99,9 +99,9 @@ export function getNodeTestingEnvironment(): NodeTestingEnvironment {
     clientId: process.env.E2E_TEST_CLIENT_ID!,
     clientSecret: process.env.E2E_TEST_CLIENT_SECRET!,
     feature: {
-      acp: process.env.E2E_TEST_FEATURE_ACP === "true" ? true : false,
-      acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true" ? true : false,
-      wac: process.env.E2E_TEST_FEATURE_WAC === "true" ? true : false,
+      acp: process.env.E2E_TEST_FEATURE_ACP === "true",
+      acp_v3: process.env.E2E_TEST_FEATURE_ACP_V3 === "true",
+      wac: process.env.E2E_TEST_FEATURE_WAC === "true",
     },
   };
 }

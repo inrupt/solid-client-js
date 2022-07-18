@@ -129,7 +129,7 @@ export async function getAccessFor(
         "When reading Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await getAgentAccess(resourceUrl, actor, options);
+    return getAgentAccess(resourceUrl, actor, options);
   }
   if (actorType === "group") {
     if (typeof actor !== "string") {
@@ -137,7 +137,7 @@ export async function getAccessFor(
         "When reading Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await getGroupAccess(resourceUrl, actor, options);
+    return getGroupAccess(resourceUrl, actor, options);
   }
   if (actorType === "public") {
     if (typeof actor === "string") {
@@ -145,7 +145,7 @@ export async function getAccessFor(
         `When reading public access, no actor type should be specified (here [${actor}]).`
       );
     }
-    return await getPublicAccess(resourceUrl, actor);
+    return getPublicAccess(resourceUrl, actor);
   }
   return null as never;
 }
@@ -185,10 +185,10 @@ export async function getAccessForAll(
   options = internal_defaultFetchOptions
 ): Promise<Record<UrlString, Access> | null> {
   if (actorType === "agent") {
-    return await getAgentAccessAll(resourceUrl, options);
+    return getAgentAccessAll(resourceUrl, options);
   }
   if (actorType === "group") {
-    return await getGroupAccessAll(resourceUrl, options);
+    return getGroupAccessAll(resourceUrl, options);
   }
   return null as never;
 }
@@ -308,7 +308,7 @@ export async function setAccessFor(
         "When writing Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await setAgentAccess(resourceUrl, actor, access, options);
+    return setAgentAccess(resourceUrl, actor, access, options);
   }
   if (actorType === "group") {
     if (typeof actor !== "string") {
@@ -316,7 +316,7 @@ export async function setAccessFor(
         "When writing Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await setGroupAccess(resourceUrl, actor, access, options);
+    return setGroupAccess(resourceUrl, actor, access, options);
   }
   if (actorType === "public") {
     if (typeof actor === "string") {
@@ -324,7 +324,7 @@ export async function setAccessFor(
         `When writing public access, no actor type should be specified (here [${actor}]).`
       );
     }
-    return await setPublicAccess(resourceUrl, access, actor);
+    return setPublicAccess(resourceUrl, access, actor);
   }
   return null as never;
 }

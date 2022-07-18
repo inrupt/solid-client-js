@@ -20,6 +20,18 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import type { Mock } from "jest-mock";
+
+import { Headers, Response } from "cross-fetch";
+
+import {
+  getFile,
+  deleteFile,
+  saveFileInContainer,
+  overwriteFile,
+  flattenHeaders,
+} from "./file";
+import { WithResourceInfo } from "../interfaces";
 
 jest.mock("../fetcher", () => ({
   fetch: jest
@@ -30,17 +42,6 @@ jest.mock("../fetcher", () => ({
       )
     ),
 }));
-
-import type { Mock } from "jest-mock";
-import {
-  getFile,
-  deleteFile,
-  saveFileInContainer,
-  overwriteFile,
-  flattenHeaders,
-} from "./file";
-import { Headers, Response } from "cross-fetch";
-import { WithResourceInfo } from "../interfaces";
 
 describe("flattenHeaders", () => {
   it("returns an empty object for undefined headers", () => {
@@ -68,7 +69,7 @@ describe("flattenHeaders", () => {
   it("supports non-iterable headers if they provide a reasonably standard way of browsing them", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const myHeaders: any = {};
-    myHeaders["forEach"] = (
+    myHeaders.forEach = (
       callback: (value: string, key: string) => void
     ): void => {
       callback("application/json", "accept");

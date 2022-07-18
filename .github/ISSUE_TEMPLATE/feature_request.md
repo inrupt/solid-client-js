@@ -6,13 +6,14 @@ labels: "enhancement"
 assignees: ""
 ---
 
-<!-- 
+<!--
 Thank you for reporting an issue.
 
-Please fill in as much of the template below as you're able. Feel free to delete any section you don't think applies, but be aware that the more comprehensive your description, the easier it is to take it into account. 
+Please fill in as much of the template below as you're able. Feel free to delete any section you don't think applies, but be aware that the more comprehensive your description, the easier it is to take it into account.
 -->
 
 ### Search terms you've used
+
 <!-- What search terms have you used to check whether this feature has been requested before? -->
 
 ### Feature suggestion
@@ -35,4 +36,5 @@ What shortcomings exist with current approaches?
 -->
 
 ### Additional information
+
 <!-- Add any other context or screenshots about the feature request here. -->
