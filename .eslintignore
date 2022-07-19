@@ -1,2 +1,9 @@
-**/*.snap
-resources/*
+**/*.ts.snap
+jest.config.js
+jest.setup.js
+jest.e2e.config.js
+.eslintrc.js
+rollup.config.js
+tsconfig.json
+# e2e browser testApp has it's own separate eslint configuration:
+e2e/browser/testapp

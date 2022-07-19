@@ -1,4 +1,7 @@
-resources/
+e2e/browser/testapp
+docs/api/build/source
+docs/api/docs-assets
+docs/api/source/api
 *.snap
 *.env
 *.env.*

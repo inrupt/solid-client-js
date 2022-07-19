@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import {
   internal_fetchAcl,
@@ -327,7 +327,7 @@ async function setActorClassAccess<T extends WithServerResourceInfo>(
   const wacAccess = universalAccessToAcl(access, currentAccess);
   const updatedResourceAcl = setAccess(resourceAcl, wacAccess);
 
-  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
+  return saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
 }
 
 async function setActorAccess<T extends WithServerResourceInfo>(
@@ -349,7 +349,7 @@ async function setActorAccess<T extends WithServerResourceInfo>(
   const wacAccess = universalAccessToAcl(access, currentAccess);
   const updatedResourceAcl = setAccess(resourceAcl, actor, wacAccess);
 
-  return await saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
+  return saveUpdatedAcl(resourceWithOldAcl, updatedResourceAcl, options);
 }
 
 /**
@@ -379,7 +379,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorAccess(
+  return setActorAccess(
     resource,
     agent,
     access,
@@ -416,7 +416,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorAccess(
+  return setActorAccess(
     resource,
     group,
     access,
@@ -451,7 +451,7 @@ export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
     typeof internal_defaultFetchOptions
   > = internal_defaultFetchOptions
 ): Promise<(T & WithResourceAcl) | null> {
-  return await setActorClassAccess(
+  return setActorClassAccess(
     resource,
     access,
     getPublicAccessWac,

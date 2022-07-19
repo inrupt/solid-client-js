@@ -1,27 +1,28 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
-import { getAgentResourceAccess } from "../acl/agent";
+import { getAgentResourceAccess, AgentAccess } from "../acl/agent";
 import {
   getAgentAccess,
   getAgentAccessAll,
@@ -33,11 +34,16 @@ import {
   setPublicResourceAccess,
   WacAccess,
 } from "./wac";
-import { Response } from "cross-fetch";
 import { triplesToTurtle } from "../formats/turtle";
-import { addMockAclRuleQuads } from "../acl/mock.internal";
+import { addMockAclRuleQuads, setMockAclUrl } from "../acl/mock.internal";
 import { acl, foaf } from "../constants";
-import { setMockAclUrl } from "../acl/mock.internal";
+
+import { mockSolidDatasetFrom } from "../resource/mock";
+import { internal_getResourceAcl } from "../acl/acl.internal";
+import { AclDataset } from "../acl/acl";
+import { getGroupResourceAccess } from "../acl/group";
+import { getPublicResourceAccess } from "../acl/class";
+import { toRdfJsQuads } from "../rdfjs.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -48,14 +54,6 @@ jest.mock("../fetcher.ts", () => ({
     )
   ),
 }));
-
-import { mockSolidDatasetFrom } from "../resource/mock";
-import { AgentAccess } from "../acl/agent";
-import { internal_getResourceAcl } from "../acl/acl.internal";
-import { AclDataset } from "../acl/acl";
-import { getGroupResourceAccess } from "../acl/group";
-import { getPublicResourceAccess } from "../acl/class";
-import { toRdfJsQuads } from "../rdfjs.internal";
 
 function getMockDataset(
   sourceIri: IriString,
@@ -80,7 +78,7 @@ describe("getAgentAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -549,7 +547,7 @@ describe("getGroupAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -926,7 +924,7 @@ describe("getPublicAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1303,7 +1301,7 @@ describe("getAgentAccessAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1508,7 +1506,7 @@ describe("getGroupAccessAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1719,7 +1717,7 @@ describe("setAgentAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2432,7 +2430,7 @@ describe("setGroupResourceAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -3156,7 +3154,7 @@ describe("setPublicResourceAccess", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

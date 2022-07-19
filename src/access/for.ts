@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { UrlString, WebId } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
@@ -129,7 +129,7 @@ export async function getAccessFor(
         "When reading Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await getAgentAccess(resourceUrl, actor, options);
+    return getAgentAccess(resourceUrl, actor, options);
   }
   if (actorType === "group") {
     if (typeof actor !== "string") {
@@ -137,7 +137,7 @@ export async function getAccessFor(
         "When reading Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await getGroupAccess(resourceUrl, actor, options);
+    return getGroupAccess(resourceUrl, actor, options);
   }
   if (actorType === "public") {
     if (typeof actor === "string") {
@@ -145,7 +145,7 @@ export async function getAccessFor(
         `When reading public access, no actor type should be specified (here [${actor}]).`
       );
     }
-    return await getPublicAccess(resourceUrl, actor);
+    return getPublicAccess(resourceUrl, actor);
   }
   return null as never;
 }
@@ -185,10 +185,10 @@ export async function getAccessForAll(
   options = internal_defaultFetchOptions
 ): Promise<Record<UrlString, Access> | null> {
   if (actorType === "agent") {
-    return await getAgentAccessAll(resourceUrl, options);
+    return getAgentAccessAll(resourceUrl, options);
   }
   if (actorType === "group") {
-    return await getGroupAccessAll(resourceUrl, options);
+    return getGroupAccessAll(resourceUrl, options);
   }
   return null as never;
 }
@@ -308,7 +308,7 @@ export async function setAccessFor(
         "When writing Agent-specific access, the given agent cannot be left undefined."
       );
     }
-    return await setAgentAccess(resourceUrl, actor, access, options);
+    return setAgentAccess(resourceUrl, actor, access, options);
   }
   if (actorType === "group") {
     if (typeof actor !== "string") {
@@ -316,7 +316,7 @@ export async function setAccessFor(
         "When writing Group-specific access, the given group cannot be left undefined."
       );
     }
-    return await setGroupAccess(resourceUrl, actor, access, options);
+    return setGroupAccess(resourceUrl, actor, access, options);
   }
   if (actorType === "public") {
     if (typeof actor === "string") {
@@ -324,7 +324,7 @@ export async function setAccessFor(
         `When writing public access, no actor type should be specified (here [${actor}]).`
       );
     }
-    return await setPublicAccess(resourceUrl, access, actor);
+    return setPublicAccess(resourceUrl, access, actor);
   }
   return null as never;
 }

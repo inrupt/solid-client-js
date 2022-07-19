@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { describe, it, expect } from "@jest/globals";
 
@@ -75,7 +75,7 @@ describe("createThing", () => {
   it("uses the given name, if any", () => {
     const thing: ThingLocal = createThing({ name: "some-name" });
 
-    expect(thing.url).toBe(localNodeSkolemPrefix + "some-name");
+    expect(thing.url).toBe(`${localNodeSkolemPrefix}some-name`);
   });
 
   it("uses the given IRI, if any", () => {
@@ -127,7 +127,7 @@ describe("getThing", () => {
     type: "Subject",
     url: mockThing1Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -136,18 +136,18 @@ describe("getThing", () => {
     type: "Subject",
     url: mockThing2Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
   };
-  const mockLocalThingIri = (localNodeSkolemPrefix +
-    "localSubject") as LocalNodeIri;
+  const mockLocalThingIri =
+    `${localNodeSkolemPrefix}localSubject` as LocalNodeIri;
   const mockLocalThing: ThingLocal = {
     type: "Subject",
     url: mockLocalThingIri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -222,7 +222,7 @@ describe("getThing", () => {
     };
     const thing = getThing(
       mockDatasetWithResourceInfo,
-      localNodeSkolemPrefix + "subject1"
+      `${localNodeSkolemPrefix}subject1`
     );
 
     expect(thing).toStrictEqual(mockThing1);
@@ -295,7 +295,7 @@ describe("getThingAll", () => {
     type: "Subject",
     url: mockThing1Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -304,7 +304,7 @@ describe("getThingAll", () => {
     type: "Subject",
     url: mockThing2Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -341,7 +341,7 @@ describe("getThingAll", () => {
     const mockDataset = getMockDataset([mockThing1]);
     const blankNode = {
       predicates: {
-        ["https://arbitrary.predicate"]: {
+        "https://arbitrary.predicate": {
           namedNodes: ["https://arbitrary.value"],
         },
       },
@@ -359,7 +359,7 @@ describe("getThingAll", () => {
     const mockDataset = getMockDataset([mockThing1]);
     const blankNode = {
       predicates: {
-        ["https://arbitrary.predicate"]: {
+        "https://arbitrary.predicate": {
           namedNodes: ["https://arbitrary.value"],
         },
       },
@@ -411,7 +411,7 @@ describe("setThing", () => {
     type: "Subject",
     url: mockThing1Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -420,7 +420,7 @@ describe("setThing", () => {
     type: "Subject",
     url: mockThing2Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -533,7 +533,7 @@ describe("setThing", () => {
 
     const updatedThing: ThingLocal = {
       type: "Subject",
-      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      url: `${localNodeSkolemPrefix}subjectName` as LocalNodeIri,
       predicates: {
         "https://some.predicate": {
           namedNodes: ["https://some.value"],
@@ -563,7 +563,7 @@ describe("setThing", () => {
 
     const updatedThing: ThingLocal = {
       type: "Subject",
-      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      url: `${localNodeSkolemPrefix}subjectName` as LocalNodeIri,
       predicates: {
         "https://some.predicate": {
           namedNodes: ["https://some.value"],
@@ -585,7 +585,7 @@ describe("removeThing", () => {
     type: "Subject",
     url: mockThing1Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -594,18 +594,18 @@ describe("removeThing", () => {
     type: "Subject",
     url: mockThing2Iri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
   };
-  const mockLocalThingIri = (localNodeSkolemPrefix +
-    "localSubject") as LocalNodeIri;
+  const mockLocalThingIri =
+    `${localNodeSkolemPrefix}localSubject` as LocalNodeIri;
   const mockLocalThing: ThingLocal = {
     type: "Subject",
     url: mockLocalThingIri,
     predicates: {
-      ["https://arbitrary.vocab/predicate"]: {
+      "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
       },
     },
@@ -773,7 +773,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       solidDataset,
-      localNodeSkolemPrefix + "subjectName"
+      `${localNodeSkolemPrefix}subjectName`
     );
 
     expect(getThingAll(updatedDataset)).toHaveLength(0);
@@ -792,7 +792,7 @@ describe("removeThing", () => {
     };
     const localThing: ThingLocal = {
       type: "Subject",
-      url: (localNodeSkolemPrefix + "subjectName") as LocalNodeIri,
+      url: `${localNodeSkolemPrefix}subjectName` as LocalNodeIri,
       predicates: {
         "https://some.predicate": {
           namedNodes: ["https://some.value"],
@@ -821,7 +821,7 @@ describe("asIri", () => {
     const localThing: ThingLocal = {
       type: "Subject",
       predicates: {},
-      url: (localNodeSkolemPrefix + "some-name") as LocalNodeIri,
+      url: `${localNodeSkolemPrefix}some-name` as LocalNodeIri,
     };
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
@@ -840,7 +840,7 @@ describe("asIri", () => {
   it("triggers a TypeScript error when passed a ThingLocal without a base IRI", () => {
     const localThing: ThingLocal = createThing();
 
-    // @ts-expect-error
+    // @ts-expect-error This is the entire point of this unit test:
     expect(() => asUrl(localThing)).toThrow();
   });
 
@@ -871,7 +871,7 @@ describe("asIri", () => {
     const localThing: ThingLocal = {
       type: "Subject",
       predicates: {},
-      url: (localNodeSkolemPrefix + "some-name") as LocalNodeIri,
+      url: `${localNodeSkolemPrefix}some-name` as LocalNodeIri,
     };
 
     expect(() => asUrl(localThing, undefined as any)).toThrow(

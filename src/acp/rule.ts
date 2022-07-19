@@ -1,26 +1,26 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { acp, rdf, solid } from "../constants";
-import { isNamedNode } from "../datatypes";
+import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import {
   SolidDataset,
   Thing,
@@ -467,10 +467,9 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let ruleToRemove: UrlString;
   if (typeof rule === "string") {
-    try {
-      new URL(rule);
+    if (internal_isValidUrl(rule)) {
       ruleToRemove = rule;
-    } catch (e) {
+    } else {
       // If the given Rule to remove is the name of the Rule,
       // resolve it to its full URL — developers usually refer to either the
       // Rule itself, or by its name, as they do not have access to the ACR
@@ -1016,22 +1015,22 @@ export function ruleAsMarkdown(rule: Rule): string {
   const targetAgents = getAgentAll(rule);
   if (targetAgents.length > 0) {
     targetEnumeration += "- The following agents:\n  - ";
-    targetEnumeration += targetAgents.join("\n  - ") + "\n";
+    targetEnumeration += `${targetAgents.join("\n  - ")}\n`;
   }
   const targetGroups = getGroupAll(rule);
   if (targetGroups.length > 0) {
     targetEnumeration += "- Members of the following groups:\n  - ";
-    targetEnumeration += targetGroups.join("\n  - ") + "\n";
+    targetEnumeration += `${targetGroups.join("\n  - ")}\n`;
   }
   const targetClients = getClientAll(rule);
   if (targetClients.length > 0) {
     targetEnumeration += "- Users of the following client applications:\n  - ";
-    targetEnumeration += targetClients.join("\n  - ") + "\n";
+    targetEnumeration += `${targetClients.join("\n  - ")}\n`;
   }
 
   markdown +=
     targetEnumeration.length > 0
-      ? "This rule applies to:\n" + targetEnumeration
+      ? `This rule applies to:\n${targetEnumeration}`
       : "<empty>\n";
 
   return markdown;

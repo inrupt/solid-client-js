@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import {
   isNamedNode,
@@ -63,7 +63,7 @@ export interface GetThingOptions {
    *
    * If not specified, the Thing will include Quads from all Named Graphs in the given
    * [[SolidDataset]].
-   **/
+   * */
   scope?: Url | UrlString;
 }
 export function getThing(
@@ -288,14 +288,14 @@ export function createThing(options?: CreateThingLocalOptions): ThingLocal;
 export function createThing(options?: CreateThingOptions): Thing;
 export function createThing(options: CreateThingOptions = {}): Thing {
   if (typeof (options as CreateThingPersistedOptions).url !== "undefined") {
-    const url = (options as CreateThingPersistedOptions).url;
+    const { url } = options as CreateThingPersistedOptions;
     if (!internal_isValidUrl(url)) {
       throw new ValidThingUrlExpectedError(url);
     }
     const thing: ThingPersisted = freeze({
       type: "Subject",
       predicates: freeze({}),
-      url: url,
+      url,
     });
     return thing;
   }
@@ -360,7 +360,7 @@ export const asIri = asUrl;
  * @since 0.3.0
  */
 export function thingAsMarkdown(thing: Thing): string {
-  let thingAsMarkdown: string = "";
+  let thingAsMarkdown = "";
 
   if (isThingLocal(thing)) {
     thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
@@ -376,10 +376,11 @@ export function thingAsMarkdown(thing: Thing): string {
   } else {
     for (const predicate of predicateIris) {
       thingAsMarkdown += `\nProperty: ${predicate}\n`;
+
       const values = getTermAll(thing, predicate);
-      values.forEach((value) => {
-        thingAsMarkdown += `- ${internal_getReadableValue(value)}\n`;
-      });
+      thingAsMarkdown += values.reduce((acc, value) => {
+        return `${acc}- ${internal_getReadableValue(value)}\n`;
+      }, "");
     }
   }
 

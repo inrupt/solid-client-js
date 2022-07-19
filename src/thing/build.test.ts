@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { describe, it, expect } from "@jest/globals";
 import { buildThing } from "./build";
@@ -191,17 +191,16 @@ describe("Thing Builder API", () => {
     // We're only going to check for expected TypeScript errors:
     expect.assertions(0);
 
-    // Since we're passing the `url` option, `buildThing` should return a ThingPersisted,
-    // which should cause an error when assigning to a ThingLocal variable:
-    // @ts-expect-error
+    // @ts-expect-error Since we're passing the `url` option, `buildThing`
+    // should return a ThingPersisted, which should cause an error when
+    // assigning to a ThingLocal variable:
     const _thingPersistedDirect: ThingLocal = buildThing({
       url: "https://some.pod/resource#thing",
     }).build();
 
-    // Since we're passing a ThingPersisted as the starting Thing,
-    // `buildThing` should also return a ThingPersisted,
-    // which should cause an error when assigning to a ThingLocal variable:
-    // @ts-expect-error
+    // @ts-expect-error Since we're passing a ThingPersisted as the starting
+    // Thing, `buildThing` should also return a ThingPersisted, which should
+    // cause an error when assigning to a ThingLocal variable:
     const _thingPersisted: ThingLocal = buildThing(
       createThing({ url: "https://some.pod/resource#thing" })
     ).build();
@@ -227,8 +226,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     adderNames.forEach((adderName) => {
-      expect((builder as Record<string, Function>)[adderName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[adderName]).toBe(
+      expect((builder as Record<string, unknown>)[adderName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[adderName]).toBe(
         "function"
       );
     });
@@ -243,8 +242,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     setterNames.forEach((setterName) => {
-      expect((builder as Record<string, Function>)[setterName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[setterName]).toBe(
+      expect((builder as Record<string, unknown>)[setterName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[setterName]).toBe(
         "function"
       );
     });
@@ -259,8 +258,8 @@ describe("Thing Builder API", () => {
     const builder = buildThing();
 
     removerNames.forEach((removerName) => {
-      expect((builder as Record<string, Function>)[removerName]).toBeDefined();
-      expect(typeof (builder as Record<string, Function>)[removerName]).toBe(
+      expect((builder as Record<string, unknown>)[removerName]).toBeDefined();
+      expect(typeof (builder as Record<string, unknown>)[removerName]).toBe(
         "function"
       );
     });

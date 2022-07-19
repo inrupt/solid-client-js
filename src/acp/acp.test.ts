@@ -1,35 +1,25 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn(window.fetch).mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 import { acp, rdf } from "../constants";
@@ -58,6 +48,16 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
 import { createSolidDataset } from "../resource/solidDataset";
 
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn(window.fetch).mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
+
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
   memberPolicies: ["https://some.pod/policies#memberPolicy"],
@@ -74,7 +74,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
     control = addIri(control, acp.applyMembers, policyUrl);
   });
 
-  const acrUrl = accessTo + "?ext=acr";
+  const acrUrl = `${accessTo}?ext=acr`;
   let acrThing = createThing({ url: acrUrl });
   policies.acrPolicies.forEach((policyUrl) => {
     acrThing = addIri(acrThing, acp.access, policyUrl);
@@ -85,7 +85,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
 
   let acr: AccessControlResource & WithServerResourceInfo = {
     ...mockSolidDatasetFrom(acrUrl),
-    accessTo: accessTo,
+    accessTo,
   };
   acr = setThing(acr, control);
   acr = setThing(acr, acrThing);
@@ -98,7 +98,7 @@ describe("getSolidDatasetWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -248,7 +248,7 @@ describe("getFileWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -329,7 +329,7 @@ describe("getResourceInfoWithAcr", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -972,7 +972,7 @@ describe("saveAcrFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

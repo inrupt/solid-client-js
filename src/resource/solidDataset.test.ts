@@ -1,36 +1,26 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 import type { Mock } from "jest-mock";
-
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 import * as jsonld from "jsonld";
@@ -74,6 +64,16 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
 
 jest.mock("jsonld", () => ({
   toRDF: jest.fn().mockImplementation(() =>
@@ -473,7 +473,7 @@ describe("getSolidDataset", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -809,7 +809,7 @@ describe("saveSolidDatasetAt", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -866,7 +866,7 @@ describe("saveSolidDatasetAt", () => {
         ]
       ).toBe("text/turtle");
       expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
       ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
@@ -1641,7 +1641,7 @@ describe("deleteSolidDataset", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -1749,7 +1749,7 @@ describe("createContainerAt", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2516,7 +2516,7 @@ describe("saveSolidDatasetInContainer", () => {
       ]
     ).toBe("text/turtle");
     expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)["Link"]
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
     ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
       "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
@@ -2665,7 +2665,7 @@ describe("saveSolidDatasetInContainer", () => {
 describe("createContainerInContainer", () => {
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockOnFetch(
     fetch: MockFetch,
@@ -2963,7 +2963,7 @@ describe("deleteContainer", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -3088,7 +3088,7 @@ describe("getContainedResourceUrlAll", () => {
 
     containedResourceNames.forEach((resourceName) => {
       let childListing = createThing({
-        url: containerUrl + resourceName + ".ttl",
+        url: `${containerUrl + resourceName}.ttl`,
       });
       childListing = addUrl(childListing, rdf.type, ldp.Resource);
 
@@ -3550,7 +3550,7 @@ describe("changeLogAsMarkdown", () => {
 describe("getWellKnownSolid", () => {
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockResourceResponseOnFetch(
     fetch: MockFetch,

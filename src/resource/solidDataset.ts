@@ -1,25 +1,25 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
-import { Quad, NamedNode, Quad_Object } from "@rdfjs/types";
+import type { Quad, NamedNode, Quad_Object } from "@rdfjs/types";
 import {
   addRdfJsQuadToDataset,
   DataFactory,
@@ -43,7 +43,6 @@ import {
   WithChangeLog,
   hasChangelog,
   LocalNode,
-  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
@@ -259,7 +258,7 @@ export async function responseToSolidDataset(
           (datasetAcc, quad) =>
             addRdfJsQuadToDataset(datasetAcc, quad, {
               otherQuads: allQuads,
-              chainBlankNodes: chainBlankNodes,
+              chainBlankNodes,
             }),
           solidDataset
         );
@@ -275,7 +274,7 @@ export async function responseToSolidDataset(
     }
   );
 
-  return await parsingPromise;
+  return parsingPromise;
 }
 
 /**
@@ -434,13 +433,14 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   if (internal_isUnsuccessfulResponse(response)) {
     const diagnostics = isUpdate(datasetWithChangelog, url)
-      ? "The changes that were sent to the Pod are listed below.\n\n" +
-        changeLogAsMarkdown(datasetWithChangelog)
-      : "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(datasetWithChangelog);
+      ? `The changes that were sent to the Pod are listed below.\n\n${changeLogAsMarkdown(
+          datasetWithChangelog
+        )}`
+      : `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
+          datasetWithChangelog
+        )}`;
     throw new FetchError(
-      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n` +
-        diagnostics,
+      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n${diagnostics}`,
       response
     );
   }
@@ -518,7 +518,7 @@ export async function createContainerAt(
   > = internal_defaultFetchOptions
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
-  url = url.endsWith("/") ? url : url + "/";
+  url = url.endsWith("/") ? url : `${url}/`;
   const config = {
     ...internal_defaultFetchOptions,
     ...options,
@@ -619,7 +619,7 @@ const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
     );
   }
 
-  const dummyUrl = url + ".dummy";
+  const dummyUrl = `${url}.dummy`;
 
   const createResponse = await config.fetch(dummyUrl, {
     method: "PUT",
@@ -725,14 +725,15 @@ export async function saveSolidDatasetInContainer(
   const response = await config.fetch(containerUrl, {
     method: "POST",
     body: rawTurtle,
-    headers: headers,
+    headers,
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
       `Storing the Resource in the Container at [${containerUrl}] failed: [${response.status}] [${response.statusText}].\n\n` +
-        "The SolidDataset that was sent to the Pod is listed below.\n\n" +
-        solidDatasetAsMarkdown(solidDataset),
+        `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
+          solidDataset
+        )}`,
       response
     );
   }
@@ -816,7 +817,7 @@ export async function createContainerInContainer(
   }
   const response = await config.fetch(containerUrl, {
     method: "POST",
-    headers: headers,
+    headers,
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
@@ -922,7 +923,7 @@ export function getContainedResourceUrlAll(
  * @since 0.3.0
  */
 export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
-  let readableSolidDataset: string = "";
+  let readableSolidDataset = "";
 
   if (hasResourceInfo(solidDataset)) {
     readableSolidDataset += `# SolidDataset: ${getSourceUrl(solidDataset)}\n`;
@@ -935,10 +936,12 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
     readableSolidDataset += "\n<empty>\n";
   } else {
     things.forEach((thing) => {
-      readableSolidDataset += "\n" + thingAsMarkdown(thing);
+      readableSolidDataset += `\n${thingAsMarkdown(thing)}`;
       if (hasChangelog(solidDataset)) {
-        readableSolidDataset +=
-          "\n" + getReadableChangeLogSummary(solidDataset, thing) + "\n";
+        readableSolidDataset += `\n${getReadableChangeLogSummary(
+          solidDataset,
+          thing
+        )}\n`;
       }
     });
   }
@@ -985,25 +988,19 @@ export function changeLogAsMarkdown(
     const changeLogByProperty = changeLogsByThingAndProperty[thingUrl];
     Object.keys(changeLogByProperty).forEach((propertyUrl) => {
       readableChangeLog += `\nProperty: ${propertyUrl}\n`;
-      const deleted = changeLogByProperty[propertyUrl].deleted;
-      const added = changeLogByProperty[propertyUrl].added;
+      const { deleted } = changeLogByProperty[propertyUrl];
+      const { added } = changeLogByProperty[propertyUrl];
       if (deleted.length > 0) {
         readableChangeLog += "- Removed:\n";
-        deleted.forEach(
-          (deletedValue) =>
-            (readableChangeLog += `  - ${internal_getReadableValue(
-              deletedValue
-            )}\n`)
-        );
+        readableChangeLog += deleted.reduce((acc, deletedValue) => {
+          return `${acc}  - ${internal_getReadableValue(deletedValue)}\n`;
+        }, "");
       }
       if (added.length > 0) {
         readableChangeLog += "- Added:\n";
-        added.forEach(
-          (addedValue) =>
-            (readableChangeLog += `  - ${internal_getReadableValue(
-              addedValue
-            )}\n`)
-        );
+        readableChangeLog += added.reduce((acc, addedValue) => {
+          return `${acc}  - ${internal_getReadableValue(addedValue)}\n`;
+        }, "");
       }
     });
   });
@@ -1076,9 +1073,9 @@ function getReadableChangeLogSummary(
   const additionString =
     nrOfAdditions === 1
       ? "1 new value added"
-      : nrOfAdditions + " new values added";
+      : `${nrOfAdditions} new values added`;
   const deletionString =
-    nrOfDeletions === 1 ? "1 value removed" : nrOfDeletions + " values removed";
+    nrOfDeletions === 1 ? "1 value removed" : `${nrOfDeletions} values removed`;
   return `(${additionString} / ${deletionString})`;
 }
 
@@ -1095,7 +1092,7 @@ function getNamedNodesForLocalNodes(quad: Quad): Quad {
 
 function getNamedNodeFromLocalNode(node: LocalNode | NamedNode): NamedNode {
   if (isLocalNodeIri(node.value)) {
-    return DataFactory.namedNode("#" + getLocalNodeName(node.value));
+    return DataFactory.namedNode(`#${getLocalNodeName(node.value)}`);
   }
   return node;
 }
@@ -1246,9 +1243,9 @@ export async function getWellKnownSolid(
   if (rootResource !== null) {
     const wellKnownSolidUrl = new URL(
       ".well-known/solid",
-      rootResource.endsWith("/") ? rootResource : rootResource + "/"
+      rootResource.endsWith("/") ? rootResource : `${rootResource}/`
     ).href;
-    return await getSolidDataset(wellKnownSolidUrl, {
+    return getSolidDataset(wellKnownSolidUrl, {
       ...options,
       parsers: {
         "application/ld+json": getJsonLdParser(),

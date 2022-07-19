@@ -1,25 +1,37 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { jest, describe, it, expect } from "@jest/globals";
+import type { Mock } from "jest-mock";
+
+import { Headers, Response } from "cross-fetch";
+
+import {
+  getFile,
+  deleteFile,
+  saveFileInContainer,
+  overwriteFile,
+  flattenHeaders,
+} from "./file";
+import { WithResourceInfo } from "../interfaces";
 
 jest.mock("../fetcher", () => ({
   fetch: jest
@@ -30,17 +42,6 @@ jest.mock("../fetcher", () => ({
       )
     ),
 }));
-
-import type { Mock } from "jest-mock";
-import {
-  getFile,
-  deleteFile,
-  saveFileInContainer,
-  overwriteFile,
-  flattenHeaders,
-} from "./file";
-import { Headers, Response } from "cross-fetch";
-import { WithResourceInfo } from "../interfaces";
 
 describe("flattenHeaders", () => {
   it("returns an empty object for undefined headers", () => {
@@ -68,7 +69,7 @@ describe("flattenHeaders", () => {
   it("supports non-iterable headers if they provide a reasonably standard way of browsing them", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const myHeaders: any = {};
-    myHeaders["forEach"] = (
+    myHeaders.forEach = (
       callback: (value: string, key: string) => void
     ): void => {
       callback("application/json", "accept");
@@ -99,7 +100,7 @@ describe("getFile", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -219,7 +220,7 @@ describe("Non-RDF data deletion", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -367,7 +368,7 @@ describe("Write non-RDF data into a folder", () => {
 
   type MockFetch = Mock<
     ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit?]
+    [RequestInfo | URL, RequestInit?]
   >;
   function setMockOnFetch(
     fetch: MockFetch,
@@ -582,7 +583,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -601,7 +602,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

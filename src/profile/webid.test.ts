@@ -1,27 +1,28 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
+import type * as CrossFetch from "cross-fetch";
 import {
-  asIri,
   buildThing,
   createSolidDataset,
   createThing,
@@ -42,8 +43,6 @@ import {
   getPodUrlAllFrom,
   getProfileAll,
 } from "./webid";
-import { Response } from "cross-fetch";
-import type * as CrossFetch from "cross-fetch";
 
 jest.mock("cross-fetch", () => {
   const crossFetchModule = jest.requireActual(
@@ -51,7 +50,7 @@ jest.mock("cross-fetch", () => {
   ) as typeof CrossFetch;
   return {
     ...crossFetchModule,
-    fetch: jest.fn(fetch),
+    fetch: jest.fn(),
   };
 });
 
@@ -152,7 +151,7 @@ describe("getProfileAll", () => {
     const mockedAuthFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -177,7 +176,7 @@ describe("getProfileAll", () => {
     const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -208,7 +207,7 @@ describe("getProfileAll", () => {
     // Mock the alt profile authenticated fetch
     const mockedAuthFetcher = jest.fn(fetch) as jest.Mock<
       ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit?]
+      [RequestInfo | URL, RequestInit?]
     >;
     mockedAuthFetcher.mockResolvedValueOnce(
       new Response(await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)), {
@@ -231,7 +230,7 @@ describe("getProfileAll", () => {
     const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -437,7 +436,7 @@ describe("getPodUrlAll", () => {
     const mockedFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -458,7 +457,7 @@ describe("getPodUrlAll", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -485,7 +484,7 @@ describe("getPodUrlAll", () => {
     const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -504,7 +503,7 @@ describe("getPodUrlAll", () => {
   it("uses the provided fetch to fetch alt profiles, but not the WebID", async () => {
     const mockedAuthFetch = jest.fn(fetch) as jest.Mock<
       ReturnType<typeof window.fetch>,
-      [RequestInfo, RequestInit?]
+      [RequestInfo | URL, RequestInit?]
     >;
 
     mockedAuthFetch.mockResolvedValueOnce(
@@ -530,7 +529,7 @@ describe("getPodUrlAll", () => {
     const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -565,7 +564,7 @@ describe("getPodUrlAll", () => {
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -602,7 +601,7 @@ describe("getPodUrlAll", () => {
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -653,12 +652,12 @@ describe("getPodUrlAll", () => {
     });
 
     // Mock the two consecutive fetches to the WebID document and the profile
-    //resource linked from it.
+    // resource linked from it.
     // The WebID is fetched using the default fetch
     const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 

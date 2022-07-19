@@ -1,23 +1,25 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+/* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
 
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
@@ -25,7 +27,7 @@
 export const fetch: typeof window.fetch = async (resource, init) => {
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof window === "object" && typeof require !== "function") {
-    return await window.fetch(resource, init);
+    return window.fetch(resource, init);
   }
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
@@ -42,7 +44,6 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // warning. Since the use of package names instead of file names requires a bundles anyway, this
   // should not have any practical consequences. For more background, see:
   // https://github.com/webpack/webpack/issues/7713
-  let fetch;
 
   // Unfortunately solid-client-authn-browser does not support a default session yet.
   // Once it does, we can auto-detect if it is available and use it as follows:
@@ -51,9 +52,8 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // } catch (e) {
   // When enabling the above, make sure to add a similar try {...} catch block using `import`
   // statements in the elseif above.
-  // eslint-disable-next-line prefer-const
-  fetch = require("cross-fetch");
+  const fetch = require("cross-fetch");
   // }
 
-  return await fetch(resource, init);
+  return fetch(resource, init);
 };

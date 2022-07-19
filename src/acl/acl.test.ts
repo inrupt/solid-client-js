@@ -1,34 +1,25 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { jest, describe, it, expect } from "@jest/globals";
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
-  ),
-}));
 
 import { Response } from "cross-fetch";
 
@@ -71,6 +62,16 @@ import { createThing, getThingAll, setThing } from "../thing/thing";
 import { addIri, addStringNoLocale } from "../thing/add";
 import { getIri } from "../thing/get";
 
+jest.mock("../fetcher.ts", () => ({
+  fetch: jest.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      })
+    )
+  ),
+}));
+
 function mockResponse(
   body?: BodyInit | null,
   init?: ResponseInit & { url: string }
@@ -83,7 +84,7 @@ describe("fetchAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -135,7 +136,7 @@ describe("fetchAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -226,7 +227,7 @@ describe("fetchAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -301,7 +302,7 @@ describe("fetchResourceAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -477,7 +478,7 @@ describe("fetchFallbackAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -691,7 +692,7 @@ describe("getSolidDatasetWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -729,7 +730,7 @@ describe("getSolidDatasetWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -759,7 +760,7 @@ describe("getSolidDatasetWithAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -864,7 +865,7 @@ describe("getFileWithAcl", () => {
     const fetcher = jest.requireMock("../fetcher") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -926,7 +927,7 @@ describe("getFileWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
-        headers: headers,
+        headers,
         url: url as string,
       };
       return Promise.resolve(new Response(undefined, init));
@@ -963,7 +964,7 @@ describe("getFileWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       const init: ResponseInit & { url: string } = {
-        headers: headers,
+        headers,
         url: url as string,
       };
       return Promise.resolve(new Response(undefined, init));
@@ -1118,7 +1119,7 @@ describe("getResourceInfoWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -1156,7 +1157,7 @@ describe("getResourceInfoWithAcl", () => {
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(undefined, {
-          headers: headers,
+          headers,
           url: url as string,
         })
       );
@@ -1186,7 +1187,7 @@ describe("getResourceInfoWithAcl", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
 
@@ -2465,7 +2466,7 @@ describe("saveAclFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     const withResourceInfo = {
@@ -2685,7 +2686,7 @@ describe("deleteAclFor", () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mock<
         ReturnType<typeof window.fetch>,
-        [RequestInfo, RequestInit?]
+        [RequestInfo | URL, RequestInit?]
       >;
     };
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {

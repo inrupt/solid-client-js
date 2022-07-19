@@ -1,42 +1,40 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import * as jsonld from "jsonld";
-import {
+import type {
+  DefaultGraph,
   Quad,
   Quad_Graph,
   Quad_Object,
   Quad_Predicate,
   Quad_Subject,
 } from "@rdfjs/types";
+import type { RemoteDocument } from "jsonld/jsonld-spec";
 import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
 import { fetch } from "../fetcher";
-import { RemoteDocument } from "jsonld/jsonld-spec";
 
-const fetchDocumentLoader = async (
-  url: string,
-  options: any
-): Promise<RemoteDocument> => {
+const fetchDocumentLoader = async (url: string): Promise<RemoteDocument> => {
   const res = await fetch(url);
 
   return {
@@ -45,6 +43,13 @@ const fetchDocumentLoader = async (
     document: await res.json(),
   };
 };
+
+interface JsonLDQuad {
+  subject: Quad_Subject;
+  predicate: Quad_Predicate;
+  object: Quad_Object;
+  graph: Quad_Graph;
+}
 
 /**
  * ```{note} This function is still experimental and subject to change, even
@@ -76,7 +81,7 @@ export const getJsonLdParser = (): Parser => {
         const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
           base: getSourceUrl(resourceInfo),
           documentLoader: fetchDocumentLoader,
-        })) as any[];
+        })) as JsonLDQuad[];
         quads = fixQuads(plainQuads);
       } catch (error) {
         onErrorCallbacks.forEach((callback) => callback(error));
@@ -93,7 +98,9 @@ export const getJsonLdParser = (): Parser => {
  * see https://github.com/digitalbazaar/jsonld.js/issues/243
  * Also, no specific type for these 'quads' is exposed by the library
  */
-function fixQuads(plainQuads: any[]): Quad[] {
+
+// change to MaybeQuad
+function fixQuads(plainQuads: JsonLDQuad[]): Quad[] {
   const fixedQuads = plainQuads.map((plainQuad) =>
     DataFactory.quad(
       term(plainQuad.subject) as Quad_Subject,
@@ -105,7 +112,7 @@ function fixQuads(plainQuads: any[]): Quad[] {
   return fixedQuads;
 }
 
-function term(term: any) {
+function term(term: Quad_Object | DefaultGraph) {
   switch (term.termType) {
     case "NamedNode":
       return DataFactory.namedNode(term.value);
@@ -116,6 +123,6 @@ function term(term: any) {
     case "DefaultGraph":
       return DataFactory.defaultGraph();
     default:
-      throw Error("unknown termType: " + term.termType);
+      throw Error(`unknown termType: ${term.termType}`);
   }
 }

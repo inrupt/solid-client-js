@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { acp } from "../constants";
 import {
@@ -172,10 +172,9 @@ export async function getSolidDatasetWithAccessDatasets(
   if (hasAccessibleAcl(solidDataset)) {
     const acl = await internal_fetchAcl(solidDataset, config);
     return internal_setAcl(solidDataset, acl);
-  } else {
-    const acr = await fetchAcr(solidDataset, config);
-    return { ...solidDataset, ...acr };
   }
+  const acr = await fetchAcr(solidDataset, config);
+  return { ...solidDataset, ...acr };
 }
 
 /**
@@ -211,10 +210,9 @@ export async function getFileWithAccessDatasets(
   if (hasAccessibleAcl(file)) {
     const acl = await internal_fetchAcl(file, config);
     return internal_setAcl(file, acl);
-  } else {
-    const acr = await fetchAcr(file, config);
-    return Object.assign(file, acr);
   }
+  const acr = await fetchAcr(file, config);
+  return Object.assign(file, acr);
 }
 
 /**
@@ -250,10 +248,9 @@ export async function getResourceInfoWithAccessDatasets(
   if (hasAccessibleAcl(resourceInfo)) {
     const acl = await internal_fetchAcl(resourceInfo, config);
     return internal_setAcl(resourceInfo, acl);
-  } else {
-    const acr = await fetchAcr(resourceInfo, config);
-    return { ...resourceInfo, ...acr };
   }
+  const acr = await fetchAcr(resourceInfo, config);
+  return { ...resourceInfo, ...acr };
 }
 
 /**
@@ -323,13 +320,13 @@ async function fetchAcr(
   resource: WithServerResourceInfo,
   options: Partial<typeof internal_defaultFetchOptions>
 ): Promise<WithAcp> {
-  let acrUrl: UrlString | undefined = undefined;
+  let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {
     // Whereas a Resource can generally have multiple linked Resources for the same relation,
     // it can only have one Access Control Resource for that ACR to be valid.
     // Hence the accessing of [0] directly:
-    acrUrl =
-      resource.internal_resourceInfo.linkedResources[acp.accessControl][0];
+    const { linkedResources } = resource.internal_resourceInfo;
+    [acrUrl] = linkedResources[acp.accessControl];
   } else if (hasAccessibleAcl(resource)) {
     // The ACP proposal will be updated to expose the Access Control Resource
     // via a Link header with rel="acl", just like WAC. That means that if
@@ -455,6 +452,8 @@ export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
     ) {
       return resource.internal_resourceInfo.linkedResources[rel][0];
     }
+
+    return undefined;
   });
   return acrLinks.find((x) => x !== undefined);
 }

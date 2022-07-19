@@ -1,27 +1,27 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
-import { isNamedNode } from "../datatypes";
+import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
@@ -574,9 +574,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
-    try {
-      new URL(policyToRemove);
-    } catch (e) {
+    if (internal_isValidUrl(policyToRemove) === false) {
       // If the given Policy to remove is the name of the Policy,
       // resolve it to its full URL — developers usually refer to either the
       // Policy itself, or by its name, as they do not have access to the ACR
@@ -629,9 +627,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
   if (typeof policyToRemove === "string") {
-    try {
-      new URL(policyToRemove);
-    } catch (e) {
+    if (internal_isValidUrl(policyToRemove) === false) {
       // If the given Policy to remove is the name of the Policy,
       // resolve it to its full URL — developers usually refer to either the
       // Policy itself, or by its name, as they do not have access to the ACR
@@ -755,15 +751,15 @@ export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
   }
   if (allOfRules.length > 0) {
     markdown += "\nAll of these rules should match:\n";
-    markdown += "- " + allOfRules.join("\n- ") + "\n";
+    markdown += `- ${allOfRules.join("\n- ")}\n`;
   }
   if (anyOfRules.length > 0) {
     markdown += "\nAt least one of these rules should match:\n";
-    markdown += "- " + anyOfRules.join("\n- ") + "\n";
+    markdown += `- ${anyOfRules.join("\n- ")}\n`;
   }
   if (noneOfRules.length > 0) {
     markdown += "\nNone of these rules should match:\n";
-    markdown += "- " + noneOfRules.join("\n- ") + "\n";
+    markdown += `- ${noneOfRules.join("\n- ")}\n`;
   }
 
   return markdown;

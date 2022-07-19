@@ -1,23 +1,23 @@
-/**
- * Copyright 2022 Inrupt Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
- * Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 
 import {
   afterEach,
@@ -27,6 +27,10 @@ import {
   it,
   test,
 } from "@jest/globals";
+
+import { blankNode } from "@rdfjs/dataset";
+import type { Session } from "@inrupt/solid-client-authn-node";
+
 import {
   getSolidDataset,
   setThing,
@@ -45,18 +49,13 @@ import {
   createSolidDataset,
   deleteSolidDataset,
   getWellKnownSolid,
-  getSourceIri,
-  saveSolidDatasetInContainer,
-  solidDatasetAsTurtle,
 } from "../../src/index";
-import { blankNode } from "@rdfjs/dataset";
 import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-import type { Session } from "@inrupt/solid-client-authn-node";
 import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const env = getNodeTestingEnvironment();
-const sessionResourcePrefix: string = "solid-client-tests/node/e2e-";
+
 if (env.environment === "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
@@ -101,7 +100,7 @@ describe("Authenticated end-to-end", () => {
     const firstSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const firstSavedThing = getThing(
       firstSavedDataset,
-      datasetUrl + "#e2e-test-thing"
+      `${datasetUrl}#e2e-test-thing`
     )!;
     expect(firstSavedThing).not.toBeNull();
     expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
@@ -113,7 +112,7 @@ describe("Authenticated end-to-end", () => {
     const secondSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const secondSavedThing = getThing(
       secondSavedDataset,
-      datasetUrl + "#e2e-test-thing"
+      `${datasetUrl}#e2e-test-thing`
     )!;
     expect(secondSavedThing).not.toBeNull();
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
@@ -186,7 +185,7 @@ describe("Authenticated end-to-end", () => {
       );
       const initialisedThing = getThing(
         initialisedDataset,
-        datasetUrl + "#e2e-test-thing-with-blank-node"
+        `${datasetUrl}#e2e-test-thing-with-blank-node`
       )!;
 
       const updatedThing = setBoolean(
