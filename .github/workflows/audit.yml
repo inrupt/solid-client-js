@@ -10,6 +10,6 @@ on:
 
 jobs:
   audit:
-    uses: inrupt/javascript-style-configs/.github/workflows/reusable-audit.yml@main
+    uses: inrupt/javascript-style-configs/.github/workflows/reusable-audit.yml@v1.1.0
     secrets:
       WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}
