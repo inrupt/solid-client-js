@@ -164,39 +164,41 @@ jobs:
           name: webpack-dist
           path: .github/workflows/cd-packaging-tests/bundler-webpack/dist
 
+  # Note: The following has been disabled due to the 1.1 -> 2.0 migration:
+
   # Run our Node-based end-to-end tests against the published package at least once,
   # to detect issues introduced by the build process:
-  cd-end-to-end-tests:
-    runs-on: ubuntu-latest
-    needs: [prepare-deployment, publish-npm]
-    environment:
-      name: "Inrupt Production"
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-          registry-url: "https://registry.npmjs.org"
-      - run: npm ci
-      - name: Install the preview release of solid-client
-        # The `--force` allows us to install it even though our own package has the same name.
-        # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
-        run: |
-          npm install --force @inrupt/solid-client
-      - name: Make sure that the end-to-end tests run against the just-published package
-        run: |
-          cd e2e/node
-          # For all files (`-type f`) in this directory,
-          # replace `../../src/index` (i.e. in the import statement) with `@inrupt/solid-client`:
-          find ./ -type f -exec sed --in-place --expression='s/\.\.\/\.\.\/src\/index/@inrupt\/solid-client/g' {} \;
-      - name: Run the Node-based end-to-end tests
-        run: npm run test:e2e:node -- --runTestsByPath e2e/node/resource.test.ts
-        env:
-          E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
-          E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
-          E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
-          E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
-          E2E_TEST_ENVIRONMENT: "Inrupt Production"
-          E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
-          E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
-          E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
+  # cd-end-to-end-tests:
+  #   runs-on: ubuntu-latest
+  #   needs: [prepare-deployment, publish-npm]
+  #   environment:
+  #     name: "Inrupt Production"
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: "16"
+  #         registry-url: "https://registry.npmjs.org"
+  #     - run: npm ci
+  #     - name: Install the preview release of solid-client
+  #       # The `--force` allows us to install it even though our own package has the same name.
+  #       # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
+  #       run: |
+  #         npm install --force @inrupt/solid-client
+  #     - name: Make sure that the end-to-end tests run against the just-published package
+  #       run: |
+  #         cd e2e/node
+  #         # For all files (`-type f`) in this directory,
+  #         # replace `../../src/index` (i.e. in the import statement) with `@inrupt/solid-client`:
+  #         find ./ -type f -exec sed --in-place --expression='s/\.\.\/\.\.\/src\/index/@inrupt\/solid-client/g' {} \;
+  #     - name: Run the Node-based end-to-end tests
+  #       run: npm run test:e2e:node -- --runTestsByPath e2e/node/resource.test.ts
+  #       env:
+  #         E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
+  #         E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
+  #         E2E_TEST_CLIENT_ID: ${{ secrets.E2E_TEST_CLIENT_ID }}
+  #         E2E_TEST_CLIENT_SECRET: ${{ secrets.E2E_TEST_CLIENT_SECRET }}
+  #         E2E_TEST_ENVIRONMENT: "Inrupt Production"
+  #         E2E_TEST_FEATURE_ACP: ${{ secrets.E2E_TEST_FEATURE_ACP }}
+  #         E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
+  #         E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}

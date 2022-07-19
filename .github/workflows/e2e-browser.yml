@@ -56,8 +56,9 @@ jobs:
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         node-version: [16.x]
+        # Note: "Inrupt Production" has been disabled due to the migration
+        # "Inrupt Dev-Next" is a 2.x environment.
         environment-name:
-          - "Inrupt Production"
           - "Inrupt Dev-Next"
 
     steps:
