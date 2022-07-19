@@ -17,8 +17,9 @@ jobs:
       name: ${{ matrix.environment-name }}
     strategy:
       matrix:
-        environment-name:
-          ["Inrupt Production", "Inrupt Dev-Next", "Inrupt 1.1", "NSS"]
+        # Note: "Inrupt Production" and "Inrupt 1.1" have been disabled due to the migration
+        # "Inrupt Dev-Next" is a 2.x environment.
+        environment-name: ["Inrupt Dev-Next", "NSS"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
