@@ -467,7 +467,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
  *
  * If operating on a container, the container must be empty otherwise a 409 CONFLICT will be raised.
  *
- * @param file The (URL of the) SolidDataset to delete
+ * @param solidDataset The URL of the SolidDataset to delete or the SolidDataset itself (if it has ResourceInfo).
  * @since 0.6.0
  */
 export async function deleteSolidDataset(
@@ -861,7 +861,7 @@ export async function createContainerInContainer(
 /**
  * Deletes the Container at a given URL.
  *
- * @param file The (URL of the) Container to delete
+ * @param container The URL of the Container to delete or the Container Dataset itself (if it has ResourceInfo).
  * @since 0.6.0
  */
 export async function deleteContainer(

@@ -80,19 +80,19 @@ function containsReserved(header: Record<string, string>): boolean {
  * For additional examples, see
  * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#retrieve-a-file).
  *
- * @param url The URL of the file to return
+ * @param fileUrl The URL of the file to return
  * @param options Fetching options: a custom fetcher and/or headers.
  * @returns The file as a blob.
  */
 export async function getFile(
-  input: Url | UrlString,
+  fileUrl: Url | UrlString,
   options: Partial<GetFileOptions> = defaultGetFileOptions
 ): Promise<File & WithServerResourceInfo> {
   const config = {
     ...defaultGetFileOptions,
     ...options,
   };
-  const url = internal_toIriString(input);
+  const url = internal_toIriString(fileUrl);
   const response = await config.fetch(url, config.init);
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
@@ -126,7 +126,7 @@ export async function getFile(
  * For additional examples, see
  * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#delete-a-file).
  *
- * @param file The URL of the file to delete
+ * @param file The URL of the file to delete or the file itself (if it has ResourceInfo).
  */
 export async function deleteFile(
   file: Url | UrlString | WithResourceInfo,
