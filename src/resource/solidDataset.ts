@@ -542,15 +542,6 @@ export async function createContainerAt(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
-    if (
-      response.status === 409 &&
-      response.statusText === "Conflict" &&
-      (await response.text()).trim() ===
-        internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465
-    ) {
-      return createContainerWithNssWorkaroundAt(url, options);
-    }
-
     const containerType =
       config.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
@@ -570,87 +561,6 @@ export async function createContainerAt(
 
   return containerDataset;
 }
-
-/**
- * Unfortunately Node Solid Server does not confirm to the Solid spec when it comes to Container
- * creation. When we make the (valid, according to the Solid protocol) request to create a
- * Container, NSS responds with the following exact error message. Thus, when we encounter exactly
- * this message, we use an NSS-specific workaround ([[createContainerWithNssWorkaroundAt]]). Both
- * this constant and that workaround should be removed once the NSS issue has been fixed and
- * no versions of NSS with the issue are in common use/supported anymore.
- *
- * @see https://github.com/solid/node-solid-server/issues/1465
- * @internal
- */
-export const internal_NSS_CREATE_CONTAINER_SPEC_NONCOMPLIANCE_DETECTION_ERROR_MESSAGE_TO_WORKAROUND_THEIR_ISSUE_1465 =
-  "Can't write file: PUT not supported on containers, use POST instead";
-
-/**
- * Unfortunately Node Solid Server does not confirm to the Solid spec when it comes to Container
- * creation. As a workaround, we create a dummy file _inside_ the desired Container (which should
- * create the desired Container on the fly), and then delete it again.
- *
- * @see https://github.com/solid/node-solid-server/issues/1465
- */
-const createContainerWithNssWorkaroundAt: typeof createContainerAt = async (
-  url,
-  options
-) => {
-  url = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  let existingContainer;
-  try {
-    existingContainer = await getResourceInfo(url, options);
-  } catch (e) {
-    // To create the Container, we'd want it to not exist yet. In other words, we'd expect to get
-    // a 404 error here in the happy path - so do nothing if that's the case.
-    if (!(e instanceof FetchError) || e.statusCode !== 404) {
-      // (But if we get an error other than a 404, just throw that error like we usually would.)
-      throw e;
-    }
-  }
-  if (typeof existingContainer !== "undefined") {
-    throw new Error(
-      `The Container at [${url}] already exists, and therefore cannot be created again.`
-    );
-  }
-
-  const dummyUrl = `${url}.dummy`;
-
-  const createResponse = await config.fetch(dummyUrl, {
-    method: "PUT",
-    headers: {
-      Accept: "text/turtle",
-      "Content-Type": "text/turtle",
-    },
-  });
-
-  if (internal_isUnsuccessfulResponse(createResponse)) {
-    throw new FetchError(
-      `Creating the empty Container at [${url}] failed: [${createResponse.status}] [${createResponse.statusText}].`,
-      createResponse
-    );
-  }
-
-  await config.fetch(dummyUrl, { method: "DELETE" });
-
-  const containerInfoResponse = await config.fetch(url, { method: "HEAD" });
-
-  const resourceInfo = internal_parseResourceInfo(containerInfoResponse);
-  const containerDataset: SolidDataset &
-    WithChangeLog &
-    WithServerResourceInfo = freeze({
-    ...createSolidDataset(),
-    internal_changeLog: { additions: [], deletions: [] },
-    internal_resourceInfo: resourceInfo,
-  });
-
-  return containerDataset;
-};
 
 function isSourceIriEqualTo(
   dataset: SolidDataset & WithResourceInfo,

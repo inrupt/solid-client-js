@@ -6,6 +6,9 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+- Remove workaround for creating containers with POST instead of PUT.
+  This was needed for [Node Solid Server (version < 5.3)](https://github.com/solid/node-solid-server/issues/1465)
+
 ## [1.23.1] - 2022-06-01
 
 ### Bugfixes
