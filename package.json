@@ -192,7 +192,7 @@
     "@types/rdfjs__dataset": "^1.0.4",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.0.2",
-    "jsonld": "^5.2.0",
+    "jsonld": "^7.0.0",
     "n3": "^1.10.0"
   },
   "engines": {
