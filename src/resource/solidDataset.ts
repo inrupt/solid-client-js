@@ -1134,12 +1134,18 @@ export async function getWellKnownSolid(
       "/.well-known/solid",
       new URL(urlString).origin
     ).href;
-    return await getSolidDataset(wellKnownSolidUrl);
+
+    // Technically, the request here should be public and shouldn't require an
+    // authenticated fetch, however, in some environments, fetcher.ts fails to
+    // load cross-fetch sometimes, which results in this call failing if we
+    // don't pass the fetch method through:
+    return await getSolidDataset(wellKnownSolidUrl, { fetch: options.fetch });
   } catch (e) {
     // In case of error, do nothing and try to discover the .well-known
     // at the pod's root.
   }
 
+  // 1.1s implementation:
   const resourceMetadata = await getResourceInfo(urlString, {
     fetch: options.fetch,
     // Discovering the .well-known/solid document is useful even for resources
@@ -1162,6 +1168,7 @@ export async function getWellKnownSolid(
       },
     });
   }
+
   throw new Error(
     "Could not determine storage root or well-known solid resource."
   );

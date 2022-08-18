@@ -3282,45 +3282,72 @@ describe("getWellKnownSolid", () => {
     ReturnType<typeof window.fetch>,
     [RequestInfo | URL, RequestInit?]
   >;
-  function setMockResourceResponseOnFetch(
-    fetch: MockFetch,
-    response = mockResponse(undefined, {
-      url: "https://some.pod/resource",
-      headers: {
-        "Content-Type": "text/turtle",
-        link: `</username/>; rel="http://www.w3.org/ns/pim/space#storage"`,
-      },
-    })
-  ): MockFetch {
-    fetch.mockResolvedValueOnce(response);
-    return fetch;
-  }
-  function setMockWellKnownSolidResponseOnFetch(
-    fetch: MockFetch,
-    response = mockResponse(
-      `
-    {
-      "@context":"https://pod.inrupt.com/solid/v1",
-      "consent":"https://consent.pod.inrupt.com",
-      "notificationGateway":"https://notification.pod.inrupt.com",
-      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
-      "storage":"https://pod.inrupt.com/username/"
-    }`,
-      {
-        url: "https://some.pod/resource",
-        headers: { "Content-Type": "application/ld+json" },
-      }
-    )
-  ): MockFetch {
-    fetch.mockResolvedValueOnce(response);
-    return fetch;
-  }
 
   const serverUrl = "https://example.org/";
   const podUrl = "https://example.org/pod/";
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
   let mockedFetcher: { fetch: MockFetch };
+
+  const mockESS20 = () =>
+    mockedFetcher.fetch.mockResolvedValueOnce(
+      new Response(
+        `@prefix solid: <http://www.w3.org/ns/solid/terms#> .
+
+    [
+        a solid:DiscoveryDocument ;
+        <http://www.w3.org/ns/auth/acl#trustedApp>
+                <https://podbrowser.inrupt.com/api/app> ;
+        solid:maxPodsPerOwner      10 ;
+        solid:notificationGateway  <https://notification.inrupt.com/> ;
+        solid:provision            <https://provision.inrupt.com/> ;
+        solid:validatesRdfSources  true
+    ] .`,
+        {
+          headers: {
+            "Content-Type": "text/turtle",
+          },
+        }
+      )
+    );
+
+  const mockESS11 = () =>
+    mockedFetcher.fetch.mockImplementation(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        if (url === "https://example.org/.well-known/solid") {
+          return mockResponse(undefined, { status: 404, url });
+        }
+
+        if (url === "https://example.org/pod/resource") {
+          return mockResponse(undefined, {
+            url: resourceUrl,
+            headers: {
+              "Content-Type": "text/turtle",
+              link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
+            },
+          });
+        }
+
+        if (url === "https://example.org/pod/.well-known/solid") {
+          return mockResponse(
+            `
+          {
+            "@context":"https://pod.inrupt.com/solid/v1",
+            "consent":"https://consent.pod.inrupt.com",
+            "notificationGateway":"https://notification.pod.inrupt.com",
+            "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+            "storage":"https://pod.inrupt.com/username/"
+          }`,
+            {
+              url,
+              headers: { "Content-Type": "application/ld+json" },
+            }
+          );
+        }
+
+        throw new Error(`Unhandled request: ${url}, ${JSON.stringify(init)}`);
+      }
+    );
 
   beforeAll(() => {
     mockedFetcher = jest.requireMock("../fetcher.ts") as {
@@ -3330,68 +3357,33 @@ describe("getWellKnownSolid", () => {
 
   it("fetches root well known solid by default", async () => {
     // Fetches root well known
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(
-        `@prefix solid: <http://www.w3.org/ns/solid/terms#> .
-
-        [
-            a solid:DiscoveryDocument ;
-            <http://www.w3.org/ns/auth/acl#trustedApp>
-                    <https://podbrowser.inrupt.com/api/app> ;
-            solid:maxPodsPerOwner      10 ;
-            solid:notificationGateway  <https://notification.inrupt.com/> ;
-            solid:provision            <https://provision.inrupt.com/> ;
-            solid:validatesRdfSources  true
-        ] .`,
-        {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        }
-      )
-    );
+    mockESS20();
 
     await getWellKnownSolid(resourceUrl);
 
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
+    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+      serverUrl.concat(wellKnownSolid)
+    );
+  });
+
+  it("uses the given fetcher for root well known solid if provided", async () => {
+    mockESS20();
+
+    await getWellKnownSolid(resourceUrl, { fetch: mockedFetcher.fetch });
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       serverUrl.concat(wellKnownSolid)
     );
   });
 
   it("fetches pod root well known solid otherwise", async () => {
-    // Root cannot be fetched
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
-    );
-    // Resource advertises Pod root
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: resourceUrl,
-        headers: {
-          "Content-Type": "text/turtle",
-          link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
-        },
-      })
-    );
-    // Fetches Pod root well known
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(
-        `{
-          "@context":"https://pod.inrupt.com/solid/v1",
-          "consent":"https://consent.pod.inrupt.com",
-          "notificationGateway":"https://notification.pod.inrupt.com",
-          "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
-          "storage":"https://pod.inrupt.com/username/"
-        }`,
-        {
-          headers: {
-            "Content-Type": "application/ld+json",
-          },
-        }
-      )
-    );
+    mockESS11();
 
     await getWellKnownSolid(resourceUrl);
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
 
     // Tries the root well known solid first is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
@@ -3406,33 +3398,22 @@ describe("getWellKnownSolid", () => {
   });
 
   it("uses the given fetcher for pod root well known solid if provided", async () => {
-    // Root cannot be fetched
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
-    );
-    const mockFetch = jest.fn(window.fetch);
-    // Resource advertises Pod root
-    mockFetch.mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: resourceUrl,
-        headers: {
-          "Content-Type": "text/turtle",
-          link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
-        },
-      })
-    );
-    setMockWellKnownSolidResponseOnFetch(mockFetch);
+    mockESS11();
 
-    await getWellKnownSolid(resourceUrl, { fetch: mockFetch });
+    await getWellKnownSolid(resourceUrl, { fetch: mockedFetcher.fetch });
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
 
     // Fails at pod root (unauthenticated)
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       serverUrl.concat(wellKnownSolid)
     );
     // Checks the pod root (authenticated/with the provided fetcher)
-    expect(mockFetch.mock.calls[0][0]).toBe(resourceUrl);
+    expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // Retrieve pod root well known solid
-    expect(mockFetch.mock.calls[1][0]).toBe(podUrl.concat(".well-known/solid"));
+    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
+      podUrl.concat(".well-known/solid")
+    );
   });
 
   it("appends a / to the Pod root if missing before appending .well-known/solid", async () => {
@@ -3470,6 +3451,8 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid(resourceUrl);
 
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
+
     // Tries the root well known solid first is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
       serverUrl.concat(wellKnownSolid)
@@ -3503,6 +3486,8 @@ describe("getWellKnownSolid", () => {
     );
 
     await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow();
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
   });
 
   it("Throws an error if the pod root cannot be determined", async () => {
@@ -3516,35 +3501,26 @@ describe("getWellKnownSolid", () => {
     await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow(
       "Could not determine storage root or well-known solid resource."
     );
+
+    expect(mockedFetcher.fetch.mock.calls).toHaveLength(2);
   });
 
-  it("returns the contents of .well-known/solid for the given resource", async () => {
-    const wellKnownSolidResponseBody = `
-    {
-      "@context":"https://pod.inrupt.com/solid/v1",
-      "consent":"https://consent.pod.inrupt.com",
-      "notificationGateway":"https://notification.pod.inrupt.com",
-      "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
-      "storage":"https://pod.inrupt.com/username/"
-    }`;
-    const mockFetch = jest.fn(window.fetch);
-    // Can't fetch root well known
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
-    );
-    setMockResourceResponseOnFetch(mockFetch);
-    setMockWellKnownSolidResponseOnFetch(
-      mockFetch,
-      mockResponse(wellKnownSolidResponseBody, {
-        url: "https://some.pod/resource",
-        headers: { "Content-Type": "application/ld+json" },
-      })
-    );
+  it("returns the contents of .well-known/solid for the given resource (2.0)", async () => {
+    mockESS20();
 
-    const wellKnownSolidResponse = await getWellKnownSolid(
-      "https://some.pod/resource",
-      { fetch: mockFetch }
-    );
+    const wellKnownSolidResponse = await getWellKnownSolid(resourceUrl, {
+      fetch: mockedFetcher.fetch,
+    });
+
+    expect(wellKnownSolidResponse).toMatchSnapshot();
+  });
+
+  it("returns the contents of .well-known/solid for the given resource (1.1)", async () => {
+    mockESS11();
+
+    const wellKnownSolidResponse = await getWellKnownSolid(resourceUrl, {
+      fetch: mockedFetcher.fetch,
+    });
 
     expect(wellKnownSolidResponse).toMatchSnapshot();
   });

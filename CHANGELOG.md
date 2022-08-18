@@ -6,8 +6,21 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfixes
+
+- Modify the internal `getWellKnownSolid` method used by
+  `@inrupt/solid-client-notifications` to always use the provided fetch
+  implementation when requesting the solid dataset that is the
+  `/.well-known/solid` resource. This fixes a bug where in some environments
+  cross-fetch failed to load at this point in the code.
+
+### Other Changes
+
 - Remove workaround for creating containers with POST instead of PUT.
   This was needed for [Node Solid Server (version < 5.3)](https://github.com/solid/node-solid-server/issues/1465)
+- Migrate project to our common eslint configuration, this resulted in a fairly
+  large amount of code changes, though everything should appear the same to
+  consumers.
 
 ## [1.23.1] - 2022-06-01
 
