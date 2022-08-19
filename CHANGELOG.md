@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.23.2] - 2022-08-19
+
 ### Bugfixes
 
 - Modify the internal `getWellKnownSolid` method used by
