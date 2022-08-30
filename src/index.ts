@@ -178,6 +178,7 @@ export {
   AclRule as internal_AclRule,
   Access,
 } from "./acl/acl";
+export { WithAcp, WithAccessibleAcr } from "./acp/acp";
 export {
   AgentAccess,
   getAgentAccess,
