@@ -178,7 +178,7 @@
     "jest": "^27.0.4",
     "prettier": "2.7.1",
     "rdf-namespaces": "^1.8.0",
-    "rollup": "^2.76.0",
+    "rollup": "^3.0.0",
     "rollup-plugin-typescript2": "^0.34.0",
     "ts-jest": "^27.0.3",
     "typedoc": "^0.23.7",
