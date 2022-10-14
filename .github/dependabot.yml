@@ -7,12 +7,6 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
-  # Enable version updates for the codesandbox script
-  - package-ecosystem: "npm"
-    directory: "/.codesandbox/sandbox"
-    # Check the npm registry for updates every day (weekdays)
-    schedule:
-      interval: "daily"
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     # Look for `package.json` and `lock` files in the `root` directory
