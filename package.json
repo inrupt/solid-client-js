@@ -4,7 +4,7 @@
   "version": "1.23.3",
   "license": "MIT",
   "scripts": {
-    "build": "rollup --config rollup.config.js",
+    "build": "rollup --config rollup.config.mjs",
     "docs:clean": "cd docs/api; make clean-all",
     "docs:install": "cd docs/api; pip install -r requirements.txt",
     "docs:build": "typedoc && cd docs/api && make html dist",
@@ -178,7 +178,7 @@
     "jest": "^27.0.4",
     "prettier": "2.7.1",
     "rdf-namespaces": "^1.8.0",
-    "rollup": "^2.76.0",
+    "rollup": "^3.1.0",
     "rollup-plugin-typescript2": "^0.34.0",
     "ts-jest": "^27.0.3",
     "typedoc": "^0.23.7",
