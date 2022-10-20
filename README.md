@@ -1,8 +1,8 @@
 # Solid JavaScript Client - solid-client
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE-OF-CONDUCT.md)
 
-This project adheres to the Contributor Covenant [code of conduct](code_of_conduct.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [engineering@inrupt.com](mailto:engineering@inrupt.com).
+This project adheres to the Contributor Covenant [code of conduct](CODE-OF-CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [engineering@inrupt.com](mailto:engineering@inrupt.com).
 
 @inrupt/solid-client is a JavaScript library for accessing data and managing
 permissions on data stored in Solid Pods. It provides an abstraction layer on
