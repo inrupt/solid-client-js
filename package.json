@@ -166,6 +166,7 @@
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.1.0",
     "@inrupt/solid-client-authn-node": "^1.12.2",
+    "@inrupt/test-env-helpers": "file:../javascript-style-configs/packages/test-env-helpers",
     "@playwright/test": "^1.23.3",
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/dotenv-flow": "^3.1.0",

@@ -31,7 +31,7 @@ import {
 import { Session } from "@inrupt/solid-client-authn-node";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
+import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";

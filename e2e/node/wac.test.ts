@@ -29,6 +29,7 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
+import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 import {
   getSolidDatasetWithAcl,
   hasResourceAcl,
@@ -51,7 +52,6 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 
 const env = getNodeTestingEnvironment();

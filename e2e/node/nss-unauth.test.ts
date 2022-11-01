@@ -55,7 +55,7 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
+import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 
 const env = getNodeTestingEnvironment();
 if (env.environment !== "NSS") {

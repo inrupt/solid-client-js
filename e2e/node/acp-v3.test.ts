@@ -29,6 +29,7 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
+import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 import {
   getSolidDataset,
   setThing,
@@ -43,7 +44,6 @@ import {
   FetchError,
   deleteFile,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import { setupTestResources, teardownTestResources } from "./test-helpers";
 
