@@ -23,7 +23,7 @@ import { Session } from "@inrupt/solid-client-authn-node";
 import {
   getNodeTestingEnvironment,
   NodeTestingEnvironment,
-} from "./getTestingEnvironment";
+} from "@inrupt/test-env-helpers";
 
 export async function getAuthenticatedSession(
   params?: NodeTestingEnvironment

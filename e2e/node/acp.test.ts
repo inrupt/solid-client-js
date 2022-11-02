@@ -29,9 +29,9 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
+import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
 import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
-import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
@@ -48,7 +48,7 @@ const TEST_SLUG = "solid-client-test-e2e-acp";
 
 const env = getNodeTestingEnvironment();
 
-if (env.feature.acp !== true) {
+if (env.features.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
