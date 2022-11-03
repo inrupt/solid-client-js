@@ -29,7 +29,11 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
+import {
+  getNodeTestingEnvironment,
+  setupTestResources,
+  teardownTestResources,
+} from "@inrupt/test-env-helpers";
 import {
   getSolidDataset,
   setThing,
@@ -45,11 +49,10 @@ import {
   deleteFile,
 } from "../../src/index";
 import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
-const env = getNodeTestingEnvironment();
+const env = getNodeTestingEnvironment({});
 
 if (env.features.acp_v3 !== true) {
   // eslint-disable-next-line jest/no-focused-tests
