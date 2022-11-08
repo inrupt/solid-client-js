@@ -32,6 +32,13 @@ import { blankNode } from "@rdfjs/dataset";
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 import {
+  getNodeTestingEnvironment,
+  setupTestResources,
+  teardownTestResources,
+  getAuthenticatedSession,
+  getPodRoot,
+} from "@inrupt/internal-test-env";
+import {
   getSolidDataset,
   setThing,
   getThing,
@@ -50,16 +57,12 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
-import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-import { setupTestResources, teardownTestResources } from "./test-helpers";
+const env = getNodeTestingEnvironment({ acp_v3: false, wac: false, acp: true });
 
-const env = getNodeTestingEnvironment();
-
-if (env.environment === "NSS") {
-  // eslint-disable-next-line jest/no-focused-tests
-  test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
-}
+// if (env.environment === "NSS") {
+//   // eslint-disable-next-line jest/no-focused-tests
+//   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
+// }
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
@@ -68,10 +71,12 @@ describe("Authenticated end-to-end", () => {
   let session: Session;
   let sessionContainer: string;
   let sessionResource: string;
+  let pod: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    pod = await getPodRoot(session);
+    const testsetup = await setupTestResources(session, TEST_SLUG, pod);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
     fetchOptions = { fetch: testsetup.fetchWithAgent };
@@ -144,8 +149,8 @@ describe("Authenticated end-to-end", () => {
   });
 
   it("can create and remove Containers", async () => {
-    const containerUrl = `${env.pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
-    const containerContainerUrl = `${env.pod}solid-client-tests/node/container-test/`;
+    const containerUrl = `${pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
+    const containerContainerUrl = `${pod}solid-client-tests/node/container-test/`;
     const containerName = `container2-${session.info.sessionId}`;
     const newContainer1 = await createContainerAt(containerUrl, fetchOptions);
     const newContainer2 = await createContainerInContainer(

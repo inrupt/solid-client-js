@@ -29,8 +29,13 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
-import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
+import {
+  getNodeTestingEnvironment,
+  setupTestResources,
+  teardownTestResources,
+  getAuthenticatedSession,
+  getPodRoot,
+} from "@inrupt/internal-test-env";
 import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
@@ -42,7 +47,6 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 import { hasAccessibleAcr } from "../../src/acp/acp";
-import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp";
 
@@ -61,7 +65,8 @@ describe("An ACP Solid server", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    const pod = await getPodRoot(session);
+    const testsetup = await setupTestResources(session, TEST_SLUG, pod);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
     fetchOptions = { fetch: testsetup.fetchWithAgent };

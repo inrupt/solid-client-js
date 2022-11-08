@@ -22,7 +22,7 @@
 /* eslint-disable jest/no-done-callback */
 
 import { test, expect } from "@playwright/test";
-import { getBrowserTestingEnvironment } from "@inrupt/test-env-helpers";
+import { getBrowserTestingEnvironment } from "@inrupt/internal-test-env";
 import { essUserLogin } from "./roles";
 
 const { username, password } = getBrowserTestingEnvironment();

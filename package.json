@@ -19,7 +19,7 @@
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
-    "test:e2e:browser": "cd e2e/browser/test && playwright test",
+    "test:e2e:browser": "playwright test",
     "test:e2e:browser:build": "cd e2e/browser/testApp && npm ci",
     "test:e2e:node": "jest --config=jest.e2e.config.js"
   },
@@ -166,7 +166,7 @@
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.1.0",
     "@inrupt/solid-client-authn-node": "^1.12.2",
-    "@inrupt/test-env-helpers": "file:../javascript-style-configs/packages/test-env-helpers",
+    "@inrupt/internal-test-env": "file:../javascript-style-configs/packages/internal-test-env",
     "@playwright/test": "^1.23.3",
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/dotenv-flow": "^3.1.0",

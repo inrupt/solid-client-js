@@ -55,9 +55,9 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "@inrupt/test-env-helpers";
+import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 
-const env = getNodeTestingEnvironment();
+const env = getNodeTestingEnvironment({ acp_v3: false, wac: false, acp: true });
 if (env.environment !== "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
