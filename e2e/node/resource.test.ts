@@ -37,6 +37,7 @@ import {
   teardownTestResources,
   getAuthenticatedSession,
   getPodRoot,
+  createFetch,
 } from "@inrupt/internal-test-env";
 import {
   getSolidDataset,
@@ -57,12 +58,13 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
-const env = getNodeTestingEnvironment({ acp_v3: false, wac: false, acp: true });
 
-// if (env.environment === "NSS") {
-//   // eslint-disable-next-line jest/no-focused-tests
-//   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
-// }
+const env = getNodeTestingEnvironment();
+
+if (env.environment === "NSS") {
+  // eslint-disable-next-line jest/no-focused-tests
+  test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
+}
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
@@ -76,10 +78,11 @@ describe("Authenticated end-to-end", () => {
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
     pod = await getPodRoot(session);
-    const testsetup = await setupTestResources(session, TEST_SLUG, pod);
+
+    fetchOptions = { fetch: createFetch(session, TEST_SLUG) };
+    const testsetup = await setupTestResources(pod, fetchOptions);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
-    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
@@ -87,7 +90,7 @@ describe("Authenticated end-to-end", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions.fetch
+      fetchOptions
     );
   });
 

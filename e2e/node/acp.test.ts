@@ -35,6 +35,7 @@ import {
   teardownTestResources,
   getAuthenticatedSession,
   getPodRoot,
+  createFetch,
 } from "@inrupt/internal-test-env";
 import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
@@ -52,7 +53,7 @@ const TEST_SLUG = "solid-client-test-e2e-acp";
 
 const env = getNodeTestingEnvironment();
 
-if (env.features.acp !== true) {
+if (env?.features?.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
@@ -66,10 +67,11 @@ describe("An ACP Solid server", () => {
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
     const pod = await getPodRoot(session);
-    const testsetup = await setupTestResources(session, TEST_SLUG, pod);
+
+    fetchOptions = { fetch: createFetch(session, TEST_SLUG) };
+    const testsetup = await setupTestResources(pod, fetchOptions);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
-    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
@@ -77,7 +79,7 @@ describe("An ACP Solid server", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions.fetch
+      fetchOptions
     );
   });
 
@@ -141,10 +143,10 @@ describe("An ACP Solid server", () => {
   });
 
   it("can get and set read access for the public", async () => {
-    const setPublicAccess = env.features.acp
+    const setPublicAccess = env.features?.acp
       ? latest_setPublicAccess
       : legacy_setPublicAccess;
-    const getPublicAccess = env.features.acp
+    const getPublicAccess = env.features?.acp
       ? latest_getPublicAccess
       : legacy_getPublicAccess;
 

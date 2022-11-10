@@ -22,6 +22,7 @@
 import { describe, expect, it, test } from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
+import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 import {
   getSolidDataset,
   setThing,
@@ -55,9 +56,8 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 
-const env = getNodeTestingEnvironment({ acp_v3: false, wac: false, acp: true });
+const env = getNodeTestingEnvironment();
 if (env.environment !== "NSS") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});

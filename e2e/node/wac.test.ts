@@ -56,12 +56,12 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-const env = getNodeTestingEnvironment({ acp_v3: false, wac: false, acp: true });
+const env = getNodeTestingEnvironment();
 const sessionResourcePrefix = "solid-client-tests/node/wac-";
-// if (env.features.wac !== true) {
-//   // eslint-disable-next-line jest/no-focused-tests
-//   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
-// }
+if (env.features?.wac !== true) {
+  // eslint-disable-next-line jest/no-focused-tests
+  test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
+}
 
 describe("Authenticated end-to-end WAC", () => {
   let options: { fetch: typeof global.fetch };
