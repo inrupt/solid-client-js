@@ -165,7 +165,7 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.4.0",
-    "@inrupt/internal-test-env": "^1.4.0",
+    "@inrupt/internal-test-env": "^1.4.2",
     "@inrupt/solid-client-authn-node": "^1.12.2",
     "@playwright/test": "^1.23.3",
     "@rushstack/eslint-patch": "^1.1.4",
