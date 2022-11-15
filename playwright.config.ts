@@ -24,7 +24,7 @@ import { PlaywrightTestConfig } from "@playwright/test";
 const config: PlaywrightTestConfig = {
   testMatch: "*.playwright.ts",
   // Configure dotenv in local:
-  globalSetup: "./globalSetup.ts",
+  globalSetup: "./e2e/browser/test/globalSetup.ts",
   retries: 1,
   // Extends from the default 30s
   timeout: 60000,
@@ -36,8 +36,8 @@ const config: PlaywrightTestConfig = {
     video: "on-first-retry",
   },
   webServer: {
-    cwd: "../testApp",
-    command: "npm run dev",
+    // cwd: "./e2e/browser/testApp/",
+    command: "cd ./e2e/browser/testApp/ && npm run dev",
     port: 3000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

@@ -29,9 +29,15 @@ import {
 } from "@jest/globals";
 
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
+import {
+  getNodeTestingEnvironment,
+  setupTestResources,
+  teardownTestResources,
+  getAuthenticatedSession,
+  getPodRoot,
+  createFetch,
+} from "@inrupt/internal-test-env";
 import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
@@ -42,13 +48,12 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 import { hasAccessibleAcr } from "../../src/acp/acp";
-import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp";
 
 const env = getNodeTestingEnvironment();
 
-if (env.feature.acp !== true) {
+if (env?.features?.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
@@ -61,10 +66,12 @@ describe("An ACP Solid server", () => {
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    const pod = await getPodRoot(session);
+
+    fetchOptions = { fetch: createFetch(session, TEST_SLUG) };
+    const testsetup = await setupTestResources(pod, fetchOptions);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
-    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
@@ -72,7 +79,7 @@ describe("An ACP Solid server", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions.fetch
+      fetchOptions
     );
   });
 
@@ -136,10 +143,10 @@ describe("An ACP Solid server", () => {
   });
 
   it("can get and set read access for the public", async () => {
-    const setPublicAccess = env.feature.acp
+    const setPublicAccess = env.features?.acp
       ? latest_setPublicAccess
       : legacy_setPublicAccess;
-    const getPublicAccess = env.feature.acp
+    const getPublicAccess = env.features?.acp
       ? latest_getPublicAccess
       : legacy_getPublicAccess;
 

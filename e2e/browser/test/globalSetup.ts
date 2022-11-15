@@ -19,11 +19,12 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { FullConfig } from "@playwright/test";
-import { setupEnv } from "../../util/setupEnv";
+import { setupEnv } from "@inrupt/internal-test-env";
 
-async function globalSetup(_config: FullConfig) {
+async function globalSetup() {
   setupEnv();
+  // Return the teardown function.
+  return async () => {};
 }
 
 export default globalSetup;

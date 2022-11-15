@@ -19,7 +19,7 @@
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
-    "test:e2e:browser": "cd e2e/browser/test && playwright test",
+    "test:e2e:browser": "playwright test",
     "test:e2e:browser:build": "cd e2e/browser/testApp && npm ci",
     "test:e2e:node": "jest --config=jest.e2e.config.js"
   },
@@ -164,7 +164,8 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
-    "@inrupt/eslint-config-lib": "^1.1.0",
+    "@inrupt/eslint-config-lib": "^1.4.0",
+    "@inrupt/internal-test-env": "^1.4.2",
     "@inrupt/solid-client-authn-node": "^1.12.2",
     "@playwright/test": "^1.23.3",
     "@rushstack/eslint-patch": "^1.1.4",

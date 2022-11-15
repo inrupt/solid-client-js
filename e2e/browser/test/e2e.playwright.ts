@@ -22,14 +22,22 @@
 /* eslint-disable jest/no-done-callback */
 
 import { test, expect } from "@playwright/test";
-import { getBrowserTestingEnvironment } from "../../util/getTestingEnvironment";
+import { getBrowserTestingEnvironment } from "@inrupt/internal-test-env";
 import { essUserLogin } from "./roles";
 
-const { username, password } = getBrowserTestingEnvironment();
+const {
+  clientCredentials: {
+    owner: { login, password },
+  },
+} = getBrowserTestingEnvironment({
+  clientCredentials: {
+    owner: { login: "", password: "" },
+  },
+});
 
 test("creating and removing empty Containers", async ({ page }) => {
   await page.goto("/");
-  await essUserLogin(page, username, password);
+  await essUserLogin(page, login, password);
 
   // The button is only shown once the app is ready.
   await page.waitForSelector("button[data-testid=createContainer]");

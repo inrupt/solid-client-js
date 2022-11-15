@@ -30,6 +30,11 @@ import {
 
 import { Session } from "@inrupt/solid-client-authn-node";
 import {
+  getNodeTestingEnvironment,
+  getPodRoot,
+  getAuthenticatedSession,
+} from "@inrupt/internal-test-env";
+import {
   getSolidDatasetWithAcl,
   hasResourceAcl,
   getPublicAccess,
@@ -51,12 +56,9 @@ import {
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
 
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
-import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-
 const env = getNodeTestingEnvironment();
 const sessionResourcePrefix = "solid-client-tests/node/wac-";
-if (env.feature.wac !== true) {
+if (env.features?.wac !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
 }
@@ -65,10 +67,12 @@ describe("Authenticated end-to-end WAC", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;
   let sessionResource: string;
+  let pod: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    sessionResource = `${env.pod}${sessionResourcePrefix}${session.info.sessionId}`;
+    pod = await getPodRoot(session);
+    sessionResource = `${pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
   });
@@ -93,7 +97,7 @@ describe("Authenticated end-to-end WAC", () => {
   it("can read and update ACLs", async () => {
     const fakeWebId = `https://example.com/fake-webid#${session.info.sessionId}`;
 
-    const datasetWithAcl = await getSolidDatasetWithAcl(env.pod, options);
+    const datasetWithAcl = await getSolidDatasetWithAcl(pod, options);
     const datasetWithoutAcl = await getSolidDatasetWithAcl(
       sessionResource,
       options
@@ -121,11 +125,11 @@ describe("Authenticated end-to-end WAC", () => {
       control: true,
     });
     const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
-    expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(env.pod);
+    expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(pod);
 
     if (!hasResourceAcl(datasetWithAcl)) {
       throw new Error(
-        `The Resource at [${env.pod}] does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+        `The Resource at [${pod}] does not seem to have an ACL. The end-to-end tests do expect it to have one.`
       );
     }
     const acl = getResourceAcl(datasetWithAcl);

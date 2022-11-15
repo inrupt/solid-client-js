@@ -30,6 +30,14 @@ import {
 
 import { Session } from "@inrupt/solid-client-authn-node";
 import {
+  getNodeTestingEnvironment,
+  setupTestResources,
+  teardownTestResources,
+  getAuthenticatedSession,
+  getPodRoot,
+  createFetch,
+} from "@inrupt/internal-test-env";
+import {
   getSolidDataset,
   setThing,
   saveSolidDatasetAt,
@@ -43,15 +51,12 @@ import {
   FetchError,
   deleteFile,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
-import { getAuthenticatedSession } from "../util/getAuthenticatedSession";
-import { setupTestResources, teardownTestResources } from "./test-helpers";
 
 const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
 const env = getNodeTestingEnvironment();
 
-if (env.feature.acp_v3 !== true) {
+if (env.features?.acp_v3 !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
 }
@@ -61,13 +66,16 @@ describe("Authenticated end-to-end ACP V3", () => {
   let session: Session;
   let sessionResource: string;
   let sessionContainer: string;
+  let pod: string;
 
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
-    const testsetup = await setupTestResources(session, TEST_SLUG, env.pod);
+    pod = await getPodRoot(session);
+    fetchOptions = { fetch: createFetch(session, TEST_SLUG) };
+
+    const testsetup = await setupTestResources(pod, fetchOptions);
     sessionResource = testsetup.resourceUrl;
     sessionContainer = testsetup.containerUrl;
-    fetchOptions = { fetch: testsetup.fetchWithAgent };
   });
 
   afterEach(async () => {
@@ -75,7 +83,7 @@ describe("Authenticated end-to-end ACP V3", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions.fetch
+      fetchOptions
     );
   });
 

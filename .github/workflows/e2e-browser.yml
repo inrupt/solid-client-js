@@ -58,8 +58,7 @@ jobs:
         node-version: [16.x]
         # Note: "Inrupt Production" has been disabled due to the migration
         # "Inrupt Dev-Next" is a 2.x environment.
-        environment-name:
-          - "Inrupt Dev-Next"
+        environment-name: ["ESS Dev-Next"]
 
     steps:
       - uses: actions/checkout@v3

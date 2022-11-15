@@ -22,6 +22,7 @@
 import { describe, expect, it, test } from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
+import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 import {
   getSolidDataset,
   setThing,
@@ -55,7 +56,6 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
-import { getNodeTestingEnvironment } from "../util/getTestingEnvironment";
 
 const env = getNodeTestingEnvironment();
 if (env.environment !== "NSS") {

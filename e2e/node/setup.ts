@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { setupEnv } from "../util/setupEnv";
+import { setupEnv } from "@inrupt/internal-test-env";
 
 // In jest, we immediately invoke this:
 setupEnv();
