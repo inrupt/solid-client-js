@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+- `getWebIdDataset` has been added to the new `profile` module. This
+  function fetches the WebId Profile document as a Solid Dataset.
+
 ## [1.23.3] - 2022-08-31
 
 - Export the `WithAcp` and `WithAccessibleAcr` types.
