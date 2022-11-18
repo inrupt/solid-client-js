@@ -195,3 +195,16 @@ export function getPodUrlAllFrom(
   );
   return Array.from(result);
 }
+
+/**
+ * Get the WebID Profile document dataset.
+ *
+ * @param webId The WebID of the agent whose WebID Profile dataset is to be fetched.
+ * @returns a SolidDataset for the WebID Profile document.
+ * @since unreleased
+ */
+export async function getWebIdDataset(
+  webId: WebId
+): Promise<SolidDataset | null> {
+  return getSolidDataset(webId, { fetch: unauthenticatedFetch });
+}
