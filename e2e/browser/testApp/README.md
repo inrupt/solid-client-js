@@ -2,7 +2,19 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+First, in the root of the project, run:
+
+```bash
+npm run build
+```
+
+Then, on the `testApp` directory, run:
+
+```bash
+npm ci
+```
+
+Then run the development server:
 
 ```bash
 npm run dev
