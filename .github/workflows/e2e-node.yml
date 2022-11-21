@@ -7,6 +7,9 @@ on:
 
 env:
   CI: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   e2e-node:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.

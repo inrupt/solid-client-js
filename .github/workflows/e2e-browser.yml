@@ -7,6 +7,9 @@ env:
   CI: true
   DEBUG: "pw:webserver"
   ACTIONS_STEP_DEBUG: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test-e2e-browser:
     if: github.actor != 'dependabot[bot]'
