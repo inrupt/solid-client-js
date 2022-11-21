@@ -203,8 +203,6 @@ export function getPodUrlAllFrom(
  * @returns a SolidDataset for the WebID Profile document.
  * @since unreleased
  */
-export async function getWebIdDataset(
-  webId: WebId
-): Promise<SolidDataset> {
+export async function getWebIdDataset(webId: WebId): Promise<SolidDataset> {
   return getSolidDataset(webId, { fetch: unauthenticatedFetch });
 }
