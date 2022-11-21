@@ -205,6 +205,6 @@ export function getPodUrlAllFrom(
  */
 export async function getWebIdDataset(
   webId: WebId
-): Promise<SolidDataset | null> {
+): Promise<SolidDataset> {
   return getSolidDataset(webId, { fetch: unauthenticatedFetch });
 }
