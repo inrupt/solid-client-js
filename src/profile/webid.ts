@@ -199,10 +199,21 @@ export function getPodUrlAllFrom(
 /**
  * Get the WebID Profile document dataset.
  *
+ * @example
+ * ```
+ * const webId = "https://example.org/people/me";
+ * const profile = await getWebIdDataset(webId);
+ * const podRoot = getPodUrlAllFrom({ webIdProfile: profile, altProfileAll: [] }, webId);
+ * const profileThing = getThing(profile, webId);
+ * const name = getStringNoLocale(profileThing, FOAF.name);
+ * ```
+ *
  * @param webId The WebID of the agent whose WebID Profile dataset is to be fetched.
  * @returns a SolidDataset for the WebID Profile document.
  * @since unreleased
  */
-export async function getWebIdDataset(webId: WebId): Promise<SolidDataset> {
+export async function getWebIdDataset(
+  webId: WebId
+): Promise<ReturnType<typeof getSolidDataset>> {
   return getSolidDataset(webId, { fetch: unauthenticatedFetch });
 }
