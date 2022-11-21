@@ -11,22 +11,24 @@ jobs:
   e2e-node:
     # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
     if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [16.x]
-        # Note: "Inrupt Production" and "Inrupt 1.1" have been disabled due to the migration
-        # "Inrupt Dev-Next" is a 2.x environment.
-        environment-name: ["ESS Dev-Next", "NSS"]
+        node-version: [16.x, 14.x]
+        environment-name: ["ESS PodSpaces", "NSS"]
+        experimental: [false]
+        include:
+          - environment-name: "ESS Dev-Next"
+            experimental: true
+            node-version: 16.x
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Runs on ${{ matrix.os }} with Node.js ${{ matrix.node-version }} against ${{ matrix.environment-name }}
-        uses: actions/setup-node@v3
-        id: setup-node
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"

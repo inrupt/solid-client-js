@@ -8,47 +8,14 @@ env:
   DEBUG: "pw:webserver"
   ACTIONS_STEP_DEBUG: true
 jobs:
-  build:
-    if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        id: setup-node
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
-        # if: steps.setup-node.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
-
-      - name: Build package
-        run: npm run build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: dist
-
   test-e2e-browser:
-    needs: build
-
-    # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
     if: github.actor != 'dependabot[bot]'
     # Ensure we timeout reasonably quickly:
     timeout-minutes: 30
-
     runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
-
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
@@ -56,41 +23,30 @@ jobs:
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         node-version: [16.x]
-        # Note: "Inrupt Production" has been disabled due to the migration
-        # "Inrupt Dev-Next" is a 2.x environment.
-        environment-name: ["ESS Dev-Next"]
-
+        environment-name: ["ESS PodSpaces"]
+        experimental: [false]
+        include:
+          - environment-name: "ESS Dev-Next"
+            experimental: true
+            node-version: 16.x
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         id: setup-node
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
+      - # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
         # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
-      - name: Build the local code
-        run: npm run build
+      - run: npm run build
+      - run: npx playwright install --with-deps
 
-      - name: Setup Playwright
-        run: npx playwright install --with-deps
+      - run: npm run test:e2e:browser:build
 
-      - name: Prepare browser-based end-to-end tests
-        run: npm run test:e2e:browser:build
-
-      - name: Run browser-based end-to-end tests
-        run: npm run test:e2e:browser
+      - run: npm run test:e2e:browser
         env:
           E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
