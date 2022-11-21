@@ -34,7 +34,7 @@ import {
   SolidDataset,
   WithServerResourceInfo,
 } from "..";
-import { foaf, pim } from "../constants";
+import { foaf, pim, rdf } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import {
@@ -42,6 +42,7 @@ import {
   getPodUrlAll,
   getPodUrlAllFrom,
   getProfileAll,
+  getWebIdDataset,
 } from "./webid";
 
 jest.mock("cross-fetch", () => {
@@ -421,7 +422,10 @@ const mockProfileDoc = (
   webId: string,
   content: Partial<{ altProfiles: string[]; pods: string[] }>
 ): SolidDataset & WithServerResourceInfo => {
-  const profileContent = buildThing({ url: webId });
+  const profileContent = buildThing({ url: webId }).addIri(
+    rdf.type,
+    foaf.Agent
+  );
   content.altProfiles?.forEach((altProfileIri) => {
     profileContent.addIri(foaf.isPrimaryTopicOf, altProfileIri);
   });
@@ -744,5 +748,36 @@ describe("getPodUrlAllFrom", () => {
     expect(
       getPodUrlAllFrom({ webIdProfile, altProfileAll }, MOCK_WEBID)
     ).toStrictEqual([MOCK_STORAGE, ALT_MOCK_STORAGE]);
+  });
+});
+
+describe("getWebIdDataset", () => {
+  it("returns a Solid Dataset for a given WebID", async () => {
+    const webIdProfile = mockProfileDoc("https://some.profile", MOCK_WEBID, {});
+    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo | URL, RequestInit?]
+      >;
+    };
+    mockedUnauthFetch.mockResolvedValueOnce(
+      new Response(await triplesToTurtle(toRdfJsQuads(webIdProfile)), {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      })
+    );
+    const result = await getWebIdDataset(MOCK_WEBID);
+    expect(result?.graphs).toEqual(webIdProfile.graphs);
+  });
+  it("throws an error if fetching fails", async () => {
+    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+      fetch: jest.Mock<
+        ReturnType<typeof window.fetch>,
+        [RequestInfo | URL, RequestInit?]
+      >;
+    };
+    mockedUnauthFetch.mockRejectedValueOnce(new Error("error"));
+    await expect(getWebIdDataset(MOCK_WEBID)).rejects.toThrow("error");
   });
 });
