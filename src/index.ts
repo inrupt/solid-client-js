@@ -241,6 +241,7 @@ export {
   getPodUrlAll,
   getPodUrlAllFrom,
   getAltProfileUrlAllFrom,
+  getWebIdDataset,
 } from "./profile/webid";
 export {
   getJsonLdParser,
