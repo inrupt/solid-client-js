@@ -706,7 +706,7 @@ export async function saveSolidDatasetInContainer(
  *
  * @param containerUrl URL of the Container in which the empty Container is to be created.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).`options.slugSuggestion` accepts a string for your new Container's name.
- * @returns A promise that resolves to a SolidDataset with Resource Info if successful, and that
+ * @returns A promise that resolves to a SolidDataset with ResourceInfo if successful, and that
  * rejects otherwise.
  * @since 0.2.0
  */
