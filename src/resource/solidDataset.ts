@@ -704,8 +704,14 @@ export async function saveSolidDatasetInContainer(
  * If the user does have access to write directly to a given location, [[createContainerAt]]
  * will do the job just fine, and does not require the parent Container to exist in advance.
  *
- * @param containerUrl URL of the Container in which the empty Container is to be created.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @param containerUrl URL of the Container in which the empty Container is to
+ * be created.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch`
+ * function to make the HTTP request, compatible with the browser-native [fetch
+ * API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).`options.slugSuggestion`
+ * accepts a string for your new Container's name.
+ * @returns A promise that resolves to a SolidDataset with ResourceInfo if
+ * successful, and that rejects otherwise.
  * @since 0.2.0
  */
 export async function createContainerInContainer(
