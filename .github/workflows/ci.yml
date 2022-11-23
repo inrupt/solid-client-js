@@ -6,7 +6,7 @@ env:
   CI: true
 jobs:
   lint:
-    uses: inrupt/javascript-style-configs/.github/workflows/reusable-lint.yml@v1.1.0
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.4.2
 
   build:
     runs-on: ${{ matrix.os }}
