@@ -11,7 +11,34 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  build:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        id: setup-node
+        with:
+          node-version: 16.x
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
+        # if: steps.setup-node.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist
+
   test-e2e-browser:
+    # Build only has to run in one configuration, and we can test with multiple configs
+    # without re-building.
+    needs: build
     if: github.actor != 'dependabot[bot]'
     # Ensure we timeout reasonably quickly:
     timeout-minutes: 30
