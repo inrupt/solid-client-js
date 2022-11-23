@@ -23,7 +23,7 @@
 
 import { test, expect } from "@playwright/test";
 import { getBrowserTestingEnvironment } from "@inrupt/internal-test-env";
-import { essUserLogin } from "./roles";
+import { essUserLogin } from "@inrupt/internal-playwright-helpers";
 
 const {
   clientCredentials: {
