@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         node-version: [16.x]
@@ -29,6 +29,14 @@ jobs:
             experimental: true
             node-version: 16.x
             os: ubuntu-latest
+
+          # macos-latest on ESS PodSpaces in CI has been crashing, but I can't
+          # reproduce locally. I think it may be a CI-environment specific error
+          # and that's next to impossible to debug
+          - environment-name: "ESS PodSpaces"
+            experimental: true
+            node-version: 16.x
+            os: macos-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
