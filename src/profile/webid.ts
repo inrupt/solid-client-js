@@ -75,8 +75,8 @@ export function getAltProfileUrlAllFrom(
  *
  * A WebID Profile may be any RDF resource on the Web, it doesn't have
  * to be a Solid resource. That is why, in order to expose a Solid-enabled part
- * of their profile, some WebID profiles link to a Profile Resource, which may
- * be a Solid resource. A WebID resource should be public, so `getProfileAll` will
+ * of their profile, some WebID profiles link to one or more Extended Profile Resources,
+ * which may are Solid resources. A WebID resource should be public, so `getProfileAll` will
  * issue an unauthenticated request to the WebID, and only use the provided
  * authenticated `fetch` (if any) to access extended profile documents.
  *
