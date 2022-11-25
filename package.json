@@ -175,7 +175,7 @@
     "@types/jest": "^27.0.0",
     "@types/jsonld": "^1.5.6",
     "@types/n3": "^1.10.4",
-    "@types/rdfjs__dataset": "^2.0.0",
+    "@types/rdfjs__dataset": "^1.0.4",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "fast-check": "^2.2.0",
