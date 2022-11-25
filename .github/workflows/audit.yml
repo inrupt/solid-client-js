@@ -7,9 +7,11 @@ on:
     branches: [main]
   schedule:
     - cron: "40 10 * * *"
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   audit:
-    uses: inrupt/javascript-style-configs/.github/workflows/reusable-audit.yml@v1.1.0
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-audit.yml@v1.4.2
     secrets:
       WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}

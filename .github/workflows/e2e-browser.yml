@@ -1,108 +1,68 @@
-name: End-to-end browser tests
+name: End-to-end Tests (Browser)
 
 on:
   push:
 
-env:
-  CI: true
-  DEBUG: "pw:webserver"
-  ACTIONS_STEP_DEBUG: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  build:
-    if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        id: setup-node
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
-        # if: steps.setup-node.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
-
-      - name: Build package
-        run: npm run build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: dist
-
-  test-e2e-browser:
-    needs: build
-
-    # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
-    # https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+  e2e-browser:
     if: github.actor != 'dependabot[bot]'
     # Ensure we timeout reasonably quickly:
     timeout-minutes: 30
-
     runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
-
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
         node-version: [16.x]
-        # Note: "Inrupt Production" has been disabled due to the migration
-        # "Inrupt Dev-Next" is a 2.x environment.
-        environment-name: ["ESS Dev-Next"]
+        environment-name: ["ESS PodSpaces"]
+        experimental: [false]
+        include:
+          - environment-name: "ESS Dev-Next"
+            experimental: true
+            node-version: 16.x
+            os: ubuntu-latest
 
+          # macos-latest on ESS PodSpaces in CI has been crashing, but I can't
+          # reproduce locally. I think it may be a CI-environment specific error
+          # and that's next to impossible to debug
+          - environment-name: "ESS PodSpaces"
+            experimental: true
+            node-version: 16.x
+            os: macos-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        id: setup-node
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
-        # if: steps.setup-node.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
-      - name: Build the local code
-        run: npm run build
-
-      - name: Setup Playwright
-        run: npx playwright install --with-deps
-
-      - name: Prepare browser-based end-to-end tests
-        run: npm run test:e2e:browser:build
-
-      - name: Run browser-based end-to-end tests
-        run: npm run test:e2e:browser
+      # install
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps
+      # build
+      - run: npm run build
+      # setup
+      - run: npm run test:e2e:browser:build
+      # test
+      - run: npm run test:e2e:browser
         env:
           E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
           E2E_TEST_USER: ${{ secrets.E2E_TEST_USER }}
           E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
-
       - name: Archive browser-based end-to-end test request logs
         uses: actions/upload-artifact@v3
+        if: failure()
         continue-on-error: true
         with:
           name: playwright-output
           path: test-results/
-        # Ensure test recordings are always uploaded if the exist:
-        if: ${{ always() }}
