@@ -30,13 +30,6 @@ jobs:
             node-version: 16.x
             os: ubuntu-latest
 
-          # macos-latest on ESS PodSpaces in CI has been crashing, but I can't
-          # reproduce locally. I think it may be a CI-environment specific error
-          # and that's next to impossible to debug
-          - environment-name: "ESS PodSpaces"
-            experimental: true
-            node-version: 16.x
-            os: macos-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
