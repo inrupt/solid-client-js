@@ -7,7 +7,7 @@ description of our setup.
 
 There are two main parts:
 
-- The system under test, which you can find under ../testApp in the
+- The system under test, which you can find under ../test-app in the
   root of this repository.
 - The test code, which you can find in this directory.
 
@@ -18,7 +18,7 @@ One thing to note is that its dependency on solid-client should be on the code
 _inside this repository_, rather than fetched from npm. This means that you will
 first need to run `npm run build` at the root of this repository, followed by
 `npm run test:e2e:browser:build`. You may run the app manually with `npm run dev`
-from the `../testApp` directory.
+from the `../test-app` directory.
 
 ## The test code
 
