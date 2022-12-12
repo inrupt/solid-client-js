@@ -165,7 +165,7 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.4.2",
-    "@inrupt/internal-playwright-helpers": "file:../typescript-sdk-tools/packages/internal-playwright-helpers",
+    "@inrupt/internal-playwright-helpers": "^1.5.2",
     "@inrupt/internal-test-env": "^1.4.2",
     "@inrupt/solid-client-authn-node": "^1.12.3",
     "@playwright/test": "^1.28.1",
