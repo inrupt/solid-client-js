@@ -20,7 +20,7 @@
 //
 
 // Disabling the following prevents from having to install before linting from
-// the root. 
+// the root.
 // eslint-disable-next-line import/no-unresolved
 import React, { useState, useEffect } from "react";
 import {
