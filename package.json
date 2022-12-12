@@ -13,7 +13,7 @@
     "lint": "npm run lint:check",
     "lint:fix": "npm run lint:eslint -- --fix && npm run lint:prettier -- --write",
     "lint:check": "npm run lint:eslint && npm run lint:prettier -- --check",
-    "lint:eslint": "eslint --config .eslintrc.js \"src/\" \"e2e/\"",
+    "lint:eslint": "eslint --config .eslintrc.js \"src/\" \"e2e/\" --ignore-pattern \"e2e/**/*js\"",
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
