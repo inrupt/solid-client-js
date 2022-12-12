@@ -19,13 +19,15 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// Disabling the following prevents from having to install before linting from
+// the root. 
+// eslint-disable-next-line import/no-unresolved
 import React, { useState, useEffect } from "react";
 import {
   login,
   logout,
   handleIncomingRedirect,
   getDefaultSession,
-  Session,
   ISessionInfo,
 } from "@inrupt/solid-client-authn-browser";
 import SolidClient from "../solidClient";

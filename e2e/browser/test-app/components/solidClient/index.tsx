@@ -19,6 +19,9 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// Disabling the following prevents from having to install before linting from
+// the root. 
+// eslint-disable-next-line import/no-unresolved
 import { useEffect, useState } from "react";
 import {
   createContainerInContainer,

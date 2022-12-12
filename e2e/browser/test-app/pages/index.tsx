@@ -20,6 +20,9 @@
 //
 
 import type { NextPage } from "next";
+// Disabling the following prevents from having to install before linting from
+// the root. 
+// eslint-disable-next-line import/no-unresolved
 import dynamic from "next/dynamic";
 
 const App = dynamic(() => import("../components/appContainer"), {
