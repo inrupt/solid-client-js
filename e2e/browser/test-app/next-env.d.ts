@@ -19,18 +19,5 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Page } from "@playwright/test";
-
-export class CognitoPage {
-  page: Page;
-
-  constructor(page: Page) {
-    this.page = page;
-  }
-
-  async login(username: string, password: string) {
-    await this.page.fill(".visible-lg [type=text]", username);
-    await this.page.fill(".visible-lg [type=password]", password);
-    await this.page.click(".visible-lg [aria-label=submit]");
-  }
-}
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/basic-features/typescript for more information.

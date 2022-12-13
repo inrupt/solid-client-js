@@ -36,8 +36,7 @@ const config: PlaywrightTestConfig = {
     video: "on-first-retry",
   },
   webServer: {
-    // cwd: "./e2e/browser/testApp/",
-    command: "cd ./e2e/browser/testApp/ && npm run dev",
+    command: "cd ./e2e/browser/test-app/ && npm run dev",
     port: 3000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

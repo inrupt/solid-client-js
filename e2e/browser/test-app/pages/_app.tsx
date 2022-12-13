@@ -19,16 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Page } from "@playwright/test";
+import type { AppProps } from "next/app";
 
-export class BrokerPage {
-  page: Page;
-
-  constructor(page: Page) {
-    this.page = page;
-  }
-
-  async authoriseOnce() {
-    await this.page.click("text=Allow");
-  }
+function MyApp({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />;
 }
+
+export default MyApp;

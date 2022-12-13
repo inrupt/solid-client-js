@@ -19,22 +19,18 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Page } from "@playwright/test";
-import { IndexPage } from "./pageModels";
-import { BrokerPage } from "./pageModels/broker";
-import { CognitoPage } from "./pageModels/cognito";
+import type { NextPage } from "next";
+// Disabling the following prevents from having to install before linting from
+// the root.
+// eslint-disable-next-line import/no-unresolved
+import dynamic from "next/dynamic";
 
-export const essUserLogin = async (
-  page: Page,
-  login: string,
-  password: string
-): Promise<void> => {
-  const indexPage = new IndexPage(page);
-  const cognitoPage = new CognitoPage(page);
-  const authorisePage = new BrokerPage(page);
+const App = dynamic(() => import("../components/appContainer"), {
+  ssr: false,
+});
 
-  await indexPage.startLogin();
-  await cognitoPage.login(login, password);
-  await authorisePage.authoriseOnce();
-  await indexPage.handleRedirect();
+const Home: NextPage = () => {
+  return <App />;
 };
+
+export default Home;

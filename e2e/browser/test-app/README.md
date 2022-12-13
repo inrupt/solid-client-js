@@ -8,7 +8,7 @@ First, in the root of the project, run:
 npm run build
 ```
 
-Then, on the `testApp` directory, run:
+Then, on the `test-app` directory, run:
 
 ```bash
 npm ci
