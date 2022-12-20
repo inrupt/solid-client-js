@@ -8,6 +8,8 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
+## [1.24.0] - 2022-12-20
+
 - Added `getWebIdDataset` method to fetch the WebId Profile document as a
   Solid Dataset. This method is part of the `profile/webid` module.
 

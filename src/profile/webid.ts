@@ -210,7 +210,7 @@ export function getPodUrlAllFrom(
  *
  * @param webId The WebID of the agent whose WebID Profile dataset is to be fetched.
  * @returns a SolidDataset for the WebID Profile document.
- * @since unreleased
+ * @since 1.24.0
  */
 export async function getWebIdDataset(
   webId: WebId
