@@ -5,3 +5,4 @@ docs/api/source/api
 *.snap
 *.env
 *.env.*
+**/.next/
