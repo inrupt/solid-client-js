@@ -119,10 +119,7 @@ describe("addJwkToJwks", () => {
 
   it("uses the default fetch if none is provided", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        Parameters<typeof window.fetch>
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await addJwkToJwks({ kid: "..." }, "https://example.org/jwks");
