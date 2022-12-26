@@ -201,5 +201,8 @@
   },
   "engines": {
     "node": "^14.17.0 || ^16.0.0"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }
