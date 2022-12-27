@@ -21,7 +21,7 @@
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
     "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci",
-    "test:e2e:node": "jest --config=jest.e2e.config.js"
+    "test:e2e:node": "jest --config=jest.e2e.config.js --collectCoverage false"
   },
   "keywords": [
     "rdf",
