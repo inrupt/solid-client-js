@@ -441,9 +441,9 @@ function getContentType(
   const fileType =
     typeof file === "object" &&
     file !== null &&
-    typeof (file as Blob).type === "string" &&
-    (file as Blob).type.length > 0
-      ? (file as Blob).type
+    typeof (file as unknown as Blob).type === "string" &&
+    (file as unknown as Blob).type.length > 0
+      ? (file as unknown as Blob).type
       : undefined;
 
   return fileType ?? "application/octet-stream";
