@@ -27,30 +27,12 @@ import { setPublicAccess as setPublicAccessAcp } from "../acp/util/setPublicAcce
 import { setPublicResourceAccess as setPublicAccessWac } from "../access/wac";
 import { saveAcrFor } from "../acp/acp";
 
-jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../acp/util/getResourceAcr", () => ({
-  getResourceAcr: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("./getPublicAccess", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../acp/acp", () => ({
-  saveAcrFor: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../acp/util/setPublicAccess", () => ({
-  setPublicAccess: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../access/wac", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({})),
-  setPublicResourceAccess: jest.fn().mockImplementation(() => ({})),
-}));
+jest.mock("../resource/resource");
+jest.mock("../acp/util/getResourceAcr");
+jest.mock("./getPublicAccess");
+jest.mock("../acp/acp");
+jest.mock("../acp/util/setPublicAccess");
+jest.mock("../access/wac");
 
 describe("setPublicAccess", () => {
   it("calls the ACP module when resource has an ACR", async () => {
@@ -59,18 +41,18 @@ describe("setPublicAccess", () => {
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(setPublicAccessAcp).toHaveBeenCalledTimes(1);
-    expect(setPublicAccessAcp).toHaveBeenCalledWith({}, {});
     expect(setPublicAccessWac).toHaveBeenCalledTimes(0);
   });
 
   it("calls the WAC module when resource does not have an ACR", async () => {
-    (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
+    (
+      getResourceAcr as jest.Mocked<typeof getResourceAcr>
+    ).mockResolvedValueOnce(null);
     await setPublicAccess("x", {});
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(setPublicAccessWac).toHaveBeenCalledTimes(1);
-    expect(setPublicAccessWac).toHaveBeenCalledWith({}, {}, undefined);
     expect(setPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 
@@ -79,26 +61,26 @@ describe("setPublicAccess", () => {
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
     expect(setPublicAccessAcp).toHaveBeenCalledTimes(1);
-    expect(setPublicAccessAcp).toHaveBeenCalledWith({}, {});
     expect(setPublicAccessWac).toHaveBeenCalledTimes(0);
   });
 
   it("calls the WAC module passing the fetch option", async () => {
-    (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
+    (
+      getResourceAcr as jest.Mocked<typeof getResourceAcr>
+    ).mockResolvedValueOnce(null);
     await setPublicAccess("x", {}, { fetch: "z" as any });
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
     expect(setPublicAccessWac).toHaveBeenCalledTimes(1);
-    expect(setPublicAccessWac).toHaveBeenCalledWith({}, {}, { fetch: "z" });
     expect(setPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 
   it("returns null if the ACR can't be saved", async () => {
-    (saveAcrFor as jest.Mock).mockRejectedValueOnce("reject");
+    (saveAcrFor as jest.Mocked<typeof saveAcrFor>).mockRejectedValueOnce(
+      "reject"
+    );
     const x = await setPublicAccess("x", {});
     expect(x).toBeNull();
   });

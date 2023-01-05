@@ -76,10 +76,7 @@ function mockResponse(
 describe("getAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -545,10 +542,7 @@ describe("getAgentAccess", () => {
 describe("getGroupAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -922,10 +916,7 @@ describe("getGroupAccess", () => {
 describe("getPublicAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -1299,10 +1290,7 @@ describe("getPublicAccess", () => {
 describe("getAgentAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -1504,10 +1492,7 @@ describe("getAgentAccessAll", () => {
 describe("getGroupAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -1715,10 +1700,7 @@ describe("getGroupAccessAll", () => {
 describe("setAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -2428,10 +2410,7 @@ describe("setAgentAccess", () => {
 describe("setGroupResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(
@@ -3152,10 +3131,7 @@ describe("setGroupResourceAccess", () => {
 describe("setPublicResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const resource = getMockDataset(

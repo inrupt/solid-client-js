@@ -82,10 +82,7 @@ function mockResponse(
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     const mockResourceInfo: WithServerResourceInfo = {
@@ -300,10 +297,7 @@ describe("fetchResourceAcl", () => {
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await internal_fetchResourceAcl(sourceDataset);
@@ -476,10 +470,7 @@ describe("fetchFallbackAcl", () => {
       },
     };
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await internal_fetchFallbackAcl(sourceDataset);
@@ -758,10 +749,7 @@ describe("getSolidDatasetWithAcl", () => {
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     getSolidDatasetWithAcl("https://some.pod/resource").catch(() => {
@@ -863,10 +851,7 @@ describe("getSolidDatasetWithAcl", () => {
 describe("getFileWithAcl", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockReturnValue(
@@ -1185,10 +1170,7 @@ describe("getResourceInfoWithAcl", () => {
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await getResourceInfoWithAcl("https://some.pod/resource");
@@ -2464,10 +2446,7 @@ describe("removeEmptyAclRules", () => {
 describe("saveAclFor", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
     const withResourceInfo = {
       internal_resourceInfo: {
@@ -2684,10 +2663,7 @@ describe("saveAclFor", () => {
 describe("deleteAclFor", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
