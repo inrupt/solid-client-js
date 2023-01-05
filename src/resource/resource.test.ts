@@ -60,15 +60,10 @@ function mockResponse(
   return new Response(body, init);
 }
 
-type MockedFetch = jest.Mock<
-  ReturnType<typeof window.fetch>,
-  Parameters<typeof window.fetch>
->;
-
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: MockedFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     await getResourceInfo("https://some.pod/resource");

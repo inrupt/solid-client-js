@@ -470,10 +470,7 @@ describe("responseToSolidDataset", () => {
 describe("getSolidDataset", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
       new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
@@ -806,10 +803,7 @@ describe("getSolidDataset", () => {
 describe("saveSolidDatasetAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     mockedFetcher.fetch.mockResolvedValue(
@@ -1638,10 +1632,7 @@ describe("saveSolidDatasetAt", () => {
 describe("deleteSolidDataset", () => {
   it("should DELETE a remote SolidDataset using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockResolvedValueOnce(
@@ -1746,10 +1737,7 @@ describe("deleteSolidDataset", () => {
 describe("createContainerAt", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await createContainerAt("https://some.pod/container/");
@@ -2086,26 +2074,22 @@ describe("createContainerAt", () => {
 });
 
 describe("saveSolidDatasetInContainer", () => {
-  type MockFetch = Mock<
-    ReturnType<typeof window.fetch>,
-    Parameters<typeof window.fetch>
-  >;
   function setMockOnFetch(
-    fetch: MockFetch,
+    fetch: jest.Mocked<typeof window.fetch>,
     saveResponse = mockResponse(undefined, {
       status: 201,
       statusText: "Created",
       headers: { Location: "resource" },
       url: "https://some.pod/container/",
     })
-  ): MockFetch {
+  ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     await saveSolidDatasetInContainer(
@@ -2393,26 +2377,22 @@ describe("saveSolidDatasetInContainer", () => {
 });
 
 describe("createContainerInContainer", () => {
-  type MockFetch = Mock<
-    ReturnType<typeof window.fetch>,
-    [RequestInfo | URL, RequestInit?]
-  >;
   function setMockOnFetch(
-    fetch: MockFetch,
+    fetch: jest.Mocked<typeof window.fetch>,
     saveResponse = mockResponse(undefined, {
       status: 201,
       statusText: "Created",
       headers: { Location: "child" },
       url: "https://some.pod/",
     })
-  ): MockFetch {
+  ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
     mockedFetcher.fetch = setMockOnFetch(mockedFetcher.fetch);
 
@@ -2691,10 +2671,7 @@ describe("createContainerInContainer", () => {
 describe("deleteContainer", () => {
   it("should DELETE a remote Container using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockResolvedValueOnce(
@@ -3278,16 +3255,11 @@ describe("changeLogAsMarkdown", () => {
 });
 
 describe("getWellKnownSolid", () => {
-  type MockFetch = Mock<
-    ReturnType<typeof window.fetch>,
-    [RequestInfo | URL, RequestInit?]
-  >;
-
   const serverUrl = "https://example.org/";
   const podUrl = "https://example.org/pod/";
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
-  let mockedFetcher: { fetch: MockFetch };
+  let mockedFetcher: { fetch: jest.Mocked<typeof window.fetch> };
 
   const mockESS20 = () =>
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3351,7 +3323,7 @@ describe("getWellKnownSolid", () => {
 
   beforeAll(() => {
     mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
   });
 

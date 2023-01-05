@@ -34,9 +34,7 @@ jest.mock("../fetcher.ts", () => ({
 describe("The Parser", () => {
   it("should correctly find all triples in raw JSON-LD", async () => {
     const parser = getJsonLdParser();
-    type OnQuadReturnType = ReturnType<Parameters<typeof parser.onQuad>[0]>;
-    type OnQuadParameters = Parameters<Parameters<typeof parser.onQuad>[0]>;
-    const onQuadCallback = jest.fn<OnQuadReturnType, OnQuadParameters>();
+    const onQuadCallback = jest.fn<Parameters<typeof parser.onQuad>[0]>();
     const onCompleteCallback = jest.fn();
 
     parser.onQuad(onQuadCallback);
@@ -161,10 +159,7 @@ describe("The Parser", () => {
       parser.onComplete(onCompleteCallback);
 
       const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-        fetch: jest.Mock<
-          ReturnType<typeof window.fetch>,
-          [RequestInfo | URL, RequestInit?]
-        >;
+        fetch: jest.Mocked<typeof fetch>;
       };
       mockedFetcher.fetch.mockResolvedValueOnce(
         new Response(
@@ -211,10 +206,7 @@ describe("The Parser", () => {
       parser.onComplete(onCompleteCallback);
 
       const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-        fetch: jest.Mock<
-          ReturnType<typeof window.fetch>,
-          [RequestInfo | URL, RequestInit?]
-        >;
+        fetch: jest.Mocked<typeof fetch>;
       };
       mockedFetcher.fetch.mockRejectedValue("Some error");
 

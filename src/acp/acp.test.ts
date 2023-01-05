@@ -96,10 +96,7 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
 describe("getSolidDatasetWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     getSolidDatasetWithAcr("https://some.pod/resource").catch(() => {
@@ -246,10 +243,7 @@ describe("getSolidDatasetWithAcr", () => {
 describe("getFileWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await getFileWithAcr("https://some.pod/resource");
@@ -327,10 +321,7 @@ describe("getFileWithAcr", () => {
 describe("getResourceInfoWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await getResourceInfoWithAcr("https://some.pod/resource");
@@ -970,10 +961,7 @@ describe("saveAcrFor", () => {
       .mockReturnValue("https://arbitrary.pod/resource");
 
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     mockedFetcher.fetch.mockResolvedValue(mockedResponse);
