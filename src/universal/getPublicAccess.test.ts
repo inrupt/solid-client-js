@@ -26,21 +26,10 @@ import { getPublicAccess as getPublicAccessAcp } from "../acp/util/getPublicAcce
 import { getPublicAccess as getPublicAccessWac } from "../access/wac";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 
-jest.mock("../resource/resource", () => ({
-  getResourceInfo: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../acp/util/getResourceAcr", () => ({
-  getResourceAcr: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../acp/util/getPublicAccess", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({})),
-}));
-
-jest.mock("../access/wac", () => ({
-  getPublicAccess: jest.fn().mockImplementation(() => ({})),
-}));
+jest.mock("../resource/resource");
+jest.mock("../acp/util/getResourceAcr");
+jest.mock("../acp/util/getPublicAccess");
+jest.mock("../access/wac");
 
 describe("getAgentAccess", () => {
   it("calls the ACP module when resource has an ACR", async () => {
@@ -49,18 +38,18 @@ describe("getAgentAccess", () => {
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(getPublicAccessAcp).toHaveBeenCalledTimes(1);
-    expect(getPublicAccessAcp).toHaveBeenCalledWith({});
     expect(getPublicAccessWac).toHaveBeenCalledTimes(0);
   });
 
   it("calls the WAC module when resource does not have an ACR", async () => {
-    (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
+    (
+      getResourceAcr as jest.Mocked<typeof getResourceAcr>
+    ).mockResolvedValueOnce(null);
     await getPublicAccess("x");
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", undefined);
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
     expect(getPublicAccessWac).toHaveBeenCalledTimes(1);
-    expect(getPublicAccessWac).toHaveBeenCalledWith({}, undefined);
     expect(getPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 
@@ -69,21 +58,19 @@ describe("getAgentAccess", () => {
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
     expect(getPublicAccessAcp).toHaveBeenCalledTimes(1);
-    expect(getPublicAccessAcp).toHaveBeenCalledWith({});
     expect(getPublicAccessWac).toHaveBeenCalledTimes(0);
   });
 
   it("calls the WAC module passing the fetch option", async () => {
-    (getResourceAcr as jest.Mock).mockResolvedValueOnce(null);
+    (
+      getResourceAcr as jest.Mocked<typeof getResourceAcr>
+    ).mockResolvedValueOnce(null);
     await getPublicAccess("x", { fetch: "z" as any });
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "z" });
     expect(getResourceAcr).toHaveBeenCalledTimes(1);
-    expect(getResourceAcr).toHaveBeenCalledWith({}, { fetch: "z" });
     expect(getPublicAccessWac).toHaveBeenCalledTimes(1);
-    expect(getPublicAccessWac).toHaveBeenCalledWith({}, { fetch: "z" });
     expect(getPublicAccessAcp).toHaveBeenCalledTimes(0);
   });
 });

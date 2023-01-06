@@ -27,9 +27,7 @@ import { getTurtleParser, triplesToTurtle } from "./turtle";
 describe("The Parser", () => {
   it("should correctly find all triples in raw Turtle", async () => {
     const parser = getTurtleParser();
-    type OnQuadReturnType = ReturnType<Parameters<typeof parser.onQuad>[0]>;
-    type OnQuadParameters = Parameters<Parameters<typeof parser.onQuad>[0]>;
-    const onQuadCallback = jest.fn<OnQuadReturnType, OnQuadParameters>();
+    const onQuadCallback = jest.fn<Parameters<typeof parser.onQuad>[0]>();
     const onCompleteCallback = jest.fn();
 
     parser.onQuad(onQuadCallback);

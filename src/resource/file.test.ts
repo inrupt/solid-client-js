@@ -98,10 +98,7 @@ describe("flattenHeaders", () => {
 describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockReturnValue(
@@ -218,10 +215,7 @@ describe("getFile", () => {
 describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockReturnValueOnce(
@@ -365,26 +359,21 @@ describe("Non-RDF data deletion", () => {
 
 describe("Write non-RDF data into a folder", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
-
-  type MockFetch = Mock<
-    ReturnType<typeof window.fetch>,
-    [RequestInfo | URL, RequestInit?]
-  >;
   function setMockOnFetch(
-    fetch: MockFetch,
+    fetch: jest.Mocked<typeof window.fetch>,
     saveResponse = new Response(undefined, {
       status: 201,
       statusText: "Created",
       headers: { Location: "someFileName" },
     })
-  ): MockFetch {
+  ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
   it("should default to the included fetcher if no other is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -396,7 +385,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("should POST to a remote resource using the included fetcher, and return the saved file", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -460,7 +449,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("sets the correct Content Type on the returned file, if available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -477,7 +466,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("sets the given Content Type on the returned file, if any was given", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -497,7 +486,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: MockFetch;
+      fetch: jest.Mocked<typeof window.fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -581,10 +570,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
   it("should default to the included fetcher if no other fetcher is available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockReturnValue(
@@ -600,10 +586,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
   it("should PUT to a remote resource when using the included fetcher, and return the saved file", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mock<
-        ReturnType<typeof window.fetch>,
-        [RequestInfo | URL, RequestInit?]
-      >;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch.mockReturnValue(

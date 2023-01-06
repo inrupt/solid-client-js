@@ -1,23 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`getSolidDataset returns a SolidDataset representing the fetched Turtle 1`] = `
-Object {
-  "graphs": Object {
-    "default": Object {
-      "https://arbitrary.pod/resource": Object {
-        "predicates": Object {
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": Object {
-            "namedNodes": Array [
+{
+  "graphs": {
+    "default": {
+      "https://arbitrary.pod/resource": {
+        "predicates": {
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+            "namedNodes": [
               "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
             ],
           },
-          "http://xmlns.com/foaf/0.1/maker": Object {
-            "namedNodes": Array [
+          "http://xmlns.com/foaf/0.1/maker": {
+            "namedNodes": [
               "https://arbitrary.pod/resource#me",
             ],
           },
-          "http://xmlns.com/foaf/0.1/primaryTopic": Object {
-            "namedNodes": Array [
+          "http://xmlns.com/foaf/0.1/primaryTopic": {
+            "namedNodes": [
               "https://arbitrary.pod/resource#me",
             ],
           },
@@ -25,16 +25,16 @@ Object {
         "type": "Subject",
         "url": "https://arbitrary.pod/resource",
       },
-      "https://arbitrary.pod/resource#me": Object {
-        "predicates": Object {
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": Object {
-            "namedNodes": Array [
+      "https://arbitrary.pod/resource#me": {
+        "predicates": {
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+            "namedNodes": [
               "http://xmlns.com/foaf/0.1/Person",
             ],
           },
-          "http://www.w3.org/2006/vcard/ns#fn": Object {
-            "literals": Object {
-              "http://www.w3.org/2001/XMLSchema#string": Array [
+          "http://www.w3.org/2006/vcard/ns#fn": {
+            "literals": {
+              "http://www.w3.org/2001/XMLSchema#string": [
                 "Vincent",
               ],
             },
@@ -45,11 +45,11 @@ Object {
       },
     },
   },
-  "internal_resourceInfo": Object {
+  "internal_resourceInfo": {
     "contentLocation": undefined,
     "contentType": "text/turtle",
     "isRawData": false,
-    "linkedResources": Object {},
+    "linkedResources": {},
     "location": undefined,
     "sourceIri": "https://arbitrary.pod/resource",
   },
@@ -58,28 +58,28 @@ Object {
 `;
 
 exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource (1.1) 1`] = `
-Object {
-  "graphs": Object {
-    "default": Object {
-      "_:b0": Object {
-        "predicates": Object {
-          "http://inrupt.com/ns/ess#consentIssuer": Object {
-            "namedNodes": Array [
+{
+  "graphs": {
+    "default": {
+      "_:b0": {
+        "predicates": {
+          "http://inrupt.com/ns/ess#consentIssuer": {
+            "namedNodes": [
               "https://consent.pod.inrupt.com",
             ],
           },
-          "http://inrupt.com/ns/ess#notificationGatewayEndpoint": Object {
-            "namedNodes": Array [
+          "http://inrupt.com/ns/ess#notificationGatewayEndpoint": {
+            "namedNodes": [
               "https://notification.pod.inrupt.com",
             ],
           },
-          "http://inrupt.com/ns/ess#powerSwitchEndpoint": Object {
-            "namedNodes": Array [
+          "http://inrupt.com/ns/ess#powerSwitchEndpoint": {
+            "namedNodes": [
               "https://pod.inrupt.com/powerswitch/username",
             ],
           },
-          "http://www.w3.org/ns/pim/space#storage": Object {
-            "namedNodes": Array [
+          "http://www.w3.org/ns/pim/space#storage": {
+            "namedNodes": [
               "https://pod.inrupt.com/username/",
             ],
           },
@@ -89,11 +89,11 @@ Object {
       },
     },
   },
-  "internal_resourceInfo": Object {
+  "internal_resourceInfo": {
     "contentLocation": undefined,
     "contentType": "application/ld+json",
     "isRawData": false,
-    "linkedResources": Object {},
+    "linkedResources": {},
     "location": undefined,
     "sourceIri": "https://example.org/pod/.well-known/solid",
   },
@@ -102,41 +102,41 @@ Object {
 `;
 
 exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource (2.0) 1`] = `
-Object {
-  "graphs": Object {
-    "default": Object {
-      "_:n3-1006": Object {
-        "predicates": Object {
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": Object {
-            "namedNodes": Array [
+{
+  "graphs": {
+    "default": {
+      "_:n3-1006": {
+        "predicates": {
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
+            "namedNodes": [
               "http://www.w3.org/ns/solid/terms#DiscoveryDocument",
             ],
           },
-          "http://www.w3.org/ns/auth/acl#trustedApp": Object {
-            "namedNodes": Array [
+          "http://www.w3.org/ns/auth/acl#trustedApp": {
+            "namedNodes": [
               "https://podbrowser.inrupt.com/api/app",
             ],
           },
-          "http://www.w3.org/ns/solid/terms#maxPodsPerOwner": Object {
-            "literals": Object {
-              "http://www.w3.org/2001/XMLSchema#integer": Array [
+          "http://www.w3.org/ns/solid/terms#maxPodsPerOwner": {
+            "literals": {
+              "http://www.w3.org/2001/XMLSchema#integer": [
                 "10",
               ],
             },
           },
-          "http://www.w3.org/ns/solid/terms#notificationGateway": Object {
-            "namedNodes": Array [
+          "http://www.w3.org/ns/solid/terms#notificationGateway": {
+            "namedNodes": [
               "https://notification.inrupt.com/",
             ],
           },
-          "http://www.w3.org/ns/solid/terms#provision": Object {
-            "namedNodes": Array [
+          "http://www.w3.org/ns/solid/terms#provision": {
+            "namedNodes": [
               "https://provision.inrupt.com/",
             ],
           },
-          "http://www.w3.org/ns/solid/terms#validatesRdfSources": Object {
-            "literals": Object {
-              "http://www.w3.org/2001/XMLSchema#boolean": Array [
+          "http://www.w3.org/ns/solid/terms#validatesRdfSources": {
+            "literals": {
+              "http://www.w3.org/2001/XMLSchema#boolean": [
                 "true",
               ],
             },
@@ -147,11 +147,11 @@ Object {
       },
     },
   },
-  "internal_resourceInfo": Object {
+  "internal_resourceInfo": {
     "contentLocation": undefined,
     "contentType": "text/turtle",
     "isRawData": false,
-    "linkedResources": Object {},
+    "linkedResources": {},
     "location": undefined,
     "sourceIri": "",
   },
