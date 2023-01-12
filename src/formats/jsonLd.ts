@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import * as jsonld from "jsonld";
 import type {
   DefaultGraph,
   Quad,
@@ -76,6 +75,8 @@ export const getJsonLdParser = (): Parser => {
       onCompleteCallbacks.push(callback);
     },
     parse: async (source, resourceInfo) => {
+      const jsonld = (await import("jsonld")).default;
+
       let quads = [] as Quad[];
       try {
         const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
