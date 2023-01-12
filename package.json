@@ -141,8 +141,8 @@
       "import": "./dist/profile/jwks.mjs"
     },
     "./profile/webId": {
-      "import": "./dist/profile/webId.mjs",
-      "types": "./dist/profile/webId.d.ts"
+      "types": "./dist/profile/webid.d.ts",
+      "import": "./dist/profile/webid.mjs"
     },
     "./formats": {
       "types": "./dist/formats/index.d.ts",
