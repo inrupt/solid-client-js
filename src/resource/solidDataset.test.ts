@@ -20,7 +20,6 @@
 //
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
-import type { Mock } from "jest-mock";
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
