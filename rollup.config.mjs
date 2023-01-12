@@ -50,6 +50,7 @@ export default {
     "cross-fetch",
     "http-link-header",
     "@rdfjs/dataset",
+    "@rdfjs/data-model",
     "n3",
     "jsonld",
   ],
