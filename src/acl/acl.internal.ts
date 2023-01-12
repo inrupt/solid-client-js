@@ -400,7 +400,7 @@ export const internal_accessModeIriStrings = {
 } as const;
 /** @internal */
 type AccessModeIriString =
-  typeof internal_accessModeIriStrings[keyof typeof internal_accessModeIriStrings];
+  (typeof internal_accessModeIriStrings)[keyof typeof internal_accessModeIriStrings];
 
 /** @internal
  * This function finds, among a set of ACL rules, the ones granting access to a given entity (the target)

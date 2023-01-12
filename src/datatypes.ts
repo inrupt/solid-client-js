@@ -40,7 +40,7 @@ export const xmlSchemaTypes = {
 } as const;
 
 export type XmlSchemaTypeIri =
-  typeof xmlSchemaTypes[keyof typeof xmlSchemaTypes];
+  (typeof xmlSchemaTypes)[keyof typeof xmlSchemaTypes];
 
 /**
  * @internal
