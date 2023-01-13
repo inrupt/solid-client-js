@@ -81,7 +81,10 @@ Inrupt glossaries, Inrupt product vocabularies, etc.):
 to npm automatically by a closed-source Inrupt tool. We plan to open-source that
 tool in the future, but currently we have no planned release date.
 
-# Browser support
+# Supported environment
+
+Our library compile to [ES2018](https://262.ecma-international.org/9.0/). If your
+target environment is older/not compatible, you will need to set up cross-compilation
 
 Our JavaScript Client Libraries use relatively modern JavaScript features that
 will work in all commonly-used browsers, except Internet Explorer. If you need
