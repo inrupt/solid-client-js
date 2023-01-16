@@ -1,8 +1,12 @@
 # Solid JavaScript Client - solid-client
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE-OF-CONDUCT.md)
+[![Contributor
+Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE-OF-CONDUCT.md)
 
-This project adheres to the Contributor Covenant [code of conduct](CODE-OF-CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [engineering@inrupt.com](mailto:engineering@inrupt.com).
+This project adheres to the Contributor Covenant [code of
+conduct](CODE-OF-CONDUCT.md). By participating, you are expected to uphold this
+code. Please report unacceptable behavior to
+[engineering@inrupt.com](mailto:engineering@inrupt.com).
 
 @inrupt/solid-client is a JavaScript library for accessing data and managing
 permissions on data stored in Solid Pods. It provides an abstraction layer on
@@ -31,8 +35,8 @@ public resources you could simply use standard `window.fetch()`).
 
 A fundamental requirement for any two systems to interoperate at all is that
 they have a shared understanding of the concepts and ideas relevant to those
-systems. That shared understanding is expressed as a common 'language', and
-the individual terms from that language are typically described and explained in
+systems. That shared understanding is expressed as a common 'language', and the
+individual terms from that language are typically described and explained in
 dictionaries.
 
 The Solid eco-system uses RDF vocabularies (or slightly more formally,
@@ -42,10 +46,10 @@ systems to share concepts and ideas).
 
 There are already many common vocabularies published on the web, such as the
 [vCard vocabulary](https://www.w3.org/TR/vcard-rdf/) for describing the concepts
-and ideas associated with People and Organizations, or [Schema.org](https://schema.org/)
-for describing the things search engines are typically interested in, intended
-to be used by webmasters to mark up their pages in ways that those search
-engines can then understand.
+and ideas associated with People and Organizations, or
+[Schema.org](https://schema.org/) for describing the things search engines are
+typically interested in, intended to be used by webmasters to mark up their
+pages in ways that those search engines can then understand.
 
 As a convenience for JavaScript developers, Inrupt publishes various npm modules
 that provide JavaScript classes containing constants representing the individual
@@ -77,24 +81,32 @@ vocabularies created and maintained by Inrupt (e.g. an Inrupt test vocabulary,
 Inrupt glossaries, Inrupt product vocabularies, etc.):
 [@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
 
-**Note:** All the above npm modules are currently generated and published
-to npm automatically by a closed-source Inrupt tool. We plan to open-source that
-tool in the future, but currently we have no planned release date.
+**Note:** All the above npm modules are currently generated and published to npm
+automatically by a closed-source Inrupt tool. We plan to open-source that tool
+in the future, but currently we have no planned release date.
 
 # Supported environment
 
-Our library compile to [ES2018](https://262.ecma-international.org/9.0/). If your
-target environment is older/not compatible, you will need to set up cross-compilation
+Our JavaScript Client Libraries use relatively modern JavaScript, aligned with
+the [ES2018](https://262.ecma-international.org/9.0/) Specification features, we
+ship both [ESM](https://nodejs.org/docs/latest-v16.x/api/esm.html) and
+[CommonJS](https://nodejs.org/docs/latest-v16.x/api/modules.html), with type
+definitions for TypeScript alongside.
 
-Our JavaScript Client Libraries use relatively modern JavaScript features that
-will work in all commonly-used browsers, except Internet Explorer. If you need
-support for Internet Explorer, it is recommended to pass them through a tool
-like [Babel](https://babeljs.io), and to add polyfills for e.g. `Map`, `Set`,
-`Promise`, `Headers`, `Array.prototype.includes`, `Object.entries` and
-`String.prototype.endsWith`.
+This mean that we only support environments (browsers or runtimes) that were
+released after mid-2018 out of the box, if you wish to target these
+environments, then you will need to cross-compile our SDKs via the use of
+[Babel](https://babeljs.io), [webpack](https://webpack.js.org/),
+[SWC](https://swc.rs/), or similar.
+
+If you need support for Internet Explorer, it is recommended to pass them
+through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g.
+`Map`, `Set`, `Promise`, `Headers`, `Array.prototype.includes`, `Object.entries`
+and `String.prototype.endsWith`.
 
 Additionally, when using this package in an environment other than Node.js, you
-will need [a polyfill for Node's `buffer` module](https://www.npmjs.com/package/buffer).
+will need [a polyfill for Node's `buffer`
+module](https://www.npmjs.com/package/buffer).
 
 # Installation
 
@@ -122,17 +134,19 @@ forum is a good place to meet the rest of the community.
 
 - For public feedback, bug reports, and feature requests please file an issue
   via [Github](https://github.com/inrupt/solid-client-js/issues/).
-- For non-public feedback or support inquiries please use the
-  [Inrupt Service Desk](https://inrupt.atlassian.net/servicedesk).
+- For non-public feedback or support inquiries please use the [Inrupt Service
+  Desk](https://inrupt.atlassian.net/servicedesk).
 
 ## Documentation
 
-- [Inrupt Solid Javascript Client Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
+- [Inrupt Solid Javascript Client
+  Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
 - [Homepage](https://docs.inrupt.com/)
 
 # Changelog
 
-See [the release notes](https://github.com/inrupt/solid-client-js/blob/main/CHANGELOG.md).
+See [the release
+notes](https://github.com/inrupt/solid-client-js/blob/main/CHANGELOG.md).
 
 # License
 
