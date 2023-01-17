@@ -1,23 +1,45 @@
 version: 2
 updates:
-  # Enable version updates for library itself
+  # Enable daily version updates for prod dependencies
   - package-ecosystem: "npm"
-    # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "production"
+    allow:
+      - dependency-type: production
+  # Enable weekly version updates for dev dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    # Check the npm registry for updates once a week
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "development"
+    allow:
+      - dependency-type: development
+
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
-    # Look for `package.json` and `lock` files in the `root` directory
     directory: "/docs"
-    # Check the npm registry for updates every day (weekdays)
+    # Check the npm registry for updates once a week
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "pip"
   # Enable version updates for our CI tooling
   - package-ecosystem: "github-actions"
-    # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
-    # Check the npm registry for updates every day (weekdays)
+    # Check the npm registry for updates once a week
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
