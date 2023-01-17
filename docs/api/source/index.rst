@@ -30,8 +30,8 @@ Changelog
 See `the release
 notes <https://github.com/inrupt/solid-client-js/blob/main/CHANGELOG.md>`__.
 
-Supported environment
-~~~~~~~~~~~~~~~~~~~~~
+Supported environments
+~~~~~~~~~~~~~~~~~~~~~~
 
 Our JavaScript Client Libraries use relatively modern JavaScript, aligned with
 the `ES2018 <https://262.ecma-international.org/9.0/>`__ Specification features, we
@@ -39,21 +39,26 @@ ship both `ESM <https://nodejs.org/docs/latest-v16.x/api/esm.html>`__ and
 `CommonJS <https://nodejs.org/docs/latest-v16.x/api/modules.html>`__, with type
 definitions for TypeScript alongside.
 
-This mean that we only support environments (browsers or runtimes) that were
-released after mid-2018 out of the box, if you wish to target these
-environments, then you will need to cross-compile our SDKs via the use of
-`Babel <https://babeljs.io>`__, `webpack <https://webpack.js.org/>`__,
-`SWC <https://swc.rs/>`__, or similar.
+This means that out of the box, we only support environments (browsers or
+runtimes) that were released after mid-2018, if you wish to target other (older)
+environments, then you will need to cross-compile our SDKs via the use of `Babel
+<https://babeljs.io>`__, `webpack <https://webpack.js.org/>`__, `SWC
+<https://swc.rs/>`__, or similar.
 
 If you need support for Internet Explorer, it is recommended to pass them
-through a tool like `Babel <https://babeljs.io>`__, and to add polyfills for e.g.
-``Map``, ``Set``, ``Promise``, ``Headers``, ``Array.prototype.includes``, ``Object.entries``
-and ``String.prototype.endsWith``.
+through a tool like `Babel <https://babeljs.io>`__, and to add polyfills for
+e.g. ``Map``, ``Set``, ``Promise``, ``Headers``, ``Array.prototype.includes``,
+``Object.entries`` and ``String.prototype.endsWith``.
 
 Additionally, when using this package in an environment other than Node.js, you
 will need `a polyfill for Node's buffer module
 <https://www.npmjs.com/package/buffer>`__.
 
+Node.js Support
+^^^^^^^^^^^^^^^
+
+Our JavaScript Client Libraries track Node.js `LTS releases
+<https://nodejs.org/en/about/releases/>`__, and support 14.x, and 16.x.
 
 .. _issues--help:
 
