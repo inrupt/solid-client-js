@@ -81,10 +81,6 @@ vocabularies created and maintained by Inrupt (e.g. an Inrupt test vocabulary,
 Inrupt glossaries, Inrupt product vocabularies, etc.):
 [@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
 
-**Note:** All the above npm modules are currently generated and published to npm
-automatically by a closed-source Inrupt tool. We plan to open-source that tool
-in the future, but currently we have no planned release date.
-
 # Supported environment
 
 Our JavaScript Client Libraries use relatively modern JavaScript, aligned with
