@@ -29,7 +29,8 @@ jobs:
             experimental: true
             node-version: 16.x
             os: ubuntu-latest
-
+    container:
+      image: mcr.microsoft.com/playwright:v1.29.0-focal
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -39,7 +40,6 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
       # install
       - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps
       # build
       - run: npm run build
       # setup
