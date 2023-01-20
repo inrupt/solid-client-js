@@ -8,6 +8,11 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
+- Set recursive VC access: the `setVcAccess` function (from the `acp/acp` module)
+  now has an `options` object, which includes an `inherit` flag. If set to `true`,
+  the newly set VC access applies not only to the target resource, but to its
+  contained resources too.  
+
 ## [1.24.0] - 2022-12-20
 
 - Added `getWebIdDataset` method to fetch the WebId Profile document as a
