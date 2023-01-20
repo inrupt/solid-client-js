@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import * as formats from "./formats";
+
 export {
   isContainer,
   isRawData,
@@ -243,11 +245,17 @@ export {
   getAltProfileUrlAllFrom,
   getWebIdDataset,
 } from "./profile/webid";
-export {
-  getJsonLdParser,
-  getTurtleParser,
-  solidDatasetAsTurtle,
-} from "./formats/index";
+
+// Export the different formats methods from @inrupt/solid-client import, these
+// are not part of our Public API, but are needed to be exported for usage from
+// our other packages.
+//
+// NOTE: We have to export like this, otherwise rollup does some sort of
+// tree-shaking and breaks the build where `dist/formats/index.mjs` is no longer
+// built, and this causes the `@inrupt/solid-client/formats` subpath export to
+// no longer work.
+export const { getJsonLdParser, getTurtleParser, solidDatasetAsTurtle } =
+  formats;
 
 /**
  * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
