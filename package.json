@@ -144,6 +144,10 @@
       "types": "./dist/profile/webid.d.ts",
       "import": "./dist/profile/webid.mjs"
     },
+    "./profile/webid": {
+      "types": "./dist/profile/webid.d.ts",
+      "import": "./dist/profile/webid.mjs"
+    },
     "./formats": {
       "types": "./dist/formats/index.d.ts",
       "import": "./dist/formats/index.mjs"
