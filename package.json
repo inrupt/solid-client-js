@@ -36,121 +36,125 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./interfaces": {
-      "import": "./dist/interfaces.mjs",
-      "types": "./dist/interfaces.d.ts"
+      "types": "./dist/interfaces.d.ts",
+      "import": "./dist/interfaces.mjs"
     },
     "./resource/resource": {
-      "import": "./dist/resource/resource.mjs",
-      "types": "./dist/resource/resource.d.ts"
+      "types": "./dist/resource/resource.d.ts",
+      "import": "./dist/resource/resource.mjs"
     },
     "./resource/solidDataset": {
-      "import": "./dist/resource/solidDataset.mjs",
-      "types": "./dist/resource/solidDataset.d.ts"
+      "types": "./dist/resource/solidDataset.d.ts",
+      "import": "./dist/resource/solidDataset.mjs"
     },
     "./resource/file": {
-      "import": "./dist/resource/file.mjs",
-      "types": "./dist/resource/file.d.ts"
+      "types": "./dist/resource/file.d.ts",
+      "import": "./dist/resource/file.mjs"
     },
     "./resource/mock": {
-      "import": "./dist/resource/mock.mjs",
-      "types": "./dist/resource/mock.d.ts"
+      "types": "./dist/resource/mock.d.ts",
+      "import": "./dist/resource/mock.mjs"
     },
     "./thing/thing": {
-      "import": "./dist/thing/thing.mjs",
-      "types": "./dist/thing/thing.d.ts"
+      "types": "./dist/thing/thing.d.ts",
+      "import": "./dist/thing/thing.mjs"
     },
     "./thing/get": {
-      "import": "./dist/thing/get.mjs",
-      "types": "./dist/thing/get.d.ts"
+      "types": "./dist/thing/get.d.ts",
+      "import": "./dist/thing/get.mjs"
     },
     "./thing/add": {
-      "import": "./dist/thing/add.mjs",
-      "types": "./dist/thing/add.d.ts"
+      "types": "./dist/thing/add.d.ts",
+      "import": "./dist/thing/add.mjs"
     },
     "./thing/set": {
-      "import": "./dist/thing/set.mjs",
-      "types": "./dist/thing/set.d.ts"
+      "types": "./dist/thing/set.d.ts",
+      "import": "./dist/thing/set.mjs"
     },
     "./thing/remove": {
-      "import": "./dist/thing/remove.mjs",
-      "types": "./dist/thing/remove.d.ts"
+      "types": "./dist/thing/remove.d.ts",
+      "import": "./dist/thing/remove.mjs"
     },
     "./thing/build": {
-      "import": "./dist/thing/build.mjs",
-      "types": "./dist/thing/build.d.ts"
+      "types": "./dist/thing/build.d.ts",
+      "import": "./dist/thing/build.mjs"
     },
     "./thing/mock": {
-      "import": "./dist/thing/mock.mjs",
-      "types": "./dist/thing/mock.d.ts"
+      "types": "./dist/thing/mock.d.ts",
+      "import": "./dist/thing/mock.mjs"
     },
     "./acl/acl": {
-      "import": "./dist/acl/acl.mjs",
-      "types": "./dist/acl/acl.d.ts"
+      "types": "./dist/acl/acl.d.ts",
+      "import": "./dist/acl/acl.mjs"
     },
     "./acl/agent": {
-      "import": "./dist/acl/agent.mjs",
-      "types": "./dist/acl/agent.d.ts"
+      "types": "./dist/acl/agent.d.ts",
+      "import": "./dist/acl/agent.mjs"
     },
     "./acl/group": {
-      "import": "./dist/acl/group.mjs",
-      "types": "./dist/acl/group.d.ts"
+      "types": "./dist/acl/group.d.ts",
+      "import": "./dist/acl/group.mjs"
     },
     "./acl/class": {
-      "import": "./dist/acl/class.mjs",
-      "types": "./dist/acl/class.d.ts"
+      "types": "./dist/acl/class.d.ts",
+      "import": "./dist/acl/class.mjs"
     },
     "./acl/mock": {
-      "import": "./dist/acl/mock.mjs",
-      "types": "./dist/acl/mock.d.ts"
+      "types": "./dist/acl/mock.d.ts",
+      "import": "./dist/acl/mock.mjs"
     },
     "./acp/acp": {
-      "import": "./dist/acp/acp.mjs",
-      "types": "./dist/acp/acp.d.ts"
+      "types": "./dist/acp/acp.d.ts",
+      "import": "./dist/acp/acp.mjs"
     },
     "./acp/control": {
-      "import": "./dist/acp/control.mjs",
-      "types": "./dist/acp/control.d.ts"
+      "types": "./dist/acp/control.d.ts",
+      "import": "./dist/acp/control.mjs"
     },
     "./acp/policy": {
-      "import": "./dist/acp/policy.mjs",
-      "types": "./dist/acp/policy.d.ts"
+      "types": "./dist/acp/policy.d.ts",
+      "import": "./dist/acp/policy.mjs"
     },
     "./acp/rule": {
-      "import": "./dist/acp/rule.mjs",
-      "types": "./dist/acp/rule.d.ts"
+      "types": "./dist/acp/rule.d.ts",
+      "import": "./dist/acp/rule.mjs"
     },
     "./acp/mock": {
-      "import": "./dist/acp/mock.mjs",
-      "types": "./dist/acp/mock.d.ts"
+      "types": "./dist/acp/mock.d.ts",
+      "import": "./dist/acp/mock.mjs"
     },
     "./access/universal": {
-      "import": "./dist/access/universal.mjs",
-      "types": "./dist/access/universal.d.ts"
+      "types": "./dist/access/universal.d.ts",
+      "import": "./dist/access/universal.mjs"
     },
     "./rdfjs": {
-      "import": "./dist/rdfjs.mjs",
-      "types": "./dist/rdfjs.d.ts"
+      "types": "./dist/rdfjs.d.ts",
+      "import": "./dist/rdfjs.mjs"
     },
     "./profile/jwks": {
-      "import": "./dist/profile/jwks.mjs",
-      "types": "./dist/profile/jwks.d.ts"
+      "types": "./dist/profile/jwks.d.ts",
+      "import": "./dist/profile/jwks.mjs"
     },
     "./profile/webId": {
-      "import": "./dist/profile/webId.mjs",
-      "types": "./dist/profile/webId.d.ts"
+      "types": "./dist/profile/webid.d.ts",
+      "import": "./dist/profile/webid.mjs"
+    },
+    "./profile/webid": {
+      "types": "./dist/profile/webid.d.ts",
+      "import": "./dist/profile/webid.mjs"
     },
     "./formats": {
-      "import": "./dist/formats/index.mjs",
-      "types": "./dist/formats/index.d.ts"
+      "types": "./dist/formats/index.d.ts",
+      "import": "./dist/formats/index.mjs"
     },
     "./universal": {
-      "import": "./dist/universal/index.mjs",
-      "types": "./dist/universal/index.d.ts"
+      "types": "./dist/universal/index.d.ts",
+      "import": "./dist/universal/index.mjs"
     }
   },
   "files": [

@@ -20,10 +20,8 @@
 //
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
-import type { Mock } from "jest-mock";
 
 import { Response } from "cross-fetch";
-import * as jsonld from "jsonld";
 import { DataFactory } from "n3";
 import {
   getSolidDataset,

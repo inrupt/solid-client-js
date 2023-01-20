@@ -2,10 +2,10 @@
 // import pkg from "./package.json" assert { type: "json" };
 
 // Until we only support Node 18+, this should be used instead
-// (see https://rollupjs.org/guide/en/#importing-packagejson) 
-import { createRequire } from 'node:module';
+// (see https://rollupjs.org/guide/en/#importing-packagejson)
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const pkg = require('./package.json');
+const pkg = require("./package.json");
 
 import typescript from "rollup-plugin-typescript2";
 
@@ -50,6 +50,7 @@ export default {
     "cross-fetch",
     "http-link-header",
     "@rdfjs/dataset",
+    "@rdfjs/data-model",
     "n3",
     "jsonld",
   ],

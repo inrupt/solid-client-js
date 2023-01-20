@@ -20,7 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "cross-fetch";
+import { fetch, Response } from "cross-fetch";
 import type * as CrossFetch from "cross-fetch";
 import {
   buildThing,
