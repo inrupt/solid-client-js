@@ -200,7 +200,7 @@
     "@rdfjs/dataset": "^1.1.0",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.1.0",
-    "jsonld": "^5.2.0",
+    "jsonld": "^8.1.0",
     "n3": "^1.10.0"
   },
   "engines": {
