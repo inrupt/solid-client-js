@@ -40,6 +40,7 @@ import { getDefaultAccessControlThing } from "../internal/getDefaultAccessContro
 import { getModes } from "../internal/getModes";
 import { setAcr } from "../internal/setAcr";
 import { setModes } from "../internal/setModes";
+import { AccessControlResource } from "../type/AccessControlResource";
 import { AccessModes } from "../type/AccessModes";
 
 export const DEFAULT_VC_POLICY_NAME = "defaultVcPolicy";
@@ -95,6 +96,9 @@ function createVcPolicy(
  * @param access The access modes to set. Setting a mode to `true` will enable it, to `false`
  * will disable it, and to `undefined` will leave it unchanged compared to what was previously
  * set.
+ * @param options An option object to customize the function behavior:
+ *  - inherit: if set to `true`, the access set to the target resource cascades
+ *    to its contained resources.
  * @returns A copy of the resource and its attached ACR, updated to the new access modes.
  * @since 1.17.0
  */
@@ -102,8 +106,8 @@ export function setVcAccess(
   resourceWithAcr: WithAccessibleAcr,
   access: Partial<AccessModes>,
   options: {
-    isRecursive: boolean;
-  } = { isRecursive: false }
+    inherit: boolean;
+  } = { inherit: false }
 ): WithAccessibleAcr {
   let acr = internal_getAcr(resourceWithAcr);
   const defaultVcPolicyIri = `${getSourceIri(acr)}#${DEFAULT_VC_POLICY_NAME}`;
@@ -125,6 +129,11 @@ export function setVcAccess(
     accessControl = addIri(accessControl, ACP.apply, policy);
   }
 
+  let memberAccessControl = getDefaultAccessControlThing(
+    resourceWithAcr,
+    "defaultMemberAccessControl"
+  );
+
   let acrThing =
     getAccessControlResourceThing(resourceWithAcr) ??
     createThing({ url: getSourceIri(acr) });
@@ -136,6 +145,14 @@ export function setVcAccess(
 
   // Write the changed access control, policy and matchers in the ACR
   acr = [acrThing, accessControl, policy, matcher].reduce(setThing, acr);
+
+  if (options.inherit) {
+    // Add triples to the member access control and link it to the ACR only
+    // if the VC access is recursive.
+    memberAccessControl = addIri(memberAccessControl, ACP.apply, policy);
+    acrThing = addIri(acrThing, ACP.memberAccessControl, memberAccessControl);
+    acr = [acrThing, memberAccessControl].reduce(setThing, acr);
+  }
 
   return setAcr(resourceWithAcr, acr);
 }
