@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.24.1] - 2023-01-23
+
+- Change targeted environment to ES2018
+
+- Dependency updates
+
 ### New features
 
 - Set recursive VC access: the `setVcAccess` function (from the `acp/acp` module)
