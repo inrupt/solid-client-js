@@ -148,9 +148,18 @@ export function setVcAccess(
 
   if (options.inherit) {
     // Add triples to the member access control and link it to the ACR only
-    // if the VC access is recursive.
-    memberAccessControl = addIri(memberAccessControl, ACP.apply, policy);
-    acrThing = addIri(acrThing, ACP.memberAccessControl, memberAccessControl);
+    // if the VC access is recursive if they don't exist already.
+    if (!getIriAll(memberAccessControl, ACP.apply).includes(asIri(policy))) {
+      memberAccessControl = addIri(memberAccessControl, ACP.apply, policy);
+    }
+    if (
+      !getIriAll(acrThing, ACP.memberAccessControl).includes(
+        asIri(memberAccessControl)
+      )
+    ) {
+      acrThing = addIri(acrThing, ACP.memberAccessControl, memberAccessControl);
+    }
+
     acr = [acrThing, memberAccessControl].reduce(setThing, acr);
   }
 
