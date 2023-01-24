@@ -898,16 +898,16 @@ export function changeLogAsMarkdown(
   )}\n`;
 
   function sortChangeLogByThingAndProperty(
-    solidDataset: WithChangeLog & WithResourceInfo
+    dataset: WithChangeLog & WithResourceInfo
   ) {
     const changeLogsByThingAndProperty: Record<
       UrlString,
       Record<UrlString, { added: Quad_Object[]; deleted: Quad_Object[] }>
     > = Object.create(null);
-    solidDataset.internal_changeLog.deletions.forEach((deletion) => {
+    dataset.internal_changeLog.deletions.forEach((deletion) => {
       const subjectNode = isLocalNode(deletion.subject)
         ? /* istanbul ignore next: Unsaved deletions should be removed from the additions list instead, so this code path shouldn't be hit: */
-          resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
+          resolveIriForLocalNode(deletion.subject, getSourceUrl(dataset))
         : deletion.subject;
       if (!isNamedNode(subjectNode) || !isNamedNode(deletion.predicate)) {
         return;
@@ -926,7 +926,7 @@ export function changeLogAsMarkdown(
     solidDataset.internal_changeLog.additions.forEach((addition) => {
       const subjectNode = isLocalNode(addition.subject)
         ? /* istanbul ignore next: setThing already resolves local Subjects when adding them, so this code path should never be hit. */
-          resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
+          resolveIriForLocalNode(addition.subject, getSourceUrl(dataset))
         : addition.subject;
       if (!isNamedNode(subjectNode) || !isNamedNode(addition.predicate)) {
         return;
