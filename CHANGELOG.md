@@ -6,11 +6,7 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-## [1.24.1] - 2023-01-23
-
-- Change targeted environment to ES2018
-
-- Dependency updates
+## [1.25.0] - 2023-01-24
 
 ### New features
 
@@ -18,6 +14,11 @@ The following changes have been implemented but not released yet:
   now has an `options` object, which includes an `inherit` flag. If set to `true`,
   the newly set VC access applies not only to the target resource, but to its
   contained resources too.
+
+## [1.24.1] - 2023-01-23
+
+- Change targeted environment to ES2018
+- Dependency updates
 
 ## [1.24.0] - 2022-12-20
 
