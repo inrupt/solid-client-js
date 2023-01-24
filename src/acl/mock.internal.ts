@@ -18,7 +18,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+import { v4 as uuidv4 } from "uuid";
 import {
   IriString,
   SolidDataset,
@@ -46,7 +46,7 @@ export function addMockAclRuleQuads(
     | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent"
 ): AclDataset {
   let newControl: Thing = createThing({
-    name: encodeURIComponent(agent) + Math.random(),
+    name: encodeURIComponent(agent) + uuidv4(),
   });
   if (typeof ruleIri === "string") {
     newControl = getThing(aclDataset, ruleIri) ?? createThing({ url: ruleIri });

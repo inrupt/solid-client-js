@@ -658,7 +658,7 @@ export function internal_setActorAccess<
     const newPolicyName =
       `policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+      `_${uuidv4()}`;
     let newPolicy = createResourcePolicyFor(resource, newPolicyName);
     newPolicy = setAllowModesV1(newPolicy, {
       read: newReadAccess === true,
@@ -952,7 +952,7 @@ function copyPolicyExcludingActor(
   const newIriSuffix =
     "_copy_without" +
     `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
-    `_${Date.now()}_${Math.random()}`;
+    `_${uuidv4()}`;
 
   // Create new Rules for the Policy, excluding the given Actor
   const newAllOfRules = copyRulesExcludingActor(
