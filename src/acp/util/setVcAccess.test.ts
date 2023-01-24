@@ -198,4 +198,98 @@ describe("setVcAccess", () => {
       ]).graphs.default
     );
   });
+
+  it("should set the given access mode on the member access control for recursive VC access", () => {
+    const resource = mockAccessControlledResource();
+
+    expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
+    const updatedResource = setVcAccess(
+      resource,
+      { read: true },
+      { inherit: true }
+    );
+    expect(updatedResource.internal_acp.acr.graphs.default).toStrictEqual(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [ACP.accessControl, [TEST_URL.defaultAccessControl]],
+            [
+              ACP.memberAccessControl,
+              [
+                // Setting recursive access creates a member access control.
+                TEST_URL.defaultMemberAccessControl,
+              ],
+            ],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControl,
+          [[ACP.apply, [TEST_URL.defaultAccessControlVcPolicy]]],
+        ],
+        [
+          TEST_URL.defaultMemberAccessControl,
+          // The member access control should enforce the VC access policy.
+          [[ACP.apply, [TEST_URL.defaultAccessControlVcPolicy]]],
+        ],
+        [
+          TEST_URL.defaultAccessControlVcPolicy,
+          [
+            [rdf.type, [ACP.Policy]],
+            [ACP.anyOf, [TEST_URL.defaultAccessControlVcMatcher]],
+            [ACP.allow, [ACL.Read]],
+          ],
+        ],
+        [
+          TEST_URL.defaultAccessControlVcMatcher,
+          [
+            [rdf.type, [ACP.Matcher]],
+            [ACP.vc, [VC_ACCESS_GRANT]],
+          ],
+        ],
+      ]).graphs.default
+    );
+  });
+
+  it("should create a default member Access Control if not present", () => {
+    const resource = mockAccessControlledResource(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [[rdf.type, [ACP.AccessControlResource]]],
+        ],
+        // Note that the default Access Control does not exist
+      ])
+    );
+    const updatedResource = setVcAccess(
+      resource,
+      { read: false, write: true },
+      { inherit: true }
+    );
+    expect(updatedResource.internal_acp.acr.graphs.default).toMatchObject(
+      createDatasetFromSubjects([
+        [
+          DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
+          [
+            [ACP.accessControl, [TEST_URL.defaultAccessControl]],
+            [ACP.memberAccessControl, [TEST_URL.defaultMemberAccessControl]],
+          ],
+        ],
+      ]).graphs.default
+    );
+  });
+});
+
+it("defaults to non-recursive access", () => {
+  const resource = mockAccessControlledResource();
+
+  const updatedResourceDefault = setVcAccess(resource, { read: true });
+  const updatedResourceExplicit = setVcAccess(
+    resource,
+    { read: true },
+    { inherit: false }
+  );
+  expect(updatedResourceDefault.internal_acp.acr.graphs.default).toStrictEqual(
+    updatedResourceExplicit.internal_acp.acr.graphs.default
+  );
 });

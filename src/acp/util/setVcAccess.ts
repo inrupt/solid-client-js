@@ -23,10 +23,12 @@ import {
   addIri,
   asIri,
   buildThing,
+  createThing,
   getIriAll,
   getSourceIri,
   getThing,
   setThing,
+  SolidDataset,
   Thing,
 } from "../..";
 import { rdf } from "../../constants";
@@ -38,10 +40,41 @@ import { getDefaultAccessControlThing } from "../internal/getDefaultAccessContro
 import { getModes } from "../internal/getModes";
 import { setAcr } from "../internal/setAcr";
 import { setModes } from "../internal/setModes";
+import { AccessControlResource } from "../type/AccessControlResource";
 import { AccessModes } from "../type/AccessModes";
 
 export const DEFAULT_VC_POLICY_NAME = "defaultVcPolicy";
 export const DEFAULT_VC_MATCHER_NAME = "defaultVcMatcher";
+
+function createVcPolicy(
+  acr: SolidDataset,
+  policyIri: string,
+  matcherIri: string,
+  access: Partial<AccessModes>
+): { policy: Thing; matcher: Thing } {
+  let vcPolicy = getThing(acr, policyIri);
+  if (vcPolicy === null) {
+    // If the policy does not exist, create it and link the default Access Control to it.
+    vcPolicy = buildThing({ url: policyIri })
+      .addIri(rdf.type, ACP.Policy)
+      .addIri(ACP.anyOf, matcherIri)
+      .build();
+  }
+  const vcMatcher: Thing =
+    getThing(acr, matcherIri) ??
+    buildThing({ url: matcherIri })
+      .addIri(rdf.type, ACP.Matcher)
+      .addIri(ACP.vc, VC_ACCESS_GRANT)
+      .build();
+
+  const currentModes = getModes(vcPolicy, ACP.allow);
+  // Only change the modes which are set in `access`, and preserve the others.
+  vcPolicy = setModes(vcPolicy, { ...currentModes, ...access }, ACP.allow);
+  return {
+    matcher: vcMatcher,
+    policy: vcPolicy,
+  };
+}
 
 /**
  * ```{note}
@@ -63,56 +96,72 @@ export const DEFAULT_VC_MATCHER_NAME = "defaultVcMatcher";
  * @param access The access modes to set. Setting a mode to `true` will enable it, to `false`
  * will disable it, and to `undefined` will leave it unchanged compared to what was previously
  * set.
+ * @param options An option object to customize the function behavior:
+ *  - inherit: if set to `true`, the access set to the target resource cascades
+ *    to its contained resources.
  * @returns A copy of the resource and its attached ACR, updated to the new access modes.
  * @since 1.17.0
  */
 export function setVcAccess(
   resourceWithAcr: WithAccessibleAcr,
-  access: Partial<AccessModes>
+  access: Partial<AccessModes>,
+  options: {
+    inherit: boolean;
+  } = { inherit: false }
 ): WithAccessibleAcr {
   let acr = internal_getAcr(resourceWithAcr);
   const defaultVcPolicyIri = `${getSourceIri(acr)}#${DEFAULT_VC_POLICY_NAME}`;
   const defaultVcMatcherIri = `${getSourceIri(acr)}#${DEFAULT_VC_MATCHER_NAME}`;
 
+  const { policy, matcher } = createVcPolicy(
+    acr,
+    defaultVcPolicyIri,
+    defaultVcMatcherIri,
+    access
+  );
+
   let accessControl = getDefaultAccessControlThing(
     resourceWithAcr,
     "defaultAccessControl"
   );
+  if (!getIriAll(accessControl, ACP.apply).includes(asIri(policy))) {
+    // Case when the ACR Thing existed, but did not include a link to the default Access Control.
+    accessControl = addIri(accessControl, ACP.apply, policy);
+  }
+
+  let memberAccessControl = getDefaultAccessControlThing(
+    resourceWithAcr,
+    "defaultMemberAccessControl"
+  );
 
   let acrThing =
     getAccessControlResourceThing(resourceWithAcr) ??
-    buildThing({ url: getSourceIri(acr) })
-      .addIri(ACP.accessControl, accessControl)
-      .build();
+    createThing({ url: getSourceIri(acr) });
 
   if (!getIriAll(acrThing, ACP.accessControl).includes(asIri(accessControl))) {
     // Case when the ACR Thing existed, but did not include a link to the default Access Control.
     acrThing = addIri(acrThing, ACP.accessControl, accessControl);
   }
 
-  let vcPolicy = getThing(acr, defaultVcPolicyIri);
-  if (vcPolicy === null) {
-    // If the policy does not exist, create it and link the default Access Control to it.
-    vcPolicy = buildThing({ url: defaultVcPolicyIri })
-      .addIri(rdf.type, ACP.Policy)
-      .addIri(ACP.anyOf, defaultVcMatcherIri)
-      .build();
-    accessControl = addIri(accessControl, ACP.apply, vcPolicy);
-  }
-
-  const vcMatcher: Thing =
-    getThing(acr, defaultVcMatcherIri) ??
-    buildThing({ url: defaultVcMatcherIri })
-      .addIri(rdf.type, ACP.Matcher)
-      .addIri(ACP.vc, VC_ACCESS_GRANT)
-      .build();
-
-  const currentModes = getModes(vcPolicy, ACP.allow);
-  // Only change the modes which are set in `access`, and preserve the others.
-  vcPolicy = setModes(vcPolicy, { ...currentModes, ...access }, ACP.allow);
-
   // Write the changed access control, policy and matchers in the ACR
-  acr = [acrThing, accessControl, vcPolicy, vcMatcher].reduce(setThing, acr);
+  acr = [acrThing, accessControl, policy, matcher].reduce(setThing, acr);
+
+  if (options.inherit) {
+    // Add triples to the member access control and link it to the ACR only
+    // if the VC access is recursive if they don't exist already.
+    if (!getIriAll(memberAccessControl, ACP.apply).includes(asIri(policy))) {
+      memberAccessControl = addIri(memberAccessControl, ACP.apply, policy);
+    }
+    if (
+      !getIriAll(acrThing, ACP.memberAccessControl).includes(
+        asIri(memberAccessControl)
+      )
+    ) {
+      acrThing = addIri(acrThing, ACP.memberAccessControl, memberAccessControl);
+    }
+
+    acr = [acrThing, memberAccessControl].reduce(setThing, acr);
+  }
 
   return setAcr(resourceWithAcr, acr);
 }
