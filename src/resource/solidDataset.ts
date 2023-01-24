@@ -897,6 +897,55 @@ export function changeLogAsMarkdown(
     solidDataset
   )}\n`;
 
+  function sortChangeLogByThingAndProperty(
+    solidDataset: WithChangeLog & WithResourceInfo
+  ) {
+    const changeLogsByThingAndProperty: Record<
+      UrlString,
+      Record<UrlString, { added: Quad_Object[]; deleted: Quad_Object[] }>
+    > = Object.create(null);
+    solidDataset.internal_changeLog.deletions.forEach((deletion) => {
+      const subjectNode = isLocalNode(deletion.subject)
+        ? /* istanbul ignore next: Unsaved deletions should be removed from the additions list instead, so this code path shouldn't be hit: */
+          resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
+        : deletion.subject;
+      if (!isNamedNode(subjectNode) || !isNamedNode(deletion.predicate)) {
+        return;
+      }
+      const thingUrl = internal_toIriString(subjectNode);
+      const propertyUrl = internal_toIriString(deletion.predicate);
+      changeLogsByThingAndProperty[thingUrl] ??= {};
+      changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
+        added: [],
+        deleted: [],
+      };
+      changeLogsByThingAndProperty[thingUrl][propertyUrl].deleted.push(
+        deletion.object
+      );
+    });
+    solidDataset.internal_changeLog.additions.forEach((addition) => {
+      const subjectNode = isLocalNode(addition.subject)
+        ? /* istanbul ignore next: setThing already resolves local Subjects when adding them, so this code path should never be hit. */
+          resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
+        : addition.subject;
+      if (!isNamedNode(subjectNode) || !isNamedNode(addition.predicate)) {
+        return;
+      }
+      const thingUrl = internal_toIriString(subjectNode);
+      const propertyUrl = internal_toIriString(addition.predicate);
+      changeLogsByThingAndProperty[thingUrl] ??= {};
+      changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
+        added: [],
+        deleted: [],
+      };
+      changeLogsByThingAndProperty[thingUrl][propertyUrl].added.push(
+        addition.object
+      );
+    });
+
+    return changeLogsByThingAndProperty;
+  }
+
   const changeLogsByThingAndProperty =
     sortChangeLogByThingAndProperty(solidDataset);
   Object.keys(changeLogsByThingAndProperty).forEach((thingUrl) => {
@@ -922,55 +971,6 @@ export function changeLogAsMarkdown(
   });
 
   return readableChangeLog;
-}
-
-function sortChangeLogByThingAndProperty(
-  solidDataset: WithChangeLog & WithResourceInfo
-) {
-  const changeLogsByThingAndProperty: Record<
-    UrlString,
-    Record<UrlString, { added: Quad_Object[]; deleted: Quad_Object[] }>
-  > = {};
-  solidDataset.internal_changeLog.deletions.forEach((deletion) => {
-    const subjectNode = isLocalNode(deletion.subject)
-      ? /* istanbul ignore next: Unsaved deletions should be removed from the additions list instead, so this code path shouldn't be hit: */
-        resolveIriForLocalNode(deletion.subject, getSourceUrl(solidDataset))
-      : deletion.subject;
-    if (!isNamedNode(subjectNode) || !isNamedNode(deletion.predicate)) {
-      return;
-    }
-    const thingUrl = internal_toIriString(subjectNode);
-    const propertyUrl = internal_toIriString(deletion.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
-    changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
-      added: [],
-      deleted: [],
-    };
-    changeLogsByThingAndProperty[thingUrl][propertyUrl].deleted.push(
-      deletion.object
-    );
-  });
-  solidDataset.internal_changeLog.additions.forEach((addition) => {
-    const subjectNode = isLocalNode(addition.subject)
-      ? /* istanbul ignore next: setThing already resolves local Subjects when adding them, so this code path should never be hit. */
-        resolveIriForLocalNode(addition.subject, getSourceUrl(solidDataset))
-      : addition.subject;
-    if (!isNamedNode(subjectNode) || !isNamedNode(addition.predicate)) {
-      return;
-    }
-    const thingUrl = internal_toIriString(subjectNode);
-    const propertyUrl = internal_toIriString(addition.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
-    changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
-      added: [],
-      deleted: [],
-    };
-    changeLogsByThingAndProperty[thingUrl][propertyUrl].added.push(
-      addition.object
-    );
-  });
-
-  return changeLogsByThingAndProperty;
 }
 
 function getReadableChangeLogSummary(
