@@ -20,7 +20,6 @@ The following changes have been implemented but not released yet:
 - Change targeted environment to ES2018
 - Dependency updates
 
-
 ## [1.24.0] - 2022-12-20
 
 - Added `getWebIdDataset` method to fetch the WebId Profile document as a
