@@ -19,24 +19,18 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import { v4 as uuidv4 } from "uuid";
 import { acp } from "../constants";
-import {
-  getSourceIri,
-  internal_defaultFetchOptions,
-} from "../resource/resource";
-import { asIri, getThing, setThing } from "../thing/thing";
+import { internal_defaultFetchOptions } from "../resource/resource";
+import { asIri, getThing } from "../thing/thing";
 import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "../acp/acp";
 import {
-  addAcrPolicyUrl,
-  addPolicyUrl,
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
   removeAcrPolicyUrl,
   removePolicyUrl,
 } from "../acp/control";
-import { internal_getAcr, internal_setAcr } from "../acp/control.internal";
 import {
-  createPolicy,
   createResourcePolicyFor,
   getAllowModesV1,
   getDenyModesV1,
@@ -46,11 +40,9 @@ import {
   setResourcePolicy,
 } from "../acp/policy";
 import {
-  createRule,
   getNoneOfRuleUrlAll,
   getAnyOfRuleUrlAll,
   getAllOfRuleUrlAll,
-  getRule,
   Rule,
   createResourceRuleFor,
   setResourceRule,
@@ -633,7 +625,7 @@ export function internal_setActorAccess<
     const newAcrPolicyName =
       `acr_policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+      `_${uuidv4()}`;
     let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
     newAcrPolicy = setAllowModesV1(newAcrPolicy, {
       read: newControlReadAccess === true,
