@@ -18,7 +18,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+import { v4 as uuidv4 } from "uuid";
 import { acp } from "../constants";
 import { internal_defaultFetchOptions } from "../resource/resource";
 import { asIri, getThing } from "../thing/thing";
@@ -586,7 +586,7 @@ export function internal_setActorAccess<
     const newAcrPolicyName =
       `acr_policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+      `_${uuidv4()}`;
     let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
     newAcrPolicy = setAllowModesV2(newAcrPolicy, {
       read: newControlReadAccess === true,
@@ -619,7 +619,7 @@ export function internal_setActorAccess<
     const newPolicyName =
       `policy` +
       `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+      `_${uuidv4()}`;
     let newPolicy = createResourcePolicyFor(resource, newPolicyName);
     newPolicy = setAllowModesV2(newPolicy, {
       read: newReadAccess === true,
@@ -867,7 +867,7 @@ function copyPolicyExcludingActor(
   const newIriSuffix =
     "_copy_without" +
     `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
-    `_${Date.now()}_${Math.random()}`;
+    `_${uuidv4()}`;
 
   // Create new Matchers for the Policy, excluding the given Actor
   const newAllOfMatchers = copyMatchersExcludingActor(
