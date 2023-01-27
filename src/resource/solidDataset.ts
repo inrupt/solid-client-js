@@ -941,7 +941,7 @@ function sortChangeLogByThingAndProperty(
     }
     const thingUrl = internal_toIriString(subjectNode);
     const propertyUrl = internal_toIriString(deletion.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl] ??= Object.create(null);
     changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
       added: [],
       deleted: [],
@@ -960,7 +960,7 @@ function sortChangeLogByThingAndProperty(
     }
     const thingUrl = internal_toIriString(subjectNode);
     const propertyUrl = internal_toIriString(addition.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl] ??= Object.create(null);
     changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
       added: [],
       deleted: [],
