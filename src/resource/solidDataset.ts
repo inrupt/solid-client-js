@@ -930,7 +930,7 @@ function sortChangeLogByThingAndProperty(
   const changeLogsByThingAndProperty: Record<
     UrlString,
     Record<UrlString, { added: Quad_Object[]; deleted: Quad_Object[] }>
-  > = {};
+  > = Object.create(null);
   solidDataset.internal_changeLog.deletions.forEach((deletion) => {
     const subjectNode = isLocalNode(deletion.subject)
       ? /* istanbul ignore next: Unsaved deletions should be removed from the additions list instead, so this code path shouldn't be hit: */
@@ -941,7 +941,7 @@ function sortChangeLogByThingAndProperty(
     }
     const thingUrl = internal_toIriString(subjectNode);
     const propertyUrl = internal_toIriString(deletion.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl] ??= Object.create(null);
     changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
       added: [],
       deleted: [],
@@ -960,7 +960,7 @@ function sortChangeLogByThingAndProperty(
     }
     const thingUrl = internal_toIriString(subjectNode);
     const propertyUrl = internal_toIriString(addition.predicate);
-    changeLogsByThingAndProperty[thingUrl] ??= {};
+    changeLogsByThingAndProperty[thingUrl] ??= Object.create(null);
     changeLogsByThingAndProperty[thingUrl][propertyUrl] ??= {
       added: [],
       deleted: [],
