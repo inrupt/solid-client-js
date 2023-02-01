@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.25.1] - 2023-02-01
+
 - Fixed the changelog data structure creation to avoid potential prototype pollution attacks.
 - Fixed the generation of unique identifiers to use UUIDs instead of
   `Math.random()`. We're also changing generated ACP IRIs to no longer contain
