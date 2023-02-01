@@ -18,25 +18,18 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+import { v4 as uuidv4 } from "uuid";
 import { acp } from "../constants";
-import {
-  getSourceIri,
-  internal_defaultFetchOptions,
-} from "../resource/resource";
-import { asIri, getThing, setThing } from "../thing/thing";
+import { internal_defaultFetchOptions } from "../resource/resource";
+import { asIri, getThing } from "../thing/thing";
 import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "../acp/acp";
 import {
-  addAcrPolicyUrl,
-  addPolicyUrl,
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
   removeAcrPolicyUrl,
   removePolicyUrl,
 } from "../acp/control";
-import { internal_getAcr, internal_setAcr } from "../acp/control.internal";
 import {
-  createPolicy,
   createResourcePolicyFor,
   getAllowModesV1,
   getDenyModesV1,
@@ -46,11 +39,9 @@ import {
   setResourcePolicy,
 } from "../acp/policy";
 import {
-  createRule,
   getNoneOfRuleUrlAll,
   getAnyOfRuleUrlAll,
   getAllOfRuleUrlAll,
-  getRule,
   Rule,
   createResourceRuleFor,
   setResourceRule,
@@ -630,10 +621,7 @@ export function internal_setActorAccess<
     newControlReadAccess !== remainingAccess.controlRead ||
     newControlWriteAccess !== remainingAccess.controlWrite
   ) {
-    const newAcrPolicyName =
-      `acr_policy` +
-      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+    const newAcrPolicyName = uuidv4();
     let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
     newAcrPolicy = setAllowModesV1(newAcrPolicy, {
       read: newControlReadAccess === true,
@@ -663,10 +651,7 @@ export function internal_setActorAccess<
     newAppendAccess !== remainingAccess.append ||
     newWriteAccess !== remainingAccess.write
   ) {
-    const newPolicyName =
-      `policy` +
-      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${Date.now()}_${Math.random()}`;
+    const newPolicyName = uuidv4();
     let newPolicy = createResourcePolicyFor(resource, newPolicyName);
     newPolicy = setAllowModesV1(newPolicy, {
       read: newReadAccess === true,
@@ -957,10 +942,7 @@ function copyPolicyExcludingActor(
   actorRelationToExclude: ActorRelation,
   actorToExclude: IriString
 ): [Policy, Rule[]] {
-  const newIriSuffix =
-    "_copy_without" +
-    `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
-    `_${Date.now()}_${Math.random()}`;
+  const newIriSuffix = uuidv4();
 
   // Create new Rules for the Policy, excluding the given Actor
   const newAllOfRules = copyRulesExcludingActor(

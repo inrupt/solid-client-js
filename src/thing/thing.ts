@@ -18,7 +18,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+import { v4 as uuidv4 } from "uuid";
 import {
   isNamedNode,
   resolveLocalIri,
@@ -471,7 +471,5 @@ export class ValidThingUrlExpectedError extends SolidClientError {
  * @returns An string that's likely to be unique
  */
 const generateName = () => {
-  return (
-    Date.now().toString() + Math.random().toString().substring("0.".length)
-  );
+  return uuidv4();
 };
