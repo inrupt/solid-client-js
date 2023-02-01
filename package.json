@@ -208,6 +208,7 @@
     "node": "^14.17.0 || ^16.0.0"
   },
   "optionalDependencies": {
-    "fsevents": "^2.3.2"
+    "fsevents": "^2.3.2",
+    "@types/rdfjs__dataset": "^1.0.4"
   }
 }
