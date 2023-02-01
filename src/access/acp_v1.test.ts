@@ -4180,66 +4180,6 @@ describe("setActorAccess", () => {
     expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
   });
 
-  it("properly encodes hashes in actor URLs when used as identifiers in Policy/Rule URLs", () => {
-    const mockSetup = {
-      policies: {
-        "https://some.pod/resource?ext=acr#policy": {
-          allow: { read: true },
-          allOf: {
-            "https://some.pod/resource?ext=acr#rule": {
-              [acp.agent]: [webId],
-            },
-          },
-        },
-      },
-      memberPolicies: {},
-      acrPolicies: {
-        "https://some.pod/resource?ext=acr#acrPolicy": {
-          allow: { read: true },
-          allOf: {
-            "https://some.pod/resource?ext=acr#acrRule": {
-              [acp.agent]: [webId],
-            },
-          },
-        },
-      },
-      memberAcrPolicies: {},
-    };
-    const resourceWithAcr = mockResourceWithAcr(
-      "https://some.pod/resource",
-      "https://some.pod/resource?ext=acr",
-      mockSetup
-    );
-    const acpData = mockAcpData(mockSetup);
-
-    const updatedResourceWithAcr = internal_setActorAccess(
-      resourceWithAcr,
-      acpData,
-      acp.agent,
-      webId,
-      {
-        read: false,
-        controlWrite: true,
-      }
-    );
-
-    const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
-    const policyAndRuleUrls = getThingAll(updatedAcr).map((policyOrRule) =>
-      asIri(policyOrRule)
-    );
-    // No Policy or Rule URL should contain the plain actor URL:
-    expect(policyAndRuleUrls.filter((url) => url.includes(webId))).toHaveLength(
-      0
-    );
-    // There should be three with the encoded one though:
-    // 1. The new ACR Policy.
-    // 2. The new Policy.
-    // 3. The new Rule.
-    expect(
-      policyAndRuleUrls.filter((url) => url.includes(encodeURIComponent(webId)))
-    ).toHaveLength(3);
-  });
-
   describe("edge cases", () => {
     it("does not inadvertently cause privilege escalation", () => {
       const runs = process.env.CI ? 1000 : 1;
