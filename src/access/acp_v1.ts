@@ -621,10 +621,7 @@ export function internal_setActorAccess<
     newControlReadAccess !== remainingAccess.controlRead ||
     newControlWriteAccess !== remainingAccess.controlWrite
   ) {
-    const newAcrPolicyName =
-      `acr_policy` +
-      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${uuidv4()}`;
+    const newAcrPolicyName = uuidv4();
     let newAcrPolicy = createResourcePolicyFor(resource, newAcrPolicyName);
     newAcrPolicy = setAllowModesV1(newAcrPolicy, {
       read: newControlReadAccess === true,
@@ -654,10 +651,7 @@ export function internal_setActorAccess<
     newAppendAccess !== remainingAccess.append ||
     newWriteAccess !== remainingAccess.write
   ) {
-    const newPolicyName =
-      `policy` +
-      `_${encodeURIComponent(`${actorRelation}_${actor}`)}` +
-      `_${uuidv4()}`;
+    const newPolicyName = uuidv4();
     let newPolicy = createResourcePolicyFor(resource, newPolicyName);
     newPolicy = setAllowModesV1(newPolicy, {
       read: newReadAccess === true,
