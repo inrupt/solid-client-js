@@ -864,10 +864,7 @@ function copyPolicyExcludingActor(
   actorRelationToExclude: ActorRelation,
   actorToExclude: IriString
 ): [Policy, Matcher[]] {
-  const newIriSuffix =
-    "_copy_without" +
-    `_${encodeURIComponent(actorRelationToExclude)}_${actorToExclude}` +
-    `_${uuidv4()}`;
+  const newIriSuffix = uuidv4();
 
   // Create new Matchers for the Policy, excluding the given Actor
   const newAllOfMatchers = copyMatchersExcludingActor(

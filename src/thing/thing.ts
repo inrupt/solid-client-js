@@ -471,5 +471,5 @@ export class ValidThingUrlExpectedError extends SolidClientError {
  * @returns An string that's likely to be unique
  */
 const generateName = () => {
-  return uuidv4().toString().substring("0.".length);
+  return uuidv4();
 };
