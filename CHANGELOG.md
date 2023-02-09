@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+- Moved `@types/rdfjs__dataset` back to dependencies from devDependencies to fix
+  the issues with TypeScript and related tooling complaining about missing
+  types. This is a temporary fix whilst we work on a more long term solution.
+  We'd initially only thought this issue affected Typedoc, not all TypeScript
+  projects.
+
 ## [1.25.1] - 2023-02-01
 
 - Fixed the changelog data structure creation to avoid potential prototype pollution attacks.

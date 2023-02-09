@@ -180,7 +180,6 @@
     "@types/jest": "^29.2.3",
     "@types/jsonld": "^1.5.6",
     "@types/n3": "^1.10.4",
-    "@types/rdfjs__dataset": "^1.0.4",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "eslint-config-next": "^13.0.6",
@@ -198,6 +197,7 @@
   },
   "dependencies": {
     "@rdfjs/dataset": "^1.1.0",
+    "@types/rdfjs__dataset": "^1.0.4",
     "cross-fetch": "^3.0.4",
     "http-link-header": "^1.1.0",
     "jsonld": "^5.2.0",
