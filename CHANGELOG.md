@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.25.2] - 2023-02-09
+
 - Moved `@types/rdfjs__dataset` back to dependencies from devDependencies to fix
   the issues with TypeScript and related tooling complaining about missing
   types. This is a temporary fix whilst we work on a more long term solution.
