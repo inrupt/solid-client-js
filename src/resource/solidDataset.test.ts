@@ -1070,10 +1070,11 @@ describe("saveSolidDatasetAt", () => {
           "The SolidDataset that was sent to the Pod is listed below.\n\n"
       );
     });
-    it("includes the status code and status message when a request failed", async () => {
+
+    it("includes the status code, status message and error body when a request failed", async () => {
       const mockFetch = jest.fn(window.fetch).mockReturnValue(
         Promise.resolve(
-          new Response("I'm a teapot!", {
+          new Response("Teapots don't make coffee.", {
             status: 418,
             statusText: "I'm a teapot!",
           })
@@ -1091,6 +1092,7 @@ describe("saveSolidDatasetAt", () => {
       await expect(fetchPromise).rejects.toMatchObject({
         statusCode: 418,
         statusText: "I'm a teapot!",
+        message: expect.stringMatching("Teapots don't make coffee"),
       });
     });
 

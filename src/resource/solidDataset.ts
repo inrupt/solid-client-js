@@ -440,7 +440,9 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
           datasetWithChangelog
         )}`;
     throw new FetchError(
-      `Storing the Resource at [${url}] failed: [${response.status}] [${response.statusText}].\n\n${diagnostics}`,
+      `Storing the Resource at [${url}] failed. The server responded ${
+        response.status
+      } ${response.statusText}: ${await response.text()}.\n\n${diagnostics}`,
       response
     );
   }
