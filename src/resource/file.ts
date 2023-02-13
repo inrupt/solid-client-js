@@ -96,7 +96,9 @@ export async function getFile(
   const response = await config.fetch(url, config.init);
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the File failed: [${response.status}] [${response.statusText}].`,
+      `Fetching the File failed: [${response.status}] [${
+        response.statusText
+      }] ${await response.text()}.`,
       response
     );
   }

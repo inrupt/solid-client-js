@@ -193,14 +193,15 @@ describe("getFile", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
-        )
-      );
+  it("includes the status code, status text and response body when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("Teapots don't make coffee.", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
 
     const response = getFile("https://arbitrary.url", {
       fetch: mockFetch,
@@ -208,6 +209,7 @@ describe("getFile", () => {
     await expect(response).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringMatching("Teapots don't make coffee"),
     });
   });
 });
@@ -336,10 +338,10 @@ describe("Non-RDF data deletion", () => {
       "Deleting the file at [https://some.url] failed: [400] [Bad request]"
     );
   });
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response(undefined, {
+        new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
         })
@@ -353,6 +355,7 @@ describe("Non-RDF data deletion", () => {
     await expect(deletionPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringMatching("Teapots don't make coffee"),
     });
   });
 });
@@ -548,10 +551,13 @@ describe("Write non-RDF data into a folder", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
-      new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
+      new Response("Teapots don't make coffee", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      })
     );
 
     await expect(
@@ -561,6 +567,7 @@ describe("Write non-RDF data into a folder", () => {
     ).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringMatching("Teapots don't make coffee"),
     });
   });
 });
@@ -682,14 +689,15 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
-    const mockFetch = jest
-      .fn(window.fetch)
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 418, statusText: "I'm a teapot!" })
-        )
-      );
+  it("includes the status code, status message and response body when a request failed", async () => {
+    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+      Promise.resolve(
+        new Response("Teapots don't make coffee", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        })
+      )
+    );
 
     await expect(
       overwriteFile("https://arbitrary.url", mockBlob, {
@@ -698,6 +706,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     ).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringContaining("Teapots don't make coffee"),
     });
   });
 });
