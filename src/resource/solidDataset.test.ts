@@ -389,9 +389,7 @@ describe("responseToSolidDataset", () => {
     const parsePromise = responseToSolidDataset(response);
 
     await expect(parsePromise).rejects.toThrow(
-      new Error(
-        "Fetching the SolidDataset at [https://some.pod/resource] failed: [403] [Forbidden]."
-      )
+      /Fetching the SolidDataset at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
     );
   });
 
@@ -753,9 +751,7 @@ describe("getSolidDataset", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Fetching the Resource at [https://some.pod/resource] failed: [403] [Forbidden]."
-      )
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
     );
   });
 
@@ -771,16 +767,14 @@ describe("getSolidDataset", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
-      )
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response("I'm a teapot!", {
+        new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
         })
@@ -794,6 +788,7 @@ describe("getSolidDataset", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringMatching("Teapots don't make coffee"),
     });
   });
 });
@@ -1045,8 +1040,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at [https://some.pod/resource] failed: [403] [Forbidden].\n\n" +
-          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m
       );
     });
 
@@ -1066,14 +1060,14 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at [https://some.pod/resource] failed: [404] [Not Found].\n\n" +
-          "The SolidDataset that was sent to the Pod is listed below.\n\n"
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m
       );
     });
-    it("includes the status code and status message when a request failed", async () => {
+
+    it("includes the status code, status message and error body when a request failed", async () => {
       const mockFetch = jest.fn(window.fetch).mockReturnValue(
         Promise.resolve(
-          new Response("I'm a teapot!", {
+          new Response("Teapots don't make coffee.", {
             status: 418,
             statusText: "I'm a teapot!",
           })
@@ -1091,6 +1085,7 @@ describe("saveSolidDatasetAt", () => {
       await expect(fetchPromise).rejects.toMatchObject({
         statusCode: 418,
         statusText: "I'm a teapot!",
+        message: expect.stringMatching("Teapots don't make coffee"),
       });
     });
 
@@ -1546,8 +1541,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at [https://some.pod/resource] failed: [403] [Forbidden].\n\n" +
-          "The changes that were sent to the Pod are listed below.\n\n"
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The changes that were sent to the Pod are listed below/m
       );
     });
 
@@ -1589,8 +1583,7 @@ describe("saveSolidDatasetAt", () => {
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        "Storing the Resource at [https://some.pod/resource] failed: [404] [Not Found].\n\n" +
-          "The changes that were sent to the Pod are listed below.\n\n"
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The changes that were sent to the Pod are listed below/m
       );
     });
     it("includes the status code and status message when a request failed", async () => {
@@ -1713,9 +1706,9 @@ describe("deleteSolidDataset", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      new Response(undefined, {
+      new Response("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
       })
@@ -1728,6 +1721,7 @@ describe("deleteSolidDataset", () => {
     await expect(deletionPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringMatching("Teapots don't make coffee"),
     });
   });
 });
@@ -1984,16 +1978,14 @@ describe("createContainerAt", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Creating the empty Container at [https://some.pod/container/] failed: [403] [Forbidden]."
-      )
+      /Creating the empty Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = jest.fn(window.fetch).mockReturnValue(
       Promise.resolve(
-        new Response("I'm a teapot!", {
+        new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
         })
@@ -2007,6 +1999,7 @@ describe("createContainerAt", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringContaining("Teapots don't make coffee"),
     });
   });
 
@@ -2134,7 +2127,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at [https://some.pod/container/] failed: [403] [Forbidden]."
+      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/
     );
   });
 
@@ -2155,7 +2148,7 @@ describe("saveSolidDatasetInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      "Storing the Resource in the Container at [https://some.pod/container/] failed: [404] [Not Found]."
+      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[404\] \[Not Found\]/
     );
   });
 
@@ -2180,10 +2173,10 @@ describe("saveSolidDatasetInContainer", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
-      mockResponse("I'm a teapot!", {
+      mockResponse("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
         url: "https://arbitrary.pod/container/",
@@ -2200,6 +2193,7 @@ describe("saveSolidDatasetInContainer", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringContaining("Teapots don't make coffee"),
     });
   });
 
@@ -2430,9 +2424,7 @@ describe("createContainerInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Creating an empty Container in the Container at [https://some.pod/parent-container/] failed: [403] [Forbidden]."
-      )
+      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/\] failed: \[403\] \[Forbidden\]/
     );
   });
 
@@ -2453,9 +2445,7 @@ describe("createContainerInContainer", () => {
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      new Error(
-        "Creating an empty Container in the Container at [https://some.pod/parent-container/] failed: [404] [Not Found]."
-      )
+      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/] failed: \[404\] \[Not Found\]./
     );
   });
 
@@ -2479,10 +2469,10 @@ describe("createContainerInContainer", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn(window.fetch),
-      mockResponse("I'm a teapot!", {
+      mockResponse("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
         url: "https://arbitrary.pod/parent-container/",
@@ -2499,6 +2489,7 @@ describe("createContainerInContainer", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringContaining("Teapots don't make coffee"),
     });
   });
 
@@ -2761,9 +2752,9 @@ describe("deleteContainer", () => {
     );
   });
 
-  it("includes the status code and status message when a request failed", async () => {
+  it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = jest.fn(window.fetch).mockResolvedValue(
-      new Response(undefined, {
+      new Response("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
       })
@@ -2779,6 +2770,7 @@ describe("deleteContainer", () => {
     await expect(deletionPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+      message: expect.stringContaining("Teapots don't make coffee"),
     });
   });
 });
