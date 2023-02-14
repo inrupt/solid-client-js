@@ -41,7 +41,7 @@ import { getModes } from "../internal/getModes";
 import { setAcr } from "../internal/setAcr";
 import { setModes } from "../internal/setModes";
 import { AccessControlResource } from "../type/AccessControlResource";
-import { AccessModes } from "../type/AccessModes";
+import { AccessModes } from "../../interfaces";
 
 export const DEFAULT_VC_POLICY_NAME = "defaultVcPolicy";
 export const DEFAULT_VC_MATCHER_NAME = "defaultVcMatcher";

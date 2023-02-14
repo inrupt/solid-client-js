@@ -19,8 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { ThingPersisted } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
+import type { AccessModes, ThingPersisted } from "../../interfaces";
 import { ACP } from "../constants";
 import { setModes } from "../internal/setModes";
 

@@ -146,4 +146,3 @@ export {
 export { addMockAcrTo, mockAcrFor } from "./mock";
 export { getVcAccess } from "./util/getVcAccess";
 export { setVcAccess } from "./util/setVcAccess";
-export type { AccessModes } from "./type/AccessModes";

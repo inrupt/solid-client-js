@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { AccessModes } from "../type/AccessModes";
+import type { AccessModes } from "../../interfaces";
 import { getAgentAccess } from "./getAgentAccess";
 import { getAgentUrlAll } from "./getAgentUrlAll";
 import type { WithAccessibleAcr } from "../acp";

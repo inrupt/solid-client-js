@@ -19,8 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { WebId } from "../../interfaces";
-import type { AccessModes } from "../type/AccessModes";
+import type { AccessModes, WebId } from "../../interfaces";
 import type { WithAccessibleAcr } from "../acp";
 import { createThing, getThing } from "../..";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
