@@ -6,11 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
-### Patch
+### Bugfixes
 
 - Add the response body along the status code and text in the error messages thrown
   on unsuccessful response from the server. The response body may contain additional
-  data useful for the user to have in order to fix the issue the server indicates.
+  data useful for the user to have in order to fix the issue the server describes.
 
 ## [1.25.2] - 2023-02-09
 
