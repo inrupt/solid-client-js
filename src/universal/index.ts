@@ -69,3 +69,4 @@ export { getAgentAccessAll } from "./getAgentAccessAll";
 export { getPublicAccess } from "./getPublicAccess";
 export { setAgentAccess } from "./setAgentAccess";
 export { setPublicAccess } from "./setPublicAccess";
+export type { AccessModes } from "../acp/type/AccessModes";
