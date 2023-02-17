@@ -228,6 +228,7 @@ export {
   WithServerResourceInfo,
   UploadRequestInit,
   SolidClientError,
+  AccessModes,
 } from "./interfaces";
 export { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 export { Time } from "./datatypes";

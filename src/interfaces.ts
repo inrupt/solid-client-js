@@ -258,3 +258,18 @@ export type UploadRequestInit = Omit<RequestInit, "method">;
  * @since 1.2.0
  */
 export class SolidClientError extends Error {}
+
+/**
+ * ```{note}
+ * The ACP specification is a draft. As such, this function is experimental and
+ * subject to change, even in a non-major release.
+ * See also: https://solid.github.io/authorization-panel/acp-specification/
+ * ```
+ */
+export type AccessModes = {
+  read: boolean;
+  append: boolean;
+  write: boolean;
+  controlRead: boolean;
+  controlWrite: boolean;
+};

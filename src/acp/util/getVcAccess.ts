@@ -29,7 +29,7 @@ import { internal_getAcr } from "../control.internal";
 import { getAccessControlResourceThing } from "../internal/getAccessControlResourceThing";
 import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
 import { getModes } from "../internal/getModes";
-import { AccessModes } from "../type/AccessModes";
+import { AccessModes } from "../../interfaces";
 import { DEFAULT_VC_MATCHER_NAME, DEFAULT_VC_POLICY_NAME } from "./setVcAccess";
 
 const DEFAULT_NO_ACCESS: AccessModes = {

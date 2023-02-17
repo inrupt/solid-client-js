@@ -20,7 +20,7 @@
 //
 
 import type { WithAccessibleAcr } from "../acp";
-import { AccessModes } from "../type/AccessModes";
+import { AccessModes } from "../../interfaces";
 import { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
 

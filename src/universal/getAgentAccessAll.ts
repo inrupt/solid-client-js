@@ -19,8 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { UrlString } from "../interfaces";
-import type { AccessModes } from "../acp/type/AccessModes";
+import type { AccessModes, UrlString } from "../interfaces";
 import type { DefaultOptions } from "../acp/type/DefaultOptions";
 import { getResourceInfo } from "../resource/resource";
 import { getAgentAccessAll as getAgentAccessAllAcp } from "../acp/util/getAgentAccessAll";
