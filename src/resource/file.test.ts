@@ -22,7 +22,7 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import type { Mock } from "jest-mock";
 
-import { Headers, Response } from "cross-fetch";
+import { Headers, Response } from "@inrupt/universal-fetch";
 
 import {
   getFile,

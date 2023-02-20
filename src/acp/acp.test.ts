@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
 import * as FileModule from "../resource/file";

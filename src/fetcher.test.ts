@@ -23,13 +23,15 @@ import { jest, it, expect } from "@jest/globals";
 
 import { fetch } from "./fetcher";
 
-jest.mock("cross-fetch");
+jest.mock("@inrupt/universal-fetch");
 
-it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("cross-fetch") as jest.Mocked<
-    typeof fetch
-  >;
+it("should fallback to @inrupt/universal-fetch if no Solid-specific fetcher is available", async () => {
+  const crossFetch = jest.requireMock("@inrupt/universal-fetch") as {
+    fetch: jest.Mocked<typeof fetch>;
+  };
   await fetch("https://some.url");
 
-  expect(crossFetch.mock.calls).toEqual([["https://some.url", undefined]]);
+  expect(crossFetch.fetch.mock.calls).toEqual([
+    ["https://some.url", undefined],
+  ]);
 });

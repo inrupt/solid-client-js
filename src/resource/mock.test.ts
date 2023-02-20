@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import * as crossFetch from "cross-fetch";
+import * as crossFetch from "@inrupt/universal-fetch";
 
 import {
   mockSolidDatasetFrom,

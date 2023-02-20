@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { fetch as unauthenticatedFetch } from "cross-fetch";
+import { fetch as unauthenticatedFetch } from "@inrupt/universal-fetch";
 import {
   asIri,
   getIriAll,

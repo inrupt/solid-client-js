@@ -20,8 +20,8 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { fetch, Response } from "cross-fetch";
-import type * as CrossFetch from "cross-fetch";
+import { fetch, Response } from "@inrupt/universal-fetch";
+import type * as CrossFetch from "@inrupt/universal-fetch";
 import {
   buildThing,
   createSolidDataset,
@@ -45,9 +45,9 @@ import {
   getWebIdDataset,
 } from "./webid";
 
-jest.mock("cross-fetch", () => {
+jest.mock("@inrupt/universal-fetch", () => {
   const crossFetchModule = jest.requireActual(
-    "cross-fetch"
+    "@inrupt/universal-fetch"
   ) as typeof CrossFetch;
   return {
     ...crossFetchModule,
@@ -171,7 +171,7 @@ describe("getProfileAll", () => {
       profileContent
     );
     // Mock the webid unauthenticated fetch
-    const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
+    const mockedUnauthFetch = jest.requireMock("@inrupt/universal-fetch") as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -219,7 +219,7 @@ describe("getProfileAll", () => {
       profileContent
     );
     // Mock the webid unauthenticated fetch
-    const mockedUnauthFetch = jest.requireMock("cross-fetch") as {
+    const mockedUnauthFetch = jest.requireMock("@inrupt/universal-fetch") as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetch.fetch.mockResolvedValueOnce(
@@ -425,7 +425,7 @@ const mockProfileDoc = (
 
 describe("getPodUrlAll", () => {
   it("does not use the provided fetch to dereference the WebID", async () => {
-    const mockedFetcher = jest.requireMock("cross-fetch") as {
+    const mockedFetcher = jest.requireMock("@inrupt/universal-fetch") as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -467,7 +467,7 @@ describe("getPodUrlAll", () => {
     );
 
     // The WebID is explicitly fetched using the unauthenticated fetch.
-    const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
+    const mockedUnauthFetcher = jest.requireMock("@inrupt/universal-fetch") as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -506,7 +506,7 @@ describe("getPodUrlAll", () => {
     );
 
     // The WebID is explicitly fetched using the unauthenticated fetch.
-    const mockedUnauthFetcher = jest.requireMock("cross-fetch") as {
+    const mockedUnauthFetcher = jest.requireMock("@inrupt/universal-fetch") as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetcher.fetch.mockResolvedValueOnce(
@@ -538,7 +538,9 @@ describe("getPodUrlAll", () => {
       pods: [MOCK_STORAGE],
     });
 
-    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+    const { fetch: mockedUnauthFetch } = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as {
       fetch: jest.Mocked<typeof fetch>;
     };
 
@@ -572,7 +574,9 @@ describe("getPodUrlAll", () => {
     // Mock the three consecutive fetches to the WebID document and the two
     // profile resources linked from it.
     // The WebID is fetched using the default fetch
-    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+    const { fetch: mockedUnauthFetch } = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as {
       fetch: jest.Mocked<typeof fetch>;
     };
 
@@ -625,7 +629,9 @@ describe("getPodUrlAll", () => {
     // Mock the two consecutive fetches to the WebID document and the profile
     // resource linked from it.
     // The WebID is fetched using the default fetch
-    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+    const { fetch: mockedUnauthFetch } = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as {
       fetch: jest.Mocked<typeof fetch>;
     };
 
@@ -718,7 +724,9 @@ describe("getPodUrlAllFrom", () => {
 describe("getWebIdDataset", () => {
   it("returns a Solid Dataset for a given WebID", async () => {
     const webIdProfile = mockProfileDoc("https://some.profile", MOCK_WEBID, {});
-    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+    const { fetch: mockedUnauthFetch } = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetch.mockResolvedValueOnce(
@@ -732,7 +740,9 @@ describe("getWebIdDataset", () => {
     expect(result?.graphs).toEqual(webIdProfile.graphs);
   });
   it("throws an error if fetching fails", async () => {
-    const { fetch: mockedUnauthFetch } = jest.requireMock("cross-fetch") as {
+    const { fetch: mockedUnauthFetch } = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedUnauthFetch.mockRejectedValueOnce(new Error("error"));

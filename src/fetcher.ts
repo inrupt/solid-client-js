@@ -31,8 +31,8 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   /* istanbul ignore next: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
     // When using Node.js with ES Modules, require is not defined:
-    const crossFetchModule = await import("cross-fetch");
-    const fetch = crossFetchModule.default;
+    const universalFetchModule = await import("@inrupt/universal-fetch");
+    const { fetch } = universalFetchModule;
     return fetch(resource, init);
   }
   // Implementation note: it's up to the client application to resolve these module names to the
@@ -51,8 +51,8 @@ export const fetch: typeof window.fetch = async (resource, init) => {
   // } catch (e) {
   // When enabling the above, make sure to add a similar try {...} catch block using `import`
   // statements in the elseif above.
-  const fetch = require("cross-fetch");
+  const universalFetch = require("@inrupt/universal-fetch");
   // }
 
-  return fetch(resource, init);
+  return universalFetch.fetch(resource, init);
 };

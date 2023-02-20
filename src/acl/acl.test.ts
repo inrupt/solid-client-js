@@ -21,7 +21,11 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-import { Response, Headers } from "cross-fetch";
+<<<<<<< HEAD
+import { Response, Headers } from "@inrupt/universal-fetch";
+=======
+import { Response } from "@inrupt/universal-fetch";
+>>>>>>> 18a751da (s/cross-fetch/@inrupt/universal-fetch/)
 
 import {
   getResourceAcl,

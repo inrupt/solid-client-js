@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import * as crossFetch from "cross-fetch";
+import * as crossFetch from "@inrupt/universal-fetch";
 
 import {
   Url,

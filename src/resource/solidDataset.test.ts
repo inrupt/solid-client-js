@@ -21,7 +21,7 @@
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
 import type * as RDF from "@rdfjs/types";
 import {

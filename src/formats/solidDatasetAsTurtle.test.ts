@@ -20,7 +20,7 @@
 //
 
 import { describe, it, expect } from "@jest/globals";
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { solidDatasetAsTurtle } from "./solidDatasetAsTurtle";
 import { responseToSolidDataset } from "../resource/solidDataset";
 import type { SolidDataset } from "../interfaces";

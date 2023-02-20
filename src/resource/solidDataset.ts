@@ -1162,7 +1162,7 @@ export async function getWellKnownSolid(
 
     // Technically, the request here should be public and shouldn't require an
     // authenticated fetch, however, in some environments, fetcher.ts fails to
-    // load cross-fetch sometimes, which results in this call failing if we
+    // load universal-fetch sometimes, which results in this call failing if we
     // don't pass the fetch method through:
     return await getSolidDataset(wellKnownSolidUrl, { fetch: options.fetch });
   } catch (e) {
