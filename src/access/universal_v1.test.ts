@@ -166,7 +166,8 @@ describe("setAgentAccess", () => {
     await setAgentAccess(
       "https://arbitrary.pod/resource",
       "https://arbitrary.pod/profile#me",
-      { read: true }
+      { read: true },
+      { fetch: jest.fn<typeof fetch>() }
     );
 
     expect(acpModule.internal_setAgentAccess).toHaveBeenCalledTimes(1);
@@ -544,7 +545,8 @@ describe("setGroupAccess", () => {
     await setGroupAccess(
       "https://arbitrary.pod/resource",
       "https://arbitrary.pod/groups#group",
-      { read: true }
+      { read: true },
+      { fetch: jest.fn<typeof fetch>() }
     );
 
     expect(acpModule.internal_setGroupAccess).toHaveBeenCalledTimes(1);
@@ -889,16 +891,21 @@ describe("setPublicAccess", () => {
       acpLowLevel,
       "getResourceInfoWithAcr"
     );
+
     const mockedResource = mockSolidDatasetFrom(
       "https://arbitrary.pod/resource"
     );
+
     const mockedAcr = mockAcrFor("https://arbitrary.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(mockedResource, mockedAcr);
     getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
     jest.spyOn(acpModule, "internal_setPublicAccess");
 
-    await setPublicAccess("https://arbitrary.pod/resource", { read: true });
-
+    await setPublicAccess(
+      "https://arbitrary.pod/resource",
+      { read: true },
+      { fetch: jest.fn<typeof fetch>() }
+    );
     expect(acpModule.internal_setPublicAccess).toHaveBeenCalledTimes(1);
   });
 

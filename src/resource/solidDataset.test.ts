@@ -389,7 +389,10 @@ describe("responseToSolidDataset", () => {
   });
 
   it("throws a meaningful error when the server returned a 403", async () => {
-    const response = new Response("Not allowed", { status: 403 });
+    const response = new Response("Not allowed", {
+      status: 403,
+      statusText: "Forbidden",
+    });
     jest
       .spyOn(response, "url", "get")
       .mockReturnValue("https://some.pod/resource");
@@ -752,7 +755,9 @@ describe("getSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -768,7 +773,9 @@ describe("getSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -1059,11 +1066,14 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest
-        .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(new Response("Not allowed", { status: 403 }))
-        );
+      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+        Promise.resolve(
+          new Response("Not allowed", {
+            status: 403,
+            statusText: "Forbidden",
+          })
+        )
+      );
 
       const fetchPromise = saveSolidDatasetAt(
         "https://some.pod/resource",
@@ -1082,7 +1092,9 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockReturnValue(
-          Promise.resolve(new Response("Not found", { status: 404 }))
+          Promise.resolve(
+            new Response("Not found", { status: 404, statusText: "Not Found" })
+          )
         );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1538,11 +1550,14 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest
-        .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(new Response("Not allowed", { status: 403 }))
-        );
+      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+        Promise.resolve(
+          new Response("Not allowed", {
+            status: 403,
+            statusText: "Forbidden",
+          })
+        )
+      );
 
       const mockDataset = getMockUpdatedDataset(
         {
@@ -1583,7 +1598,9 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockReturnValue(
-          Promise.resolve(new Response("Not found", { status: 404 }))
+          Promise.resolve(
+            new Response("Not found", { status: 404, statusText: "Not Found" })
+          )
         );
 
       const mockDataset = getMockUpdatedDataset(
@@ -2009,7 +2026,9 @@ describe("createContainerAt", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = createContainerAt("https://some.pod/container/", {
@@ -2158,6 +2177,7 @@ describe("saveSolidDatasetInContainer", () => {
         "Not allowed",
         {
           status: 403,
+          statusText: "Forbidden",
         },
         "https://some.pod/container/"
       )
@@ -2183,6 +2203,7 @@ describe("saveSolidDatasetInContainer", () => {
         "Not found",
         {
           status: 404,
+          statusText: "Not Found",
         },
         "https://some.pod/container/"
       )
@@ -2477,6 +2498,7 @@ describe("createContainerInContainer", () => {
         "Not allowed",
         {
           status: 403,
+          statusText: "Forbidden",
         },
         "https://some.pod/parent-container/"
       )
@@ -2501,6 +2523,7 @@ describe("createContainerInContainer", () => {
         "Not found",
         {
           status: 404,
+          statusText: "Not Found",
         },
         "https://some.pod/parent-container/"
       )

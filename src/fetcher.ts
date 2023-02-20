@@ -18,41 +18,42 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+export { fetch } from "@inrupt/universal-fetch";
 
 /* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */
-export const fetch: typeof window.fetch = async (resource, init) => {
-  /* istanbul ignore next: `require` is always defined in the unit test environment */
-  if (typeof window === "object" && typeof require !== "function") {
-    return window.fetch(resource, init);
-  }
-  /* istanbul ignore next: `require` is always defined in the unit test environment */
-  if (typeof require !== "function") {
-    // When using Node.js with ES Modules, require is not defined:
-    const universalFetchModule = await import("@inrupt/universal-fetch");
-    const { fetch } = universalFetchModule;
-    return fetch(resource, init);
-  }
-  // Implementation note: it's up to the client application to resolve these module names to the
-  // respective npm packages. At least one commonly used tool (Webpack) is only able to do that if
-  // the module names are literal strings.
-  // Additionally, Webpack throws a warning in a way that halts compilation for at least Next.js
-  // when using native Javascript dynamic imports (`import()`), whereas `require()` just logs a
-  // warning. Since the use of package names instead of file names requires a bundles anyway, this
-  // should not have any practical consequences. For more background, see:
-  // https://github.com/webpack/webpack/issues/7713
+// export const fetch: typeof window.fetch = async (resource, init) => {
+//   /* istanbul ignore next: `require` is always defined in the unit test environment */
+//   if (typeof window === "object" && typeof require !== "function") {
+//     return window.fetch(resource, init);
+//   }
+//   /* istanbul ignore next: `require` is always defined in the unit test environment */
+//   if (typeof require !== "function") {
+//     // When using Node.js with ES Modules, require is not defined:
+//     const universalFetchModule = await import("@inrupt/universal-fetch");
+//     const { fetch } = universalFetchModule;
+//     return fetch(resource, init);
+//   }
+//   // Implementation note: it's up to the client application to resolve these module names to the
+//   // respective npm packages. At least one commonly used tool (Webpack) is only able to do that if
+//   // the module names are literal strings.
+//   // Additionally, Webpack throws a warning in a way that halts compilation for at least Next.js
+//   // when using native Javascript dynamic imports (`import()`), whereas `require()` just logs a
+//   // warning. Since the use of package names instead of file names requires a bundles anyway, this
+//   // should not have any practical consequences. For more background, see:
+//   // https://github.com/webpack/webpack/issues/7713
 
-  // Unfortunately solid-client-authn-browser does not support a default session yet.
-  // Once it does, we can auto-detect if it is available and use it as follows:
-  // try {
-  //   fetch = require("solid-client-authn-browser").fetch;
-  // } catch (e) {
-  // When enabling the above, make sure to add a similar try {...} catch block using `import`
-  // statements in the elseif above.
-  const universalFetch = require("@inrupt/universal-fetch");
-  // }
+//   // Unfortunately solid-client-authn-browser does not support a default session yet.
+//   // Once it does, we can auto-detect if it is available and use it as follows:
+//   // try {
+//   //   fetch = require("solid-client-authn-browser").fetch;
+//   // } catch (e) {
+//   // When enabling the above, make sure to add a similar try {...} catch block using `import`
+//   // statements in the elseif above.
+//   const universalFetch = require("@inrupt/universal-fetch");
+//   // }
 
-  return universalFetch.fetch(resource, init);
-};
+//   return universalFetch.fetch(resource, init);
+// };

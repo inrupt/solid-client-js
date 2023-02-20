@@ -70,7 +70,9 @@ function mockResponse(
   body?: BodyInit | null,
   init?: ResponseInit & { url: string }
 ): Response {
-  return new Response(body, init);
+  const response = new Response(body, init);
+  jest.spyOn(response, "url", "get").mockReturnValue(init?.url ?? "");
+  return response;
 }
 
 describe("getAgentAccess", () => {

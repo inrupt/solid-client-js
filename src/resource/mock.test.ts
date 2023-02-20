@@ -108,7 +108,7 @@ describe("mockFileFrom", () => {
 
 describe("mockFetchError", () => {
   it("returns a fetch-specific Error object containing response details", () => {
-    const error = mockFetchError("https://some.pod/resource");
+    const error = mockFetchError("https://some.pod/resource", 404, "Not Found");
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
@@ -121,7 +121,11 @@ describe("mockFetchError", () => {
   });
 
   it("can represent different error statuses", () => {
-    const error = mockFetchError("https://some.pod/resource", 418);
+    const error = mockFetchError(
+      "https://some.pod/resource",
+      418,
+      "I'm a Teapot"
+    );
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
@@ -133,14 +137,14 @@ describe("mockFetchError", () => {
   });
 
   it("can represent unknown status codes", () => {
-    const error = mockFetchError("https://some.pod/resource", 1337);
+    const error = mockFetchError("https://some.pod/resource", 599);
 
     expect(error).toBeInstanceOf(Error);
-    expect(error.statusText).toBeUndefined();
+    expect(error.statusText).toBe("");
     expect(error.message).toBe(
-      "Fetching the Resource at [https://some.pod/resource] failed: [1337] [undefined]."
+      "Fetching the Resource at [https://some.pod/resource] failed: [599] []."
     );
-    expect(error.statusCode).toBe(1337);
+    expect(error.statusCode).toBe(599);
     expect(error.response.status).toBe(error.statusCode);
   });
 });

@@ -46,7 +46,6 @@ import { addIri } from "../thing/add";
 import { AccessControlResource } from "./control";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
-import { createSolidDataset } from "../resource/solidDataset";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn<typeof fetch>().mockImplementation(() =>
@@ -58,6 +57,15 @@ jest.mock("../fetcher.ts", () => ({
   ),
 }));
 
+function mockResponseFrom(
+  body?: BodyInit | null,
+  init?: ResponseInit,
+  url?: string
+): Response {
+  const response = new Response(body, init);
+  jest.spyOn(response, "url", "get").mockReturnValue(url ?? "");
+  return response;
+}
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
   memberPolicies: ["https://some.pod/policies#memberPolicy"],
@@ -128,13 +136,16 @@ describe("getSolidDatasetWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
-            "Content-Type": "text/turtle",
+        mockResponseFrom(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+              "Content-Type": "text/turtle",
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
@@ -267,12 +278,15 @@ describe("getFileWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+        mockResponseFrom(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
@@ -376,14 +390,17 @@ describe("getResourceInfoWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+        mockResponseFrom(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
-      .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
+      .mockResolvedValueOnce(mockResponseFrom("Not allowed", { status: 401 }));
 
     const fetchedResourceInfo = await getResourceInfoWithAcr(
       "https://some.pod/resource",

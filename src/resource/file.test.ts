@@ -128,15 +128,17 @@ describe("getFile", () => {
   });
 
   it("should return the fetched data as a blob", async () => {
-    const init: ResponseInit & { url: string } = {
+    const mockedResponse = new Response("Some data", {
       status: 200,
       statusText: "OK",
-      url: "https://some.url",
-    };
+    });
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://some.url");
 
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+      .mockReturnValue(Promise.resolve(mockedResponse));
 
     const file = await getFile("https://some.url", {
       fetch: mockFetch,

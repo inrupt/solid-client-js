@@ -21,11 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-<<<<<<< HEAD
 import { Response, Headers } from "@inrupt/universal-fetch";
-=======
-import { Response } from "@inrupt/universal-fetch";
->>>>>>> 18a751da (s/cross-fetch/@inrupt/universal-fetch/)
 
 import {
   getResourceAcl,
@@ -80,7 +76,9 @@ function mockResponse(
   body?: BodyInit | null,
   init?: ResponseInit & { url: string }
 ): Response {
-  return new Response(body, init);
+  const response = new Response(body, init);
+  jest.spyOn(response, "url", "get").mockReturnValue(init?.url ?? "");
+  return response;
 }
 
 describe("fetchAcl", () => {
@@ -796,7 +794,9 @@ describe("getSolidDatasetWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -812,7 +812,9 @@ describe("getSolidDatasetWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -881,15 +883,17 @@ describe("getFileWithAcl", () => {
   });
 
   it("should return the fetched data as a blob, along with its ACL", async () => {
-    const init: ResponseInit & { url: string } = {
+    const mockedResponse = new Response("Some data", {
       status: 200,
       statusText: "OK",
-      url: "https://some.url",
-    };
+    });
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://some.url");
 
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+      .mockReturnValue(Promise.resolve(mockedResponse));
 
     const file = await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
@@ -911,11 +915,9 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const init: ResponseInit & { url: string } = {
-        headers,
-        url: url as string,
-      };
-      return Promise.resolve(new Response(undefined, init));
+      const response = new Response(undefined, { headers });
+      jest.spyOn(response, "url", "get").mockReturnValue(url as string);
+      return Promise.resolve(response);
     });
 
     const fetchedSolidDataset = await getFileWithAcl(
@@ -948,11 +950,9 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const init: ResponseInit & { url: string } = {
-        headers,
-        url: url as string,
-      };
-      return Promise.resolve(new Response(undefined, init));
+      const response = new Response(undefined, { headers });
+      jest.spyOn(response, "url", "get").mockReturnValue(url as string);
+      return Promise.resolve(response);
     });
 
     const fetchedSolidDataset = await getFileWithAcl(
@@ -1001,7 +1001,9 @@ describe("getFileWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1017,7 +1019,9 @@ describe("getFileWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1210,13 +1214,15 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockResponse = new Response("Not allowed", { status: 403 });
-    jest
-      .spyOn(mockResponse, "url", "get")
-      .mockReturnValue("https://some.pod/resource");
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        mockResponse("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+          url: "https://some.pod/resource",
+        })
+      )
+    );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
@@ -1228,13 +1234,15 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockResponse = new Response("Not found", { status: 404 });
-    jest
-      .spyOn(mockResponse, "url", "get")
-      .mockReturnValue("https://some.pod/resource");
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        mockResponse("Not found", {
+          status: 404,
+          statusText: "Not Found",
+          url: "https://some.pod/resource",
+        })
+      )
+    );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
@@ -2524,11 +2532,14 @@ describe("saveAclFor", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        })
+      )
+    );
     const withResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -2736,11 +2747,14 @@ describe("deleteAclFor", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        })
+      )
+    );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
@@ -2766,7 +2780,9 @@ describe("deleteAclFor", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {

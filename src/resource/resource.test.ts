@@ -57,7 +57,9 @@ function mockResponse(
   body?: BodyInit | null,
   init?: ResponseInit & { url: string }
 ): Response {
-  return new Response(body, init);
+  const response = new Response(body, init);
+  jest.spyOn(response, "url", "get").mockReturnValue(init?.url ?? "");
+  return response;
 }
 
 describe("getResourceInfo", () => {
@@ -268,15 +270,13 @@ describe("getResourceInfo", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockResponse = new Response(undefined, {
+    const mockedResponse = mockResponse(undefined, {
       headers: {
         Link: '<arbitrary-resource>; rel="not-acl"',
       },
       url: "https://arbitrary.pod",
-      // We need the type assertion because in non-mock situations,
-      // you cannot set the URL manually:
-    } as ResponseInit);
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockResponse);
+    });
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
@@ -387,7 +387,10 @@ describe("getResourceInfo", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockResponse = new Response("Not allowed", { status: 403 });
+    const mockResponse = new Response("Not allowed", {
+      status: 403,
+      statusText: "Forbidden",
+    });
     jest
       .spyOn(mockResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");
@@ -405,13 +408,15 @@ describe("getResourceInfo", () => {
   });
 
   it("overrides a 403 error if provided the appropriate option", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse("Forbidden", { status: 403, url: "https://some.url" })
-        )
-      );
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        mockResponse("Forbidden", {
+          status: 403,
+          url: "https://some.url",
+          statusText: "Forbidden",
+        })
+      )
+    );
 
     const resourceInfo = await getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
@@ -424,7 +429,10 @@ describe("getResourceInfo", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockResponse = new Response("Not found", { status: 404 });
+    const mockResponse = new Response("Not found", {
+      status: 404,
+      statusText: "Not Found",
+    });
     jest
       .spyOn(mockResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");

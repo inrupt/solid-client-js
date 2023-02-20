@@ -145,10 +145,12 @@ export function mockFileFrom(
  */
 export function mockFetchError(
   fetchedUrl: UrlString,
-  statusCode = 404
+  statusCode = 404,
+  statusText = ""
 ): FetchError {
   const failedResponse = new Response(undefined, {
     status: statusCode,
+    statusText,
   }) as Response & { ok: false };
   return new FetchError(
     `Fetching the Resource at [${fetchedUrl}] failed: [${failedResponse.status}] [${failedResponse.statusText}].`,
