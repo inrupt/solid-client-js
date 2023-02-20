@@ -113,7 +113,7 @@ describe("getFile", () => {
 
   it("should GET a remote resource using the provided fetcher", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response("Some data", { status: 200, statusText: "OK" })
@@ -135,7 +135,7 @@ describe("getFile", () => {
     };
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(new Response("Some data", init)));
 
     const file = await getFile("https://some.url", {
@@ -152,7 +152,7 @@ describe("getFile", () => {
 
   it("should pass the request headers through", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response("Some data", { status: 200, statusText: "OK" })
@@ -178,7 +178,7 @@ describe("getFile", () => {
 
   it("should throw on failure", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 400, statusText: "Bad request" })
@@ -194,7 +194,7 @@ describe("getFile", () => {
   });
 
   it("includes the status code, status text and response body when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("Teapots don't make coffee.", {
           status: 418,
@@ -241,7 +241,7 @@ describe("Non-RDF data deletion", () => {
 
   it("should DELETE a remote resource using the provided fetcher", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 200, statusText: "Deleted" })
@@ -265,7 +265,7 @@ describe("Non-RDF data deletion", () => {
 
   it("should accept a fetched File as target", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 200, statusText: "Deleted" })
@@ -296,7 +296,7 @@ describe("Non-RDF data deletion", () => {
 
   it("should pass through the request init if it is set by the user", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 200, statusText: "Deleted" })
@@ -321,7 +321,7 @@ describe("Non-RDF data deletion", () => {
     ]);
   });
   it("should throw an error on a failed request", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           status: 400,
@@ -339,7 +339,7 @@ describe("Non-RDF data deletion", () => {
     );
   });
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("Teapots don't make coffee", {
           status: 418,
@@ -411,7 +411,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should use the provided fetcher if available", async () => {
-    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
+    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
 
     await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -421,7 +421,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should POST a remote resource using the provided fetcher", async () => {
-    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
+    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
 
     await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -434,7 +434,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("should pass the suggested slug through", async () => {
-    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
+    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
 
     await saveFileInContainer("https://some.url", mockBlob, {
       fetch: mockFetch,
@@ -507,7 +507,7 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("throws when a reserved header is passed", async () => {
-    const mockFetch = setMockOnFetch(jest.fn(window.fetch));
+    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
 
     await expect(
       saveFileInContainer("https://some.url", mockBlob, {
@@ -523,7 +523,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("throws when saving failed", async () => {
     const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
+      jest.fn<typeof fetch>(),
       new Response(undefined, { status: 403, statusText: "Forbidden" })
     );
 
@@ -538,7 +538,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("throws when the server did not return the location of the newly-saved file", async () => {
     const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
+      jest.fn<typeof fetch>(),
       new Response(undefined, { status: 201, statusText: "Created" })
     );
 
@@ -553,7 +553,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("includes the status code, status message and response body when a request failed", async () => {
     const mockFetch = setMockOnFetch(
-      jest.fn(window.fetch),
+      jest.fn<typeof fetch>(),
       new Response("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
@@ -627,7 +627,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
   it("should use the provided fetcher", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 201, statusText: "Created" })
@@ -642,7 +642,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   });
 
   it("should PUT a remote resource using the provided fetcher, and return the saved file", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           status: 201,
@@ -673,7 +673,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
   it("throws when saving failed", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           new Response(undefined, { status: 403, statusText: "Forbidden" })
@@ -690,7 +690,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("Teapots don't make coffee", {
           status: 418,

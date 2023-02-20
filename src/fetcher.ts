@@ -20,7 +20,6 @@
 //
 
 /* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
-
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */

@@ -92,7 +92,7 @@ describe("getAgentAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -130,7 +130,7 @@ describe("getAgentAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -154,7 +154,7 @@ describe("getAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -189,7 +189,7 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -250,7 +250,7 @@ describe("getAgentAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -303,7 +303,7 @@ describe("getAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -337,7 +337,7 @@ describe("getAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -371,7 +371,7 @@ describe("getAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -405,7 +405,7 @@ describe("getAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -441,7 +441,7 @@ describe("getAgentAccess", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -477,7 +477,7 @@ describe("getAgentAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -513,7 +513,7 @@ describe("getAgentAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -558,7 +558,7 @@ describe("getGroupAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -596,7 +596,7 @@ describe("getGroupAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -622,7 +622,7 @@ describe("getGroupAccess", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -659,7 +659,7 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -724,7 +724,7 @@ describe("getGroupAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -779,7 +779,7 @@ describe("getGroupAccess", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -815,7 +815,7 @@ describe("getGroupAccess", () => {
       acl.agent
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -851,7 +851,7 @@ describe("getGroupAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -887,7 +887,7 @@ describe("getGroupAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -932,7 +932,7 @@ describe("getPublicAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -970,7 +970,7 @@ describe("getPublicAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -996,7 +996,7 @@ describe("getPublicAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1033,7 +1033,7 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -1098,7 +1098,7 @@ describe("getPublicAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -1153,7 +1153,7 @@ describe("getPublicAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1189,7 +1189,7 @@ describe("getPublicAccess", () => {
       acl.agent
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1225,7 +1225,7 @@ describe("getPublicAccess", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1261,7 +1261,7 @@ describe("getPublicAccess", () => {
       acl.agentClass
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1306,7 +1306,7 @@ describe("getAgentAccessAll", () => {
 
   it("returns null if the advertized ACL isn't accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -1344,7 +1344,7 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns null if no ACL is advertised by the resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -1360,7 +1360,7 @@ describe("getAgentAccessAll", () => {
   });
 
   it("calls the underlying getAgentAccessAll", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1384,7 +1384,7 @@ describe("getAgentAccessAll", () => {
   });
 
   it("returns an empty list if the ACL defines no access", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1418,7 +1418,7 @@ describe("getAgentAccessAll", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1461,7 +1461,7 @@ describe("getAgentAccessAll", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1508,7 +1508,7 @@ describe("getGroupAccessAll", () => {
 
   it("returns null if the advertized ACL isn't accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -1546,7 +1546,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns null if no ACL is advertised by the resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -1562,7 +1562,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("calls the underlying getGroupAccessAll", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1586,7 +1586,7 @@ describe("getGroupAccessAll", () => {
   });
 
   it("returns an empty list if the ACL defines no access", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1624,7 +1624,7 @@ describe("getGroupAccessAll", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1669,7 +1669,7 @@ describe("getGroupAccessAll", () => {
       acl.agentGroup
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1722,7 +1722,7 @@ describe("setAgentAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -1771,7 +1771,7 @@ describe("setAgentAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -1806,7 +1806,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1852,7 +1852,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1898,7 +1898,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1944,7 +1944,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -1992,7 +1992,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2038,7 +2038,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2085,7 +2085,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2136,7 +2136,7 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -2217,7 +2217,7 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -2284,7 +2284,7 @@ describe("setAgentAccess", () => {
       "resource"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2324,7 +2324,7 @@ describe("setAgentAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -2364,7 +2364,7 @@ describe("setAgentAccess", () => {
   });
 
   it("calls the underlying WAC API functions", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2428,7 +2428,7 @@ describe("setGroupResourceAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -2473,7 +2473,7 @@ describe("setGroupResourceAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -2506,7 +2506,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2554,7 +2554,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2602,7 +2602,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2650,7 +2650,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2700,7 +2700,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2748,7 +2748,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2796,7 +2796,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -2849,7 +2849,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -2934,7 +2934,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -3003,7 +3003,7 @@ describe("setGroupResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentGroup"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3045,7 +3045,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -3085,7 +3085,7 @@ describe("setGroupResourceAccess", () => {
   });
 
   it("calls the underlying WAC API group functions", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3149,7 +3149,7 @@ describe("setPublicResourceAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -3193,7 +3193,7 @@ describe("setPublicResourceAccess", () => {
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("ACL not found", {
         status: 404,
         url: "https://some.pod/resource.acl",
@@ -3225,7 +3225,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3269,7 +3269,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3313,7 +3313,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3357,7 +3357,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3402,7 +3402,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3446,7 +3446,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3490,7 +3490,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3539,7 +3539,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // No resource ACL available...
       .mockResolvedValueOnce(
         mockResponse("", {
@@ -3620,7 +3620,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       // The resource ACL is available...
       .mockResolvedValueOnce(
         mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
@@ -3686,7 +3686,7 @@ describe("setPublicResourceAccess", () => {
       "http://www.w3.org/ns/auth/acl#agentClass"
     );
 
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(await triplesToTurtle(toRdfJsQuads(aclResource)), {
         status: 200,
         url: "https://some.pod/resource.acl",
@@ -3716,7 +3716,7 @@ describe("setPublicResourceAccess", () => {
   });
 
   it("calls the underlying WAC API class functions", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse("", {
         status: 200,
         url: "https://some.pod/resource.acl",

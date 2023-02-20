@@ -49,7 +49,7 @@ import { addMockAcrTo } from "./mock";
 import { createSolidDataset } from "../resource/solidDataset";
 
 jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn(window.fetch).mockImplementation(() =>
+  fetch: jest.fn<typeof fetch>().mockImplementation(() =>
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
@@ -112,7 +112,7 @@ describe("getSolidDatasetWithAcr", () => {
 
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(
         new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
       );
@@ -126,7 +126,7 @@ describe("getSolidDatasetWithAcr", () => {
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(undefined, {
           headers: {
@@ -254,7 +254,7 @@ describe("getFileWithAcr", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(new Response());
 
     await getFileWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
@@ -265,7 +265,7 @@ describe("getFileWithAcr", () => {
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(undefined, {
           headers: {
@@ -332,7 +332,7 @@ describe("getResourceInfoWithAcr", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(new Response());
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(new Response());
 
     await getResourceInfoWithAcr("https://some.pod/resource", {
       fetch: mockFetch,
@@ -374,7 +374,7 @@ describe("getResourceInfoWithAcr", () => {
 
   it("returns null for the ACR if it is not accessible to the current user", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(undefined, {
           headers: {
@@ -585,7 +585,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     await getSolidDatasetWithAccessDatasets("https://some.pod/resource", {
@@ -616,7 +616,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     await getSolidDatasetWithAccessDatasets("https://some.pod/resource", {
@@ -738,7 +738,7 @@ describe("getFileWithAccessDatasets", () => {
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     await getFileWithAccessDatasets("https://some.pod/resource", {
@@ -774,7 +774,7 @@ describe("getFileWithAccessDatasets", () => {
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     await getFileWithAccessDatasets("https://some.pod/resource", {
@@ -894,7 +894,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     // We specifically use the root Resource here,
@@ -933,7 +933,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
     const mockedFetcher = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValue(new Response());
 
     await getResourceInfoWithAccessDatasets("https://some.pod/resource", {
@@ -982,7 +982,7 @@ describe("saveAcrFor", () => {
     jest
       .spyOn(mockedResponse, "url", "get")
       .mockReturnValue("https://arbitrary.pod/resource");
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockedResponse);
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),
@@ -1001,7 +1001,7 @@ describe("saveAcrFor", () => {
     jest
       .spyOn(mockedResponse, "url", "get")
       .mockReturnValue("https://arbitrary.pod/resource");
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockedResponse);
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
     const mockedSaveSolidDatasetAt = jest.spyOn(
       SolidDatasetModule,
       "saveSolidDatasetAt"

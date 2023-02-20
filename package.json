@@ -17,11 +17,13 @@
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
-    "test": "jest",
+    "test": "jest --ignoreProjects e2e-node",
+    "test:unit:browser": "jest --selectProjects browser",
+    "test:unit:node": "jest --selectProjects node",
+    "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 30000 --collectCoverage false",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
-    "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci",
-    "test:e2e:node": "jest --config=jest.e2e.config.js --collectCoverage false"
+    "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci"
   },
   "keywords": [
     "rdf",
@@ -171,6 +173,7 @@
     "@inrupt/eslint-config-lib": "^1.5.3",
     "@inrupt/internal-playwright-helpers": "^1.5.3",
     "@inrupt/internal-test-env": "^1.4.2",
+    "@inrupt/jest-jsdom-polyfills": "^1.5.5",
     "@inrupt/solid-client-authn-node": "^1.12.3",
     "@playwright/test": "^1.28.1",
     "@rdfjs/types": "^1.1.0",
@@ -191,6 +194,7 @@
     "rollup": "^3.1.0",
     "rollup-plugin-typescript2": "^0.34.0",
     "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
     "typedoc": "^0.23.7",
     "typedoc-plugin-markdown": "^3.13.3",
     "typescript": "^4.9.4"
