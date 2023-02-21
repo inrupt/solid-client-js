@@ -17,9 +17,9 @@
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
-    "test": "jest --ignoreProjects e2e-node",
-    "test:unit:browser": "jest --selectProjects browser",
-    "test:unit:node": "jest --selectProjects node",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --ignoreProjects e2e-node",
+    "test:unit:browser": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects browser",
+    "test:unit:node": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects node",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 30000 --collectCoverage false",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
@@ -182,6 +182,7 @@
     "@types/http-link-header": "^1.0.1",
     "@types/jest": "^29.2.3",
     "@types/n3": "^1.10.4",
+    "buffer": "^6.0.3",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "eslint-config-next": "^13.0.6",
@@ -214,5 +215,10 @@
   },
   "optionalDependencies": {
     "fsevents": "^2.3.2"
+  },
+  "overrides": {
+    "node-fetch": "^2.6.7",
+    "ky-universal": "^0.11.0",
+    "@digitalbazaar/http-client": "^3.3.0"
   }
 }
