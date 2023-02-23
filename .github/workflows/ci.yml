@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.4.2
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.5.5
 
   build:
     runs-on: ${{ matrix.os }}
