@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Documentation
+
+ - File APIs marked as stable.
+
 ### Bugfixes
 
 - Add the response body along the status code and text in the error messages thrown
