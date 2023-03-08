@@ -8,7 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### Documentation
 
- - File APIs marked as stable.
+- File APIs marked as stable.
 
 ### Bugfixes
 
