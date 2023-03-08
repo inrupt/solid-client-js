@@ -66,9 +66,6 @@ function containsReserved(header: Record<string, string>): boolean {
 }
 
 /**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
- *
  * Retrieves a file from a URL and returns the file as a blob.
  *
  * For example:
@@ -115,8 +112,6 @@ export async function getFile(
 }
 
 /**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
  * Deletes a file at a given URL.
  *
  * For example:
@@ -157,9 +152,6 @@ export async function deleteFile(
 }
 
 /**
- * ```{note} This type is still experimental and subject to change, even in a
- * non-major release.
- * ```
  * Options available when saving a file (extends the options available when
  * writing a file: [[WriteFileOptions]]).
  *
@@ -174,9 +166,6 @@ type SaveFileOptions = WriteFileOptions & {
 };
 
 /**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
- *
  * Saves a file in an existing folder/Container associated with the given URL.
  *
  * For example:
@@ -263,9 +252,6 @@ export async function saveFileInContainer<FileExt extends File | Buffer>(
 }
 
 /**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
- *
  * Options available when writing a file.
  */
 export type WriteFileOptions = GetFileOptions & {
@@ -282,9 +268,6 @@ export type WriteFileOptions = GetFileOptions & {
 };
 
 /**
- * ```{note} This function is still experimental and subject to change, even in a non-major release.
- * ```
- *
  * Saves a file at a given URL. If a file already exists at the URL,
  * the function overwrites the existing file.
  *
