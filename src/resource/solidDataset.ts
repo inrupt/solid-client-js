@@ -375,12 +375,14 @@ async function prepareSolidDatasetUpdate(
  * @hidden
  */
 async function prepareSolidDatasetCreation(
-  solidDataset: SolidDataset
+  solidDataset: SolidDataset,
+  options?: Partial<{ prefixes: Record<string, string> }>
 ): Promise<RequestInit> {
   return {
     method: "PUT",
     body: await triplesToTurtle(
-      toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
+      toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes),
+      options
     ),
     headers: {
       "Content-Type": "text/turtle",
@@ -418,7 +420,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   url: UrlString | Url,
   solidDataset: Dataset,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & { prefixes: Record<string, string> }
   > = internal_defaultFetchOptions
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
@@ -431,7 +433,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const requestInit = isUpdate(datasetWithChangelog, url)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
-    : await prepareSolidDatasetCreation(datasetWithChangelog);
+    : await prepareSolidDatasetCreation(datasetWithChangelog, options);
 
   const response = await config.fetch(url, requestInit);
 

@@ -128,4 +128,26 @@ describe("triplesToTurtle", () => {
       '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".'
     );
   });
+
+  it("allows to pass a prefix map", async () => {
+    const triples = [
+      DataFactory.quad(
+        DataFactory.namedNode("https://vincentt.inrupt.net/profile/card#me"),
+        DataFactory.namedNode(foaf.name),
+        DataFactory.literal("Vincent"),
+        undefined
+      ),
+    ];
+
+    const turtle = await triplesToTurtle(triples, {
+      prefixes: { foaf: "http://xmlns.com/foaf/0.1/" },
+    });
+
+    expect(turtle.trim()).toContain(
+      "@prefix foaf: <http://xmlns.com/foaf/0.1/>"
+    );
+    expect(turtle.trim()).toContain(
+      '<https://vincentt.inrupt.net/profile/card#me> foaf:name "Vincent".'
+    );
+  });
 });
