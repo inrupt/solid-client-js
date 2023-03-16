@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New feature
+
+- `saveSolidDatasetAt` has a new `options` field, `prefixes`. It allows a prefix
+  map to be passed in to customize the serialization if the target format supports
+  it.
+
 ### Documentation
 
 - File APIs marked as stable.

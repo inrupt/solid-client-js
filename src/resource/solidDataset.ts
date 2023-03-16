@@ -414,6 +414,7 @@ async function prepareSolidDatasetCreation(
  * @param url URL to save `solidDataset` to.
  * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ *  `options.prefixes`: A prefix map to customize the serialization. Only applied on resource creation if the serialization allows it.
  * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or rejecting if saving it failed.
  */
 export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
