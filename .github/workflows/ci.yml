@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm ci --ignore-scripts
-      - run: npm test:unit:bowser
+      - run: npm test:unit:browser
       - run: npm test:unit:node
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
