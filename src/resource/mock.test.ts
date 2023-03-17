@@ -137,14 +137,31 @@ describe("mockFetchError", () => {
   });
 
   it("can represent unknown status codes", () => {
-    const error = mockFetchError("https://some.pod/resource", 599);
+    const error = mockFetchError(
+      "https://some.pod/resource",
+      599,
+      "Unknown error"
+    );
 
     expect(error).toBeInstanceOf(Error);
-    expect(error.statusText).toBe("");
-    expect(error.message).toBe(
-      "Fetching the Resource at [https://some.pod/resource] failed: [599] []."
-    );
     expect(error.statusCode).toBe(599);
+    // The Response constructor in Node 14 makes an empty status text undefined.
+    expect(error.statusText).toBe("Unknown error");
+    expect(error.message).toMatch(
+      "Fetching the Resource at [https://some.pod/resource] failed: [599] [Unknown error]"
+    );
+    expect(error.response.status).toBe(error.statusCode);
+  });
+
+  it("defaults to a 404 error", () => {
+    const error = mockFetchError("https://some.pod/resource");
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.statusCode).toBe(404);
+    expect(error.statusText).toBe("Not Found");
+    expect(error.message).toMatch(
+      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]"
+    );
     expect(error.response.status).toBe(error.statusCode);
   });
 });

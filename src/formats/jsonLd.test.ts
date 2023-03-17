@@ -20,7 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
