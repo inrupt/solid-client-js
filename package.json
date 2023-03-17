@@ -201,7 +201,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@inrupt/universal-fetch": "^1.0.0-alpha.0",
+    "@inrupt/universal-fetch": "^1.0.1",
     "@rdfjs/dataset": "^1.1.0",
     "@types/rdfjs__dataset": "^1.0.4",
     "http-link-header": "^1.1.0",
