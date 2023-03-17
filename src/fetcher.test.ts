@@ -20,15 +20,24 @@
 //
 
 import { jest, it, expect } from "@jest/globals";
+import type * as UniversalFetch from "@inrupt/universal-fetch";
 
 import { fetch } from "./fetcher";
 
-jest.mock("@inrupt/universal-fetch");
+jest.mock("@inrupt/universal-fetch", () => {
+  const uniFetchModule = jest.requireActual(
+    "@inrupt/universal-fetch"
+  ) as typeof UniversalFetch;
+  return {
+    ...uniFetchModule,
+    fetch: jest.fn(),
+  };
+});
 
 it("should fallback to @inrupt/universal-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("@inrupt/universal-fetch") as {
-    fetch: jest.Mocked<typeof fetch>;
-  };
+  const crossFetch = jest.requireMock("@inrupt/universal-fetch") as jest.Mocked<
+    typeof UniversalFetch
+  >;
   await fetch("https://some.url");
 
   expect(crossFetch.fetch.mock.calls).toEqual([
