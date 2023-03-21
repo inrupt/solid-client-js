@@ -1024,6 +1024,28 @@ describe("saveSolidDatasetAt", () => {
       });
     });
 
+    it("uses the provided prefixes if any", async () => {
+      const mockFetch = jest
+        .fn(window.fetch)
+        .mockReturnValue(Promise.resolve(new Response()));
+      const mockThing = addUrl(
+        createThing({ url: "https://arbitrary.vocab/subject" }),
+        "https://arbitrary.vocab/predicate",
+        "https://arbitrary.vocab/object"
+      );
+      const mockDataset = setThing(createSolidDataset(), mockThing);
+
+      await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
+        fetch: mockFetch,
+        prefixes: { ex: "https://arbitrary.vocab/" },
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toContain(
+        "ex:subject ex:predicate ex:object."
+      );
+    });
+
     it("returns a meaningful error when the server returns a 403", async () => {
       const mockFetch = jest
         .fn(window.fetch)

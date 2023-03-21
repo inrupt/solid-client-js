@@ -375,12 +375,14 @@ async function prepareSolidDatasetUpdate(
  * @hidden
  */
 async function prepareSolidDatasetCreation(
-  solidDataset: SolidDataset
+  solidDataset: SolidDataset,
+  options?: Partial<{ prefixes: Record<string, string> }>
 ): Promise<RequestInit> {
   return {
     method: "PUT",
     body: await triplesToTurtle(
-      toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
+      toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes),
+      options
     ),
     headers: {
       "Content-Type": "text/turtle",
@@ -412,13 +414,14 @@ async function prepareSolidDatasetCreation(
  * @param url URL to save `solidDataset` to.
  * @param solidDataset The [[SolidDataset]] to save.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ *  `options.prefixes`: A prefix map to customize the serialization. Only applied on resource creation if the serialization allows it.
  * @returns A Promise resolving to a [[SolidDataset]] containing the stored data, or rejecting if saving it failed.
  */
 export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   url: UrlString | Url,
   solidDataset: Dataset,
   options: Partial<
-    typeof internal_defaultFetchOptions
+    typeof internal_defaultFetchOptions & { prefixes: Record<string, string> }
   > = internal_defaultFetchOptions
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
@@ -431,7 +434,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
 
   const requestInit = isUpdate(datasetWithChangelog, url)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
-    : await prepareSolidDatasetCreation(datasetWithChangelog);
+    : await prepareSolidDatasetCreation(datasetWithChangelog, options);
 
   const response = await config.fetch(url, requestInit);
 
