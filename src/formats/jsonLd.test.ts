@@ -23,15 +23,19 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "cross-fetch";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
-import { getJsonLdParser } from "./jsonLd";
 
 // FIXME: Move this to jest.config.ts when merging with the universal fetch PR
-import * as RDF from "@rdfjs/types";
-import type { IQuadTerms } from 'jest-rdf/lib/matchers/toBeRdfDatasetMatching';
-import matchers from 'jest-rdf/lib/matchers';
+import type * as RDF from "@rdfjs/types";
+import type { IQuadTerms } from "jest-rdf/lib/matchers/toBeRdfDatasetMatching";
+import matchers from "jest-rdf/lib/matchers";
+import { getJsonLdParser } from "./jsonLd";
+
 interface Matchers<R> {
   toBeRdfDatasetContaining: (...actual: RDF.BaseQuad[]) => R;
-  toBeRdfDatasetMatching: (match: IQuadTerms<RDF.BaseQuad>, matches?: number) => R;
+  toBeRdfDatasetMatching: (
+    match: IQuadTerms<RDF.BaseQuad>,
+    matches?: number
+  ) => R;
   toBeRdfDatasetOfSize: (size: number) => R;
   toBeRdfIsomorphic: (actual: Iterable<RDF.BaseQuad>) => R;
   toEqualRdfQuad: (actual: RDF.BaseQuad) => R;
@@ -90,7 +94,11 @@ describe("The Parser", () => {
     // instead of the generic Jest `.toEqual()`, since it's RDF-quad-equality
     // we're checking, and not quad-implementation-equality.
     expect(onQuadCallback).toHaveBeenCalledTimes(2);
-    (expect(onQuadCallback.mock.calls.map(([quad]) => quad)) as unknown as Matchers<RDF.Quad[]>).toBeRdfIsomorphic([
+    // The custom matcher is not attached to expect added to the type
+    // because the globals have not been overidden (which usually happens when
+    // matchers are overidden by using jest-rdf)
+    // @ts-ignore
+    expect(onQuadCallback.mock.calls.map(([quad]) => quad)).toBeRdfIsomorphic([
       expectedTriple1,
       expectedTriple2,
     ]);
