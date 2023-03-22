@@ -24,6 +24,7 @@ import { Response } from "cross-fetch";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
+import type * as RDF from "@rdfjs/types";
 import { getJsonLdParser } from "./jsonLd";
 
 jest.mock("../fetcher.ts", () => ({
@@ -31,6 +32,62 @@ jest.mock("../fetcher.ts", () => ({
     .fn()
     .mockImplementation(() => Promise.resolve(new Response(undefined, {}))),
 }));
+
+async function stringToArray(str: string) {
+  const parser = getJsonLdParser();
+
+  const quadArr: RDF.Quad[] = [];
+
+  await new Promise<void>((res, rej) => {
+    parser.onQuad((quad) => quadArr.push(quad));
+    parser.onError(rej);
+    parser.onComplete(res);
+    parser.parse(str, {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: false,
+        linkedResources: {},
+      },
+    });
+  });
+
+  return quadArr;
+}
+
+const jsonLdUsername = `
+{
+  "@context":"https://pod.inrupt.com/solid/v1",
+  "storage":"https://pod.inrupt.com/username/"
+}`;
+
+const jsonLdInvalidLiteral = `
+{
+  "@id":"https://example.com/some-path#someSubject",
+  "@type":"http://xmlns.com/foaf/0.1/Person",
+  "http://xmlns.com/foaf/0.1/name":“A literal with invalid quotes”
+}`;
+
+const jsonLdPersonData = `
+{
+  "@id":"https://example.com/some-path#someSubject",
+  "@type":"http://xmlns.com/foaf/0.1/Person",
+  "http://xmlns.com/foaf/0.1/name":"Some name"
+}`;
+
+const personQuads = [
+  DataFactory.quad(
+    DataFactory.namedNode("https://example.com/some-path#someSubject"),
+    DataFactory.namedNode(rdf.type),
+    DataFactory.namedNode(foaf.Person),
+    undefined
+  ),
+  DataFactory.quad(
+    DataFactory.namedNode("https://example.com/some-path#someSubject"),
+    DataFactory.namedNode(foaf.name),
+    DataFactory.literal("Some name"),
+    undefined
+  ),
+];
 
 describe("The Parser", () => {
   it("should correctly find all triples in raw JSON-LD", async () => {
@@ -40,34 +97,14 @@ describe("The Parser", () => {
 
     parser.onQuad(onQuadCallback);
     parser.onComplete(onCompleteCallback);
-    const jsonLd = `
-    {
-      "@id":"https://example.com/some-path#someSubject",
-      "@type":"http://xmlns.com/foaf/0.1/Person",
-      "http://xmlns.com/foaf/0.1/name":"Some name"
-    }
-  `;
 
-    await parser.parse(jsonLd, {
+    await parser.parse(jsonLdPersonData, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
         isRawData: false,
         linkedResources: {},
       },
     });
-
-    const expectedTriple1 = DataFactory.quad(
-      DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(rdf.type),
-      DataFactory.namedNode(foaf.Person),
-      undefined
-    );
-    const expectedTriple2 = DataFactory.quad(
-      DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(foaf.name),
-      DataFactory.literal("Some name"),
-      undefined
-    );
 
     // Our RDF parser will use a very specific implementation, which may use a
     // different RDF/JS implementation than our main code. This is no problem,
@@ -78,7 +115,7 @@ describe("The Parser", () => {
     expect(
       isomorphic(
         onQuadCallback.mock.calls.map(([quad]) => quad),
-        [expectedTriple1, expectedTriple2]
+        personQuads
       )
     ).toBe(true);
     expect(onCompleteCallback).toHaveBeenCalledTimes(1);
@@ -91,14 +128,7 @@ describe("The Parser", () => {
 
     parser.onError(onErrorCallback);
     parser.onComplete(onCompleteCallback);
-    const jsonLd = `
-    {
-      "@id":"https://example.com/some-path#someSubject",
-      "@type":"http://xmlns.com/foaf/0.1/Person",
-      "http://xmlns.com/foaf/0.1/name":“A literal with invalid quotes”
-    }
-  `;
-    await parser.parse(jsonLd, {
+    await parser.parse(jsonLdInvalidLiteral, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
         isRawData: false,
@@ -139,14 +169,7 @@ describe("The Parser", () => {
         )
       );
 
-      const jsonLd = `
-      {
-        "@context":"https://pod.inrupt.com/solid/v1",
-        "storage":"https://pod.inrupt.com/username/"
-      }
-    `;
-
-      await parser.parse(jsonLd, {
+      await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
@@ -172,14 +195,7 @@ describe("The Parser", () => {
       };
       mockedFetcher.fetch.mockRejectedValue("Some error");
 
-      const jsonLd = `
-      {
-        "@context":"https://pod.inrupt.com/solid/v1",
-        "storage":"https://pod.inrupt.com/username/"
-      }
-    `;
-
-      await parser.parse(jsonLd, {
+      await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
@@ -190,6 +206,16 @@ describe("The Parser", () => {
       expect(onErrorCallback).toHaveBeenCalledTimes(1);
       expect(onCompleteCallback).toHaveBeenCalledTimes(1);
       expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should parse valid JSON-LD to correct quads", async () => {
+      expect(
+        isomorphic(await stringToArray(jsonLdPersonData), personQuads)
+      ).toBe(true);
+    });
+
+    it("Should throw error before complete on invalid JSON-LD", () => {
+      return expect(stringToArray(jsonLdInvalidLiteral)).rejects.toThrow();
     });
   });
 });

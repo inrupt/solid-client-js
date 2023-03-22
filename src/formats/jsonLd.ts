@@ -54,15 +54,23 @@ export const getJsonLdParser = (): Parser => {
           baseIRI: getSourceUrl(resourceInfo),
           documentLoader: new FetchDocumentLoader(fetch),
         });
-        parser.on("end", () => res());
-        parser.on("error", () => res());
 
-        onQuadCallbacks.forEach((callback) => parser.on("data", callback));
-        onCompleteCallbacks.forEach((callback) => {
-          parser.on("end", callback);
-          parser.on("error", callback);
+        let endCalled = false;
+        function end() {
+          if (!endCalled) {
+            endCalled = true;
+            onCompleteCallbacks.forEach((callback) => callback());
+            res();
+          }
+        }
+
+        parser.on("end", end);
+        parser.on("error", (err) => {
+          onErrorCallbacks.forEach((callback) => callback(err));
+          end();
         });
-        onErrorCallbacks.forEach((callback) => parser.on("error", callback));
+        onQuadCallbacks.forEach((callback) => parser.on("data", callback));
+
         parser.write(source);
         parser.end();
       }),
