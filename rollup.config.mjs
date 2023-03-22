@@ -52,6 +52,7 @@ export default {
     "@rdfjs/dataset",
     "@rdfjs/data-model",
     "n3",
-    "jsonld",
+    "jsonld-context-parser",
+    "jsonld-streaming-parser",
   ],
 };
