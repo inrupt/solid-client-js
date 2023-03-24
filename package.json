@@ -215,10 +215,5 @@
   },
   "optionalDependencies": {
     "fsevents": "^2.3.2"
-  },
-  "overrides": {
-    "node-fetch": "^2.6.7",
-    "ky-universal": "^0.11.0",
-    "@digitalbazaar/http-client": "^3.3.0"
   }
 }
