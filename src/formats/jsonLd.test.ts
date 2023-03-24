@@ -20,9 +20,11 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "cross-fetch";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
-import jsonld from "jsonld";
+import { isomorphic } from "rdf-isomorphic";
+import type * as RDF from "@rdfjs/types";
 import { getJsonLdParser } from "./jsonLd";
 
 jest.mock("../fetcher.ts", () => ({
@@ -30,6 +32,62 @@ jest.mock("../fetcher.ts", () => ({
     .fn()
     .mockImplementation(() => Promise.resolve(new Response(undefined, {}))),
 }));
+
+async function stringToArray(str: string) {
+  const parser = getJsonLdParser();
+
+  const quadArr: RDF.Quad[] = [];
+
+  await new Promise<void>((res, rej) => {
+    parser.onQuad((quad) => quadArr.push(quad));
+    parser.onError(rej);
+    parser.onComplete(res);
+    parser.parse(str, {
+      internal_resourceInfo: {
+        sourceIri: "https://some.pod/resource",
+        isRawData: false,
+        linkedResources: {},
+      },
+    });
+  });
+
+  return quadArr;
+}
+
+const jsonLdUsername = `
+{
+  "@context":"https://pod.inrupt.com/solid/v1",
+  "storage":"https://pod.inrupt.com/username/"
+}`;
+
+const jsonLdInvalidLiteral = `
+{
+  "@id":"https://example.com/some-path#someSubject",
+  "@type":"http://xmlns.com/foaf/0.1/Person",
+  "http://xmlns.com/foaf/0.1/name":“A literal with invalid quotes”
+}`;
+
+const jsonLdPersonData = `
+{
+  "@id":"https://example.com/some-path#someSubject",
+  "@type":"http://xmlns.com/foaf/0.1/Person",
+  "http://xmlns.com/foaf/0.1/name":"Some name"
+}`;
+
+const personQuads = [
+  DataFactory.quad(
+    DataFactory.namedNode("https://example.com/some-path#someSubject"),
+    DataFactory.namedNode(rdf.type),
+    DataFactory.namedNode(foaf.Person),
+    undefined
+  ),
+  DataFactory.quad(
+    DataFactory.namedNode("https://example.com/some-path#someSubject"),
+    DataFactory.namedNode(foaf.name),
+    DataFactory.literal("Some name"),
+    undefined
+  ),
+];
 
 describe("The Parser", () => {
   it("should correctly find all triples in raw JSON-LD", async () => {
@@ -39,15 +97,10 @@ describe("The Parser", () => {
 
     parser.onQuad(onQuadCallback);
     parser.onComplete(onCompleteCallback);
-    const jsonLd = `
-    {
-      "@id":"https://example.com/some-path#someSubject",
-      "@type":"http://xmlns.com/foaf/0.1/Person",
-      "http://xmlns.com/foaf/0.1/name":"Some name"
-    }
-  `;
 
-    await parser.parse(jsonLd, {
+    // FIXME: Despite the type signature, parser.parse does return a Promise,
+    // so we await on it until we fix this behavior.
+    await parser.parse(jsonLdPersonData, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
         isRawData: false,
@@ -55,27 +108,18 @@ describe("The Parser", () => {
       },
     });
 
-    const expectedTriple1 = DataFactory.quad(
-      DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(rdf.type),
-      DataFactory.namedNode(foaf.Person),
-      undefined
-    );
-    const expectedTriple2 = DataFactory.quad(
-      DataFactory.namedNode("https://example.com/some-path#someSubject"),
-      DataFactory.namedNode(foaf.name),
-      DataFactory.literal("Some name"),
-      undefined
-    );
-
     // Our RDF parser will use a very specific implementation, which may use a
     // different RDF/JS implementation than our main code. This is no problem,
     // but we just need to make sure we use the RDF/JS 'quad equals' method
     // instead of the generic Jest `.toEqual()`, since it's RDF-quad-equality
     // we're checking, and not quad-implementation-equality.
     expect(onQuadCallback).toHaveBeenCalledTimes(2);
-    expect(onQuadCallback.mock.calls[0][0].equals(expectedTriple1)).toBe(true);
-    expect(onQuadCallback.mock.calls[1][0].equals(expectedTriple2)).toBe(true);
+    expect(
+      isomorphic(
+        onQuadCallback.mock.calls.map(([quad]) => quad),
+        personQuads
+      )
+    ).toBe(true);
     expect(onCompleteCallback).toHaveBeenCalledTimes(1);
   });
 
@@ -86,58 +130,9 @@ describe("The Parser", () => {
 
     parser.onError(onErrorCallback);
     parser.onComplete(onCompleteCallback);
-    const jsonLd = `
-    {
-      "@id":"https://example.com/some-path#someSubject",
-      "@type":"http://xmlns.com/foaf/0.1/Person",
-      "http://xmlns.com/foaf/0.1/name":“A literal with invalid quotes”
-    }
-  `;
-    await parser.parse(jsonLd, {
-      internal_resourceInfo: {
-        sourceIri: "https://example.com/some-path",
-        isRawData: false,
-        linkedResources: {},
-      },
-    });
-
-    expect(onErrorCallback).toHaveBeenCalledTimes(1);
-    expect(onErrorCallback.mock.calls[0][0]).toBeInstanceOf(Error);
-  });
-
-  it("should throw an error if jsonld returns unknown termType", async () => {
-    const parser = getJsonLdParser();
-    const onErrorCallback = jest.fn();
-    const onCompleteCallback = jest.fn();
-
-    parser.onError(onErrorCallback);
-    parser.onComplete(onCompleteCallback);
-    const jsonLd = `
-    {
-      "@id":"https://example.com/some-path#someSubject",
-      "@type":"http://xmlns.com/foaf/0.1/Person",
-      "http://xmlns.com/foaf/0.1/name":"Some name"
-    }
-  `;
-
-    jest.spyOn(jsonld, "toRDF").mockResolvedValueOnce([
-      {
-        subject: {
-          termType: "FakeTermType",
-          value: "https://example.com/some-path#someSubject",
-        },
-        predicate: {
-          termType: "NamedNode",
-          value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        },
-        object: {
-          termType: "NamedNode",
-          value: "http://xmlns.com/foaf/0.1/Person",
-        },
-        graph: { termType: "DefaultGraph", value: "" },
-      },
-    ]);
-    await parser.parse(jsonLd, {
+    // FIXME: Despite the type signature, parser.parse does return a Promise,
+    // so we await on it until we fix this behavior.
+    await parser.parse(jsonLdInvalidLiteral, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
         isRawData: false,
@@ -157,6 +152,7 @@ describe("The Parser", () => {
 
       parser.onError(onErrorCallback);
       parser.onComplete(onCompleteCallback);
+      parser.onQuad(() => {});
 
       const mockedFetcher = jest.requireMock("../fetcher.ts") as {
         fetch: jest.Mocked<typeof fetch>;
@@ -173,18 +169,13 @@ describe("The Parser", () => {
               storage: { "@id": "pim:storage", "@type": "@id" },
             },
           }),
-          { headers: { "Content-Type": "application/json" } }
+          { headers: { "Content-Type": "application/ld+json" } }
         )
       );
 
-      const jsonLd = `
-      {
-        "@context":"https://pod.inrupt.com/solid/v1",
-        "storage":"https://pod.inrupt.com/username/"
-      }
-    `;
-
-      await parser.parse(jsonLd, {
+      // FIXME: Despite the type signature, parser.parse does return a Promise,
+      // so we await on it until we fix this behavior.
+      await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
@@ -210,14 +201,9 @@ describe("The Parser", () => {
       };
       mockedFetcher.fetch.mockRejectedValue("Some error");
 
-      const jsonLd = `
-      {
-        "@context":"https://pod.inrupt.com/solid/v1",
-        "storage":"https://pod.inrupt.com/username/"
-      }
-    `;
-
-      await parser.parse(jsonLd, {
+      // FIXME: Despite the type signature, parser.parse does return a Promise,
+      // so we await on it until we fix this behavior.
+      await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
           isRawData: false,
@@ -228,6 +214,16 @@ describe("The Parser", () => {
       expect(onErrorCallback).toHaveBeenCalledTimes(1);
       expect(onCompleteCallback).toHaveBeenCalledTimes(1);
       expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should parse valid JSON-LD to correct quads", async () => {
+      expect(
+        isomorphic(await stringToArray(jsonLdPersonData), personQuads)
+      ).toBe(true);
+    });
+
+    it("Should throw error before complete on invalid JSON-LD", () => {
+      return expect(stringToArray(jsonLdInvalidLiteral)).rejects.toThrow();
     });
   });
 });

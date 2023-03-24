@@ -18,37 +18,11 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
-import type {
-  DefaultGraph,
-  Quad,
-  Quad_Graph,
-  Quad_Object,
-  Quad_Predicate,
-  Quad_Subject,
-} from "@rdfjs/types";
-import type { RemoteDocument } from "jsonld/jsonld-spec";
-import { DataFactory } from "../rdfjs.internal";
+import { JsonLdParser } from "jsonld-streaming-parser";
+import { FetchDocumentLoader } from "jsonld-context-parser";
 import { getSourceUrl } from "../resource/resource";
 import { Parser } from "../resource/solidDataset";
 import { fetch } from "../fetcher";
-
-const fetchDocumentLoader = async (url: string): Promise<RemoteDocument> => {
-  const res = await fetch(url);
-
-  return {
-    contextUrl: undefined,
-    documentUrl: url,
-    document: await res.json(),
-  };
-};
-
-interface JsonLDQuad {
-  subject: Quad_Subject;
-  predicate: Quad_Predicate;
-  object: Quad_Object;
-  graph: Quad_Graph;
-}
 
 /**
  * ```{note} This function is still experimental and subject to change, even
@@ -74,56 +48,34 @@ export const getJsonLdParser = (): Parser => {
     onComplete: (callback) => {
       onCompleteCallbacks.push(callback);
     },
-    parse: async (source, resourceInfo) => {
-      const jsonld = (await import("jsonld")).default;
+    // The following returns a Promise that can be awaited, which is undocumented
+    // behavior that doesn't match the type signature. It prevents a potentially
+    // breaking change, and will be updated on the next major release.
+    parse: async (source, resourceInfo) =>
+      new Promise((res) => {
+        const parser = new JsonLdParser({
+          baseIRI: getSourceUrl(resourceInfo),
+          documentLoader: new FetchDocumentLoader(fetch),
+        });
 
-      let quads = [] as Quad[];
-      try {
-        const plainQuads = (await jsonld.toRDF(JSON.parse(source), {
-          base: getSourceUrl(resourceInfo),
-          documentLoader: fetchDocumentLoader,
-        })) as JsonLDQuad[];
-        quads = fixQuads(plainQuads);
-      } catch (error) {
-        onErrorCallbacks.forEach((callback) => callback(error));
-      }
-      quads.forEach((quad) => {
-        onQuadCallbacks.forEach((callback) => callback(quad));
-      });
-      onCompleteCallbacks.forEach((callback) => callback());
-    },
+        let endCalled = false;
+        function end() {
+          if (!endCalled) {
+            endCalled = true;
+            onCompleteCallbacks.forEach((callback) => callback());
+            res();
+          }
+        }
+
+        parser.on("end", end);
+        parser.on("error", (err) => {
+          onErrorCallbacks.forEach((callback) => callback(err));
+          end();
+        });
+        onQuadCallbacks.forEach((callback) => parser.on("data", callback));
+
+        parser.write(source);
+        parser.end();
+      }),
   };
 };
-
-/* Quads returned by jsonld parser are not spec-compliant
- * see https://github.com/digitalbazaar/jsonld.js/issues/243
- * Also, no specific type for these 'quads' is exposed by the library
- */
-
-// change to MaybeQuad
-function fixQuads(plainQuads: JsonLDQuad[]): Quad[] {
-  const fixedQuads = plainQuads.map((plainQuad) =>
-    DataFactory.quad(
-      term(plainQuad.subject) as Quad_Subject,
-      term(plainQuad.predicate) as Quad_Predicate,
-      term(plainQuad.object) as Quad_Object,
-      term(plainQuad.graph) as Quad_Graph
-    )
-  );
-  return fixedQuads;
-}
-
-function term(term: Quad_Object | DefaultGraph) {
-  switch (term.termType) {
-    case "NamedNode":
-      return DataFactory.namedNode(term.value);
-    case "BlankNode":
-      return DataFactory.blankNode(term.value.substr(2)); // Remove the '_:' prefix. see https://github.com/digitalbazaar/jsonld.js/issues/244
-    case "Literal":
-      return DataFactory.literal(term.value, term.language || term.datatype);
-    case "DefaultGraph":
-      return DataFactory.defaultGraph();
-    default:
-      throw Error(`unknown termType: ${term.termType}`);
-  }
-}

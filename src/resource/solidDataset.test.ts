@@ -23,6 +23,7 @@ import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 
 import { Response } from "cross-fetch";
 import { DataFactory } from "n3";
+import type * as RDF from "@rdfjs/types";
 import {
   getSolidDataset,
   saveSolidDatasetAt,
@@ -72,59 +73,57 @@ jest.mock("../fetcher.ts", () => ({
   ),
 }));
 
-jest.mock("jsonld", () => ({
-  toRDF: jest.fn().mockImplementation(() =>
-    Promise.resolve([
-      {
-        subject: { termType: "BlankNode", value: "_:b0" },
-        predicate: {
-          termType: "NamedNode",
-          value: "http://inrupt.com/ns/ess#consentIssuer",
-        },
-        object: {
-          termType: "NamedNode",
-          value: "https://consent.pod.inrupt.com",
-        },
-        graph: { termType: "DefaultGraph", value: "" },
-      },
-      {
-        subject: { termType: "BlankNode", value: "_:b0" },
-        predicate: {
-          termType: "NamedNode",
-          value: "http://inrupt.com/ns/ess#notificationGatewayEndpoint",
-        },
-        object: {
-          termType: "NamedNode",
-          value: "https://notification.pod.inrupt.com",
-        },
-        graph: { termType: "DefaultGraph", value: "" },
-      },
-      {
-        subject: { termType: "BlankNode", value: "_:b0" },
-        predicate: {
-          termType: "NamedNode",
-          value: "http://inrupt.com/ns/ess#powerSwitchEndpoint",
-        },
-        object: {
-          termType: "NamedNode",
-          value: "https://pod.inrupt.com/powerswitch/username",
-        },
-        graph: { termType: "DefaultGraph", value: "" },
-      },
-      {
-        subject: { termType: "BlankNode", value: "_:b0" },
-        predicate: {
-          termType: "NamedNode",
-          value: "http://www.w3.org/ns/pim/space#storage",
-        },
-        object: {
-          termType: "NamedNode",
-          value: "https://pod.inrupt.com/username/",
-        },
-        graph: { termType: "DefaultGraph", value: "" },
-      },
-    ])
+const bnode = DataFactory.blankNode("b0");
+
+const data: RDF.Quad[] = [
+  DataFactory.quad(
+    bnode,
+    DataFactory.namedNode("http://inrupt.com/ns/ess#consentIssuer"),
+    DataFactory.namedNode("https://consent.pod.inrupt.com")
   ),
+  DataFactory.quad(
+    bnode,
+    DataFactory.namedNode(
+      "http://inrupt.com/ns/ess#notificationGatewayEndpoint"
+    ),
+    DataFactory.namedNode("https://notification.pod.inrupt.com")
+  ),
+  DataFactory.quad(
+    bnode,
+    DataFactory.namedNode("http://inrupt.com/ns/ess#powerSwitchEndpoint"),
+    DataFactory.namedNode("https://pod.inrupt.com/powerswitch/username")
+  ),
+  DataFactory.quad(
+    bnode,
+    DataFactory.namedNode("http://www.w3.org/ns/pim/space#storage"),
+    DataFactory.namedNode("https://pod.inrupt.com/username/")
+  ),
+];
+
+jest.mock("../formats/jsonLd", () => ({
+  getJsonLdParser: jest.fn().mockImplementation((): Parser => {
+    const onQuadCallbacks: Array<Parameters<Parser["onQuad"]>[0]> = [];
+    const onCompleteCallbacks: Array<Parameters<Parser["onComplete"]>[0]> = [];
+    const onErrorCallbacks: Array<Parameters<Parser["onError"]>[0]> = [];
+
+    return {
+      onQuad: (callback) => {
+        onQuadCallbacks.push(callback);
+      },
+      onError: (callback) => {
+        onErrorCallbacks.push(callback);
+      },
+      onComplete: (callback) => {
+        onCompleteCallbacks.push(callback);
+      },
+      parse: async () => {
+        for (const quad of data) {
+          onQuadCallbacks.forEach((callback) => callback(quad));
+        }
+        onCompleteCallbacks.forEach((callback) => callback());
+      },
+    };
+  }),
 }));
 
 function mockResponse(

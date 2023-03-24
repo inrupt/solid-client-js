@@ -2,9 +2,19 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-The following changes have been implemented but not released yet:
+## [Deprecation notice]
+
+The following changes are pending, and will be applied on the next major release:
+
+- the parser returned by `getJsonLdParser` will no longer return a promise when
+  the `parse` method is called. This function's signature already specifies it
+  returns `void`, so no code should rely on a returned value, but we wanted to
+  give a heads-up to any developers currently relying on this undocumented behavior
+  before making a potentially breaking change.
 
 ## [Unreleased]
+
+The following changes have been implemented but not released yet:
 
 ## [1.26.0] - 2023-03-24
 
