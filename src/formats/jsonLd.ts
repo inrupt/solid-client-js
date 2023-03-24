@@ -48,6 +48,9 @@ export const getJsonLdParser = (): Parser => {
     onComplete: (callback) => {
       onCompleteCallbacks.push(callback);
     },
+    // The following returns a Promise that can be awaited, which is undocumented
+    // behavior that doesn't match the type signature. It prevents a potentially
+    // breaking change, and will be updated on the next major release.
     parse: async (source, resourceInfo) =>
       new Promise((res) => {
         const parser = new JsonLdParser({

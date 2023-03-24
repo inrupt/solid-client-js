@@ -98,6 +98,8 @@ describe("The Parser", () => {
     parser.onQuad(onQuadCallback);
     parser.onComplete(onCompleteCallback);
 
+    // FIXME: Despite the type signature, parser.parse does return a Promise,
+    // so we await on it until we fix this behavior.
     await parser.parse(jsonLdPersonData, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
@@ -128,6 +130,8 @@ describe("The Parser", () => {
 
     parser.onError(onErrorCallback);
     parser.onComplete(onCompleteCallback);
+    // FIXME: Despite the type signature, parser.parse does return a Promise,
+    // so we await on it until we fix this behavior.
     await parser.parse(jsonLdInvalidLiteral, {
       internal_resourceInfo: {
         sourceIri: "https://example.com/some-path",
@@ -169,6 +173,8 @@ describe("The Parser", () => {
         )
       );
 
+      // FIXME: Despite the type signature, parser.parse does return a Promise,
+      // so we await on it until we fix this behavior.
       await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
@@ -195,6 +201,8 @@ describe("The Parser", () => {
       };
       mockedFetcher.fetch.mockRejectedValue("Some error");
 
+      // FIXME: Despite the type signature, parser.parse does return a Promise,
+      // so we await on it until we fix this behavior.
       await parser.parse(jsonLdUsername, {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
