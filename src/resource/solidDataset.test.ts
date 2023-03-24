@@ -1038,7 +1038,7 @@ describe("saveSolidDatasetAt", () => {
 
     it("uses the provided prefixes if any", async () => {
       const mockFetch = jest
-        .fn(window.fetch)
+        .fn<typeof fetch>()
         .mockReturnValue(Promise.resolve(new Response()));
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
