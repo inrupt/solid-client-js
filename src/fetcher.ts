@@ -20,16 +20,15 @@
 //
 
 /* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
-
 /**
  * @ignore Internal fallback for when no fetcher is provided; not to be used downstream.
  */
 export const fetch: typeof window.fetch = async (resource, init) => {
-  /* istanbul ignore if: `require` is always defined in the unit test environment */
+  /* istanbul ignore next: `require` is always defined in the unit test environment */
   if (typeof window === "object" && typeof require !== "function") {
     return window.fetch(resource, init);
   }
-  /* istanbul ignore if: `require` is always defined in the unit test environment */
+  /* istanbul ignore next: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
     // When using Node.js with ES Modules, require is not defined:
     const crossFetchModule = await import("cross-fetch");

@@ -105,7 +105,7 @@ describe("getProfileJwksIri", () => {
 describe("addJwkToJwks", () => {
   it("returns an updated JWKS with the provided JWK", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify({ keys: [] })));
     const jwks = await addJwkToJwks(
       { kid: "..." },
@@ -132,7 +132,7 @@ describe("addJwkToJwks", () => {
 
   it("throws if the given IRI does not resolve to a JWKS", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify("Not a JWKS")));
     await expect(
       addJwkToJwks({ kid: "..." }, "https://example.org/jwks", {
@@ -143,7 +143,7 @@ describe("addJwkToJwks", () => {
 
   it("throws if the given IRI cannot be resolved", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response("", { status: 400, statusText: "Bad request" })
       );
@@ -156,7 +156,7 @@ describe("addJwkToJwks", () => {
 
   it("throws if the given IRI resolves to a JSON document which isn't a JWKS", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ someKey: "some value" }))
       );
@@ -216,7 +216,7 @@ describe("addPublicKeyToProfileJwks", () => {
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
 
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify({ keys: [] })))
       .mockResolvedValueOnce(new Response(""));
 

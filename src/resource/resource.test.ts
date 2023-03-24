@@ -76,7 +76,7 @@ describe("getResourceInfo", () => {
 
   it("uses the given fetcher if provided", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(new Response()));
 
     await getResourceInfo("https://some.pod/resource", {
@@ -89,7 +89,7 @@ describe("getResourceInfo", () => {
 
   it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           mockResponse(undefined, { url: "https://some.pod/resource" })
@@ -109,7 +109,7 @@ describe("getResourceInfo", () => {
   });
 
   it("knows when the Resource contains a SolidDataset", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
           url: "https://arbitrary.pod/resource",
@@ -129,7 +129,7 @@ describe("getResourceInfo", () => {
   });
 
   it("knows when the Resource does not contain a SolidDataset", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
           url: "https://arbitrary.pod/resource",
@@ -150,7 +150,7 @@ describe("getResourceInfo", () => {
 
   it("marks a Resource as not a SolidDataset when its Content Type is unknown", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           mockResponse(undefined, { url: "https://arbitrary.pod/resource" })
@@ -168,7 +168,7 @@ describe("getResourceInfo", () => {
   });
 
   it("exposes the Content Type when known", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
           url: "https://some.pod/resource",
@@ -191,7 +191,7 @@ describe("getResourceInfo", () => {
 
   it("does not expose a Content-Type when none is known", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(mockResponse()));
 
     const solidDatasetInfo = await getResourceInfo(
@@ -205,7 +205,7 @@ describe("getResourceInfo", () => {
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
@@ -227,7 +227,7 @@ describe("getResourceInfo", () => {
   });
 
   it("exposes the URLs of linked Resources", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         mockResponse(undefined, {
           headers: {
@@ -253,7 +253,7 @@ describe("getResourceInfo", () => {
   });
 
   it("exposes when no Resources were linked", async () => {
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
       mockResponse(undefined, {
         url: "https://arbitrary.pod",
       })
@@ -276,7 +276,7 @@ describe("getResourceInfo", () => {
       // We need the type assertion because in non-mock situations,
       // you cannot set the URL manually:
     } as ResponseInit);
-    const mockFetch = jest.fn(window.fetch).mockResolvedValue(mockResponse);
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockResponse);
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
@@ -287,7 +287,7 @@ describe("getResourceInfo", () => {
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -319,7 +319,7 @@ describe("getResourceInfo", () => {
   });
 
   it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {
@@ -352,7 +352,7 @@ describe("getResourceInfo", () => {
   });
 
   it("does not provide the resource's access permissions if not provided by the server", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response(undefined, {
           headers: {},
@@ -370,7 +370,7 @@ describe("getResourceInfo", () => {
 
   it("does not request the actual data from the server", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           mockResponse(undefined, { url: "https://some.pod/resource" })
@@ -392,7 +392,7 @@ describe("getResourceInfo", () => {
       .spyOn(mockResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(mockResponse));
 
     const fetchPromise = getResourceInfo("https://some.pod/resource", {
@@ -406,7 +406,7 @@ describe("getResourceInfo", () => {
 
   it("overrides a 403 error if provided the appropriate option", async () => {
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
           mockResponse("Forbidden", { status: 403, url: "https://some.url" })
@@ -429,7 +429,7 @@ describe("getResourceInfo", () => {
       .spyOn(mockResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
-      .fn(window.fetch)
+      .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(mockResponse));
 
     const fetchPromise = getResourceInfo("https://some.pod/resource", {
@@ -442,7 +442,7 @@ describe("getResourceInfo", () => {
   });
 
   it("includes the status code and status message when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("I'm a teapot!", {
           status: 418,
@@ -462,7 +462,7 @@ describe("getResourceInfo", () => {
   });
 
   it("does not ignore non-auth errors", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("I'm a teapot!", {
           status: 418,
@@ -483,7 +483,7 @@ describe("getResourceInfo", () => {
   });
 
   it("throws an instance of SolidClientError when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("I'm a teapot!", {
           status: 418,
@@ -500,7 +500,7 @@ describe("getResourceInfo", () => {
   });
 
   it("throws an instance of FetchError when a request failed", async () => {
-    const mockFetch = jest.fn(window.fetch).mockReturnValue(
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
         new Response("I'm a teapot!", {
           status: 418,
