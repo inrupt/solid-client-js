@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## [1.26.0] - 2023-03-24
+
 ### New feature
 
 - `saveSolidDatasetAt` has a new `options` field, `prefixes`. It allows a prefix
