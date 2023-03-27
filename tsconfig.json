@@ -78,6 +78,7 @@
     // as the root directory for compilation (instead of /src),
     // meaning that files that would otherwise be included in /dist directly
     // (e.g. dist/index.d.ts) will then be built to /dist/src.
-    "e2e"
+    "e2e",
+    "**/*.test.ts"
   ]
 }
