@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { fetch as unauthenticatedFetch } from "@inrupt/universal-fetch";
 import {
   asIri,
   getIriAll,
@@ -122,7 +121,9 @@ export async function getProfileAll<
   const authFetch = options.fetch ?? defaultFetch;
   const webIdProfile =
     options.webIdProfile ??
-    (await getSolidDataset(webId, { fetch: unauthenticatedFetch }));
+    (await getSolidDataset(webId, {
+      fetch: defaultFetch,
+    }));
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
@@ -217,5 +218,5 @@ export function getPodUrlAllFrom(
 export async function getWebIdDataset(
   webId: WebId
 ): Promise<ReturnType<typeof getSolidDataset>> {
-  return getSolidDataset(webId, { fetch: unauthenticatedFetch });
+  return getSolidDataset(webId, { fetch: defaultFetch });
 }

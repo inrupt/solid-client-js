@@ -18,7 +18,11 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-export { fetch } from "@inrupt/universal-fetch";
+import { fetch as unifetch } from "@inrupt/universal-fetch";
+
+// Make sure fetch can't be rebound, because it can cause errors in the browser.
+// Namely, it causes the issue discussed in https://stackoverflow.com/questions/71822422/uncaught-in-promise-typeerror-fetch-called-on-an-object-that-does-not-imple.
+export const fetch = unifetch.bind(globalThis);
 
 /* eslint-disable prefer-const, global-require, no-shadow, @typescript-eslint/no-var-requires */
 /**
