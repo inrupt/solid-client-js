@@ -80,6 +80,6 @@
     // (e.g. dist/index.d.ts) will then be built to /dist/src.
     "e2e",
     "**/*.test.ts",
-    "src/test.internal.ts"
+    "src/tests.internal.ts"
   ]
 }
