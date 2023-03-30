@@ -545,12 +545,10 @@ describe("getSolidDataset", () => {
   });
 
   it("can be called with NamedNodes", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        })
-      )
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      })
     );
 
     await getSolidDataset(DataFactory.namedNode("https://some.pod/resource"), {
@@ -563,7 +561,13 @@ describe("getSolidDataset", () => {
   it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse(undefined)));
+      .mockResolvedValueOnce(
+        mockResponse(
+          undefined,
+          { headers: { "Content-Type": "text/turtle" } },
+          "https://some.pod/resource"
+        )
+      );
 
     const solidDataset = await getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
@@ -575,19 +579,29 @@ describe("getSolidDataset", () => {
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
         mockResponse(
           undefined,
           {
             headers: {
               Link: '<aclresource.acl>; rel="acl"',
+              "Content-Type": "text/turtle",
             },
+          },
+          "https://some.pod/container/"
+        )
+      )
+      .mockResolvedValueOnce(
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
           },
           "https://some.pod/container/aclresource.acl"
         )
-      )
-    );
+      );
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",

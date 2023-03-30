@@ -84,10 +84,8 @@ describe("getResourceInfo", () => {
   it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, undefined, "https://some.pod/resource")
-        )
+      .mockResolvedValue(
+        mockResponse(undefined, undefined, "https://some.pod/resource")
       );
 
     const solidDatasetInfo = await getResourceInfo(
