@@ -61,6 +61,7 @@ import { createSolidDataset } from "../resource/solidDataset";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { addIri, addStringNoLocale } from "../thing/add";
 import { getIri } from "../thing/get";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -71,15 +72,6 @@ jest.mock("../fetcher.ts", () => ({
     )
   ),
 }));
-
-function mockResponse(
-  body?: BodyInit | null,
-  init?: ResponseInit & { url: string }
-): Response {
-  const response = new Response(body, init);
-  jest.spyOn(response, "url", "get").mockReturnValue(init?.url ?? "");
-  return response;
-}
 
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
@@ -134,10 +126,13 @@ describe("fetchAcl", () => {
           ? { Link: "" }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -167,24 +162,30 @@ describe("fetchAcl", () => {
     const mockFetch = jest.fn((url) => {
       if (url === "https://some.pod/resource.acl") {
         return Promise.resolve(
-          mockResponse(undefined, {
-            url: "https://some.pod/resource.acl",
-            headers: {
-              Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
-              "Content-Type": "text/turtle",
+          mockResponse(
+            undefined,
+            {
+              headers: {
+                Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+                "Content-Type": "text/turtle",
+              },
             },
-          })
+            "https://some.pod/resource.acl"
+          )
         );
       }
 
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            "Content-Type": "text/turtle",
-            Link: '<resource.acl>; rel="acl"',
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              "Content-Type": "text/turtle",
+              Link: '<resource.acl>; rel="acl"',
+            },
           },
-          url: url as string,
-        })
+          url as string
+        )
       );
     });
 
@@ -211,10 +212,13 @@ describe("fetchAcl", () => {
     const mockFetch = jest.fn((url) => {
       if (url === "https://some.pod/resource.acl") {
         return Promise.resolve(
-          mockResponse("ACL not found", {
-            status: 404,
-            url: "https://some.pod/resource.acl",
-          })
+          mockResponse(
+            "ACL not found",
+            {
+              status: 404,
+            },
+            "https://some.pod/resource.acl"
+          )
         );
       }
 
@@ -225,10 +229,13 @@ describe("fetchAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -268,10 +275,13 @@ describe("fetchResourceAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/resource.acl"
+        )
       )
     );
 
@@ -336,10 +346,13 @@ describe("fetchResourceAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/resource.acl",
-        })
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
+          },
+          "https://some.pod/resource.acl"
+        )
       )
     );
 
@@ -364,13 +377,16 @@ describe("fetchResourceAcl", () => {
       },
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource?ext=acr",
-        headers: {
-          "Content-Type": "text/turtle",
-          Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+      mockResponse(
+        undefined,
+        {
+          headers: {
+            "Content-Type": "text/turtle",
+            Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+          },
         },
-      })
+        "https://some.pod/resource?ext=acr"
+      )
     );
 
     await expect(
@@ -394,13 +410,16 @@ describe("fetchResourceAcl", () => {
       },
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource?ext=acr",
-        headers: {
-          "Content-Type": "text/turtle",
-          Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+      mockResponse(
+        undefined,
+        {
+          headers: {
+            "Content-Type": "text/turtle",
+            Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+          },
         },
-      })
+        "https://some.pod/resource?ext=acr"
+      )
     );
 
     await expect(
@@ -430,20 +449,26 @@ describe("fetchFallbackAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod/",
-        })
+          "https://some.pod/"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/.acl"
+        )
       )
     );
 
@@ -497,38 +522,50 @@ describe("fetchFallbackAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod/with-acl/without-acl/",
-        })
+          "https://some.pod/with-acl/without-acl/"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/with-acl/without-acl/.acl",
-        })
-      )
-    );
-    mockFetch.mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
           },
-          url: "https://some.pod/with-acl/",
-        })
+          "https://some.pod/with-acl/without-acl/.acl"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/with-acl/.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
+          },
+          "https://some.pod/with-acl/"
+        )
+      )
+    );
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/with-acl/.acl"
+        )
       )
     );
 
@@ -569,13 +606,17 @@ describe("fetchFallbackAcl", () => {
         },
       },
     };
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/arbitrary-parent/no-control-access/",
-        })
-      )
-    );
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse(
+            undefined,
+            {},
+            "https://some.pod/arbitrary-parent/no-control-access/"
+          )
+        )
+      );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
       fetch: mockFetch,
@@ -605,20 +646,26 @@ describe("fetchFallbackAcl", () => {
 
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod",
-        })
+          "https://some.pod"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/.acl",
-        })
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
+          },
+          "https://some.pod/.acl"
+        )
       )
     );
 
@@ -684,10 +731,13 @@ describe("getSolidDatasetWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -722,10 +772,13 @@ describe("getSolidDatasetWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -770,13 +823,16 @@ describe("getSolidDatasetWithAcl", () => {
 
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: "",
-            "Content-Type": "text/turtle",
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: "",
+              "Content-Type": "text/turtle",
+            },
           },
-          url: "https://some.pod/resource",
-        })
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -1107,10 +1163,13 @@ describe("getResourceInfoWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -1145,10 +1204,13 @@ describe("getResourceInfoWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -1194,12 +1256,15 @@ describe("getResourceInfoWithAcl", () => {
 
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: "",
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: "",
+            },
           },
-          url: "https://some.pod/resource",
-        })
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -1216,11 +1281,14 @@ describe("getResourceInfoWithAcl", () => {
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse("Not allowed", {
-          status: 403,
-          statusText: "Forbidden",
-          url: "https://some.pod/resource",
-        })
+        mockResponse(
+          "Not allowed",
+          {
+            status: 403,
+            statusText: "Forbidden",
+          },
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -1236,11 +1304,14 @@ describe("getResourceInfoWithAcl", () => {
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse("Not found", {
-          status: 404,
-          statusText: "Not Found",
-          url: "https://some.pod/resource",
-        })
+        mockResponse(
+          "Not found",
+          {
+            status: 404,
+            statusText: "Not Found",
+          },
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -1281,7 +1352,7 @@ describe("getResourceInfoWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: "https://some.pod/resource" })
+          mockResponse(undefined, {}, "https://some.pod/resource")
         )
       );
 
