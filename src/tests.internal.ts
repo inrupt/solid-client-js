@@ -20,6 +20,7 @@
 //
 
 import { Response } from "@inrupt/universal-fetch";
+import { jest } from "@jest/globals";
 
 const buildResponseMocker =
   (urlMock: (sourceUrl: string, response: Response) => void) =>
