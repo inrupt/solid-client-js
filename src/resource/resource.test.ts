@@ -42,6 +42,7 @@ import {
   SolidClientError,
 } from "../interfaces";
 import { createSolidDataset } from "./solidDataset";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -52,15 +53,6 @@ jest.mock("../fetcher.ts", () => ({
     )
   ),
 }));
-
-function mockResponse(
-  body?: BodyInit | null,
-  init?: ResponseInit & { url: string }
-): Response {
-  const response = new Response(body, init);
-  jest.spyOn(response, "url", "get").mockReturnValue(init?.url ?? "");
-  return response;
-}
 
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
@@ -94,7 +86,7 @@ describe("getResourceInfo", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: "https://some.pod/resource" })
+          mockResponse(undefined, undefined, "https://some.pod/resource")
         )
       );
 
@@ -113,10 +105,13 @@ describe("getResourceInfo", () => {
   it("knows when the Resource contains a SolidDataset", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://arbitrary.pod/resource",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://arbitrary.pod/resource"
+        )
       )
     );
 
@@ -133,10 +128,13 @@ describe("getResourceInfo", () => {
   it("knows when the Resource does not contain a SolidDataset", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://arbitrary.pod/resource",
-          headers: { "Content-Type": "image/svg+xml" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "image/svg+xml" },
+          },
+          "https://arbitrary.pod/resource"
+        )
       )
     );
 
@@ -155,7 +153,7 @@ describe("getResourceInfo", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: "https://arbitrary.pod/resource" })
+          mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
         )
       );
 
@@ -172,10 +170,13 @@ describe("getResourceInfo", () => {
   it("exposes the Content Type when known", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource",
-          headers: { "Content-Type": "text/turtle; charset=UTF-8" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle; charset=UTF-8" },
+          },
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -209,12 +210,15 @@ describe("getResourceInfo", () => {
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: '<aclresource.acl>; rel="acl"',
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: '<aclresource.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod/container/resource",
-        })
+          "https://some.pod/container/resource"
+        )
       )
     );
 
@@ -231,12 +235,15 @@ describe("getResourceInfo", () => {
   it("exposes the URLs of linked Resources", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
+            },
           },
-          url: "https://some.pod",
-        })
+          "https://some.pod"
+        )
       )
     );
 
@@ -255,11 +262,9 @@ describe("getResourceInfo", () => {
   });
 
   it("exposes when no Resources were linked", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      mockResponse(undefined, {
-        url: "https://arbitrary.pod",
-      })
-    );
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValue(mockResponse(undefined, {}, "https://arbitrary.pod"));
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
@@ -270,12 +275,15 @@ describe("getResourceInfo", () => {
   });
 
   it("does not provide an IRI to an ACL resource if not provided one by the server", async () => {
-    const mockedResponse = mockResponse(undefined, {
-      headers: {
-        Link: '<arbitrary-resource>; rel="not-acl"',
+    const mockedResponse = mockResponse(
+      undefined,
+      {
+        headers: {
+          Link: '<arbitrary-resource>; rel="not-acl"',
+        },
       },
-      url: "https://arbitrary.pod",
-    });
+      "https://arbitrary.pod"
+    );
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
 
     const solidDatasetInfo = await getResourceInfo(
@@ -373,7 +381,7 @@ describe("getResourceInfo", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: "https://some.pod/resource" })
+          mockResponse(undefined, undefined, "https://some.pod/resource")
         )
       );
 
@@ -410,11 +418,14 @@ describe("getResourceInfo", () => {
   it("overrides a 403 error if provided the appropriate option", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
-        mockResponse("Forbidden", {
-          status: 403,
-          url: "https://some.url",
-          statusText: "Forbidden",
-        })
+        mockResponse(
+          "Forbidden",
+          {
+            status: 403,
+            statusText: "Forbidden",
+          },
+          "https://some.url"
+        )
       )
     );
 
@@ -429,16 +440,16 @@ describe("getResourceInfo", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockResponse = new Response("Not found", {
+    const mockedResponse = new Response("Not found", {
       status: 404,
       statusText: "Not Found",
     });
     jest
-      .spyOn(mockResponse, "url", "get")
+      .spyOn(mockedResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+      .mockReturnValue(Promise.resolve(mockedResponse));
 
     const fetchPromise = getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,
