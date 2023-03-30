@@ -62,6 +62,7 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -126,24 +127,6 @@ jest.mock("../formats/jsonLd", () => ({
   }),
 }));
 
-function mockResponse(
-  body?: BodyInit | null,
-  init?: ResponseInit,
-  url = "https://some.pod/resource"
-): Response {
-  const response = new Response(body, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      "Content-Type":
-        (init?.headers as Record<string, string>)?.["Content-Type"] ??
-        "text/turtle",
-    },
-  });
-  jest.spyOn(response, "url", "get").mockReturnValue(url);
-  return response;
-}
-
 describe("createSolidDataset", () => {
   it("should initialise a new empty SolidDataset", () => {
     const solidDataset = createSolidDataset();
@@ -166,11 +149,15 @@ describe("responseToSolidDataset", () => {
         vcard:fn "Vincent", [:predicate <for://a.blank/node>].
     `;
 
-    const response = mockResponse(turtle, {
-      headers: {
-        "Content-Type": "text/turtle",
+    const response = mockResponse(
+      turtle,
+      {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
       },
-    });
+      "https://some.pod/resource"
+    );
     const solidDataset = await responseToSolidDataset(response);
 
     expect(solidDataset).toEqual(
@@ -737,7 +724,11 @@ describe("getSolidDataset", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(turtle, undefined, "https://arbitrary.pod/resource")
+          mockResponse(
+            turtle,
+            { headers: { "Content-Type": "text/turtle" } },
+            "https://arbitrary.pod/resource"
+          )
         )
       );
 
@@ -1883,6 +1874,7 @@ describe("createContainerAt", () => {
           {
             headers: {
               Link: '<aclresource.acl>; rel="acl"',
+              "Content-Type": "text/turtle",
             },
           },
           "https://some.pod/container/"
