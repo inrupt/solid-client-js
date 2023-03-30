@@ -122,6 +122,7 @@ export async function getProfileAll<
   const webIdProfile =
     options.webIdProfile ??
     (await getSolidDataset(webId, {
+      // This should always use an unauthenticated fetch.
       fetch: defaultFetch,
     }));
   const altProfileAll = (
