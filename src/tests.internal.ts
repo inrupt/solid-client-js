@@ -22,6 +22,11 @@
 import { Response } from "@inrupt/universal-fetch";
 import { jest } from "@jest/globals";
 
+/**
+ * This function is intended to be extracted into a shared package, as it is used
+ * across multiple repositories. It receiving a callback allows the shared package
+ * to have no dependency on jest, the need for peer dependencies and version alignment.
+ */
 const buildResponseMocker =
   (urlMock: (sourceUrl: string, response: Response) => void) =>
   (body?: BodyInit | null, init?: ResponseInit, sourceUrl?: string) => {
@@ -32,6 +37,11 @@ const buildResponseMocker =
     return response;
   };
 
+/**
+ * The `url` property of a Response is read-only, and using the default constructor
+ * doesn't allow to set it. Our library requires `response.url` to be set in order
+ * to track the resource's URL, so we use jest to mock this call.
+ */
 export const mockResponse = buildResponseMocker(
   (sourceUrl: string, response: Response) => {
     jest.spyOn(response, "url", "get").mockReturnValue(sourceUrl);
