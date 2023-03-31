@@ -302,13 +302,6 @@ export async function getSolidDataset(
     ...internal_defaultFetchOptions,
     ...options,
   };
-  // config.fetch = config.fetch.bind(window);
-  // await config
-  //   .fetch(
-  //     "https://openid.dev-next.inrupt.com/.well-known/openid-configuration"
-  //   )
-  //   .then((response) => response.text())
-  //   .then(console.log);
   const parserContentTypes = Object.keys(options.parsers ?? {});
   const acceptedContentTypes =
     parserContentTypes.length > 0
