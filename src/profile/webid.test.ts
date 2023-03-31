@@ -56,19 +56,6 @@ jest.mock("@inrupt/universal-fetch", () => {
   };
 });
 
-// jest.mock("../fetcher.ts", () => ({
-//   fetch: jest.fn().mockImplementation(() =>
-//     Promise.resolve(
-//       new Response(undefined, {
-//         headers: {
-//           Location: "https://arbitrary.pod/resource",
-//           "Content-Type": "text/turtle",
-//         },
-//       })
-//     )
-//   ),
-// }));
-
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn(),
 }));
