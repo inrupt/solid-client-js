@@ -971,8 +971,7 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const response = new Response(undefined, { headers });
-      jest.spyOn(response, "url", "get").mockReturnValue(url as string);
+      const response = mockResponse(undefined, { headers }, url as string);
       return Promise.resolve(response);
     });
 
@@ -1006,8 +1005,7 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const response = new Response(undefined, { headers });
-      jest.spyOn(response, "url", "get").mockReturnValue(url as string);
+      const response = mockResponse(undefined, { headers }, url as string);
       return Promise.resolve(response);
     });
 
