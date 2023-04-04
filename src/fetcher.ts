@@ -22,4 +22,5 @@ import { fetch as unifetch } from "@inrupt/universal-fetch";
 
 // Make sure fetch can't be rebound, because it can cause errors in the browser.
 // Namely, it causes the issue discussed in https://stackoverflow.com/questions/71822422/uncaught-in-promise-typeerror-fetch-called-on-an-object-that-does-not-imple.
+// @see https://github.com/inrupt/solid-client-js/pull/1884#discussion_r1153872418
 export const fetch = unifetch.bind(globalThis);
