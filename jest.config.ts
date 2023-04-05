@@ -45,8 +45,14 @@ export default {
   projects: [
     {
       ...baseConfig,
-      displayName: "browser",
-      testEnvironment: "jsdom",
+      displayName: "browser [Timezone: UTC]",
+      testEnvironment: "./jest.environment-utc.js",
+      testPathIgnorePatterns: ["e2e", "node.test.ts"],
+    },
+    {
+      ...baseConfig,
+      displayName: "browser [Timezone: Australia/Melbourne]",
+      testEnvironment: "./jest.environment-apac.js",
       testPathIgnorePatterns: ["e2e", "node.test.ts"],
     },
     {
