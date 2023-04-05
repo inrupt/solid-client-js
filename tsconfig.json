@@ -67,7 +67,7 @@
     ],
     "theme": "markdown",
     "readme": "none",
-    "entryDocument": "index.md"
+    "entryDocument": "index.rst"
   },
   "include": ["src/**/*.ts"],
   "exclude": [
