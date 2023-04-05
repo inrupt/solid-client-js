@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.5.5
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.6.0
 
   build:
     runs-on: ${{ matrix.os }}
@@ -46,7 +46,7 @@ jobs:
         with:
           name: code-coverage-ubuntu-latest-16
           path: coverage/
-      - uses: SonarSource/sonarcloud-github-action@v1.8
+      - uses: SonarSource/sonarcloud-github-action@v1.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
