@@ -212,6 +212,19 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
+export async function saveFileInContainer<FileExt extends File>(
+  folderUrl: Url | UrlString,
+  file: FileExt,
+  options?: Partial<SaveFileOptions>
+): Promise<FileExt & WithResourceInfo>;
+/**
+ * @deprecated `saveFileInContainer` should only have `Blob` input
+ */
+export async function saveFileInContainer<FileExt extends File | Buffer>(
+  folderUrl: Url | UrlString,
+  file: FileExt,
+  options?: Partial<SaveFileOptions>
+): Promise<FileExt & WithResourceInfo>;
 export async function saveFileInContainer<FileExt extends File | Buffer>(
   folderUrl: Url | UrlString,
   file: FileExt,
@@ -299,6 +312,19 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
+export async function overwriteFile<FileExt extends File>(
+  fileUrl: Url | UrlString,
+  file: FileExt,
+  options?: Partial<WriteFileOptions>
+): Promise<FileExt & WithResourceInfo>;
+/**
+ * @deprecated `overwriteFile` should only have `Blob` input
+ */
+export async function overwriteFile<FileExt extends File | Buffer>(
+  fileUrl: Url | UrlString,
+  file: FileExt,
+  options?: Partial<WriteFileOptions>
+): Promise<FileExt & WithResourceInfo>;
 export async function overwriteFile<FileExt extends File | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
@@ -387,6 +413,21 @@ export function flattenHeaders(
  * @param method The HTTP method
  * @param options Additional parameters for file creation (e.g. a slug, or media type)
  */
+async function writeFile(
+  targetUrl: UrlString,
+  file: File,
+  method: "PUT" | "POST",
+  options: Partial<SaveFileOptions>
+): Promise<Response>;
+/**
+ * @deprecated `writeFile` should only have `Blob` input
+ */
+async function writeFile(
+  targetUrl: UrlString,
+  file: File | Buffer,
+  method: "PUT" | "POST",
+  options: Partial<SaveFileOptions>
+): Promise<Response>;
 async function writeFile(
   targetUrl: UrlString,
   file: File | Buffer,
