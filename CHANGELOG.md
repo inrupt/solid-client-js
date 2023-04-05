@@ -16,6 +16,10 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+### Documentation
+
+- Buffer API marked as deprecated.
+
 ## [1.26.0] - 2023-03-24
 
 ### New feature
