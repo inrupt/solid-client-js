@@ -194,7 +194,7 @@ export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
         return (
           deserializedDate.getFullYear() === value.getFullYear() &&
           deserializedDate.getMonth() === value.getMonth() &&
-          deserializedDate.getDate() === value.getDate()
+          deserializedDate.getUTCDate() === value.getUTCDate()
         );
       }
       return false;
