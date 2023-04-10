@@ -24,7 +24,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm ci --ignore-scripts
-      - run: npm test
+      # Unit tests are separate because running both at the same time causes issues
+      # to the CI runner.
+      - run: npm run test:unit:browser
+      - run: npm run test:unit:node
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16' }}

@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { rdf, acp } from "../constants";

@@ -19,28 +19,31 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, it, expect } from "@jest/globals";
-import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
+import { jest } from "@jest/globals";
 
-import { fetch } from "./fetcher";
-
-jest.mock("@inrupt/universal-fetch", () => {
-  const uniFetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
-  ) as typeof UniversalFetch;
-  return {
-    ...uniFetchModule,
-    fetch: jest.fn(),
+/**
+ * This function is intended to be extracted into a shared package, as it is used
+ * across multiple repositories. It receiving a callback allows the shared package
+ * to have no dependency on jest, the need for peer dependencies and version alignment.
+ */
+const buildResponseMocker =
+  (urlMock: (sourceUrl: string, response: Response) => void) =>
+  (body?: BodyInit | null, init?: ResponseInit, sourceUrl?: string) => {
+    const response = new Response(body, init);
+    if (sourceUrl !== undefined) {
+      urlMock(sourceUrl, response);
+    }
+    return response;
   };
-});
 
-it("should fallback to @inrupt/universal-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("@inrupt/universal-fetch") as jest.Mocked<
-    typeof UniversalFetch
-  >;
-  await fetch("https://some.url");
-
-  expect(crossFetch.fetch.mock.calls).toEqual([
-    ["https://some.url", undefined],
-  ]);
-});
+/**
+ * The `url` property of a Response is read-only, and using the default constructor
+ * doesn't allow to set it. Our library requires `response.url` to be set in order
+ * to track the resource's URL, so we use jest to mock this call.
+ */
+export const mockResponse = buildResponseMocker(
+  (sourceUrl: string, response: Response) => {
+    jest.spyOn(response, "url", "get").mockReturnValue(sourceUrl);
+  }
+);

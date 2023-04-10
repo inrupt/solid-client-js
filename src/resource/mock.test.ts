@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import * as crossFetch from "cross-fetch";
+import * as crossFetch from "@inrupt/universal-fetch";
 
 import {
   mockSolidDatasetFrom,
@@ -108,7 +108,7 @@ describe("mockFileFrom", () => {
 
 describe("mockFetchError", () => {
   it("returns a fetch-specific Error object containing response details", () => {
-    const error = mockFetchError("https://some.pod/resource");
+    const error = mockFetchError("https://some.pod/resource", 404, "Not Found");
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
@@ -121,7 +121,11 @@ describe("mockFetchError", () => {
   });
 
   it("can represent different error statuses", () => {
-    const error = mockFetchError("https://some.pod/resource", 418);
+    const error = mockFetchError(
+      "https://some.pod/resource",
+      418,
+      "I'm a Teapot"
+    );
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
@@ -133,14 +137,31 @@ describe("mockFetchError", () => {
   });
 
   it("can represent unknown status codes", () => {
-    const error = mockFetchError("https://some.pod/resource", 1337);
+    const error = mockFetchError(
+      "https://some.pod/resource",
+      599,
+      "Unknown error"
+    );
 
     expect(error).toBeInstanceOf(Error);
-    expect(error.statusText).toBeUndefined();
-    expect(error.message).toBe(
-      "Fetching the Resource at [https://some.pod/resource] failed: [1337] [undefined]."
+    expect(error.statusCode).toBe(599);
+    // The Response constructor in Node 14 makes an empty status text undefined.
+    expect(error.statusText).toBe("Unknown error");
+    expect(error.message).toMatch(
+      "Fetching the Resource at [https://some.pod/resource] failed: [599] [Unknown error]"
     );
-    expect(error.statusCode).toBe(1337);
+    expect(error.response.status).toBe(error.statusCode);
+  });
+
+  it("defaults to a 404 error", () => {
+    const error = mockFetchError("https://some.pod/resource");
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.statusCode).toBe(404);
+    expect(error.statusText).toBe("Not Found");
+    expect(error.message).toMatch(
+      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]"
+    );
     expect(error.response.status).toBe(error.statusCode);
   });
 });

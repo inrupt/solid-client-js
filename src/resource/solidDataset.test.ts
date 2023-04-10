@@ -21,7 +21,7 @@
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
 import type * as RDF from "@rdfjs/types";
 import {
@@ -62,6 +62,7 @@ import { removeStringNoLocale } from "../thing/remove";
 import { ldp, rdf } from "../constants";
 import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -126,24 +127,6 @@ jest.mock("../formats/jsonLd", () => ({
   }),
 }));
 
-function mockResponse(
-  body?: BodyInit | null,
-  init?: ResponseInit,
-  url = "https://some.pod/resource"
-): Response {
-  const response = new Response(body, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      "Content-Type":
-        (init?.headers as Record<string, string>)?.["Content-Type"] ??
-        "text/turtle",
-    },
-  });
-  jest.spyOn(response, "url", "get").mockReturnValue(url);
-  return response;
-}
-
 describe("createSolidDataset", () => {
   it("should initialise a new empty SolidDataset", () => {
     const solidDataset = createSolidDataset();
@@ -166,11 +149,15 @@ describe("responseToSolidDataset", () => {
         vcard:fn "Vincent", [:predicate <for://a.blank/node>].
     `;
 
-    const response = mockResponse(turtle, {
-      headers: {
-        "Content-Type": "text/turtle",
+    const response = mockResponse(
+      turtle,
+      {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
       },
-    });
+      "https://some.pod/resource"
+    );
     const solidDataset = await responseToSolidDataset(response);
 
     expect(solidDataset).toEqual(
@@ -389,7 +376,10 @@ describe("responseToSolidDataset", () => {
   });
 
   it("throws a meaningful error when the server returned a 403", async () => {
-    const response = new Response("Not allowed", { status: 403 });
+    const response = new Response("Not allowed", {
+      status: 403,
+      statusText: "Forbidden",
+    });
     jest
       .spyOn(response, "url", "get")
       .mockReturnValue("https://some.pod/resource");
@@ -555,12 +545,10 @@ describe("getSolidDataset", () => {
   });
 
   it("can be called with NamedNodes", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        })
-      )
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      })
     );
 
     await getSolidDataset(DataFactory.namedNode("https://some.pod/resource"), {
@@ -573,7 +561,13 @@ describe("getSolidDataset", () => {
   it("keeps track of where the SolidDataset was fetched from", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse(undefined)));
+      .mockResolvedValueOnce(
+        mockResponse(
+          undefined,
+          { headers: { "Content-Type": "text/turtle" } },
+          "https://some.pod/resource"
+        )
+      );
 
     const solidDataset = await getSolidDataset("https://some.pod/resource", {
       fetch: mockFetch,
@@ -585,19 +579,29 @@ describe("getSolidDataset", () => {
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
         mockResponse(
           undefined,
           {
             headers: {
               Link: '<aclresource.acl>; rel="acl"',
+              "Content-Type": "text/turtle",
             },
+          },
+          "https://some.pod/container/"
+        )
+      )
+      .mockResolvedValueOnce(
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
           },
           "https://some.pod/container/aclresource.acl"
         )
-      )
-    );
+      );
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
@@ -734,7 +738,11 @@ describe("getSolidDataset", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(turtle, undefined, "https://arbitrary.pod/resource")
+          mockResponse(
+            turtle,
+            { headers: { "Content-Type": "text/turtle" } },
+            "https://arbitrary.pod/resource"
+          )
         )
       );
 
@@ -752,7 +760,9 @@ describe("getSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -768,7 +778,9 @@ describe("getSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -1059,11 +1071,14 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest
-        .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(new Response("Not allowed", { status: 403 }))
-        );
+      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+        Promise.resolve(
+          new Response("Not allowed", {
+            status: 403,
+            statusText: "Forbidden",
+          })
+        )
+      );
 
       const fetchPromise = saveSolidDatasetAt(
         "https://some.pod/resource",
@@ -1082,7 +1097,9 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockReturnValue(
-          Promise.resolve(new Response("Not found", { status: 404 }))
+          Promise.resolve(
+            new Response("Not found", { status: 404, statusText: "Not Found" })
+          )
         );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1538,11 +1555,14 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest
-        .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(new Response("Not allowed", { status: 403 }))
-        );
+      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+        Promise.resolve(
+          new Response("Not allowed", {
+            status: 403,
+            statusText: "Forbidden",
+          })
+        )
+      );
 
       const mockDataset = getMockUpdatedDataset(
         {
@@ -1583,7 +1603,9 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockReturnValue(
-          Promise.resolve(new Response("Not found", { status: 404 }))
+          Promise.resolve(
+            new Response("Not found", { status: 404, statusText: "Not Found" })
+          )
         );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1866,6 +1888,7 @@ describe("createContainerAt", () => {
           {
             headers: {
               Link: '<aclresource.acl>; rel="acl"',
+              "Content-Type": "text/turtle",
             },
           },
           "https://some.pod/container/"
@@ -2009,7 +2032,9 @@ describe("createContainerAt", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = createContainerAt("https://some.pod/container/", {
@@ -2158,6 +2183,7 @@ describe("saveSolidDatasetInContainer", () => {
         "Not allowed",
         {
           status: 403,
+          statusText: "Forbidden",
         },
         "https://some.pod/container/"
       )
@@ -2183,6 +2209,7 @@ describe("saveSolidDatasetInContainer", () => {
         "Not found",
         {
           status: 404,
+          statusText: "Not Found",
         },
         "https://some.pod/container/"
       )
@@ -2477,6 +2504,7 @@ describe("createContainerInContainer", () => {
         "Not allowed",
         {
           status: 403,
+          statusText: "Forbidden",
         },
         "https://some.pod/parent-container/"
       )
@@ -2501,6 +2529,7 @@ describe("createContainerInContainer", () => {
         "Not found",
         {
           status: 404,
+          statusText: "Not Found",
         },
         "https://some.pod/parent-container/"
       )

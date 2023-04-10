@@ -18,7 +18,7 @@
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
     "test": "jest --ignoreProjects e2e-node",
-    "test:unit:browser": "jest --selectProjects browser",
+    "test:unit:browser": "jest --selectProjects browser-utc",
     "test:unit:node": "jest --selectProjects node",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 30000 --collectCoverage false",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
@@ -170,10 +170,10 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
-    "@inrupt/eslint-config-lib": "^1.6.0",
-    "@inrupt/internal-playwright-helpers": "^1.6.0",
-    "@inrupt/internal-test-env": "^1.6.0",
-    "@inrupt/jest-jsdom-polyfills": "^1.6.0",
+    "@inrupt/eslint-config-lib": "^1.6.1",
+    "@inrupt/internal-playwright-helpers": "^1.6.1",
+    "@inrupt/internal-test-env": "^1.6.1",
+    "@inrupt/jest-jsdom-polyfills": "^1.6.1",
     "@inrupt/solid-client-authn-node": "^1.12.3",
     "@playwright/test": "^1.28.1",
     "@rdfjs/types": "^1.1.0",
@@ -200,9 +200,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "@inrupt/universal-fetch": "^1.0.1",
     "@rdfjs/dataset": "^1.1.0",
     "@types/rdfjs__dataset": "^1.0.4",
-    "cross-fetch": "^3.0.4",
     "http-link-header": "^1.1.0",
     "jsonld-context-parser": "^2.3.0",
     "jsonld-streaming-parser": "^3.2.0",

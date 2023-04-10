@@ -67,6 +67,7 @@ import {
 import { getIriAll } from "../thing/get";
 import { normalizeServerSideIri } from "./iri.internal";
 import { freeze, getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
+import { fetch as defaultFetch } from "../fetcher";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -301,7 +302,6 @@ export async function getSolidDataset(
     ...internal_defaultFetchOptions,
     ...options,
   };
-
   const parserContentTypes = Object.keys(options.parsers ?? {});
   const acceptedContentTypes =
     parserContentTypes.length > 0
@@ -1160,11 +1160,9 @@ export async function getWellKnownSolid(
       new URL(urlString).origin
     ).href;
 
-    // Technically, the request here should be public and shouldn't require an
-    // authenticated fetch, however, in some environments, fetcher.ts fails to
-    // load cross-fetch sometimes, which results in this call failing if we
-    // don't pass the fetch method through:
-    return await getSolidDataset(wellKnownSolidUrl, { fetch: options.fetch });
+    return await getSolidDataset(wellKnownSolidUrl, {
+      fetch: defaultFetch,
+    });
   } catch (e) {
     // In case of error, do nothing and try to discover the .well-known
     // at the pod's root.

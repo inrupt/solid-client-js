@@ -30,13 +30,11 @@ test("creating and removing empty Containers", async ({ page, auth }) => {
   await page.waitForSelector("button[data-testid=createContainer]");
 
   // A root container should have been found.
-  await expect(
-    page.locator("span[data-testid=parentContainerUrl]")
-  ).toContainText(/https:\/\//);
+  await expect(page.getByTestId("parentContainerUrl")).toContainText(
+    /https:\/\//
+  );
   // No child container should be available yet.
-  await expect(
-    page.locator("span[data-testid=childContainerUrl]")
-  ).toContainText("None");
+  await expect(page.getByTestId("childContainerUrl")).toContainText("None");
 
   await Promise.all([
     page.waitForRequest((request) => request.method() === "POST"),
