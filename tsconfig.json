@@ -67,7 +67,8 @@
     ],
     "theme": "markdown",
     "readme": "none",
-    "entryDocument": "index.rst"
+    "entryDocument": "index.rst",
+    "plugin": ["typedoc-plugin-markdown"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [
