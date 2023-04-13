@@ -8,7 +8,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   e2e-browser:
-    if: github.actor != 'dependabot[bot]'
     # Ensure we timeout reasonably quickly:
     timeout-minutes: 30
     runs-on: ${{ matrix.os }}
@@ -21,13 +20,13 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         # The Node version does not influence how well our tests run in the browser,
         # so we only need to test in one.
-        node-version: [16.x]
+        node-version: [18.x]
         environment-name: ["ESS PodSpaces"]
         experimental: [false]
         include:
           - environment-name: "ESS Dev-Next"
             experimental: true
-            node-version: 16.x
+            node-version: 18.x
             os: ubuntu-latest
 
     steps:
@@ -45,7 +44,12 @@ jobs:
       # setup
       - run: npm run test:e2e:browser:build
       # test
-      - run: npm run test:e2e:browser
+      - # Dependabot cannot access secrets, so it doesn't have a token to authenticate to ESS.
+        # We want jobs in this workflow to be gating PRs, so the whole matrix must
+        # run even for dependabot so that the matrixed jobs are skipped, instead
+        # of the whole pipeline.
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: npm run test:e2e:browser
         env:
           E2E_TEST_ENVIRONMENT: ${{ matrix.environment-name }}
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
