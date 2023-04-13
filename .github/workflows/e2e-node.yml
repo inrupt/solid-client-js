@@ -12,8 +12,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   e2e-node:
-    # Running end-to-end tests requires accessing secrets which aren't available to dependabot.
-    if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
@@ -21,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [16.x, 14.x]
+        node-version: ["18.x", "16.x", "14.x"]
         # NSS node-based end-to-end tests are only running for unauthenticated operations,
         # because NSS doesn't support static client registration. Therefore, they run
         # against an environment that has manually been pre-provisioned.
@@ -30,7 +28,7 @@ jobs:
         include:
           - environment-name: "ESS Dev-Next"
             experimental: true
-            node-version: 16.x
+            node-version: "18.x"
             os: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -45,7 +43,12 @@ jobs:
         # if: steps.setup-node.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - run: npm run test:e2e:node
+      - # Dependabot cannot access secrets, so it doesn't have a token to authenticate to ESS.
+        # We want jobs in this workflow to be gating PRs, so the whole matrix must
+        # run even for dependabot so that the matrixed jobs are skipped, instead
+        # of the whole pipeline.
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: npm run test:e2e:node
         env:
           E2E_TEST_POD: ${{ secrets.E2E_TEST_POD }}
           E2E_TEST_IDP: ${{ secrets.E2E_TEST_IDP }}
