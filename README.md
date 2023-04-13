@@ -107,7 +107,7 @@ module](https://www.npmjs.com/package/buffer).
 ## Node.js Support
 
 Our JavaScript Client Libraries track Node.js [LTS
-releases](https://nodejs.org/en/about/releases/), and support 14.x, and 16.x.
+releases](https://nodejs.org/en/about/releases/), and support 14.x, 16.x and 18.x
 
 # Installation
 

@@ -20,6 +20,10 @@ The following changes have been implemented but not released yet:
 
 - Buffer API marked as deprecated.
 
+### New feature
+
+- Node 18 support
+
 ## [1.26.0] - 2023-03-24
 
 ### New feature
