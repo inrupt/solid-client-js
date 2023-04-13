@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node-version: ["16", "14"]
+        node-version: ["18.x", "16.x", "14.x"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -30,7 +30,7 @@ jobs:
       - run: npm run test:unit:node
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '18.x' }}
         with:
           name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
           path: coverage/
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v3
         with:
-          name: code-coverage-ubuntu-latest-16
+          name: code-coverage-ubuntu-latest-18.x
           path: coverage/
       - uses: SonarSource/sonarcloud-github-action@v1.9
         env:
