@@ -333,11 +333,17 @@ async function fetchAcr(
     // an ACL is advertised, we can still fetch its metadata — if that indicates
     // that it's actually an ACP Access Control Resource, then we can fetch that
     // instead.
-    const aclResourceInfo = await getResourceInfo(
-      resource.internal_resourceInfo.aclUrl,
-      options
-    );
-    if (isAcr(aclResourceInfo)) {
+    let aclResourceInfo;
+    try {
+      aclResourceInfo = await getResourceInfo(
+        resource.internal_resourceInfo.aclUrl,
+        options
+      );
+    } catch (e) {
+      // if the above fails, an ACL cannot be found and we proceed.
+    }
+
+    if (aclResourceInfo && isAcr(aclResourceInfo)) {
       acrUrl = getSourceUrl(aclResourceInfo);
     }
   }
