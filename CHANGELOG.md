@@ -16,6 +16,12 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+## [1.27.1] - 2023-04-17
+
+### Bugfixes
+
+- Ignore errors when ACL is not found, so that it can be handled properly for WAC.
+
 ## [1.27.0] - 2023-04-14
 
 ### Documentation
