@@ -20,7 +20,7 @@ The following changes have been implemented but not released yet:
 
 ### Bugfixes
 
-- Ignore errors when ACL is not found, so that it can be handled properly for WAC.
+- `universal`: Ignore errors when ACL is not found, so that it can be handled properly for WAC.
 
 ## [1.27.0] - 2023-04-14
 
