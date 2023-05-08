@@ -9,14 +9,14 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.5.5
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.6.2
 
-  build:
+  unit-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node-version: ["16", "14"]
+        node-version: ["20.x", "18.x", "16.x", "14.x"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -24,17 +24,20 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm ci --ignore-scripts
-      - run: npm test
+      # Unit tests are separate because running both at the same time causes issues
+      # to the CI runner.
+      - run: npm run test:unit:browser
+      - run: npm run test:unit:node
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '16' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x' }}
         with:
           name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
           path: coverage/
 
   sonar-scan:
     if: ${{ github.actor != 'dependabot[bot]' }}
-    needs: [build]
+    needs: [unit-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -44,9 +47,9 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v3
         with:
-          name: code-coverage-ubuntu-latest-16
+          name: code-coverage-ubuntu-latest-20.x
           path: coverage/
-      - uses: SonarSource/sonarcloud-github-action@v1.8
+      - uses: SonarSource/sonarcloud-github-action@v1.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

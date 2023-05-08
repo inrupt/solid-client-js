@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import * as crossFetch from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 
 import {
   Url,
@@ -32,8 +32,6 @@ import { internal_toIriString } from "../interfaces.internal";
 import { getSolidDataset, createSolidDataset } from "./solidDataset";
 import { getFile } from "./file";
 import { FetchError } from "./resource";
-
-const { Response } = crossFetch;
 
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;
 
@@ -145,10 +143,13 @@ export function mockFileFrom(
  */
 export function mockFetchError(
   fetchedUrl: UrlString,
-  statusCode = 404
+  statusCode = 404,
+  statusText = "Not Found"
 ): FetchError {
+  // The Response constructor in Node 14 makes an empty status text undefined.
   const failedResponse = new Response(undefined, {
     status: statusCode,
+    statusText,
   }) as Response & { ok: false };
   return new FetchError(
     `Fetching the Resource at [${fetchedUrl}] failed: [${failedResponse.status}] [${failedResponse.statusText}].`,

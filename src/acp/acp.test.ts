@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
 import * as FileModule from "../resource/file";
@@ -46,7 +46,7 @@ import { addIri } from "../thing/add";
 import { AccessControlResource } from "./control";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
-import { createSolidDataset } from "../resource/solidDataset";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn<typeof fetch>().mockImplementation(() =>
@@ -128,13 +128,16 @@ describe("getSolidDatasetWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
-            "Content-Type": "text/turtle",
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+              "Content-Type": "text/turtle",
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
@@ -267,12 +270,15 @@ describe("getFileWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
@@ -376,14 +382,17 @@ describe("getResourceInfoWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(undefined, {
-          headers: {
-            Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
+            },
           },
-          url: "https://some.pod/resource",
-        } as ResponseInit)
+          "https://some.pod/resource"
+        )
       )
-      .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
+      .mockResolvedValueOnce(mockResponse("Not allowed", { status: 401 }));
 
     const fetchedResourceInfo = await getResourceInfoWithAcr(
       "https://some.pod/resource",
@@ -955,16 +964,13 @@ describe("getResourceInfoWithAccessDatasets", () => {
 
 describe("saveAcrFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedResponse = new Response();
-    jest
-      .spyOn(mockedResponse, "url", "get")
-      .mockReturnValue("https://arbitrary.pod/resource");
-
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
       fetch: jest.Mocked<typeof fetch>;
     };
 
-    mockedFetcher.fetch.mockResolvedValue(mockedResponse);
+    mockedFetcher.fetch.mockResolvedValue(
+      mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
+    );
 
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
@@ -978,11 +984,11 @@ describe("saveAcrFor", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockedResponse = new Response();
-    jest
-      .spyOn(mockedResponse, "url", "get")
-      .mockReturnValue("https://arbitrary.pod/resource");
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
+      );
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),

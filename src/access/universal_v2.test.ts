@@ -163,7 +163,8 @@ describe("setAgentAccess", () => {
     await setAgentAccess(
       "https://arbitrary.pod/resource",
       "https://arbitrary.pod/profile#me",
-      { read: true }
+      { read: true },
+      { fetch: jest.fn<typeof fetch>() }
     );
 
     expect(acpModule.internal_setAgentAccess).toHaveBeenCalledTimes(1);
@@ -517,7 +518,11 @@ describe("setPublicAccess", () => {
     getResourceInfoWithAcr.mockResolvedValueOnce(mockedResourceWithAcr);
     jest.spyOn(acpModule, "internal_setPublicAccess");
 
-    await setPublicAccess("https://arbitrary.pod/resource", { read: true });
+    await setPublicAccess(
+      "https://arbitrary.pod/resource",
+      { read: true },
+      { fetch: jest.fn<typeof fetch>() }
+    );
 
     expect(acpModule.internal_setPublicAccess).toHaveBeenCalledTimes(1);
   });

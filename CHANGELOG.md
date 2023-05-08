@@ -16,6 +16,26 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+### New feature
+
+- Node 20 support
+
+## [1.27.1] - 2023-04-17
+
+### Bugfixes
+
+- `universal`: Ignore errors when ACL is not found, so that it can be handled properly for WAC.
+
+## [1.27.0] - 2023-04-14
+
+### Documentation
+
+- Buffer API marked as deprecated.
+
+### New feature
+
+- Node 18 support
+
 ## [1.26.0] - 2023-03-24
 
 ### New feature

@@ -2,4 +2,10 @@
 
 pydata-sphinx-theme==0.13.3
 myst-parser==1.0.0
-Sphinx==6.1.3
+# Currently myst-parse is incompatible with sphinx v7
+Sphinx==6.2.1
+# urllib3 v2.0 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled
+# with OpenSSL 1.0.2k-fips  26 Jan 2017.
+# See: https://github.com/urllib3/urllib3/issues/2168, 
+# https://github.com/psf/requests/releases/tag/v2.30.0, )
+urllib3<2

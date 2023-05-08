@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 
-import { Response, Headers } from "cross-fetch";
+import { Response, Headers } from "@inrupt/universal-fetch";
 
 import {
   getResourceAcl,
@@ -61,6 +61,7 @@ import { createSolidDataset } from "../resource/solidDataset";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { addIri, addStringNoLocale } from "../thing/add";
 import { getIri } from "../thing/get";
+import { mockResponse } from "../tests.internal";
 
 jest.mock("../fetcher.ts", () => ({
   fetch: jest.fn().mockImplementation(() =>
@@ -71,13 +72,6 @@ jest.mock("../fetcher.ts", () => ({
     )
   ),
 }));
-
-function mockResponse(
-  body?: BodyInit | null,
-  init?: ResponseInit & { url: string }
-): Response {
-  return new Response(body, init);
-}
 
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
@@ -132,10 +126,13 @@ describe("fetchAcl", () => {
           ? { Link: "" }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -165,24 +162,30 @@ describe("fetchAcl", () => {
     const mockFetch = jest.fn((url) => {
       if (url === "https://some.pod/resource.acl") {
         return Promise.resolve(
-          mockResponse(undefined, {
-            url: "https://some.pod/resource.acl",
-            headers: {
-              Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
-              "Content-Type": "text/turtle",
+          mockResponse(
+            undefined,
+            {
+              headers: {
+                Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+                "Content-Type": "text/turtle",
+              },
             },
-          })
+            "https://some.pod/resource.acl"
+          )
         );
       }
 
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            "Content-Type": "text/turtle",
-            Link: '<resource.acl>; rel="acl"',
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              "Content-Type": "text/turtle",
+              Link: '<resource.acl>; rel="acl"',
+            },
           },
-          url: url as string,
-        })
+          url as string
+        )
       );
     });
 
@@ -209,10 +212,13 @@ describe("fetchAcl", () => {
     const mockFetch = jest.fn((url) => {
       if (url === "https://some.pod/resource.acl") {
         return Promise.resolve(
-          mockResponse("ACL not found", {
-            status: 404,
-            url: "https://some.pod/resource.acl",
-          })
+          mockResponse(
+            "ACL not found",
+            {
+              status: 404,
+            },
+            "https://some.pod/resource.acl"
+          )
         );
       }
 
@@ -223,10 +229,13 @@ describe("fetchAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -266,10 +275,13 @@ describe("fetchResourceAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/resource.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/resource.acl"
+        )
       )
     );
 
@@ -334,10 +346,13 @@ describe("fetchResourceAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/resource.acl",
-        })
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
+          },
+          "https://some.pod/resource.acl"
+        )
       )
     );
 
@@ -362,13 +377,16 @@ describe("fetchResourceAcl", () => {
       },
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource?ext=acr",
-        headers: {
-          "Content-Type": "text/turtle",
-          Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+      mockResponse(
+        undefined,
+        {
+          headers: {
+            "Content-Type": "text/turtle",
+            Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+          },
         },
-      })
+        "https://some.pod/resource?ext=acr"
+      )
     );
 
     await expect(
@@ -392,13 +410,16 @@ describe("fetchResourceAcl", () => {
       },
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      mockResponse(undefined, {
-        url: "https://some.pod/resource?ext=acr",
-        headers: {
-          "Content-Type": "text/turtle",
-          Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+      mockResponse(
+        undefined,
+        {
+          headers: {
+            "Content-Type": "text/turtle",
+            Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
+          },
         },
-      })
+        "https://some.pod/resource?ext=acr"
+      )
     );
 
     await expect(
@@ -428,20 +449,26 @@ describe("fetchFallbackAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod/",
-        })
+          "https://some.pod/"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/.acl"
+        )
       )
     );
 
@@ -495,38 +522,50 @@ describe("fetchFallbackAcl", () => {
     };
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod/with-acl/without-acl/",
-        })
+          "https://some.pod/with-acl/without-acl/"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/with-acl/without-acl/.acl",
-        })
-      )
-    );
-    mockFetch.mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
           },
-          url: "https://some.pod/with-acl/",
-        })
+          "https://some.pod/with-acl/without-acl/.acl"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/with-acl/.acl",
-          headers: { "Content-Type": "text/turtle" },
-        })
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
+          },
+          "https://some.pod/with-acl/"
+        )
+      )
+    );
+    mockFetch.mockReturnValueOnce(
+      Promise.resolve(
+        mockResponse(
+          undefined,
+          {
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/with-acl/.acl"
+        )
       )
     );
 
@@ -567,13 +606,17 @@ describe("fetchFallbackAcl", () => {
         },
       },
     };
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
-      Promise.resolve(
-        mockResponse(undefined, {
-          url: "https://some.pod/arbitrary-parent/no-control-access/",
-        })
-      )
-    );
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockReturnValueOnce(
+        Promise.resolve(
+          mockResponse(
+            undefined,
+            {},
+            "https://some.pod/arbitrary-parent/no-control-access/"
+          )
+        )
+      );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
       fetch: mockFetch,
@@ -603,20 +646,26 @@ describe("fetchFallbackAcl", () => {
 
     const mockFetch = jest.fn<typeof fetch>().mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("", {
-          headers: {
-            Link: '<.acl>; rel="acl"',
+        mockResponse(
+          "",
+          {
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
           },
-          url: "https://some.pod",
-        })
+          "https://some.pod"
+        )
       )
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse("ACL not found", {
-          status: 404,
-          url: "https://some.pod/.acl",
-        })
+        mockResponse(
+          "ACL not found",
+          {
+            status: 404,
+          },
+          "https://some.pod/.acl"
+        )
       )
     );
 
@@ -682,10 +731,13 @@ describe("getSolidDatasetWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -720,10 +772,13 @@ describe("getSolidDatasetWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -768,13 +823,16 @@ describe("getSolidDatasetWithAcl", () => {
 
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: "",
-            "Content-Type": "text/turtle",
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: "",
+              "Content-Type": "text/turtle",
+            },
           },
-          url: "https://some.pod/resource",
-        })
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -792,7 +850,9 @@ describe("getSolidDatasetWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -808,7 +868,9 @@ describe("getSolidDatasetWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -877,15 +939,17 @@ describe("getFileWithAcl", () => {
   });
 
   it("should return the fetched data as a blob, along with its ACL", async () => {
-    const init: ResponseInit & { url: string } = {
+    const mockedResponse = new Response("Some data", {
       status: 200,
       statusText: "OK",
-      url: "https://some.url",
-    };
+    });
+    jest
+      .spyOn(mockedResponse, "url", "get")
+      .mockReturnValue("https://some.url");
 
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(new Response("Some data", init)));
+      .mockReturnValue(Promise.resolve(mockedResponse));
 
     const file = await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
@@ -907,11 +971,8 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const init: ResponseInit & { url: string } = {
-        headers,
-        url: url as string,
-      };
-      return Promise.resolve(new Response(undefined, init));
+      const response = mockResponse(undefined, { headers }, url as string);
+      return Promise.resolve(response);
     });
 
     const fetchedSolidDataset = await getFileWithAcl(
@@ -944,11 +1005,8 @@ describe("getFileWithAcl", () => {
           : url === "https://some.pod/"
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
-      const init: ResponseInit & { url: string } = {
-        headers,
-        url: url as string,
-      };
-      return Promise.resolve(new Response(undefined, init));
+      const response = mockResponse(undefined, { headers }, url as string);
+      return Promise.resolve(response);
     });
 
     const fetchedSolidDataset = await getFileWithAcl(
@@ -997,7 +1055,9 @@ describe("getFileWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
+        Promise.resolve(
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
+        )
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1013,7 +1073,9 @@ describe("getFileWithAcl", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1099,10 +1161,13 @@ describe("getResourceInfoWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -1137,10 +1202,13 @@ describe("getResourceInfoWithAcl", () => {
           ? { Link: '<.acl>; rel="acl"' }
           : { "Content-Type": "text/turtle" };
       return Promise.resolve(
-        mockResponse(undefined, {
-          headers,
-          url: url as string,
-        })
+        mockResponse(
+          undefined,
+          {
+            headers,
+          },
+          url as string
+        )
       );
     });
 
@@ -1186,12 +1254,15 @@ describe("getResourceInfoWithAcl", () => {
 
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
-        mockResponse(undefined, {
-          headers: {
-            Link: "",
+        mockResponse(
+          undefined,
+          {
+            headers: {
+              Link: "",
+            },
           },
-          url: "https://some.pod/resource",
-        })
+          "https://some.pod/resource"
+        )
       )
     );
 
@@ -1206,13 +1277,18 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockResponse = new Response("Not allowed", { status: 403 });
-    jest
-      .spyOn(mockResponse, "url", "get")
-      .mockReturnValue("https://some.pod/resource");
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        mockResponse(
+          "Not allowed",
+          {
+            status: 403,
+            statusText: "Forbidden",
+          },
+          "https://some.pod/resource"
+        )
+      )
+    );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
@@ -1224,13 +1300,18 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockResponse = new Response("Not found", { status: 404 });
-    jest
-      .spyOn(mockResponse, "url", "get")
-      .mockReturnValue("https://some.pod/resource");
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        mockResponse(
+          "Not found",
+          {
+            status: 404,
+            statusText: "Not Found",
+          },
+          "https://some.pod/resource"
+        )
+      )
+    );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
       fetch: mockFetch,
@@ -1269,7 +1350,7 @@ describe("getResourceInfoWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, { url: "https://some.pod/resource" })
+          mockResponse(undefined, {}, "https://some.pod/resource")
         )
       );
 
@@ -2520,11 +2601,14 @@ describe("saveAclFor", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        })
+      )
+    );
     const withResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -2732,11 +2816,14 @@ describe("deleteAclFor", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(new Response("Not allowed", { status: 403 }))
-      );
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        })
+      )
+    );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
@@ -2762,7 +2849,9 @@ describe("deleteAclFor", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(
-        Promise.resolve(new Response("Not found", { status: 404 }))
+        Promise.resolve(
+          new Response("Not found", { status: 404, statusText: "Not Found" })
+        )
       );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {

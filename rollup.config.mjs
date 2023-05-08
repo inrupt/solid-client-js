@@ -47,7 +47,7 @@ export default {
     }),
   ],
   external: [
-    "cross-fetch",
+    "@inrupt/universal-fetch",
     "http-link-header",
     "@rdfjs/dataset",
     "@rdfjs/data-model",

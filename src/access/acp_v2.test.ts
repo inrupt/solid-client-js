@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import * as fc from "fast-check";
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import { WithAccessibleAcr } from "../acp/acp";
 import {
   AccessControlResource,
