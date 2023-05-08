@@ -168,21 +168,32 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
-    const fileUrl = `${sessionResource}.txt`;
+  // Blob isn't available in Node 14
+  (Number(process.versions.node.split(".")[0]) === 14 ? it.skip : it)(
+    "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
+    async () => {
+      const fileUrl = `${sessionResource}.txt`;
 
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      new Blob(["test"]),
-      fetchOptions
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+      const sessionFile = await overwriteFile(
+        fileUrl,
+        new Blob(["test"]),
+        fetchOptions
+      );
+      const sessionDataset = await getSolidDataset(
+        sessionResource,
+        fetchOptions
+      );
 
-    expect(isRawData(sessionDataset)).toBe(false);
-    expect(isRawData(sessionFile)).toBe(true);
+      // Eslint isn't detecting the fact that this is inside an it statement
+      // for an unknown reason
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionDataset)).toBe(false);
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionFile)).toBe(true);
 
-    await deleteFile(fileUrl, fetchOptions);
-  });
+      await deleteFile(fileUrl, fetchOptions);
+    }
+  );
 
   it("can create and remove Containers", async () => {
     const containerUrl = `${pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
