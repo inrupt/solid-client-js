@@ -599,139 +599,158 @@ describe("Write non-RDF data into a folder", () => {
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
+  const mockBuffer = Buffer.from("mock blob data");
+  const mockNodeBuffer = NodeBuffer.from("mock blob data");
 
-  it("should default to the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
+  describe.each([
+    ["blob", mockBlob],
+    ["buffer", mockBuffer],
+    ["nodeBuffer", mockNodeBuffer],
+  ] as [string, Blob | Buffer][])(
+    "blob, buffer and nodeBuffer test",
+    (_, data) => {
+      it("should default to the included fetcher if no other fetcher is available", async () => {
+        const fetcher = jest.requireMock("../fetcher") as {
+          fetch: jest.Mocked<typeof fetch>;
+        };
 
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, { status: 201, statusText: "Created" })
-      )
-    );
+        fetcher.fetch.mockReturnValue(
+          Promise.resolve(
+            new Response(undefined, { status: 201, statusText: "Created" })
+          )
+        );
 
-    await overwriteFile("https://some.url", mockBlob);
+        await overwriteFile("https://some.url", data);
 
-    expect(fetcher.fetch).toHaveBeenCalled();
-  });
+        expect(fetcher.fetch).toHaveBeenCalled();
+      });
 
-  it("should PUT to a remote resource when using the included fetcher, and return the saved file", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
+      it("should PUT to a remote resource when using the included fetcher, and return the saved file", async () => {
+        const fetcher = jest.requireMock("../fetcher") as {
+          fetch: jest.Mocked<typeof fetch>;
+        };
 
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          url: "https://some.url",
-        } as ResponseInit)
-      )
-    );
+        fetcher.fetch.mockReturnValue(
+          Promise.resolve(
+            new Response(undefined, {
+              status: 201,
+              statusText: "Created",
+              url: "https://some.url",
+            } as ResponseInit)
+          )
+        );
 
-    const savedFile = await overwriteFile("https://some.url", mockBlob);
+        const savedFile = await overwriteFile("https://some.url", data);
 
-    const mockCall = fetcher.fetch.mock.calls[0];
-    expect(mockCall[0]).toBe("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({
-      "Content-Type": "binary",
-    });
-    expect(mockCall[1]?.method).toBe("PUT");
-    expect(mockCall[1]?.body).toEqual(mockBlob);
+        const mockCall = fetcher.fetch.mock.calls[0];
+        expect(mockCall[0]).toBe("https://some.url");
+        expect(mockCall[1]?.headers).toEqual({
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        });
+        expect(mockCall[1]?.method).toBe("PUT");
+        expect(mockCall[1]?.body).toEqual(data);
+        if (mockBlob === data) {
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(savedFile).toBeInstanceOf(Blob);
+        }
+        expect(savedFile.internal_resourceInfo).toEqual({
+          contentType: undefined,
+          sourceIri: "https://some.url",
+          isRawData: true,
+          linkedResources: {},
+        });
+      });
 
-    expect(savedFile).toBeInstanceOf(Blob);
-    expect(savedFile.internal_resourceInfo).toEqual({
-      contentType: undefined,
-      sourceIri: "https://some.url",
-      isRawData: true,
-      linkedResources: {},
-    });
-  });
+      it("should use the provided fetcher", async () => {
+        const mockFetch = jest
+          .fn<typeof fetch>()
+          .mockReturnValue(
+            Promise.resolve(
+              new Response(undefined, { status: 201, statusText: "Created" })
+            )
+          );
 
-  it("should use the provided fetcher", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
-      );
+        await overwriteFile("https://some.url", data, {
+          fetch: mockFetch,
+        });
 
-    const response = await overwriteFile("https://some.url", mockBlob, {
-      fetch: mockFetch,
-    });
+        expect(mockFetch).toHaveBeenCalled();
+      });
 
-    expect(mockFetch).toHaveBeenCalled();
-  });
+      it("should PUT a remote resource using the provided fetcher, and return the saved file", async () => {
+        const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+          Promise.resolve(
+            new Response(undefined, {
+              status: 201,
+              statusText: "Created",
+              url: "https://some.url",
+            } as ResponseInit)
+          )
+        );
 
-  it("should PUT a remote resource using the provided fetcher, and return the saved file", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 201,
-          statusText: "Created",
-          url: "https://some.url",
-        } as ResponseInit)
-      )
-    );
+        const savedFile = await overwriteFile("https://some.url", data, {
+          fetch: mockFetch,
+        });
 
-    const savedFile = await overwriteFile("https://some.url", mockBlob, {
-      fetch: mockFetch,
-    });
+        const mockCall = mockFetch.mock.calls[0];
+        expect(mockCall[0]).toBe("https://some.url");
+        expect(mockCall[1]?.headers).toEqual({
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        });
+        expect(mockCall[1]?.method).toBe("PUT");
+        expect(mockCall[1]?.body).toEqual(data);
+        if (mockBlob === data) {
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(savedFile).toBeInstanceOf(Blob);
+        }
+        expect(savedFile.internal_resourceInfo).toEqual({
+          contentType: undefined,
+          sourceIri: "https://some.url",
+          isRawData: true,
+          linkedResources: {},
+        });
+      });
 
-    const mockCall = mockFetch.mock.calls[0];
-    expect(mockCall[0]).toBe("https://some.url");
-    expect(mockCall[1]?.headers).toEqual({ "Content-Type": "binary" });
-    expect(mockCall[1]?.method).toBe("PUT");
-    expect(mockCall[1]?.body).toEqual(mockBlob);
+      it("throws when saving failed", async () => {
+        const mockFetch = jest
+          .fn<typeof fetch>()
+          .mockReturnValue(
+            Promise.resolve(
+              new Response(undefined, { status: 403, statusText: "Forbidden" })
+            )
+          );
 
-    expect(savedFile).toBeInstanceOf(Blob);
-    expect(savedFile.internal_resourceInfo).toEqual({
-      contentType: undefined,
-      sourceIri: "https://some.url",
-      isRawData: true,
-      linkedResources: {},
-    });
-  });
+        await expect(
+          overwriteFile("https://some.url", data, {
+            fetch: mockFetch,
+          })
+        ).rejects.toThrow(
+          "Overwriting the file at [https://some.url] failed: [403] [Forbidden]"
+        );
+      });
 
-  it("throws when saving failed", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 403, statusText: "Forbidden" })
-        )
-      );
+      it("includes the status code, status message and response body when a request failed", async () => {
+        const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+          Promise.resolve(
+            new Response("Teapots don't make coffee", {
+              status: 418,
+              statusText: "I'm a teapot!",
+            })
+          )
+        );
 
-    await expect(
-      overwriteFile("https://some.url", mockBlob, {
-        fetch: mockFetch,
-      })
-    ).rejects.toThrow(
-      "Overwriting the file at [https://some.url] failed: [403] [Forbidden]"
-    );
-  });
-
-  it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response("Teapots don't make coffee", {
-          status: 418,
+        await expect(
+          overwriteFile("https://arbitrary.url", data, {
+            fetch: mockFetch,
+          })
+        ).rejects.toMatchObject({
+          statusCode: 418,
           statusText: "I'm a teapot!",
-        })
-      )
-    );
-
-    await expect(
-      overwriteFile("https://arbitrary.url", mockBlob, {
-        fetch: mockFetch,
-      })
-    ).rejects.toMatchObject({
-      statusCode: 418,
-      statusText: "I'm a teapot!",
-      message: expect.stringContaining("Teapots don't make coffee"),
-    });
-  });
+          message: expect.stringContaining("Teapots don't make coffee"),
+        });
+      });
+    }
+  );
 });
