@@ -16,6 +16,13 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+### Bugfixes
+
+- `Buffer` type: As discussed in microsoft/TypeScript#53668 the
+  @types/node definition of a buffer is looser and hence we now
+  use that in order to be compatible with web buffer types and node
+  buffer types.
+
 ### New feature
 
 - Node 20 support
