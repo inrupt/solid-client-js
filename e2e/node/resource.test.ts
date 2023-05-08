@@ -58,6 +58,7 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
+import { Buffer as NodeBuffer } from "buffer";
 
 const env = getNodeTestingEnvironment();
 
@@ -141,6 +142,39 @@ describe("Authenticated end-to-end", () => {
     const sessionFile = await overwriteFile(
       fileUrl,
       Buffer.from("test"),
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+
+    expect(isRawData(sessionDataset)).toBe(false);
+    expect(isRawData(sessionFile)).toBe(true);
+
+    await deleteFile(fileUrl, fetchOptions);
+  });
+
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a node Buffer", async () => {
+    const fileUrl = `${sessionResource}.txt`;
+
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      NodeBuffer.from("test"),
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+
+    expect(isRawData(sessionDataset)).toBe(false);
+    expect(isRawData(sessionFile)).toBe(true);
+
+    await deleteFile(fileUrl, fetchOptions);
+  });
+
+
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
+    const fileUrl = `${sessionResource}.txt`;
+
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      new Blob(["test"]),
       fetchOptions
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
