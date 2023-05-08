@@ -19,6 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { Buffer } from "buffer";
 import { fetch } from "../fetcher";
 import {
   File,
@@ -36,7 +37,6 @@ import {
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
-import type { Buffer } from 'buffer';
 
 /**
  * Options when fetching a file from a Pod.

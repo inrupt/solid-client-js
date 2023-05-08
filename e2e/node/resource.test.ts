@@ -39,6 +39,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
+import { Buffer as NodeBuffer } from "buffer";
 import {
   getSolidDataset,
   setThing,
@@ -58,7 +59,6 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
-import { Buffer as NodeBuffer } from "buffer";
 
 const env = getNodeTestingEnvironment();
 
@@ -167,7 +167,6 @@ describe("Authenticated end-to-end", () => {
 
     await deleteFile(fileUrl, fetchOptions);
   });
-
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
     const fileUrl = `${sessionResource}.txt`;
