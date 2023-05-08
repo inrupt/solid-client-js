@@ -3,3 +3,6 @@
 pydata-sphinx-theme==0.13.3
 myst-parser==1.0.0
 Sphinx==6.2.1
+# The following is required for Sphinx to not rely on a deprecated urllib version
+# pulling in an unspoorted ssl version.
+requests==2.30.0
