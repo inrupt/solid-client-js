@@ -23,6 +23,8 @@ The following changes have been implemented but not released yet:
   use that in order to be compatible with web buffer types and node
   buffer types.
 
+## [1.28.0] - 2023-05-09
+
 ### New feature
 
 - Node 20 support
