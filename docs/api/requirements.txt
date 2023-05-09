@@ -8,4 +8,4 @@ Sphinx==6.2.1
 # with OpenSSL 1.0.2k-fips  26 Jan 2017.
 # See: https://github.com/urllib3/urllib3/issues/2168, 
 # https://github.com/psf/requests/releases/tag/v2.30.0, )
-urllib3<2
+urllib3<3
