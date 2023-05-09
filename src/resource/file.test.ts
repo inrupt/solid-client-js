@@ -381,7 +381,7 @@ describe("Write non-RDF data into a folder", () => {
     ["blob", mockBlob],
     ["buffer", mockBuffer],
     ["nodeBuffer", mockNodeBuffer],
-  ] as [string, Blob | Buffer][])(
+  ])(
     "support for %s raw data source",
     (_, data) => {
       it("should default to the included fetcher if no other is available", async () => {
@@ -606,7 +606,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     ["blob", mockBlob],
     ["buffer", mockBuffer],
     ["nodeBuffer", mockNodeBuffer],
-  ] as [string, Blob | Buffer][])(
+  ])(
     "support for %s raw data source",
     (_, data) => {
       it("should default to the included fetcher if no other fetcher is available", async () => {
