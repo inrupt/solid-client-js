@@ -382,7 +382,7 @@ describe("Write non-RDF data into a folder", () => {
     ["buffer", mockBuffer],
     ["nodeBuffer", mockNodeBuffer],
   ] as [string, Blob | Buffer][])(
-    "blob, buffer and nodeBuffer test",
+    "support for %s raw data source",
     (_, data) => {
       it("should default to the included fetcher if no other is available", async () => {
         const fetcher = jest.requireMock("../fetcher") as {
@@ -469,66 +469,6 @@ describe("Write non-RDF data into a folder", () => {
         expect(mockCall[1]?.body).toEqual(data);
       });
 
-      it("sets the correct Content Type on the returned file, if available", async () => {
-        const fetcher = jest.requireMock("../fetcher") as {
-          fetch: jest.Mocked<typeof window.fetch>;
-        };
-
-        fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
-        const mockTextBlob = new Blob(["mock blob data"], {
-          type: "text/plain",
-        });
-        const savedFile = await saveFileInContainer(
-          "https://some.url",
-          mockTextBlob
-        );
-
-        expect(savedFile).toBeInstanceOf(Blob);
-        expect(savedFile!.internal_resourceInfo.contentType).toBe("text/plain");
-      });
-
-      it("sets the given Content Type on the returned file, if any was given", async () => {
-        const fetcher = jest.requireMock("../fetcher") as {
-          fetch: jest.Mocked<typeof window.fetch>;
-        };
-
-        fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
-        const mockTextBlob = new Blob(["mock blob data"], {
-          type: "text/plain",
-        });
-        const savedFile = await saveFileInContainer(
-          "https://some.url",
-          mockTextBlob,
-          {
-            contentType: "text/csv",
-          }
-        );
-
-        expect(savedFile).toBeInstanceOf(Blob);
-        expect(savedFile!.internal_resourceInfo.contentType).toBe("text/csv");
-      });
-
-      it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
-        const fetcher = jest.requireMock("../fetcher") as {
-          fetch: jest.Mocked<typeof window.fetch>;
-        };
-
-        fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
-        const mockTextBlob = new Blob(["mock blob data"]);
-        const savedFile = await saveFileInContainer(
-          "https://some.url",
-          mockTextBlob
-        );
-
-        expect(savedFile).toBeInstanceOf(Blob);
-        expect(savedFile!.internal_resourceInfo.contentType).toBe(
-          "application/octet-stream"
-        );
-      });
-
       it("throws when a reserved header is passed", async () => {
         const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
 
@@ -595,6 +535,66 @@ describe("Write non-RDF data into a folder", () => {
       });
     }
   );
+
+  it("sets the correct Content Type on the returned file, if available", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mocked<typeof window.fetch>;
+    };
+
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
+
+    const mockTextBlob = new Blob(["mock blob data"], {
+      type: "text/plain",
+    });
+    const savedFile = await saveFileInContainer(
+      "https://some.url",
+      mockTextBlob
+    );
+
+    expect(savedFile).toBeInstanceOf(Blob);
+    expect(savedFile!.internal_resourceInfo.contentType).toBe("text/plain");
+  });
+
+  it("sets the given Content Type on the returned file, if any was given", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mocked<typeof window.fetch>;
+    };
+
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
+
+    const mockTextBlob = new Blob(["mock blob data"], {
+      type: "text/plain",
+    });
+    const savedFile = await saveFileInContainer(
+      "https://some.url",
+      mockTextBlob,
+      {
+        contentType: "text/csv",
+      }
+    );
+
+    expect(savedFile).toBeInstanceOf(Blob);
+    expect(savedFile!.internal_resourceInfo.contentType).toBe("text/csv");
+  });
+
+  it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
+    const fetcher = jest.requireMock("../fetcher") as {
+      fetch: jest.Mocked<typeof window.fetch>;
+    };
+
+    fetcher.fetch = setMockOnFetch(fetcher.fetch);
+
+    const mockTextBlob = new Blob(["mock blob data"]);
+    const savedFile = await saveFileInContainer(
+      "https://some.url",
+      mockTextBlob
+    );
+
+    expect(savedFile).toBeInstanceOf(Blob);
+    expect(savedFile!.internal_resourceInfo.contentType).toBe(
+      "application/octet-stream"
+    );
+  });
 });
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
@@ -607,7 +607,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     ["buffer", mockBuffer],
     ["nodeBuffer", mockNodeBuffer],
   ] as [string, Blob | Buffer][])(
-    "blob, buffer and nodeBuffer test",
+    "support for %s raw data source",
     (_, data) => {
       it("should default to the included fetcher if no other fetcher is available", async () => {
         const fetcher = jest.requireMock("../fetcher") as {
