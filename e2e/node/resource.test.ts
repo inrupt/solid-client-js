@@ -185,7 +185,7 @@ describe("Authenticated end-to-end", () => {
       );
 
       // Eslint isn't detecting the fact that this is inside an it statement
-      // for an unknown reason
+      // because of the conditional.
       // eslint-disable-next-line jest/no-standalone-expect
       expect(isRawData(sessionDataset)).toBe(false);
       // eslint-disable-next-line jest/no-standalone-expect
