@@ -39,7 +39,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import { Buffer as NodeBuffer } from "buffer";
+import { Buffer as NodeBuffer, Blob } from "buffer";
 import {
   getSolidDataset,
   setThing,
@@ -169,31 +169,28 @@ describe("Authenticated end-to-end", () => {
   });
 
   // Blob isn't available in Node 14
-  (Number(process.versions.node.split(".")[0]) === 14 ? it.skip : it)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
+    const fileUrl = `${sessionResource}.txt`;
 
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        new Blob(["test"]),
-        fetchOptions
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions
-      );
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      // We need to type cast because the buffer definition
+      // of Blob does not have the prototype property expected
+      // by the lib.dom.ts
+      new Blob(["test"]) as unknown as globalThis.Blob,
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
+    // Eslint isn't detecting the fact that this is inside an it statement
+    // because of the conditional.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionDataset)).toBe(false);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionFile)).toBe(true);
 
-      await deleteFile(fileUrl, fetchOptions);
-    }
-  );
+    await deleteFile(fileUrl, fetchOptions);
+  });
 
   it("can create and remove Containers", async () => {
     const containerUrl = `${pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
