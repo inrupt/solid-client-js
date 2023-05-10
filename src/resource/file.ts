@@ -19,6 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { Buffer } from "buffer";
 import { fetch } from "../fetcher";
 import {
   File,
