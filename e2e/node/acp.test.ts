@@ -142,6 +142,78 @@ describe("An ACP Solid server", () => {
     });
   });
 
+  it("can get and set access for multiple agents", async () => {
+    const alice = "https://example.org/alice";
+    const bob = "https://example.org/bob";
+    const aliceAccess = await setAgentAccess(
+      sessionResource,
+      alice,
+      { read: true },
+      fetchOptions
+    );
+    const bobAccess = await setAgentAccess(
+      sessionResource,
+      alice,
+      { append: true },
+      fetchOptions
+    );
+    expect(bobAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+    expect(aliceAccess).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual({
+      read: true,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+
+    const bobUpdatedAccess = await setAgentAccess(
+      sessionResource,
+      alice,
+      { read: true },
+      fetchOptions
+    );
+    expect(bobUpdatedAccess).toStrictEqual({
+      read: false,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual({
+      read: true,
+      append: true,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
   it("can get and set read access for the public", async () => {
     const setPublicAccess = env.features?.acp
       ? latest_setPublicAccess
