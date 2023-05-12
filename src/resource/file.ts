@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { Buffer } from "buffer";
+import type { Buffer, Blob as _File } from "buffer";
 import { fetch } from "../fetcher";
 import {
   File,
@@ -213,7 +213,7 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File>(
+export async function saveFileInContainer<FileExt extends _File>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>
@@ -221,12 +221,12 @@ export async function saveFileInContainer<FileExt extends File>(
 /**
  * @deprecated `saveFileInContainer` should only have `Blob` input
  */
-export async function saveFileInContainer<FileExt extends File | Buffer>(
+export async function saveFileInContainer<FileExt extends _File | Buffer>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function saveFileInContainer<FileExt extends File | Buffer>(
+export async function saveFileInContainer<FileExt extends _File | Buffer>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
@@ -313,7 +313,7 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
-export async function overwriteFile<FileExt extends File>(
+export async function overwriteFile<FileExt extends _File>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
@@ -321,12 +321,12 @@ export async function overwriteFile<FileExt extends File>(
 /**
  * @deprecated `overwriteFile` should only have `Blob` input
  */
-export async function overwriteFile<FileExt extends File | Buffer>(
+export async function overwriteFile<FileExt extends _File | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function overwriteFile<FileExt extends File | Buffer>(
+export async function overwriteFile<FileExt extends _File | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options: Partial<WriteFileOptions> = defaultGetFileOptions
@@ -416,7 +416,7 @@ export function flattenHeaders(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: File,
+  file: _File,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response>;
@@ -425,13 +425,13 @@ async function writeFile(
  */
 async function writeFile(
   targetUrl: UrlString,
-  file: File | Buffer,
+  file: _File | Buffer,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response>;
 async function writeFile(
   targetUrl: UrlString,
-  file: File | Buffer,
+  file: _File | Buffer,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
@@ -460,12 +460,12 @@ async function writeFile(
     ...config.init,
     headers,
     method,
-    body: file,
+    body: file as File | Buffer,
   });
 }
 
 function getContentType(
-  file: File | Buffer,
+  file: _File | Buffer,
   contentTypeOverride?: string
 ): string {
   if (typeof contentTypeOverride === "string") {
