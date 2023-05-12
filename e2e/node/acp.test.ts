@@ -38,7 +38,15 @@ import {
   createFetch,
 } from "@inrupt/internal-test-env";
 import Link from "http-link-header";
-import { acp_v4 as acp, acp_ess_2, fromRdfJsDataset, getSolidDataset, getSourceUrl, saveSolidDatasetAt, toRdfJsDataset } from "../../src/index";
+import {
+  acp_v4 as acp,
+  acp_ess_2,
+  fromRdfJsDataset,
+  getSolidDataset,
+  getSourceUrl,
+  saveSolidDatasetAt,
+  toRdfJsDataset,
+} from "../../src/index";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
@@ -66,14 +74,14 @@ const READ_ONLY_ACCESS = {
   write: false,
   controlRead: false,
   controlWrite: false,
-}
+};
 const APPEND_ONLY_ACCESS = {
   read: false,
   append: true,
   write: false,
   controlRead: false,
   controlWrite: false,
-}
+};
 
 describe("An ACP Solid server", () => {
   let fetchOptions: { fetch: typeof global.fetch };
@@ -164,8 +172,12 @@ describe("An ACP Solid server", () => {
     );
     expect(bobAccess).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(aliceAccess).toStrictEqual(READ_ONLY_ACCESS);
-    expect(await getAgentAccess(sessionResource, alice, fetchOptions)).toStrictEqual(READ_ONLY_ACCESS);
-    expect(await getAgentAccess(sessionResource, bob, fetchOptions)).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(READ_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
 
     const bobUpdatedAccess = await setAgentAccess(
       sessionResource,
@@ -195,7 +207,7 @@ describe("An ACP Solid server", () => {
     const alice = "https://example.org/alice";
     const bob = "https://example.org/bob";
     const agent = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
-    
+
     const aliceAccess = await setAgentAccess(
       sessionResource,
       alice,
@@ -203,7 +215,9 @@ describe("An ACP Solid server", () => {
       fetchOptions
     );
     expect(aliceAccess).toStrictEqual(APPEND_ONLY_ACCESS);
-    expect(await getAgentAccess(sessionResource, alice, fetchOptions)).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(
       await getAgentAccess(sessionResource, bob, fetchOptions)
     ).toStrictEqual({
@@ -218,7 +232,7 @@ describe("An ACP Solid server", () => {
       method: "HEAD",
     });
 
-    const responseLinks = headResponse.headers.get("Link")
+    const responseLinks = headResponse.headers.get("Link");
     if (!responseLinks) {
       throw new Error("No Link header found");
     }
@@ -233,16 +247,25 @@ describe("An ACP Solid server", () => {
       rdfjs.add(DataFactory.quad(p.subject, agent, DataFactory.namedNode(bob)));
     }
 
-    const datasetWithAcr = await acp_ess_2.getSolidDatasetWithAcr(sessionResource, { fetch: session.fetch });
+    const datasetWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
+      sessionResource,
+      { fetch: session.fetch }
+    );
 
     if (!datasetWithAcr.internal_acp.acr) {
       throw new Error("No ACR found");
     }
 
-    await saveSolidDatasetAt(acrUrl, fromRdfJsDataset(rdfjs), { fetch: session.fetch });
+    await saveSolidDatasetAt(acrUrl, fromRdfJsDataset(rdfjs), {
+      fetch: session.fetch,
+    });
 
-    expect(await getAgentAccess(sessionResource, alice, fetchOptions)).toStrictEqual(APPEND_ONLY_ACCESS);
-    expect(await getAgentAccess(sessionResource, bob, fetchOptions)).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
   });
 
   it("can get and set read access for the public", async () => {
