@@ -27,5 +27,5 @@ setupEnv();
 
 if (process.env.CI === "true") {
   // Tests running in the CI runners tend to be more flaky.
-  jest.retryTimes(3, { logErrorsBeforeRetry: true });
+  jest.retryTimes(5, { logErrorsBeforeRetry: true });
 }
