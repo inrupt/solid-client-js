@@ -20,7 +20,7 @@
 //
 
 import { setupEnv } from "@inrupt/internal-test-env";
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 // In jest, we immediately invoke this:
 setupEnv();
