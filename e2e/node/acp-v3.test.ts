@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import jest, {
+import {
   beforeEach,
   afterEach,
   describe,
