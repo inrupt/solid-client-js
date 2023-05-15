@@ -63,11 +63,6 @@ if (env.environment !== "NSS") {
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
-if (process.env.CI === "true") {
-  // Tests running in the CI runners tend to be more flaky.
-  jest.retryTimes(3, { logErrorsBeforeRetry: true });
-}
-
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the e2e tests have an NSS environment setup.
 describe("End-to-end tests with pre-existing data against resources in an NSS server", () => {

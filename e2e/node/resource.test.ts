@@ -67,11 +67,6 @@ if (env.environment === "NSS") {
   test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
 }
 
-if (process.env.CI === "true") {
-  // Tests running in the CI runners tend to be more flaky.
-  jest.retryTimes(3, { logErrorsBeforeRetry: true });
-}
-
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
 describe("Authenticated end-to-end", () => {

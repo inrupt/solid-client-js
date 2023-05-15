@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import {
+import jest, {
   beforeEach,
   afterEach,
   describe,
@@ -59,11 +59,6 @@ const env = getNodeTestingEnvironment();
 if (env.features?.acp_v3 !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
-}
-
-if (process.env.CI === "true") {
-  // Tests running in the CI runners tend to be more flaky.
-  jest.retryTimes(3, { logErrorsBeforeRetry: true });
 }
 
 describe("Authenticated end-to-end ACP V3", () => {

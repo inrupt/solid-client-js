@@ -23,3 +23,8 @@ import { setupEnv } from "@inrupt/internal-test-env";
 
 // In jest, we immediately invoke this:
 setupEnv();
+
+if (process.env.CI === "true") {
+  // Tests running in the CI runners tend to be more flaky.
+  jest.retryTimes(3, { logErrorsBeforeRetry: true });
+}
