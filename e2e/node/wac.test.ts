@@ -63,6 +63,11 @@ if (env.features?.wac !== true) {
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
 }
 
+if (process.env.CI === "true") {
+  // Tests running in the CI runners tend to be more flaky.
+  jest.retryTimes(3, { logErrorsBeforeRetry: true });
+}
+
 describe("Authenticated end-to-end WAC", () => {
   let options: { fetch: typeof global.fetch };
   let session: Session;

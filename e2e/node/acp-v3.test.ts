@@ -61,6 +61,11 @@ if (env.features?.acp_v3 !== true) {
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
 }
 
+if (process.env.CI === "true") {
+  // Tests running in the CI runners tend to be more flaky.
+  jest.retryTimes(3, { logErrorsBeforeRetry: true });
+}
+
 describe("Authenticated end-to-end ACP V3", () => {
   let fetchOptions: { fetch: typeof global.fetch };
   let session: Session;

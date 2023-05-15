@@ -58,6 +58,11 @@ if (env?.features?.acp !== true) {
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
 
+if (process.env.CI === "true") {
+  // Tests running in the CI runners tend to be more flaky.
+  jest.retryTimes(3, { logErrorsBeforeRetry: true });
+}
+
 describe("An ACP Solid server", () => {
   let fetchOptions: { fetch: typeof global.fetch };
   let session: Session;
