@@ -68,6 +68,20 @@ if (env?.features?.acp !== true) {
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
 
+const NO_ACCESS = {
+  read: false,
+  append: false,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+const ALL_ACCESS = {
+  read: true,
+  append: true,
+  write: true,
+  controlRead: true,
+  controlWrite: true,
+};
 const READ_ONLY_ACCESS = {
   read: true,
   append: false,
@@ -77,6 +91,13 @@ const READ_ONLY_ACCESS = {
 };
 const APPEND_ONLY_ACCESS = {
   read: false,
+  append: true,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+const READ_AND_APPEND_ACCESS = {
+  read: true,
   append: true,
   write: false,
   controlRead: false,
@@ -185,22 +206,10 @@ describe("An ACP Solid server", () => {
       { read: true },
       fetchOptions
     );
-    expect(bobUpdatedAccess).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(bobUpdatedAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
     expect(
       await getAgentAccess(sessionResource, bob, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 
   it("can get access for multiple agents with externally modified access", async () => {
@@ -220,13 +229,7 @@ describe("An ACP Solid server", () => {
     ).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(
       await getAgentAccess(sessionResource, bob, fetchOptions)
-    ).toStrictEqual({
-      read: false,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    ).toStrictEqual(NO_ACCESS);
 
     const headResponse = await session.fetch(sessionResource, {
       method: "HEAD",
@@ -288,21 +291,10 @@ describe("An ACP Solid server", () => {
       fetchOptions
     );
 
-    expect(access).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(access).toStrictEqual(READ_ONLY_ACCESS);
+    expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual(
+      READ_ONLY_ACCESS
+    );
 
     try {
       await expect(getSolidDataset(sessionResource)).resolves.toEqual(
@@ -320,74 +312,27 @@ describe("An ACP Solid server", () => {
     const agentAccess = await setAgentAccess(
       sessionResource,
       agent,
-      {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      },
+      ALL_ACCESS,
       fetchOptions
     );
-    expect(agentAccess).toStrictEqual({
-      read: true,
-      append: true,
-      write: true,
-      controlRead: true,
-      controlWrite: true,
-    });
+    expect(agentAccess).toStrictEqual(ALL_ACCESS);
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: true,
-      write: true,
-      controlRead: true,
-      controlWrite: true,
-    });
+    ).toStrictEqual(ALL_ACCESS);
   });
 
   it("can remove access for an agent", async () => {
     const agent = "https://example.org/malika";
-    const agentAccess = await setAgentAccess(
-      sessionResource,
-      agent,
-      {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      },
-      fetchOptions
-    );
+    await setAgentAccess(sessionResource, agent, ALL_ACCESS, fetchOptions);
     const removedAgentAccess = await setAgentAccess(
       sessionResource,
       agent,
-      {
-        read: true,
-        append: true,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
+      READ_AND_APPEND_ACCESS,
       fetchOptions
     );
-    expect(removedAgentAccess).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(removedAgentAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 });
