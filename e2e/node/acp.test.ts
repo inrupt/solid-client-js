@@ -37,7 +37,16 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import { acp_v4 as acp, getSolidDataset, getSourceUrl } from "../../src/index";
+import Link from "http-link-header";
+import {
+  acp_v4 as acp,
+  acp_ess_2,
+  fromRdfJsDataset,
+  getSolidDataset,
+  getSourceUrl,
+  saveSolidDatasetAt,
+  toRdfJsDataset,
+} from "../../src/index";
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
@@ -48,6 +57,7 @@ import {
   getPublicAccess as legacy_getPublicAccess,
 } from "../../src/access/universal";
 import { hasAccessibleAcr } from "../../src/acp/acp";
+import { DataFactory } from "../../src/rdfjs.internal";
 
 const TEST_SLUG = "solid-client-test-e2e-acp";
 
@@ -57,6 +67,42 @@ if (env?.features?.acp !== true) {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
+
+const NO_ACCESS = {
+  read: false,
+  append: false,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+const ALL_ACCESS = {
+  read: true,
+  append: true,
+  write: true,
+  controlRead: true,
+  controlWrite: true,
+};
+const READ_ONLY_ACCESS = {
+  read: true,
+  append: false,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+const APPEND_ONLY_ACCESS = {
+  read: false,
+  append: true,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
+const READ_AND_APPEND_ACCESS = {
+  read: true,
+  append: true,
+  write: false,
+  controlRead: false,
+  controlWrite: false,
+};
 
 describe("An ACP Solid server", () => {
   let fetchOptions: { fetch: typeof global.fetch };
@@ -124,22 +170,105 @@ describe("An ACP Solid server", () => {
       { read: true },
       fetchOptions
     );
-    expect(agentAccess).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(agentAccess).toStrictEqual(READ_ONLY_ACCESS);
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
+    ).toStrictEqual(READ_ONLY_ACCESS);
+  });
+
+  it("can get and set access for multiple agents", async () => {
+    const alice = "https://example.org/alice";
+    const bob = "https://example.org/bob";
+    const aliceAccess = await setAgentAccess(
+      sessionResource,
+      alice,
+      { read: true },
+      fetchOptions
+    );
+    const bobAccess = await setAgentAccess(
+      sessionResource,
+      bob,
+      { append: true },
+      fetchOptions
+    );
+    expect(bobAccess).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(aliceAccess).toStrictEqual(READ_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(READ_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
+
+    const bobUpdatedAccess = await setAgentAccess(
+      sessionResource,
+      bob,
+      { read: true },
+      fetchOptions
+    );
+    expect(bobUpdatedAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(READ_AND_APPEND_ACCESS);
+  });
+
+  it("can get access for multiple agents with externally modified access", async () => {
+    const alice = "https://example.org/alice";
+    const bob = "https://example.org/bob";
+    const agent = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
+
+    const aliceAccess = await setAgentAccess(
+      sessionResource,
+      alice,
+      { append: true },
+      fetchOptions
+    );
+    expect(aliceAccess).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(NO_ACCESS);
+
+    const headResponse = await session.fetch(sessionResource, {
+      method: "HEAD",
     });
+
+    const responseLinks = headResponse.headers.get("Link");
+    if (!responseLinks) {
+      throw new Error("No Link header found");
+    }
+
+    const links = Link.parse(responseLinks.toString());
+    const acrUrl = links?.get("rel", "acl")[0].uri;
+    const acrDataset = await getSolidDataset(acrUrl, { fetch: session.fetch });
+    const rdfjs = toRdfJsDataset(acrDataset);
+
+    // Find the policies applying to alice and also apply them to bob
+    for (const p of rdfjs.match(null, agent, DataFactory.namedNode(alice))) {
+      rdfjs.add(DataFactory.quad(p.subject, agent, DataFactory.namedNode(bob)));
+    }
+
+    const datasetWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
+      sessionResource,
+      { fetch: session.fetch }
+    );
+
+    if (!datasetWithAcr.internal_acp.acr) {
+      throw new Error("No ACR found");
+    }
+
+    await saveSolidDatasetAt(acrUrl, fromRdfJsDataset(rdfjs), {
+      fetch: session.fetch,
+    });
+
+    expect(
+      await getAgentAccess(sessionResource, alice, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
+    expect(
+      await getAgentAccess(sessionResource, bob, fetchOptions)
+    ).toStrictEqual(APPEND_ONLY_ACCESS);
   });
 
   it("can get and set read access for the public", async () => {
@@ -162,21 +291,10 @@ describe("An ACP Solid server", () => {
       fetchOptions
     );
 
-    expect(access).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
-
-    expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual({
-      read: true,
-      append: false,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(access).toStrictEqual(READ_ONLY_ACCESS);
+    expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual(
+      READ_ONLY_ACCESS
+    );
 
     try {
       await expect(getSolidDataset(sessionResource)).resolves.toEqual(
@@ -194,74 +312,27 @@ describe("An ACP Solid server", () => {
     const agentAccess = await setAgentAccess(
       sessionResource,
       agent,
-      {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      },
+      ALL_ACCESS,
       fetchOptions
     );
-    expect(agentAccess).toStrictEqual({
-      read: true,
-      append: true,
-      write: true,
-      controlRead: true,
-      controlWrite: true,
-    });
+    expect(agentAccess).toStrictEqual(ALL_ACCESS);
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: true,
-      write: true,
-      controlRead: true,
-      controlWrite: true,
-    });
+    ).toStrictEqual(ALL_ACCESS);
   });
 
   it("can remove access for an agent", async () => {
     const agent = "https://example.org/malika";
-    const agentAccess = await setAgentAccess(
-      sessionResource,
-      agent,
-      {
-        read: true,
-        append: true,
-        write: true,
-        controlRead: true,
-        controlWrite: true,
-      },
-      fetchOptions
-    );
+    await setAgentAccess(sessionResource, agent, ALL_ACCESS, fetchOptions);
     const removedAgentAccess = await setAgentAccess(
       sessionResource,
       agent,
-      {
-        read: true,
-        append: true,
-        write: false,
-        controlRead: false,
-        controlWrite: false,
-      },
+      READ_AND_APPEND_ACCESS,
       fetchOptions
     );
-    expect(removedAgentAccess).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    expect(removedAgentAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions)
-    ).toStrictEqual({
-      read: true,
-      append: true,
-      write: false,
-      controlRead: false,
-      controlWrite: false,
-    });
+    ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 });
