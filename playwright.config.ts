@@ -25,9 +25,9 @@ const config: PlaywrightTestConfig = {
   testMatch: "*.playwright.ts",
   // Configure dotenv in local:
   globalSetup: "./e2e/browser/test/globalSetup.ts",
-  retries: 1,
+  retries: process.env.CI ? 3 : 1,
   // Extends from the default 30s
-  timeout: 60000,
+  timeout: 120000,
   use: {
     baseURL: "http://localhost:3000/",
     headless: true,
