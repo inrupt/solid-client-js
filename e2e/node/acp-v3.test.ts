@@ -56,7 +56,7 @@ const TEST_SLUG = "solid-client-test-e2e-acp_v3";
 
 const env = getNodeTestingEnvironment();
 
-if (env.features?.acp_v3 !== true) {
+if (env.features?.ACP_V3 === "false" || env.features?.ACP_V3 === "") {
   // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP V3 tests in ${env.environment}`, () => {});
 }
