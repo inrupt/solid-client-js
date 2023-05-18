@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { Buffer } from "buffer";
+import type { Buffer, File as NodeFile } from "buffer";
 import { fetch } from "../fetcher";
 import {
   File,
@@ -174,7 +174,7 @@ type SaveFileOptions = WriteFileOptions & {
  * ```
  * const savedFile = await saveFileInContainer(
  *   "https://pod.example.com/some/existing/container/",
- *   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
+ *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
  *   { slug: "suggestedFileName.txt", contentType: "text/plain", fetch: fetch }
  * );
  * ```
@@ -213,20 +213,24 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File>(
+export async function saveFileInContainer<FileExt extends File | NodeFile>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
 /**
- * @deprecated `saveFileInContainer` should only have `Blob` input
+ * @deprecated `saveFileInContainer` should only have `File` input
  */
-export async function saveFileInContainer<FileExt extends File | Buffer>(
+export async function saveFileInContainer<
+  FileExt extends File | NodeFile | Buffer
+>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function saveFileInContainer<FileExt extends File | Buffer>(
+export async function saveFileInContainer<
+  FileExt extends File | NodeFile | Buffer
+>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
@@ -290,7 +294,7 @@ export type WriteFileOptions = GetFileOptions & {
  * ```
  * const savedFile = await overwriteFile(
  *   "https://pod.example.com/some/container/myFile.txt",
- *   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
+ *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
  *   { contentType: "text/plain", fetch: fetch }
  * );
  * ```
@@ -313,20 +317,20 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
-export async function overwriteFile<FileExt extends File>(
+export async function overwriteFile<FileExt extends File | NodeFile>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
 /**
- * @deprecated `overwriteFile` should only have `Blob` input
+ * @deprecated `overwriteFile` should only have `File` input
  */
-export async function overwriteFile<FileExt extends File | Buffer>(
+export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function overwriteFile<FileExt extends File | Buffer>(
+export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options: Partial<WriteFileOptions> = defaultGetFileOptions
@@ -414,24 +418,24 @@ export function flattenHeaders(
  * @param method The HTTP method
  * @param options Additional parameters for file creation (e.g. a slug, or media type)
  */
-async function writeFile(
+async function writeFile<T extends File | NodeFile>(
   targetUrl: UrlString,
-  file: File,
+  file: T,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response>;
 /**
- * @deprecated `writeFile` should only have `Blob` input
+ * @deprecated `writeFile` should only have `File` input
  */
-async function writeFile(
+async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
-  file: File | Buffer,
+  file: T,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response>;
-async function writeFile(
+async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
-  file: File | Buffer,
+  file: T,
   method: "PUT" | "POST",
   options: Partial<SaveFileOptions>
 ): Promise<Response> {
@@ -460,12 +464,12 @@ async function writeFile(
     ...config.init,
     headers,
     method,
-    body: file,
+    body: file as File | Buffer,
   });
 }
 
 function getContentType(
-  file: File | Buffer,
+  file: File | NodeFile | Buffer,
   contentTypeOverride?: string
 ): string {
   if (typeof contentTypeOverride === "string") {
@@ -474,9 +478,10 @@ function getContentType(
   const fileType =
     typeof file === "object" &&
     file !== null &&
-    typeof (file as unknown as Blob).type === "string" &&
-    (file as unknown as Blob).type.length > 0
-      ? (file as unknown as Blob).type
+    "type" in file &&
+    typeof file.type === "string" &&
+    file.type.length > 0
+      ? file.type
       : undefined;
 
   return fileType ?? "application/octet-stream";
