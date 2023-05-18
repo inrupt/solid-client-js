@@ -183,7 +183,9 @@ describe("Authenticated end-to-end", () => {
       // We need to type cast because the buffer definition
       // of Blob does not have the prototype property expected
       // by the lib.dom.ts
-      new Blob(["test"], { type: "text/plain" }) as unknown as globalThis.Blob,
+      new NodeBlob(["test"], {
+        type: "text/plain",
+      }) as unknown as globalThis.Blob,
       fetchOptions
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
