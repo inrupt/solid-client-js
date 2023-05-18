@@ -194,10 +194,8 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  const testFn = nodeMajor > 16 ? it : it.skip;
-
-  // Blob is only available globally Node 16 and above
-  testFn(
+  // Blob is only available globally Node 18 and above
+  (nodeMajor > 18 ? it : it.skip)(
     "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
     async () => {
       const fileUrl = `${sessionResource}.txt`;
@@ -209,7 +207,7 @@ describe("Authenticated end-to-end", () => {
         // by the lib.dom.ts
         new Blob(["test"], {
           type: "text/plain",
-        }) as unknown as globalThis.Blob,
+        }),
         fetchOptions
       );
       const sessionDataset = await getSolidDataset(
@@ -227,6 +225,8 @@ describe("Authenticated end-to-end", () => {
       await deleteFile(fileUrl, fetchOptions);
     }
   );
+
+  const testFn = nodeMajor > 16 ? it : it.skip;
 
   // Cannot use file constructor in Node 16 and below
   testFn(
