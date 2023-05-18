@@ -313,7 +313,7 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
-export async function overwriteFile<FileExt extends NodeBlob>(
+export async function overwriteFile<FileExt extends Blob | NodeBlob>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
@@ -321,12 +321,12 @@ export async function overwriteFile<FileExt extends NodeBlob>(
 /**
  * @deprecated `overwriteFile` should only have `Blob` input
  */
-export async function overwriteFile<FileExt extends NodeBlob | Buffer>(
+export async function overwriteFile<FileExt extends Blob | NodeBlob | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function overwriteFile<FileExt extends NodeBlob | Buffer>(
+export async function overwriteFile<FileExt extends Blob | NodeBlob | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options: Partial<WriteFileOptions> = defaultGetFileOptions
