@@ -226,10 +226,8 @@ describe("Authenticated end-to-end", () => {
     }
   );
 
-  const testFn = nodeMajor > 16 ? it : it.skip;
-
-  // Cannot use file constructor in Node 16 and below
-  testFn(
+  // Cannot use file constructor in Node 18 and below
+  (nodeMajor > 18 ? it : it.skip)(
     "can create, delete, and differentiate between RDF and non-RDF Resources using a File",
     async () => {
       const fileUrl = `${sessionResource}.txt`;
@@ -259,7 +257,7 @@ describe("Authenticated end-to-end", () => {
   );
 
   // Cannot use node file constructor in Node 16 and below (https://github.com/feross/buffer/issues/325)
-  testFn(
+  (nodeMajor > 16 ? it : it.skip)(
     "can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package",
     async () => {
       const fileUrl = `${sessionResource}.txt`;
