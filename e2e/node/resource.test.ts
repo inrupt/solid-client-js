@@ -39,7 +39,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import { Buffer as NodeBuffer, File } from "buffer";
+import { Buffer as NodeBuffer, File as NodeFile, Blob } from "buffer";
 import {
   getSolidDataset,
   setThing,
@@ -68,6 +68,9 @@ if (env.environment === "NSS") {
 }
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
+
+const nodeVersion = process.versions.node.split(".");
+const nodeMajor = Number(nodeVersion[0]);
 
 describe("Authenticated end-to-end", () => {
   let fetchOptions: { fetch: typeof global.fetch };
@@ -168,7 +171,6 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  // Blob isn't available in Node 14
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
@@ -177,7 +179,57 @@ describe("Authenticated end-to-end", () => {
       // We need to type cast because the buffer definition
       // of Blob does not have the prototype property expected
       // by the lib.dom.ts
-      new File(["test"], "test.txt", { type: "text/plain" }),
+      new Blob(["test"], { type: "text/plain" }) as unknown as globalThis.Blob,
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+
+    // Eslint isn't detecting the fact that this is inside an it statement
+    // because of the conditional.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionDataset)).toBe(false);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionFile)).toBe(true);
+
+    await deleteFile(fileUrl, fetchOptions);
+  });
+
+  const testFn = nodeMajor > 16 ? it : it.skip;
+
+  // Cannot use file constructor in Node 16 and below
+  testFn("can create, delete, and differentiate between RDF and non-RDF Resources using a File", async () => {
+    const fileUrl = `${sessionResource}.txt`;
+
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      // We need to type cast because the buffer definition
+      // of Blob does not have the prototype property expected
+      // by the lib.dom.ts
+      new File(["test"], fileUrl, { type: "text/plain" }),
+      fetchOptions
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+
+    // Eslint isn't detecting the fact that this is inside an it statement
+    // because of the conditional.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionDataset)).toBe(false);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionFile)).toBe(true);
+
+    await deleteFile(fileUrl, fetchOptions);
+  });
+
+  // Cannot use node file constructor in Node 16 and below (https://github.com/feross/buffer/issues/325)
+  testFn("can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package", async () => {
+    const fileUrl = `${sessionResource}.txt`;
+
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      // We need to type cast because the buffer definition
+      // of Blob does not have the prototype property expected
+      // by the lib.dom.ts
+      new NodeFile(["test"], fileUrl, { type: "text/plain" }),
       fetchOptions
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
