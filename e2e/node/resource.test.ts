@@ -39,7 +39,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import { Buffer as NodeBuffer, Blob } from "buffer";
+import { Buffer as NodeBuffer, File } from "buffer";
 import {
   getSolidDataset,
   setThing,
@@ -177,7 +177,7 @@ describe("Authenticated end-to-end", () => {
       // We need to type cast because the buffer definition
       // of Blob does not have the prototype property expected
       // by the lib.dom.ts
-      new Blob(["test"]) as unknown as globalThis.Blob,
+      new File(["test"], "test.txt", { type: "text/plain" }),
       fetchOptions
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);

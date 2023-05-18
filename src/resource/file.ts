@@ -174,7 +174,7 @@ type SaveFileOptions = WriteFileOptions & {
  * ```
  * const savedFile = await saveFileInContainer(
  *   "https://pod.example.com/some/existing/container/",
- *   new File(["This is a plain piece of text"], { type: "plain/text" }),
+ *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
  *   { slug: "suggestedFileName.txt", contentType: "text/plain", fetch: fetch }
  * );
  * ```
@@ -294,7 +294,7 @@ export type WriteFileOptions = GetFileOptions & {
  * ```
  * const savedFile = await overwriteFile(
  *   "https://pod.example.com/some/container/myFile.txt",
- *   new Blob(["This is a plain piece of text"], { type: "plain/text" }),
+ *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
  *   { contentType: "text/plain", fetch: fetch }
  * );
  * ```
