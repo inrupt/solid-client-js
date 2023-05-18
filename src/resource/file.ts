@@ -221,12 +221,16 @@ export async function saveFileInContainer<FileExt extends Blob | NodeBlob>(
 /**
  * @deprecated `saveFileInContainer` should only have `File` input
  */
-export async function saveFileInContainer<FileExt extends Blob | NodeBlob | Buffer>(
+export async function saveFileInContainer<
+  FileExt extends Blob | NodeBlob | Buffer
+>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>
 ): Promise<FileExt & WithResourceInfo>;
-export async function saveFileInContainer<FileExt extends Blob | NodeBlob | Buffer>(
+export async function saveFileInContainer<
+  FileExt extends Blob | NodeBlob | Buffer
+>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options: Partial<SaveFileOptions> = defaultGetFileOptions
