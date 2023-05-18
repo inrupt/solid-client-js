@@ -184,11 +184,7 @@ describe("Authenticated end-to-end", () => {
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
-    // Eslint isn't detecting the fact that this is inside an it statement
-    // because of the conditional.
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(isRawData(sessionDataset)).toBe(false);
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(isRawData(sessionFile)).toBe(true);
 
     await deleteFile(fileUrl, fetchOptions);
