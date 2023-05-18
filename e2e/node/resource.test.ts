@@ -39,7 +39,11 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import { Buffer as NodeBuffer, File as NodeFile, Blob } from "buffer";
+import {
+  Buffer as NodeBuffer,
+  File as NodeFile,
+  Blob as NodeBlob,
+} from "buffer";
 import {
   getSolidDataset,
   setThing,
@@ -171,7 +175,7 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
     const sessionFile = await overwriteFile(
@@ -191,6 +195,38 @@ describe("Authenticated end-to-end", () => {
   });
 
   const testFn = nodeMajor > 16 ? it : it.skip;
+
+  // Blob is only available globally Node 16 and above
+  testFn(
+    "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
+    async () => {
+      const fileUrl = `${sessionResource}.txt`;
+
+      const sessionFile = await overwriteFile(
+        fileUrl,
+        // We need to type cast because the buffer definition
+        // of Blob does not have the prototype property expected
+        // by the lib.dom.ts
+        new Blob(["test"], {
+          type: "text/plain",
+        }) as unknown as globalThis.Blob,
+        fetchOptions
+      );
+      const sessionDataset = await getSolidDataset(
+        sessionResource,
+        fetchOptions
+      );
+
+      // Eslint isn't detecting the fact that this is inside an it statement
+      // because of the conditional.
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionDataset)).toBe(false);
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionFile)).toBe(true);
+
+      await deleteFile(fileUrl, fetchOptions);
+    }
+  );
 
   // Cannot use file constructor in Node 16 and below
   testFn(
