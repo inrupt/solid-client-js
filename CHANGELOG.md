@@ -16,6 +16,12 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+## [1.29.0] - 2023-05-18
+
+### New feature
+
+- Support `File` type from `@types/node` in `overwriteFile` and `saveFileInContainer`.
+
 ## [1.28.1] - 2023-05-10
 
 ### Bugfixes
