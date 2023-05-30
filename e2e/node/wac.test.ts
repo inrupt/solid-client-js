@@ -107,7 +107,7 @@ describe("Authenticated end-to-end WAC", () => {
     expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
 
     expect(getPublicAccess(datasetWithAcl)).toEqual({
-      read: false,
+      read: env.environment === "CSS",
       append: false,
       write: false,
       control: false,

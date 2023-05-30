@@ -129,6 +129,7 @@ describe("An ACP Solid server", () => {
     );
   });
 
+  // This seems to be failing on the CSS because of https://github.com/jeswr/css-acp-repro
   it("advertises its ACLs as ACP AccessControlResources", async () => {
     expect(await acp.isAcpControlled(sessionResource, fetchOptions)).toBe(true);
   });
