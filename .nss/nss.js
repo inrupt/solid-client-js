@@ -5,6 +5,12 @@ const path = require('path')
 const root = path.join(__dirname, '.data')
 const templates = path.join(__dirname, 'config', 'templates', 'new-account')
 
+// Clear out any remnant data from previous tests
+fs.rmSync(root, { recursive: true, force: true });
+fs.rmSync(path.join(__dirname, 'config'), { recursive: true, force: true });
+fs.rmSync(path.join(__dirname, '.db'), { recursive: true, force: true });
+
+// The user details
 const details = {
   username: "ownername",
   webId: "http://localhost:8443/profile/card#me",
@@ -14,16 +20,8 @@ const details = {
   hashedPassword: "$2a$10$V38ahP7KVOianSZdBQpgR.2TlfgjVTI1KPA7V70XuOPsT8eX6.id."
 };
 
-fs.rmSync(root, { recursive: true, force: true });
-fs.rmSync(path.join(__dirname, 'config'), { recursive: true, force: true });
-fs.rmSync(path.join(__dirname, '.db'), { recursive: true, force: true });
-
-const app = solid({
-  serverUri: details.idp,
-  root,
-});
-
-const server = app.listen(8443);
+// Start the NSS server
+const server = solid({ serverUri: details.idp, root }).listen(8443);
 
 function applyTemplate(dir) {
   for (const elem of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -42,6 +40,7 @@ function applyTemplate(dir) {
   }
 }
 
+// Once the server has started, copy the template data into the users directory and fill it in
 server.on('listening', () => {
   fs.cpSync(templates, root, { recursive: true });
   fs.cpSync(path.join(__dirname, 'publicWriteTemplate'), path.join(root, 'publicWrite'), { recursive: true });
@@ -59,4 +58,4 @@ server.on('listening', () => {
     );
     console.log('Solid server running on http://localhost:8443/')
   });
-})
+});
