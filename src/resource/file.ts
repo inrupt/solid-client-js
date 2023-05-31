@@ -91,7 +91,6 @@ export async function getFile(
     ...options,
   };
   const url = internal_toIriString(fileUrl);
-  console.log('fetching', url)
   const response = await config.fetch(url, config.init);
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
