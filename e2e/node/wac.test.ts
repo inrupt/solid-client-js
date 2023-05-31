@@ -70,9 +70,9 @@ describe("Authenticated end-to-end WAC", () => {
   let pod: string;
 
   beforeEach(async () => {
-    console.log('about to get authenticated session')
+    console.log("about to get authenticated session");
     session = await getAuthenticatedSession(env);
-    console.log('session is', session)
+    console.log("session is", session);
     pod = await getPodRoot(session);
     sessionResource = `${pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };

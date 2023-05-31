@@ -362,9 +362,12 @@ describe("Authenticated end-to-end", () => {
   // It is important to note that /.well-known/solid is *not* spec mandated to exist
   // so we should be able to cope if it is not present.
 
-  (env.environment === "CSS" ? it.skip : it)("can fetch getWellKnownSolid", async () => {
-    // We don't really care for what the resulting dataset is, just that across
-    // environments it reliably succeeds:
-    await expect(getWellKnownSolid(sessionResource)).resolves.not.toThrow();
-  });
+  (env.environment === "CSS" ? it.skip : it)(
+    "can fetch getWellKnownSolid",
+    async () => {
+      // We don't really care for what the resulting dataset is, just that across
+      // environments it reliably succeeds:
+      await expect(getWellKnownSolid(sessionResource)).resolves.not.toThrow();
+    }
+  );
 });
