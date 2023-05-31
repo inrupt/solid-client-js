@@ -48,6 +48,8 @@ server.on('listening', () => {
 
   // .db isn't created until the next tick so wait until then before creating the user credentials
   setTimeout(() => {
+    // This adds the user credentials to the oidc database so the user can login for browser
+    // tests
     fs.writeFileSync(
       path.join(__dirname, '.db', 'oidc', 'users', 'users', '_key_localhost%3A8443%2Fprofile%2Fcard%23me.json'),
       JSON.stringify(details)
