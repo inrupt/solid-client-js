@@ -1,0 +1,52 @@
+@prefix : <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl.acl#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix c: <https://vincentt.inrupt.net/profile/card#> .
+@prefix c0: <{{idp}}/profile/card#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+:16159602813865875907794380433 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16159602806580.7641879348429264> ;
+  acl:mode acl:Read .
+
+:161848785783740763365500940707 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16184878530950.40784665869079584> ;
+  acl:mode acl:Read .
+
+:16184949894728443823954020386 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16184949849320.8249406366952747> ;
+  acl:mode acl:Read .
+
+:16184953822725122467128657555 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16184953776900.3789976117909595> ;
+  acl:mode acl:Read .
+
+:161849552773629748031863354196 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16184955235150.8199937676138151> ;
+  acl:mode acl:Read .
+
+:161899803550608556116906128719 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16189979749340.9092578566196619> ;
+  acl:mode acl:Read .
+
+:1618999675334821695804970803 rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent <https://example.com/fake-webid#16189996204660.31691825579342536> ;
+  acl:mode acl:Read .
+
+:Append rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent c:me ;
+  acl:mode acl:Append .
+
+:ControlReadWrite rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/passthrough-container/resource-with-acl.ttl> ;
+  acl:agent c0:me ;
+  acl:agentClass foaf:Agent ;
+  acl:mode acl:Control, acl:Read, acl:Write .
