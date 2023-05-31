@@ -66,7 +66,8 @@ if (env.environment !== "NSS") {
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the e2e tests have an NSS environment setup.
 describe("End-to-end tests with pre-existing data against resources in an NSS server", () => {
-  const rootContainer = "https://lit-e2e-test.inrupt.net/public/";
+  // TODO: Remove this hard coded URL and use the env variables
+  const rootContainer = "http://localhost:8443/publicWrite/";
 
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = `Random nick ${Math.random()}`;
@@ -167,7 +168,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
       `${rootContainer}container-test/some-container/`
     );
     const newContainer2 = await createContainerInContainer(
-      "https://lit-e2e-test.inrupt.net/public/container-test/",
+      "http://localhost:8443/publicWrite/container-test/",
       { slugSuggestion: "some-other-container" }
     );
 

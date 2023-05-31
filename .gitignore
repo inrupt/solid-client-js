@@ -18,3 +18,5 @@ test-results/
 .parcel-cache/
 .vscode/settings.json
 coverage
+.nss/.*
+.nss/config

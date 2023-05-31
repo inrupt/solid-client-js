@@ -27,7 +27,8 @@
     "test:server:css:wac": "community-solid-server -c ./.community-solid-server.wac.json",
     "test:server:css:acp": "community-solid-server -c ./.community-solid-server.acp.json",
     "test:server:css:webhooks": "community-solid-server -c ./.community-solid-server.webhooks.json",
-    "test:server:css:setup": "npx ts-node postCssInit.ts"
+    "test:server:css:setup": "npx ts-node postCssInit.ts",
+    "test:server:nss": "cd ./.nss && node nss.js"
   },
   "keywords": [
     "rdf",
@@ -199,6 +200,7 @@
     "rdf-namespaces": "^1.8.0",
     "rollup": "^3.1.0",
     "rollup-plugin-typescript2": "^0.34.0",
+    "solid-server": "^5.7.7",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.1",
