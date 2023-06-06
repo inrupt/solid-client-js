@@ -1,6 +1,6 @@
 # Select environment (see @inrupt/internal-test-env for a list of available environments)
 E2E_TEST_ENVIRONMENT=NSS
-E2E_TEST_IDP=http://localhost:8443/
+E2E_TEST_IDP=http://localhost:8443
 # Mark the features you want to test
 E2E_TEST_FEATURE_ACP=false
 E2E_TEST_FEATURE_ACP_V3=false

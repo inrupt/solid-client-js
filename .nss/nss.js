@@ -41,11 +41,7 @@ function applyTemplate(dir) {
 }
 
 // Once the server has started, copy the template data into the users directory and fill it in
-server.on('listening', () => {
-  fs.cpSync(templates, root, { recursive: true });
-  fs.cpSync(path.join(__dirname, 'publicWriteTemplate'), path.join(root, 'publicWrite'), { recursive: true });
-  applyTemplate(root);
-
+server.on('listening', async () => {
   // .db isn't created until the next tick so wait until then before creating the user credentials
   setTimeout(() => {
     // This adds the user credentials to the oidc database so the user can login for browser
@@ -58,6 +54,11 @@ server.on('listening', () => {
       path.join(__dirname, '.db', 'oidc', 'users', 'users-by-email', '_key_owner%40owner.email.json'),
       JSON.stringify({ id: "localhost:8443/profile/card#me" })
     );
+
+    fs.cpSync(templates, root, { recursive: true });
+    fs.cpSync(path.join(__dirname, 'template'), root, { recursive: true });
+    applyTemplate(root);
+
     console.log('NSS instance running on http://localhost:8443/')
   });
 });
