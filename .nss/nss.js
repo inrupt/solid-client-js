@@ -58,6 +58,6 @@ server.on('listening', () => {
       path.join(__dirname, '.db', 'oidc', 'users', 'users-by-email', '_key_owner%40owner.email.json'),
       JSON.stringify({ id: "localhost:8443/profile/card#me" })
     );
-    console.log('Solid server running on http://localhost:8443/')
+    console.log('NSS instance running on http://localhost:8443/')
   });
 });
