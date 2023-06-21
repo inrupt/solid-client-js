@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,15 +19,15 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { WithServerResourceInfo } from "../interfaces";
+import type { WithServerResourceInfo } from "../interfaces";
 import { getSourceIri } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
-import {
-  createAcl,
+import type {
   WithAccessibleAcl,
   WithFallbackAcl,
   WithResourceAcl,
 } from "./acl";
+import { createAcl } from "./acl";
 import { internal_getContainerPath, internal_setAcl } from "./acl.internal";
 import { mockContainerFrom } from "../resource/mock";
 import { setMockAclUrl } from "./mock.internal";

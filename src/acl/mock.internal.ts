@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import {
+import type {
   IriString,
   SolidDataset,
   Thing,
@@ -30,7 +30,7 @@ import {
 import { internal_cloneResource } from "../resource/resource.internal";
 import { addIri } from "../thing/add";
 import { createThing, getThing, setThing } from "../thing/thing";
-import { Access, AclDataset, WithAccessibleAcl } from "./acl";
+import type { Access, AclDataset, WithAccessibleAcl } from "./acl";
 
 export function addMockAclRuleQuads(
   aclDataset: SolidDataset & WithResourceInfo,

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -24,6 +24,7 @@ import type { NamedNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
 
 import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
+import type { Matcher } from "./matcher";
 import {
   addAgent,
   addNoneOfMatcherUrl,
@@ -41,7 +42,6 @@ import {
   hasAuthenticated,
   hasPublic,
   removeAgent,
-  Matcher,
   setAgent,
   setAuthenticated,
   setNoneOfMatcherUrl,
@@ -71,10 +71,10 @@ import {
   setClient,
 } from "./matcher";
 
-import { Policy } from "./policy";
+import type { Policy } from "./policy";
 import { createSolidDataset } from "../resource/solidDataset";
 import { setUrl } from "../thing/set";
-import { Thing, ThingPersisted, Url } from "../interfaces";
+import type { Thing, ThingPersisted, Url } from "../interfaces";
 import { acp, rdf } from "../constants";
 import {
   getIri,

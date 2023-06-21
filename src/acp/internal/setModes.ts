@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,7 +23,7 @@ import type { AccessModes, ThingPersisted } from "../../interfaces";
 import { removeAll } from "../../thing/remove";
 import { addIri } from "../../thing/add";
 import { ACL } from "../constants";
-import { ModeType } from "./getModes";
+import type { ModeType } from "./getModes";
 
 /** @hidden */
 export function setModes<T extends ThingPersisted>(

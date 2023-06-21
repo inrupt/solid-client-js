@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,18 +19,20 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import {
+import type {
   UrlString,
-  hasResourceInfo,
   Url,
   WebId,
   Resource,
   WithServerResourceInfo,
   WithResourceInfo,
-  hasServerResourceInfo,
-  SolidClientError,
   LinkedResourceUrlAll,
   EffectiveAccess,
+} from "../interfaces";
+import {
+  hasResourceInfo,
+  hasServerResourceInfo,
+  SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { fetch } from "../fetcher";

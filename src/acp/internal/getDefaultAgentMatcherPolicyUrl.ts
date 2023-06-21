@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,10 +21,8 @@
 
 import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../../interfaces";
-import {
-  DefaultAccessControlName,
-  getDefaultAccessControlUrl,
-} from "./getDefaultAccessControlUrl";
+import type { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
+import { getDefaultAccessControlUrl } from "./getDefaultAccessControlUrl";
 
 /** @hidden */
 export function getDefaultAgentMatcherPolicyUrl(

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,17 +19,17 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Thing, UrlString } from "../..";
+import type { Thing, UrlString } from "../..";
 import { getSourceIri } from "../../resource/resource";
 import { getIriAll } from "../../thing/get";
 import { asIri, getThing } from "../../thing/thing";
-import { WithAccessibleAcr } from "../acp";
+import type { WithAccessibleAcr } from "../acp";
 import { ACP } from "../constants";
 import { internal_getAcr } from "../control.internal";
 import { getAccessControlResourceThing } from "../internal/getAccessControlResourceThing";
 import { getDefaultAccessControlThing } from "../internal/getDefaultAccessControlThing";
 import { getModes } from "../internal/getModes";
-import { AccessModes } from "../../interfaces";
+import type { AccessModes } from "../../interfaces";
 import { DEFAULT_VC_MATCHER_NAME, DEFAULT_VC_POLICY_NAME } from "./setVcAccess";
 
 const DEFAULT_NO_ACCESS: AccessModes = {

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,10 +23,10 @@ import type { AccessModes, UrlString } from "../interfaces";
 import type { DefaultOptions } from "../acp/type/DefaultOptions";
 import { getResourceInfo } from "../resource/resource";
 import { setPublicAccess as setPublicAccessAcp } from "../acp/util/setPublicAccess";
+import type { WacAccess } from "../access/wac";
 import {
   setPublicResourceAccess as setPublicAccessWac,
   getPublicAccess as getPublicAccessWac,
-  WacAccess,
 } from "../access/wac";
 import { getResourceAcr } from "../acp/util/getResourceAcr";
 import { saveAcrFor } from "../acp/acp";

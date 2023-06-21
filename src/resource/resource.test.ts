@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -35,12 +35,12 @@ import {
   getEffectiveAccess,
 } from "./resource";
 import { internal_cloneResource } from "./resource.internal";
-import {
+import type {
   WithResourceInfo,
   IriString,
   WithServerResourceInfo,
-  SolidClientError,
 } from "../interfaces";
+import { SolidClientError } from "../interfaces";
 import { createSolidDataset } from "./solidDataset";
 import { mockResponse } from "../tests.internal";
 

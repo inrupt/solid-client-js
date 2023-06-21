@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -22,31 +22,32 @@ import { v4 as uuidv4 } from "uuid";
 import { acp } from "../constants";
 import { internal_defaultFetchOptions } from "../resource/resource";
 import { asIri, getThing } from "../thing/thing";
-import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "../acp/acp";
+import type { WithAccessibleAcr, WithAcp } from "../acp/acp";
+import { hasAccessibleAcr } from "../acp/acp";
 import {
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
   removeAcrPolicyUrl,
   removePolicyUrl,
 } from "../acp/control";
+import type { Policy } from "../acp/policy";
 import {
   createResourcePolicyFor,
   getAllowModesV1,
   getDenyModesV1,
-  Policy,
   setAllowModesV1,
   setResourceAcrPolicy,
   setResourcePolicy,
 } from "../acp/policy";
+import type { Rule } from "../acp/rule";
 import {
   getNoneOfRuleUrlAll,
   getAnyOfRuleUrlAll,
   getAllOfRuleUrlAll,
-  Rule,
   createResourceRuleFor,
   setResourceRule,
 } from "../acp/rule";
-import {
+import type {
   IriString,
   SolidDataset,
   Thing,
@@ -55,7 +56,7 @@ import {
   WithResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
-import { Access } from "./universal_v1";
+import type { Access } from "./universal_v1";
 import { getIri, getIriAll } from "../thing/get";
 import { addIri } from "../thing/add";
 import { setIri } from "../thing/set";

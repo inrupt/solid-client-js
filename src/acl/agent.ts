@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,18 +19,19 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { WithServerResourceInfo, WithChangeLog, WebId } from "../interfaces";
+import type {
+  WithServerResourceInfo,
+  WithChangeLog,
+  WebId,
+} from "../interfaces";
 import { getIri } from "../thing/get";
 import { acl } from "../constants";
+import type { AclDataset, Access, AclRule, WithAcl } from "./acl";
 import {
-  AclDataset,
-  Access,
-  AclRule,
   hasResourceAcl,
   getResourceAcl,
   hasFallbackAcl,
   getFallbackAcl,
-  WithAcl,
 } from "./acl";
 import {
   internal_combineAccessModes,

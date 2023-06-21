@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,20 +21,22 @@
 
 import RdfJsDataFactory from "@rdfjs/data-model";
 import type * as RdfJs from "@rdfjs/types";
-import {
+import type {
   BlankNodeId,
-  freeze,
-  getBlankNodeId,
-  getBlankNodeValue,
   Graph,
   ImmutableDataset,
-  isBlankNodeId,
   Objects,
   Predicates,
   Subject,
 } from "./rdf.internal";
-import { ToRdfJsOptions } from "./rdfjs";
-import { IriString } from "./interfaces";
+import {
+  freeze,
+  getBlankNodeId,
+  getBlankNodeValue,
+  isBlankNodeId,
+} from "./rdf.internal";
+import type { ToRdfJsOptions } from "./rdfjs";
+import type { IriString } from "./interfaces";
 import { xmlSchemaTypes } from "./datatypes";
 
 export const DataFactory = RdfJsDataFactory;

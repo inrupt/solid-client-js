@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 import { acp, rdf, solid } from "../constants";
 import { internal_isValidUrl, isNamedNode } from "../datatypes";
-import {
+import type {
   SolidDataset,
   Thing,
   ThingPersisted,
@@ -43,9 +43,9 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
-import { WithAccessibleAcr } from "./acp";
+import type { WithAccessibleAcr } from "./acp";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
-import { Policy, ResourcePolicy } from "./policy";
+import type { Policy, ResourcePolicy } from "./policy";
 
 /**
  * A Rule can be applied to a [[Policy]] to determine under what circumstances that Policy is applied to a Resource.

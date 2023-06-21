@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,8 +20,9 @@
 //
 
 import type { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
-import { Thing, Url, UrlString } from "../interfaces";
-import { internal_isValidUrl, Time } from "../datatypes";
+import type { Thing, Url, UrlString } from "../interfaces";
+import type { Time } from "../datatypes";
+import { internal_isValidUrl } from "../datatypes";
 import { internal_throwIfNotThing } from "./thing.internal";
 import { removeAll } from "./remove";
 import {

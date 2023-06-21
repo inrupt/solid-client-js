@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -24,18 +24,17 @@ import {
   resolveLocalIri,
   internal_isValidUrl,
 } from "../datatypes";
-import {
+import type {
   UrlString,
   Url,
-  SolidClientError,
   Thing,
   ThingLocal,
   ThingPersisted,
   SolidDataset,
   WithChangeLog,
   IriString,
-  hasServerResourceInfo,
 } from "../interfaces";
+import { SolidClientError, hasServerResourceInfo } from "../interfaces";
 import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
 import {
@@ -43,13 +42,13 @@ import {
   internal_addDeletionsToChangeLog,
   internal_getReadableValue,
 } from "./thing.internal";
+import type { LocalNodeIri } from "../rdf.internal";
 import {
   freeze,
   getLocalNodeIri,
   getLocalNodeName,
   isBlankNodeId,
   isLocalNodeIri,
-  LocalNodeIri,
 } from "../rdf.internal";
 import { internal_toIriString } from "../interfaces.internal";
 import { getTermAll } from "./get";

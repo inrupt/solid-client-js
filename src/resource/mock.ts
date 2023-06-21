@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 import { Response } from "@inrupt/universal-fetch";
 
-import {
+import type {
   Url,
   UrlString,
   SolidDataset,
@@ -29,8 +29,9 @@ import {
   WithServerResourceInfo,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
-import { getSolidDataset, createSolidDataset } from "./solidDataset";
-import { getFile } from "./file";
+import type { getSolidDataset } from "./solidDataset";
+import { createSolidDataset } from "./solidDataset";
+import type { getFile } from "./file";
 import { FetchError } from "./resource";
 
 type Unpromisify<T> = T extends Promise<infer R> ? R : T;
