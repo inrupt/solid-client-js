@@ -170,7 +170,7 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
-    "@inrupt/eslint-config-lib": "^1.6.1",
+    "@inrupt/eslint-config-lib": "^2.0.0",
     "@inrupt/internal-playwright-helpers": "^1.6.1",
     "@inrupt/internal-test-env": "^1.6.1",
     "@inrupt/jest-jsdom-polyfills": "^1.6.1",
