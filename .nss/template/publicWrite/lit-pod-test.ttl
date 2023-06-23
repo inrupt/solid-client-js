@@ -1,0 +1,13 @@
+@prefix : <#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix schema: <http://schema.org/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ex: <https://example.com/>.
+
+:thing1
+    a foaf:Document;
+    schema:dateCreated "2020-05-18T10:08:37Z"^^xsd:dateTime;
+    schema:dateModified "2023-05-31T00:45:16.918Z"^^xsd:dateTime;
+    foaf:name "Thing for first end-to-end test";
+    foaf:nick "Random nick 0.30771597211531154".
+:thing2 foaf:name "Thing for second end-to-end test"; ex:boolean true.

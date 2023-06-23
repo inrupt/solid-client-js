@@ -1,0 +1,11 @@
+# ACL resource for the public folder
+@prefix acl: <http://www.w3.org/ns/auth/acl#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+
+# The owner has all permissions
+<#owner>
+    a acl:Authorization;
+    acl:agent <{{webId}}>;
+    acl:accessTo <./>;
+    acl:default <./>;
+    acl:mode acl:Read, acl:Write, acl:Control.

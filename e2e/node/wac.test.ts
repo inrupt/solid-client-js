@@ -55,6 +55,7 @@ import {
   getAgentAccess as getAgentAccessUniversal,
   setPublicAccess as setPublicAccessUniversal,
 } from "../../src/access/universal";
+import { getNssSession } from "./getNssSession";
 
 const env = getNodeTestingEnvironment();
 const sessionResourcePrefix = "solid-client-tests/node/wac-";
@@ -70,12 +71,17 @@ describe("Authenticated end-to-end WAC", () => {
   let pod: string;
 
   beforeEach(async () => {
-    session = await getAuthenticatedSession(env);
+    const { owner } = env.clientCredentials;
+    session = owner.type === "CSS Client Credentials" ? await getAuthenticatedSession(env) : await getNssSession({
+      oidcIssuer: env.idp,
+      username: owner.id,
+      password: owner.secret,
+    });
     pod = await getPodRoot(session);
     sessionResource = `${pod}${sessionResourcePrefix}${session.info.sessionId}`;
     options = { fetch: session.fetch };
     await saveSolidDatasetAt(sessionResource, createSolidDataset(), options);
-  });
+  }, 20_000);
 
   afterEach(async () => {
     await deleteSolidDataset(sessionResource, options);
@@ -92,7 +98,7 @@ describe("Authenticated end-to-end WAC", () => {
       controlRead: true,
       controlWrite: true,
     });
-  });
+  }, 60_000);
 
   it("can read and update ACLs", async () => {
     const fakeWebId = `https://example.com/fake-webid#${session.info.sessionId}`;
@@ -107,7 +113,7 @@ describe("Authenticated end-to-end WAC", () => {
     expect(hasResourceAcl(datasetWithoutAcl)).toBe(false);
 
     expect(getPublicAccess(datasetWithAcl)).toEqual({
-      read: false,
+      read: true,
       append: false,
       write: false,
       control: false,

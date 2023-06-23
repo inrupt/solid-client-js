@@ -19,10 +19,14 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { describe, expect, it, test } from "@jest/globals";
+import { describe, expect, it, test, beforeAll } from "@jest/globals";
 
 import { foaf, schema } from "rdf-namespaces";
-import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
+import {
+  getNodeTestingEnvironment,
+  getPodRoot,
+} from "@inrupt/internal-test-env";
+import type { Session } from "@inrupt/solid-client-authn-node";
 import {
   getSolidDataset,
   setThing,
@@ -56,6 +60,7 @@ import {
   getBoolean,
   setBoolean,
 } from "../../src/index";
+import { getNssSession } from "./getNssSession";
 
 const env = getNodeTestingEnvironment();
 if (env.environment !== "NSS") {
@@ -66,7 +71,27 @@ if (env.environment !== "NSS") {
 // This block of end-to-end tests should be removed once solid-client-authn-node works against NSS,
 // and the e2e tests have an NSS environment setup.
 describe("End-to-end tests with pre-existing data against resources in an NSS server", () => {
-  const rootContainer = "https://lit-e2e-test.inrupt.net/public/";
+  let rootContainer: string;
+  let options: { fetch: typeof global.fetch };
+  let session: Session;
+  let pod: string;
+
+  beforeAll(async () => {
+    const { owner } = env.clientCredentials;
+    if (owner.type === "CSS Client Credentials") {
+      throw new Error("Unexpected CSS Credentials");
+    }
+    session = await getNssSession({
+      oidcIssuer: env.idp,
+      username: owner.id,
+      password: owner.secret,
+    });
+    pod = await getPodRoot(session);
+    rootContainer = `${pod}public${
+      pod.startsWith("http://localhost:") ? "Write" : ""
+    }/`;
+    options = { fetch: session.fetch };
+  }, 60_000);
 
   it("should be able to read and update data in a Pod", async () => {
     const randomNick = `Random nick ${Math.random()}`;
@@ -167,7 +192,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
       `${rootContainer}container-test/some-container/`
     );
     const newContainer2 = await createContainerInContainer(
-      "https://lit-e2e-test.inrupt.net/public/container-test/",
+      "http://localhost:8443/publicWrite/container-test/",
       { slugSuggestion: "some-other-container" }
     );
 

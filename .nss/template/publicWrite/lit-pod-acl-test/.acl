@@ -1,0 +1,31 @@
+@prefix : <{{idp}}/publicWrite/lit-pod-acl-test/.acl#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix c: <{{idp}}/profile/card#> .
+@prefix c0: <https://vincentt.inrupt.net/profile/card#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+:AppendDefault rdf:type acl:Authorization ;
+  acl:default <{{idp}}/publicWrite/lit-pod-acl-test/> ;
+  acl:mode acl:Append .
+
+:ControlReadWrite rdf:type acl:Authorization ;
+  acl:accessTo <{{idp}}/publicWrite/lit-pod-acl-test/> ;
+  acl:agent c:me ;
+  acl:agentClass foaf:Agent ;
+  acl:mode acl:Control ,
+  acl:Read ,
+  acl:Write .
+
+:ControlReadWriteDefault rdf:type acl:Authorization ;
+  acl:agent c:me ;
+  acl:default <{{idp}}/publicWrite/lit-pod-acl-test/> ;
+  acl:mode acl:Control ,
+  acl:Read ,
+  acl:Write .
+
+:ReadDefault rdf:type acl:Authorization ;
+  acl:agent c0:me ;
+  acl:agentClass foaf:Agent ;
+  acl:default <{{idp}}/publicWrite/lit-pod-acl-test/> ;
+  acl:mode acl:Read .
