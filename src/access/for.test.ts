@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Access } from "./universal";
+import type { Access } from "./universal";
 import { getAccessFor, getAccessForAll, setAccessFor } from "./for";
 
 jest.mock("./universal");

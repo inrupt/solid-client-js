@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -22,8 +22,8 @@
 import { describe, it, expect } from "@jest/globals";
 import { DataFactory } from "n3";
 
+import type { AccessControlResource, WithLinkedAcr } from "./control";
 import {
-  AccessControlResource,
   acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
@@ -42,7 +42,6 @@ import {
   removeMemberPolicyUrlAll,
   removePolicyUrl,
   removePolicyUrlAll,
-  WithLinkedAcr,
 } from "./control";
 import {
   internal_createControl,
@@ -59,7 +58,7 @@ import {
   internal_removePolicyUrlAll,
 } from "./control.internal";
 import { acp, rdf } from "../constants";
-import { WithServerResourceInfo } from "../interfaces";
+import type { WithServerResourceInfo } from "../interfaces";
 import { getIri, getIriAll, getUrl, getUrlAll } from "../thing/get";
 import {
   asIri,
@@ -72,7 +71,7 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 import { setIri, setUrl } from "../thing/set";
 import { addIri, addUrl } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";
-import { WithAccessibleAcl } from "../acl/acl";
+import type { WithAccessibleAcl } from "../acl/acl";
 import { getSourceUrl } from "../resource/resource";
 import { removeControl } from "./v1";
 

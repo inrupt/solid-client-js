@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -29,12 +29,8 @@ import {
   deserializeDecimal,
   deserializeInteger,
 } from "../datatypes";
-import {
-  Thing,
-  SolidDataset,
-  hasChangelog,
-  WithChangeLog,
-} from "../interfaces";
+import type { Thing, SolidDataset, WithChangeLog } from "../interfaces";
+import { hasChangelog } from "../interfaces";
 import { ThingExpectedError, isThing } from "./thing";
 import { freeze } from "../rdf.internal";
 

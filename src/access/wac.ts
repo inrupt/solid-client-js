@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -39,25 +39,27 @@ import {
   getPublicAccess as getPublicAccessWac,
   setPublicResourceAccess as setPublicResourceAccessWac,
 } from "../acl/class";
-import {
+import type {
   IriString,
   UrlString,
   WebId,
   WithServerResourceInfo,
 } from "../interfaces";
 import { internal_defaultFetchOptions } from "../resource/resource";
-import { Access } from "./universal";
-import {
+import type { Access } from "./universal";
+import type {
   Access as AclAccess,
   AclDataset,
+  WithAccessibleAcl,
+  WithResourceAcl,
+} from "../acl/acl";
+import {
   createAclFromFallbackAcl,
   getResourceAcl,
   hasAccessibleAcl,
   hasFallbackAcl,
   hasResourceAcl,
   saveAclFor,
-  WithAccessibleAcl,
-  WithResourceAcl,
 } from "../acl/acl";
 
 export type WacAccess = (

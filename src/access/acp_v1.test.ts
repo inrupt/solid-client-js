@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -22,9 +22,9 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import * as fc from "fast-check";
 import { Response } from "@inrupt/universal-fetch";
-import { WithAccessibleAcr } from "../acp/acp";
+import type { WithAccessibleAcr } from "../acp/acp";
+import type { AccessControlResource } from "../acp/control";
 import {
-  AccessControlResource,
   addAcrPolicyUrl,
   addPolicyUrl,
   getAcrPolicyUrlAll,
@@ -35,25 +35,20 @@ import {
   internal_getAcr,
 } from "../acp/control.internal";
 import { addMockAcrTo } from "../acp/mock";
+import type { Policy } from "../acp/policy";
 import {
   createPolicy,
   getAllowModesV1,
   getDenyModesV1,
   getPolicy,
-  Policy,
   setAllowModesV1,
   setDenyModesV1,
   setPolicy,
 } from "../acp/policy";
-import {
-  addAllOfRuleUrl,
-  createRule,
-  getRule,
-  Rule,
-  setRule,
-} from "../acp/rule";
+import type { Rule } from "../acp/rule";
+import { addAllOfRuleUrl, createRule, getRule, setRule } from "../acp/rule";
 import { acp, rdf } from "../constants";
-import {
+import type {
   ThingPersisted,
   UrlString,
   WithResourceInfo,
@@ -64,6 +59,7 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addIri, addUrl } from "../thing/add";
 import { getIri, getIriAll, getUrl, getUrlAll } from "../thing/get";
 import { asIri, getThing, getThingAll, setThing } from "../thing/thing";
+import type { internal_AcpData } from "./acp_v1";
 import {
   internal_getActorAccessAll,
   internal_getActorAccess,
@@ -78,7 +74,6 @@ import {
   internal_setGroupAccess,
   internal_setPublicAccess,
   internal_setAuthenticatedAccess,
-  internal_AcpData,
   internal_getPoliciesAndRules,
 } from "./acp_v1";
 

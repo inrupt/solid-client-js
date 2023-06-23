@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -29,7 +29,8 @@ import {
   deleteContainer,
   getPodUrlAll,
 } from "@inrupt/solid-client";
-import { getDefaultSession, Session } from "@inrupt/solid-client-authn-browser";
+import type { Session } from "@inrupt/solid-client-authn-browser";
+import { getDefaultSession } from "@inrupt/solid-client-authn-browser";
 
 interface CreateResourceButtonProps {
   parentContainerUrl?: string;

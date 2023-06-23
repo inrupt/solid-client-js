@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import {
+import type {
   SolidDataset,
   WithResourceInfo,
   IriString,
@@ -37,7 +37,7 @@ import {
   setGroupDefaultAccess,
   setGroupResourceAccess,
 } from "./group";
-import { Access, AclDataset, WithAcl } from "./acl";
+import type { Access, AclDataset, WithAcl } from "./acl";
 import { internal_setAcl } from "./acl.internal";
 import { addMockAclRuleQuads } from "./mock.internal";
 import { createThing, getThingAll, setThing } from "../thing/thing";

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -62,6 +62,7 @@ import {
   setDenyModesV1,
   setPolicy,
 } from "./policy";
+import type { Rule } from "./rule";
 import {
   addAgent,
   addNoneOfRuleUrl,
@@ -88,7 +89,6 @@ import {
   removePublic,
   removeAllOfRuleUrl,
   removeRule,
-  Rule,
   ruleAsMarkdown,
   setAgent,
   setAuthenticated,

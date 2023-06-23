@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,8 +20,9 @@
 //
 
 import type { Literal, NamedNode, Quad_Object } from "@rdfjs/types";
-import { UrlString, Url, Thing, IriString } from "../interfaces";
+import type { UrlString, Url, Thing, IriString } from "../interfaces";
 import { internal_throwIfNotThing } from "./thing.internal";
+import type { XmlSchemaTypeIri, Time } from "../datatypes";
 import {
   serializeBoolean,
   serializeDatetime,
@@ -29,12 +30,10 @@ import {
   serializeDecimal,
   serializeInteger,
   normalizeLocale,
-  XmlSchemaTypeIri,
   xmlSchemaTypes,
   internal_isValidUrl,
   isNamedNode,
   serializeTime,
-  Time,
 } from "../datatypes";
 import {
   asIri,

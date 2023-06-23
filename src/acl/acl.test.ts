@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,6 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 
 import { Response, Headers } from "@inrupt/universal-fetch";
 
+import type { WithAccessibleAcl, AclDataset, Access, WithAcl } from "./acl";
 import {
   getResourceAcl,
   getFallbackAcl,
@@ -34,10 +35,6 @@ import {
   getSolidDatasetWithAcl,
   getFileWithAcl,
   getResourceInfoWithAcl,
-  WithAccessibleAcl,
-  AclDataset,
-  Access,
-  WithAcl,
 } from "./acl";
 import {
   internal_getAccess,
@@ -54,7 +51,7 @@ import {
   internal_fetchAcl,
   internal_setAcl,
 } from "./acl.internal";
-import { WithServerResourceInfo, WithChangeLog } from "../interfaces";
+import type { WithServerResourceInfo, WithChangeLog } from "../interfaces";
 import { getFile } from "../resource/file";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { createSolidDataset } from "../resource/solidDataset";

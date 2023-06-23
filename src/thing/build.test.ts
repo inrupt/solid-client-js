@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -25,7 +25,7 @@ import * as adders from "./add";
 import * as setters from "./set";
 import * as removers from "./remove";
 import { asIri, createThing, isThing } from "./thing";
-import { ThingLocal } from "../interfaces";
+import type { ThingLocal } from "../interfaces";
 import { getInteger, getStringWithLocale } from "./get";
 
 describe("Thing Builder API", () => {

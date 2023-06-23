@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,12 +23,12 @@
 // the root.
 // eslint-disable-next-line import/no-unresolved
 import React, { useState, useEffect } from "react";
+import type { ISessionInfo } from "@inrupt/solid-client-authn-browser";
 import {
   login,
   logout,
   handleIncomingRedirect,
   getDefaultSession,
-  ISessionInfo,
 } from "@inrupt/solid-client-authn-browser";
 import SolidClient from "../solidClient";
 

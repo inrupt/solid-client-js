@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -27,7 +27,7 @@ import {
   setPublicDefaultAccess,
   setPublicResourceAccess,
 } from "./class";
-import {
+import type {
   SolidDataset,
   WithResourceInfo,
   IriString,
@@ -36,7 +36,7 @@ import {
 import { foaf } from "../constants";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
-import { Access, AclDataset, WithAcl } from "./acl";
+import type { Access, AclDataset, WithAcl } from "./acl";
 import { internal_setAcl } from "./acl.internal";
 import { addIri } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";

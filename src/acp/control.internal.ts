@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { acp, rdf } from "../constants";
-import { ThingPersisted, Url, UrlString } from "../interfaces";
+import type { ThingPersisted, Url, UrlString } from "../interfaces";
 import { getSourceUrl } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
 import { addIri } from "../thing/add";
@@ -28,8 +28,9 @@ import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
 import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
-import { hasAccessibleAcr, WithAccessibleAcr, WithAcp } from "./acp";
-import { AccessControlResource, Control } from "./control";
+import type { WithAccessibleAcr, WithAcp } from "./acp";
+import { hasAccessibleAcr } from "./acp";
+import type { AccessControlResource, Control } from "./control";
 
 /** @hidden */
 export function internal_getAcr(

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -40,7 +40,7 @@
 
 import type * as RdfJs from "@rdfjs/types";
 import rdfjsDatasetModule from "@rdfjs/dataset";
-import { ImmutableDataset } from "./rdf.internal";
+import type { ImmutableDataset } from "./rdf.internal";
 import {
   addRdfJsQuadToDataset,
   getChainBlankNodes,

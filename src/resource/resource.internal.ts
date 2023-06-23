@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,8 +20,8 @@
 //
 
 import LinkHeader from "http-link-header";
-import { Access } from "../acl/acl";
-import { WithServerResourceInfo } from "../interfaces";
+import type { Access } from "../acl/acl";
+import type { WithServerResourceInfo } from "../interfaces";
 
 /**
  * @internal

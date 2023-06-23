@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,6 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { WithAccessibleAcr } from "./acp";
 import {
   getFileWithAccessDatasets,
   getFileWithAcr,
@@ -29,7 +30,6 @@ import {
   getSolidDatasetWithAcr,
   hasAccessibleAcr,
   saveAcrFor,
-  WithAccessibleAcr,
 } from "./acp";
 import {
   createPolicy,
@@ -78,6 +78,7 @@ import {
   setRule,
 } from "./rule";
 import { addMockAcrTo, mockAcrFor } from "./mock";
+import type { Control } from "./control";
 import {
   hasLinkedAcr,
   addAcrPolicyUrl,
@@ -88,7 +89,6 @@ import {
   removeAcrPolicyUrlAll,
   removeMemberAcrPolicyUrl,
   removeMemberAcrPolicyUrlAll,
-  Control,
 } from "./control";
 import {
   internal_addMemberPolicyUrl,

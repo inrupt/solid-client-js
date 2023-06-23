@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Url, UrlString, ThingPersisted } from "../interfaces";
+import type { Url, UrlString, ThingPersisted } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 
 /**

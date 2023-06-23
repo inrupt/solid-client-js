@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,14 +20,15 @@
 //
 
 import type { Literal, Quad_Object, NamedNode } from "@rdfjs/types";
-import { Time } from "../datatypes";
-import {
+import type { Time } from "../datatypes";
+import type {
   Thing,
   ThingLocal,
   ThingPersisted,
   Url,
   UrlString,
 } from "../interfaces";
+import type { AddOfType } from "./add";
 import {
   addBoolean,
   addDate,
@@ -38,12 +39,12 @@ import {
   addIri,
   addLiteral,
   addNamedNode,
-  AddOfType,
   addStringNoLocale,
   addStringWithLocale,
   addTerm,
   addUrl,
 } from "./add";
+import type { RemoveOfType } from "./remove";
 import {
   removeAll,
   removeBoolean,
@@ -55,11 +56,11 @@ import {
   removeIri,
   removeLiteral,
   removeNamedNode,
-  RemoveOfType,
   removeStringNoLocale,
   removeStringWithLocale,
   removeUrl,
 } from "./remove";
+import type { SetOfType } from "./set";
 import {
   setBoolean,
   setDate,
@@ -70,19 +71,17 @@ import {
   setIri,
   setLiteral,
   setNamedNode,
-  SetOfType,
   setStringNoLocale,
   setStringWithLocale,
   setTerm,
   setUrl,
 } from "./set";
-import {
-  createThing,
+import type {
   CreateThingLocalOptions,
   CreateThingOptions,
   CreateThingPersistedOptions,
-  isThing,
 } from "./thing";
+import { createThing, isThing } from "./thing";
 
 type Adder<Type, T extends Thing> = (
   property: Parameters<AddOfType<Type>>[1],

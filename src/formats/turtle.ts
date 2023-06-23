@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,10 +21,10 @@
 
 import type { Quad } from "@rdfjs/types";
 import { Parser as N3Parser, Writer as N3Writer } from "n3";
-import { IriString } from "../interfaces";
+import type { IriString } from "../interfaces";
 import { DataFactory } from "../rdfjs.internal";
 import { getSourceUrl } from "../resource/resource";
-import { Parser } from "../resource/solidDataset";
+import type { Parser } from "../resource/solidDataset";
 
 /**
  * ```{note} This function is still experimental and subject to change, even

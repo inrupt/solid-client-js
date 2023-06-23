@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,8 +21,14 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
-import { IriString, SolidDataset, WithServerResourceInfo } from "../interfaces";
-import { getAgentResourceAccess, AgentAccess } from "../acl/agent";
+import type {
+  IriString,
+  SolidDataset,
+  WithServerResourceInfo,
+} from "../interfaces";
+import type { AgentAccess } from "../acl/agent";
+import { getAgentResourceAccess } from "../acl/agent";
+import type { WacAccess } from "./wac";
 import {
   getAgentAccess,
   getAgentAccessAll,
@@ -32,7 +38,6 @@ import {
   setAgentResourceAccess,
   setGroupResourceAccess,
   setPublicResourceAccess,
-  WacAccess,
 } from "./wac";
 import { triplesToTurtle } from "../formats/turtle";
 import { addMockAclRuleQuads, setMockAclUrl } from "../acl/mock.internal";
@@ -40,7 +45,7 @@ import { acl, foaf } from "../constants";
 
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_getResourceAcl } from "../acl/acl.internal";
-import { AclDataset } from "../acl/acl";
+import type { AclDataset } from "../acl/acl";
 import { getGroupResourceAccess } from "../acl/group";
 import { getPublicResourceAccess } from "../acl/class";
 import { toRdfJsQuads } from "../rdfjs.internal";

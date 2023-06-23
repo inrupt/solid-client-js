@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,7 +23,7 @@
 // Thus, import the default export, then obtain the `dataset` property from there.
 import rdfJsDatasetModule from "@rdfjs/dataset";
 import type * as RdfJs from "@rdfjs/types";
-import { IriString } from "./interfaces";
+import type { IriString } from "./interfaces";
 import type { XmlSchemaTypeIri } from "./datatypes";
 
 export const rdfJsDataset = rdfJsDatasetModule.dataset;

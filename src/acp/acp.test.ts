@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -40,10 +40,10 @@ import {
   getVcAccess,
   setVcAccess,
 } from "./acp";
-import { UrlString, WithServerResourceInfo, File } from "../interfaces";
+import type { UrlString, WithServerResourceInfo, File } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
 import { addIri } from "../thing/add";
-import { AccessControlResource } from "./control";
+import type { AccessControlResource } from "./control";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
 import { mockResponse } from "../tests.internal";
