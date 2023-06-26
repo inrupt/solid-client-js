@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,8 +20,8 @@
 //
 
 import type { Quad, NamedNode } from "@rdfjs/types";
-import { Access } from "./acl/acl";
-import { ImmutableDataset, LocalNodeIri, Subject } from "./rdf.internal";
+import type { Access } from "./acl/acl";
+import type { ImmutableDataset, LocalNodeIri, Subject } from "./rdf.internal";
 
 /**
  * Alias to indicate where we expect to be given a URL represented as an RDF/JS NamedNode.

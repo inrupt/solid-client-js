@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -31,10 +31,10 @@ import {
   getAgentAccessAll,
   setAgentDefaultAccess,
 } from "./agent";
-import { SolidDataset, WithServerResourceInfo } from "../interfaces";
+import type { SolidDataset, WithServerResourceInfo } from "../interfaces";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { getIri, getIriAll } from "../thing/get";
-import { AclDataset, WithAcl } from "./acl";
+import type { AclDataset, WithAcl } from "./acl";
 import { addMockAclRuleQuads } from "./mock.internal";
 import { internal_setAcl } from "./acl.internal";
 import { mockSolidDatasetFrom } from "../resource/mock";

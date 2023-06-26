@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -19,17 +19,13 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import {
-  asIri,
-  getIriAll,
-  getSolidDataset,
-  getThing,
-  getThingAll,
+import type {
   SolidDataset,
   UrlString,
   WebId,
   WithServerResourceInfo,
 } from "..";
+import { asIri, getIriAll, getSolidDataset, getThing, getThingAll } from "..";
 import { foaf, pim } from "../constants";
 import {
   getSourceIri,

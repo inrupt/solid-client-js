@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 import { JsonLdParser } from "jsonld-streaming-parser";
 import { FetchDocumentLoader } from "jsonld-context-parser";
 import { getSourceUrl } from "../resource/resource";
-import { Parser } from "../resource/solidDataset";
+import type { Parser } from "../resource/solidDataset";
 import { fetch } from "../fetcher";
 
 /**

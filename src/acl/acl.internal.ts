@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 import type { Quad } from "@rdfjs/types";
 import { getSolidDataset } from "../resource/solidDataset";
-import {
+import type {
   IriString,
   WithChangeLog,
   Thing,
@@ -44,16 +44,16 @@ import {
 import { getIri, getIriAll } from "../thing/get";
 import { setIri } from "../thing/set";
 import { addIri } from "../thing/add";
-import {
+import type {
   Access,
   AclDataset,
   AclRule,
-  hasAccessibleAcl,
   WithAccessibleAcl,
   WithAcl,
   WithFallbackAcl,
   WithResourceAcl,
 } from "./acl";
+import { hasAccessibleAcl } from "./acl";
 import { removeAll, removeIri } from "../thing/remove";
 import { freeze } from "../rdf.internal";
 import { internal_cloneResource } from "../resource/resource.internal";

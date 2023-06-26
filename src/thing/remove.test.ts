@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,7 +23,12 @@ import { describe, it, expect } from "@jest/globals";
 
 import { dataset } from "@rdfjs/dataset";
 import { DataFactory } from "n3";
-import { IriString, Thing, ThingPersisted, UrlString } from "../interfaces";
+import type {
+  IriString,
+  Thing,
+  ThingPersisted,
+  UrlString,
+} from "../interfaces";
 import {
   removeAll,
   removeUrl,

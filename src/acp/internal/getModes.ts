@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,8 @@
 //
 
 import type { AccessModes, ThingPersisted } from "../../interfaces";
-import { ACL, ACP } from "../constants";
+import type { ACP } from "../constants";
+import { ACL } from "../constants";
 import { getIriAll } from "../../thing/get";
 
 /** @hidden */

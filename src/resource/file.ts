@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,15 +21,15 @@
 
 import type { Buffer, File as NodeFile } from "buffer";
 import { fetch } from "../fetcher";
-import {
+import type {
   File,
   UploadRequestInit,
   WithResourceInfo,
   Url,
   UrlString,
-  hasResourceInfo,
   WithServerResourceInfo,
 } from "../interfaces";
+import { hasResourceInfo } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceIri, FetchError } from "./resource";
 import {

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -24,6 +24,7 @@ import { beforeAll, jest, describe, it, expect } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
 import type * as RDF from "@rdfjs/types";
+import type { Parser } from "./solidDataset";
 import {
   getSolidDataset,
   saveSolidDatasetAt,
@@ -37,10 +38,9 @@ import {
   deleteContainer,
   getContainedResourceUrlAll,
   responseToSolidDataset,
-  Parser,
   getWellKnownSolid,
 } from "./solidDataset";
-import {
+import type {
   WithChangeLog,
   WithResourceInfo,
   IriString,

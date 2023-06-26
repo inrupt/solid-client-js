@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -28,7 +28,7 @@ import {
   expect,
 } from "@jest/globals";
 
-import { Session } from "@inrupt/solid-client-authn-node";
+import type { Session } from "@inrupt/solid-client-authn-node";
 import {
   getNodeTestingEnvironment,
   setupTestResources,
@@ -37,6 +37,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
+import type { UrlString, FetchError } from "../../src/index";
 import {
   getSolidDataset,
   setThing,
@@ -46,9 +47,7 @@ import {
   getSourceUrl,
   createSolidDataset,
   deleteSolidDataset,
-  UrlString,
   acp_v3 as acp,
-  FetchError,
   deleteFile,
 } from "../../src/index";
 

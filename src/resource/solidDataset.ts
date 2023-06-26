@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -30,10 +30,9 @@ import { ldp, pim } from "../constants";
 import { getJsonLdParser } from "../formats/jsonLd";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
-import {
+import type {
   UrlString,
   WithResourceInfo,
-  hasResourceInfo,
   Url,
   IriString,
   Thing,
@@ -41,9 +40,9 @@ import {
   WithServerResourceInfo,
   SolidDataset,
   WithChangeLog,
-  hasChangelog,
   LocalNode,
 } from "../interfaces";
+import { hasResourceInfo, hasChangelog } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
   internal_defaultFetchOptions,

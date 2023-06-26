@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,8 @@
 
 import type { NamedNode, Literal, Term, Quad_Subject } from "@rdfjs/types";
 import { DataFactory } from "./rdfjs.internal";
-import { IriString, Iri, SolidClientError, LocalNode } from "./interfaces";
+import type { IriString, Iri, LocalNode } from "./interfaces";
+import { SolidClientError } from "./interfaces";
 import { internal_toIriString } from "./interfaces.internal";
 import { getLocalNodeName, isLocalNodeIri } from "./rdf.internal";
 

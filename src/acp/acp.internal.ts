@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { acp } from "../constants";
-import { WithServerResourceInfo } from "../interfaces";
+import type { WithServerResourceInfo } from "../interfaces";
 import { getLinkedResourceUrlAll } from "../resource/resource";
 
 /**

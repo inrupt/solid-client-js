@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -38,14 +38,14 @@ import {
   ValidValueUrlExpectedError,
 } from "./thing";
 import { internal_throwIfNotThing } from "./thing.internal";
-import {
+import type {
   Thing,
   ThingLocal,
   ThingPersisted,
   SolidDataset,
-  SolidClientError,
   WithServerResourceInfo,
 } from "../interfaces";
+import { SolidClientError } from "../interfaces";
 import { createSolidDataset } from "../resource/solidDataset";
 import { mockThingFrom } from "./mock";
 import {
@@ -57,10 +57,11 @@ import {
   addDatetime,
   addDecimal,
 } from "./add";
-import { WithAcl } from "../acl/acl";
+import type { WithAcl } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_setAcl } from "../acl/acl.internal";
-import { LocalNodeIri, localNodeSkolemPrefix } from "../rdf.internal";
+import type { LocalNodeIri } from "../rdf.internal";
+import { localNodeSkolemPrefix } from "../rdf.internal";
 
 describe("createThing", () => {
   it("automatically generates a unique name for the Thing", () => {

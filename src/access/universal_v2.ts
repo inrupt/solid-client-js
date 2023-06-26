@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -25,7 +25,7 @@ import {
   hasAccessibleAcr,
   saveAcrFor,
 } from "../acp/acp";
-import { UrlString, WebId } from "../interfaces";
+import type { UrlString, WebId } from "../interfaces";
 import {
   getSourceIri,
   internal_defaultFetchOptions,
@@ -38,13 +38,13 @@ import {
   internal_setPublicAccess as setPublicAccessAcp,
   internal_getPoliciesAndMatchers,
 } from "./acp_v2";
+import type { WacAccess } from "./wac";
 import {
   getAgentAccess as getAgentAccessWac,
   getAgentAccessAll as getAgentAccessAllWac,
   setAgentResourceAccess as setAgentAccessWac,
   getPublicAccess as getPublicAccessWac,
   setPublicResourceAccess as setPublicAccessWac,
-  WacAccess,
 } from "./wac";
 
 /**

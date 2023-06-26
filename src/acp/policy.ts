@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +22,12 @@
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
 import { internal_isValidUrl, isNamedNode } from "../datatypes";
-import { SolidDataset, ThingPersisted, Url, UrlString } from "../interfaces";
+import type {
+  SolidDataset,
+  ThingPersisted,
+  Url,
+  UrlString,
+} from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
@@ -38,7 +43,7 @@ import {
   removeThing,
   setThing,
 } from "../thing/thing";
-import { WithAccessibleAcr } from "./acp";
+import type { WithAccessibleAcr } from "./acp";
 import {
   addAcrPolicyUrl,
   addPolicyUrl,
