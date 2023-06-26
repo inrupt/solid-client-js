@@ -26,7 +26,7 @@ import type {
   WithServerResourceInfo,
 } from "..";
 import { asIri, getIriAll, getSolidDataset, getThing, getThingAll } from "..";
-import { foaf, pim } from "../constants";
+import { foaf, pim, rdfs } from "../constants";
 import {
   getSourceIri,
   internal_defaultFetchOptions,
@@ -58,6 +58,7 @@ export function getAltProfileUrlAllFrom(
   const altProfileUrlAll = getThingAll(webIdProfile)
     .filter((thing) => getIriAll(thing, foaf.primaryTopic).length > 0)
     .map(asIri)
+    .concat(webIdThing ? getIriAll(webIdThing, rdfs.seeAlso) : [])
     .concat(webIdThing ? getIriAll(webIdThing, foaf.isPrimaryTopicOf) : [])
     .filter((profileIri) => profileIri !== getSourceIri(webIdProfile));
 

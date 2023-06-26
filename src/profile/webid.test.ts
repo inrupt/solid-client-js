@@ -33,7 +33,7 @@ import {
   setStringNoLocale,
   setThing,
 } from "..";
-import { foaf, pim, rdf } from "../constants";
+import { foaf, pim, rdf, rdfs } from "../constants";
 import { triplesToTurtle } from "../formats/turtle";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import {
@@ -70,7 +70,7 @@ const MOCK_PROFILE = setThing(
 );
 
 describe("getAltProfileUrlAllFrom", () => {
-  it("returns no alt profiles if the WebID profile contains no triples with the foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
+  it("returns no alt profiles if the WebID profile contains no triples with the rdfs:seeAlso or foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
     const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
       getProfileAll(MOCK_WEBID, { webIdProfile })
@@ -94,6 +94,22 @@ describe("getAltProfileUrlAllFrom", () => {
       profileContent
     );
     webIdProfile = setThing(webIdProfile, otherProfileContent);
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
+    expect(result).toHaveLength(2);
+    expect(result).toContain("https://some.profile");
+    expect(result).toContain("https://some.other.profile");
+  });
+
+  it("returns an array of the IRI of objects of triples of the WebID doc such as <webid, rdfs:seeAlso, ?object>", () => {
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(rdfs.seeAlso, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
     expect(result).toContain("https://some.profile");
@@ -302,6 +318,53 @@ describe("getProfileAll", () => {
     );
   });
 
+  it("returns an array of the objects of triples of the WebID doc such as <webid, rdfs:seeAlso, ?object>", async () => {
+    const mockedFetch = jest
+      .fn<(typeof CrossFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        mockResponse(
+          await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)),
+          {
+            headers: {
+              "Content-Type": "text/turtle",
+            },
+          },
+          "https://some.profile"
+        )
+      )
+      .mockResolvedValueOnce(
+        mockResponse(
+          await triplesToTurtle(toRdfJsQuads(MOCK_PROFILE)),
+          {
+            headers: {
+              "Content-Type": "text/turtle",
+            },
+          },
+          "https://some.other.profile"
+        )
+      );
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(rdfs.seeAlso, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const result = await getProfileAll(MOCK_WEBID, {
+      fetch: mockedFetch,
+      webIdProfile,
+    });
+    expect(result.altProfileAll).toHaveLength(2);
+    expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
+      getThingAll(MOCK_PROFILE)
+    );
+    expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
+      getThingAll(MOCK_PROFILE)
+    );
+  });
+
   it("returns an array of the objects of triples of the WebID doc such as <webid, foaf:isPrimaryTopicOf, ?object>", async () => {
     const mockedFetch = jest
       .fn<(typeof CrossFetch)["fetch"]>()
@@ -484,7 +547,8 @@ describe("getPodUrlAll", () => {
 
     const profileContent = buildThing({ url: MOCK_WEBID })
       // This will point to an alt profile, prompting the authenticated fetch.
-      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
       .build();
 
     const webIdProfile = setThing(
@@ -526,7 +590,8 @@ describe("getPodUrlAll", () => {
 
     const profileContent = buildThing({ url: MOCK_WEBID })
       // This will point to an alt profile, prompting the authenticated fetch.
-      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
       .build();
 
     const webIdProfile = setThing(
@@ -548,9 +613,13 @@ describe("getPodUrlAll", () => {
     );
     await getPodUrlAll(MOCK_WEBID, { fetch: mockedAuthFetch });
     // The provided authenticated fetch should have been used to fetch the alt profile.
-    expect(mockedAuthFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAuthFetch).toHaveBeenCalledTimes(2);
     expect(mockedAuthFetch).toHaveBeenCalledWith(
       "https://some.profile",
+      expect.anything()
+    );
+    expect(mockedAuthFetch).toHaveBeenCalledWith(
+      "https://some.other.profile",
       expect.anything()
     );
     // The unauthenticated fetch should have been used to fetch the webid profile.
