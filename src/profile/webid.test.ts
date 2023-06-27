@@ -132,6 +132,22 @@ describe("getAltProfileUrlAllFrom", () => {
     expect(result).toContain("https://some.other.profile");
   });
 
+  it("returns an array of the IRI of objects of triples of the WebID doc such as <webid, foaf:isPrimaryTopicOf, ?object>, <webid, foaf:isPrimaryTopicOf, ?object>, in the correct order prioritizing rdfs:seeAlso", () => {
+    const profileContent = buildThing({ url: MOCK_WEBID })
+      .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.other.profile")
+      .build();
+
+    const webIdProfile = setThing(
+      mockSolidDatasetFrom(MOCK_WEBID),
+      profileContent
+    );
+    const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("https://some.other.profile");
+    expect(result[1]).toBe("https://some.profile");
+  });
+
   it("deduplicates profile values", () => {
     // The profile document will have two triples <profile, foaf:primaryTopic, webid>...
     const profileContent = buildThing({ url: "https://some.profile" })
@@ -433,6 +449,7 @@ describe("getProfileAll", () => {
     // and <webid, foaf:isPrimaryTopicOf, profile>.
     const webidData = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
+      .addIri(rdfs.seeAlso, "https://some.profile")
       .build();
     let webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
