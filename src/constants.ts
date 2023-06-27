@@ -42,6 +42,11 @@ export const rdf = {
 } as const;
 
 /** @hidden */
+export const rdfs = {
+  seeAlso: "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+} as const;
+
+/** @hidden */
 export const ldp = {
   BasicContainer: "http://www.w3.org/ns/ldp#BasicContainer",
   Container: "http://www.w3.org/ns/ldp#Container",
