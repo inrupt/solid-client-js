@@ -16,6 +16,8 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+- `getProfileAll` now also follows `rdfs:seeAlso` when discovering extended profiles.
+
 ## [1.29.0] - 2023-05-18
 
 ### New feature
