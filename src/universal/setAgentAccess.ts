@@ -71,11 +71,15 @@ export async function setAgentAccess(
   access: Partial<AccessModes>,
   options?: DefaultOptions
 ): Promise<AccessModes | null> {
+  console.log('inside set agent access')
   // TODO: Change the standard getAgentAccess signatures to all take a  T extends WithAcl
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);
 
+  console.log('the acr is', acr)
+
   if (acr === null) {
+    console.log('Setting Agent Access WAC')
     await setAgentAccessWac(resourceInfo, webId, access as WacAccess, options);
     return getAgentAccessWac(resourceInfo, webId, options);
   }

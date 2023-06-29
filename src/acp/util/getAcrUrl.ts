@@ -45,6 +45,7 @@ export async function getAcrUrl(
   }
 
   // The ACP Draft mandates a link rel="type" header identifies Access Control Resources
+  // This will error on the CSS because acr resources are not available by default.
   const aclServerResourceInfo = await getAclServerResourceInfo(
     resource,
     options
