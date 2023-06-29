@@ -17,13 +17,15 @@
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
     "prepublishOnly": "npm run build",
-    "test": "jest --ignoreProjects e2e-node",
+    "test": "npm run test:unit && npm run test:webpack",
+    "test:unit": "jest --ignoreProjects e2e-node",
     "test:unit:browser": "jest --selectProjects browser-utc",
     "test:unit:node": "jest --selectProjects node",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 30000 --collectCoverage false",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
-    "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci"
+    "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci",
+    "test:webpack": "webpack --config e2e/bundle/webpack.config.js"
   },
   "keywords": [
     "rdf",
