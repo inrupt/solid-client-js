@@ -827,6 +827,17 @@ export async function deleteContainer(
   }
 }
 
+function isChildResource(a: string, b: string): boolean {
+  const parent = new URL(b);
+  const child = new URL(a);
+  const isAncestor = child.href.startsWith(parent.href);
+  const urlDiff = child.href.substring(parent.href.length, child.href.length);
+  // The child path component that isn't present in the parent should only
+  // potentially include slashes at the end (if it is a container).
+  const isDirectChild = urlDiff.includes(urlDiff.replace("/", " ").trim());
+  return isAncestor && isDirectChild;
+}
+
 /**
  * Given a [[SolidDataset]] representing a Container (see [[isContainer]]), fetch the URLs of all
  * contained resources.
@@ -844,7 +855,11 @@ export function getContainedResourceUrlAll(
   // See https://www.w3.org/TR/2015/REC-ldp-20150226/#h-ldpc-http_post:
   // > a containment triple MUST be added to the state of the LDPC whose subject is the LDPC URI,
   // > whose predicate is ldp:contains and whose object is the URI for the newly created document
-  return container !== null ? getIriAll(container, ldp.contains) : [];
+  return container !== null
+    ? getIriAll(container, ldp.contains).filter((child) =>
+        isChildResource(child, getSourceUrl(solidDataset))
+      )
+    : [];
 }
 
 /**

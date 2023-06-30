@@ -2894,14 +2894,14 @@ describe("deleteContainer", () => {
 describe("getContainedResourceUrlAll", () => {
   const mockContainer = (
     containerUrl: string,
-    containedResourceNames: UrlString[]
+    containedResourceUrls: UrlString[]
   ) => {
     let childrenIndex = createThing({ url: containerUrl });
     let mockedContainer = mockContainerFrom(containerUrl);
 
-    containedResourceNames.forEach((resourceName) => {
+    containedResourceUrls.forEach((resourceUrl) => {
       let childListing = createThing({
-        url: `${containerUrl + resourceName}.ttl`,
+        url: resourceUrl,
       });
       childListing = addUrl(childListing, rdf.type, ldp.Resource);
 
@@ -2917,15 +2917,35 @@ describe("getContainedResourceUrlAll", () => {
 
   it("gets all URLs for contained Resources from a Container", () => {
     const containerUrl = "https://arbitrary.pod/container/";
-    const containedThings = ["resource1", "resource2", "resource3"];
+    const containedThings = [
+      "https://arbitrary.pod/container/resource1",
+      "https://arbitrary.pod/container/resource2/",
+    ];
     const container = mockContainer(containerUrl, containedThings);
-    const expectedReturnUrls = containedThings.map(
-      (thingName) => `${containerUrl}${thingName}.ttl`
-    );
 
     expect(getContainedResourceUrlAll(container)).toStrictEqual(
-      expectedReturnUrls
+      containedThings
     );
+  });
+
+  it("filters out non-direct children of target Container", () => {
+    const containerUrl = "https://arbitrary.pod/container/";
+    const validChildren = [
+      "https://arbitrary.pod/container/resource1",
+      "https://arbitrary.pod/container/resource2/",
+    ];
+    const indirectChildren = [
+      "https://arbitrary.pod/container/container/resource1/",
+      "https://arbitrary.pod/container/c/resource2",
+      "https://arbitrary.pod/resource3",
+      "https://other.pod/container/resource4",
+    ];
+    const container = mockContainer(containerUrl, [
+      ...validChildren,
+      ...indirectChildren,
+    ]);
+
+    expect(getContainedResourceUrlAll(container)).toStrictEqual(validChildren);
   });
 
   it("returns an empty array if the Container contains no Resources", () => {
