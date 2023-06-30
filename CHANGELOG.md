@@ -14,11 +14,20 @@ The following changes are pending, and will be applied on the next major release
 
 ## [Unreleased]
 
-### [Patch]
+### Patch
 
 The following changes have been implemented but not released yet:
 
 - `getProfileAll` now also follows `rdfs:seeAlso` when discovering extended profiles.
+
+### Bugfix
+
+- When listing contained resources with `getContainedResourcesAll`, resources that
+  are not direct child resources of the target container from a URL path semantics
+  perspective are no longer returned. This means `https://pod.example.org/foo/bar/moo`
+  cannot be considered a child resource of `https://pod.example.org/foo/`, regardless
+  of the `ldp:contains` statements in the container. Resources from a different
+  origin are also be excluded by this change.
 
 ## [1.29.0] - 2023-05-18
 
