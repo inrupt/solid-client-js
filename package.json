@@ -25,7 +25,7 @@
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
     "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci",
-    "test:webpack": "webpack --config e2e/bundle/webpack.config.js"
+    "test:webpack": "npm run build && webpack --config e2e/bundle/webpack.config.js"
   },
   "keywords": [
     "rdf",
