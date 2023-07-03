@@ -830,11 +830,16 @@ export async function deleteContainer(
 function isChildResource(a: string, b: string): boolean {
   const parent = new URL(b);
   const child = new URL(a);
+  // Explicitly test on the whole URL to enforce similar origins.
   const isAncestor = child.href.startsWith(parent.href);
-  const urlDiff = child.href.substring(parent.href.length, child.href.length);
+  const urlDiff = child.pathname.substring(
+    parent.pathname.length,
+    child.pathname.length
+  );
   // The child path component that isn't present in the parent should only
   // potentially include slashes at the end (if it is a container).
-  const isDirectChild = urlDiff.includes(urlDiff.replace(/\//g, " ").trim());
+  const isDirectChild =
+    urlDiff !== "" && urlDiff.includes(urlDiff.replace(/\//g, " ").trim());
   return isAncestor && isDirectChild;
 }
 

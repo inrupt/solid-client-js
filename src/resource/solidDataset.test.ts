@@ -2937,24 +2937,28 @@ describe("getContainedResourceUrlAll", () => {
       "https://other.pod/container/resource4",
     ];
 
+    indirectChildren.forEach((invalidChildUrl) => {
+      expect(() =>
+        getContainedResourceUrlAll(
+          mockContainer(containerUrl, [invalidChildUrl])
+        )
+      ).toThrow("not possible according to slash semantics");
+    });
+    expect.assertions(indirectChildren.length);
+  });
+
+  it("throws on children having a similar URL path as the parent", () => {
     expect(() =>
       getContainedResourceUrlAll(
-        mockContainer(containerUrl, [indirectChildren[0]])
+        mockContainer("http://example.org/a/", ["http://example.org/a/"])
       )
     ).toThrow("not possible according to slash semantics");
+
     expect(() =>
       getContainedResourceUrlAll(
-        mockContainer(containerUrl, [indirectChildren[1]])
-      )
-    ).toThrow("not possible according to slash semantics");
-    expect(() =>
-      getContainedResourceUrlAll(
-        mockContainer(containerUrl, [indirectChildren[2]])
-      )
-    ).toThrow("not possible according to slash semantics");
-    expect(() =>
-      getContainedResourceUrlAll(
-        mockContainer(containerUrl, [indirectChildren[3]])
+        mockContainer("http://example.org/a/?q1=a/", [
+          "http://example.org/a/?q1=a/a",
+        ])
       )
     ).toThrow("not possible according to slash semantics");
   });
