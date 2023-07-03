@@ -2961,6 +2961,12 @@ describe("getContainedResourceUrlAll", () => {
         ])
       )
     ).toThrow("not possible according to slash semantics");
+
+    expect(() =>
+      getContainedResourceUrlAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a//"])
+      )
+    ).toThrow("not possible according to slash semantics");
   });
 
   it("returns an empty array if the Container contains no Resources", () => {
