@@ -869,7 +869,7 @@ export function getContainedResourceUrlAll(
     // See https://solidproject.org/TR/protocol#resource-containment
     if (!isChildResource(childUrl, containerUrl)) {
       throw new Error(
-        `Container [${containerUrl}] claims containment of [${childUrl}], but this is not possible according to slash semantics. The containment triple should be removed from [${containerUrl}].`
+        `Container [${containerUrl}] claims containment of [${childUrl}], but this is not possible according to slash semantics (https://solidproject.org/TR/protocol#resource-containment). The containment triple should be removed from [${containerUrl}].`
       );
     }
   });
