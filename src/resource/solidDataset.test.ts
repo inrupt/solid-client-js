@@ -2928,24 +2928,35 @@ describe("getContainedResourceUrlAll", () => {
     );
   });
 
-  it("filters out non-direct children of target Container", () => {
+  it("throws out non-direct children of target Container", () => {
     const containerUrl = "https://arbitrary.pod/container/";
-    const validChildren = [
-      "https://arbitrary.pod/container/resource1",
-      "https://arbitrary.pod/container/resource2/",
-    ];
     const indirectChildren = [
       "https://arbitrary.pod/container/container/resource1/",
       "https://arbitrary.pod/container//c/resource2",
       "https://arbitrary.pod/resource3",
       "https://other.pod/container/resource4",
     ];
-    const container = mockContainer(containerUrl, [
-      ...validChildren,
-      ...indirectChildren,
-    ]);
 
-    expect(getContainedResourceUrlAll(container)).toStrictEqual(validChildren);
+    expect(() =>
+      getContainedResourceUrlAll(
+        mockContainer(containerUrl, [indirectChildren[0]])
+      )
+    ).toThrow("not possible according to slash semantics");
+    expect(() =>
+      getContainedResourceUrlAll(
+        mockContainer(containerUrl, [indirectChildren[1]])
+      )
+    ).toThrow("not possible according to slash semantics");
+    expect(() =>
+      getContainedResourceUrlAll(
+        mockContainer(containerUrl, [indirectChildren[2]])
+      )
+    ).toThrow("not possible according to slash semantics");
+    expect(() =>
+      getContainedResourceUrlAll(
+        mockContainer(containerUrl, [indirectChildren[3]])
+      )
+    ).toThrow("not possible according to slash semantics");
   });
 
   it("returns an empty array if the Container contains no Resources", () => {

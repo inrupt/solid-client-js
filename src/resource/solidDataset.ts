@@ -851,15 +851,24 @@ function isChildResource(a: string, b: string): boolean {
 export function getContainedResourceUrlAll(
   solidDataset: SolidDataset & WithResourceInfo
 ): UrlString[] {
-  const container = getThing(solidDataset, getSourceUrl(solidDataset));
+  const containerUrl = getSourceUrl(solidDataset);
+  const container = getThing(solidDataset, containerUrl);
+  if (container === null) {
+    return [];
+  }
   // See https://www.w3.org/TR/2015/REC-ldp-20150226/#h-ldpc-http_post:
   // > a containment triple MUST be added to the state of the LDPC whose subject is the LDPC URI,
   // > whose predicate is ldp:contains and whose object is the URI for the newly created document
-  return container !== null
-    ? getIriAll(container, ldp.contains).filter((child) =>
-        isChildResource(child, getSourceUrl(solidDataset))
-      )
-    : [];
+  const childrenUrlAll = getIriAll(container, ldp.contains);
+  childrenUrlAll.forEach((childUrl) => {
+    // See https://solidproject.org/TR/protocol#resource-containment
+    if (!isChildResource(childUrl, containerUrl)) {
+      throw new Error(
+        `Container [${containerUrl}] claims containment of [${childUrl}], but this is not possible according to slash semantics. The containment triple should be removed from [${containerUrl}].`
+      );
+    }
+  });
+  return childrenUrlAll;
 }
 
 /**
