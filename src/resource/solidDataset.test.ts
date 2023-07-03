@@ -2936,7 +2936,7 @@ describe("getContainedResourceUrlAll", () => {
     ];
     const indirectChildren = [
       "https://arbitrary.pod/container/container/resource1/",
-      "https://arbitrary.pod/container/c/resource2",
+      "https://arbitrary.pod/container//c/resource2",
       "https://arbitrary.pod/resource3",
       "https://other.pod/container/resource4",
     ];
