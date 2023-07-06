@@ -28,6 +28,7 @@ jobs:
       # to the CI runner.
       - run: npm run test:unit:browser
       - run: npm run test:unit:node
+      - run: npm run test:webpack
       # Upload coverage for sonarcube (only matching OS and one node version required)
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x' }}
