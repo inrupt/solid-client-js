@@ -14,6 +14,12 @@ The following changes are pending, and will be applied on the next major release
 
 ## [Unreleased]
 
+### New features
+
+- `validateContainedResourcesAll`: In addition to the change to `getContainedResourcesAll`
+  described in the Bugfix section, a new function is added to the API to help detecting
+  incorrect containment claims.
+
 ### Patch
 
 The following changes have been implemented but not released yet:
