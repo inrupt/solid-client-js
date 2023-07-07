@@ -39,6 +39,7 @@ import {
   getContainedResourceUrlAll,
   responseToSolidDataset,
   getWellKnownSolid,
+  validateContainedResourceAll,
 } from "./solidDataset";
 import type {
   WithChangeLog,
@@ -2926,9 +2927,13 @@ describe("getContainedResourceUrlAll", () => {
     expect(getContainedResourceUrlAll(container)).toStrictEqual(
       containedThings
     );
+    expect(validateContainedResourceAll(container)).toStrictEqual({
+      isValid: true,
+      invalidContainedResources: [],
+    });
   });
 
-  it("throws out non-direct children of target Container", () => {
+  it("does not include non-direct children of target Container", () => {
     const containerUrl = "https://arbitrary.pod/container/";
     const indirectChildren = [
       "https://arbitrary.pod/container/container/resource1/",
@@ -2936,37 +2941,65 @@ describe("getContainedResourceUrlAll", () => {
       "https://arbitrary.pod/resource3",
       "https://other.pod/container/resource4",
     ];
-
-    indirectChildren.forEach((invalidChildUrl) => {
-      expect(() =>
-        getContainedResourceUrlAll(
-          mockContainer(containerUrl, [invalidChildUrl])
-        )
-      ).toThrow("not possible according to slash semantics");
+    expect(
+      getContainedResourceUrlAll(mockContainer(containerUrl, indirectChildren))
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer(containerUrl, indirectChildren)
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: [...indirectChildren],
     });
-    expect.assertions(indirectChildren.length);
   });
 
-  it("throws on children having a similar URL path as the parent", () => {
-    expect(() =>
+  it("does not include children having a similar URL path as the parent", () => {
+    expect(
       getContainedResourceUrlAll(
         mockContainer("http://example.org/a/", ["http://example.org/a/"])
       )
-    ).toThrow("not possible according to slash semantics");
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a/"])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a/"],
+    });
 
-    expect(() =>
+    expect(
       getContainedResourceUrlAll(
         mockContainer("http://example.org/a/?q1=a/", [
           "http://example.org/a/?q1=a/a",
         ])
       )
-    ).toThrow("not possible according to slash semantics");
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/?q1=a/", [
+          "http://example.org/a/?q1=a/a",
+        ])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a/?q1=a/a"],
+    });
 
-    expect(() =>
+    expect(
       getContainedResourceUrlAll(
         mockContainer("http://example.org/a/", ["http://example.org/a//"])
       )
-    ).toThrow("not possible according to slash semantics");
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a//"])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a//"],
+    });
   });
 
   it("returns an empty array if the Container contains no Resources", () => {
