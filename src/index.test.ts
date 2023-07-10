@@ -46,6 +46,7 @@ import {
   createContainerInContainer,
   deleteContainer,
   getContainedResourceUrlAll,
+  validateContainedResourceAll,
   saveAclFor,
   deleteAclFor,
   getThing,
@@ -234,6 +235,7 @@ it("exports the public API from the entry file", () => {
   expect(createContainerInContainer).toBeDefined();
   expect(deleteContainer).toBeDefined();
   expect(getContainedResourceUrlAll).toBeDefined();
+  expect(validateContainedResourceAll).toBeDefined();
   expect(saveAclFor).toBeDefined();
   expect(deleteAclFor).toBeDefined();
   expect(getThing).toBeDefined();

@@ -39,6 +39,7 @@ import {
   getContainedResourceUrlAll,
   responseToSolidDataset,
   getWellKnownSolid,
+  validateContainedResourceAll,
 } from "./solidDataset";
 import type {
   WithChangeLog,
@@ -2894,14 +2895,14 @@ describe("deleteContainer", () => {
 describe("getContainedResourceUrlAll", () => {
   const mockContainer = (
     containerUrl: string,
-    containedResourceNames: UrlString[]
+    containedResourceUrls: UrlString[]
   ) => {
     let childrenIndex = createThing({ url: containerUrl });
     let mockedContainer = mockContainerFrom(containerUrl);
 
-    containedResourceNames.forEach((resourceName) => {
+    containedResourceUrls.forEach((resourceUrl) => {
       let childListing = createThing({
-        url: `${containerUrl + resourceName}.ttl`,
+        url: resourceUrl,
       });
       childListing = addUrl(childListing, rdf.type, ldp.Resource);
 
@@ -2917,15 +2918,88 @@ describe("getContainedResourceUrlAll", () => {
 
   it("gets all URLs for contained Resources from a Container", () => {
     const containerUrl = "https://arbitrary.pod/container/";
-    const containedThings = ["resource1", "resource2", "resource3"];
+    const containedThings = [
+      "https://arbitrary.pod/container/resource1",
+      "https://arbitrary.pod/container/resource2/",
+    ];
     const container = mockContainer(containerUrl, containedThings);
-    const expectedReturnUrls = containedThings.map(
-      (thingName) => `${containerUrl}${thingName}.ttl`
-    );
 
     expect(getContainedResourceUrlAll(container)).toStrictEqual(
-      expectedReturnUrls
+      containedThings
     );
+    expect(validateContainedResourceAll(container)).toStrictEqual({
+      isValid: true,
+      invalidContainedResources: [],
+    });
+  });
+
+  it("does not include non-direct children of target Container", () => {
+    const containerUrl = "https://arbitrary.pod/container/";
+    const indirectChildren = [
+      "https://arbitrary.pod/container/container/resource1/",
+      "https://arbitrary.pod/container//c/resource2",
+      "https://arbitrary.pod/resource3",
+      "https://other.pod/container/resource4",
+    ];
+    expect(
+      getContainedResourceUrlAll(mockContainer(containerUrl, indirectChildren))
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer(containerUrl, indirectChildren)
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: [...indirectChildren],
+    });
+  });
+
+  it("does not include children having a similar URL path as the parent", () => {
+    expect(
+      getContainedResourceUrlAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a/"])
+      )
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a/"])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a/"],
+    });
+
+    expect(
+      getContainedResourceUrlAll(
+        mockContainer("http://example.org/a/?q1=a/", [
+          "http://example.org/a/?q1=a/a",
+        ])
+      )
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/?q1=a/", [
+          "http://example.org/a/?q1=a/a",
+        ])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a/?q1=a/a"],
+    });
+
+    expect(
+      getContainedResourceUrlAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a//"])
+      )
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a//"])
+      )
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a//"],
+    });
   });
 
   it("returns an empty array if the Container contains no Resources", () => {
@@ -2941,6 +3015,10 @@ describe("getContainedResourceUrlAll", () => {
   it("returns an empty array if the Container contains no index of contained Resources", () => {
     const dataset = mockSolidDatasetFrom("https://arbitrary.pod/dataset");
     expect(getContainedResourceUrlAll(dataset)).toStrictEqual([]);
+    expect(validateContainedResourceAll(dataset)).toStrictEqual({
+      isValid: true,
+      invalidContainedResources: [],
+    });
   });
 });
 

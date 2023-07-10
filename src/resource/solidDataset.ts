@@ -827,10 +827,25 @@ export async function deleteContainer(
   }
 }
 
+function isChildResource(a: string, b: string): boolean {
+  const parent = new URL(b);
+  const child = new URL(a);
+  // Explicitly test on the whole URL to enforce similar origins.
+  const isAncestor = child.href.startsWith(parent.href);
+  const relativePath = child.pathname
+    .substring(parent.pathname.length, child.pathname.length)
+    .replace(/(^\/)|(\/$)/g, "");
+  // The child path component that isn't present in the parent should only
+  // potentially include slashes at the end (if it is a container).
+  return isAncestor && relativePath.length >= 1 && !relativePath.includes("/");
+}
+
 /**
  * Given a [[SolidDataset]] representing a Container (see [[isContainer]]), fetch the URLs of all
  * contained resources.
  * If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
+ * If the containment of some resources is invalid (see {@link validateContainedResourceAll}),
+ * they are not included in the result.
  *
  * @param solidDataset The container from which to fetch all contained Resource URLs.
  * @returns A list of URLs, each of which points to a contained Resource of the given SolidDataset.
@@ -840,11 +855,54 @@ export async function deleteContainer(
 export function getContainedResourceUrlAll(
   solidDataset: SolidDataset & WithResourceInfo
 ): UrlString[] {
-  const container = getThing(solidDataset, getSourceUrl(solidDataset));
+  const containerUrl = getSourceUrl(solidDataset);
+  const container = getThing(solidDataset, containerUrl);
+  if (container === null) {
+    return [];
+  }
   // See https://www.w3.org/TR/2015/REC-ldp-20150226/#h-ldpc-http_post:
   // > a containment triple MUST be added to the state of the LDPC whose subject is the LDPC URI,
   // > whose predicate is ldp:contains and whose object is the URI for the newly created document
-  return container !== null ? getIriAll(container, ldp.contains) : [];
+  return (
+    getIriAll(container, ldp.contains)
+      // See https://solidproject.org/TR/protocol#resource-containment
+      .filter((childUrl) => isChildResource(childUrl, containerUrl))
+  );
+}
+
+/**
+ * Given a {@link SolidDataset} representing a Container (see {@link isContainer}), verify that
+ * all its containùent claims are valid. Containment of a resource is invalid if it doesn't
+ * respect slash semantics, see https://solidproject.org/TR/protocol#resource-containment for
+ * more details.
+ *
+ * Resources for which containment is invalid are not included in the result set returned by
+ * {@link getContainedResourceUrlAll}.
+ *
+ * @param solidDataset The container from which containment claims are validated.
+ * @returns A validation report, including the offending contained resources URL if any.
+ * @since unreleased
+ */
+export function validateContainedResourceAll(
+  solidDataset: SolidDataset & WithResourceInfo
+): { isValid: boolean; invalidContainedResources: string[] } {
+  const containerUrl = getSourceUrl(solidDataset);
+  const container = getThing(solidDataset, containerUrl);
+  if (container === null) {
+    return { isValid: true, invalidContainedResources: [] };
+  }
+
+  // See https://www.w3.org/TR/2015/REC-ldp-20150226/#h-ldpc-http_post:
+  // > a containment triple MUST be added to the state of the LDPC whose subject is the LDPC URI,
+  // > whose predicate is ldp:contains and whose object is the URI for the newly created document
+  const invalidChildren = getIriAll(container, ldp.contains)
+    // See https://solidproject.org/TR/protocol#resource-containment
+    .filter((childUrl) => !isChildResource(childUrl, containerUrl));
+
+  if (invalidChildren.length > 0) {
+    return { isValid: false, invalidContainedResources: invalidChildren };
+  }
+  return { isValid: true, invalidContainedResources: [] };
 }
 
 /**

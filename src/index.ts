@@ -51,6 +51,7 @@ export {
   createContainerInContainer,
   deleteContainer,
   getContainedResourceUrlAll,
+  validateContainedResourceAll,
   solidDatasetAsMarkdown,
   changeLogAsMarkdown,
   Parser,
