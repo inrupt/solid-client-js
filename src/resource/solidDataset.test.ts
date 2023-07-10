@@ -3015,6 +3015,10 @@ describe("getContainedResourceUrlAll", () => {
   it("returns an empty array if the Container contains no index of contained Resources", () => {
     const dataset = mockSolidDatasetFrom("https://arbitrary.pod/dataset");
     expect(getContainedResourceUrlAll(dataset)).toStrictEqual([]);
+    expect(validateContainedResourceAll(dataset)).toStrictEqual({
+      isValid: true,
+      invalidContainedResources: [],
+    });
   });
 });
 
