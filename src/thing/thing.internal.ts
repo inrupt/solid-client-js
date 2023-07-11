@@ -113,23 +113,21 @@ export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
     : /* istanbul ignore next: This function always gets called after addDeletionsToChangeLog, so the ChangeLog always already exists in tests: */
       { additions: [], deletions: [] };
 
-  const [newAdditions, newDeletions] = additions
-    .filter((addition) => !containsBlankNode(addition))
-    .reduce(
-      ([additionsAcc, deletionsAcc], addition) => {
-        const existingDeletion = deletionsAcc.find((deletion) =>
-          deletion.equals(addition)
-        );
-        if (typeof existingDeletion !== "undefined") {
-          return [
-            additionsAcc,
-            deletionsAcc.filter((deletion) => !deletion.equals(addition)),
-          ];
-        }
-        return [additionsAcc.concat(addition), deletionsAcc];
-      },
-      [changeLog.additions, changeLog.deletions]
-    );
+  const [newAdditions, newDeletions] = additions.reduce(
+    ([additionsAcc, deletionsAcc], addition) => {
+      const existingDeletion = deletionsAcc.find((deletion) =>
+        deletion.equals(addition)
+      );
+      if (typeof existingDeletion !== "undefined") {
+        return [
+          additionsAcc,
+          deletionsAcc.filter((deletion) => !deletion.equals(addition)),
+        ];
+      }
+      return [additionsAcc.concat(addition), deletionsAcc];
+    },
+    [changeLog.additions, changeLog.deletions]
+  );
 
   return freeze({
     ...solidDataset,
