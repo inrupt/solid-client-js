@@ -884,7 +884,7 @@ export function getContainedResourceUrlAll(
  * @since unreleased
  */
 export function validateContainedResourceAll(
-  solidDataset: SolidDataset & WithResourceInfo
+  solidDataset: SolidDataset & WithResourceInfo,
 ): { isValid: boolean; invalidContainedResources: string[] } {
   const containerUrl = getSourceUrl(solidDataset);
   const container = getThing(solidDataset, containerUrl);
