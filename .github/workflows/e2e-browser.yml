@@ -24,7 +24,7 @@ jobs:
         environment-name: ["ESS PodSpaces"]
         experimental: [false]
         include:
-          - environment-name: "ESS Dev-Next"
+          - environment-name: "ESS Dev-2-2"
             experimental: true
             node-version: 20.x
             os: ubuntu-latest
